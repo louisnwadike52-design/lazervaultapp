@@ -149,8 +149,11 @@ class _DepositReceiptScreenState extends State<DepositReceiptScreen> {
     }
   }
 
-  Color get _statusColor =>
-      _completed ? _success : _failed ? _error : _accent;
+  Color get _statusColor => _completed
+      ? _success
+      : _failed
+          ? _error
+          : _accent;
   IconData get _statusIcon => _completed
       ? Icons.check_rounded
       : _failed
@@ -214,8 +217,13 @@ class _DepositReceiptScreenState extends State<DepositReceiptScreen> {
     final v = (raw ?? '').trim();
     if (v.isEmpty || v == '—' || v == '-' || v == 'N/A') return false;
     const placeholders = {
-      'unknown', 'unknown sender', 'anonymous', 'anonymous customer',
-      'null', 'nil', 'undefined',
+      'unknown',
+      'unknown sender',
+      'anonymous',
+      'anonymous customer',
+      'null',
+      'nil',
+      'undefined',
     };
     return !placeholders.contains(v.toLowerCase());
   }
@@ -328,7 +336,8 @@ class _DepositReceiptScreenState extends State<DepositReceiptScreen> {
                                 if (widget.fee > 0)
                                   _row('Fee', _money(widget.fee)),
                                 if (widget.discount > 0)
-                                  _row('Discount', '-${_money(widget.discount)}',
+                                  _row(
+                                      'Discount', '-${_money(widget.discount)}',
                                       valueColor: _success),
                                 _row('Reference', widget.reference,
                                     copyable: true),
@@ -419,8 +428,7 @@ class _DepositReceiptScreenState extends State<DepositReceiptScreen> {
     );
   }
 
-  Widget _divider_() =>
-      Divider(color: _divider, height: 18.h, thickness: 1);
+  Widget _divider_() => Divider(color: _divider, height: 18.h, thickness: 1);
 
   Widget _buildActions(BuildContext context) {
     return Container(

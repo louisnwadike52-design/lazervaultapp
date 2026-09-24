@@ -160,7 +160,8 @@ class _StockOrdersScreenState extends State<StockOrdersScreen>
         isScrollable: true,
         labelColor: Colors.white.withValues(alpha: 0.7),
         unselectedLabelColor: Colors.white.withValues(alpha: 0.5),
-        labelStyle: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600),
+        labelStyle:
+            GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600),
         unselectedLabelStyle: GoogleFonts.inter(fontSize: 13.sp),
         indicatorPadding: EdgeInsets.all(4.w),
         dividerColor: Colors.transparent,
@@ -214,7 +215,9 @@ class _StockOrdersScreenState extends State<StockOrdersScreen>
 
   List<StockOrder> _filterOrders(List<StockOrder> orders, String status) {
     if (status == 'all') return orders;
-    return orders.where((order) => order.status.toLowerCase() == status).toList();
+    return orders
+        .where((order) => order.status.toLowerCase() == status)
+        .toList();
   }
 
   Widget _buildOrderCard(StockOrder order) {
@@ -240,7 +243,8 @@ class _StockOrdersScreenState extends State<StockOrdersScreen>
               width: 48.w,
               height: 48.w,
               decoration: BoxDecoration(
-                color: (isBuy ? Colors.green : Colors.red).withValues(alpha: 0.15),
+                color:
+                    (isBuy ? Colors.green : Colors.red).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
@@ -266,9 +270,11 @@ class _StockOrdersScreenState extends State<StockOrdersScreen>
                       ),
                       SizedBox(width: 8.w),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 6.w, vertical: 2.h),
                         decoration: BoxDecoration(
-                          color: (isBuy ? Colors.green : Colors.red).withValues(alpha: 0.2),
+                          color: (isBuy ? Colors.green : Colors.red)
+                              .withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                         child: Text(
@@ -305,7 +311,8 @@ class _StockOrdersScreenState extends State<StockOrdersScreen>
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  CurrencySymbols.formatAmountWithCurrency(order.totalValue, order.currency),
+                  CurrencySymbols.formatAmountWithCurrency(
+                      order.totalValue, order.currency),
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 14.sp,
@@ -408,13 +415,20 @@ class _StockOrdersScreenState extends State<StockOrdersScreen>
                     _buildDetailItem('Stock', order.symbol),
                     _buildDetailItem('Type', order.type.toUpperCase()),
                     _buildDetailItem('Quantity', '${order.quantity} shares'),
-                    _buildDetailItem('Price', CurrencySymbols.formatAmountWithCurrency(order.price ?? 0.0, order.currency)),
-                    _buildDetailItem('Total Value', CurrencySymbols.formatAmountWithCurrency(order.totalValue, order.currency)),
+                    _buildDetailItem(
+                        'Price',
+                        CurrencySymbols.formatAmountWithCurrency(
+                            order.price ?? 0.0, order.currency)),
+                    _buildDetailItem(
+                        'Total Value',
+                        CurrencySymbols.formatAmountWithCurrency(
+                            order.totalValue, order.currency)),
                     _buildDetailItem('Status', order.status.toUpperCase()),
                     _buildDetailItem('Created', _formatDate(order.createdAt)),
                     if (order.status.toLowerCase() == 'completed' &&
                         order.executedAt != null)
-                      _buildDetailItem('Executed', _formatDate(order.executedAt!)),
+                      _buildDetailItem(
+                          'Executed', _formatDate(order.executedAt!)),
                     SizedBox(height: 24.h),
                     if (order.status.toLowerCase() == 'pending')
                       Row(

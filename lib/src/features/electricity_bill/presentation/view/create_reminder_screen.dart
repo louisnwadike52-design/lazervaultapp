@@ -23,7 +23,6 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import '../../utils/meter_validation.dart';
 part 'create_reminder_screen_widgets.dart';
 
-
 class CreateReminderScreen extends StatefulWidget {
   const CreateReminderScreen({super.key});
 
@@ -72,7 +71,9 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
               onPrimary: Colors.white,
               surface: Color(0xFF1A1A1A),
               onSurface: Colors.white,
-            ), dialogTheme: DialogThemeData(backgroundColor: const Color(0xFF1A1A1A)),
+            ),
+            dialogTheme:
+                DialogThemeData(backgroundColor: const Color(0xFF1A1A1A)),
           ),
           child: child!,
         );
@@ -98,7 +99,9 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
               onPrimary: Colors.white,
               surface: Color(0xFF1A1A1A),
               onSurface: Colors.white,
-            ), dialogTheme: DialogThemeData(backgroundColor: const Color(0xFF1A1A1A)),
+            ),
+            dialogTheme:
+                DialogThemeData(backgroundColor: const Color(0xFF1A1A1A)),
           ),
           child: child!,
         );
@@ -233,7 +236,8 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                         child: _buildDateTimeCard(
                           icon: Icons.calendar_today,
                           label: 'Date',
-                          value: DateFormat('MMM dd, yyyy').format(_selectedDate),
+                          value:
+                              DateFormat('MMM dd, yyyy').format(_selectedDate),
                           onTap: _selectDate,
                         ),
                       ),
@@ -297,7 +301,8 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                       onPressed: isLoading ? null : _createReminder,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF4E03D0),
-                        disabledBackgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.5),
+                        disabledBackgroundColor:
+                            const Color(0xFF4E03D0).withValues(alpha: 0.5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16.r),
                         ),
@@ -467,7 +472,8 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add_circle_outline, color: const Color(0xFF4E03D0), size: 16.sp),
+                        Icon(Icons.add_circle_outline,
+                            color: const Color(0xFF4E03D0), size: 16.sp),
                         SizedBox(width: 6.w),
                         Text(
                           'Add New Beneficiary',
@@ -493,7 +499,8 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.1)),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<BillBeneficiaryEntity>(
@@ -542,15 +549,15 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                                 ),
                               ),
                               ...[
-                              SizedBox(height: 2.h),
-                              Text(
-                                beneficiary.meterNumber,
-                                style: GoogleFonts.inter(
-                                  fontSize: 12.sp,
-                                  color: Colors.white.withValues(alpha: 0.5),
+                                SizedBox(height: 2.h),
+                                Text(
+                                  beneficiary.meterNumber,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12.sp,
+                                    color: Colors.white.withValues(alpha: 0.5),
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
                             ],
                           ),
                         );
@@ -570,7 +577,8 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.add_circle_outline, color: const Color(0xFF4E03D0), size: 16.sp),
+                    Icon(Icons.add_circle_outline,
+                        color: const Color(0xFF4E03D0), size: 16.sp),
                     SizedBox(width: 6.w),
                     Text(
                       'Add New Beneficiary',
@@ -615,7 +623,8 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.2)),
+        border:
+            Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -648,7 +657,8 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                   });
                 },
                 activeThumbColor: const Color(0xFF4E03D0),
-                activeTrackColor: const Color(0xFF4E03D0).withValues(alpha: 0.5),
+                activeTrackColor:
+                    const Color(0xFF4E03D0).withValues(alpha: 0.5),
               ),
             ],
           ),
@@ -760,7 +770,8 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.3)),
+        border:
+            Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

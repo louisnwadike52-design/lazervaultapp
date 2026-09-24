@@ -36,7 +36,8 @@ void main() {
       // Try to create a simple connection
       try {
         await channel.shutdown();
-        print('✓ Successfully connected to crypto-gateway at $_cryptoGatewayUrl:9090');
+        print(
+            '✓ Successfully connected to crypto-gateway at $_cryptoGatewayUrl:9090');
       } catch (e) {
         print('⚠ Warning: Could not cleanly shutdown connection: $e');
       }
@@ -57,7 +58,8 @@ void main() {
       // Try to create a simple connection
       try {
         await channel.shutdown();
-        print('✓ Successfully connected to core-gateway at $_coreGatewayUrl:7878');
+        print(
+            '✓ Successfully connected to core-gateway at $_coreGatewayUrl:7878');
       } catch (e) {
         print('⚠ Warning: Could not cleanly shutdown connection: $e');
       }

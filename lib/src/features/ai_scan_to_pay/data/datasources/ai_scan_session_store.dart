@@ -62,11 +62,11 @@ class AiScanSessionStore {
       final statusIdx = json['status'] as int? ?? 0;
       final session = ScanSession(
         id: json['session_id'] as String? ?? '',
-        scanType: ScanType.values[
-            scanTypeIdx.clamp(0, ScanType.values.length - 1)],
+        scanType:
+            ScanType.values[scanTypeIdx.clamp(0, ScanType.values.length - 1)],
         createdAt: DateTime.fromMillisecondsSinceEpoch(createdMs),
-        status: ScanStatus.values[
-            statusIdx.clamp(0, ScanStatus.values.length - 1)],
+        status:
+            ScanStatus.values[statusIdx.clamp(0, ScanStatus.values.length - 1)],
       );
       BankDetails? bankDetails;
       final bd = json['bank_details'];

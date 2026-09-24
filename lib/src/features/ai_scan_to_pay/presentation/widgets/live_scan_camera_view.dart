@@ -18,7 +18,6 @@ import 'package:lazervault/core/services/scan_capability.dart';
 import '../../domain/services/scan_candidate_detector.dart';
 part 'live_scan_camera_view_widgets.dart';
 
-
 const Color _kAccent = Color.fromARGB(255, 78, 3, 208);
 
 /// Live "hover to detect" scan camera.
@@ -327,7 +326,8 @@ class _LiveScanCameraViewState extends State<LiveScanCameraView>
     if (controller == null || _isDisposing) return;
     try {
       setState(() => _isFlashOn = !_isFlashOn);
-      await controller.setFlashMode(_isFlashOn ? FlashMode.torch : FlashMode.off);
+      await controller
+          .setFlashMode(_isFlashOn ? FlashMode.torch : FlashMode.off);
     } catch (_) {
       if (mounted && !_isDisposing) setState(() => _isFlashOn = !_isFlashOn);
     }
@@ -793,7 +793,8 @@ class _LiveScanCameraViewState extends State<LiveScanCameraView>
         imageQuality: 85,
       );
       if (image == null || _isDisposing) {
-        if (!_fired && mounted) _startPoll(); // user cancelled — resume scanning
+        if (!_fired && mounted)
+          _startPoll(); // user cancelled — resume scanning
         return;
       }
       if (!_claimCapture()) return; // auto tick already handed a still off
@@ -880,14 +881,17 @@ class _LiveScanCameraViewState extends State<LiveScanCameraView>
                   children: [
                     if (_fired) ...[
                       SizedBox(
-                          width: 16.w, height: 16.w, child: LazerVaultLoader.small()),
+                          width: 16.w,
+                          height: 16.w,
+                          child: LazerVaultLoader.small()),
                       SizedBox(width: 10.w),
                     ],
                     Flexible(
                       child: Text(
                         _statusHint,
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(fontSize: 13.sp, color: Colors.white),
+                        style: GoogleFonts.inter(
+                            fontSize: 13.sp, color: Colors.white),
                       ),
                     ),
                   ],
@@ -909,8 +913,8 @@ class _LiveScanCameraViewState extends State<LiveScanCameraView>
                 _circleBtn(Icons.arrow_back, () => Get.back())
               else
                 SizedBox(width: 48.w),
-              _circleBtn(_isFlashOn ? Icons.flash_on : Icons.flash_off,
-                  _toggleFlash,
+              _circleBtn(
+                  _isFlashOn ? Icons.flash_on : Icons.flash_off, _toggleFlash,
                   isActive: _isFlashOn),
             ],
           ),
@@ -931,7 +935,8 @@ class _LiveScanCameraViewState extends State<LiveScanCameraView>
                   width: 74.w,
                   height: 74.w,
                   decoration: BoxDecoration(
-                    color: (_fired || _manualCapturing) ? Colors.grey : _kAccent,
+                    color:
+                        (_fired || _manualCapturing) ? Colors.grey : _kAccent,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
@@ -942,7 +947,8 @@ class _LiveScanCameraViewState extends State<LiveScanCameraView>
                   ),
                   child: _manualCapturing
                       ? LazerVaultLoader.small()
-                      : Icon(Icons.camera_alt, color: Colors.white, size: 30.sp),
+                      : Icon(Icons.camera_alt,
+                          color: Colors.white, size: 30.sp),
                 ),
               ),
               _actionBtn(Icons.flip_camera_ios, 'Switch',
@@ -954,7 +960,8 @@ class _LiveScanCameraViewState extends State<LiveScanCameraView>
     );
   }
 
-  Widget _circleBtn(IconData icon, VoidCallback? onTap, {bool isActive = false}) {
+  Widget _circleBtn(IconData icon, VoidCallback? onTap,
+      {bool isActive = false}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(

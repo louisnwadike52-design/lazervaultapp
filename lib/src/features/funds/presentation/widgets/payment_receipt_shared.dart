@@ -76,8 +76,8 @@ Future<void> shareReceiptCapture(
   required String shareText,
 }) async {
   try {
-    final Uint8List? bytes =
-        await controller.capture(pixelRatio: 2.5, delay: const Duration(milliseconds: 60));
+    final Uint8List? bytes = await controller.capture(
+        pixelRatio: 2.5, delay: const Duration(milliseconds: 60));
     if (bytes == null) throw Exception('capture returned null');
     final dir = await getTemporaryDirectory();
     final file = File(
@@ -87,14 +87,14 @@ Future<void> shareReceiptCapture(
   } catch (_) {
     Get.snackbar('', 'Couldn\'t share the receipt. Please try again.',
         titleText: const SizedBox.shrink(),
-        messageText: const Text('Couldn\'t share the receipt. Please try again.',
+        messageText: const Text(
+            'Couldn\'t share the receipt. Please try again.',
             style: TextStyle(color: Colors.white)),
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.92),
         margin: EdgeInsets.all(12.w));
   }
 }
-
 
 /// Bottom sheet: pick the file format for a shareable banking receipt
 /// (PDF / JPG / PNG). Returns null when dismissed.
@@ -157,11 +157,19 @@ Future<ReceiptFileFormat?> pickReceiptFormat(BuildContext context,
                     fontSize: 16,
                     fontWeight: FontWeight.w700)),
             const SizedBox(height: 14),
-            tile(ctx, ReceiptFileFormat.pdf, Icons.picture_as_pdf_outlined,
-                const Color(0xFFEF4444), 'Vector document — best for printing.'),
+            tile(
+                ctx,
+                ReceiptFileFormat.pdf,
+                Icons.picture_as_pdf_outlined,
+                const Color(0xFFEF4444),
+                'Vector document — best for printing.'),
             const SizedBox(height: 10),
-            tile(ctx, ReceiptFileFormat.jpg, Icons.image_outlined,
-                const Color(0xFF3B82F6), 'Compact image — easy to share in chats.'),
+            tile(
+                ctx,
+                ReceiptFileFormat.jpg,
+                Icons.image_outlined,
+                const Color(0xFF3B82F6),
+                'Compact image — easy to share in chats.'),
             const SizedBox(height: 10),
             tile(ctx, ReceiptFileFormat.png, Icons.photo_outlined,
                 const Color(0xFF8B5CF6), 'Lossless image with full quality.'),
@@ -207,7 +215,8 @@ Future<void> shareBankingReceiptAs({
     const PopScope(
       canPop: false,
       child: Center(
-          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3)),
+          child:
+              CircularProgressIndicator(color: Colors.white, strokeWidth: 3)),
     ),
     barrierDismissible: false,
     barrierColor: Colors.black54,
@@ -222,9 +231,9 @@ Future<void> shareBankingReceiptAs({
     if (Get.isDialogOpen ?? false) Get.back();
   }
   await SharePlus.instance.share(ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+    // iOS: a non-zero popover anchor is required — CGRectZero throws
+    // PlatformException and the share silently fails on iPhone/iPad.
+    sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
     files: [XFile(file.path)],
     text: shareText,
     subject: 'Lazervault receipt',

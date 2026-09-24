@@ -12,7 +12,6 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'enhanced_kyc_verification_screen_widgets.dart';
 
-
 /// Enhanced KYC Verification Screen with AI Document Extraction
 ///
 /// This screen handles country-specific KYC requirements including:
@@ -441,7 +440,8 @@ class _EnhancedKYCVerificationScreenState
         children: [
           Row(
             children: [
-              Icon(Icons.info_outline, color: Colors.blue.shade700, size: 20.sp),
+              Icon(Icons.info_outline,
+                  color: Colors.blue.shade700, size: 20.sp),
               SizedBox(width: 8.w),
               Text(
                 'Regulatory Notice',
@@ -1036,7 +1036,9 @@ class _EnhancedKYCVerificationScreenState
               color: Colors.white,
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
-                color: _selfie != null ? Colors.green.shade300 : Colors.grey.shade300,
+                color: _selfie != null
+                    ? Colors.green.shade300
+                    : Colors.grey.shade300,
                 width: _selfie != null ? 2 : 1,
               ),
             ),
@@ -1588,7 +1590,8 @@ class _EnhancedKYCVerificationScreenState
           _frontExtractionResult = result;
 
           // Enable manual entry if extraction failed
-          if (!result.success || result.confidence == ExtractionConfidence.low) {
+          if (!result.success ||
+              result.confidence == ExtractionConfidence.low) {
             _isManualEntryMode = true;
           }
 
@@ -1811,9 +1814,8 @@ class _EnhancedKYCVerificationScreenState
 
       // Convert images to bytes
       final List<int>? frontImageBytes = await _frontDocument?.readAsBytes();
-      final List<int>? backImageBytes = _backDocument != null
-          ? await _backDocument?.readAsBytes()
-          : null;
+      final List<int>? backImageBytes =
+          _backDocument != null ? await _backDocument?.readAsBytes() : null;
 
       if (frontImageBytes == null) {
         _showErrorSnackBar('Document image not available');
@@ -1831,9 +1833,7 @@ class _EnhancedKYCVerificationScreenState
       final response = await userServiceClient.uploadIDDocument(request);
 
       if (response.success) {
-        final uploadedDoc = response.hasDocument()
-            ? response.document
-            : null;
+        final uploadedDoc = response.hasDocument() ? response.document : null;
 
         if (uploadedDoc != null && uploadedDoc.hasId()) {
           // Now verify the uploaded document
@@ -1841,14 +1841,17 @@ class _EnhancedKYCVerificationScreenState
             documentId: uploadedDoc.id,
           );
 
-          final verifyResponse = await userServiceClient.verifyIDDocument(verifyRequest);
+          final verifyResponse =
+              await userServiceClient.verifyIDDocument(verifyRequest);
 
           if (verifyResponse.success) {
-            _showSuccessSnackBar('Verification submitted successfully! Your ID is being reviewed.');
+            _showSuccessSnackBar(
+                'Verification submitted successfully! Your ID is being reviewed.');
             await Future.delayed(const Duration(milliseconds: 500));
             Get.back(result: true);
           } else {
-            _showErrorSnackBar('Document uploaded but verification failed: ${verifyResponse.message}');
+            _showErrorSnackBar(
+                'Document uploaded but verification failed: ${verifyResponse.message}');
           }
         } else {
           _showSuccessSnackBar('Document uploaded successfully!');
@@ -1923,7 +1926,6 @@ class _EnhancedKYCVerificationScreenState
         return user_pb.DocumentType.DOCUMENT_TYPE_NATIONAL_ID;
       case IdentityDocumentType.saPassport:
         return user_pb.DocumentType.DOCUMENT_TYPE_PASSPORT;
-
     }
   }
 

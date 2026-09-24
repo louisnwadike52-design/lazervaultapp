@@ -52,13 +52,15 @@ void main() {
       expect(
         body.contains('endSession('),
         isTrue,
-        reason: 'the close button must END the call — disconnecting alone leaves the '
+        reason:
+            'the close button must END the call — disconnecting alone leaves the '
             'session unterminated and emits no VoiceSessionEnded',
       );
       expect(
         body.contains('disconnectFromLiveKitRoom'),
         isFalse,
-        reason: 'disconnect alone was the bug; endSession already performs the teardown',
+        reason:
+            'disconnect alone was the bug; endSession already performs the teardown',
       );
     });
 
@@ -86,7 +88,8 @@ void main() {
       expect(
         body.contains('disconnectFromLiveKitRoom'),
         isFalse,
-        reason: 'the gesture-dismissal path must not fall back to a bare disconnect',
+        reason:
+            'the gesture-dismissal path must not fall back to a bare disconnect',
       );
     });
 
@@ -95,7 +98,8 @@ void main() {
       // ending the session, minimising silently hangs up on the user.
       final body = _method(_sheet, 'void _minimizeSheet()');
       expect(
-        body.contains('endSession(') || body.contains('disconnectFromLiveKitRoom'),
+        body.contains('endSession(') ||
+            body.contains('disconnectFromLiveKitRoom'),
         isFalse,
         reason: 'minimising must keep the session alive',
       );

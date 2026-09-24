@@ -80,8 +80,10 @@ class TaggedInvoice extends Equatable {
       ];
 
   // Helper methods
-  bool get isPending => paymentStatus == InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING;
-  bool get isPaid => paymentStatus == InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_COMPLETED;
+  bool get isPending =>
+      paymentStatus == InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING;
+  bool get isPaid =>
+      paymentStatus == InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_COMPLETED;
   bool get isOverdue {
     if (invoice?.dueDate == null) return false;
     return invoice!.dueDate!.isBefore(DateTime.now()) && isPending;
@@ -102,8 +104,10 @@ class TaggedInvoice extends Equatable {
     // Last resort fallback
     return 'Invoice Creator';
   }
+
   String get displayUsername => taggerUsername ?? taggedUserUsername ?? '';
-  String? get displayProfilePicture => taggerProfilePicture ?? taggedUserProfilePicture;
+  String? get displayProfilePicture =>
+      taggerProfilePicture ?? taggedUserProfilePicture;
 
   double get amount => invoice?.totalAmount ?? 0.0;
   String get currency => invoice?.currency ?? 'USD';
@@ -196,7 +200,8 @@ class TaggedInvoice extends Equatable {
       taggedUserName: taggedUserName ?? this.taggedUserName,
       taggedUserUsername: taggedUserUsername ?? this.taggedUserUsername,
       taggedUserEmail: taggedUserEmail ?? this.taggedUserEmail,
-      taggedUserProfilePicture: taggedUserProfilePicture ?? this.taggedUserProfilePicture,
+      taggedUserProfilePicture:
+          taggedUserProfilePicture ?? this.taggedUserProfilePicture,
     );
   }
 }

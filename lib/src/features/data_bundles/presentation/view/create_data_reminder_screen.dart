@@ -14,7 +14,6 @@ import '../cubit/data_reminder_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'create_data_reminder_screen_widgets.dart';
 
-
 /// Create or edit a data reminder. Mirrors `CreateAirtimeReminderScreen`.
 /// Optional pre-fills via `Get.arguments`:
 ///   * `phoneNumber` — surfaces in the title default
@@ -124,7 +123,8 @@ class _CreateDataReminderScreenState extends State<CreateDataReminderScreen> {
             surface: Color(0xFF1A1A1A),
             onSurface: Colors.white,
           ),
-          dialogTheme: const DialogThemeData(backgroundColor: Color(0xFF1A1A1A)),
+          dialogTheme:
+              const DialogThemeData(backgroundColor: Color(0xFF1A1A1A)),
         ),
         child: child!,
       ),
@@ -144,7 +144,8 @@ class _CreateDataReminderScreenState extends State<CreateDataReminderScreen> {
             surface: Color(0xFF1A1A1A),
             onSurface: Colors.white,
           ),
-          dialogTheme: const DialogThemeData(backgroundColor: Color(0xFF1A1A1A)),
+          dialogTheme:
+              const DialogThemeData(backgroundColor: Color(0xFF1A1A1A)),
         ),
         child: child!,
       ),
@@ -158,8 +159,7 @@ class _CreateDataReminderScreenState extends State<CreateDataReminderScreen> {
         _selectedDate.day, _selectedTime.hour, _selectedTime.minute);
     if (dt.isBefore(DateTime.now())) {
       Get.snackbar('Invalid Time', 'Please choose a time in the future',
-          backgroundColor: const Color(0xFFEF4444),
-          colorText: Colors.white);
+          backgroundColor: const Color(0xFFEF4444), colorText: Colors.white);
       return;
     }
     final amountText = _amountController.text.trim();
@@ -176,7 +176,8 @@ class _CreateDataReminderScreenState extends State<CreateDataReminderScreen> {
     }
     final amount = double.tryParse(amountText);
     if (amount == null || amount <= 0) {
-      Get.snackbar('Invalid amount', 'Please enter a valid amount greater than 0',
+      Get.snackbar(
+          'Invalid amount', 'Please enter a valid amount greater than 0',
           backgroundColor: const Color(0xFFEF4444),
           colorText: Colors.white,
           snackPosition: SnackPosition.TOP,
@@ -249,8 +250,9 @@ class _CreateDataReminderScreenState extends State<CreateDataReminderScreen> {
           }
         },
         builder: (context, state) {
-          final isLoading =
-              state is DataReminderCreating || state is DataReminderUpdating || state is DataReminderLoading;
+          final isLoading = state is DataReminderCreating ||
+              state is DataReminderUpdating ||
+              state is DataReminderLoading;
           return SingleChildScrollView(
             padding: EdgeInsets.all(20.w),
             child: Form(
@@ -284,8 +286,8 @@ class _CreateDataReminderScreenState extends State<CreateDataReminderScreen> {
                         child: _dateTimeCard(
                           icon: Icons.calendar_today,
                           label: 'Date',
-                          value: DateFormat('MMM dd, yyyy')
-                              .format(_selectedDate),
+                          value:
+                              DateFormat('MMM dd, yyyy').format(_selectedDate),
                           onTap: _selectDate,
                         ),
                       ),
@@ -339,7 +341,10 @@ class _CreateDataReminderScreenState extends State<CreateDataReminderScreen> {
                       ),
                       child: isLoading
                           ? LazerVaultLoader.small()
-                          : Text(_isEditing ? 'Update Reminder' : 'Create Reminder',
+                          : Text(
+                              _isEditing
+                                  ? 'Update Reminder'
+                                  : 'Create Reminder',
                               style: GoogleFonts.inter(
                                   fontSize: 16.sp,
                                   fontWeight: FontWeight.w600,
@@ -476,8 +481,7 @@ class _CreateDataReminderScreenState extends State<CreateDataReminderScreen> {
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(16.r),
-                border:
-                    Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
               child: Text(
                   'No saved data contacts \u2014 reminder will be unlinked.',
@@ -504,16 +508,14 @@ class _CreateDataReminderScreenState extends State<CreateDataReminderScreen> {
                 icon: Icon(Icons.keyboard_arrow_down,
                     color: Colors.white.withValues(alpha: 0.5)),
                 dropdownColor: const Color(0xFF1A1A1A),
-                style:
-                    GoogleFonts.inter(fontSize: 16.sp, color: Colors.white),
+                style: GoogleFonts.inter(fontSize: 16.sp, color: Colors.white),
                 items: [
                   DropdownMenuItem<DataBeneficiary>(
                     value: null,
                     child: Text('None',
                         style: GoogleFonts.inter(
                             fontSize: 16.sp,
-                            color:
-                                Colors.white.withValues(alpha: 0.5))),
+                            color: Colors.white.withValues(alpha: 0.5))),
                   ),
                   ...list.map((b) => DropdownMenuItem<DataBeneficiary>(
                         value: b,
@@ -624,8 +626,7 @@ class _CreateDataReminderScreenState extends State<CreateDataReminderScreen> {
             child: Text(label,
                 style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    fontWeight:
-                        selected ? FontWeight.w600 : FontWeight.w500,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                     color: Colors.white)),
           ),
         ),

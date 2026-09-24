@@ -59,7 +59,8 @@ class TransferWebSocketService {
   http.Client? _httpClient;
   StreamSubscription? _sseSubscription;
   final _eventController = StreamController<TransferStatusEvent>.broadcast();
-  final _connectionController = StreamController<TransferWebSocketConnectionState>.broadcast();
+  final _connectionController =
+      StreamController<TransferWebSocketConnectionState>.broadcast();
   Timer? _pingTimer;
   bool _isConnected = false;
   bool _useSSE = false;
@@ -73,7 +74,8 @@ class TransferWebSocketService {
   Stream<TransferStatusEvent> get transferUpdates => _eventController.stream;
 
   /// Stream of connection state changes
-  Stream<TransferWebSocketConnectionState> get connectionState => _connectionController.stream;
+  Stream<TransferWebSocketConnectionState> get connectionState =>
+      _connectionController.stream;
 
   /// Check if currently connected
   bool get isConnected => _isConnected;
@@ -207,7 +209,8 @@ class TransferWebSocketService {
     final response = await _httpClient!.send(request);
 
     if (response.statusCode != 200) {
-      throw Exception('SSE connection failed with status ${response.statusCode}');
+      throw Exception(
+          'SSE connection failed with status ${response.statusCode}');
     }
 
     _isConnected = true;
@@ -217,11 +220,11 @@ class TransferWebSocketService {
         .transform(utf8.decoder)
         .transform(const LineSplitter())
         .listen(
-      _handleSSELine,
-      onError: _handleError,
-      onDone: _handleDone,
-      cancelOnError: false,
-    );
+          _handleSSELine,
+          onError: _handleError,
+          onDone: _handleDone,
+          cancelOnError: false,
+        );
 
     print('TransferWebSocketService: SSE connected successfully');
   }
@@ -313,7 +316,8 @@ class TransferWebSocketService {
       final eventType = data['event_type'] as String?;
       if (eventType != null) {
         final event = TransferStatusEvent.fromJson(data);
-        print('TransferWebSocketService: Received transfer update (legacy) - $event');
+        print(
+            'TransferWebSocketService: Received transfer update (legacy) - $event');
         _eventController.add(event);
       }
     } catch (e) {

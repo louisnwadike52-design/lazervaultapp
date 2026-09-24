@@ -51,7 +51,8 @@ class MeterValidated extends ElectricityBillState {
   });
 
   @override
-  List<Object?> get props => [validationResult, providerCode, meterNumber, meterType];
+  List<Object?> get props =>
+      [validationResult, providerCode, meterNumber, meterType];
 }
 
 class MeterValidationFailed extends ElectricityBillState {
@@ -91,7 +92,8 @@ class SmartMeterValidationFailed extends ElectricityBillState {
   /// True when no provider could be reached (see [MeterValidationFailed.isUnavailable]).
   final bool isUnavailable;
 
-  SmartMeterValidationFailed({required this.message, this.isUnavailable = false});
+  SmartMeterValidationFailed(
+      {required this.message, this.isUnavailable = false});
 
   @override
   List<Object?> get props => [message, isUnavailable];
@@ -157,7 +159,8 @@ class AsyncPaymentPending extends ElectricityBillState {
 
   AsyncPaymentPending({
     required this.payment,
-    this.message = 'Your token will be delivered via SMS once the provider confirms.',
+    this.message =
+        'Your token will be delivered via SMS once the provider confirms.',
   });
 
   @override

@@ -71,7 +71,8 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
             width: 40.w,
             height: 40.w,
             decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+              color:
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20.r),
             ),
             child: Icon(
@@ -261,10 +262,10 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
           ),
           SizedBox(height: 16.h),
           ...suggestions.map((suggestion) => _buildSuggestionItem(
-            suggestion['name'] as String,
-            suggestion['symbol'] as String,
-            suggestion['color'] as Color,
-          )),
+                suggestion['name'] as String,
+                suggestion['symbol'] as String,
+                suggestion['color'] as Color,
+              )),
           SizedBox(height: 24.h),
           Container(
             padding: EdgeInsets.all(16.w),
@@ -506,7 +507,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
       'MATIC': Colors.indigo,
       'LINK': Colors.blue,
     };
-    
+
     return colors[symbol.toUpperCase()] ?? Colors.grey;
   }
-} 
+}

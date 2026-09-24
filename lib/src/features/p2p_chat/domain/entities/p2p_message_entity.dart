@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 /// A single user's reaction to a message (WhatsApp-style, one per user).
 class P2PReaction {
   final String userId;
@@ -16,11 +17,13 @@ class P2PMessageEntity {
   final String id;
   final String conversationId;
   final String senderId;
-  final String messageType; // text, transfer_sent, transfer_received, transfer_request, system, image, voice
+  final String
+      messageType; // text, transfer_sent, transfer_received, transfer_request, system, image, voice
   final String? content;
   final String? mediaUrl; // Storage object URL for image/voice messages
   final String? mediaType; // 'image' | 'voice'
-  final String? localMediaPath; // Local file path for optimistic preview before upload completes
+  final String?
+      localMediaPath; // Local file path for optimistic preview before upload completes
   final String? transferRef;
   final int? transferAmount; // Minor units (kobo)
   final String? transferCurrency;
@@ -79,13 +82,24 @@ class P2PMessageEntity {
   bool get isImage => messageType == 'image';
   bool get isVoice => messageType == 'voice';
   bool get isMedia => isImage || isVoice;
-  bool get isTransfer => isTransferGeneric || isTransferSent || isTransferReceived || isTransferRequest;
+  bool get isTransfer =>
+      isTransferGeneric ||
+      isTransferSent ||
+      isTransferReceived ||
+      isTransferRequest;
 
   /// Fiat currency codes whose bubble amounts are stored as ×100 minor units.
   /// Anything else is a CRYPTO transfer: the bubble stores the asset's own
   /// ledger minor units (sats-style scales).
   static const _fiatTransferCodes = {
-    'NGN', '', 'USD', 'GBP', 'EUR', 'GHS', 'KES', 'ZAR',
+    'NGN',
+    '',
+    'USD',
+    'GBP',
+    'EUR',
+    'GHS',
+    'KES',
+    'ZAR',
   };
 
   /// True when this transfer bubble carries crypto (internal user-to-user
@@ -167,8 +181,8 @@ class P2PMessageEntity {
         ? amt.toInt().toString()
         : amt.toStringAsFixed(2);
     // Group thousands.
-    final withCommas = formatted.replaceAllMapped(
-        RegExp(r'\B(?=(\d{3})+(?!\d))'), (m) => ',');
+    final withCommas =
+        formatted.replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (m) => ',');
     return '💸 $transferCurrencySymbol$withCommas';
   }
 

@@ -121,7 +121,8 @@ class _BuyGiftCreditSheetState extends State<BuyGiftCreditSheet>
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A1A),
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
@@ -145,7 +146,10 @@ class _BuyGiftCreditSheetState extends State<BuyGiftCreditSheet>
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text('Buy gifts',
-                    style: TextStyle(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.bold)),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.bold)),
               ),
             ),
             SizedBox(height: 4.h),
@@ -153,8 +157,10 @@ class _BuyGiftCreditSheetState extends State<BuyGiftCreditSheet>
               padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Bought from your personal account. The value becomes gifts you can spray.',
-                    style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+                child: Text(
+                    'Bought from your personal account. The value becomes gifts you can spray.',
+                    style: TextStyle(
+                        color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
               ),
             ),
             SizedBox(height: 14.h),
@@ -169,7 +175,8 @@ class _BuyGiftCreditSheetState extends State<BuyGiftCreditSheet>
               child: _gifts.isEmpty
                   ? Center(
                       child: Text('No purchasable gifts available',
-                          style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp)))
+                          style: TextStyle(
+                              color: const Color(0xFF9CA3AF), fontSize: 13.sp)))
                   : ListView.separated(
                       scrollDirection: Axis.horizontal,
                       padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -190,25 +197,32 @@ class _BuyGiftCreditSheetState extends State<BuyGiftCreditSheet>
                             width: 84.w,
                             decoration: BoxDecoration(
                               color: selected
-                                  ? const Color(0xFF7C3AED).withValues(alpha: 0.2)
-                                  : const Color(0xFF2D2D2D).withValues(alpha: 0.5),
+                                  ? const Color(0xFF7C3AED)
+                                      .withValues(alpha: 0.2)
+                                  : const Color(0xFF2D2D2D)
+                                      .withValues(alpha: 0.5),
                               borderRadius: BorderRadius.circular(12.r),
                               border: Border.all(
-                                color: selected ? const Color(0xFF7C3AED) : Colors.transparent,
+                                color: selected
+                                    ? const Color(0xFF7C3AED)
+                                    : Colors.transparent,
                                 width: 1.5,
                               ),
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(g.emoji, style: TextStyle(fontSize: 28.sp)),
+                                Text(g.emoji,
+                                    style: TextStyle(fontSize: 28.sp)),
                                 SizedBox(height: 4.h),
                                 Text(g.name,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(color: Colors.white, fontSize: 10.sp)),
+                                    style: TextStyle(
+                                        color: Colors.white, fontSize: 10.sp)),
                                 SizedBox(height: 2.h),
-                                Text('${widget.currency} ${g.priceMajor.toStringAsFixed(0)}',
+                                Text(
+                                    '${widget.currency} ${g.priceMajor.toStringAsFixed(0)}',
                                     style: TextStyle(
                                         color: const Color(0xFFFFD700),
                                         fontSize: 10.sp,
@@ -237,22 +251,34 @@ class _BuyGiftCreditSheetState extends State<BuyGiftCreditSheet>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            onPressed: _quantity > 1 ? () => setState(() => _quantity--) : null,
-                            icon: Icon(Icons.remove, size: 18.sp, color: Colors.white),
+                            onPressed: _quantity > 1
+                                ? () => setState(() => _quantity--)
+                                : null,
+                            icon: Icon(Icons.remove,
+                                size: 18.sp, color: Colors.white),
                           ),
                           Text('$_quantity',
-                              style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.bold)),
                           IconButton(
-                            onPressed: _quantity < 50 ? () => setState(() => _quantity++) : null,
-                            icon: Icon(Icons.add, size: 18.sp, color: Colors.white),
+                            onPressed: _quantity < 50
+                                ? () => setState(() => _quantity++)
+                                : null,
+                            icon: Icon(Icons.add,
+                                size: 18.sp, color: Colors.white),
                           ),
                         ],
                       ),
                     ),
                     const Spacer(),
-                    Text('Total: ${widget.currency} ${_totalMajor.toStringAsFixed(0)}',
+                    Text(
+                        'Total: ${widget.currency} ${_totalMajor.toStringAsFixed(0)}',
                         style: TextStyle(
-                            color: _insufficient ? const Color(0xFFEF4444) : Colors.white,
+                            color: _insufficient
+                                ? const Color(0xFFEF4444)
+                                : Colors.white,
                             fontSize: 15.sp,
                             fontWeight: FontWeight.w700)),
                   ],
@@ -265,7 +291,8 @@ class _BuyGiftCreditSheetState extends State<BuyGiftCreditSheet>
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Insufficient balance in your personal account. Top up your account or pick a smaller gift.',
-                      style: TextStyle(color: const Color(0xFFEF4444), fontSize: 12.sp),
+                      style: TextStyle(
+                          color: const Color(0xFFEF4444), fontSize: 12.sp),
                     ),
                   ),
                 ),
@@ -279,15 +306,18 @@ class _BuyGiftCreditSheetState extends State<BuyGiftCreditSheet>
                     onPressed: (_busy || _insufficient) ? null : _buy,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF7C3AED),
-                      disabledBackgroundColor: const Color(0xFF7C3AED).withValues(alpha: 0.4),
+                      disabledBackgroundColor:
+                          const Color(0xFF7C3AED).withValues(alpha: 0.4),
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r)),
                     ),
                     child: _busy
                         ? LazerVaultLoader.small()
                         : Text(
                             'Buy ${_selected!.emoji} ×$_quantity (${widget.currency} ${_totalMajor.toStringAsFixed(0)})',
-                            style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                                fontSize: 14.sp, fontWeight: FontWeight.w600),
                           ),
                   ),
                 ),
@@ -307,7 +337,9 @@ class _BuyGiftCreditSheetState extends State<BuyGiftCreditSheet>
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.6), width: 1.5),
+          border: Border.all(
+              color: const Color(0xFF3B82F6).withValues(alpha: 0.6),
+              width: 1.5),
         ),
         padding: EdgeInsets.all(14.w),
         child: Row(
@@ -319,7 +351,8 @@ class _BuyGiftCreditSheetState extends State<BuyGiftCreditSheet>
                 color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10.r),
               ),
-              child: Icon(Icons.account_balance_wallet, color: const Color(0xFF3B82F6), size: 20.sp),
+              child: Icon(Icons.account_balance_wallet,
+                  color: const Color(0xFF3B82F6), size: 20.sp),
             ),
             SizedBox(width: 12.w),
             Expanded(
@@ -327,17 +360,27 @@ class _BuyGiftCreditSheetState extends State<BuyGiftCreditSheet>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Paying from',
-                      style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
+                      style: TextStyle(
+                          color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
                   SizedBox(height: 2.h),
                   Text(
-                    widget.accountDisplay.isNotEmpty ? widget.accountDisplay : 'Personal Account',
-                    style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600),
+                    widget.accountDisplay.isNotEmpty
+                        ? widget.accountDisplay
+                        : 'Personal Account',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
             ),
-            Text('${widget.currency} ${widget.accountBalanceMajor.toStringAsFixed(0)}',
-                style: TextStyle(color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600)),
+            Text(
+                '${widget.currency} ${widget.accountBalanceMajor.toStringAsFixed(0)}',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600)),
           ],
         ),
       ),

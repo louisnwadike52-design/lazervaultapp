@@ -54,7 +54,8 @@ class _IDVerificationScreenState extends State<IDVerificationScreen> {
   Future<void> _uploadDocument() async {
     if (_frontImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please capture the front of your document')),
+        const SnackBar(
+            content: Text('Please capture the front of your document')),
       );
       return;
     }
@@ -155,7 +156,8 @@ class _IDVerificationScreenState extends State<IDVerificationScreen> {
                         ? const Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.camera_alt, size: 48, color: Colors.grey),
+                              Icon(Icons.camera_alt,
+                                  size: 48, color: Colors.grey),
                               SizedBox(height: 8),
                               Text('Tap to capture front'),
                             ],
@@ -170,7 +172,8 @@ class _IDVerificationScreenState extends State<IDVerificationScreen> {
 
                 // Back Image (optional for some document types)
                 if (_selectedDocumentType != DocumentType.passport) ...[
-                  const Text('Back of Document', style: TextStyle(fontSize: 16)),
+                  const Text('Back of Document',
+                      style: TextStyle(fontSize: 16)),
                   const SizedBox(height: 8),
                   GestureDetector(
                     onTap: _pickBackImage,
@@ -185,7 +188,8 @@ class _IDVerificationScreenState extends State<IDVerificationScreen> {
                           ? const Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.camera_alt, size: 48, color: Colors.grey),
+                                Icon(Icons.camera_alt,
+                                    size: 48, color: Colors.grey),
                                 SizedBox(height: 8),
                                 Text('Tap to capture back (optional)'),
                               ],

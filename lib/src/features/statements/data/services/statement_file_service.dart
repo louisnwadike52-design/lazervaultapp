@@ -69,13 +69,15 @@ class StatementFileService {
   Future<void> openFile(String path) async {
     final uri = Uri.file(path);
     if (await canLaunchUrl(uri)) {
-      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      final launched =
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (launched) return;
     }
     await SharePlus.instance.share(ShareParams(
         // iOS: a non-zero popover anchor is required — CGRectZero throws
         // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),files: [XFile(path)]));
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+        files: [XFile(path)]));
   }
 
   /// Send a PDF at [path] to the system print dialog.
@@ -89,6 +91,7 @@ class StatementFileService {
     await SharePlus.instance.share(ShareParams(
         // iOS: a non-zero popover anchor is required — CGRectZero throws
         // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),files: [XFile(path)]));
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+        files: [XFile(path)]));
   }
 }

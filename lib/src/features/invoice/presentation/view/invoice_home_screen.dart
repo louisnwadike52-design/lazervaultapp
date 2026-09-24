@@ -53,15 +53,30 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
   bool _receivedRetryFired = false;
   bool _createdRetryFired = false;
 
-  static const _receivedFilters = ['All', 'Pending', 'Paid', 'Overdue', 'Cancelled'];
-  static const _createdFilters = ['All', 'Pending', 'Paid', 'Partially Paid', 'Overdue', 'Cancelled'];
+  static const _receivedFilters = [
+    'All',
+    'Pending',
+    'Paid',
+    'Overdue',
+    'Cancelled'
+  ];
+  static const _createdFilters = [
+    'All',
+    'Pending',
+    'Paid',
+    'Partially Paid',
+    'Overdue',
+    'Cancelled'
+  ];
 
-  List<String> get _filters => _tabController.index == 0 ? _receivedFilters : _createdFilters;
+  List<String> get _filters =>
+      _tabController.index == 0 ? _receivedFilters : _createdFilters;
 
   String get _currencySymbol {
     try {
       final state = context.read<AccountCardsSummaryCubit>().state;
-      if (state is AccountCardsSummaryLoaded && state.accountSummaries.isNotEmpty) {
+      if (state is AccountCardsSummaryLoaded &&
+          state.accountSummaries.isNotEmpty) {
         return _getCurrencySymbol(state.accountSummaries.first.currency);
       }
     } catch (_) {}
@@ -70,16 +85,26 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
 
   String _getCurrencySymbol(String currency) {
     switch (currency.toUpperCase()) {
-      case 'NGN': return '₦';
-      case 'GBP': return '£';
-      case 'EUR': return '€';
-      case 'ZAR': return 'R';
-      case 'CAD': return 'C\$';
-      case 'AUD': return 'A\$';
-      case 'INR': return '₹';
-      case 'JPY': return '¥';
-      case 'USD': return '\$';
-      default: return '₦';
+      case 'NGN':
+        return '₦';
+      case 'GBP':
+        return '£';
+      case 'EUR':
+        return '€';
+      case 'ZAR':
+        return 'R';
+      case 'CAD':
+        return 'C\$';
+      case 'AUD':
+        return 'A\$';
+      case 'INR':
+        return '₹';
+      case 'JPY':
+        return '¥';
+      case 'USD':
+        return '\$';
+      default:
+        return '₦';
     }
   }
 
@@ -196,37 +221,49 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
     // Use server-side filtering with pagination
     final statusParam = filter == 'All' ? null : _filterToStatus(filter);
     if (_tabController.index == 0) {
-      final statusEnum = filter == 'All' ? null : _filterToPaymentStatus(filter);
+      final statusEnum =
+          filter == 'All' ? null : _filterToPaymentStatus(filter);
       context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(
-        page: 1,
-        statusFilter: statusEnum,
-      );
+            page: 1,
+            statusFilter: statusEnum,
+          );
     } else {
       context.read<InvoiceCubit>().loadInvoicesPage(
-        page: 1,
-        statusFilter: statusParam,
-      );
+            page: 1,
+            statusFilter: statusParam,
+          );
     }
   }
 
   String? _filterToStatus(String filter) {
     switch (filter.toLowerCase()) {
-      case 'pending': return 'pending';
-      case 'paid': return 'paid';
-      case 'overdue': return 'overdue';
-      case 'cancelled': return 'cancelled';
-      case 'partially paid': return 'partially_paid';
-      default: return null;
+      case 'pending':
+        return 'pending';
+      case 'paid':
+        return 'paid';
+      case 'overdue':
+        return 'overdue';
+      case 'cancelled':
+        return 'cancelled';
+      case 'partially paid':
+        return 'partially_paid';
+      default:
+        return null;
     }
   }
 
   InvoicePaymentStatus? _filterToPaymentStatus(String filter) {
     switch (filter.toLowerCase()) {
-      case 'pending': return InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING;
-      case 'paid': return InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_COMPLETED;
-      case 'overdue': return InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_OVERDUE;
-      case 'cancelled': return InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_CANCELLED;
-      default: return null;
+      case 'pending':
+        return InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING;
+      case 'paid':
+        return InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_COMPLETED;
+      case 'overdue':
+        return InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_OVERDUE;
+      case 'cancelled':
+        return InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_CANCELLED;
+      default:
+        return null;
     }
   }
 
@@ -239,7 +276,9 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
           await Get.toNamed(AppRoutes.createInvoice);
           if (context.mounted) {
             context.read<InvoiceCubit>().loadInvoicesPage(page: 1);
-            context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(page: 1);
+            context
+                .read<TaggedInvoiceCubit>()
+                .loadIncomingInvoicesPage(page: 1);
           }
         },
         backgroundColor: InvoiceThemeColors.primaryPurple,
@@ -362,8 +401,10 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
 
             // Show shimmer only for the active tab's cubit
             final isLoading = isReceivedTab
-                ? (taggedState is TaggedInvoiceLoading || taggedState is TaggedInvoiceInitial)
-                : (invoiceState is InvoiceLoading || invoiceState is InvoiceInitial);
+                ? (taggedState is TaggedInvoiceLoading ||
+                    taggedState is TaggedInvoiceInitial)
+                : (invoiceState is InvoiceLoading ||
+                    invoiceState is InvoiceInitial);
             if (isLoading) {
               return const InvoiceStatsShimmer();
             }
@@ -378,18 +419,31 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
               // Compute stats from the actual loaded invoices for accuracy
               // Backend statistics RPC may return stale/incorrect data
               final invoices = taggedState.invoices;
-              totalAmount = invoices.fold<double>(0.0, (sum, inv) => sum + inv.amount);
-              pendingCount = invoices.where((inv) => inv.isPending && !inv.isOverdue).length;
+              totalAmount =
+                  invoices.fold<double>(0.0, (sum, inv) => sum + inv.amount);
+              pendingCount = invoices
+                  .where((inv) => inv.isPending && !inv.isOverdue)
+                  .length;
               paidCount = invoices.where((inv) => inv.isPaid).length;
-              overdueCount = invoices.where((inv) => inv.isOverdue || inv.paymentStatus == InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_OVERDUE).length;
+              overdueCount = invoices
+                  .where((inv) =>
+                      inv.isOverdue ||
+                      inv.paymentStatus ==
+                          InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_OVERDUE)
+                  .length;
             }
 
             if (!isReceivedTab && invoiceState is InvoicesLoaded) {
               // Compute stats from the actual loaded invoices for the Created tab
               final invoices = invoiceState.invoices;
-              totalAmount = invoices.fold<double>(0.0, (sum, inv) => sum + inv.amount);
-              pendingCount = invoices.where((inv) => inv.status == InvoiceStatus.pending).length;
-              paidCount = invoices.where((inv) => inv.status == InvoiceStatus.paid).length;
+              totalAmount =
+                  invoices.fold<double>(0.0, (sum, inv) => sum + inv.amount);
+              pendingCount = invoices
+                  .where((inv) => inv.status == InvoiceStatus.pending)
+                  .length;
+              paidCount = invoices
+                  .where((inv) => inv.status == InvoiceStatus.paid)
+                  .length;
               partiallyPaidCount = invoices
                   .where((inv) => inv.status == InvoiceStatus.partiallyPaid)
                   .length;
@@ -407,7 +461,8 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                       // major units (naira) — dividing by 100 rendered a
                       // 150.00 invoice as "2". The /100 assumed a kobo ledger
                       // this feature never used.
-                      value: '$_currencySymbol${totalAmount.toStringAsFixed(0)}',
+                      value:
+                          '$_currencySymbol${totalAmount.toStringAsFixed(0)}',
                       color: InvoiceThemeColors.primaryPurple,
                     ),
                   ),
@@ -514,8 +569,10 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
         indicatorSize: TabBarIndicatorSize.tab,
         labelColor: Colors.white,
         unselectedLabelColor: InvoiceThemeColors.textGray400,
-        labelStyle: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
-        unselectedLabelStyle: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w500),
+        labelStyle:
+            GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
+        unselectedLabelStyle:
+            GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w500),
         dividerColor: Colors.transparent,
         tabs: const [
           Tab(text: 'Received'),
@@ -554,7 +611,9 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                 child: Text(
                   filter,
                   style: GoogleFonts.inter(
-                    color: isSelected ? Colors.white : InvoiceThemeColors.textGray400,
+                    color: isSelected
+                        ? Colors.white
+                        : InvoiceThemeColors.textGray400,
                     fontSize: 13.sp,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   ),
@@ -627,10 +686,12 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
             children: [
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: () => context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(
-                    page: state.currentPage,
-                    statusFilter: state.currentFilter,
-                  ),
+                  onRefresh: () => context
+                      .read<TaggedInvoiceCubit>()
+                      .loadIncomingInvoicesPage(
+                        page: state.currentPage,
+                        statusFilter: state.currentFilter,
+                      ),
                   color: InvoiceThemeColors.primaryPurple,
                   child: ListView.builder(
                     padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -648,7 +709,8 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                 totalCount: state.totalCount,
                 hasNext: state.currentPage < state.totalPages,
                 hasPrevious: state.currentPage > 1,
-                onPageChanged: (page) => context.read<TaggedInvoiceCubit>().goToIncomingPage(page),
+                onPageChanged: (page) =>
+                    context.read<TaggedInvoiceCubit>().goToIncomingPage(page),
               ),
             ],
           );
@@ -656,8 +718,11 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
         // Only trigger load for truly initial state, not transient states
         if (state is TaggedInvoiceInitial) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (context.mounted && !context.read<TaggedInvoiceCubit>().isClosed) {
-              context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(page: 1);
+            if (context.mounted &&
+                !context.read<TaggedInvoiceCubit>().isClosed) {
+              context
+                  .read<TaggedInvoiceCubit>()
+                  .loadIncomingInvoicesPage(page: 1);
             }
           });
         }
@@ -719,10 +784,11 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
             children: [
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: () => context.read<InvoiceCubit>().loadInvoicesPage(
-                    page: state.currentPage,
-                    statusFilter: state.currentFilter,
-                  ),
+                  onRefresh: () =>
+                      context.read<InvoiceCubit>().loadInvoicesPage(
+                            page: state.currentPage,
+                            statusFilter: state.currentFilter,
+                          ),
                   color: InvoiceThemeColors.primaryPurple,
                   child: ListView.builder(
                     padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -740,7 +806,8 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                 totalCount: state.totalCount,
                 hasNext: state.hasNext,
                 hasPrevious: state.hasPrevious,
-                onPageChanged: (page) => context.read<InvoiceCubit>().goToPage(page),
+                onPageChanged: (page) =>
+                    context.read<InvoiceCubit>().goToPage(page),
               ),
             ],
           );
@@ -809,7 +876,11 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Icon(
-                    isPaid ? Icons.check_circle : isOverdue ? Icons.warning_rounded : Icons.receipt_long,
+                    isPaid
+                        ? Icons.check_circle
+                        : isOverdue
+                            ? Icons.warning_rounded
+                            : Icons.receipt_long,
                     color: statusColor,
                     size: 20.sp,
                   ),
@@ -834,7 +905,8 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8.w, vertical: 3.h),
                             decoration: BoxDecoration(
                               color: statusColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6.r),
@@ -853,9 +925,11 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                               invoice.invoice!.type != InvoiceType.invoice) ...[
                             SizedBox(width: 6.w),
                             Container(
-                              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 8.w, vertical: 3.h),
                               decoration: BoxDecoration(
-                                color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.12),
+                                color: InvoiceThemeColors.primaryPurple
+                                    .withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(6.r),
                               ),
                               child: Text(
@@ -892,13 +966,21 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                 Expanded(
                   child: Row(
                     children: [
-                      Icon(Icons.arrow_upward_rounded, color: InvoiceThemeColors.errorRed, size: 14.sp),
+                      Icon(Icons.arrow_upward_rounded,
+                          color: InvoiceThemeColors.errorRed, size: 14.sp),
                       SizedBox(width: 4.w),
-                      Text('From: ', style: GoogleFonts.inter(color: InvoiceThemeColors.textGray500, fontSize: 12.sp, fontWeight: FontWeight.w500)),
+                      Text('From: ',
+                          style: GoogleFonts.inter(
+                              color: InvoiceThemeColors.textGray500,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w500)),
                       Flexible(
                         child: Text(
                           creatorName,
-                          style: GoogleFonts.inter(color: InvoiceThemeColors.textGray300, fontSize: 12.sp, fontWeight: FontWeight.w600),
+                          style: GoogleFonts.inter(
+                              color: InvoiceThemeColors.textGray300,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w600),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -910,13 +992,21 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                 Expanded(
                   child: Row(
                     children: [
-                      Icon(Icons.arrow_downward_rounded, color: InvoiceThemeColors.successGreen, size: 14.sp),
+                      Icon(Icons.arrow_downward_rounded,
+                          color: InvoiceThemeColors.successGreen, size: 14.sp),
                       SizedBox(width: 4.w),
-                      Text('To: ', style: GoogleFonts.inter(color: InvoiceThemeColors.textGray500, fontSize: 12.sp, fontWeight: FontWeight.w500)),
+                      Text('To: ',
+                          style: GoogleFonts.inter(
+                              color: InvoiceThemeColors.textGray500,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w500)),
                       Flexible(
                         child: Text(
                           receiverName,
-                          style: GoogleFonts.inter(color: InvoiceThemeColors.textGray300, fontSize: 12.sp, fontWeight: FontWeight.w600),
+                          style: GoogleFonts.inter(
+                              color: InvoiceThemeColors.textGray300,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w600),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -931,12 +1021,18 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
               SizedBox(height: 8.h),
               Row(
                 children: [
-                  Icon(Icons.schedule, color: isOverdue ? InvoiceThemeColors.errorRed : InvoiceThemeColors.textGray500, size: 13.sp),
+                  Icon(Icons.schedule,
+                      color: isOverdue
+                          ? InvoiceThemeColors.errorRed
+                          : InvoiceThemeColors.textGray500,
+                      size: 13.sp),
                   SizedBox(width: 4.w),
                   Text(
                     'Due ${_formatDate(invoice.invoice!.dueDate!)}',
                     style: GoogleFonts.inter(
-                      color: isOverdue ? InvoiceThemeColors.errorRed : InvoiceThemeColors.textGray400,
+                      color: isOverdue
+                          ? InvoiceThemeColors.errorRed
+                          : InvoiceThemeColors.textGray400,
                       fontSize: 11.sp,
                       fontWeight: FontWeight.w500,
                     ),
@@ -954,20 +1050,25 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                 child: ElevatedButton.icon(
                   onPressed: () async {
                     if (invoice.invoice != null) {
-                      await Get.toNamed(AppRoutes.invoiceItemPayment, arguments: invoice.invoice!);
+                      await Get.toNamed(AppRoutes.invoiceItemPayment,
+                          arguments: invoice.invoice!);
                       if (context.mounted) {
-                        context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(page: 1);
+                        context
+                            .read<TaggedInvoiceCubit>()
+                            .loadIncomingInvoicesPage(page: 1);
                       }
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15),
+                    backgroundColor: InvoiceThemeColors.primaryPurple
+                        .withValues(alpha: 0.15),
                     shadowColor: Colors.transparent,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.r),
                     ),
                   ),
-                  icon: Icon(Icons.payment, color: Colors.white.withValues(alpha: 0.9), size: 16.sp),
+                  icon: Icon(Icons.payment,
+                      color: Colors.white.withValues(alpha: 0.9), size: 16.sp),
                   label: Text(
                     'Quick Pay',
                     style: GoogleFonts.inter(
@@ -980,13 +1081,15 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
               ),
             ],
             // Tagged users count
-            if (invoice.invoice?.taggedUsers != null && invoice.invoice!.taggedUsers!.isNotEmpty) ...[
+            if (invoice.invoice?.taggedUsers != null &&
+                invoice.invoice!.taggedUsers!.isNotEmpty) ...[
               SizedBox(height: 8.h),
               GestureDetector(
                 onTap: () => _showTaggedUsersSheet(invoice.invoice!),
                 child: Row(
                   children: [
-                    Icon(Icons.people_outline, color: InvoiceThemeColors.textGray400, size: 14.sp),
+                    Icon(Icons.people_outline,
+                        color: InvoiceThemeColors.textGray400, size: 14.sp),
                     SizedBox(width: 6.w),
                     Text(
                       '${invoice.invoice!.taggedUsers!.length} tagged user${invoice.invoice!.taggedUsers!.length == 1 ? '' : 's'}',
@@ -997,7 +1100,8 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                       ),
                     ),
                     SizedBox(width: 4.w),
-                    Icon(Icons.chevron_right, color: InvoiceThemeColors.textGray500, size: 14.sp),
+                    Icon(Icons.chevron_right,
+                        color: InvoiceThemeColors.textGray500, size: 14.sp),
                   ],
                 ),
               ),
@@ -1102,7 +1206,8 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Container(
-                              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 8.w, vertical: 3.h),
                               decoration: BoxDecoration(
                                 color: statusColor.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(6.r),
@@ -1120,9 +1225,11 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                             if (invoice.type != InvoiceType.invoice) ...[
                               SizedBox(width: 6.w),
                               Container(
-                                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8.w, vertical: 3.h),
                                 decoration: BoxDecoration(
-                                  color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.12),
+                                  color: InvoiceThemeColors.primaryPurple
+                                      .withValues(alpha: 0.12),
                                   borderRadius: BorderRadius.circular(6.r),
                                 ),
                                 child: Text(
@@ -1160,13 +1267,22 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                   Expanded(
                     child: Row(
                       children: [
-                        Icon(Icons.arrow_upward_rounded, color: InvoiceThemeColors.primaryPurple, size: 14.sp),
+                        Icon(Icons.arrow_upward_rounded,
+                            color: InvoiceThemeColors.primaryPurple,
+                            size: 14.sp),
                         SizedBox(width: 4.w),
-                        Text('From: ', style: GoogleFonts.inter(color: InvoiceThemeColors.textGray500, fontSize: 12.sp, fontWeight: FontWeight.w500)),
+                        Text('From: ',
+                            style: GoogleFonts.inter(
+                                color: InvoiceThemeColors.textGray500,
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w500)),
                         Flexible(
                           child: Text(
                             'You',
-                            style: GoogleFonts.inter(color: InvoiceThemeColors.textGray300, fontSize: 12.sp, fontWeight: FontWeight.w600),
+                            style: GoogleFonts.inter(
+                                color: InvoiceThemeColors.textGray300,
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w600),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -1178,13 +1294,24 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                   Expanded(
                     child: Row(
                       children: [
-                        Icon(Icons.arrow_downward_rounded, color: InvoiceThemeColors.successGreen, size: 14.sp),
+                        Icon(Icons.arrow_downward_rounded,
+                            color: InvoiceThemeColors.successGreen,
+                            size: 14.sp),
                         SizedBox(width: 4.w),
-                        Text('To: ', style: GoogleFonts.inter(color: InvoiceThemeColors.textGray500, fontSize: 12.sp, fontWeight: FontWeight.w500)),
+                        Text('To: ',
+                            style: GoogleFonts.inter(
+                                color: InvoiceThemeColors.textGray500,
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w500)),
                         Flexible(
                           child: Text(
-                            invoice.payerDetails?.contactName ?? invoice.toName ?? 'Unknown',
-                            style: GoogleFonts.inter(color: InvoiceThemeColors.textGray300, fontSize: 12.sp, fontWeight: FontWeight.w600),
+                            invoice.payerDetails?.contactName ??
+                                invoice.toName ??
+                                'Unknown',
+                            style: GoogleFonts.inter(
+                                color: InvoiceThemeColors.textGray300,
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w600),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -1199,12 +1326,18 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                 SizedBox(height: 8.h),
                 Row(
                   children: [
-                    Icon(Icons.schedule, color: isOverdue ? InvoiceThemeColors.errorRed : InvoiceThemeColors.textGray500, size: 13.sp),
+                    Icon(Icons.schedule,
+                        color: isOverdue
+                            ? InvoiceThemeColors.errorRed
+                            : InvoiceThemeColors.textGray500,
+                        size: 13.sp),
                     SizedBox(width: 4.w),
                     Text(
                       'Due ${_formatDate(invoice.dueDate!)}',
                       style: GoogleFonts.inter(
-                        color: isOverdue ? InvoiceThemeColors.errorRed : InvoiceThemeColors.textGray400,
+                        color: isOverdue
+                            ? InvoiceThemeColors.errorRed
+                            : InvoiceThemeColors.textGray400,
                         fontSize: 11.sp,
                         fontWeight: FontWeight.w500,
                       ),
@@ -1213,7 +1346,9 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                 ),
               ],
             ],
-            if (isPartiallyPaid && invoice.taggedUsers != null && invoice.taggedUsers!.isNotEmpty) ...[
+            if (isPartiallyPaid &&
+                invoice.taggedUsers != null &&
+                invoice.taggedUsers!.isNotEmpty) ...[
               SizedBox(height: 10.h),
               _buildPaymentProgressBar(invoice),
             ],
@@ -1266,7 +1401,8 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
             child: LinearProgressIndicator(
               value: progress,
               backgroundColor: const Color(0xFFF59E0B).withValues(alpha: 0.15),
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
               minHeight: 6.h,
             ),
           ),
@@ -1278,7 +1414,8 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
   Widget _buildTaggedUsersRow(Invoice invoice) {
     final users = invoice.taggedUsers!;
     final maxAvatars = 4;
-    final displayUsers = users.length > maxAvatars ? users.sublist(0, maxAvatars) : users;
+    final displayUsers =
+        users.length > maxAvatars ? users.sublist(0, maxAvatars) : users;
     final overflow = users.length - maxAvatars;
 
     // Count statuses and types
@@ -1292,11 +1429,14 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
         padding: EdgeInsets.only(top: 10.h),
         child: Row(
           children: [
-            Icon(Icons.people_outline, color: InvoiceThemeColors.textGray400, size: 14.sp),
+            Icon(Icons.people_outline,
+                color: InvoiceThemeColors.textGray400, size: 14.sp),
             SizedBox(width: 6.w),
             // Overlapping avatars
             SizedBox(
-              width: (displayUsers.length * 20.w) + 8.w + (overflow > 0 ? 20.w : 0),
+              width: (displayUsers.length * 20.w) +
+                  8.w +
+                  (overflow > 0 ? 20.w : 0),
               height: 24.w,
               child: Stack(
                 children: [
@@ -1316,16 +1456,24 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                         decoration: BoxDecoration(
                           color: typeColor.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFF1F1F1F), width: 2),
+                          border: Border.all(
+                              color: const Color(0xFF1F1F1F), width: 2),
                         ),
                         child: Center(
                           child: user.isPlatformUser
                               ? Text(
-                                  user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : '?',
-                                  style: GoogleFonts.inter(color: typeColor, fontSize: 9.sp, fontWeight: FontWeight.w700),
+                                  user.displayName.isNotEmpty
+                                      ? user.displayName[0].toUpperCase()
+                                      : '?',
+                                  style: GoogleFonts.inter(
+                                      color: typeColor,
+                                      fontSize: 9.sp,
+                                      fontWeight: FontWeight.w700),
                                 )
                               : Icon(
-                                  user.tagType == 'email' ? Icons.email_outlined : Icons.sms_outlined,
+                                  user.tagType == 'email'
+                                      ? Icons.email_outlined
+                                      : Icons.sms_outlined,
                                   color: typeColor,
                                   size: 11.sp,
                                 ),
@@ -1342,7 +1490,8 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFF1F1F1F), width: 2),
+                          border: Border.all(
+                              color: const Color(0xFF1F1F1F), width: 2),
                         ),
                         child: Center(
                           child: Text(
@@ -1371,7 +1520,8 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            Icon(Icons.chevron_right, color: InvoiceThemeColors.textGray400, size: 16.sp),
+            Icon(Icons.chevron_right,
+                color: InvoiceThemeColors.textGray400, size: 16.sp),
           ],
         ),
       ),
@@ -1385,7 +1535,8 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) => Container(
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.6),
+        constraints:
+            BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.6),
         decoration: BoxDecoration(
           color: const Color(0xFFF8F9FA),
           borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
@@ -1406,11 +1557,15 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
               padding: EdgeInsets.all(20.w),
               child: Row(
                 children: [
-                  Icon(Icons.people, color: InvoiceThemeColors.primaryPurple, size: 20.sp),
+                  Icon(Icons.people,
+                      color: InvoiceThemeColors.primaryPurple, size: 20.sp),
                   SizedBox(width: 10.w),
                   Text(
                     'Tagged Users (${users.length})',
-                    style: GoogleFonts.inter(color: const Color(0xFF111827), fontSize: 16.sp, fontWeight: FontWeight.w600),
+                    style: GoogleFonts.inter(
+                        color: const Color(0xFF111827),
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
@@ -1421,7 +1576,8 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                 shrinkWrap: true,
                 padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                 itemCount: users.length,
-                itemBuilder: (context, index) => _buildLightTaggedUserTile(users[index]),
+                itemBuilder: (context, index) =>
+                    _buildLightTaggedUserTile(users[index]),
               ),
             ),
           ],
@@ -1436,7 +1592,11 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
         : user.status == 'viewed'
             ? const Color(0xFFFB923C)
             : const Color(0xFF6B7280);
-    final statusLabel = user.status == 'paid' ? 'Paid' : user.status == 'viewed' ? 'Viewed' : 'Pending';
+    final statusLabel = user.status == 'paid'
+        ? 'Paid'
+        : user.status == 'viewed'
+            ? 'Viewed'
+            : 'Pending';
     final typeColor = user.isPlatformUser
         ? InvoiceThemeColors.primaryPurple
         : user.tagType == 'email'
@@ -1451,7 +1611,12 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12.r),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 4, offset: const Offset(0, 1))],
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 4,
+                offset: const Offset(0, 1))
+          ],
         ),
         child: Column(
           children: [
@@ -1460,12 +1625,25 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                 CircleAvatar(
                   radius: 18.r,
                   backgroundColor: typeColor.withValues(alpha: 0.12),
-                  backgroundImage: user.profilePicture != null ? NetworkImage(user.profilePicture!) : null,
+                  backgroundImage: user.profilePicture != null
+                      ? NetworkImage(user.profilePicture!)
+                      : null,
                   child: user.profilePicture == null
                       ? user.isPlatformUser
-                          ? Text(user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : '?',
-                              style: GoogleFonts.inter(color: typeColor, fontSize: 14.sp, fontWeight: FontWeight.w700))
-                          : Icon(user.tagType == 'email' ? Icons.email_outlined : Icons.sms_outlined, color: typeColor, size: 16.sp)
+                          ? Text(
+                              user.displayName.isNotEmpty
+                                  ? user.displayName[0].toUpperCase()
+                                  : '?',
+                              style: GoogleFonts.inter(
+                                  color: typeColor,
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w700))
+                          : Icon(
+                              user.tagType == 'email'
+                                  ? Icons.email_outlined
+                                  : Icons.sms_outlined,
+                              color: typeColor,
+                              size: 16.sp)
                       : null,
                 ),
                 SizedBox(width: 12.w),
@@ -1473,22 +1651,44 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(user.displayName, style: GoogleFonts.inter(color: const Color(0xFF111827), fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                      Text(user.displayName,
+                          style: GoogleFonts.inter(
+                              color: const Color(0xFF111827),
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600)),
                       SizedBox(height: 2.h),
                       Row(
                         children: [
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                            decoration: BoxDecoration(color: typeColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4.r)),
-                            child: Text(user.tagMethodLabel, style: GoogleFonts.inter(color: typeColor, fontSize: 10.sp, fontWeight: FontWeight.w600)),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 6.w, vertical: 2.h),
+                            decoration: BoxDecoration(
+                                color: typeColor.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(4.r)),
+                            child: Text(user.tagMethodLabel,
+                                style: GoogleFonts.inter(
+                                    color: typeColor,
+                                    fontSize: 10.sp,
+                                    fontWeight: FontWeight.w600)),
                           ),
                           if (user.username.isNotEmpty) ...[
                             SizedBox(width: 6.w),
-                            Flexible(child: Text('@${user.username}', style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 12.sp), overflow: TextOverflow.ellipsis)),
+                            Flexible(
+                                child: Text('@${user.username}',
+                                    style: GoogleFonts.inter(
+                                        color: const Color(0xFF6B7280),
+                                        fontSize: 12.sp),
+                                    overflow: TextOverflow.ellipsis)),
                           ],
-                          if (user.tagValue != null && user.tagValue!.isNotEmpty) ...[
+                          if (user.tagValue != null &&
+                              user.tagValue!.isNotEmpty) ...[
                             SizedBox(width: 6.w),
-                            Flexible(child: Text(user.tagValue!, style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 12.sp), overflow: TextOverflow.ellipsis)),
+                            Flexible(
+                                child: Text(user.tagValue!,
+                                    style: GoogleFonts.inter(
+                                        color: const Color(0xFF6B7280),
+                                        fontSize: 12.sp),
+                                    overflow: TextOverflow.ellipsis)),
                           ],
                         ],
                       ),
@@ -1496,9 +1696,16 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                   ),
                 ),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                  decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8.r)),
-                  child: Text(statusLabel, style: GoogleFonts.inter(color: statusColor, fontSize: 11.sp, fontWeight: FontWeight.w600)),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8.r)),
+                  child: Text(statusLabel,
+                      style: GoogleFonts.inter(
+                          color: statusColor,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w600)),
                 ),
               ],
             ),
@@ -1507,19 +1714,28 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
               Row(
                 children: [
                   SizedBox(width: 48.w),
-                  Icon(Icons.schedule, color: const Color(0xFF9CA3AF), size: 12.sp),
+                  Icon(Icons.schedule,
+                      color: const Color(0xFF9CA3AF), size: 12.sp),
                   SizedBox(width: 4.w),
-                  Text(_formatRelativeDate(user.taggedAt!), style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
+                  Text(_formatRelativeDate(user.taggedAt!),
+                      style: GoogleFonts.inter(
+                          color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
                   if (user.paidAt != null) ...[
                     SizedBox(width: 12.w),
-                    Icon(Icons.check_circle_outline, color: const Color(0xFF10B981), size: 12.sp),
+                    Icon(Icons.check_circle_outline,
+                        color: const Color(0xFF10B981), size: 12.sp),
                     SizedBox(width: 4.w),
-                    Text('Paid ${_formatRelativeDate(user.paidAt!)}', style: GoogleFonts.inter(color: const Color(0xFF10B981), fontSize: 11.sp)),
+                    Text('Paid ${_formatRelativeDate(user.paidAt!)}',
+                        style: GoogleFonts.inter(
+                            color: const Color(0xFF10B981), fontSize: 11.sp)),
                   ] else if (user.viewedAt != null) ...[
                     SizedBox(width: 12.w),
-                    Icon(Icons.visibility_outlined, color: const Color(0xFFFB923C), size: 12.sp),
+                    Icon(Icons.visibility_outlined,
+                        color: const Color(0xFFFB923C), size: 12.sp),
                     SizedBox(width: 4.w),
-                    Text('Viewed ${_formatRelativeDate(user.viewedAt!)}', style: GoogleFonts.inter(color: const Color(0xFFFB923C), fontSize: 11.sp)),
+                    Text('Viewed ${_formatRelativeDate(user.viewedAt!)}',
+                        style: GoogleFonts.inter(
+                            color: const Color(0xFFFB923C), fontSize: 11.sp)),
                   ],
                 ],
               ),
@@ -1535,7 +1751,8 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         child: Padding(
           padding: EdgeInsets.all(24.w),
           child: Column(
@@ -1543,44 +1760,61 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
             children: [
               CircleAvatar(
                 radius: 40.r,
-                backgroundColor: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.12),
-                backgroundImage: user.profilePicture != null ? NetworkImage(user.profilePicture!) : null,
+                backgroundColor:
+                    InvoiceThemeColors.primaryPurple.withValues(alpha: 0.12),
+                backgroundImage: user.profilePicture != null
+                    ? NetworkImage(user.profilePicture!)
+                    : null,
                 child: user.profilePicture == null
                     ? Text(
-                        user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : '?',
-                        style: GoogleFonts.inter(color: InvoiceThemeColors.primaryPurple, fontSize: 28.sp, fontWeight: FontWeight.w700),
+                        user.displayName.isNotEmpty
+                            ? user.displayName[0].toUpperCase()
+                            : '?',
+                        style: GoogleFonts.inter(
+                            color: InvoiceThemeColors.primaryPurple,
+                            fontSize: 28.sp,
+                            fontWeight: FontWeight.w700),
                       )
                     : null,
               ),
               SizedBox(height: 16.h),
               Text(
                 user.displayName,
-                style: GoogleFonts.inter(color: const Color(0xFF111827), fontSize: 18.sp, fontWeight: FontWeight.w700),
+                style: GoogleFonts.inter(
+                    color: const Color(0xFF111827),
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700),
               ),
               if (user.username.isNotEmpty) ...[
                 SizedBox(height: 4.h),
                 Text(
                   '@${user.username}',
-                  style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 14.sp),
+                  style: GoogleFonts.inter(
+                      color: const Color(0xFF6B7280), fontSize: 14.sp),
                 ),
               ],
               SizedBox(height: 12.h),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
+                  color:
+                      InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
                   'Lazervault User',
-                  style: GoogleFonts.inter(color: InvoiceThemeColors.primaryPurple, fontSize: 12.sp, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.inter(
+                      color: InvoiceThemeColors.primaryPurple,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600),
                 ),
               ),
               if (user.status.isNotEmpty) ...[
                 SizedBox(height: 12.h),
                 Text(
                   'Status: ${user.status == 'paid' ? 'Paid' : user.status == 'viewed' ? 'Viewed' : 'Pending'}',
-                  style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 13.sp),
+                  style: GoogleFonts.inter(
+                      color: const Color(0xFF6B7280), fontSize: 13.sp),
                 ),
               ],
               SizedBox(height: 20.h),
@@ -1591,9 +1825,14 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                   style: TextButton.styleFrom(
                     backgroundColor: const Color(0xFFF3F4F6),
                     padding: EdgeInsets.symmetric(vertical: 12.h),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r)),
                   ),
-                  child: Text('Close', style: GoogleFonts.inter(color: const Color(0xFF374151), fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                  child: Text('Close',
+                      style: GoogleFonts.inter(
+                          color: const Color(0xFF374151),
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600)),
                 ),
               ),
             ],
@@ -1625,7 +1864,8 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                 color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(32.r),
               ),
-              child: Icon(Icons.cloud_off_rounded, size: 32.sp, color: const Color(0xFFEF4444)),
+              child: Icon(Icons.cloud_off_rounded,
+                  size: 32.sp, color: const Color(0xFFEF4444)),
             ),
             SizedBox(height: 20.h),
             Text(
@@ -1652,14 +1892,16 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
               child: ElevatedButton.icon(
                 onPressed: onRetry,
                 icon: Icon(Icons.refresh, size: 18.sp),
-                label: Text('Try Again', style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                )),
+                label: Text('Try Again',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    )),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: InvoiceThemeColors.primaryPurple,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r)),
                   elevation: 0,
                 ),
               ),
@@ -1670,7 +1912,8 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
     );
   }
 
-  Widget _buildEmptyState(String title, String subtitle, {IconData icon = Icons.receipt_outlined}) {
+  Widget _buildEmptyState(String title, String subtitle,
+      {IconData icon = Icons.receipt_outlined}) {
     return Center(
       child: Padding(
         padding: EdgeInsets.all(32.w),
@@ -1684,7 +1927,10 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                 color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(36.r),
               ),
-              child: Icon(icon, size: 36.sp, color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.5)),
+              child: Icon(icon,
+                  size: 36.sp,
+                  color:
+                      InvoiceThemeColors.primaryPurple.withValues(alpha: 0.5)),
             ),
             SizedBox(height: 20.h),
             Text(
@@ -1717,7 +1963,9 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
     if (lower.contains('unavailable') || lower.contains('connection')) {
       return 'Unable to reach the server. Check your connection and try again.';
     }
-    if (lower.contains('unauthenticated') || lower.contains('auth') || lower.contains('token')) {
+    if (lower.contains('unauthenticated') ||
+        lower.contains('auth') ||
+        lower.contains('token')) {
       return 'Your session has expired. Please log in again.';
     }
     if (lower.contains('timeout') || lower.contains('deadline')) {

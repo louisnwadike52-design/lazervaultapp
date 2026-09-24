@@ -15,12 +15,15 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
   ElectricityBillRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, List<ElectricityProviderEntity>>> getProviders({String? country}) async {
+  Future<Either<Failure, List<ElectricityProviderEntity>>> getProviders(
+      {String? country}) async {
     try {
       final result = await remoteDataSource.getProviders(country: country);
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to get providers', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to get providers',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
@@ -32,7 +35,9 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
       await remoteDataSource.syncProviders();
       return const Right(null);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to sync providers', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to sync providers',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
@@ -52,7 +57,9 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
       );
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to validate meter', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to validate meter',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
@@ -68,7 +75,9 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
       );
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Smart meter validation failed', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Smart meter validation failed',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
@@ -104,19 +113,24 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
       );
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to initiate payment', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to initiate payment',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
   @override
-  Future<Either<Failure, BillPaymentEntity>> verifyPayment({required String paymentId}) async {
+  Future<Either<Failure, BillPaymentEntity>> verifyPayment(
+      {required String paymentId}) async {
     try {
       final result = await remoteDataSource.verifyPayment(paymentId: paymentId);
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to verify payment', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to verify payment',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
@@ -128,22 +142,29 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
     int? offset,
   }) async {
     try {
-      final result = await remoteDataSource.getPaymentHistory(limit: limit, offset: offset);
+      final result = await remoteDataSource.getPaymentHistory(
+          limit: limit, offset: offset);
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to get payment history', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to get payment history',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
   @override
-  Future<Either<Failure, BillPaymentEntity>> getPaymentReceipt({required String paymentId}) async {
+  Future<Either<Failure, BillPaymentEntity>> getPaymentReceipt(
+      {required String paymentId}) async {
     try {
-      final result = await remoteDataSource.getPaymentReceipt(paymentId: paymentId);
+      final result =
+          await remoteDataSource.getPaymentReceipt(paymentId: paymentId);
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to get payment receipt', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to get payment receipt',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
@@ -177,19 +198,24 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
       );
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to save beneficiary', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to save beneficiary',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
   @override
-  Future<Either<Failure, List<BillBeneficiaryEntity>>> getBeneficiaries() async {
+  Future<Either<Failure, List<BillBeneficiaryEntity>>>
+      getBeneficiaries() async {
     try {
       final result = await remoteDataSource.getBeneficiaries();
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to get beneficiaries', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to get beneficiaries',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
@@ -209,19 +235,24 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
       );
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to update beneficiary', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to update beneficiary',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
   @override
-  Future<Either<Failure, void>> deleteBeneficiary({required String beneficiaryId}) async {
+  Future<Either<Failure, void>> deleteBeneficiary(
+      {required String beneficiaryId}) async {
     try {
       await remoteDataSource.deleteBeneficiary(beneficiaryId: beneficiaryId);
       return const Right(null);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to delete beneficiary', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to delete beneficiary',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
@@ -253,7 +284,9 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
       );
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to create auto-recharge', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to create auto-recharge',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
@@ -265,7 +298,9 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
       final result = await remoteDataSource.getAutoRecharges();
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to get auto-recharges', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to get auto-recharges',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
@@ -295,43 +330,54 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
       );
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to update auto-recharge', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to update auto-recharge',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
   @override
-  Future<Either<Failure, void>> pauseAutoRecharge({required String autoRechargeId}) async {
+  Future<Either<Failure, void>> pauseAutoRecharge(
+      {required String autoRechargeId}) async {
     try {
       await remoteDataSource.pauseAutoRecharge(autoRechargeId: autoRechargeId);
       return const Right(null);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to pause auto-recharge', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to pause auto-recharge',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
   @override
-  Future<Either<Failure, void>> resumeAutoRecharge({required String autoRechargeId}) async {
+  Future<Either<Failure, void>> resumeAutoRecharge(
+      {required String autoRechargeId}) async {
     try {
       await remoteDataSource.resumeAutoRecharge(autoRechargeId: autoRechargeId);
       return const Right(null);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to resume auto-recharge', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to resume auto-recharge',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
   @override
-  Future<Either<Failure, void>> deleteAutoRecharge({required String autoRechargeId}) async {
+  Future<Either<Failure, void>> deleteAutoRecharge(
+      {required String autoRechargeId}) async {
     try {
       await remoteDataSource.deleteAutoRecharge(autoRechargeId: autoRechargeId);
       return const Right(null);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to delete auto-recharge', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to delete auto-recharge',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
@@ -359,7 +405,9 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
       );
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to create reminder', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to create reminder',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
@@ -371,7 +419,9 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
       final result = await remoteDataSource.getReminders();
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to get reminders', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to get reminders',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
@@ -399,31 +449,39 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
       );
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to update reminder', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to update reminder',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
   @override
-  Future<Either<Failure, void>> markReminderComplete({required String reminderId}) async {
+  Future<Either<Failure, void>> markReminderComplete(
+      {required String reminderId}) async {
     try {
       await remoteDataSource.markReminderComplete(reminderId: reminderId);
       return const Right(null);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to mark reminder complete', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to mark reminder complete',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
   @override
-  Future<Either<Failure, void>> deleteReminder({required String reminderId}) async {
+  Future<Either<Failure, void>> deleteReminder(
+      {required String reminderId}) async {
     try {
       await remoteDataSource.deleteReminder(reminderId: reminderId);
       return const Right(null);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to delete reminder', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to delete reminder',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }

@@ -117,8 +117,7 @@ Future<String> _login() async {
 ClientChannel _channel(int port) => ClientChannel(
       _host,
       port: port,
-      options:
-          const ChannelOptions(credentials: ChannelCredentials.insecure()),
+      options: const ChannelOptions(credentials: ChannelCredentials.insecure()),
     );
 
 /// Runs a SQL statement against a local postgres DB; returns trimmed stdout.
@@ -203,8 +202,8 @@ void main() {
       ..destinationAccountId = _savingsAccountId
       ..maximumPerSave = _maxPerSaveKobo;
 
-    final res =
-        await autoSaveClient.createAutoSaveRule(req, options: await authOptions());
+    final res = await autoSaveClient.createAutoSaveRule(req,
+        options: await authOptions());
     expect(res.success, isTrue, reason: 'create failed: ${res.msg}');
     final rule = res.rule;
     ruleId = rule.id;
@@ -289,8 +288,7 @@ void main() {
         reason: 'no successful AutoSave transaction within 60s — check '
             'banking outbox publisher, Kafka, and the fp consumer logs');
 
-    expect(found!.triggerType,
-        autosave_pb.TriggerType.TRIGGER_EXTERNAL_INFLOW);
+    expect(found!.triggerType, autosave_pb.TriggerType.TRIGGER_EXTERNAL_INFLOW);
     expect(found.triggerReason, 'external_inflow');
     expect(found.amount.round(), _expectedSaveKobo,
         reason: '50% of ₦20,000 clamped by max_per_save ₦5,000');
@@ -340,8 +338,7 @@ void main() {
     expect(depositCount, '1', reason: 'replay must not create a second debit');
   }, timeout: const Timeout(Duration(minutes: 1)));
 
-  test('4. settlement lands the wallet credit as "AutoSave Deposit"',
-      () async {
+  test('4. settlement lands the wallet credit as "AutoSave Deposit"', () async {
     expect(ruleId, isNotNull);
 
     // The Mono sandbox debit settles via webhook (Cloudflare tunnel) or the deposit

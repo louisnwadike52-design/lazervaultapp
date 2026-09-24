@@ -12,4 +12,4 @@ class StockEvent {
     required this.type,
     required this.description,
   });
-} 
+}

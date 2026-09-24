@@ -6,8 +6,8 @@ import 'package:lazervault/core/usecase/usecase.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'package:lazervault/src/features/funds/domain/repositories/i_batch_transfer_repository.dart';
 
-class InitiateBatchTransferUseCase
-    extends UseCaseWithParams<BatchTransferEntity, InitiateBatchTransferParams> {
+class InitiateBatchTransferUseCase extends UseCaseWithParams<
+    BatchTransferEntity, InitiateBatchTransferParams> {
   final IBatchTransferRepository repository;
 
   InitiateBatchTransferUseCase(this.repository);
@@ -50,8 +50,8 @@ class InitiateBatchTransferParams extends Equatable {
       ];
 }
 
-class GetBatchTransfersUseCase
-    extends UseCaseWithParams<(List<BatchTransferHistoryEntity>, int), GetBatchTransfersParams> {
+class GetBatchTransfersUseCase extends UseCaseWithParams<
+    (List<BatchTransferHistoryEntity>, int), GetBatchTransfersParams> {
   final IBatchTransferRepository repository;
 
   GetBatchTransfersUseCase(this.repository);
@@ -85,14 +85,15 @@ class GetBatchTransferDetailParams extends Equatable {
   List<Object?> get props => [batchId];
 }
 
-class GetBatchTransferDetailUseCase
-    extends UseCaseWithParams<BatchTransferDetailEntity, GetBatchTransferDetailParams> {
+class GetBatchTransferDetailUseCase extends UseCaseWithParams<
+    BatchTransferDetailEntity, GetBatchTransferDetailParams> {
   final IBatchTransferRepository repository;
 
   GetBatchTransferDetailUseCase(this.repository);
 
   @override
-  Future<Either<Failure, BatchTransferDetailEntity>> call(GetBatchTransferDetailParams params) async {
+  Future<Either<Failure, BatchTransferDetailEntity>> call(
+      GetBatchTransferDetailParams params) async {
     return await repository.getBatchTransferDetail(batchId: params.batchId);
   }
 }

@@ -27,19 +27,19 @@ class TaggedInvoice extends Equatable {
   final DateTime? paidAt;
   final PaymentStatus paymentStatus;
   final InvoicePriority priority;
-  
+
   // Sender info
   final String fromUserId;
   final String fromUserName;
   final String fromUserEmail;
   final String? fromCompanyName;
   final String? fromCompanyLogo;
-  
+
   // Tagged user info (current user)
   final String toUserId;
   final String toUserName;
   final String toUserEmail;
-  
+
   // Payment details
   final List<InvoiceItem> items;
   final double? taxAmount;
@@ -48,7 +48,7 @@ class TaggedInvoice extends Equatable {
   final String? notes;
   final String? paymentReference;
   final String? qrCodeData;
-  
+
   // Additional metadata
   final Map<String, dynamic>? metadata;
   final bool isOverdue;
@@ -212,7 +212,7 @@ class TaggedInvoice extends Equatable {
   }
 
   String get formattedAmount => '$currency ${totalAmount.toStringAsFixed(2)}';
-  
+
   String get formattedDueDate {
     if (dueDate == null) return 'No due date';
     return '${dueDate!.day}/${dueDate!.month}/${dueDate!.year}';
@@ -275,4 +275,4 @@ class InvoiceItem extends Equatable {
         totalPrice,
         category,
       ];
-} 
+}

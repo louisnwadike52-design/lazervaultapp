@@ -10,10 +10,11 @@ class VoiceBiometricsClient {
     required String host,
     required int port,
     ChannelOptions? options,
-  })  : _channel = ClientChannel(
+  }) : _channel = ClientChannel(
           host,
           port: port,
-          options: options ?? const ChannelOptions(credentials: ChannelCredentials.insecure()),
+          options: options ??
+              const ChannelOptions(credentials: ChannelCredentials.insecure()),
         ) {
     _stub = VoiceBiometricsServiceClient(_channel);
   }
@@ -35,8 +36,7 @@ class VoiceBiometricsClient {
         ..codec = codec
         ..sampleRate = sampleRate
         ..channels = channels
-        ..bitDepth = bitDepth
-      )
+        ..bitDepth = bitDepth)
       ..metadata.addAll(metadata);
 
     return await _stub.enrollVoice(request);
@@ -60,8 +60,7 @@ class VoiceBiometricsClient {
         ..codec = codec
         ..sampleRate = sampleRate
         ..channels = channels
-        ..bitDepth = bitDepth
-      )
+        ..bitDepth = bitDepth)
       ..threshold = threshold
       ..metadata.addAll(metadata);
 
@@ -100,8 +99,7 @@ class VoiceBiometricsClient {
         ..codec = codec
         ..sampleRate = sampleRate
         ..channels = channels
-        ..bitDepth = bitDepth
-      );
+        ..bitDepth = bitDepth);
 
     return await _stub.updateVoiceEnrollment(request);
   }

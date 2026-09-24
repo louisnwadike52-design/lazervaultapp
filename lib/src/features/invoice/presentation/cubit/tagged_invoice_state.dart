@@ -41,7 +41,17 @@ class IncomingTaggedInvoicesLoaded extends TaggedInvoiceState {
   });
 
   @override
-  List<Object?> get props => [invoices, statistics, currentPage, hasMore, currentFilter, totalPages, totalCount, pageSize, isRevalidating];
+  List<Object?> get props => [
+        invoices,
+        statistics,
+        currentPage,
+        hasMore,
+        currentFilter,
+        totalPages,
+        totalCount,
+        pageSize,
+        isRevalidating
+      ];
 
   IncomingTaggedInvoicesLoaded copyWith({
     List<TaggedInvoice>? invoices,
@@ -84,7 +94,8 @@ class OutgoingTaggedInvoicesLoaded extends TaggedInvoiceState {
   });
 
   @override
-  List<Object?> get props => [invoices, statistics, currentPage, hasMore, currentFilter];
+  List<Object?> get props =>
+      [invoices, statistics, currentPage, hasMore, currentFilter];
 
   OutgoingTaggedInvoicesLoaded copyWith({
     List<TaggedInvoice>? invoices,
@@ -138,7 +149,8 @@ class TaggedInvoicePaymentSuccess extends TaggedInvoiceState {
   List<Object?> get props => [transaction, message];
 
   String get transactionId => transaction['transaction_id'] as String? ?? '';
-  String get confirmationCode => transaction['confirmation_code'] as String? ?? '';
+  String get confirmationCode =>
+      transaction['confirmation_code'] as String? ?? '';
   double get amount => transaction['amount'] as double? ?? 0.0;
   String get currency => transaction['currency'] as String? ?? 'USD';
   double get feeAmount => transaction['fee_amount'] as double? ?? 0.0;

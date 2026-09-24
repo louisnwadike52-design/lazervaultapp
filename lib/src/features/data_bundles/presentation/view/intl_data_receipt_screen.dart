@@ -53,10 +53,14 @@ class IntlDataReceiptScreen extends StatelessWidget {
       paymentId = paymentId.isEmpty ? purchase.paymentId : paymentId;
       reference = reference.isEmpty ? purchase.reference : reference;
       amountPaid = amountPaid > 0 ? amountPaid : purchase.amountPaid;
-      senderCurrency = senderCurrency == 'NGN' && purchase.senderCurrency.isNotEmpty
-          ? purchase.senderCurrency
-          : (purchase.senderCurrency.isNotEmpty ? purchase.senderCurrency : senderCurrency);
-      deliveredAmount = deliveredAmount > 0 ? deliveredAmount : purchase.deliveredAmount;
+      senderCurrency =
+          senderCurrency == 'NGN' && purchase.senderCurrency.isNotEmpty
+              ? purchase.senderCurrency
+              : (purchase.senderCurrency.isNotEmpty
+                  ? purchase.senderCurrency
+                  : senderCurrency);
+      deliveredAmount =
+          deliveredAmount > 0 ? deliveredAmount : purchase.deliveredAmount;
       deliveredCurrency = deliveredCurrency.isNotEmpty
           ? deliveredCurrency
           : purchase.deliveredCurrency;
@@ -76,9 +80,8 @@ class IntlDataReceiptScreen extends StatelessWidget {
       reference = reference.isEmpty ? tx.reference : reference;
       amountPaid = amountPaid > 0 ? amountPaid : tx.amount;
       phoneNumber = phoneNumber.isNotEmpty ? phoneNumber : tx.phoneNumber;
-      bundleDescription = bundleDescription.isNotEmpty
-          ? bundleDescription
-          : tx.dataPlan;
+      bundleDescription =
+          bundleDescription.isNotEmpty ? bundleDescription : tx.dataPlan;
       isSuccess = tx.isCompleted;
 
       // Read the PARSED metadata map.
@@ -100,12 +103,13 @@ class IntlDataReceiptScreen extends StatelessWidget {
                   .toString();
           final fx = meta['fx_rate_used'] ?? meta['fx_rate'];
           if (fx is num && fxRateUsed == 0) fxRateUsed = fx.toDouble();
-          senderCurrency = (meta['sender_currency'] ?? meta['senderCurrency'])
-                  ?.toString() ??
-              senderCurrency;
+          senderCurrency =
+              (meta['sender_currency'] ?? meta['senderCurrency'])?.toString() ??
+                  senderCurrency;
           operatorName = operatorName.isNotEmpty
               ? operatorName
-              : (meta['operator_name'] ?? meta['operatorName'] ?? '').toString();
+              : (meta['operator_name'] ?? meta['operatorName'] ?? '')
+                  .toString();
           countryName = countryName.isNotEmpty
               ? countryName
               : (meta['country_name'] ??
@@ -130,107 +134,106 @@ class IntlDataReceiptScreen extends StatelessWidget {
         }
       },
       child: Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Column(
-                  children: [
-                    SizedBox(height: 40.h),
-                    _buildStatusIcon(isSuccess),
-                    SizedBox(height: 16.h),
-                    Text(
-                      isSuccess ? 'Data Bundle Delivered!' : 'Payment Failed',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24.sp,
-                        fontWeight: FontWeight.w700,
+        backgroundColor: const Color(0xFF0A0A0A),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 40.h),
+                      _buildStatusIcon(isSuccess),
+                      SizedBox(height: 16.h),
+                      Text(
+                        isSuccess ? 'Data Bundle Delivered!' : 'Payment Failed',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      isSuccess
-                          ? 'International data bundle has been delivered successfully'
-                          : 'Your payment could not be processed',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: const Color(0xFF9CA3AF),
-                        fontSize: 14.sp,
+                      SizedBox(height: 8.h),
+                      Text(
+                        isSuccess
+                            ? 'International data bundle has been delivered successfully'
+                            : 'Your payment could not be processed',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: const Color(0xFF9CA3AF),
+                          fontSize: 14.sp,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 32.h),
-                    if (isSuccess)
-                      _buildDualAmountCard(
-                        amountPaid: amountPaid,
-                        senderCurrency: senderCurrency,
-                        deliveredAmount: deliveredAmount,
-                        deliveredCurrency: deliveredCurrency,
-                        fxRateUsed: fxRateUsed,
+                      SizedBox(height: 32.h),
+                      if (isSuccess)
+                        _buildDualAmountCard(
+                          amountPaid: amountPaid,
+                          senderCurrency: senderCurrency,
+                          deliveredAmount: deliveredAmount,
+                          deliveredCurrency: deliveredCurrency,
+                          fxRateUsed: fxRateUsed,
+                        ),
+                      SizedBox(height: 16.h),
+                      _buildDetailsCard(
+                        reference: reference,
+                        phoneNumber: phoneNumber,
+                        operatorName: operatorName,
+                        countryName: countryName,
+                        bundleDescription: bundleDescription,
+                        paymentId: paymentId,
                       ),
-                    SizedBox(height: 16.h),
-                    _buildDetailsCard(
-                      reference: reference,
-                      phoneNumber: phoneNumber,
-                      operatorName: operatorName,
-                      countryName: countryName,
-                      bundleDescription: bundleDescription,
-                      paymentId: paymentId,
-                    ),
-                    if (reference.isNotEmpty || paymentId.isNotEmpty) ...[
-                      SizedBox(height: 20.h),
-                      BillReceiptQrBlock(
-                        type: 'intl_data',
-                        reference:
-                            reference.isNotEmpty ? reference : paymentId,
-                        amount: amountPaid,
-                        currency: senderCurrency,
-                        status: isSuccess ? 'completed' : 'failed',
-                        timestamp: DateTime.now(),
-                        showDivider: false,
-                        extraPayload: {
-                          if (phoneNumber.isNotEmpty) 'phone': phoneNumber,
-                          if (operatorName.isNotEmpty)
-                            'operator': operatorName,
-                          if (countryName.isNotEmpty) 'country': countryName,
-                          if (bundleDescription.isNotEmpty)
-                            'bundle': bundleDescription,
-                          if (deliveredCurrency.isNotEmpty)
-                            'dest_currency': deliveredCurrency,
-                          if (deliveredAmount > 0)
-                            'dest_amount':
-                                deliveredAmount.toStringAsFixed(2),
-                        },
-                      ),
+                      if (reference.isNotEmpty || paymentId.isNotEmpty) ...[
+                        SizedBox(height: 20.h),
+                        BillReceiptQrBlock(
+                          type: 'intl_data',
+                          reference:
+                              reference.isNotEmpty ? reference : paymentId,
+                          amount: amountPaid,
+                          currency: senderCurrency,
+                          status: isSuccess ? 'completed' : 'failed',
+                          timestamp: DateTime.now(),
+                          showDivider: false,
+                          extraPayload: {
+                            if (phoneNumber.isNotEmpty) 'phone': phoneNumber,
+                            if (operatorName.isNotEmpty)
+                              'operator': operatorName,
+                            if (countryName.isNotEmpty) 'country': countryName,
+                            if (bundleDescription.isNotEmpty)
+                              'bundle': bundleDescription,
+                            if (deliveredCurrency.isNotEmpty)
+                              'dest_currency': deliveredCurrency,
+                            if (deliveredAmount > 0)
+                              'dest_amount': deliveredAmount.toStringAsFixed(2),
+                          },
+                        ),
+                      ],
+                      SizedBox(height: 32.h),
                     ],
-                    SizedBox(height: 32.h),
-                  ],
+                  ),
                 ),
               ),
-            ),
-            _buildActions(
-              isSuccess,
-              IntlDataReceiptData(
-                reference: reference,
-                paymentId: paymentId,
-                amountPaid: amountPaid,
-                senderCurrency: senderCurrency,
-                deliveredAmount: deliveredAmount,
-                deliveredCurrency: deliveredCurrency,
-                fxRateUsed: fxRateUsed,
-                phoneNumber: phoneNumber,
-                operatorName: operatorName,
-                countryName: countryName,
-                bundleDescription: bundleDescription,
-                isSuccess: isSuccess,
-                timestamp: DateTime.now(),
+              _buildActions(
+                isSuccess,
+                IntlDataReceiptData(
+                  reference: reference,
+                  paymentId: paymentId,
+                  amountPaid: amountPaid,
+                  senderCurrency: senderCurrency,
+                  deliveredAmount: deliveredAmount,
+                  deliveredCurrency: deliveredCurrency,
+                  fxRateUsed: fxRateUsed,
+                  phoneNumber: phoneNumber,
+                  operatorName: operatorName,
+                  countryName: countryName,
+                  bundleDescription: bundleDescription,
+                  isSuccess: isSuccess,
+                  timestamp: DateTime.now(),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -286,8 +289,7 @@ class IntlDataReceiptScreen extends StatelessWidget {
             ),
             _amountRow(
               label: 'Recipient Got',
-              value:
-                  '$deliveredCurrency ${deliveredAmount.toStringAsFixed(2)}',
+              value: '$deliveredCurrency ${deliveredAmount.toStringAsFixed(2)}',
               valueColor: const Color(0xFF10B981),
               icon: Icons.arrow_downward,
               iconColor: const Color(0xFF10B981),
@@ -342,8 +344,7 @@ class IntlDataReceiptScreen extends StatelessWidget {
         ),
         SizedBox(width: 12.w),
         Text(label,
-            style:
-                TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
+            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
         const Spacer(),
         Text(value,
             style: TextStyle(
@@ -400,8 +401,8 @@ class IntlDataReceiptScreen extends StatelessWidget {
       child: Row(
         children: [
           Text(label,
-              style: TextStyle(
-                  color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
+              style:
+                  TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
           const Spacer(),
           Flexible(
             child: Text(
@@ -425,8 +426,8 @@ class IntlDataReceiptScreen extends StatelessWidget {
       child: Row(
         children: [
           Text('Reference',
-              style: TextStyle(
-                  color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
+              style:
+                  TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
           const Spacer(),
           GestureDetector(
             onTap: () {
@@ -449,8 +450,7 @@ class IntlDataReceiptScreen extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                     )),
                 SizedBox(width: 6.w),
-                Icon(Icons.copy,
-                    color: const Color(0xFF9CA3AF), size: 14.sp),
+                Icon(Icons.copy, color: const Color(0xFF9CA3AF), size: 14.sp),
               ],
             ),
           ),
@@ -459,8 +459,7 @@ class IntlDataReceiptScreen extends StatelessWidget {
     );
   }
 
-  Widget _divider() =>
-      const Divider(color: Color(0xFF2D2D2D), height: 1);
+  Widget _divider() => const Divider(color: Color(0xFF2D2D2D), height: 1);
 
   Widget _buildActions(bool isSuccess, IntlDataReceiptData receipt) {
     return Container(

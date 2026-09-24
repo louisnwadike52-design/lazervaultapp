@@ -276,7 +276,8 @@ class ScanAnalysisModel extends ScanAnalysis {
 
     // amount_minor (kobo) → major units.
     final amountMinor = toDouble(json['amount_minor']);
-    final amountMajor = amountMinor != null ? amountMinor / 100.0 : toDouble(json['amount']);
+    final amountMajor =
+        amountMinor != null ? amountMinor / 100.0 : toDouble(json['amount']);
 
     // field_confidence may be absent or a {field: double} map.
     final fc = <String, double>{};
@@ -388,4 +389,4 @@ class PaymentReceiptModel extends PaymentReceipt {
       isExternal: entity.isExternal,
     );
   }
-} 
+}

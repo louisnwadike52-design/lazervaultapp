@@ -13,7 +13,6 @@ import '../cubit/cable_tv_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'cable_tv_payment_processing_screen_widgets.dart';
 
-
 class CableTVPaymentProcessingScreen extends StatefulWidget {
   const CableTVPaymentProcessingScreen({super.key});
 
@@ -217,25 +216,21 @@ class _CableTVPaymentProcessingScreenState
                     decoration: BoxDecoration(
                       color: const Color(0xFF1F1F1F),
                       borderRadius: BorderRadius.circular(16.r),
-                      border: Border.all(
-                          color: const Color(0xFF2D2D2D), width: 1),
+                      border:
+                          Border.all(color: const Color(0xFF2D2D2D), width: 1),
                     ),
                     child: Column(
                       children: [
                         _buildSummaryRow(
                             'Provider', provider?.name ?? 'Not set'),
-                        const Divider(
-                            color: Color(0xFF2D2D2D), height: 24),
-                        _buildSummaryRow(
-                            'Smart Card', smartCardNumber),
-                        const Divider(
-                            color: Color(0xFF2D2D2D), height: 24),
+                        const Divider(color: Color(0xFF2D2D2D), height: 24),
+                        _buildSummaryRow('Smart Card', smartCardNumber),
+                        const Divider(color: Color(0xFF2D2D2D), height: 24),
                         _buildSummaryRow(
                           'Package',
                           package?.name ?? 'Not set',
                         ),
-                        const Divider(
-                            color: Color(0xFF2D2D2D), height: 24),
+                        const Divider(color: Color(0xFF2D2D2D), height: 24),
                         _buildSummaryRow(
                           'Amount',
                           package != null
@@ -255,8 +250,7 @@ class _CableTVPaymentProcessingScreenState
                       width: double.infinity,
                       height: 52.h,
                       child: ElevatedButton.icon(
-                        onPressed: () =>
-                            Get.offAllNamed(AppRoutes.cableTVHome),
+                        onPressed: () => Get.offAllNamed(AppRoutes.cableTVHome),
                         icon: Icon(Icons.arrow_back,
                             size: 18.sp, color: Colors.white),
                         label: Text(
@@ -302,9 +296,8 @@ class _CableTVPaymentProcessingScreenState
                 AnimatedBuilder(
                   animation: _pulseController,
                   builder: (context, _) {
-                    final scale = isActive
-                        ? 1.0 + (_pulseController.value * 0.08)
-                        : 1.0;
+                    final scale =
+                        isActive ? 1.0 + (_pulseController.value * 0.08) : 1.0;
                     return Transform.scale(
                       scale: scale,
                       child: Container(
@@ -313,11 +306,9 @@ class _CableTVPaymentProcessingScreenState
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: isFailed
-                              ? const Color(0xFFEF4444)
-                                  .withValues(alpha: 0.15)
+                              ? const Color(0xFFEF4444).withValues(alpha: 0.15)
                               : isCompleted || isActive
-                                  ? step.activeColor
-                                      .withValues(alpha: 0.15)
+                                  ? step.activeColor.withValues(alpha: 0.15)
                                   : const Color(0xFF1F1F1F),
                           border: Border.all(
                             color: isFailed
@@ -359,9 +350,8 @@ class _CableTVPaymentProcessingScreenState
                                   ? Colors.white
                                   : const Color(0xFF6B7280),
                           fontSize: 15.sp,
-                          fontWeight: isActive
-                              ? FontWeight.w700
-                              : FontWeight.w600,
+                          fontWeight:
+                              isActive ? FontWeight.w700 : FontWeight.w600,
                         ),
                       ),
                       SizedBox(height: 2.h),
@@ -369,8 +359,7 @@ class _CableTVPaymentProcessingScreenState
                         isFailed ? _failMessage : step.subtitle,
                         style: GoogleFonts.inter(
                           color: isFailed
-                              ? const Color(0xFFEF4444)
-                                  .withValues(alpha: 0.8)
+                              ? const Color(0xFFEF4444).withValues(alpha: 0.8)
                               : isCompleted || isActive
                                   ? const Color(0xFF9CA3AF)
                                   : const Color(0xFF4B5563),
@@ -382,8 +371,7 @@ class _CableTVPaymentProcessingScreenState
                     ],
                   ),
                 ),
-                if (isActive)
-                  LazerVaultLoader.small(),
+                if (isActive) LazerVaultLoader.small(),
                 if (isCompleted)
                   Icon(Icons.check_circle,
                       color: step.activeColor, size: 20.sp),
@@ -451,8 +439,8 @@ class _CableTVPaymentProcessingScreenState
       decoration: BoxDecoration(
         color: const Color(0xFFEF4444).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-            color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+        border:
+            Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -486,8 +474,7 @@ class _CableTVPaymentProcessingScreenState
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.lock_outline,
-              size: 16.sp, color: const Color(0xFF4E03D0)),
+          Icon(Icons.lock_outline, size: 16.sp, color: const Color(0xFF4E03D0)),
           SizedBox(width: 8.w),
           Expanded(
             child: Text(

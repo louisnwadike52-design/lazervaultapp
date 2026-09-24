@@ -61,8 +61,7 @@ class _DurationConfirmationDialog extends StatelessWidget {
     return Dialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
       backgroundColor: Colors.transparent,
-      shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
       child: Container(
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
@@ -172,8 +171,8 @@ class _DurationConfirmationDialog extends StatelessWidget {
                   child: OutlinedButton(
                     onPressed: () => Navigator.of(context).pop(false),
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(
-                          color: Color(0xFF3D3D3D), width: 1),
+                      side:
+                          const BorderSide(color: Color(0xFF3D3D3D), width: 1),
                       padding: EdgeInsets.symmetric(vertical: 12.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.r),

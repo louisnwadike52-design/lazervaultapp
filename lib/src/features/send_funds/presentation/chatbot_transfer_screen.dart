@@ -16,7 +16,6 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/c
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card_v2.dart';
 part 'chatbot_transfer_screen_widgets.dart';
 
-
 /// Chatbot-powered transfer screen
 /// Uses AI chat interface for seamless transfer experience
 /// with bottom navigation for quick actions
@@ -126,7 +125,9 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
     final accessToken = authState.profile.session.accessToken;
 
     // Call cubit method to send message
-    context.read<AIChatCubit>().sendMessage(messageText, accessToken: accessToken);
+    context
+        .read<AIChatCubit>()
+        .sendMessage(messageText, accessToken: accessToken);
 
     _scrollToBottom(isDelayed: true);
   }
@@ -220,7 +221,8 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
                   width: 1.5,
                 ),
               ),
-              child: Icon(Icons.smart_toy_rounded, color: InvoiceThemeColors.gradientPurple, size: 24.sp),
+              child: Icon(Icons.smart_toy_rounded,
+                  color: InvoiceThemeColors.gradientPurple, size: 24.sp),
             ),
             SizedBox(width: 12.w),
             Column(
@@ -228,11 +230,15 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
               children: [
                 Text(
                   'NOVA Transfer',
-                  style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600),
                 ),
                 Text(
                   'Tell me what to send',
-                  style: TextStyle(color: InvoiceThemeColors.textGray400, fontSize: 12.sp),
+                  style: TextStyle(
+                      color: InvoiceThemeColors.textGray400, fontSize: 12.sp),
                 ),
               ],
             ),
@@ -279,9 +285,13 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
                       }
                     },
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                       decoration: BoxDecoration(
-                        color: isSelected ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15) : Colors.transparent,
+                        color: isSelected
+                            ? InvoiceThemeColors.primaryPurple
+                                .withValues(alpha: 0.15)
+                            : Colors.transparent,
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: Column(
@@ -289,16 +299,22 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
                         children: [
                           Icon(
                             item.icon,
-                            color: isSelected ? InvoiceThemeColors.gradientPurple : InvoiceThemeColors.textGray500,
+                            color: isSelected
+                                ? InvoiceThemeColors.gradientPurple
+                                : InvoiceThemeColors.textGray500,
                             size: 20.sp,
                           ),
                           SizedBox(height: 4.h),
                           Text(
                             item.label,
                             style: TextStyle(
-                              color: isSelected ? InvoiceThemeColors.gradientPurple : InvoiceThemeColors.textGray500,
+                              color: isSelected
+                                  ? InvoiceThemeColors.gradientPurple
+                                  : InvoiceThemeColors.textGray500,
                               fontSize: 11.sp,
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.w400,
                             ),
                           ),
                         ],
@@ -320,7 +336,8 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
                       decoration: BoxDecoration(
                         color: InvoiceThemeColors.secondaryBackground,
                         borderRadius: BorderRadius.circular(24.r),
-                        border: Border.all(color: InvoiceThemeColors.borderColor),
+                        border:
+                            Border.all(color: InvoiceThemeColors.borderColor),
                       ),
                       child: TextField(
                         controller: _messageController,
@@ -328,20 +345,25 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
                         textInputAction: TextInputAction.send,
                         obscureText: _isPinMode,
                         obscuringCharacter: '*',
-                        keyboardType: _isPinMode ? TextInputType.number : TextInputType.text,
+                        keyboardType: _isPinMode
+                            ? TextInputType.number
+                            : TextInputType.text,
                         maxLines: _isPinMode ? 1 : null,
                         onSubmitted: (text) {
                           _handleSubmitted(text);
                           if (_isPinMode) setState(() => _isPinMode = false);
                         },
                         onChanged: (text) {
-                          final looksLikePin = RegExp(r'^\d{4,6}$').hasMatch(text.trim());
+                          final looksLikePin =
+                              RegExp(r'^\d{4,6}$').hasMatch(text.trim());
                           if (looksLikePin != _isPinMode) {
                             setState(() => _isPinMode = looksLikePin);
                           }
                         },
                         decoration: InputDecoration(
-                          hintText: _isPinMode ? 'Enter your PIN...' : 'Type a message...',
+                          hintText: _isPinMode
+                              ? 'Enter your PIN...'
+                              : 'Type a message...',
                           hintStyle: TextStyle(color: Colors.white54),
                           border: InputBorder.none,
                         ),
@@ -365,13 +387,15 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3),
+                            color: InvoiceThemeColors.primaryPurple
+                                .withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
                         ],
                       ),
-                      child: Icon(Icons.send_rounded, color: Colors.white, size: 20.sp),
+                      child: Icon(Icons.send_rounded,
+                          color: Colors.white, size: 20.sp),
                     ),
                   ),
                 ],
@@ -394,7 +418,8 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
               color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.lock_rounded, color: InvoiceThemeColors.primaryPurple, size: 48.sp),
+            child: Icon(Icons.lock_rounded,
+                color: InvoiceThemeColors.primaryPurple, size: 48.sp),
           ),
           SizedBox(height: 16.h),
           Text(
@@ -423,7 +448,8 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
     final chatMessages = messages.isEmpty
         ? [
             ChatMessageEntity(
-              text: "Hi! I'm your AI transfer assistant. How can I help you send money today?",
+              text:
+                  "Hi! I'm your AI transfer assistant. How can I help you send money today?",
               isUser: false,
               timestamp: DateTime.now(),
             ),
@@ -456,7 +482,8 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
           right: isUser ? 0 : 64.w,
         ),
         child: Column(
-          crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment:
+              isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             // Confirmation summary renders on its own — even when the bot sends
             // NO accompanying text (previously nested under text.isNotEmpty, so
@@ -467,7 +494,9 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
               Container(
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
-                  color: isUser ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2) : InvoiceThemeColors.secondaryBackground,
+                  color: isUser
+                      ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2)
+                      : InvoiceThemeColors.secondaryBackground,
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(16.r),
                     topRight: Radius.circular(16.r),
@@ -481,18 +510,25 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
                     MarkdownBody(
                       data: isUser ? maskIfPin(message.text) : message.text,
                       selectable: !isUser || !isPinText(message.text),
-                      styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-                        p: Theme.of(context).textTheme.bodyMedium?.copyWith(color: isUser ? Colors.white70 : Colors.white),
+                      styleSheet:
+                          MarkdownStyleSheet.fromTheme(Theme.of(context))
+                              .copyWith(
+                        p: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: isUser ? Colors.white70 : Colors.white),
                         code: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontFamily: 'monospace',
-                          backgroundColor: Colors.black.withValues(alpha: 0.1),
-                          color: Colors.lightBlueAccent,
-                          fontSize: 13.sp,
-                        ),
+                              fontFamily: 'monospace',
+                              backgroundColor:
+                                  Colors.black.withValues(alpha: 0.1),
+                              color: Colors.lightBlueAccent,
+                              fontSize: 13.sp,
+                            ),
                       ),
                     ),
                     SizedBox(height: 4.h),
-                    Text(_formatTime(message.timestamp), style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10.sp)),
+                    Text(_formatTime(message.timestamp),
+                        style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.5),
+                            fontSize: 10.sp)),
                   ],
                 ),
               ),
@@ -564,9 +600,12 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildConfirmRow('Action', data.actionType.replaceAll('_', ' ').toUpperCase()),
-          if (data.amount.isNotEmpty) _buildConfirmRow('Amount', '${data.currency} ${data.amount}'),
-          if (data.recipientName.isNotEmpty) _buildConfirmRow('To', data.recipientName),
+          _buildConfirmRow(
+              'Action', data.actionType.replaceAll('_', ' ').toUpperCase()),
+          if (data.amount.isNotEmpty)
+            _buildConfirmRow('Amount', '${data.currency} ${data.amount}'),
+          if (data.recipientName.isNotEmpty)
+            _buildConfirmRow('To', data.recipientName),
           if (data.description != null && data.description!.isNotEmpty)
             _buildConfirmRow('Note', data.description!),
         ],
@@ -580,9 +619,15 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+          Text(label,
+              style:
+                  TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
           Flexible(
-            child: Text(value, style: TextStyle(color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w500)),
+            child: Text(value,
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w500)),
           ),
         ],
       ),

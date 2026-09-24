@@ -16,7 +16,8 @@ class InsuranceDocumentsScreen extends StatefulWidget {
   });
 
   @override
-  State<InsuranceDocumentsScreen> createState() => _InsuranceDocumentsScreenState();
+  State<InsuranceDocumentsScreen> createState() =>
+      _InsuranceDocumentsScreenState();
 }
 
 class _InsuranceDocumentsScreenState extends State<InsuranceDocumentsScreen> {
@@ -98,9 +99,10 @@ class _InsuranceDocumentsScreenState extends State<InsuranceDocumentsScreen> {
       }
 
       await SharePlus.instance.share(ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),text: parts.join('\n')));
+          // iOS: a non-zero popover anchor is required — CGRectZero throws
+          // PlatformException and the share silently fails on iPhone/iPad.
+          sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+          text: parts.join('\n')));
     } finally {
       if (mounted) setState(() => _isSharing = false);
     }
@@ -126,8 +128,7 @@ class _InsuranceDocumentsScreenState extends State<InsuranceDocumentsScreen> {
                       icon: Icons.verified,
                       iconColor: const Color(0xFF6366F1),
                       title: 'Policy Certificate',
-                      description:
-                          'Your official insurance policy certificate',
+                      description: 'Your official insurance policy certificate',
                       // Certificate URL comes from MyCover.GetPolicyByID
                       // (`certificate_url`). The previous code mistakenly
                       // pointed this at `_termsUrl`, so users tapping
@@ -139,8 +140,7 @@ class _InsuranceDocumentsScreenState extends State<InsuranceDocumentsScreen> {
                       icon: Icons.summarize,
                       iconColor: const Color(0xFF10B981),
                       title: 'Coverage Summary',
-                      description:
-                          'Detailed breakdown of your coverage',
+                      description: 'Detailed breakdown of your coverage',
                       // Coverage summary lives within Policy Details
                       // (Coverage tab); no separate document exists.
                       onView: () => _viewDocument(null),
@@ -150,8 +150,7 @@ class _InsuranceDocumentsScreenState extends State<InsuranceDocumentsScreen> {
                       icon: Icons.calendar_month,
                       iconColor: const Color(0xFFFB923C),
                       title: 'Payment Schedule',
-                      description:
-                          'Upcoming premium payment dates',
+                      description: 'Upcoming premium payment dates',
                       onView: () => _viewDocument(null),
                     ),
                     if (_termsUrl != null && _termsUrl!.isNotEmpty) ...[
@@ -160,8 +159,7 @@ class _InsuranceDocumentsScreenState extends State<InsuranceDocumentsScreen> {
                         icon: Icons.description,
                         iconColor: const Color.fromARGB(255, 78, 3, 208),
                         title: 'Terms & Conditions',
-                        description:
-                            'Full terms and conditions of your policy',
+                        description: 'Full terms and conditions of your policy',
                         onView: () => _viewDocument(_termsUrl),
                       ),
                     ],

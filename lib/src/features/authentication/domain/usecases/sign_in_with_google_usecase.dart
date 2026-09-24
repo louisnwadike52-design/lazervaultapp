@@ -11,4 +11,4 @@ class SignInWithGoogleUseCase {
   Future<Either<Failure, ProfileEntity>> call() async {
     return _repository.signInWithGoogle();
   }
-} 
+}

@@ -72,8 +72,7 @@ class _ContactPickerSheetState extends State<ContactPickerSheet> {
                 const Spacer(),
                 TextButton(
                   onPressed: () => Navigator.pop(
-                      context,
-                      const Contact(id: '', userId: '', name: '')),
+                      context, const Contact(id: '', userId: '', name: '')),
                   child: const Text('Unlink',
                       style: TextStyle(color: Color(0xFFEF4444))),
                 ),
@@ -95,7 +94,8 @@ class _ContactPickerSheetState extends State<ContactPickerSheet> {
                 if (contacts.isEmpty) {
                   return Padding(
                     padding: EdgeInsets.all(24.w),
-                    child: Text('No contacts yet. Add people in the People tab.',
+                    child: Text(
+                        'No contacts yet. Add people in the People tab.',
                         textAlign: TextAlign.center,
                         style:
                             GoogleFonts.inter(color: _muted, fontSize: 13.sp)),

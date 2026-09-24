@@ -43,8 +43,12 @@ class TaggedInvoiceModel extends TaggedInvoice {
       amount: (json['amount'] as num).toDouble(),
       currency: json['currency'] as String,
       createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
-      dueDate: json['due_date'] != null ? DateTime.parse(json['due_date'] as String).toLocal() : null,
-      paidAt: json['paid_at'] != null ? DateTime.parse(json['paid_at'] as String).toLocal() : null,
+      dueDate: json['due_date'] != null
+          ? DateTime.parse(json['due_date'] as String).toLocal()
+          : null,
+      paidAt: json['paid_at'] != null
+          ? DateTime.parse(json['paid_at'] as String).toLocal()
+          : null,
       paymentStatus: PaymentStatus.values.firstWhere(
         (status) => status.name == json['payment_status'],
         orElse: () => PaymentStatus.pending,
@@ -62,10 +66,15 @@ class TaggedInvoiceModel extends TaggedInvoice {
       toUserName: json['to_user_name'] as String,
       toUserEmail: json['to_user_email'] as String,
       items: (json['items'] as List<dynamic>)
-          .map((item) => InvoiceItemModel.fromJson(item as Map<String, dynamic>))
+          .map(
+              (item) => InvoiceItemModel.fromJson(item as Map<String, dynamic>))
           .toList(),
-      taxAmount: json['tax_amount'] != null ? (json['tax_amount'] as num).toDouble() : null,
-      discountAmount: json['discount_amount'] != null ? (json['discount_amount'] as num).toDouble() : null,
+      taxAmount: json['tax_amount'] != null
+          ? (json['tax_amount'] as num).toDouble()
+          : null,
+      discountAmount: json['discount_amount'] != null
+          ? (json['discount_amount'] as num).toDouble()
+          : null,
       totalAmount: (json['total_amount'] as num).toDouble(),
       notes: json['notes'] as String?,
       paymentReference: json['payment_reference'] as String?,
@@ -98,7 +107,8 @@ class TaggedInvoiceModel extends TaggedInvoice {
       'to_user_id': toUserId,
       'to_user_name': toUserName,
       'to_user_email': toUserEmail,
-      'items': items.map((item) => (item as InvoiceItemModel).toJson()).toList(),
+      'items':
+          items.map((item) => (item as InvoiceItemModel).toJson()).toList(),
       'tax_amount': taxAmount,
       'discount_amount': discountAmount,
       'total_amount': totalAmount,
@@ -133,7 +143,9 @@ class TaggedInvoiceModel extends TaggedInvoice {
       toUserId: entity.toUserId,
       toUserName: entity.toUserName,
       toUserEmail: entity.toUserEmail,
-      items: entity.items.map((item) => InvoiceItemModel.fromEntity(item)).toList(),
+      items: entity.items
+          .map((item) => InvoiceItemModel.fromEntity(item))
+          .toList(),
       taxAmount: entity.taxAmount,
       discountAmount: entity.discountAmount,
       totalAmount: entity.totalAmount,
@@ -284,4 +296,4 @@ class InvoiceItemModel extends InvoiceItem {
       category: category ?? this.category,
     );
   }
-} 
+}

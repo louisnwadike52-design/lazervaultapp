@@ -93,7 +93,8 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
                       SnackBar(
                         content: Text(state.message),
                         backgroundColor: InvoiceThemeColors.errorRed,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r)),
                         behavior: SnackBarBehavior.floating,
                         margin: EdgeInsets.only(
                           bottom: MediaQuery.of(context).size.height - 150.h,
@@ -107,7 +108,8 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
                       SnackBar(
                         content: Text(state.message),
                         backgroundColor: InvoiceThemeColors.successGreen,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r)),
                         behavior: SnackBarBehavior.floating,
                         margin: EdgeInsets.only(
                           bottom: MediaQuery.of(context).size.height - 150.h,
@@ -121,7 +123,8 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
                       SnackBar(
                         content: Text(state.errorMessage),
                         backgroundColor: InvoiceThemeColors.errorRed,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r)),
                         behavior: SnackBarBehavior.floating,
                         margin: EdgeInsets.only(
                           bottom: MediaQuery.of(context).size.height - 150.h,
@@ -135,7 +138,8 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
                       SnackBar(
                         content: Text(state.message),
                         backgroundColor: InvoiceThemeColors.successGreen,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r)),
                         behavior: SnackBarBehavior.floating,
                         margin: EdgeInsets.only(
                           bottom: MediaQuery.of(context).size.height - 150.h,
@@ -229,9 +233,11 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
       builder: (context, state) {
         int overdueCount = 0;
         if (state is PayInvoicesLoaded) {
-          overdueCount = state.invoices.where((invoice) =>
-            invoice.isOverdue && invoice.paymentStatus != PaymentStatus.completed
-          ).length;
+          overdueCount = state.invoices
+              .where((invoice) =>
+                  invoice.isOverdue &&
+                  invoice.paymentStatus != PaymentStatus.completed)
+              .length;
         }
 
         return Container(
@@ -267,7 +273,9 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
                     decoration: BoxDecoration(
                       color: InvoiceThemeColors.errorRed,
                       borderRadius: BorderRadius.circular(8.r),
-                      border: Border.all(color: InvoiceThemeColors.primaryBackground, width: 2),
+                      border: Border.all(
+                          color: InvoiceThemeColors.primaryBackground,
+                          width: 2),
                     ),
                     child: Center(
                       child: Text(
@@ -377,10 +385,14 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
         onTap: (index) {
           switch (index) {
             case 0:
-              context.read<PayInvoiceCubit>().loadInvoicesByStatus(PaymentStatus.pending);
+              context
+                  .read<PayInvoiceCubit>()
+                  .loadInvoicesByStatus(PaymentStatus.pending);
               break;
             case 1:
-              context.read<PayInvoiceCubit>().loadInvoicesByStatus(PaymentStatus.completed);
+              context
+                  .read<PayInvoiceCubit>()
+                  .loadInvoicesByStatus(PaymentStatus.completed);
               break;
             case 2:
               context.read<PayInvoiceCubit>().loadOverdueInvoices();
@@ -477,8 +489,9 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
 
     if (state is PayInvoicesLoaded) {
       final overdueInvoices = state.invoices
-          .where((invoice) => invoice.isOverdue &&
-                             invoice.paymentStatus != PaymentStatus.completed)
+          .where((invoice) =>
+              invoice.isOverdue &&
+              invoice.paymentStatus != PaymentStatus.completed)
           .toList();
 
       if (overdueInvoices.isEmpty) {
@@ -534,7 +547,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
                   ? () => _showPaymentSheet(invoice)
                   : null,
               isOverdue: invoice.isOverdue &&
-                        invoice.paymentStatus != PaymentStatus.completed,
+                  invoice.paymentStatus != PaymentStatus.completed,
             );
           },
         ),

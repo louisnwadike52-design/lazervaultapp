@@ -61,7 +61,8 @@ class SupportApi {
     }
     // core-gateway base ends with `/api/v1`; our paths already carry that
     // prefix, so proxy through the gateway origin.
-    final core = endpointRegistry.httpCore; // e.g. https://dev.lazervault.app/api/v1
+    final core =
+        endpointRegistry.httpCore; // e.g. https://dev.lazervault.app/api/v1
     const suffix = '/api/v1';
     final origin = core.endsWith(suffix)
         ? core.substring(0, core.length - suffix.length)

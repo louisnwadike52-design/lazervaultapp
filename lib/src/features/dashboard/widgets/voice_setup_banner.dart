@@ -102,7 +102,8 @@ class VoiceSetupBanner extends StatelessWidget {
                                   Text(
                                     '$skipCount/3 reminders',
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.7),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.7),
                                       fontSize: 11.sp,
                                       fontWeight: FontWeight.w600,
                                     ),

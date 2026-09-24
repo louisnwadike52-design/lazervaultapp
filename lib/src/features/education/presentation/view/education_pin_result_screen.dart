@@ -110,8 +110,7 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
       accountId: _purchase.accountId,
       billType:
           _purchase.billType.isNotEmpty ? _purchase.billType : h.providerName,
-      providerId:
-          h.providerId.isNotEmpty ? h.providerId : _purchase.providerId,
+      providerId: h.providerId.isNotEmpty ? h.providerId : _purchase.providerId,
       reference: h.reference.isNotEmpty ? h.reference : _purchase.reference,
       amount: h.amount > 0 ? h.amount : _purchase.amount,
       status: h.status,
@@ -119,8 +118,7 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
           ? _purchase.customerNumber
           : h.phoneNumber,
       metadata: _purchase.metadata,
-      createdAt:
-          h.createdAt.isNotEmpty ? h.createdAt : _purchase.createdAt,
+      createdAt: h.createdAt.isNotEmpty ? h.createdAt : _purchase.createdAt,
       newBalance: _purchase.newBalance,
       pins: h.pins.isNotEmpty ? h.pins : _purchase.pins,
       message: _purchase.message,
@@ -145,12 +143,13 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
     final existingBeneficiaryId = args['existingBeneficiaryId'] as String?;
     if (!saveCandidate || existingBeneficiaryId != null) return;
 
-    final phone = (args['phone'] as String?)?.trim() ?? _purchase.customerNumber;
+    final phone =
+        (args['phone'] as String?)?.trim() ?? _purchase.customerNumber;
     if (phone.isEmpty) return;
     final nickname = args['candidateNickname'] as String?;
     final provider = _provider;
-    final providerCode = provider?.serviceId.toUpperCase() ??
-        _purchase.providerId.toUpperCase();
+    final providerCode =
+        provider?.serviceId.toUpperCase() ?? _purchase.providerId.toUpperCase();
     final providerName = provider?.name ?? _purchase.billType;
     final examType = provider?.serviceId ?? _purchase.billType;
 
@@ -252,9 +251,10 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
       buffer.writeln('Purchased via Lazervault');
 
       SharePlus.instance.share(ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),text: buffer.toString()));
+          // iOS: a non-zero popover anchor is required — CGRectZero throws
+          // PlatformException and the share silently fails on iPhone/iPad.
+          sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+          text: buffer.toString()));
     } finally {
       if (mounted) setState(() => _isSharing = false);
     }
@@ -301,82 +301,84 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
         if (!didPop) Get.offAllNamed(AppRoutes.billsHub);
       },
       child: Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Get.offAllNamed(AppRoutes.billsHub),
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-        ),
-        title: Text(
-          'Your PINs',
-          style: TextStyle(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
+        backgroundColor: const Color(0xFF0A0A0A),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            onPressed: () => Get.offAllNamed(AppRoutes.billsHub),
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
           ),
+          title: Text(
+            'Your PINs',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          centerTitle: true,
         ),
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-                  child: Column(
-                    children: [
-                      // Success icon
-                      _buildSuccessHeader(),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: SingleChildScrollView(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+                    child: Column(
+                      children: [
+                        // Success icon
+                        _buildSuccessHeader(),
 
-                      SizedBox(height: 24.h),
+                        SizedBox(height: 24.h),
 
-                      // Purchase info
-                      _buildPurchaseInfo(),
+                        // Purchase info
+                        _buildPurchaseInfo(),
 
-                      SizedBox(height: 20.h),
+                        SizedBox(height: 20.h),
 
-                      // PIN cards — or a pending placeholder while the async
-                      // consumer is still generating them.
-                      if (_purchase.pins.isEmpty && _purchase.isPending)
-                        _buildPendingPinsPlaceholder()
-                      else
-                        ..._purchase.pins.asMap().entries.map(
-                              (entry) => _buildPinCard(entry.key, entry.value),
-                            ),
+                        // PIN cards — or a pending placeholder while the async
+                        // consumer is still generating them.
+                        if (_purchase.pins.isEmpty && _purchase.isPending)
+                          _buildPendingPinsPlaceholder()
+                        else
+                          ..._purchase.pins.asMap().entries.map(
+                                (entry) =>
+                                    _buildPinCard(entry.key, entry.value),
+                              ),
 
-                      SizedBox(height: 24.h),
-                      BillReceiptQrBlock(
-                        type: 'education',
-                        reference: _purchase.reference,
-                        amount: _purchase.amount,
-                        currency: 'NGN',
-                        status: _purchase.status,
-                        timestamp: DateTime.tryParse(_purchase.createdAt) ??
-                            DateTime.now(),
-                        showDivider: false,
-                        extraPayload: {
-                          if (_purchase.billType.isNotEmpty)
-                            'bill_type': _purchase.billType,
-                          if (_provider?.name.isNotEmpty == true)
-                            'provider': _provider!.name,
-                          'pin_count': _purchase.pins.length.toString(),
-                        },
-                      ),
-                    ],
+                        SizedBox(height: 24.h),
+                        BillReceiptQrBlock(
+                          type: 'education',
+                          reference: _purchase.reference,
+                          amount: _purchase.amount,
+                          currency: 'NGN',
+                          status: _purchase.status,
+                          timestamp: DateTime.tryParse(_purchase.createdAt) ??
+                              DateTime.now(),
+                          showDivider: false,
+                          extraPayload: {
+                            if (_purchase.billType.isNotEmpty)
+                              'bill_type': _purchase.billType,
+                            if (_provider?.name.isNotEmpty == true)
+                              'provider': _provider!.name,
+                            'pin_count': _purchase.pins.length.toString(),
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            // Bottom actions
-            _buildBottomActions(),
-          ],
+              // Bottom actions
+              _buildBottomActions(),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -479,8 +481,7 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline,
-              size: 18.sp, color: const Color(0xFFFB923C)),
+          Icon(Icons.info_outline, size: 18.sp, color: const Color(0xFFFB923C)),
           SizedBox(width: 10.w),
           Expanded(
             child: Text(
@@ -514,7 +515,8 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
           SizedBox(height: 8.h),
           _buildInfoRow('Reference', _purchase.reference),
           SizedBox(height: 8.h),
-          _buildInfoRow('Amount Paid', '\u20A6${_formatAmount(_purchase.amount)}'),
+          _buildInfoRow(
+              'Amount Paid', '\u20A6${_formatAmount(_purchase.amount)}'),
           if (_purchase.newBalance > 0) ...[
             SizedBox(height: 8.h),
             _buildInfoRow(
@@ -607,7 +609,8 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
               GestureDetector(
                 onTap: () => _copyPin(pin.pin),
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                   decoration: BoxDecoration(
                     color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8.r),

@@ -93,81 +93,83 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
         Get.offNamed(AppRoutes.electricityBillHome);
       },
       child: Scaffold(
-      backgroundColor: _bg,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          filtered ? 'Filtered Payment History' : 'Payment History',
-          style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w700),
+        backgroundColor: _bg,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: Text(
+            filtered ? 'Filtered Payment History' : 'Payment History',
+            style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w700),
+          ),
+          centerTitle: true,
+          leading: IconButton(
+            // Always return to the electricity bill landing screen, regardless
+            // of the entry path (deep link, history actions sheet, etc.). Using
+            // offNamed replaces the current route so a back press from the
+            // landing doesn't pop straight back into history.
+            onPressed: () => Get.offNamed(AppRoutes.electricityBillHome),
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+          ),
+          actions: [
+            if (filtered)
+              IconButton(
+                tooltip: 'Clear filter',
+                onPressed: () {
+                  setState(() {
+                    _meterFilter = null;
+                    _providerFilter = null;
+                  });
+                },
+                icon: Icon(Icons.filter_alt_off, color: _accent, size: 22.sp),
+              ),
+          ],
         ),
-        centerTitle: true,
-        leading: IconButton(
-          // Always return to the electricity bill landing screen, regardless
-          // of the entry path (deep link, history actions sheet, etc.). Using
-          // offNamed replaces the current route so a back press from the
-          // landing doesn't pop straight back into history.
-          onPressed: () => Get.offNamed(AppRoutes.electricityBillHome),
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-        ),
-        actions: [
-          if (filtered)
-            IconButton(
-              tooltip: 'Clear filter',
-              onPressed: () {
-                setState(() {
-                  _meterFilter = null;
-                  _providerFilter = null;
-                });
-              },
-              icon: Icon(Icons.filter_alt_off, color: _accent, size: 22.sp),
-            ),
-        ],
-      ),
-      body: SafeArea(
-        child: BlocBuilder<ElectricityBillCubit, ElectricityBillState>( // wrapped by PopScope above
-          builder: (context, state) {
-            if (state is PaymentHistoryLoading) {
-              return const Center(
-                child: LazerVaultLoader.small(),
+        body: SafeArea(
+          child: BlocBuilder<ElectricityBillCubit, ElectricityBillState>(
+            // wrapped by PopScope above
+            builder: (context, state) {
+              if (state is PaymentHistoryLoading) {
+                return const Center(
+                  child: LazerVaultLoader.small(),
+                );
+              }
+              if (state is ElectricityBillError) {
+                return _buildError(state.message);
+              }
+              final all = state is PaymentHistoryLoaded
+                  ? state.payments
+                  : const <BillPaymentEntity>[];
+              final list = _applyFilters(all);
+              return RefreshIndicator(
+                color: _accent,
+                backgroundColor: _card,
+                onRefresh: () async {
+                  await context
+                      .read<ElectricityBillCubit>()
+                      .getPaymentHistory();
+                },
+                child: list.isEmpty
+                    ? _buildEmpty()
+                    : ListView.separated(
+                        padding: EdgeInsets.all(20.w),
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemBuilder: (context, i) => _buildRow(list[i]),
+                        separatorBuilder: (_, __) => SizedBox(height: 10.h),
+                        itemCount: list.length,
+                      ),
               );
-            }
-            if (state is ElectricityBillError) {
-              return _buildError(state.message);
-            }
-            final all = state is PaymentHistoryLoaded
-                ? state.payments
-                : const <BillPaymentEntity>[];
-            final list = _applyFilters(all);
-            return RefreshIndicator(
-              color: _accent,
-              backgroundColor: _card,
-              onRefresh: () async {
-                await context.read<ElectricityBillCubit>().getPaymentHistory();
-              },
-              child: list.isEmpty
-                  ? _buildEmpty()
-                  : ListView.separated(
-                      padding: EdgeInsets.all(20.w),
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      itemBuilder: (context, i) => _buildRow(list[i]),
-                      separatorBuilder: (_, __) => SizedBox(height: 10.h),
-                      itemCount: list.length,
-                    ),
-            );
-          },
+            },
+          ),
         ),
       ),
-    ),
     );
   }
 
   Widget _buildRow(BillPaymentEntity p) {
-    final isFocused =
-        _focusPaymentId != null && p.id == _focusPaymentId;
+    final isFocused = _focusPaymentId != null && p.id == _focusPaymentId;
     final item = BillHistoryItem(
       leadingIcon: Container(
         decoration: BoxDecoration(
@@ -254,8 +256,8 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
               onPressed: () =>
                   context.read<ElectricityBillCubit>().getPaymentHistory(),
               style: ElevatedButton.styleFrom(backgroundColor: _accent),
-              child: Text('Retry',
-                  style: GoogleFonts.inter(color: Colors.white)),
+              child:
+                  Text('Retry', style: GoogleFonts.inter(color: Colors.white)),
             ),
           ],
         ),

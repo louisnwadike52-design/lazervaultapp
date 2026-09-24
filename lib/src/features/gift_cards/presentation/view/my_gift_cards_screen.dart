@@ -29,7 +29,6 @@ import 'widgets/gift_card_error_widget.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'my_gift_cards_screen_widgets.dart';
 
-
 class MyGiftCardsScreen extends StatefulWidget {
   const MyGiftCardsScreen({super.key});
 
@@ -129,7 +128,8 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
       },
       child: Scaffold(
         backgroundColor: kGiftCardBgTop,
-        body: GiftCardBackground(child: SafeArea(
+        body: GiftCardBackground(
+            child: SafeArea(
           child: Column(
             children: [
               _buildHeader(),

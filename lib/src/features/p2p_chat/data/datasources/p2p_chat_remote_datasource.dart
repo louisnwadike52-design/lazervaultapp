@@ -16,14 +16,19 @@ class P2PChatRemoteDatasource {
       : _client = client ?? http.Client();
 
   void _debugLog(String method, String url, http.Response response) {
-    print('P2P_DEBUG [$method $url] status=${response.statusCode} body=${response.body.length > 200 ? response.body.substring(0, 200) : response.body}');
+    print(
+        'P2P_DEBUG [$method $url] status=${response.statusCode} body=${response.body.length > 200 ? response.body.substring(0, 200) : response.body}');
   }
 
   String get _baseUrl => _resolveHttpBase(
-      hostEnv: 'P2P_CHAT_HOST', portEnv: 'P2P_CHAT_PORT', suffix: '/api/v1/chat');
+      hostEnv: 'P2P_CHAT_HOST',
+      portEnv: 'P2P_CHAT_PORT',
+      suffix: '/api/v1/chat');
 
   String get _coreGatewayUrl => _resolveHttpBase(
-      hostEnv: 'CORE_GATEWAY_HOST', portEnv: 'CORE_GATEWAY_PORT', suffix: '/api/v1');
+      hostEnv: 'CORE_GATEWAY_HOST',
+      portEnv: 'CORE_GATEWAY_PORT',
+      suffix: '/api/v1');
 
   /// Build an HTTP base URL. A dev/local `*_HOST` override uses its own `*_PORT`
   /// (loopback like 8018/7878 → plain http). With NO host override (prod / the
@@ -125,7 +130,8 @@ class P2PChatRemoteDatasource {
   Future<List<P2PConversationModel>> listConnections(String accessToken,
       {int page = 1, int limit = 20}) async {
     final url = '$_baseUrl/connections?page=$page&limit=$limit';
-    print('P2P_DEBUG listConnections: url=$url token_len=${accessToken.length} token_prefix=${accessToken.substring(0, accessToken.length > 30 ? 30 : accessToken.length)}');
+    print(
+        'P2P_DEBUG listConnections: url=$url token_len=${accessToken.length} token_prefix=${accessToken.substring(0, accessToken.length > 30 ? 30 : accessToken.length)}');
     final response = await _client
         .get(
           Uri.parse(url),
@@ -162,8 +168,8 @@ class P2PChatRemoteDatasource {
     final data = _decodeBody(response.body);
     final list = data['birthdays'] as List<dynamic>? ?? [];
     return list
-        .map((b) =>
-            ConnectionBirthdayEntity.fromJson(b as Map<String, dynamic>))
+        .map(
+            (b) => ConnectionBirthdayEntity.fromJson(b as Map<String, dynamic>))
         .toList();
   }
 
@@ -204,8 +210,7 @@ class P2PChatRemoteDatasource {
     }
   }
 
-  Future<void> declineRequest(
-      String conversationId, String accessToken) async {
+  Future<void> declineRequest(String conversationId, String accessToken) async {
     final response = await _client
         .post(
           Uri.parse('$_baseUrl/requests/$conversationId/decline'),
@@ -305,9 +310,11 @@ class P2PChatRemoteDatasource {
   Future<List<P2PMessageModel>> getMessagesPage(
       String conversationId, String accessToken,
       {int limit = 30, DateTime? before}) async {
-    final q = StringBuffer('$_baseUrl/conversations/$conversationId/messages?limit=$limit');
+    final q = StringBuffer(
+        '$_baseUrl/conversations/$conversationId/messages?limit=$limit');
     if (before != null) {
-      q.write('&before=${Uri.encodeComponent(before.toUtc().toIso8601String())}');
+      q.write(
+          '&before=${Uri.encodeComponent(before.toUtc().toIso8601String())}');
     }
     final response = await _client
         .get(Uri.parse(q.toString()), headers: _headers(accessToken))
@@ -339,7 +346,8 @@ class P2PChatRemoteDatasource {
             'content': content,
             if (clientMessageId != null) 'client_message_id': clientMessageId,
             if (mediaUrl != null && mediaUrl.isNotEmpty) 'media_url': mediaUrl,
-            if (mediaUrl != null && mediaUrl.isNotEmpty) 'media_type': mediaType,
+            if (mediaUrl != null && mediaUrl.isNotEmpty)
+              'media_type': mediaType,
             if (replyToMessageId != null && replyToMessageId.isNotEmpty)
               'reply_to_message_id': replyToMessageId,
             if (forwarded) 'forwarded': true,
@@ -390,7 +398,8 @@ class P2PChatRemoteDatasource {
       String content, String accessToken) async {
     final response = await _client
         .patch(
-          Uri.parse('$_baseUrl/conversations/$conversationId/messages/$messageId'),
+          Uri.parse(
+              '$_baseUrl/conversations/$conversationId/messages/$messageId'),
           headers: _headers(accessToken),
           body: jsonEncode({'content': content}),
         )

@@ -12,15 +12,16 @@ import '../cubit/internet_bill_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'internet_account_input_screen_widgets.dart';
 
-
 class InternetAccountInputScreen extends StatefulWidget {
   const InternetAccountInputScreen({super.key});
 
   @override
-  State<InternetAccountInputScreen> createState() => _InternetAccountInputScreenState();
+  State<InternetAccountInputScreen> createState() =>
+      _InternetAccountInputScreenState();
 }
 
-class _InternetAccountInputScreenState extends State<InternetAccountInputScreen> {
+class _InternetAccountInputScreenState
+    extends State<InternetAccountInputScreen> {
   final _formKey = GlobalKey<FormState>();
   final _accountController = TextEditingController();
   bool _isValidated = false;
@@ -233,7 +234,8 @@ class _InternetAccountInputScreenState extends State<InternetAccountInputScreen>
                   decoration: BoxDecoration(
                     color: const Color(0xFF1F1F1F),
                     borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(color: const Color(0xFF2D2D2D), width: 1),
+                    border:
+                        Border.all(color: const Color(0xFF2D2D2D), width: 1),
                   ),
                   child: Row(
                     children: [
@@ -241,10 +243,12 @@ class _InternetAccountInputScreenState extends State<InternetAccountInputScreen>
                         width: 48.w,
                         height: 48.w,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
+                          color:
+                              const Color(0xFF4E03D0).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12.r),
                         ),
-                        child: Icon(Icons.wifi, color: const Color(0xFF4E03D0), size: 24.sp),
+                        child: Icon(Icons.wifi,
+                            color: const Color(0xFF4E03D0), size: 24.sp),
                       ),
                       SizedBox(width: 16.w),
                       Expanded(
@@ -299,11 +303,13 @@ class _InternetAccountInputScreenState extends State<InternetAccountInputScreen>
                         controller: _accountController,
                         keyboardType: rules.keyboardType,
                         inputFormatters: rules.formatters,
-                        style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp),
+                        style: GoogleFonts.inter(
+                            color: Colors.white, fontSize: 16.sp),
                         decoration: InputDecoration(
                           hintText: rules.hint,
                           hintStyle: GoogleFonts.inter(
-                            color: const Color(0xFF9CA3AF).withValues(alpha: 0.6),
+                            color:
+                                const Color(0xFF9CA3AF).withValues(alpha: 0.6),
                             fontSize: 16.sp,
                           ),
                           counterText: '',
@@ -320,27 +326,33 @@ class _InternetAccountInputScreenState extends State<InternetAccountInputScreen>
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.r),
-                            borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+                            borderSide:
+                                const BorderSide(color: Color(0xFF2D2D2D)),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.r),
-                            borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+                            borderSide:
+                                const BorderSide(color: Color(0xFF2D2D2D)),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.r),
-                            borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
+                            borderSide: const BorderSide(
+                                color: Color(0xFF4E03D0), width: 2),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.r),
-                            borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1),
+                            borderSide: const BorderSide(
+                                color: Color(0xFFEF4444), width: 1),
                           ),
                           focusedErrorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.r),
-                            borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
+                            borderSide: const BorderSide(
+                                color: Color(0xFFEF4444), width: 2),
                           ),
                         ),
                         onChanged: (_) {
-                          if (_isValidated) setState(() => _isValidated = false);
+                          if (_isValidated)
+                            setState(() => _isValidated = false);
                         },
                         validator: rules.validator,
                       ),
@@ -423,8 +435,7 @@ class _InternetAccountInputScreenState extends State<InternetAccountInputScreen>
     // skimmed the green and tapped Continue, forcing the Continue
     // handler to catch the mismatch with a snackbar.
     final isValid = state.validation.isValid;
-    final accent =
-        isValid ? const Color(0xFF10B981) : const Color(0xFFEF4444);
+    final accent = isValid ? const Color(0xFF10B981) : const Color(0xFFEF4444);
     final statusText = state.validation.status.trim();
     final customerName = state.validation.customerName.trim();
     return Container(
@@ -511,7 +522,8 @@ class _InternetAccountInputScreenState extends State<InternetAccountInputScreen>
       children: [
         Text(
           label,
-          style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+          style: GoogleFonts.inter(
+              color: const Color(0xFF9CA3AF), fontSize: 13.sp),
         ),
         Flexible(
           child: Text(
@@ -541,7 +553,8 @@ class _InternetAccountInputScreenState extends State<InternetAccountInputScreen>
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF4E03D0),
-          disabledBackgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.4),
+          disabledBackgroundColor:
+              const Color(0xFF4E03D0).withValues(alpha: 0.4),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),
           ),

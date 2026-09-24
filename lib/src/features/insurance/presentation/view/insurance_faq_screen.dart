@@ -28,7 +28,13 @@ class _InsuranceFaqScreenState extends State<InsuranceFaqScreen> {
   int? _expandedFaqIndex;
   final TextEditingController _searchController = TextEditingController();
 
-  static const _categories = ['All', 'Policies', 'Claims', 'Payments', 'Coverage'];
+  static const _categories = [
+    'All',
+    'Policies',
+    'Claims',
+    'Payments',
+    'Coverage'
+  ];
 
   static const _faqItems = <_FaqItem>[
     // Policies
@@ -243,7 +249,8 @@ class _InsuranceFaqScreenState extends State<InsuranceFaqScreen> {
           ),
           filled: true,
           fillColor: const Color(0xFF1F1F1F),
-          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+          contentPadding:
+              EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.r),
             borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
@@ -419,7 +426,8 @@ class _InsuranceFaqScreenState extends State<InsuranceFaqScreen> {
                           vertical: 4.h,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                          color:
+                              const Color(0xFF6366F1).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8.r),
                         ),
                         child: Text(

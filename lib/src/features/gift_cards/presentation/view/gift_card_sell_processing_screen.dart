@@ -102,7 +102,8 @@ class _GiftCardSellProcessingScreenState
         _errorIconColor = const Color(0xFFEF4444);
       } else if (state is SellEscalatedToManualReview) {
         _errorTitle = 'Switched to manual review';
-        _errorMessage = 'Our team will take it from here. You will get a notification once your card is paid out.';
+        _errorMessage =
+            'Our team will take it from here. You will get a notification once your card is paid out.';
         _errorIcon = Icons.support_agent_outlined;
         _errorIconColor = const Color(0xFFFB923C);
       } else if (state is SellError) {
@@ -121,7 +122,8 @@ class _GiftCardSellProcessingScreenState
       canPop: false,
       child: Scaffold(
         backgroundColor: kGiftCardBgTop,
-        body: GiftCardBackground(child: BlocListener<GiftCardCubit, GiftCardState>(
+        body: GiftCardBackground(
+            child: BlocListener<GiftCardCubit, GiftCardState>(
           listener: (context, state) {
             // Every SALE OUTCOME lands on the receipt — paid, rejected or
             // sent for review. This used to drop the user on the My Sales

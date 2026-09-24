@@ -59,7 +59,8 @@ class DepositMethodsLoaded extends DepositState {
 class DepositWebSocketCompleted extends DepositState {
   final String reference;
   final String status;
-  const DepositWebSocketCompleted({required this.reference, required this.status});
+  const DepositWebSocketCompleted(
+      {required this.reference, required this.status});
   @override
   List<Object?> get props => [reference, status];
 }
@@ -67,7 +68,8 @@ class DepositWebSocketCompleted extends DepositState {
 class DepositWebSocketFailed extends DepositState {
   final String reference;
   final String message;
-  const DepositWebSocketFailed({required this.reference, required this.message});
+  const DepositWebSocketFailed(
+      {required this.reference, required this.message});
   @override
   List<Object?> get props => [reference, message];
 }

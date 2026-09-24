@@ -94,7 +94,8 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to download: ${e.toString().replaceAll('Exception: ', '')}'),
+          content: Text(
+              'Failed to download: ${e.toString().replaceAll('Exception: ', '')}'),
           backgroundColor: const Color(0xFFEF4444),
         ),
       );
@@ -132,7 +133,8 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to share: ${e.toString().replaceAll('Exception: ', '')}'),
+          content: Text(
+              'Failed to share: ${e.toString().replaceAll('Exception: ', '')}'),
           backgroundColor: const Color(0xFFEF4444),
         ),
       );
@@ -222,167 +224,169 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
                         ),
                       ),
                       SizedBox(height: 18.h),
-                // Receipt card
-                Container(
-                  padding: EdgeInsets.all(16.w),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1F1F1F),
-                    borderRadius: BorderRadius.circular(16.r),
-                    border: Border.all(
-                      color: const Color(0xFF2D2D2D),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
+                      // Receipt card
+                      Container(
+                        padding: EdgeInsets.all(16.w),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1F1F1F),
+                          borderRadius: BorderRadius.circular(16.r),
+                          border: Border.all(
+                            color: const Color(0xFF2D2D2D),
+                          ),
+                        ),
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Lazervault',
-                              style: TextStyle(
-                                color: PayFlowTheme.accentOnDark,
-                                fontSize: 20.sp,
-                                fontWeight: FontWeight.bold,
+                            Center(
+                              child: Column(
+                                children: [
+                                  Text(
+                                    'Lazervault',
+                                    style: TextStyle(
+                                      color: PayFlowTheme.accentOnDark,
+                                      fontSize: 20.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4.h),
+                                  Text(
+                                    'DONATION RECEIPT',
+                                    style: TextStyle(
+                                      color: Colors.grey[500],
+                                      fontSize: 12.sp,
+                                      letterSpacing: 1.5,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            SizedBox(height: 4.h),
-                            Text(
-                              'DONATION RECEIPT',
-                              style: TextStyle(
-                                color: Colors.grey[500],
-                                fontSize: 12.sp,
-                                letterSpacing: 1.5,
+                            SizedBox(height: 16.h),
+                            if (widget.receipt != null) ...[
+                              _buildReceiptRow(
+                                'Receipt Number',
+                                widget.receipt!.receiptNumber,
+                                isHighlighted: true,
+                              ),
+                              SizedBox(height: 16.h),
+                            ],
+                            _buildReceiptRow(
+                              'Donation ID',
+                              widget.donation.id,
+                            ),
+                            SizedBox(height: 16.h),
+                            Divider(color: const Color(0xFF2D2D2D)),
+                            SizedBox(height: 16.h),
+                            _buildReceiptRow(
+                              'Campaign',
+                              widget.crowdfund.title,
+                            ),
+                            SizedBox(height: 16.h),
+                            _buildReceiptRow(
+                              'Creator',
+                              '${widget.crowdfund.creator.firstName} ${widget.crowdfund.creator.lastName}',
+                              trailing: widget.crowdfund.creator.verified
+                                  ? Icon(
+                                      Icons.verified,
+                                      color: const Color(0xFF10B981),
+                                      size: 16.sp,
+                                    )
+                                  : null,
+                            ),
+                            SizedBox(height: 16.h),
+                            Divider(color: const Color(0xFF2D2D2D)),
+                            SizedBox(height: 16.h),
+                            _buildReceiptRow(
+                              'Amount',
+                              '${widget.donation.currency} ${widget.donation.amount.toStringAsFixed(2)}',
+                              isAmount: true,
+                            ),
+                            SizedBox(height: 16.h),
+                            _buildReceiptRow(
+                              'Date & Time',
+                              DateFormat('MMM dd, yyyy • hh:mm a')
+                                  .format(widget.donation.donationDate),
+                            ),
+                            SizedBox(height: 16.h),
+                            if (widget.donation.transactionId != null) ...[
+                              _buildReceiptRow(
+                                'Transaction ID',
+                                widget.donation.transactionId!,
+                              ),
+                              SizedBox(height: 16.h),
+                            ],
+                            _buildReceiptRow(
+                              'Payment Method',
+                              widget.donation.paymentMethod,
+                            ),
+                            SizedBox(height: 16.h),
+                            _buildReceiptRow(
+                              'Status',
+                              _getStatusText(widget.donation.status),
+                              trailing:
+                                  _buildStatusBadge(widget.donation.status),
+                            ),
+                            if (widget.donation.message != null &&
+                                widget.donation.message!.isNotEmpty) ...[
+                              SizedBox(height: 16.h),
+                              Divider(color: const Color(0xFF2D2D2D)),
+                              SizedBox(height: 16.h),
+                              Text(
+                                'Your Message',
+                                style: TextStyle(
+                                  color: Colors.grey[500],
+                                  fontSize: 12.sp,
+                                ),
+                              ),
+                              SizedBox(height: 8.h),
+                              Container(
+                                padding: EdgeInsets.all(12.w),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0A0A0A),
+                                  borderRadius: BorderRadius.circular(8.r),
+                                ),
+                                child: Text(
+                                  widget.donation.message!,
+                                  style: TextStyle(
+                                    color: Colors.grey[400],
+                                    fontSize: 13.sp,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
+                            ],
+                            SizedBox(height: 16.h),
+                            Divider(color: const Color(0xFF2D2D2D)),
+                            SizedBox(height: 16.h),
+                            // QR code + reference at the bottom of the
+                            // receipt card. Same shape as the send-funds
+                            // receipt — scan to surface this donation later.
+                            Center(
+                              child: QrImageView(
+                                data: _qrData,
+                                version: QrVersions.auto,
+                                size: 90.w,
+                                backgroundColor: Colors.transparent,
+                                dataModuleStyle: const QrDataModuleStyle(
+                                  color: Colors.white,
+                                ),
+                                eyeStyle: const QrEyeStyle(color: Colors.white),
+                              ),
+                            ),
+                            SizedBox(height: 8.h),
+                            Center(
+                              child: Text(
+                                widget.donation.transactionId ??
+                                    widget.donation.id,
+                                style: GoogleFonts.robotoMono(
+                                  fontSize: 10.sp,
+                                  color: const Color(0xFF8E8E93),
+                                  letterSpacing: 0.5,
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(height: 16.h),
-                      if (widget.receipt != null) ...[
-                        _buildReceiptRow(
-                          'Receipt Number',
-                          widget.receipt!.receiptNumber,
-                          isHighlighted: true,
-                        ),
-                        SizedBox(height: 16.h),
-                      ],
-                      _buildReceiptRow(
-                        'Donation ID',
-                        widget.donation.id,
-                      ),
-                      SizedBox(height: 16.h),
-                      Divider(color: const Color(0xFF2D2D2D)),
-                      SizedBox(height: 16.h),
-                      _buildReceiptRow(
-                        'Campaign',
-                        widget.crowdfund.title,
-                      ),
-                      SizedBox(height: 16.h),
-                      _buildReceiptRow(
-                        'Creator',
-                        '${widget.crowdfund.creator.firstName} ${widget.crowdfund.creator.lastName}',
-                        trailing: widget.crowdfund.creator.verified
-                            ? Icon(
-                                Icons.verified,
-                                color: const Color(0xFF10B981),
-                                size: 16.sp,
-                              )
-                            : null,
-                      ),
-                      SizedBox(height: 16.h),
-                      Divider(color: const Color(0xFF2D2D2D)),
-                      SizedBox(height: 16.h),
-                      _buildReceiptRow(
-                        'Amount',
-                        '${widget.donation.currency} ${widget.donation.amount.toStringAsFixed(2)}',
-                        isAmount: true,
-                      ),
-                      SizedBox(height: 16.h),
-                      _buildReceiptRow(
-                        'Date & Time',
-                        DateFormat('MMM dd, yyyy • hh:mm a')
-                            .format(widget.donation.donationDate),
-                      ),
-                      SizedBox(height: 16.h),
-                      if (widget.donation.transactionId != null) ...[
-                        _buildReceiptRow(
-                          'Transaction ID',
-                          widget.donation.transactionId!,
-                        ),
-                        SizedBox(height: 16.h),
-                      ],
-                      _buildReceiptRow(
-                        'Payment Method',
-                        widget.donation.paymentMethod,
-                      ),
-                      SizedBox(height: 16.h),
-                      _buildReceiptRow(
-                        'Status',
-                        _getStatusText(widget.donation.status),
-                        trailing: _buildStatusBadge(widget.donation.status),
-                      ),
-                      if (widget.donation.message != null &&
-                          widget.donation.message!.isNotEmpty) ...[
-                        SizedBox(height: 16.h),
-                        Divider(color: const Color(0xFF2D2D2D)),
-                        SizedBox(height: 16.h),
-                        Text(
-                          'Your Message',
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 12.sp,
-                          ),
-                        ),
-                        SizedBox(height: 8.h),
-                        Container(
-                          padding: EdgeInsets.all(12.w),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0A0A0A),
-                            borderRadius: BorderRadius.circular(8.r),
-                          ),
-                          child: Text(
-                            widget.donation.message!,
-                            style: TextStyle(
-                              color: Colors.grey[400],
-                              fontSize: 13.sp,
-                              height: 1.4,
-                            ),
-                          ),
-                        ),
-                      ],
-                      SizedBox(height: 16.h),
-                      Divider(color: const Color(0xFF2D2D2D)),
-                      SizedBox(height: 16.h),
-                      // QR code + reference at the bottom of the
-                      // receipt card. Same shape as the send-funds
-                      // receipt — scan to surface this donation later.
-                      Center(
-                        child: QrImageView(
-                          data: _qrData,
-                          version: QrVersions.auto,
-                          size: 90.w,
-                          backgroundColor: Colors.transparent,
-                          dataModuleStyle: const QrDataModuleStyle(
-                            color: Colors.white,
-                          ),
-                          eyeStyle: const QrEyeStyle(color: Colors.white),
-                        ),
-                      ),
-                      SizedBox(height: 8.h),
-                      Center(
-                        child: Text(
-                          widget.donation.transactionId ?? widget.donation.id,
-                          style: GoogleFonts.robotoMono(
-                            fontSize: 10.sp,
-                            color: const Color(0xFF8E8E93),
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
                       SizedBox(height: 16.h),
                     ],
                   ),

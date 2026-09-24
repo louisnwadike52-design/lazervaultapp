@@ -89,7 +89,8 @@ class VoiceChatHistoryCubit extends Cubit<VoiceChatHistoryState> {
   }
 
   /// Add a user message to the conversation
-  void addUserMessage(String sessionId, String text, {VoiceConversationMetadata? metadata}) {
+  void addUserMessage(String sessionId, String text,
+      {VoiceConversationMetadata? metadata}) {
     if (sessionId.isEmpty || text.trim().isEmpty) return;
 
     final conversation = _getOrCreateConversation(sessionId);
@@ -98,10 +99,12 @@ class VoiceChatHistoryCubit extends Cubit<VoiceChatHistoryState> {
     if (conversation.messages.length >= _maxMessagesPerConversation) {
       // Remove oldest message if at limit
       final trimmedMessages = conversation.messages.sublist(1);
-      _conversations[sessionId] = conversation.copyWith(messages: trimmedMessages);
+      _conversations[sessionId] =
+          conversation.copyWith(messages: trimmedMessages);
     }
 
-    final updated = _conversations[sessionId]!.addUserMessage(text, metadata: metadata);
+    final updated =
+        _conversations[sessionId]!.addUserMessage(text, metadata: metadata);
     _conversations[sessionId] = updated;
 
     // Only emit if this is the active conversation
@@ -117,7 +120,8 @@ class VoiceChatHistoryCubit extends Cubit<VoiceChatHistoryState> {
   /// turn is a continuation/merge of the previous one (e.g. "send 500 to Obinna" then
   /// "actually make it 600"), so the conversation shows ONE coherent message instead
   /// of two. Falls back to adding a fresh user message if there's none to replace.
-  void replaceLastUserMessage(String sessionId, String text, {VoiceConversationMetadata? metadata}) {
+  void replaceLastUserMessage(String sessionId, String text,
+      {VoiceConversationMetadata? metadata}) {
     if (sessionId.isEmpty || text.trim().isEmpty) return;
 
     final conversation = _conversations[sessionId];
@@ -149,7 +153,8 @@ class VoiceChatHistoryCubit extends Cubit<VoiceChatHistoryState> {
   }
 
   /// Add an agent message to the conversation
-  void addAgentMessage(String sessionId, String text, {VoiceConversationMetadata? metadata}) {
+  void addAgentMessage(String sessionId, String text,
+      {VoiceConversationMetadata? metadata}) {
     if (sessionId.isEmpty || text.trim().isEmpty) return;
 
     final conversation = _getOrCreateConversation(sessionId);
@@ -157,10 +162,12 @@ class VoiceChatHistoryCubit extends Cubit<VoiceChatHistoryState> {
     // Edge case: Enforce message limit
     if (conversation.messages.length >= _maxMessagesPerConversation) {
       final trimmedMessages = conversation.messages.sublist(1);
-      _conversations[sessionId] = conversation.copyWith(messages: trimmedMessages);
+      _conversations[sessionId] =
+          conversation.copyWith(messages: trimmedMessages);
     }
 
-    final updated = _conversations[sessionId]!.addAgentMessage(text, metadata: metadata);
+    final updated =
+        _conversations[sessionId]!.addAgentMessage(text, metadata: metadata);
     _conversations[sessionId] = updated;
 
     // Only emit if this is the active conversation
@@ -177,7 +184,8 @@ class VoiceChatHistoryCubit extends Cubit<VoiceChatHistoryState> {
   /// the user sees ONE answer. Only replaces when the LAST message is an agent
   /// message; otherwise the previous reply was never committed (interrupted before
   /// it ended) and we simply append this one.
-  void replaceLastAgentMessage(String sessionId, String text, {VoiceConversationMetadata? metadata}) {
+  void replaceLastAgentMessage(String sessionId, String text,
+      {VoiceConversationMetadata? metadata}) {
     if (sessionId.isEmpty || text.trim().isEmpty) return;
 
     final conversation = _conversations[sessionId];
@@ -271,7 +279,8 @@ class VoiceChatHistoryCubit extends Cubit<VoiceChatHistoryState> {
     final recipient = summary['recipient'] as String?;
     final bank = summary['bank'] as String?;
 
-    final text = 'Confirm transfer of ${amount ?? 0} to $recipient (${bank ?? 'Bank'})?';
+    final text =
+        'Confirm transfer of ${amount ?? 0} to $recipient (${bank ?? 'Bank'})?';
 
     addAgentMessage(
       sessionId,

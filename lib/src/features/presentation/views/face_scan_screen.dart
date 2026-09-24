@@ -13,8 +13,6 @@ class FaceScanScreen extends StatefulWidget {
 }
 
 class _FaceScanScreenState extends State<FaceScanScreen> {
-
-
   @override
   void initState() {
     super.initState();

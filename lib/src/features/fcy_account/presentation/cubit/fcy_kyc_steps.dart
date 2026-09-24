@@ -226,8 +226,10 @@ List<FcyKycStep> buildFcyKycSteps({
       });
       if (missing != null) return missing;
 
-      final issued = DateTime.tryParse(v[FcyKycFieldId.documentIssuedDate] ?? '');
-      final expires = DateTime.tryParse(v[FcyKycFieldId.documentExpiryDate] ?? '');
+      final issued =
+          DateTime.tryParse(v[FcyKycFieldId.documentIssuedDate] ?? '');
+      final expires =
+          DateTime.tryParse(v[FcyKycFieldId.documentExpiryDate] ?? '');
       if (issued == null || expires == null) {
         return 'Please enter the dates as YYYY-MM-DD.';
       }

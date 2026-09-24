@@ -25,8 +25,8 @@ void main() {
   group('participant role', () {
     test('protobuf constant name normalises', () {
       expect(SessionParticipant.normalizeRole('PARTICIPANT_ROLE_HOST'), 'host');
-      expect(
-          SessionParticipant.normalizeRole('PARTICIPANT_ROLE_COHOST'), 'cohost');
+      expect(SessionParticipant.normalizeRole('PARTICIPANT_ROLE_COHOST'),
+          'cohost');
       expect(
           SessionParticipant.normalizeRole('PARTICIPANT_ROLE_GUEST'), 'guest');
     });
@@ -37,7 +37,12 @@ void main() {
     });
 
     test('null / empty / UNSPECIFIED fall back to participant', () {
-      for (final raw in <String?>[null, '', '  ', 'PARTICIPANT_ROLE_UNSPECIFIED']) {
+      for (final raw in <String?>[
+        null,
+        '',
+        '  ',
+        'PARTICIPANT_ROLE_UNSPECIFIED'
+      ]) {
         expect(SessionParticipant.normalizeRole(raw), 'participant');
       }
     });
@@ -59,7 +64,8 @@ void main() {
       expect(make('PARTICIPANT_ROLE_GUEST').isBroadcaster, isFalse);
     });
 
-    test('seat_state is NOT normalised — it is a plain column, not an enum', () {
+    test('seat_state is NOT normalised — it is a plain column, not an enum',
+        () {
       final p = SessionParticipant.fromJson({
         'user_id': 'u1',
         'user_name': 'Ada',
@@ -112,8 +118,8 @@ void main() {
     test('known types read as product language', () {
       expect(make('TRANSACTION_TYPE_SPRAY').description, 'Sprayed money');
       expect(make('TRANSACTION_TYPE_FUND').description, 'Funded wallet');
-      expect(make('TRANSACTION_TYPE_PURCHASE').description,
-          'Bought gift credit');
+      expect(
+          make('TRANSACTION_TYPE_PURCHASE').description, 'Bought gift credit');
     });
   });
 }

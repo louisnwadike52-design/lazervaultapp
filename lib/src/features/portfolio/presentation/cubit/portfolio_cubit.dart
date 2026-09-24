@@ -83,7 +83,8 @@ class PortfolioCubit extends Cubit<PortfolioState> {
       if (isClosed) return;
       final s = state;
       if (s is PortfolioLoaded) {
-        emit(s.copyWith(history: history, historyPeriod: period, historyLoading: false));
+        emit(s.copyWith(
+            history: history, historyPeriod: period, historyLoading: false));
       }
     } catch (_) {
       if (isClosed) return;

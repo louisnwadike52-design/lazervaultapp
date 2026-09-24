@@ -42,8 +42,7 @@ class PlanNotificationService {
     try {
       tzdata.initializeTimeZones();
 
-      const androidInit =
-          AndroidInitializationSettings('@mipmap/ic_launcher');
+      const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
       const iosInit = DarwinInitializationSettings();
       await _plugin.initialize(
         const InitializationSettings(android: androidInit, iOS: iosInit),
@@ -54,13 +53,13 @@ class PlanNotificationService {
           .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>()
           ?.createNotificationChannel(
-        const AndroidNotificationChannel(
-          _channelId,
-          _channelName,
-          description: _channelDesc,
-          importance: Importance.high,
-        ),
-      );
+            const AndroidNotificationChannel(
+              _channelId,
+              _channelName,
+              description: _channelDesc,
+              importance: Importance.high,
+            ),
+          );
 
       _initialized = true;
     } catch (e) {

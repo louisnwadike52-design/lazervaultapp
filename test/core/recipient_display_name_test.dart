@@ -1,7 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 
-RecipientModel _r({required String name, String bankName = 'Lazervault', String? alias}) =>
+RecipientModel _r(
+        {required String name,
+        String bankName = 'Lazervault',
+        String? alias}) =>
     RecipientModel(
       id: '1',
       name: name,
@@ -35,6 +38,7 @@ void main() {
   });
 
   test('alias still wins', () {
-    expect(_r(name: 'Lazervault/Nnaemeka Ezeke', alias: 'Chris').displayName, 'Chris');
+    expect(_r(name: 'Lazervault/Nnaemeka Ezeke', alias: 'Chris').displayName,
+        'Chris');
   });
 }

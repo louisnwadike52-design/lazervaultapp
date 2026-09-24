@@ -10,14 +10,16 @@ class PortfolioWithdrawScreen extends StatefulWidget {
   const PortfolioWithdrawScreen({super.key, this.currency = 'USD'});
 
   @override
-  State<PortfolioWithdrawScreen> createState() => _PortfolioWithdrawScreenState();
+  State<PortfolioWithdrawScreen> createState() =>
+      _PortfolioWithdrawScreenState();
 }
 
-class _PortfolioWithdrawScreenState extends State<PortfolioWithdrawScreen> with TickerProviderStateMixin {
+class _PortfolioWithdrawScreenState extends State<PortfolioWithdrawScreen>
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _slideAnimation;
-  
+
   final TextEditingController _amountController = TextEditingController();
   String _selectedWithdrawMethod = 'Bank Transfer';
   double _selectedAmount = 0.0;
@@ -36,15 +38,15 @@ class _PortfolioWithdrawScreenState extends State<PortfolioWithdrawScreen> with 
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _slideAnimation = Tween<double>(begin: 30.0, end: 0.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _animationController.forward();
   }
 
@@ -232,7 +234,8 @@ class _PortfolioWithdrawScreenState extends State<PortfolioWithdrawScreen> with 
           ),
           SizedBox(height: 16.h),
           Text(
-            CurrencySymbols.formatAmountWithCurrency(_availableCash, widget.currency),
+            CurrencySymbols.formatAmountWithCurrency(
+                _availableCash, widget.currency),
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 36.sp,
@@ -279,12 +282,12 @@ class _PortfolioWithdrawScreenState extends State<PortfolioWithdrawScreen> with 
             ),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -330,7 +333,8 @@ class _PortfolioWithdrawScreenState extends State<PortfolioWithdrawScreen> with 
                   });
                 },
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                   decoration: BoxDecoration(
                     color: Colors.orange.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
@@ -380,7 +384,9 @@ class _PortfolioWithdrawScreenState extends State<PortfolioWithdrawScreen> with 
         Wrap(
           spacing: 12.w,
           runSpacing: 12.h,
-          children: _quickAmounts.map((amount) => _buildQuickAmountButton(amount)).toList(),
+          children: _quickAmounts
+              .map((amount) => _buildQuickAmountButton(amount))
+              .toList(),
         ),
       ],
     );
@@ -389,14 +395,16 @@ class _PortfolioWithdrawScreenState extends State<PortfolioWithdrawScreen> with 
   Widget _buildQuickAmountButton(double amount) {
     final isSelected = _selectedAmount == amount;
     final isAvailable = amount <= _availableCash;
-    
+
     return GestureDetector(
-      onTap: isAvailable ? () {
-        setState(() {
-          _selectedAmount = amount;
-          _amountController.text = amount.toStringAsFixed(0);
-        });
-      } : null,
+      onTap: isAvailable
+          ? () {
+              setState(() {
+                _selectedAmount = amount;
+                _amountController.text = amount.toStringAsFixed(0);
+              });
+            }
+          : null,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
         decoration: BoxDecoration(
@@ -405,23 +413,28 @@ class _PortfolioWithdrawScreenState extends State<PortfolioWithdrawScreen> with 
                   colors: [Colors.orange, Colors.orange.shade700],
                 )
               : null,
-          color: isSelected && isAvailable ? null : 
-                 isAvailable ? Colors.white.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1),
+          color: isSelected && isAvailable
+              ? null
+              : isAvailable
+                  ? Colors.white.withValues(alpha: 0.1)
+                  : Colors.grey.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
+          ],
         ),
         child: Text(
           '${CurrencySymbols.getSymbol(widget.currency)}${amount.toStringAsFixed(0)}',
           style: GoogleFonts.inter(
-            color: isSelected && isAvailable ? Colors.white : 
-                   isAvailable ? Colors.grey[300] : Colors.grey[600],
+            color: isSelected && isAvailable
+                ? Colors.white
+                : isAvailable
+                    ? Colors.grey[300]
+                    : Colors.grey[600],
             fontSize: 16.sp,
             fontWeight: FontWeight.w600,
           ),
@@ -453,7 +466,7 @@ class _PortfolioWithdrawScreenState extends State<PortfolioWithdrawScreen> with 
     IconData icon;
     Color color;
     String processingTime;
-    
+
     switch (method) {
       case 'Bank Transfer':
         icon = Icons.account_balance;
@@ -496,7 +509,6 @@ class _PortfolioWithdrawScreenState extends State<PortfolioWithdrawScreen> with 
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Material(
         color: Colors.transparent,
@@ -640,11 +652,17 @@ class _PortfolioWithdrawScreenState extends State<PortfolioWithdrawScreen> with 
             ),
           ),
           SizedBox(height: 16.h),
-          _buildSummaryRow('Withdrawal Amount', CurrencySymbols.formatAmountWithCurrency(_selectedAmount, widget.currency)),
+          _buildSummaryRow(
+              'Withdrawal Amount',
+              CurrencySymbols.formatAmountWithCurrency(
+                  _selectedAmount, widget.currency)),
           if (fee > 0)
-            _buildSummaryRow('Processing Fee', '-${CurrencySymbols.formatAmountWithCurrency(fee, widget.currency)}'),
+            _buildSummaryRow('Processing Fee',
+                '-${CurrencySymbols.formatAmountWithCurrency(fee, widget.currency)}'),
           Divider(color: Colors.white.withValues(alpha: 0.2)),
-          _buildSummaryRow('You\'ll Receive', CurrencySymbols.formatAmountWithCurrency(total, widget.currency), isTotal: true),
+          _buildSummaryRow('You\'ll Receive',
+              CurrencySymbols.formatAmountWithCurrency(total, widget.currency),
+              isTotal: true),
         ],
       ),
     );
@@ -679,7 +697,7 @@ class _PortfolioWithdrawScreenState extends State<PortfolioWithdrawScreen> with 
 
   Widget _buildContinueButton() {
     final isEnabled = _selectedAmount > 0 && _selectedAmount <= _availableCash;
-    
+
     return Container(
       width: double.infinity,
       height: 56.h,
@@ -725,7 +743,7 @@ class _PortfolioWithdrawScreenState extends State<PortfolioWithdrawScreen> with 
   void _proceedToWithdraw() {
     final fee = _selectedWithdrawMethod == 'Check' ? 5.0 : 0.0;
     final total = _selectedAmount - fee;
-    
+
     Get.toNamed(AppRoutes.stockTradePayment, arguments: {
       'type': 'withdraw_funds',
       'amount': _selectedAmount,
@@ -735,4 +753,4 @@ class _PortfolioWithdrawScreenState extends State<PortfolioWithdrawScreen> with 
       'description': 'Withdraw funds from portfolio',
     });
   }
-} 
+}

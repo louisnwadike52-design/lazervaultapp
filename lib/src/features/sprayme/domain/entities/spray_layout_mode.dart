@@ -70,7 +70,10 @@ SprayLayoutMode sprayLayoutModeFromSetting(String? raw) {
   return switch (value) {
     'gallery' || 'tiles' || 'equal' => SprayLayoutMode.grid,
     'side' || 'filmstrip' || 'strip' => SprayLayoutMode.sidebar,
-    'speaker' || 'active_speaker' || 'focus' || 'stage' =>
+    'speaker' ||
+    'active_speaker' ||
+    'focus' ||
+    'stage' =>
       SprayLayoutMode.spotlight,
     _ => kSprayDefaultLayoutMode,
   };

@@ -240,8 +240,7 @@ class _BettingHomeScreenState extends State<BettingHomeScreen> {
                 ),
                 SizedBox(height: 4.h),
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6.r),

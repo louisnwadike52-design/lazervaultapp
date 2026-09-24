@@ -425,160 +425,160 @@ class _SessionCard extends StatelessWidget {
             ));
       },
       child: TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: Duration(milliseconds: 400 + (index * 80)),
-      curve: Curves.easeOut,
-      builder: (context, value, child) {
-        return Opacity(
-          opacity: value,
-          child: Transform.translate(
-            offset: Offset(0, 20 * (1 - value)),
-            child: child,
+        tween: Tween(begin: 0.0, end: 1.0),
+        duration: Duration(milliseconds: 400 + (index * 80)),
+        curve: Curves.easeOut,
+        builder: (context, value, child) {
+          return Opacity(
+            opacity: value,
+            child: Transform.translate(
+              offset: Offset(0, 20 * (1 - value)),
+              child: child,
+            ),
+          );
+        },
+        child: Container(
+          margin: EdgeInsets.only(bottom: 12.h),
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF1F1F1F), Color(0xFF1F1F35)],
+            ),
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(
+              color: statusColor.withValues(alpha: 0.15),
+            ),
           ),
-        );
-      },
-      child: Container(
-        margin: EdgeInsets.only(bottom: 12.h),
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF1F1F1F), Color(0xFF1F1F35)],
-          ),
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: statusColor.withValues(alpha: 0.15),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                // Status icon
-                Container(
-                  width: 44.w,
-                  height: 44.w,
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12.r),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  // Status icon
+                  Container(
+                    width: 44.w,
+                    height: 44.w,
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Icon(
+                      _getStatusIcon(session.status),
+                      size: 22.sp,
+                      color: statusColor,
+                    ),
                   ),
-                  child: Icon(
-                    _getStatusIcon(session.status),
-                    size: 22.sp,
-                    color: statusColor,
-                  ),
-                ),
-                SizedBox(width: 14.w),
+                  SizedBox(width: 14.w),
 
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            session.formattedAmount,
-                            style: GoogleFonts.inter(
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                          ),
-                          SizedBox(width: 8.w),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 8.w,
-                              vertical: 2.h,
-                            ),
-                            decoration: BoxDecoration(
-                              color: statusColor.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(6.r),
-                            ),
-                            child: Text(
-                              _getStatusText(session.status),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              session.formattedAmount,
                               style: GoogleFonts.inter(
-                                fontSize: 9.sp,
+                                fontSize: 16.sp,
                                 fontWeight: FontWeight.w700,
-                                color: statusColor,
-                                letterSpacing: 0.5,
+                                color: Colors.white,
                               ),
                             ),
+                            SizedBox(width: 8.w),
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 8.w,
+                                vertical: 2.h,
+                              ),
+                              decoration: BoxDecoration(
+                                color: statusColor.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(6.r),
+                              ),
+                              child: Text(
+                                _getStatusText(session.status),
+                                style: GoogleFonts.inter(
+                                  fontSize: 9.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: statusColor,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          dateFormat.format(session.createdAt),
+                          style: GoogleFonts.inter(
+                            fontSize: 11.sp,
+                            color: const Color(0xFF9CA3AF),
                           ),
-                        ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 20.sp,
+                    color: const Color(0xFF9CA3AF).withValues(alpha: 0.5),
+                  ),
+                ],
+              ),
+
+              // Payer info if available
+              if (session.payerName != null) ...[
+                SizedBox(height: 12.h),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 8.h,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.person_rounded,
+                        size: 16.sp,
+                        color: const Color(0xFF10B981),
                       ),
-                      SizedBox(height: 4.h),
+                      SizedBox(width: 8.w),
                       Text(
-                        dateFormat.format(session.createdAt),
+                        'Paid by ${session.payerName}',
                         style: GoogleFonts.inter(
-                          fontSize: 11.sp,
-                          color: const Color(0xFF9CA3AF),
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF10B981),
                         ),
                       ),
                     ],
                   ),
                 ),
+              ],
 
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 20.sp,
-                  color: const Color(0xFF9CA3AF).withValues(alpha: 0.5),
+              // Description if available
+              if (session.description != null &&
+                  session.description!.isNotEmpty) ...[
+                SizedBox(height: 8.h),
+                Text(
+                  session.description!,
+                  style: GoogleFonts.inter(
+                    fontSize: 12.sp,
+                    color: const Color(0xFF9CA3AF).withValues(alpha: 0.7),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
-            ),
-
-            // Payer info if available
-            if (session.payerName != null) ...[
-              SizedBox(height: 12.h),
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(
-                  horizontal: 12.w,
-                  vertical: 8.h,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.person_rounded,
-                      size: 16.sp,
-                      color: const Color(0xFF10B981),
-                    ),
-                    SizedBox(width: 8.w),
-                    Text(
-                      'Paid by ${session.payerName}',
-                      style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF10B981),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ],
-
-            // Description if available
-            if (session.description != null &&
-                session.description!.isNotEmpty) ...[
-              SizedBox(height: 8.h),
-              Text(
-                session.description!,
-                style: GoogleFonts.inter(
-                  fontSize: 12.sp,
-                  color: const Color(0xFF9CA3AF).withValues(alpha: 0.7),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ],
+          ),
         ),
-      ),
       ),
     );
   }

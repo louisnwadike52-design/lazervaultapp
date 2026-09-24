@@ -24,7 +24,8 @@ class TransferPredictionCubit extends Cubit<TransferPredictionState> {
 
     if (!isClosed) emit(const TransferPredictionLoading());
 
-    final prediction = await paymentsTransferDataSource.getTransferSuccessPrediction(
+    final prediction =
+        await paymentsTransferDataSource.getTransferSuccessPrediction(
       bankCode: bankCode,
       accountNumber: accountNumber,
     );

@@ -53,7 +53,8 @@ class _ComposeCampaignScreenState extends State<ComposeCampaignScreen> {
             '';
     final brand = _deriveSenderIdFromName(fullName);
     if (!mounted) return;
-    setState(() => _senderIdField.text = brand.isNotEmpty ? brand : 'Lazervault');
+    setState(
+        () => _senderIdField.text = brand.isNotEmpty ? brand : 'Lazervault');
   }
 
   /// Turn a user's name into a provider-valid sender ID: alphanumeric only,
@@ -192,8 +193,7 @@ class _ComposeCampaignScreenState extends State<ComposeCampaignScreen> {
       );
 
   Widget _senderIdSection(BulkSmsState state) {
-    final approved =
-        state.senderIds.where((s) => s.status.isApproved).toList();
+    final approved = state.senderIds.where((s) => s.status.isApproved).toList();
     // Auto-select the first approved sender ID so the user isn't silently sending
     // as the default "Lazervault" when they have their own approved IDs.
     if (approved.isNotEmpty && _selectedSenderId == null) {
@@ -213,8 +213,8 @@ class _ComposeCampaignScreenState extends State<ComposeCampaignScreen> {
             GestureDetector(
               onTap: () => Get.toNamed(AppRoutes.bulkSmsSenderIds),
               child: Text('Manage',
-                  style: TextStyle(
-                      color: BulkSmsTheme.primary, fontSize: 12.sp)),
+                  style:
+                      TextStyle(color: BulkSmsTheme.primary, fontSize: 12.sp)),
             ),
           ],
         ),
@@ -248,8 +248,8 @@ class _ComposeCampaignScreenState extends State<ComposeCampaignScreen> {
                           size: 14.sp, color: BulkSmsTheme.success),
                       SizedBox(width: 6.w),
                       Text(s.senderId,
-                          style: TextStyle(
-                              color: Colors.white, fontSize: 13.sp)),
+                          style:
+                              TextStyle(color: Colors.white, fontSize: 13.sp)),
                     ],
                   ),
                 ),
@@ -272,11 +272,11 @@ class _ComposeCampaignScreenState extends State<ComposeCampaignScreen> {
             FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9 ]')),
           ],
           decoration: InputDecoration(
-            counterStyle: TextStyle(
-                color: BulkSmsTheme.textSecondary, fontSize: 10.sp),
+            counterStyle:
+                TextStyle(color: BulkSmsTheme.textSecondary, fontSize: 10.sp),
             hintText: 'Your brand name (what recipients see)',
-            hintStyle: TextStyle(
-                color: BulkSmsTheme.textSecondary, fontSize: 14.sp),
+            hintStyle:
+                TextStyle(color: BulkSmsTheme.textSecondary, fontSize: 14.sp),
             filled: true,
             fillColor: BulkSmsTheme.card,
             contentPadding:
@@ -318,8 +318,8 @@ class _ComposeCampaignScreenState extends State<ComposeCampaignScreen> {
             decoration: InputDecoration(
               hintText:
                   'Hi {{name}}, thanks for shopping with us. Enjoy 10% off today!',
-              hintStyle: TextStyle(
-                  color: BulkSmsTheme.textSecondary, fontSize: 13.sp),
+              hintStyle:
+                  TextStyle(color: BulkSmsTheme.textSecondary, fontSize: 13.sp),
               border: InputBorder.none,
               isCollapsed: true,
             ),
@@ -337,15 +337,14 @@ class _ComposeCampaignScreenState extends State<ComposeCampaignScreen> {
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Text('Insert:',
-            style: TextStyle(
-                color: BulkSmsTheme.textSecondary, fontSize: 12.sp)),
+            style:
+                TextStyle(color: BulkSmsTheme.textSecondary, fontSize: 12.sp)),
         _varChip('name'),
         _varChip('amount'),
         _varChip('date'),
         if (used.isNotEmpty)
           Text('Using: ${used.join(", ")}',
-              style: TextStyle(
-                  color: BulkSmsTheme.primary, fontSize: 11.sp)),
+              style: TextStyle(color: BulkSmsTheme.primary, fontSize: 11.sp)),
       ],
     );
   }
@@ -358,8 +357,8 @@ class _ComposeCampaignScreenState extends State<ComposeCampaignScreen> {
         decoration: BoxDecoration(
           color: BulkSmsTheme.primary.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(8.r),
-          border: Border.all(
-              color: BulkSmsTheme.primary.withValues(alpha: 0.4)),
+          border:
+              Border.all(color: BulkSmsTheme.primary.withValues(alpha: 0.4)),
         ),
         child: Text('{{$key}}',
             style: TextStyle(
@@ -399,8 +398,8 @@ class _ComposeCampaignScreenState extends State<ComposeCampaignScreen> {
           borderRadius: BorderRadius.circular(8.r),
         ),
         child: Text(text,
-            style: TextStyle(
-                color: BulkSmsTheme.textSecondary, fontSize: 11.sp)),
+            style:
+                TextStyle(color: BulkSmsTheme.textSecondary, fontSize: 11.sp)),
       );
 
   Widget _recipientsTile() {
@@ -463,8 +462,7 @@ class _ComposeCampaignScreenState extends State<ComposeCampaignScreen> {
                   borderRadius: BorderRadius.circular(16.r)),
             ),
             child: Text('Review campaign',
-                style:
-                    TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700)),
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700)),
           ),
         ),
       ),

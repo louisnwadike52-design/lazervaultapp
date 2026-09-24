@@ -74,8 +74,8 @@ class _WhatsAppBankingChannelScreenState
         listener: (context, state) {
           if (state is ChannelDeactivated && state.channelType == _channel) {
             setState(() => _toggleBusy = false);
-            _snack('WhatsApp banking switched off.',
-                ChannelScreenTheme.textMuted);
+            _snack(
+                'WhatsApp banking switched off.', ChannelScreenTheme.textMuted);
             context.read<ChannelManagementCubit>().loadChannels();
           }
           if (state is ChannelManagementError) {
@@ -218,7 +218,8 @@ class _WhatsAppBankingChannelScreenState
       child: Column(
         children: [
           _actionRow(
-            icon: hasPin ? Icons.password_rounded : Icons.add_moderator_outlined,
+            icon:
+                hasPin ? Icons.password_rounded : Icons.add_moderator_outlined,
             label: hasPin ? 'Change WhatsApp PIN' : 'Create WhatsApp PIN',
             trailing: hasPin
                 ? const Icon(Icons.check_circle,
@@ -335,7 +336,9 @@ class _WhatsAppBankingChannelScreenState
         backgroundColor: ChannelScreenTheme.card,
         title: Text('Switch off WhatsApp banking?',
             style: GoogleFonts.inter(
-                color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w700)),
         content: Text(
           'LazerVault will stop answering messages from your WhatsApp number. '
           'Your account and money are unaffected, and you can switch it back '

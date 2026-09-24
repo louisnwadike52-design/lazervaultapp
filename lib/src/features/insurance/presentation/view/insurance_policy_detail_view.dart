@@ -28,7 +28,8 @@ class InsurancePolicyDetailView extends StatefulWidget {
   });
 
   @override
-  State<InsurancePolicyDetailView> createState() => _InsurancePolicyDetailViewState();
+  State<InsurancePolicyDetailView> createState() =>
+      _InsurancePolicyDetailViewState();
 }
 
 class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
@@ -48,7 +49,9 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<InsuranceCubit>().loadInsuranceDetailsWithData(_currentInsurance);
+      context
+          .read<InsuranceCubit>()
+          .loadInsuranceDetailsWithData(_currentInsurance);
     });
     // The list-view path (GetUserInsurances) does not include the
     // per-policy metadata extras — claim_url, renew_url, certificate_url,
@@ -160,7 +163,9 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
         builder: (context, _) {
           switch (_tabController.index) {
             case 0:
-              return _shouldShowRenewCta ? _buildRenewFab() : const SizedBox.shrink();
+              return _shouldShowRenewCta
+                  ? _buildRenewFab()
+                  : const SizedBox.shrink();
             case 2:
               return _buildClaimFab();
             default:
@@ -470,7 +475,8 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 56.sp, color: const Color(0xFFEF4444)),
+            Icon(Icons.error_outline,
+                size: 56.sp, color: const Color(0xFFEF4444)),
             SizedBox(height: 16.h),
             Text(
               'Something went wrong',
@@ -498,8 +504,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF6366F1),
                 foregroundColor: Colors.white,
-                padding:
-                    EdgeInsets.symmetric(horizontal: 28.w, vertical: 12.h),
+                padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 12.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.r),
                 ),
@@ -543,7 +548,8 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
     }
 
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.insuranceClaimTracking, arguments: claim),
+      onTap: () =>
+          Get.toNamed(AppRoutes.insuranceClaimTracking, arguments: claim),
       child: Container(
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
@@ -886,9 +892,9 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
     // URL when the user taps. If it's missing (admin hasn't configured
     // it), surface nothing — the slow-path snackbar would only confuse.
     final hasBase = ((insurance.coverageDetails['renew_link_base']
-                ?.toString()
-                .trim()
-                .isNotEmpty) ??
+            ?.toString()
+            .trim()
+            .isNotEmpty) ??
         false);
     if (!hasBase && _renewUrlFromInsurance(insurance) == null) return false;
     return true;
@@ -1051,7 +1057,8 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
       decoration: BoxDecoration(
         color: const Color(0xFF6366F1).withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+        border:
+            Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -1101,11 +1108,14 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
       ),
       child: Column(
         children: [
-          _buildDetailRow('Name', _currentInsurance.policyHolderName, Icons.person),
+          _buildDetailRow(
+              'Name', _currentInsurance.policyHolderName, Icons.person),
           SizedBox(height: 12.h),
-          _buildDetailRow('Email', _currentInsurance.policyHolderEmail, Icons.email),
+          _buildDetailRow(
+              'Email', _currentInsurance.policyHolderEmail, Icons.email),
           SizedBox(height: 12.h),
-          _buildDetailRow('Phone', _currentInsurance.policyHolderPhone, Icons.phone),
+          _buildDetailRow(
+              'Phone', _currentInsurance.policyHolderPhone, Icons.phone),
         ],
       ),
     );
@@ -1237,7 +1247,8 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
   }
 
   Widget _buildFeatures() {
-    final features = _currentInsurance.coverageDetails['features'] as List? ?? [];
+    final features =
+        _currentInsurance.coverageDetails['features'] as List? ?? [];
 
     if (features.isEmpty) {
       return Container(
@@ -1334,7 +1345,8 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
     }
 
     // Check and display description
-    if (_currentInsurance.description != null && _currentInsurance.description!.isNotEmpty) {
+    if (_currentInsurance.description != null &&
+        _currentInsurance.description!.isNotEmpty) {
       hasOptionalFields = true;
       fieldWidgets.add(_buildDetailRow(
         'Description',

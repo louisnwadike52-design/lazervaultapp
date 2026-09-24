@@ -150,7 +150,8 @@ class LinkedAccountSelector extends StatelessWidget {
                           vertical: 2.h,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                          color: const Color.fromARGB(255, 78, 3, 208)
+                              .withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                         child: Text(

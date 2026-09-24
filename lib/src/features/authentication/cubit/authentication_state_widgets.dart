@@ -35,7 +35,7 @@ class AuthenticationSuccess extends AuthenticationState {
 // screen navigates to the OTP screen, which calls AuthenticationCubit.verifyLoginOtp.
 class LoginStepUpRequired extends AuthenticationState {
   final String stepUpToken;
-  final String method;      // "email" | "sms"
+  final String method; // "email" | "sms"
   final String destination; // masked, for display
 
   /// Code lifetime in seconds as the server reported it. 0 = not supplied.
@@ -59,7 +59,8 @@ class LoginTwoFactorRequired extends AuthenticationState {
   final String twoFactorToken;
   final String method; // "totp" | "sms" | "email"
 
-  const LoginTwoFactorRequired({required this.twoFactorToken, required this.method});
+  const LoginTwoFactorRequired(
+      {required this.twoFactorToken, required this.method});
 
   @override
   List<Object?> get props => [twoFactorToken, method];
@@ -162,7 +163,8 @@ class ResetPasswordInProgress extends AuthenticationState {
   }
 
   @override
-  List<Object?> get props => [email, token, newPassword, confirmPassword, isLoading, errorMessage];
+  List<Object?> get props =>
+      [email, token, newPassword, confirmPassword, isLoading, errorMessage];
 }
 
 class UserCreated extends AuthenticationState {
@@ -197,30 +199,30 @@ enum PrimaryContactType {
 // Enum to track identity verification type per country
 enum IdentityType {
   // Nigeria
-  bvn,  // Bank Verification Number (11 digits)
-  nin,  // National Identification Number (11 digits)
+  bvn, // Bank Verification Number (11 digits)
+  nin, // National Identification Number (11 digits)
 
   // UK
-  passport,        // UK Passport
-  drivingLicence,  // UK Driving Licence
+  passport, // UK Passport
+  drivingLicence, // UK Driving Licence
 
   // US
-  ssn,            // Social Security Number (last 4 or full)
-  stateId,        // State-issued ID
-  usPassport,     // US Passport
+  ssn, // Social Security Number (last 4 or full)
+  stateId, // State-issued ID
+  usPassport, // US Passport
 
   // Ghana
-  ghanaCard,      // Ghana Card (National ID)
-  ghanaVoterId,   // Ghana Voter ID
-  ghanaPassport,  // Ghana Passport
+  ghanaCard, // Ghana Card (National ID)
+  ghanaVoterId, // Ghana Voter ID
+  ghanaPassport, // Ghana Passport
 
   // Kenya
   kenyaNationalId, // Kenya National ID
-  kenyaPassport,   // Kenya Passport
+  kenyaPassport, // Kenya Passport
 
   // South Africa
-  saId,           // South African ID Number
-  saPassport,     // South African Passport
+  saId, // South African ID Number
+  saPassport, // South African Passport
 }
 
 /// Helper extension to get display name and validation info for identity types
@@ -348,9 +350,17 @@ extension IdentityTypeExtension on IdentityType {
       case 'GB':
         return [IdentityType.passport, IdentityType.drivingLicence];
       case 'US':
-        return [IdentityType.ssn, IdentityType.stateId, IdentityType.usPassport];
+        return [
+          IdentityType.ssn,
+          IdentityType.stateId,
+          IdentityType.usPassport
+        ];
       case 'GH':
-        return [IdentityType.ghanaCard, IdentityType.ghanaVoterId, IdentityType.ghanaPassport];
+        return [
+          IdentityType.ghanaCard,
+          IdentityType.ghanaVoterId,
+          IdentityType.ghanaPassport
+        ];
       case 'KE':
         return [IdentityType.kenyaNationalId, IdentityType.kenyaPassport];
       case 'ZA':

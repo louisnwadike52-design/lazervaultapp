@@ -170,14 +170,16 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
     if (state is PinManagementReady) {
       // A user can verify via email/SMS OR an enrolled authenticator app, so
       // only block when NONE of those paths is available.
-      final hasAvailableChannels =
-          state.channels.any((ch) => ch.isAvailable) || _isAuthenticatorEnrolled();
+      final hasAvailableChannels = state.channels.any((ch) => ch.isAvailable) ||
+          _isAuthenticatorEnrolled();
       if (!hasAvailableChannels) {
         // No verification path at all - show error
         setState(() {
           _currentStep = 5; // Error step
         });
-        _showSnackbar('No verification method available. Add a verified email or phone number, or set up an authenticator app in Settings.', isError: false);
+        _showSnackbar(
+            'No verification method available. Add a verified email or phone number, or set up an authenticator app in Settings.',
+            isError: false);
         return;
       }
       setState(() {
@@ -253,42 +255,43 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
           return PopScope(
             canPop: !isLoading,
             child: Scaffold(
-            backgroundColor: Colors.white,
-            appBar: AppBar(
               backgroundColor: Colors.white,
-              elevation: 0,
-              leading: IconButton(
-                icon: Icon(Icons.arrow_back, color: Colors.black, size: 24.sp),
-                onPressed: isLoading ? null : () => Get.back(),
+              appBar: AppBar(
+                backgroundColor: Colors.white,
+                elevation: 0,
+                leading: IconButton(
+                  icon:
+                      Icon(Icons.arrow_back, color: Colors.black, size: 24.sp),
+                  onPressed: isLoading ? null : () => Get.back(),
+                ),
+                title: Text(
+                  'Forgot PIN',
+                  style: GoogleFonts.inter(
+                    color: Colors.black,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                centerTitle: true,
               ),
-              title: Text(
-                'Forgot PIN',
-                style: GoogleFonts.inter(
-                  color: Colors.black,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w600,
+              body: SafeArea(
+                child: Stack(
+                  children: [
+                    SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(horizontal: 24.w),
+                      child: _buildStepContent(state),
+                    ),
+                    if (isLoading)
+                      Container(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        child: const Center(
+                          child: LazerVaultLoader.small(),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-              centerTitle: true,
             ),
-            body: SafeArea(
-              child: Stack(
-                children: [
-                  SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(horizontal: 24.w),
-                    child: _buildStepContent(state),
-                  ),
-                  if (isLoading)
-                    Container(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      child: const Center(
-                        child: LazerVaultLoader.small(),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
           );
         },
       ),
@@ -407,8 +410,8 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
         // Channel cards
         ...channels.where((ch) => ch.isAvailable).map((channel) {
           final isSelected = _selectedChannel == channel.type;
-          final isRecommended =
-              state is PinManagementReady && state.recommendedChannel == channel.type;
+          final isRecommended = state is PinManagementReady &&
+              state.recommendedChannel == channel.type;
 
           return Padding(
             padding: EdgeInsets.only(bottom: 12.h),
@@ -649,7 +652,8 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isSelected ? _purpleAccent : Colors.grey.shade400,
+                        color:
+                            isSelected ? _purpleAccent : Colors.grey.shade400,
                         width: isSelected ? 6 : 1.5,
                       ),
                     ),
@@ -763,8 +767,9 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
     final IconData headerIcon = isAuthenticator
         ? Icons.shield_moon_outlined
         : (isEmail ? Icons.email_outlined : Icons.sms_outlined);
-    final String headerTitle =
-        isAuthenticator ? 'Enter Authenticator Code' : 'Enter Verification Code';
+    final String headerTitle = isAuthenticator
+        ? 'Enter Authenticator Code'
+        : 'Enter Verification Code';
     final String headerSubtitle = isAuthenticator
         ? 'Enter the current 6-digit code from your authenticator app'
         : 'We sent a 6-digit code to $_maskedDestination';
@@ -835,7 +840,8 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10.r),
-                    borderSide: const BorderSide(color: _purpleAccent, width: 1.5),
+                    borderSide:
+                        const BorderSide(color: _purpleAccent, width: 1.5),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10.r),

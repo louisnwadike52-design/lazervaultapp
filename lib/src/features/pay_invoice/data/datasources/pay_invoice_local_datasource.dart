@@ -4,7 +4,8 @@ import '../../domain/entities/tagged_invoice_entity.dart';
 
 abstract class PayInvoiceLocalDataSource {
   Future<List<TaggedInvoiceModel>> getTaggedInvoices(String userId);
-  Future<List<TaggedInvoiceModel>> getTaggedInvoicesByStatus(String userId, PaymentStatus status);
+  Future<List<TaggedInvoiceModel>> getTaggedInvoicesByStatus(
+      String userId, PaymentStatus status);
   Future<TaggedInvoiceModel?> getTaggedInvoiceById(String invoiceId);
   Future<bool> saveTaggedInvoice(TaggedInvoiceModel invoice);
   Future<bool> updateInvoiceStatus(String invoiceId, PaymentStatus status);
@@ -34,14 +35,18 @@ class PayInvoiceLocalDataSourceImpl implements PayInvoiceLocalDataSource {
   @override
   Future<List<TaggedInvoiceModel>> getTaggedInvoices(String userId) async {
     await Future.delayed(Duration(milliseconds: 500)); // Simulate network delay
-    return _mockInvoices.where((invoice) => invoice.toUserId == userId).toList();
+    return _mockInvoices
+        .where((invoice) => invoice.toUserId == userId)
+        .toList();
   }
 
   @override
-  Future<List<TaggedInvoiceModel>> getTaggedInvoicesByStatus(String userId, PaymentStatus status) async {
+  Future<List<TaggedInvoiceModel>> getTaggedInvoicesByStatus(
+      String userId, PaymentStatus status) async {
     await Future.delayed(Duration(milliseconds: 300));
     return _mockInvoices
-        .where((invoice) => invoice.toUserId == userId && invoice.paymentStatus == status)
+        .where((invoice) =>
+            invoice.toUserId == userId && invoice.paymentStatus == status)
         .toList();
   }
 
@@ -63,10 +68,12 @@ class PayInvoiceLocalDataSourceImpl implements PayInvoiceLocalDataSource {
   }
 
   @override
-  Future<bool> updateInvoiceStatus(String invoiceId, PaymentStatus status) async {
+  Future<bool> updateInvoiceStatus(
+      String invoiceId, PaymentStatus status) async {
     await Future.delayed(Duration(milliseconds: 400));
-    
-    final index = _mockInvoices.indexWhere((invoice) => invoice.id == invoiceId);
+
+    final index =
+        _mockInvoices.indexWhere((invoice) => invoice.id == invoiceId);
     if (index != -1) {
       final invoice = _mockInvoices[index];
       _mockInvoices[index] = invoice.copyWith(
@@ -98,7 +105,8 @@ class PayInvoiceLocalDataSourceImpl implements PayInvoiceLocalDataSource {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getUserPaymentMethods(String userId) async {
+  Future<List<Map<String, dynamic>>> getUserPaymentMethods(
+      String userId) async {
     await Future.delayed(Duration(milliseconds: 250));
     return _mockPaymentMethods[userId] ?? _getDefaultPaymentMethods();
   }
@@ -106,7 +114,7 @@ class PayInvoiceLocalDataSourceImpl implements PayInvoiceLocalDataSource {
   // Private methods for mock data initialization
   void _initializeMockData() {
     final currentUserId = 'current_user_123'; // Mock current user ID
-    
+
     // Generate mock tagged invoices
     _mockInvoices.addAll([
       _generateMockInvoice(
@@ -192,7 +200,7 @@ class PayInvoiceLocalDataSourceImpl implements PayInvoiceLocalDataSource {
           'type': 'personal',
         },
         {
-          'id': 'acc_002', 
+          'id': 'acc_002',
           'name': 'Savings Account',
           'currency': 'GBP',
           'balance': 5430.00,
@@ -267,7 +275,8 @@ class PayInvoiceLocalDataSourceImpl implements PayInvoiceLocalDataSource {
 
     return TaggedInvoiceModel(
       id: id,
-      invoiceNumber: 'INV-${Random().nextInt(99999).toString().padLeft(5, '0')}',
+      invoiceNumber:
+          'INV-${Random().nextInt(99999).toString().padLeft(5, '0')}',
       title: title,
       description: 'Professional services invoice',
       amount: amount,
@@ -279,15 +288,18 @@ class PayInvoiceLocalDataSourceImpl implements PayInvoiceLocalDataSource {
       priority: priority,
       fromUserId: 'user_${Random().nextInt(1000)}',
       fromUserName: fromUser,
-      fromUserEmail: '${fromUser.toLowerCase().replaceAll(' ', '.')}@${fromCompany.toLowerCase().replaceAll(' ', '')}.com',
+      fromUserEmail:
+          '${fromUser.toLowerCase().replaceAll(' ', '.')}@${fromCompany.toLowerCase().replaceAll(' ', '')}.com',
       fromCompanyName: fromCompany,
-      fromCompanyLogo: 'https://ui-avatars.com/api/?name=${fromCompany[0]}&background=random',
+      fromCompanyLogo:
+          'https://ui-avatars.com/api/?name=${fromCompany[0]}&background=random',
       toUserId: toUserId,
       toUserName: 'Current User',
       toUserEmail: 'current.user@example.com',
       items: items,
       totalAmount: amount,
-      isOverdue: isOverdue || (daysUntilDue < 0 && status != PaymentStatus.completed),
+      isOverdue:
+          isOverdue || (daysUntilDue < 0 && status != PaymentStatus.completed),
       daysUntilDue: daysUntilDue,
     );
   }
@@ -320,4 +332,4 @@ class PayInvoiceLocalDataSourceImpl implements PayInvoiceLocalDataSource {
       },
     ];
   }
-} 
+}

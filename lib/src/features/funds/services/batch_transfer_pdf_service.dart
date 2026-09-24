@@ -22,8 +22,7 @@ class BatchTransferPdfService {
   static pw.Font? _boldFont;
 
   /// Get currency symbol - ASCII-safe for PDF compatibility
-  static String _currencySymbolFor(String code) =>
-      receiptCurrencySymbol(code);
+  static String _currencySymbolFor(String code) => receiptCurrencySymbol(code);
 
   /// Get display currency name
   static String _currencyNameFor(String code) {
@@ -90,8 +89,7 @@ class BatchTransferPdfService {
     // Extract data
     final batchId = receiptData['batchId']?.toString() ??
         'BTX${DateTime.now().millisecondsSinceEpoch}';
-    final totalAmount =
-        (receiptData['totalAmount'] as num?)?.toDouble() ?? 0.0;
+    final totalAmount = (receiptData['totalAmount'] as num?)?.toDouble() ?? 0.0;
     final totalFee = (receiptData['totalFee'] as num?)?.toDouble() ?? 0.0;
     final currency = receiptData['currency'] as String? ?? 'NGN';
     final currencySymbol = _currencySymbolFor(currency);
@@ -104,10 +102,8 @@ class BatchTransferPdfService {
     final scheduledAt = receiptData['scheduledAt'] as String?;
     final senderName =
         receiptData['senderAccountName'] as String? ?? 'Lazervault User';
-    final senderAccountInfo =
-        receiptData['senderAccountInfo'] as String?;
-    final transfers =
-        receiptData['transfers'] as List<dynamic>? ?? [];
+    final senderAccountInfo = receiptData['senderAccountInfo'] as String?;
+    final transfers = receiptData['transfers'] as List<dynamic>? ?? [];
 
     DateTime? timestamp;
     if (receiptData['timestamp'] != null) {
@@ -269,8 +265,7 @@ class BatchTransferPdfService {
     );
 
     final output = await getTemporaryDirectory();
-    final safeId =
-        batchId.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+    final safeId = batchId.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
     final fileName = 'batch_transfer_receipt_$safeId.pdf';
     final file = File('${output.path}/$fileName');
     await file.writeAsBytes(await pdf.save());
@@ -308,8 +303,7 @@ class BatchTransferPdfService {
                     child: pw.Text(
                       'FINANCIAL SERVICES',
                       style: _getTextStyle(fontSize: 8, isBold: true)
-                          .copyWith(
-                              color: PdfColors.blue800, letterSpacing: 1),
+                          .copyWith(color: PdfColors.blue800, letterSpacing: 1),
                     ),
                   ),
                 ],
@@ -365,8 +359,7 @@ class BatchTransferPdfService {
         pw.SizedBox(height: 4),
         pw.Row(
           children: [
-            pw.Text('Bank',
-                style: _getTextStyle(fontSize: 11, isBold: true)),
+            pw.Text('Bank', style: _getTextStyle(fontSize: 11, isBold: true)),
             pw.SizedBox(width: 12),
             pw.Text('Lazervault', style: _getTextStyle(fontSize: 11)),
           ],
@@ -409,19 +402,18 @@ class BatchTransferPdfService {
             padding: const pw.EdgeInsets.symmetric(vertical: 4),
             decoration: const pw.BoxDecoration(
               border: pw.Border(
-                bottom:
-                    pw.BorderSide(color: PdfColors.grey200, width: 0.5),
+                bottom: pw.BorderSide(color: PdfColors.grey200, width: 0.5),
               ),
             ),
             child: pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
                 pw.Text('Status',
-                    style: _getTextStyle(
-                        fontSize: 11, color: PdfColors.grey700)),
+                    style:
+                        _getTextStyle(fontSize: 11, color: PdfColors.grey700)),
                 pw.Container(
-                  padding: const pw.EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 2),
+                  padding:
+                      const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: pw.BoxDecoration(
                     color: statusColor.shade(50),
                     borderRadius: pw.BorderRadius.circular(4),
@@ -500,10 +492,8 @@ class BatchTransferPdfService {
           child: pw.Column(
             children: [
               _buildDetailRow(
-                  'Amount',
-                  '$currencySymbol${totalAmount.toStringAsFixed(2)}',
-                  isBold: true,
-                  isHighlight: true),
+                  'Amount', '$currencySymbol${totalAmount.toStringAsFixed(2)}',
+                  isBold: true, isHighlight: true),
               _buildDetailRow(
                   'Fee',
                   totalFee == 0
@@ -518,8 +508,7 @@ class BatchTransferPdfService {
                   isBold: true),
               pw.SizedBox(height: 8),
               _buildDetailRow('Currency', _currencyNameFor(currency)),
-              _buildDetailRow(
-                  'Recipients',
+              _buildDetailRow('Recipients',
                   '$recipientCount transfer${recipientCount == 1 ? '' : 's'}'),
               _buildDetailRow('Batch ID', batchId, isSmall: true),
             ],
@@ -584,23 +573,20 @@ class BatchTransferPdfService {
         ...transfers.map((t) {
           final transfer = t as Map<String, dynamic>;
           final name = _resolveTransferName(transfer);
-          final account =
-              transfer['recipientAccount'] as String? ?? 'N/A';
-          final amount =
-              (transfer['amount'] as num?)?.toDouble() ?? 0.0;
+          final account = transfer['recipientAccount'] as String? ?? 'N/A';
+          final amount = (transfer['amount'] as num?)?.toDouble() ?? 0.0;
           final status = transfer['status'] as String? ?? 'Pending';
 
           return pw.TableRow(
             children: [
               _buildTableCell(name),
               _buildTableCell(account),
-              _buildTableCell(
-                  '$currencySymbol${amount.toStringAsFixed(2)}'),
+              _buildTableCell('$currencySymbol${amount.toStringAsFixed(2)}'),
               pw.Container(
                 padding: const pw.EdgeInsets.all(8),
                 child: pw.Container(
-                  padding: const pw.EdgeInsets.symmetric(
-                      horizontal: 6, vertical: 2),
+                  padding:
+                      const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: pw.BoxDecoration(
                     color: statusColor.shade(50),
                     borderRadius: pw.BorderRadius.circular(3),
@@ -696,12 +682,14 @@ class BatchTransferPdfService {
     final beneficiaryName = transfer['beneficiaryName'] as String?;
     final name = transfer['name'] as String?;
 
-    if (beneficiaryName != null && beneficiaryName.isNotEmpty &&
+    if (beneficiaryName != null &&
+        beneficiaryName.isNotEmpty &&
         beneficiaryName.toLowerCase() != 'unknown' &&
         beneficiaryName.toLowerCase() != 'external account') {
       return beneficiaryName;
     }
-    if (recipientName != null && recipientName.isNotEmpty &&
+    if (recipientName != null &&
+        recipientName.isNotEmpty &&
         recipientName.toLowerCase() != 'unknown' &&
         recipientName.toLowerCase() != 'business') {
       return recipientName;
@@ -752,7 +740,8 @@ class BatchTransferPdfService {
       'senderAccountInfo': senderAccountInfo,
       'transfers': entity.results
           .map((r) => {
-                'recipientName': r.recipientName ?? r.beneficiaryName ?? 'Unknown',
+                'recipientName':
+                    r.recipientName ?? r.beneficiaryName ?? 'Unknown',
                 'beneficiaryName': r.beneficiaryName,
                 'recipientAccount': r.recipientAccount ?? '',
                 'amount': r.amount.toDouble() / 100,
@@ -847,8 +836,7 @@ class BatchTransferPdfService {
 
     // Extract individual transfer data
     final recipientName = _resolveTransferName(transfer);
-    final recipientAccount =
-        transfer['recipientAccount'] as String? ?? 'N/A';
+    final recipientAccount = transfer['recipientAccount'] as String? ?? 'N/A';
     final amount = (transfer['amount'] as num?)?.toDouble() ?? 0.0;
     final fee = (transfer['fee'] as num?)?.toDouble() ?? 0.0;
     final status = transfer['status'] as String? ?? 'Completed';
@@ -900,8 +888,7 @@ class BatchTransferPdfService {
                           _buildSummaryRow('Batch ID', batchId),
                           _buildSummaryRow('Date', transactionDate),
                           pw.Container(
-                            padding:
-                                const pw.EdgeInsets.symmetric(vertical: 4),
+                            padding: const pw.EdgeInsets.symmetric(vertical: 4),
                             decoration: const pw.BoxDecoration(
                               border: pw.Border(
                                 bottom: pw.BorderSide(
@@ -921,8 +908,7 @@ class BatchTransferPdfService {
                                       horizontal: 8, vertical: 2),
                                   decoration: pw.BoxDecoration(
                                     color: statusColor.shade(50),
-                                    borderRadius:
-                                        pw.BorderRadius.circular(4),
+                                    borderRadius: pw.BorderRadius.circular(4),
                                   ),
                                   child: pw.Text(
                                     _formatStatus(status),
@@ -962,30 +948,23 @@ class BatchTransferPdfService {
                 child: pw.Column(
                   children: [
                     _buildDetailRow(
-                        'Amount',
-                        '$currencySymbol${amount.toStringAsFixed(2)}',
-                        isBold: true,
-                        isHighlight: true),
+                        'Amount', '$currencySymbol${amount.toStringAsFixed(2)}',
+                        isBold: true, isHighlight: true),
                     _buildDetailRow(
                         'Fee',
                         fee == 0
                             ? 'Free'
                             : '$currencySymbol${fee.toStringAsFixed(2)}'),
                     pw.Container(
-                      margin:
-                          const pw.EdgeInsets.symmetric(vertical: 8),
-                      child: pw.Divider(
-                          color: PdfColors.grey300, height: 1),
+                      margin: const pw.EdgeInsets.symmetric(vertical: 8),
+                      child: pw.Divider(color: PdfColors.grey300, height: 1),
                     ),
-                    _buildDetailRow(
-                        'Total',
+                    _buildDetailRow('Total',
                         '$currencySymbol${(amount + fee).toStringAsFixed(2)}',
                         isBold: true),
                     pw.SizedBox(height: 8),
-                    _buildDetailRow(
-                        'Currency', _currencyNameFor(currency)),
-                    _buildDetailRow('Reference', reference,
-                        isSmall: true),
+                    _buildDetailRow('Currency', _currencyNameFor(currency)),
+                    _buildDetailRow('Reference', reference, isSmall: true),
                   ],
                 ),
               ),
@@ -1027,14 +1006,12 @@ class BatchTransferPdfService {
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Text('Failure Reason: ',
-                          style:
-                              _getTextStyle(fontSize: 11, isBold: true)
-                                  .copyWith(color: PdfColors.red800)),
+                          style: _getTextStyle(fontSize: 11, isBold: true)
+                              .copyWith(color: PdfColors.red800)),
                       pw.Expanded(
                         child: pw.Text(failureReason,
                             style: _getTextStyle(
-                                fontSize: 11,
-                                color: PdfColors.red800)),
+                                fontSize: 11, color: PdfColors.red800)),
                       ),
                     ],
                   ),
@@ -1052,12 +1029,9 @@ class BatchTransferPdfService {
     );
 
     final output = await getTemporaryDirectory();
-    final safeName =
-        recipientName.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
-    final safeId =
-        batchId.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
-    final fileName =
-        'transfer_receipt_${safeName}_$safeId.pdf';
+    final safeName = recipientName.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+    final safeId = batchId.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+    final fileName = 'transfer_receipt_${safeName}_$safeId.pdf';
     final file = File('${output.path}/$fileName');
     await file.writeAsBytes(await pdf.save());
     return file;
@@ -1074,19 +1048,16 @@ class BatchTransferPdfService {
         transfer: transfer,
       );
 
-      final recipientName =
-          transfer['recipientName'] as String? ?? 'recipient';
+      final recipientName = transfer['recipientName'] as String? ?? 'recipient';
       final batchId = receiptData['batchId']?.toString() ?? 'batch';
-      final safeName =
-          recipientName.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+      final safeName = recipientName.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
       final safeId = batchId.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
       return await ReceiptDownload.saveAndOpen(
         source: file,
         fileName: 'transfer_receipt_${safeName}_$safeId.pdf',
       );
     } catch (e) {
-      throw Exception(
-          'Failed to download individual transfer receipt: $e');
+      throw Exception('Failed to download individual transfer receipt: $e');
     }
   }
 
@@ -1104,8 +1075,7 @@ class BatchTransferPdfService {
       final currency = receiptData['currency'] as String? ?? 'NGN';
       final currencySymbol = _currencySymbolFor(currency);
       final amount = (transfer['amount'] as num?)?.toDouble() ?? 0.0;
-      final recipientName =
-          transfer['recipientName'] as String? ?? 'Recipient';
+      final recipientName = transfer['recipientName'] as String? ?? 'Recipient';
 
       await SharePlus.instance.share(ShareParams(
         // iOS: a non-zero popover anchor is required — CGRectZero throws
@@ -1117,8 +1087,7 @@ class BatchTransferPdfService {
         subject: 'Lazervault Transfer Receipt - $recipientName',
       ));
     } catch (e) {
-      throw Exception(
-          'Failed to share individual transfer receipt: $e');
+      throw Exception('Failed to share individual transfer receipt: $e');
     }
   }
 }

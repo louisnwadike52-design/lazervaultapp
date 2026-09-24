@@ -137,8 +137,7 @@ class _CreateCableTVAutoRechargeScreenState
       return;
     }
     if (_loadedPackages!.isEmpty) {
-      _snack('No plans available for this provider. Cannot save.',
-          error: true);
+      _snack('No plans available for this provider. Cannot save.', error: true);
       return;
     }
 
@@ -178,8 +177,7 @@ class _CreateCableTVAutoRechargeScreenState
       _snack('Pick a valid day of the week', error: true);
       return;
     }
-    if (_frequency == 'monthly' &&
-        (_dayOfMonth < 1 || _dayOfMonth > 31)) {
+    if (_frequency == 'monthly' && (_dayOfMonth < 1 || _dayOfMonth > 31)) {
       _snack('Pick a day of the month between 1 and 31', error: true);
       return;
     }
@@ -262,11 +260,11 @@ class _CreateCableTVAutoRechargeScreenState
                 // catalog entry; fall back to synthetic if not found.
                 if (_editId != null && _editFallbackPackage != null) {
                   final match = state.packages.where(
-                    (p) => p.variationCode == _editFallbackPackage!.variationCode,
+                    (p) =>
+                        p.variationCode == _editFallbackPackage!.variationCode,
                   );
-                  _selectedPackage = match.isNotEmpty
-                      ? match.first
-                      : _editFallbackPackage;
+                  _selectedPackage =
+                      match.isNotEmpty ? match.first : _editFallbackPackage;
                 } else if (_selectedPackage != null) {
                   // Refresh selection if it's already pointing at a package
                   // from an earlier load (e.g., user changed beneficiary).
@@ -302,8 +300,7 @@ class _CreateCableTVAutoRechargeScreenState
                 color: Colors.white, size: 20.sp),
             onPressed: () => Get.back(),
           ),
-          title: Text(
-              _editId != null ? 'Edit Auto-Renew' : 'Create Auto-Renew',
+          title: Text(_editId != null ? 'Edit Auto-Renew' : 'Create Auto-Renew',
               style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w600,
@@ -383,8 +380,8 @@ class _CreateCableTVAutoRechargeScreenState
                     if (picked != null) setState(() => _time = picked);
                   },
                   child: Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 16.w, vertical: 14.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFF1F1F1F),
                       borderRadius: BorderRadius.circular(12.r),
@@ -422,8 +419,7 @@ class _CreateCableTVAutoRechargeScreenState
                                 ? 'Update Auto-Renew'
                                 : 'Schedule Auto-Renew',
                             style: TextStyle(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w600)),
+                                fontSize: 16.sp, fontWeight: FontWeight.w600)),
                   ),
                 ),
                 SizedBox(height: 24.h),
@@ -460,8 +456,8 @@ class _CreateCableTVAutoRechargeScreenState
             LazerVaultLoader(size: 18),
             SizedBox(width: 12.w),
             Text('Loading packages…',
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
           ],
         ),
       );
@@ -472,8 +468,7 @@ class _CreateCableTVAutoRechargeScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding:
-                EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
             decoration: BoxDecoration(
               color: const Color(0xFFEF4444).withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12.r),
@@ -552,8 +547,7 @@ class _CreateCableTVAutoRechargeScreenState
                         Text(
                           _selectedPackage!.variationCode,
                           style: TextStyle(
-                              color: const Color(0xFF6B7280),
-                              fontSize: 11.sp),
+                              color: const Color(0xFF6B7280), fontSize: 11.sp),
                         ),
                       ],
                     ),
@@ -580,8 +574,7 @@ class _CreateCableTVAutoRechargeScreenState
       ),
       child: Row(
         children: [
-          Icon(Icons.lock_outline,
-              color: const Color(0xFF6B7280), size: 16.sp),
+          Icon(Icons.lock_outline, color: const Color(0xFF6B7280), size: 16.sp),
           SizedBox(width: 10.w),
           Text(
             '₦${fmt.format(_selectedPackage!.amount)}',
@@ -594,8 +587,7 @@ class _CreateCableTVAutoRechargeScreenState
           SizedBox(width: 8.w),
           Text(
             '(set by package)',
-            style: TextStyle(
-                color: const Color(0xFF6B7280), fontSize: 12.sp),
+            style: TextStyle(color: const Color(0xFF6B7280), fontSize: 12.sp),
           ),
         ],
       ),
@@ -670,8 +662,7 @@ class _CreateCableTVAutoRechargeScreenState
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.tv_off,
-                              color: const Color(0xFF4B5563),
-                              size: 48.sp),
+                              color: const Color(0xFF4B5563), size: 48.sp),
                           SizedBox(height: 12.h),
                           Text(
                             'No plans found for this provider.',
@@ -684,16 +675,15 @@ class _CreateCableTVAutoRechargeScreenState
                     )
                   : ListView.separated(
                       controller: scrollCtrl,
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 16.w, vertical: 8.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                       itemCount: packages.length,
                       separatorBuilder: (_, __) =>
                           Divider(color: const Color(0xFF2D2D2D), height: 1),
                       itemBuilder: (_, i) {
                         final pkg = packages[i];
-                        final isSelected =
-                            _selectedPackage?.variationCode ==
-                                pkg.variationCode;
+                        final isSelected = _selectedPackage?.variationCode ==
+                            pkg.variationCode;
                         final fmt = NumberFormat('#,##0', 'en_NG');
                         return InkWell(
                           onTap: () {
@@ -714,8 +704,7 @@ class _CreateCableTVAutoRechargeScreenState
                                         ? const Color(0xFF4E03D0)
                                             .withValues(alpha: 0.15)
                                         : const Color(0xFF0A0A0A),
-                                    borderRadius:
-                                        BorderRadius.circular(10.r),
+                                    borderRadius: BorderRadius.circular(10.r),
                                     border: Border.all(
                                       color: isSelected
                                           ? const Color(0xFF4E03D0)
@@ -757,8 +746,8 @@ class _CreateCableTVAutoRechargeScreenState
                                           if (pkg.validity.isNotEmpty) ...[
                                             Text(' · ',
                                                 style: TextStyle(
-                                                    color: const Color(
-                                                        0xFF4B5563),
+                                                    color:
+                                                        const Color(0xFF4B5563),
                                                     fontSize: 11.sp)),
                                             Text(
                                               pkg.validity,
@@ -858,8 +847,7 @@ class _CreateCableTVAutoRechargeScreenState
             ),
             child: Text(
               'No saved smart cards. Save one from a cable TV receipt first.',
-              style: TextStyle(
-                  color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
             ),
           );
         }
@@ -922,8 +910,8 @@ class _CreateCableTVAutoRechargeScreenState
           Icon(icon, color: const Color(0xFF4B5563), size: 18.sp),
           SizedBox(width: 10.w),
           Text(text,
-              style: TextStyle(
-                  color: const Color(0xFF4B5563), fontSize: 14.sp)),
+              style:
+                  TextStyle(color: const Color(0xFF4B5563), fontSize: 14.sp)),
         ],
       ),
     );
@@ -953,8 +941,7 @@ class _CreateCableTVAutoRechargeScreenState
           color: selected ? const Color(0xFF4E03D0) : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(8.r),
           border: Border.all(
-            color:
-                selected ? const Color(0xFF4E03D0) : const Color(0xFF2D2D2D),
+            color: selected ? const Color(0xFF4E03D0) : const Color(0xFF2D2D2D),
           ),
         ),
         child: Text(label,
@@ -976,8 +963,7 @@ class _CreateCableTVAutoRechargeScreenState
           color: selected ? const Color(0xFF4E03D0) : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(8.r),
           border: Border.all(
-            color:
-                selected ? const Color(0xFF4E03D0) : const Color(0xFF2D2D2D),
+            color: selected ? const Color(0xFF4E03D0) : const Color(0xFF2D2D2D),
           ),
         ),
         child: Text(label,
@@ -1015,9 +1001,8 @@ class _CreateCableTVAutoRechargeScreenState
                     style: TextStyle(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w500,
-                        color: selected
-                            ? Colors.white
-                            : const Color(0xFF9CA3AF))),
+                        color:
+                            selected ? Colors.white : const Color(0xFF9CA3AF))),
               ),
             ),
           );
@@ -1055,9 +1040,8 @@ class _CreateCableTVAutoRechargeScreenState
                     style: TextStyle(
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w500,
-                        color: selected
-                            ? Colors.white
-                            : const Color(0xFF9CA3AF))),
+                        color:
+                            selected ? Colors.white : const Color(0xFF9CA3AF))),
               ),
             ),
           );

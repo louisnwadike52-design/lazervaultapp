@@ -2,7 +2,8 @@ import '../../../../core/network/grpc_client.dart';
 import '../../../../core/network/retry_helper.dart';
 import '../../../../generated/invoice_payment.pb.dart' as pb;
 import '../../../../generated/common.pb.dart' as common_pb;
-import '../../../../generated/google/protobuf/timestamp.pb.dart' as timestamp_pb;
+import '../../../../generated/google/protobuf/timestamp.pb.dart'
+    as timestamp_pb;
 
 import '../../domain/entities/tagged_invoice_entity.dart';
 import '../../domain/repositories/pay_invoice_repository.dart';
@@ -24,7 +25,8 @@ class PayInvoiceRepositoryGrpcImpl implements PayInvoiceRepository {
   });
 
   @override
-  Future<PaymentResult> payInvoice(String invoiceId, PaymentDetails paymentDetails) async {
+  Future<PaymentResult> payInvoice(
+      String invoiceId, PaymentDetails paymentDetails) async {
     return retryWithBackoff(
       operation: () async {
         final request = pb.ProcessInvoicePaymentRequest()
@@ -65,12 +67,14 @@ class PayInvoiceRepositoryGrpcImpl implements PayInvoiceRepository {
         );
 
         // Convert proto accounts to map format
-        final accounts = response.accounts.map((account) => {
-          'account_number': account.accountNumber,
-          'account_name': account.accountName,
-          'currency': account.currency,
-          'available_balance': account.availableBalance,
-        }).toList();
+        final accounts = response.accounts
+            .map((account) => {
+                  'account_number': account.accountNumber,
+                  'account_name': account.accountName,
+                  'currency': account.currency,
+                  'available_balance': account.availableBalance,
+                })
+            .toList();
 
         return {
           'accounts': accounts,
@@ -84,25 +88,29 @@ class PayInvoiceRepositoryGrpcImpl implements PayInvoiceRepository {
   }
 
   @override
-  Future<PaymentResult> processPartialPayment(String invoiceId, PaymentDetails paymentDetails) async {
+  Future<PaymentResult> processPartialPayment(
+      String invoiceId, PaymentDetails paymentDetails) async {
     // Backend supports partial payments through the same ProcessInvoicePayment RPC
     return payInvoice(invoiceId, paymentDetails);
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getUserPaymentMethods(String userId) async {
+  Future<List<Map<String, dynamic>>> getUserPaymentMethods(
+      String userId) async {
     // This would typically call a GetUserPaymentMethods RPC
     // For now, derive from account balance
     final accountData = await getUserAccountBalance(userId);
     final accounts = accountData['accounts'] as List;
 
-    return accounts.map((account) => {
-      'id': account['account_number'],
-      'type': 'account_balance',
-      'name': account['account_name'],
-      'currency': account['currency'],
-      'balance': account['available_balance'],
-    }).toList();
+    return accounts
+        .map((account) => {
+              'id': account['account_number'],
+              'type': 'account_balance',
+              'name': account['account_name'],
+              'currency': account['currency'],
+              'balance': account['available_balance'],
+            })
+        .toList();
   }
 
   // Invoice query methods - delegate to InvoiceRepository
@@ -114,7 +122,8 @@ class PayInvoiceRepositoryGrpcImpl implements PayInvoiceRepository {
   }
 
   @override
-  Future<List<TaggedInvoice>> getTaggedInvoicesByStatus(String userId, PaymentStatus status) async {
+  Future<List<TaggedInvoice>> getTaggedInvoicesByStatus(
+      String userId, PaymentStatus status) async {
     final invoices = await invoiceRepository.getInvoicesTaggedToUser(userId);
     final paymentStatus = _toInvoiceStatus(status);
     return invoices
@@ -129,24 +138,25 @@ class PayInvoiceRepositoryGrpcImpl implements PayInvoiceRepository {
     final now = DateTime.now();
     return invoices
         .where((inv) =>
-          inv.status != invoice_entity.InvoiceStatus.paid &&
-          inv.dueDate != null &&
-          inv.dueDate!.isBefore(now))
+            inv.status != invoice_entity.InvoiceStatus.paid &&
+            inv.dueDate != null &&
+            inv.dueDate!.isBefore(now))
         .map((inv) => _invoiceToTaggedInvoice(inv))
         .toList();
   }
 
   @override
-  Future<List<TaggedInvoice>> getUpcomingInvoices(String userId, {int days = 7}) async {
+  Future<List<TaggedInvoice>> getUpcomingInvoices(String userId,
+      {int days = 7}) async {
     final invoices = await invoiceRepository.getInvoicesTaggedToUser(userId);
     final now = DateTime.now();
     final futureDate = now.add(Duration(days: days));
     return invoices
         .where((inv) =>
-          inv.status != invoice_entity.InvoiceStatus.paid &&
-          inv.dueDate != null &&
-          inv.dueDate!.isAfter(now) &&
-          inv.dueDate!.isBefore(futureDate))
+            inv.status != invoice_entity.InvoiceStatus.paid &&
+            inv.dueDate != null &&
+            inv.dueDate!.isAfter(now) &&
+            inv.dueDate!.isBefore(futureDate))
         .map((inv) => _invoiceToTaggedInvoice(inv))
         .toList();
   }
@@ -159,20 +169,22 @@ class PayInvoiceRepositoryGrpcImpl implements PayInvoiceRepository {
   }
 
   @override
-  Future<List<TaggedInvoice>> searchTaggedInvoices(String userId, String query) async {
+  Future<List<TaggedInvoice>> searchTaggedInvoices(
+      String userId, String query) async {
     final invoices = await invoiceRepository.getInvoicesTaggedToUser(userId);
     final lowerQuery = query.toLowerCase();
     return invoices
         .where((inv) =>
-          inv.title.toLowerCase().contains(lowerQuery) ||
-          (inv.description.toLowerCase().contains(lowerQuery)) ||
-          (inv.toEmail?.toLowerCase().contains(lowerQuery) ?? false))
+            inv.title.toLowerCase().contains(lowerQuery) ||
+            (inv.description.toLowerCase().contains(lowerQuery)) ||
+            (inv.toEmail?.toLowerCase().contains(lowerQuery) ?? false))
         .map((inv) => _invoiceToTaggedInvoice(inv))
         .toList();
   }
 
   @override
-  Future<List<TaggedInvoice>> filterInvoicesByPriority(String userId, InvoicePriority priority) async {
+  Future<List<TaggedInvoice>> filterInvoicesByPriority(
+      String userId, InvoicePriority priority) async {
     final invoices = await invoiceRepository.getInvoicesTaggedToUser(userId);
     // Filter by priority based on due date and amount
     return invoices
@@ -182,19 +194,21 @@ class PayInvoiceRepositoryGrpcImpl implements PayInvoiceRepository {
   }
 
   @override
-  Future<List<TaggedInvoice>> filterInvoicesByDateRange(String userId, DateTime start, DateTime end) async {
+  Future<List<TaggedInvoice>> filterInvoicesByDateRange(
+      String userId, DateTime start, DateTime end) async {
     final invoices = await invoiceRepository.getInvoicesTaggedToUser(userId);
     return invoices
         .where((inv) =>
-          inv.createdAt.isAfter(start) &&
-          inv.createdAt.isBefore(end))
+            inv.createdAt.isAfter(start) && inv.createdAt.isBefore(end))
         .map((inv) => _invoiceToTaggedInvoice(inv))
         .toList();
   }
 
   @override
-  Future<bool> requestPaymentExtension(String invoiceId, DateTime newDueDate, String? reason) async {
-    throw UnimplementedError('RequestPaymentExtension not yet available in backend API');
+  Future<bool> requestPaymentExtension(
+      String invoiceId, DateTime newDueDate, String? reason) async {
+    throw UnimplementedError(
+        'RequestPaymentExtension not yet available in backend API');
   }
 
   @override
@@ -204,42 +218,53 @@ class PayInvoiceRepositoryGrpcImpl implements PayInvoiceRepository {
 
   @override
   Future<List<Map<String, dynamic>>> getPaymentHistory(String invoiceId) async {
-    throw UnimplementedError('GetPaymentHistory not yet available in backend API');
+    throw UnimplementedError(
+        'GetPaymentHistory not yet available in backend API');
   }
 
   @override
   Future<Map<String, dynamic>> getPaymentStatistics(String userId) async {
-    throw UnimplementedError('GetPaymentStatistics not yet available in backend API');
+    throw UnimplementedError(
+        'GetPaymentStatistics not yet available in backend API');
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getRecentTransactions(String userId, {int limit = 20}) async {
-    throw UnimplementedError('GetRecentTransactions not yet available in backend API');
+  Future<List<Map<String, dynamic>>> getRecentTransactions(String userId,
+      {int limit = 20}) async {
+    throw UnimplementedError(
+        'GetRecentTransactions not yet available in backend API');
   }
 
   @override
   Future<bool> markInvoiceAsViewed(String invoiceId) async {
-    throw UnimplementedError('MarkInvoiceAsViewed not yet available in backend API');
+    throw UnimplementedError(
+        'MarkInvoiceAsViewed not yet available in backend API');
   }
 
   @override
-  Future<bool> setPaymentReminder(String invoiceId, DateTime reminderDate) async {
+  Future<bool> setPaymentReminder(
+      String invoiceId, DateTime reminderDate) async {
     throw UnimplementedError('SetPaymentReminder handled client-side');
   }
 
   @override
   Future<bool> requestInvoiceDetails(String invoiceId) async {
-    throw UnimplementedError('RequestInvoiceDetails not yet available in backend API');
+    throw UnimplementedError(
+        'RequestInvoiceDetails not yet available in backend API');
   }
 
   @override
-  Future<bool> addPaymentMethod(String userId, Map<String, dynamic> paymentMethodData) async {
-    throw UnimplementedError('AddPaymentMethod not yet available in backend API');
+  Future<bool> addPaymentMethod(
+      String userId, Map<String, dynamic> paymentMethodData) async {
+    throw UnimplementedError(
+        'AddPaymentMethod not yet available in backend API');
   }
 
   @override
-  Future<bool> removePaymentMethod(String userId, String paymentMethodId) async {
-    throw UnimplementedError('RemovePaymentMethod not yet available in backend API');
+  Future<bool> removePaymentMethod(
+      String userId, String paymentMethodId) async {
+    throw UnimplementedError(
+        'RemovePaymentMethod not yet available in backend API');
   }
 
   // Helper: Map proto payment status to domain status
@@ -262,8 +287,8 @@ class PayInvoiceRepositoryGrpcImpl implements PayInvoiceRepository {
 
   // Helper: Convert protobuf timestamp to DateTime
   DateTime _fromProtoTimestamp(timestamp_pb.Timestamp timestamp) {
-    final milliseconds = timestamp.seconds.toInt() * 1000 +
-                        (timestamp.nanos ~/ 1000000);
+    final milliseconds =
+        timestamp.seconds.toInt() * 1000 + (timestamp.nanos ~/ 1000000);
     return DateTime.fromMillisecondsSinceEpoch(milliseconds);
   }
 
@@ -275,9 +300,8 @@ class PayInvoiceRepositoryGrpcImpl implements PayInvoiceRepository {
         invoice.status != invoice_entity.InvoiceStatus.paid &&
         invoice.dueDate!.isBefore(now);
 
-    final int daysUntilDue = invoice.dueDate != null
-        ? invoice.dueDate!.difference(now).inDays
-        : 0;
+    final int daysUntilDue =
+        invoice.dueDate != null ? invoice.dueDate!.difference(now).inDays : 0;
 
     // Determine priority based on due date and amount
     final priority = _calculatePriority(invoice, daysUntilDue, isOverdue);
@@ -286,15 +310,17 @@ class PayInvoiceRepositoryGrpcImpl implements PayInvoiceRepository {
     final paymentStatus = _fromInvoiceStatus(invoice.status);
 
     // Convert invoice items to tagged invoice items
-    final items = invoice.items.map((item) => InvoiceItem(
-      id: item.id,
-      name: item.name,
-      description: item.description,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice,
-      totalPrice: item.totalPrice,
-      category: item.category,
-    )).toList();
+    final items = invoice.items
+        .map((item) => InvoiceItem(
+              id: item.id,
+              name: item.name,
+              description: item.description,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              totalPrice: item.totalPrice,
+              category: item.category,
+            ))
+        .toList();
 
     return TaggedInvoice(
       id: invoice.id,
@@ -309,7 +335,8 @@ class PayInvoiceRepositoryGrpcImpl implements PayInvoiceRepository {
       paymentStatus: paymentStatus,
       priority: priority,
       fromUserId: invoice.fromUserId,
-      fromUserName: invoice.recipientDetails?.contactName ?? invoice.toName ?? 'Unknown',
+      fromUserName:
+          invoice.recipientDetails?.contactName ?? invoice.toName ?? 'Unknown',
       fromUserEmail: invoice.recipientDetails?.email ?? invoice.toEmail ?? '',
       fromCompanyName: invoice.recipientDetails?.companyName,
       toUserId: invoice.toUserId ?? currentUserId,
@@ -329,17 +356,24 @@ class PayInvoiceRepositoryGrpcImpl implements PayInvoiceRepository {
   }
 
   // Helper: Calculate invoice priority based on due date and amount
-  InvoicePriority _calculatePriority(invoice_entity.Invoice invoice, int daysUntilDue, bool isOverdue) {
+  InvoicePriority _calculatePriority(
+      invoice_entity.Invoice invoice, int daysUntilDue, bool isOverdue) {
     if (isOverdue) {
       return InvoicePriority.urgent;
     }
 
     if (daysUntilDue <= 3) {
-      return invoice.amount >= 1000 ? InvoicePriority.urgent : InvoicePriority.high;
+      return invoice.amount >= 1000
+          ? InvoicePriority.urgent
+          : InvoicePriority.high;
     } else if (daysUntilDue <= 7) {
-      return invoice.amount >= 1000 ? InvoicePriority.high : InvoicePriority.medium;
+      return invoice.amount >= 1000
+          ? InvoicePriority.high
+          : InvoicePriority.medium;
     } else {
-      return invoice.amount >= 1000 ? InvoicePriority.medium : InvoicePriority.low;
+      return invoice.amount >= 1000
+          ? InvoicePriority.medium
+          : InvoicePriority.low;
     }
   }
 

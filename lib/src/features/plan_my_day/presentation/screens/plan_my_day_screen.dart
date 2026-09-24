@@ -45,7 +45,6 @@ import 'package:lazervault/src/features/plan_my_day/presentation/widgets/upcomin
 import 'package:lazervault/src/features/plan_my_day/presentation/widgets/reminders_list_body.dart';
 part 'plan_my_day_screen_widgets.dart';
 
-
 class PlanMyDayScreen extends StatefulWidget {
   const PlanMyDayScreen({super.key});
 
@@ -438,13 +437,13 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          _layoutToggleBtn(
-              Icons.view_agenda_outlined, 'List', !_kanbanLayout, () {
+          _layoutToggleBtn(Icons.view_agenda_outlined, 'List', !_kanbanLayout,
+              () {
             if (_kanbanLayout) _toggleBoardLayout();
           }),
           SizedBox(width: 6.w),
-          _layoutToggleBtn(
-              Icons.view_week_outlined, 'Kanban', _kanbanLayout, () {
+          _layoutToggleBtn(Icons.view_week_outlined, 'Kanban', _kanbanLayout,
+              () {
             if (!_kanbanLayout) _toggleBoardLayout();
           }),
         ],
@@ -462,9 +461,8 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
           color: active ? const Color(0xFF4E03D0) : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(8.r),
           border: Border.all(
-              color: active
-                  ? const Color(0xFF4E03D0)
-                  : const Color(0xFF2D2D2D)),
+              color:
+                  active ? const Color(0xFF4E03D0) : const Color(0xFF2D2D2D)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -613,8 +611,7 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
             : _errorBody(
                 icon: Icons.wifi_off_rounded,
                 title: 'You’re offline',
-                message:
-                    'Check your internet connection and try again.',
+                message: 'Check your internet connection and try again.',
               );
       },
     );
@@ -697,7 +694,8 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
           // Board view is the status pipeline over the full task list.
           final loading = state.isDayLoading;
           final dayTasks = state.tasksForDay(state.selectedDate);
-          final isToday = DateUtils.isSameDay(state.selectedDate, DateTime.now());
+          final isToday =
+              DateUtils.isSameDay(state.selectedDate, DateTime.now());
           final overdue = isToday ? state.overdueBeforeToday : <Task>[];
           final events = state.events;
           final done = dayTasks.where((t) => t.isCompleted).length;
@@ -876,8 +874,8 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
             SizedBox(height: 12.h),
             Row(
               children: [
-                _dayStatChip(Icons.check_circle_outline, '$done/$total', 'tasks',
-                    const Color(0xFF10B981)),
+                _dayStatChip(Icons.check_circle_outline, '$done/$total',
+                    'tasks', const Color(0xFF10B981)),
                 SizedBox(width: 10.w),
                 _dayStatChip(Icons.event_outlined, '$events', 'events',
                     const Color(0xFF3B82F6)),
@@ -1088,8 +1086,9 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
         SizedBox(height: 8.h),
         Row(
           children: [
-            _dayUtilityChip(Icons.sticky_note_2_outlined, 'Notes',
-                const Color(0xFF3B82F6), () {
+            _dayUtilityChip(
+                Icons.sticky_note_2_outlined, 'Notes', const Color(0xFF3B82F6),
+                () {
               Navigator.push(context, NotesScreen.route());
             }),
             SizedBox(width: 8.w),
@@ -1333,7 +1332,8 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
                           spacing: 6.w,
                           runSpacing: 4.h,
                           children: [
-                            if (subtasks.isNotEmpty) _subtaskCountChip(subtasks),
+                            if (subtasks.isNotEmpty)
+                              _subtaskCountChip(subtasks),
                             if (contact != null)
                               TaskContactChip(
                                 contact: contact,

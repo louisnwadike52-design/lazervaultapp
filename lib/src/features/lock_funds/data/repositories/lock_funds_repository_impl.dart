@@ -94,11 +94,10 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
         idempotencyKey: _uuid.v4(),
       );
 
-      final response =
-          await _grpcClient.lockFundsClient.createLockFund(
-            request,
-            options: await _grpcClient.callOptions,
-          );
+      final response = await _grpcClient.lockFundsClient.createLockFund(
+        request,
+        options: await _grpcClient.callOptions,
+      );
 
       if (!response.success) {
         throw Exception(response.message);
@@ -157,11 +156,10 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
         request.lockFundId = lockFundId;
       }
 
-      final response =
-          await _grpcClient.lockFundsClient.getLockTransactions(
-            request,
-            options: await _grpcClient.callOptions,
-          );
+      final response = await _grpcClient.lockFundsClient.getLockTransactions(
+        request,
+        options: await _grpcClient.callOptions,
+      );
 
       return response.transactions
           .map((proto) => LockFundModel.transactionFromProto(proto))
@@ -184,11 +182,10 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
         ..amount = amount
         ..lockDurationDays = lockDurationDays;
 
-      final response =
-          await _grpcClient.lockFundsClient.calculateInterest(
-            request,
-            options: await _grpcClient.callOptions,
-          );
+      final response = await _grpcClient.lockFundsClient.calculateInterest(
+        request,
+        options: await _grpcClient.callOptions,
+      );
 
       return LockFundModel.interestFromProto(
         response,
@@ -237,11 +234,10 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
         ..lockFundId = lockFundId
         ..reason = reason;
 
-      final response =
-          await _grpcClient.lockFundsClient.cancelLockFund(
-            request,
-            options: await _grpcClient.callOptions,
-          );
+      final response = await _grpcClient.lockFundsClient.cancelLockFund(
+        request,
+        options: await _grpcClient.callOptions,
+      );
 
       return CancelResult(
         success: response.success,
@@ -321,34 +317,36 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
         options: await _grpcClient.callOptions,
       );
 
-      return response.configs.map((c) => PiggyVaultConfig(
-        id: c.id,
-        lockType: c.lockType,
-        currency: c.currency,
-        displayName: c.displayName,
-        baseInterestRate: c.baseInterestRate,
-        maxInterestRate: c.maxInterestRate,
-        earlyWithdrawalPenalty: c.earlyWithdrawalPenalty,
-        minDurationDays: c.minDurationDays,
-        maxDurationDays: c.maxDurationDays,
-        minAmount: c.minAmount,
-        maxAmount: c.maxAmount,
-        isFixedAmount: c.isFixedAmount,
-        fixedAmount: c.fixedAmount,
-        durationOptions: c.durationOptions,
-        quickAmountOptions: c.quickAmountOptions,
-        confirmationNotes: c.confirmationNotes,
-        confirmationNotesRenewOn: c.confirmationNotesRenewOn,
-        confirmationNotesRenewOff: c.confirmationNotesRenewOff,
-        allowsEarlyWithdrawal: c.allowsEarlyWithdrawal,
-        supportsAutoRenew: c.supportsAutoRenew,
-        supportsTopUp: c.supportsTopUp,
-        supportsAutoSave: c.supportsAutoSave,
-        supportsUpfrontInterest: c.supportsUpfrontInterest,
-        durationBonusTiers: c.durationBonusTiers,
-        isActive: c.isActive,
-        description: c.description,
-      )).toList();
+      return response.configs
+          .map((c) => PiggyVaultConfig(
+                id: c.id,
+                lockType: c.lockType,
+                currency: c.currency,
+                displayName: c.displayName,
+                baseInterestRate: c.baseInterestRate,
+                maxInterestRate: c.maxInterestRate,
+                earlyWithdrawalPenalty: c.earlyWithdrawalPenalty,
+                minDurationDays: c.minDurationDays,
+                maxDurationDays: c.maxDurationDays,
+                minAmount: c.minAmount,
+                maxAmount: c.maxAmount,
+                isFixedAmount: c.isFixedAmount,
+                fixedAmount: c.fixedAmount,
+                durationOptions: c.durationOptions,
+                quickAmountOptions: c.quickAmountOptions,
+                confirmationNotes: c.confirmationNotes,
+                confirmationNotesRenewOn: c.confirmationNotesRenewOn,
+                confirmationNotesRenewOff: c.confirmationNotesRenewOff,
+                allowsEarlyWithdrawal: c.allowsEarlyWithdrawal,
+                supportsAutoRenew: c.supportsAutoRenew,
+                supportsTopUp: c.supportsTopUp,
+                supportsAutoSave: c.supportsAutoSave,
+                supportsUpfrontInterest: c.supportsUpfrontInterest,
+                durationBonusTiers: c.durationBonusTiers,
+                isActive: c.isActive,
+                description: c.description,
+              ))
+          .toList();
     } catch (e) {
       throw Exception(friendlyLockError(e));
     }
@@ -380,10 +378,10 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
   }
 
   @override
-  Future<LockFundAutoSaveConfig?> getAutoSave({required String lockFundId}) async {
+  Future<LockFundAutoSaveConfig?> getAutoSave(
+      {required String lockFundId}) async {
     try {
-      final request = pb.GetLockFundAutoSaveRequest()
-        ..lockFundId = lockFundId;
+      final request = pb.GetLockFundAutoSaveRequest()..lockFundId = lockFundId;
 
       final response = await _grpcClient.lockFundsClient.getLockFundAutoSave(
         request,

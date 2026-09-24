@@ -165,4 +165,4 @@ class RecipientEntity {
         alias.hashCode ^
         type.hashCode;
   }
-} 
+}

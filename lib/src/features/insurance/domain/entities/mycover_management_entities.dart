@@ -27,7 +27,17 @@ class MyCoverCustomer extends Equatable {
   String get fullName => '$firstName $lastName'.trim();
 
   @override
-  List<Object?> get props => [id, firstName, lastName, email, phoneNumber, gender, dateOfBirth, createdAt, updatedAt];
+  List<Object?> get props => [
+        id,
+        firstName,
+        lastName,
+        email,
+        phoneNumber,
+        gender,
+        dateOfBirth,
+        createdAt,
+        updatedAt
+      ];
 }
 
 /// MyCover Purchase entity
@@ -89,7 +99,15 @@ class MyCoverPurchase extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, policyIsActive, policyNumber, amount, productName, providerName, updatedAt];
+  List<Object?> get props => [
+        id,
+        policyIsActive,
+        policyNumber,
+        amount,
+        productName,
+        providerName,
+        updatedAt
+      ];
 }
 
 /// MyCover Policy Detail entity
@@ -149,7 +167,8 @@ class MyCoverPolicyDetail extends Equatable {
   String get holderName => '$firstName $lastName'.trim();
 
   @override
-  List<Object?> get props => [id, isActive, policyNumber, amount, productName, updatedAt];
+  List<Object?> get props =>
+      [id, isActive, policyNumber, amount, productName, updatedAt];
 }
 
 /// MyCover Notification Preference entity
@@ -215,7 +234,8 @@ class MyCoverProviderClaim extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, status, amount, approvedAmount, claimNumber, updatedAt];
+  List<Object?> get props =>
+      [id, status, amount, approvedAmount, claimNumber, updatedAt];
 }
 
 /// MyCover Wallet Balance
@@ -261,5 +281,12 @@ class InsuranceRefund extends Equatable {
   });
 
   @override
-  List<Object?> get props => [refundId, policyReference, status, amount, providerRefunded, walletCredited];
+  List<Object?> get props => [
+        refundId,
+        policyReference,
+        status,
+        amount,
+        providerRefunded,
+        walletCredited
+      ];
 }

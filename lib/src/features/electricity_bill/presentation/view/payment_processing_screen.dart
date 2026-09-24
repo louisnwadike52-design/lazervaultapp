@@ -12,7 +12,6 @@ import '../../../../../core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'payment_processing_screen_widgets.dart';
 
-
 class PaymentProcessingScreen extends StatefulWidget {
   const PaymentProcessingScreen({super.key});
 
@@ -138,7 +137,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
       // hardcoded timers gating business logic.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        print('[PaymentProcessing] Initiating payment: provider=$_providerCode, meter=$_meterNumber, amount=$_amount, txId=$_transactionId');
+        print(
+            '[PaymentProcessing] Initiating payment: provider=$_providerCode, meter=$_meterNumber, amount=$_amount, txId=$_transactionId');
         context.read<ElectricityBillCubit>().initiatePaymentWithToken(
               providerCode: _providerCode!,
               meterNumber: _meterNumber!,
@@ -255,7 +255,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
               }
 
               if (state is PaymentInitiated) {
-                print('[PaymentProcessing] State: PaymentInitiated (id=${state.payment.id})');
+                print(
+                    '[PaymentProcessing] State: PaymentInitiated (id=${state.payment.id})');
                 if (!_hasFailed && _currentStep < 1) {
                   setState(() => _currentStep = 1);
                   _scheduleStep(2, after: const Duration(milliseconds: 700));
@@ -299,7 +300,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
               }
 
               if (state is PaymentFailed) {
-                print('[PaymentProcessing] PaymentFailed: ${state.errorMessage}');
+                print(
+                    '[PaymentProcessing] PaymentFailed: ${state.errorMessage}');
                 setState(() {
                   _hasFailed = true;
                   _failMessage = state.errorMessage;
@@ -309,7 +311,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
               }
 
               if (state is ElectricityBillError) {
-                print('[PaymentProcessing] ElectricityBillError: ${state.message}');
+                print(
+                    '[PaymentProcessing] ElectricityBillError: ${state.message}');
                 setState(() {
                   _hasFailed = true;
                   _failMessage = state.message;
@@ -368,7 +371,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: isFailed
-                                ? const Color(0xFFEF4444).withValues(alpha: 0.15)
+                                ? const Color(0xFFEF4444)
+                                    .withValues(alpha: 0.15)
                                 : isCompleted || isFinalComplete
                                     ? step.activeColor.withValues(alpha: 0.15)
                                     : isActive
@@ -442,8 +446,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                     ),
                   ),
                   // Status indicator
-                  if (isActive && !_hasFailed)
-                    LazerVaultLoader.small(),
+                  if (isActive && !_hasFailed) LazerVaultLoader.small(),
                   if (isCompleted || isFinalComplete)
                     Icon(
                       Icons.check_circle,
@@ -607,8 +610,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
             SizedBox(width: 12.w),
             Expanded(
               child: ElevatedButton(
-                onPressed: () =>
-                    Get.offAllNamed(AppRoutes.electricityBillHome),
+                onPressed: () => Get.offAllNamed(AppRoutes.electricityBillHome),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4E03D0),
                   foregroundColor: Colors.white,

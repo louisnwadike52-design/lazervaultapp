@@ -138,8 +138,7 @@ class InventoryRepositoryGrpcImpl implements InventoryRepository {
   Future<InventoryItemEntity> getItem(String itemId) async {
     return retryWithBackoff(
       operation: () async {
-        final request = payroll_pb.GetInventoryItemRequest()
-          ..itemId = itemId;
+        final request = payroll_pb.GetInventoryItemRequest()..itemId = itemId;
 
         final options = await _callOptionsHelper.withAuth();
         final response = await _client.getInventoryItem(
@@ -191,8 +190,7 @@ class InventoryRepositoryGrpcImpl implements InventoryRepository {
         );
 
         return InventoryItemsPageResult(
-          items:
-              response.items.map((i) => _itemFromProto(i)).toList(),
+          items: response.items.map((i) => _itemFromProto(i)).toList(),
           totalItems: response.pagination.totalItems,
           currentPage: response.pagination.currentPage,
           totalPages: response.pagination.totalPages,
@@ -259,9 +257,8 @@ class InventoryRepositoryGrpcImpl implements InventoryRepository {
         );
 
         return InventoryAdjustmentsPageResult(
-          adjustments: response.adjustments
-              .map((a) => _adjustmentFromProto(a))
-              .toList(),
+          adjustments:
+              response.adjustments.map((a) => _adjustmentFromProto(a)).toList(),
           totalItems: response.pagination.totalItems,
           currentPage: response.pagination.currentPage,
           totalPages: response.pagination.totalPages,
@@ -293,8 +290,7 @@ class InventoryRepositoryGrpcImpl implements InventoryRepository {
         return {
           'totalItems': response.totalItems,
           'lowStockItems': response.lowStockItems,
-          'totalInventoryValue':
-              response.totalInventoryValue.toInt() / 100.0,
+          'totalInventoryValue': response.totalInventoryValue.toInt() / 100.0,
           'categories': response.categories
               .map((c) => {
                     'category': c.category,
@@ -358,11 +354,9 @@ class InventoryRepositoryGrpcImpl implements InventoryRepository {
   ) {
     switch (status) {
       case InventoryItemStatus.active:
-        return payroll_pb
-            .InventoryItemStatus.INVENTORY_ITEM_STATUS_ACTIVE;
+        return payroll_pb.InventoryItemStatus.INVENTORY_ITEM_STATUS_ACTIVE;
       case InventoryItemStatus.inactive:
-        return payroll_pb
-            .InventoryItemStatus.INVENTORY_ITEM_STATUS_INACTIVE;
+        return payroll_pb.InventoryItemStatus.INVENTORY_ITEM_STATUS_INACTIVE;
       case InventoryItemStatus.discontinued:
         return payroll_pb
             .InventoryItemStatus.INVENTORY_ITEM_STATUS_DISCONTINUED;
@@ -390,14 +384,11 @@ class InventoryRepositoryGrpcImpl implements InventoryRepository {
     payroll_pb.InventoryItemStatus status,
   ) {
     switch (status) {
-      case payroll_pb
-            .InventoryItemStatus.INVENTORY_ITEM_STATUS_ACTIVE:
+      case payroll_pb.InventoryItemStatus.INVENTORY_ITEM_STATUS_ACTIVE:
         return InventoryItemStatus.active;
-      case payroll_pb
-            .InventoryItemStatus.INVENTORY_ITEM_STATUS_INACTIVE:
+      case payroll_pb.InventoryItemStatus.INVENTORY_ITEM_STATUS_INACTIVE:
         return InventoryItemStatus.inactive;
-      case payroll_pb
-            .InventoryItemStatus.INVENTORY_ITEM_STATUS_DISCONTINUED:
+      case payroll_pb.InventoryItemStatus.INVENTORY_ITEM_STATUS_DISCONTINUED:
         return InventoryItemStatus.discontinued;
       default:
         return InventoryItemStatus.active;

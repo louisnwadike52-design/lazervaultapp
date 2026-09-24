@@ -101,8 +101,7 @@ ExchangeErrorView classifyExchangeError(String? rawMessage) {
     );
   }
 
-  if (lc.contains('moving too fast') ||
-      lc.contains('rate limit exceeded')) {
+  if (lc.contains('moving too fast') || lc.contains('rate limit exceeded')) {
     return ExchangeErrorView(
       kind: ExchangeErrorKind.rateLimit,
       headline: 'Slow down',
@@ -115,7 +114,8 @@ ExchangeErrorView classifyExchangeError(String? rawMessage) {
     return ExchangeErrorView(
       kind: ExchangeErrorKind.duplicateRequest,
       headline: 'Duplicate transfer',
-      detail: 'A transfer with this idempotency key is already being processed.',
+      detail:
+          'A transfer with this idempotency key is already being processed.',
     );
   }
 

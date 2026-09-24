@@ -31,7 +31,8 @@ class CountrySelectionBottomsheet extends StatefulWidget {
   ];
 
   @override
-  State<CountrySelectionBottomsheet> createState() => _CountrySelectionBottomsheetState();
+  State<CountrySelectionBottomsheet> createState() =>
+      _CountrySelectionBottomsheetState();
 
   /// Static method to show the bottomsheet
   static void show({
@@ -71,7 +72,8 @@ class CountrySelectionBottomsheet extends StatefulWidget {
   }
 }
 
-class _CountrySelectionBottomsheetState extends State<CountrySelectionBottomsheet> {
+class _CountrySelectionBottomsheetState
+    extends State<CountrySelectionBottomsheet> {
   String _searchQuery = '';
   final _searchController = TextEditingController();
 
@@ -87,13 +89,12 @@ class _CountrySelectionBottomsheetState extends State<CountrySelectionBottomshee
     final List<_CountryItem> items = [_allCountriesItem];
 
     if (widget.dynamicCountries.isNotEmpty) {
-      items.addAll(widget.dynamicCountries
-          .map((c) => _CountryItem(
-                code: c.isoCode,
-                name: c.name,
-                currency: c.currencyCode,
-                flag: getFlag(c.isoCode),
-              )));
+      items.addAll(widget.dynamicCountries.map((c) => _CountryItem(
+            code: c.isoCode,
+            name: c.name,
+            currency: c.currencyCode,
+            flag: getFlag(c.isoCode),
+          )));
     } else {
       items.addAll(CountrySelectionBottomsheet._fallbackCountries
           .map((c) => _CountryItem(
@@ -106,7 +107,8 @@ class _CountrySelectionBottomsheetState extends State<CountrySelectionBottomshee
     return items;
   }
 
-  static String getFlag(String code) => CountrySelectionBottomsheet.getFlag(code);
+  static String getFlag(String code) =>
+      CountrySelectionBottomsheet.getFlag(code);
 
   List<_CountryItem> get _filteredCountries {
     if (_searchQuery.isEmpty) return _countries;
@@ -131,155 +133,160 @@ class _CountrySelectionBottomsheetState extends State<CountrySelectionBottomshee
     final hasDynamic = widget.dynamicCountries.isNotEmpty;
 
     return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Handle bar
-          Center(
-            child: Container(
-              width: 40.w,
-              height: 4.h,
-              margin: EdgeInsets.only(top: 12.h, bottom: 20.h),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2D2D2D),
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
+        behavior: HitTestBehavior.opaque,
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
           ),
-          // Header
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Select Country',
-                        style: GoogleFonts.inter(
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        hasDynamic
-                            ? '${widget.dynamicCountries.length} countries available'
-                            : 'Choose a country to see available gift cards',
-                        style: GoogleFonts.inter(
-                          fontSize: 13.sp,
-                          color: const Color(0xFF9CA3AF),
-                        ),
-                      ),
-                    ],
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  margin: EdgeInsets.only(top: 12.h, bottom: 20.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2D2D2D),
+                    borderRadius: BorderRadius.circular(2.r),
                   ),
                 ),
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    width: 32.w,
-                    height: 32.w,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF2D2D2D),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.close,
-                      color: Colors.white,
-                      size: 18.sp,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 16.h),
-          // Search field
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
-            child: TextField(
-              controller: _searchController,
-              onChanged: (val) => setState(() => _searchQuery = val),
-              style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
-              decoration: InputDecoration(
-                hintText: 'Search countries...',
-                hintStyle: GoogleFonts.inter(
-                  color: const Color(0xFF6B7280),
-                  fontSize: 14.sp,
-                ),
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: const Color(0xFF6B7280),
-                  size: 20.sp,
-                ),
-                filled: true,
-                fillColor: const Color(0xFF0A0A0A),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: const BorderSide(color: InvoiceThemeColors.primaryPurple),
-                ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               ),
-            ),
-          ),
-          SizedBox(height: 12.h),
-          // Countries list
-          SizedBox(
-            height: 400.h,
-            child: filtered.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.search_off, color: const Color(0xFF6B7280), size: 32.sp),
-                        SizedBox(height: 8.h),
-                        Text(
-                          'No countries match your search',
-                          style: GoogleFonts.inter(
-                            color: const Color(0xFF9CA3AF),
-                            fontSize: 14.sp,
+              // Header
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Select Country',
+                            style: GoogleFonts.inter(
+                              fontSize: 20.sp,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
                           ),
-                        ),
-                      ],
+                          SizedBox(height: 4.h),
+                          Text(
+                            hasDynamic
+                                ? '${widget.dynamicCountries.length} countries available'
+                                : 'Choose a country to see available gift cards',
+                            style: GoogleFonts.inter(
+                              fontSize: 13.sp,
+                              color: const Color(0xFF9CA3AF),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  )
-                : ListView.builder(
-                    keyboardDismissBehavior:
-                        ScrollViewKeyboardDismissBehavior.onDrag,
-                    padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final country = filtered[index];
-                      final isSelected = country.code == widget.selectedCountryCode;
-                      return _buildCountryTile(
-                        context: context,
-                        country: country,
-                        isSelected: isSelected,
-                      );
-                    },
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        width: 32.w,
+                        height: 32.w,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF2D2D2D),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.close,
+                          color: Colors.white,
+                          size: 18.sp,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 16.h),
+              // Search field
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (val) => setState(() => _searchQuery = val),
+                  style:
+                      GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                  decoration: InputDecoration(
+                    hintText: 'Search countries...',
+                    hintStyle: GoogleFonts.inter(
+                      color: const Color(0xFF6B7280),
+                      fontSize: 14.sp,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: const Color(0xFF6B7280),
+                      size: 20.sp,
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFF0A0A0A),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: const BorderSide(
+                          color: InvoiceThemeColors.primaryPurple),
+                    ),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                   ),
+                ),
+              ),
+              SizedBox(height: 12.h),
+              // Countries list
+              SizedBox(
+                height: 400.h,
+                child: filtered.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.search_off,
+                                color: const Color(0xFF6B7280), size: 32.sp),
+                            SizedBox(height: 8.h),
+                            Text(
+                              'No countries match your search',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF9CA3AF),
+                                fontSize: 14.sp,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
+                        padding: EdgeInsets.symmetric(horizontal: 16.w),
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final country = filtered[index];
+                          final isSelected =
+                              country.code == widget.selectedCountryCode;
+                          return _buildCountryTile(
+                            context: context,
+                            country: country,
+                            isSelected: isSelected,
+                          );
+                        },
+                      ),
+              ),
+              SizedBox(height: 24.h),
+            ],
           ),
-          SizedBox(height: 24.h),
-        ],
-      ),
-    ));
+        ));
   }
 
   Widget _buildCountryTile({
@@ -290,7 +297,8 @@ class _CountrySelectionBottomsheetState extends State<CountrySelectionBottomshee
     return GestureDetector(
       // Keyed for integration tests: "All Countries" (empty code) →
       // country_option_ALL; specific countries → country_option_<ISO>.
-      key: Key('country_option_${country.code.isEmpty ? 'ALL' : country.code.toUpperCase()}'),
+      key: Key(
+          'country_option_${country.code.isEmpty ? 'ALL' : country.code.toUpperCase()}'),
       onTap: () {
         widget.onCountrySelected(country.code, country.name);
         Navigator.pop(context);
@@ -304,7 +312,9 @@ class _CountrySelectionBottomsheetState extends State<CountrySelectionBottomshee
               : const Color(0xFF0A0A0A),
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
-            color: isSelected ? InvoiceThemeColors.primaryPurple : const Color(0xFF2D2D2D),
+            color: isSelected
+                ? InvoiceThemeColors.primaryPurple
+                : const Color(0xFF2D2D2D),
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -324,7 +334,9 @@ class _CountrySelectionBottomsheetState extends State<CountrySelectionBottomshee
                     style: GoogleFonts.inter(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? InvoiceThemeColors.primaryPurple : Colors.white,
+                      color: isSelected
+                          ? InvoiceThemeColors.primaryPurple
+                          : Colors.white,
                     ),
                   ),
                   SizedBox(height: 2.h),

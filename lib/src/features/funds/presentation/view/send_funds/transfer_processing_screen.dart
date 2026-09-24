@@ -14,12 +14,12 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/balance_webs
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'transfer_processing_screen_widgets.dart';
 
-
 class TransferProcessingScreen extends StatefulWidget {
   const TransferProcessingScreen({super.key});
 
   @override
-  State<TransferProcessingScreen> createState() => _TransferProcessingScreenState();
+  State<TransferProcessingScreen> createState() =>
+      _TransferProcessingScreenState();
 }
 
 class _TransferProcessingScreenState extends State<TransferProcessingScreen>
@@ -152,7 +152,8 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
 
       // Log current state
       debugPrint('TransferProcessingScreen: Listening for WebSocket updates');
-      debugPrint('TransferProcessingScreen: Expected reference: ${transferDetails['reference']}');
+      debugPrint(
+          'TransferProcessingScreen: Expected reference: ${transferDetails['reference']}');
     } catch (e) {
       debugPrint('TransferProcessingScreen: Error connecting to WebSocket: $e');
       // Continue with simulation if WebSocket not available
@@ -161,14 +162,16 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
 
   /// Handle balance update events from WebSocket
   void _handleBalanceUpdate(BalanceUpdateEvent event) {
-    debugPrint('TransferProcessingScreen: Received balance update: ${event.eventType}, status: ${event.status}');
+    debugPrint(
+        'TransferProcessingScreen: Received balance update: ${event.eventType}, status: ${event.status}');
 
     // Check if this event is for our transfer
     final expectedTransactionId = transferDetails['transactionId'] as String?;
     final expectedReference = transferDetails['reference'] as String?;
 
     // Match by transaction ID, reference, or if it's a transfer_out event
-    final isMatch = (expectedTransactionId != null && event.transactionId == expectedTransactionId) ||
+    final isMatch = (expectedTransactionId != null &&
+            event.transactionId == expectedTransactionId) ||
         (expectedReference != null && event.reference == expectedReference) ||
         (event.eventType == 'transfer_out' && !_isCompleted);
 
@@ -176,18 +179,22 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
       // Update status based on event
       switch (event.status.toLowerCase()) {
         case 'pending':
-          _updateStatus(TransferProcessingStatus.validating, 'Validating transfer...');
+          _updateStatus(
+              TransferProcessingStatus.validating, 'Validating transfer...');
           break;
         case 'processing':
-          _updateStatus(TransferProcessingStatus.processing, 'Processing with bank...');
+          _updateStatus(
+              TransferProcessingStatus.processing, 'Processing with bank...');
           break;
         case 'completed':
-          _updateStatus(TransferProcessingStatus.completed, 'Transfer successful!');
+          _updateStatus(
+              TransferProcessingStatus.completed, 'Transfer successful!');
           _completeTransfer();
           break;
         case 'failed':
           _handleTransferFailure(
-            event.narration ?? 'Transfer failed. Your funds have been returned to your account.',
+            event.narration ??
+                'Transfer failed. Your funds have been returned to your account.',
           );
           break;
         case 'reversed':
@@ -209,7 +216,8 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
       _completeTransfer();
       return;
     } else if (apiStatus == 'pending' || apiStatus == 'processing') {
-      _updateStatus(TransferProcessingStatus.processing, 'Processing with bank...');
+      _updateStatus(
+          TransferProcessingStatus.processing, 'Processing with bank...');
     } else if (apiStatus == 'failed') {
       _handleTransferFailure('Transfer failed. Please try again.');
       return;
@@ -228,10 +236,12 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
       if (!_isCompleted && mounted) {
         // If we have a transferId, the transfer was accepted — treat as success
         if (transferDetails['transferId'] != null) {
-          _updateStatus(TransferProcessingStatus.completed, 'Transfer submitted successfully!');
+          _updateStatus(TransferProcessingStatus.completed,
+              'Transfer submitted successfully!');
           _completeTransfer();
         } else {
-          _handleTransferFailure('Transfer timed out. Please check your transaction history.');
+          _handleTransferFailure(
+              'Transfer timed out. Please check your transaction history.');
         }
       }
     });
@@ -342,7 +352,9 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _isCompleted ? 'Transfer Complete!' : 'Processing Transfer...',
+                  _isCompleted
+                      ? 'Transfer Complete!'
+                      : 'Processing Transfer...',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 20.sp,
@@ -487,7 +499,8 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
             ),
           ),
           // Show fee and total if fee > 0
-          if (transferDetails['fee'] != null && (transferDetails['fee'] as double) > 0) ...[
+          if (transferDetails['fee'] != null &&
+              (transferDetails['fee'] as double) > 0) ...[
             SizedBox(height: 12.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -572,7 +585,8 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
             height: 32.h,
             decoration: BoxDecoration(
               color: isActive
-                  ? (isCurrent ? Colors.blue : Colors.green).withValues(alpha: 0.2)
+                  ? (isCurrent ? Colors.blue : Colors.green)
+                      .withValues(alpha: 0.2)
                   : Colors.grey.withValues(alpha: 0.1),
               shape: BoxShape.circle,
               border: Border.all(
@@ -613,8 +627,7 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
               ],
             ),
           ),
-          if (isCurrent && !_isCompleted)
-            LazerVaultLoader.tiny(),
+          if (isCurrent && !_isCompleted) LazerVaultLoader.tiny(),
         ],
       ),
     );

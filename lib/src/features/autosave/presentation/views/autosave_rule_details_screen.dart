@@ -9,7 +9,8 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:lazervault/src/features/autosave/services/autosave_pdf_service.dart';
 import 'package:lazervault/core/types/app_routes.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cubit.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_state.dart';
@@ -29,15 +30,16 @@ import 'package:lazervault/src/features/autosave/domain/repositories/i_autosave_
 import '../../utils/autosave_trigger_labels.dart';
 part 'autosave_rule_details_screen_widgets.dart';
 
-
 class AutoSaveRuleDetailsScreen extends StatefulWidget {
   const AutoSaveRuleDetailsScreen({super.key});
 
   @override
-  State<AutoSaveRuleDetailsScreen> createState() => _AutoSaveRuleDetailsScreenState();
+  State<AutoSaveRuleDetailsScreen> createState() =>
+      _AutoSaveRuleDetailsScreenState();
 }
 
-class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> with TransactionPinMixin {
+class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
+    with TransactionPinMixin {
   @override
   ITransactionPinService get transactionPinService =>
       GetIt.I<ITransactionPinService>();
@@ -153,8 +155,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
           rule.triggerType == TriggerType.scheduledExternal) &&
       rule.sourceLinkedAccountId.isNotEmpty;
 
-  String get _userId =>
-      context.read<AuthenticationCubit>().userId ?? '';
+  String get _userId => context.read<AuthenticationCubit>().userId ?? '';
 
   /// Load the mandate status for a linked-bank rule so the health banner (and
   /// the manual-save pre-check) can tell whether the Direct Debit can still
@@ -295,14 +296,15 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
       message: rule.isActive
           ? 'Are you sure you want to pause this auto-save rule? No automatic savings will occur while paused.'
           : 'Are you sure you want to resume this auto-save rule? Automatic savings will restart immediately.',
-      confirmColor: rule.isActive ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
+      confirmColor:
+          rule.isActive ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
       confirmText: actionText,
       onConfirm: () {
         setState(() => _isTogglingRule = true);
         context.read<AutoSaveCubit>().toggleRuleOptimistic(
-          ruleId: rule.id,
-          action: action,
-        );
+              ruleId: rule.id,
+              action: action,
+            );
       },
     );
   }
@@ -310,7 +312,8 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
   void _deleteRule() {
     _showConfirmationDialog(
       title: 'Delete Rule',
-      message: 'Are you sure you want to delete this auto-save rule? This action cannot be undone. All transaction history will be preserved.',
+      message:
+          'Are you sure you want to delete this auto-save rule? This action cannot be undone. All transaction history will be preserved.',
       confirmColor: const Color(0xFFEF4444),
       confirmText: 'Delete',
       onConfirm: () {
@@ -386,7 +389,8 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
     if (!mounted) return;
     feeNaira += platformFee;
 
-    final amtStr = currency_formatter.CurrencySymbols.formatAmountWithCurrency(saveAmount, rule.currency);
+    final amtStr = currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+        saveAmount, rule.currency);
     final confirmMessage = feeNaira > 0
         ? 'Save $amtStr from your bank by direct debit. A fee of '
             '${currency_formatter.CurrencySymbols.formatAmountWithCurrency(feeNaira, rule.currency)} applies — '
@@ -423,10 +427,10 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
 
     if (!mounted) return;
     context.read<AutoSaveCubit>().triggerSave(
-      ruleId: rule.id,
-      transactionPinToken: verificationToken!,
-      customAmount: saveAmount,
-    );
+          ruleId: rule.id,
+          transactionPinToken: verificationToken!,
+          customAmount: saveAmount,
+        );
   }
 
   /// Pre-flight for a manual save on a linked-bank rule: confirm the Direct
@@ -445,8 +449,9 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
         cubit.getMandateForAccount(rule.sourceLinkedAccountId);
     if (mandate != null && mandate.isActive) return true;
 
-    final bank =
-        rule.sourceBankName.isNotEmpty ? rule.sourceBankName : 'your linked bank';
+    final bank = rule.sourceBankName.isNotEmpty
+        ? rule.sourceBankName
+        : 'your linked bank';
     final goSetup = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -620,7 +625,8 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
-                          borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+                          borderSide:
+                              const BorderSide(color: Color(0xFF2D2D2D)),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
@@ -630,11 +636,13 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
                         ),
                         errorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
-                          borderSide: const BorderSide(color: Color(0xFFEF4444)),
+                          borderSide:
+                              const BorderSide(color: Color(0xFFEF4444)),
                         ),
                         focusedErrorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
-                          borderSide: const BorderSide(color: Color(0xFFEF4444)),
+                          borderSide:
+                              const BorderSide(color: Color(0xFFEF4444)),
                         ),
                       ),
                     ),
@@ -702,14 +710,12 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
     // was surfaced verbatim before). Captured BEFORE the async PDF build so we
     // never touch `context` across the await. Harmless on phones/Android.
     final box = context.findRenderObject() as RenderBox?;
-    final origin = box != null
-        ? box.localToGlobal(Offset.zero) & box.size
-        : null;
+    final origin =
+        box != null ? box.localToGlobal(Offset.zero) & box.size : null;
     try {
       final file = await AutoSavePdfService.generateRuleDetails(
         rule: rule,
-        sourceAccountLabel:
-            _sourceAccountName ?? rule.sourceAccountId,
+        sourceAccountLabel: _sourceAccountName ?? rule.sourceAccountId,
         destinationAccountLabel:
             _destinationAccountName ?? rule.destinationAccountId,
         triggerDescription: _getTriggerDescription(),
@@ -813,13 +819,23 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
 
   String _getDayName(int? day) {
     if (day == null) return 'N/A';
-    const days = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const days = [
+      '',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday'
+    ];
     return day >= 1 && day <= 7 ? days[day] : 'N/A';
   }
 
   String _getAmountDescription() {
     if (rule.amountType == AmountType.fixed) {
-      return currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.amountValue, rule.currency);
+      return currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+          rule.amountValue, rule.currency);
     } else {
       return '${rule.amountValue.toStringAsFixed(0)}% of deposit';
     }
@@ -845,7 +861,9 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
 
           Get.snackbar(
             'Success',
-            rule.isActive ? 'Rule resumed successfully' : 'Rule paused successfully',
+            rule.isActive
+                ? 'Rule resumed successfully'
+                : 'Rule paused successfully',
             backgroundColor: const Color(0xFF10B981),
             colorText: Colors.white,
             snackPosition: SnackPosition.TOP,
@@ -865,7 +883,8 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
             snackPosition: SnackPosition.TOP,
             duration: const Duration(seconds: 2),
           );
-        } else if (state is AutoSaveRuleDeleted || state is AutoSaveRuleDeleteSuccess) {
+        } else if (state is AutoSaveRuleDeleted ||
+            state is AutoSaveRuleDeleteSuccess) {
           setState(() => _isDeletingRule = false);
 
           Get.snackbar(
@@ -1116,7 +1135,9 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
   Widget _buildPendingInflowBanner() {
     final amt = currency_formatter.CurrencySymbols.formatAmountWithCurrency(
         rule.pendingInflowKobo / 100, rule.currency);
-    final bank = rule.sourceBankName.isNotEmpty ? rule.sourceBankName : 'your linked bank';
+    final bank = rule.sourceBankName.isNotEmpty
+        ? rule.sourceBankName
+        : 'your linked bank';
     return GestureDetector(
       onTap: _isTriggeringRule ? null : _triggerManualSave,
       child: Container(
@@ -1124,25 +1145,38 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
         decoration: BoxDecoration(
           color: const Color(0xFF10B981).withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
+          border: Border.all(
+              color: const Color(0xFF10B981).withValues(alpha: 0.35)),
         ),
         child: Row(
           children: [
-            Icon(Icons.savings_rounded, color: const Color(0xFF10B981), size: 20.sp),
+            Icon(Icons.savings_rounded,
+                color: const Color(0xFF10B981), size: 20.sp),
             SizedBox(width: 10.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('$amt available to save',
-                      style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white, fontWeight: FontWeight.w700)),
+                      style: GoogleFonts.inter(
+                          fontSize: 14.sp,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700)),
                   SizedBox(height: 2.h),
-                  Text('Money arrived in $bank. Tap to save it — a direct debit fee applies.',
-                      style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF9CA3AF), height: 1.3)),
+                  Text(
+                      'Money arrived in $bank. Tap to save it — a direct debit fee applies.',
+                      style: GoogleFonts.inter(
+                          fontSize: 12.sp,
+                          color: const Color(0xFF9CA3AF),
+                          height: 1.3)),
                 ],
               ),
             ),
-            Text('Save', style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF10B981), fontWeight: FontWeight.w700)),
+            Text('Save',
+                style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    color: const Color(0xFF10B981),
+                    fontWeight: FontWeight.w700)),
           ],
         ),
       ),
@@ -1271,7 +1305,8 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
           _buildDetailRow('Created', dateFormat.format(rule.createdAt)),
           if (rule.lastTriggeredAt != null) ...[
             SizedBox(height: 12.h),
-            _buildDetailRow('Last Triggered', dateFormat.format(rule.lastTriggeredAt!)),
+            _buildDetailRow(
+                'Last Triggered', dateFormat.format(rule.lastTriggeredAt!)),
           ],
         ],
       ),
@@ -1308,9 +1343,11 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
             ],
           ),
           SizedBox(height: 20.h),
-          _buildDetailRow('Source Account', _sourceAccountName ?? rule.sourceAccountId),
+          _buildDetailRow(
+              'Source Account', _sourceAccountName ?? rule.sourceAccountId),
           SizedBox(height: 12.h),
-          _buildDetailRow('Destination Account', _destinationAccountName ?? rule.destinationAccountId),
+          _buildDetailRow('Destination Account',
+              _destinationAccountName ?? rule.destinationAccountId),
         ],
       ),
     );
@@ -1357,7 +1394,8 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
           if (rule.targetAmount != null) ...[
             _buildLimitRow(
               'Target Amount',
-              currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.targetAmount!, rule.currency),
+              currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+                  rule.targetAmount!, rule.currency),
               _targetAmountHint,
             ),
             SizedBox(height: 8.h),
@@ -1367,7 +1405,8 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
           if (rule.minimumBalance != null) ...[
             _buildLimitRow(
               'Minimum Balance',
-              currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.minimumBalance!, rule.currency),
+              currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+                  rule.minimumBalance!, rule.currency),
               _minimumBalanceHint(rule.triggerType),
             ),
             SizedBox(height: 16.h),
@@ -1375,7 +1414,8 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
           if (rule.maximumPerSave != null)
             _buildLimitRow(
               'Maximum Per Save',
-              currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.maximumPerSave!, rule.currency),
+              currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+                  rule.maximumPerSave!, rule.currency),
               _maximumPerSaveHint,
             ),
         ],
@@ -1421,7 +1461,8 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.totalSaved, rule.currency),
+              currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+                  rule.totalSaved, rule.currency),
               style: GoogleFonts.inter(
                 color: _accent,
                 fontSize: 14.sp,
@@ -1500,7 +1541,8 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
               Expanded(
                 child: _buildStatItem(
                   'Total Saved',
-                  currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.totalSaved, rule.currency),
+                  currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+                      rule.totalSaved, rule.currency),
                   Icons.savings_outlined,
                   const Color(0xFF10B981),
                 ),
@@ -1521,7 +1563,8 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
+  Widget _buildStatItem(
+      String label, String value, IconData icon, Color color) {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -1565,12 +1608,9 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
     // pair it with Pause; otherwise Resume gets the lead slot.
     final pauseResume = _buildActionButton(
       label: rule.isActive ? 'Pause' : 'Resume',
-      icon: rule.isActive
-          ? Icons.pause_circle_outline
-          : Icons.play_circle_filled,
-      color: rule.isActive
-          ? const Color(0xFFF59E0B)
-          : const Color(0xFF10B981),
+      icon:
+          rule.isActive ? Icons.pause_circle_outline : Icons.play_circle_filled,
+      color: rule.isActive ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
       onPressed: busy ? null : _toggleRule,
       isLoading: _isTogglingRule,
     );
@@ -1732,15 +1772,17 @@ _FriendlyError _humaniseAutosaveError(String raw) {
       'This rule has already saved its full target amount.',
     );
   }
-  if (m.contains('rule not active') || m.contains('status=paused') ||
-      m.contains('status=cancelled') || m.contains('status=completed')) {
+  if (m.contains('rule not active') ||
+      m.contains('status=paused') ||
+      m.contains('status=cancelled') ||
+      m.contains('status=completed')) {
     return const _FriendlyError(
       'Rule not active',
       'Resume the rule first, then try again.',
     );
   }
-  if (m.contains('insufficient') || m.contains('balance') &&
-      m.contains('low')) {
+  if (m.contains('insufficient') ||
+      m.contains('balance') && m.contains('low')) {
     return const _FriendlyError(
       'Not enough balance',
       'Your source account doesn\'t have the funds for this save right now.',
@@ -1749,13 +1791,15 @@ _FriendlyError _humaniseAutosaveError(String raw) {
   if (m.contains('debit rejected')) {
     return _FriendlyError(
       'Source account couldn\'t be debited',
-      raw.replaceFirst(RegExp(r'^debit rejected:?\s*', caseSensitive: false), ''),
+      raw.replaceFirst(
+          RegExp(r'^debit rejected:?\s*', caseSensitive: false), ''),
     );
   }
   if (m.contains('credit rejected')) {
     return _FriendlyError(
       'Destination account refused the credit',
-      raw.replaceFirst(RegExp(r'^credit rejected:?\s*', caseSensitive: false), ''),
+      raw.replaceFirst(
+          RegExp(r'^credit rejected:?\s*', caseSensitive: false), ''),
     );
   }
   if (m.contains('duplicate trigger in progress')) {

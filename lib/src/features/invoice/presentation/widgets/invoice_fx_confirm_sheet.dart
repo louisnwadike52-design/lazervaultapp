@@ -319,7 +319,8 @@ class _InvoiceFxConfirmSheetState extends State<InvoiceFxConfirmSheet> {
     );
   }
 
-  Widget _buildActions(ExchangeRate? rate, double converted, bool insufficient) {
+  Widget _buildActions(
+      ExchangeRate? rate, double converted, bool insufficient) {
     final canConfirm = rate != null && !insufficient && converted > 0;
     return Row(
       children: [

@@ -36,6 +36,7 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/c
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card_v2.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_qr_card.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_markdown_style.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_analytics_card.dart';
 import '../../cubit/ai_chat_cubit.dart';
 import '../../cubit/ai_chat_state.dart';
@@ -1788,13 +1789,12 @@ class _AiChatContentState extends State<AiChatContent>
             if (message.text.isNotEmpty) ...[
               MarkdownBody(
                 data: message.text,
-                styleSheet:
-                    MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-                  p: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(color: Colors.white, fontSize: 14.sp),
-                ),
+                // The shared dark-bubble sheet. Overriding only `p` left every
+                // other element on the light theme's defaults, so an inline
+                // reference like `C2C-a1b2c3` rendered as a pale grey block with
+                // near-black text on a dark bubble, and bold headings came
+                // through no brighter than the body.
+                styleSheet: chatAssistantMarkdownStyle(context),
               ),
               SizedBox(height: 12.h),
             ],
@@ -1920,13 +1920,8 @@ class _AiChatContentState extends State<AiChatContent>
                 ),
                 child: MarkdownBody(
                   data: message.text,
-                  styleSheet:
-                      MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-                    p: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(color: Colors.white, fontSize: 14.sp),
-                  ),
+                  // Same shared dark-bubble sheet as above.
+                  styleSheet: chatAssistantMarkdownStyle(context),
                 ),
               ),
             SizedBox(height: 8.h),

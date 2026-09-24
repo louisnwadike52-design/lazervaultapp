@@ -25,7 +25,8 @@ final _entity = File(
 
 String _strip(String s) => s
     .split('\n')
-    .where((l) => !l.trimLeft().startsWith('//') && !l.trimLeft().startsWith('///'))
+    .where((l) =>
+        !l.trimLeft().startsWith('//') && !l.trimLeft().startsWith('///'))
     .join('\n');
 
 void main() {
@@ -65,7 +66,13 @@ void main() {
       // are all excluded. Pinned here because the count drives the hero card.
       final ent = _strip(_entity);
       expect(ent, contains('enum InvitationStatus'));
-      for (final s in ['pending', 'accepted', 'declined', 'removed', 'expired']) {
+      for (final s in [
+        'pending',
+        'accepted',
+        'declined',
+        'removed',
+        'expired'
+      ]) {
         expect(ent, contains(s),
             reason: '$s must remain a distinct state, not be folded together');
       }

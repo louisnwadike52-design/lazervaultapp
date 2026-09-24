@@ -134,8 +134,7 @@ class ReviewStep extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                   decoration: BoxDecoration(
                     color: const Color(0xFF4E03D0).withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(6.r),
@@ -217,9 +216,8 @@ class ReviewStep extends StatelessWidget {
             icon: Icons.access_time,
             label: 'Deadline',
             value: _deadlineText,
-            valueColor: deadline == null
-                ? const Color(0xFF9CA3AF)
-                : Colors.white,
+            valueColor:
+                deadline == null ? const Color(0xFF9CA3AF) : Colors.white,
           ),
         ),
       ],
@@ -324,8 +322,8 @@ class ReviewStep extends StatelessWidget {
               children: socialLinks.entries
                   .map(
                     (e) => Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 8.w, vertical: 3.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                       decoration: BoxDecoration(
                         color: const Color(0xFF0A0A0A),
                         borderRadius: BorderRadius.circular(8.r),
@@ -334,8 +332,7 @@ class ReviewStep extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(_socialIcon(e.key),
-                              size: 11.sp,
-                              color: const Color(0xFF9CA3AF)),
+                              size: 11.sp, color: const Color(0xFF9CA3AF)),
                           SizedBox(width: 4.w),
                           Text(
                             e.value,
@@ -401,8 +398,7 @@ class ReviewStep extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.ios_share,
-              size: 16.sp, color: PayFlowTheme.accentOnDark),
+          Icon(Icons.ios_share, size: 16.sp, color: PayFlowTheme.accentOnDark),
           SizedBox(width: 10.w),
           Expanded(
             child: Column(

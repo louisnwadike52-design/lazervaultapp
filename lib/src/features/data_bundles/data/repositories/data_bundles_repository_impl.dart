@@ -136,7 +136,8 @@ class DataBundlesRepositoryImpl implements DataBundlesRepository {
   }
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> getAutoRenewSubscriptions({
+  Future<Either<Failure, List<Map<String, dynamic>>>>
+      getAutoRenewSubscriptions({
     int limit = 50,
     int offset = 0,
   }) async {
@@ -145,23 +146,25 @@ class DataBundlesRepositoryImpl implements DataBundlesRepository {
         limit: limit,
         offset: offset,
       );
-      final subs = response.subscriptions.map((s) => {
-        'id': s.id,
-        'planName': s.planName,
-        'amount': s.amount,
-        'currency': s.currency,
-        'network': s.autoRenewNetwork,
-        'variationId': s.autoRenewVariationId,
-        'phoneNumber': s.customerNumber,
-        'status': s.status,
-        'autoRenewEnabled': s.autoRenewEnabled,
-        'nextRenewalAt': s.nextRenewalAt,
-        'renewalAttempts': s.renewalAttempts,
-        'daysRemaining': s.daysRemaining,
-        'progressPercentage': s.progressPercentage,
-        'autoRenewAmount': s.autoRenewAmount,
-        'disabledReason': s.autoRenewDisabledReason,
-      }).toList();
+      final subs = response.subscriptions
+          .map((s) => {
+                'id': s.id,
+                'planName': s.planName,
+                'amount': s.amount,
+                'currency': s.currency,
+                'network': s.autoRenewNetwork,
+                'variationId': s.autoRenewVariationId,
+                'phoneNumber': s.customerNumber,
+                'status': s.status,
+                'autoRenewEnabled': s.autoRenewEnabled,
+                'nextRenewalAt': s.nextRenewalAt,
+                'renewalAttempts': s.renewalAttempts,
+                'daysRemaining': s.daysRemaining,
+                'progressPercentage': s.progressPercentage,
+                'autoRenewAmount': s.autoRenewAmount,
+                'disabledReason': s.autoRenewDisabledReason,
+              })
+          .toList();
       return Right(subs);
     } on GrpcError catch (e) {
       return Left(ServerFailure(

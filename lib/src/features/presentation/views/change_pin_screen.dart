@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:lazervault/core/types/screen.dart';
 import 'package:lazervault/src/features/widgets/change_pin.dart';
 
-
 class ChangePinScreen extends StatefulWidget {
   const ChangePinScreen({super.key});
 
@@ -12,8 +11,6 @@ class ChangePinScreen extends StatefulWidget {
 }
 
 class _ChangePinScreenState extends State<ChangePinScreen> {
-
-
   @override
   void initState() {
     super.initState();

@@ -19,8 +19,7 @@ class CableTVAutoRechargeScreen extends StatefulWidget {
       _CableTVAutoRechargeScreenState();
 }
 
-class _CableTVAutoRechargeScreenState
-    extends State<CableTVAutoRechargeScreen> {
+class _CableTVAutoRechargeScreenState extends State<CableTVAutoRechargeScreen> {
   @override
   void initState() {
     super.initState();
@@ -36,8 +35,8 @@ class _CableTVAutoRechargeScreenState
         elevation: 0,
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: Icon(Icons.arrow_back_ios_new,
-              color: Colors.white, size: 20.sp),
+          icon:
+              Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20.sp),
         ),
         title: Text('Auto-Renew',
             style: TextStyle(
@@ -53,13 +52,11 @@ class _CableTVAutoRechargeScreenState
                 if (res == true && mounted) cubit.load();
               });
             },
-            icon:
-                Icon(Icons.add, color: const Color(0xFF10B981), size: 22.sp),
+            icon: Icon(Icons.add, color: const Color(0xFF10B981), size: 22.sp),
           ),
         ],
       ),
-      body:
-          BlocConsumer<CableTVAutoRechargeCubit, CableTVAutoRechargeState>(
+      body: BlocConsumer<CableTVAutoRechargeCubit, CableTVAutoRechargeState>(
         listener: (context, state) {
           if (state is CableTVAutoRechargeError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -95,8 +92,7 @@ class _CableTVAutoRechargeScreenState
                   Text(state.message,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                          color: const Color(0xFF9CA3AF),
-                          fontSize: 14.sp)),
+                          color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
                   SizedBox(height: 24.h),
                   ElevatedButton(
                     onPressed: () =>
@@ -114,8 +110,7 @@ class _CableTVAutoRechargeScreenState
           return RefreshIndicator(
             color: const Color(0xFF10B981),
             backgroundColor: const Color(0xFF1F1F1F),
-            onRefresh: () =>
-                context.read<CableTVAutoRechargeCubit>().load(),
+            onRefresh: () => context.read<CableTVAutoRechargeCubit>().load(),
             child: ListView.builder(
               padding: EdgeInsets.all(16.w),
               physics: const AlwaysScrollableScrollPhysics(),
@@ -152,8 +147,7 @@ class _CableTVAutoRechargeScreenState
               ElevatedButton.icon(
                 onPressed: () {
                   final cubit = context.read<CableTVAutoRechargeCubit>();
-                  Get.toNamed(
-                      AppRoutes.cableTVAutoRechargeCreate)?.then((res) {
+                  Get.toNamed(AppRoutes.cableTVAutoRechargeCreate)?.then((res) {
                     if (res == true && mounted) cubit.load();
                   });
                 },
@@ -184,8 +178,8 @@ class _CableTVAutoRechargeScreenState
       executionHour: ar.executionHour,
       executionMinute: ar.executionMinute,
       failureCount: ar.failureCount,
-      leadingIcon: Icon(Icons.live_tv,
-          color: const Color(0xFF4E03D0), size: 20.sp),
+      leadingIcon:
+          Icon(Icons.live_tv, color: const Color(0xFF4E03D0), size: 20.sp),
       onPause: isActive
           ? () => context.read<CableTVAutoRechargeCubit>().pause(ar.id)
           : null,
@@ -210,13 +204,12 @@ class _CableTVAutoRechargeScreenState
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text('Delete Auto-Renew',
             style: TextStyle(color: Colors.white, fontSize: 17.sp)),
         content: Text('Are you sure you want to delete this auto-renewal?',
-            style: TextStyle(
-                color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
+            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
         actions: [
           TextButton(
               onPressed: () => Navigator.of(ctx).pop(),

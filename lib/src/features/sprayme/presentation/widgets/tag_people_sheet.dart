@@ -87,7 +87,8 @@ class _TagPeopleSheetState extends State<TagPeopleSheet> {
       _error = null;
     });
     try {
-      final users = await serviceLocator<P2PChatRepository>().searchUsers(query);
+      final users =
+          await serviceLocator<P2PChatRepository>().searchUsers(query);
       if (!mounted) return;
       setState(() {
         _results = users;
@@ -129,7 +130,8 @@ class _TagPeopleSheetState extends State<TagPeopleSheet> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
         height: MediaQuery.of(context).size.height * 0.78,
         decoration: BoxDecoration(
@@ -265,8 +267,8 @@ class _TagPeopleSheetState extends State<TagPeopleSheet> {
       ),
       subtitle: tagged
           ? Text('Already tagged',
-              style: TextStyle(
-                  color: const Color(0xFF6B7280), fontSize: 11.5.sp))
+              style:
+                  TextStyle(color: const Color(0xFF6B7280), fontSize: 11.5.sp))
           : null,
       trailing: tagged
           ? Icon(Icons.check_circle,
@@ -288,8 +290,7 @@ class _TagPeopleSheetState extends State<TagPeopleSheet> {
             Text(
               text,
               textAlign: TextAlign.center,
-              style:
-                  TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
             ),
             if (retry != null)
               TextButton(onPressed: retry, child: const Text('Try again')),

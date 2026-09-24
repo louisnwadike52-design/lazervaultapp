@@ -155,7 +155,8 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
       }
 
       // Update local cache
-      final existingIndex = _linkedAccounts.indexWhere((a) => a.id == account.id);
+      final existingIndex =
+          _linkedAccounts.indexWhere((a) => a.id == account.id);
       if (existingIndex >= 0) {
         _linkedAccounts[existingIndex] = account;
       } else {
@@ -245,7 +246,8 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     try {
       final String token;
       if (useGrpc && _grpcDataSource != null) {
-        token = await _grpcDataSource!.getReauthorizationToken(accountId: accountId);
+        token = await _grpcDataSource!
+            .getReauthorizationToken(accountId: accountId);
       } else {
         token = await _restDataSource!.getReauthorizationToken(
           accountId: accountId,
@@ -337,7 +339,8 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
       // Update local cache (unlink)
       _linkedAccounts.removeWhere((a) => a.id == accountId);
       if (_defaultAccount?.id == accountId) {
-        _defaultAccount = _linkedAccounts.isNotEmpty ? _linkedAccounts.first : null;
+        _defaultAccount =
+            _linkedAccounts.isNotEmpty ? _linkedAccounts.first : null;
       }
 
       if (isClosed) return;
@@ -409,8 +412,7 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     required String accessToken,
     Duration? staleAfter,
   }) {
-    final threshold =
-        DateTime.now().subtract(staleAfter ?? balanceStaleAfter);
+    final threshold = DateTime.now().subtract(staleAfter ?? balanceStaleAfter);
     for (final account in List.of(_linkedAccounts)) {
       final updatedAt = account.balanceUpdatedAt;
       final isStale = updatedAt == null || updatedAt.isBefore(threshold);
@@ -558,7 +560,8 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     required double amount, // In major units (Naira)
     String? narration,
     required String accessToken,
-    bool useRecurringAccess = false, // false = DirectPay (one-time), true = Mandate (recurring)
+    bool useRecurringAccess =
+        false, // false = DirectPay (one-time), true = Mandate (recurring)
     String? currency, // destination wallet currency (e.g. NGN)
     String? countryCode, // derived country (e.g. NG) — routes NGN to Mono
     // Transaction-PIN gate for interactive bank-rail (redeposit) pulls: the
@@ -734,7 +737,8 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     if (amountKobo <= 0) return null;
     try {
       if (useGrpc && _grpcDataSource != null) {
-        return await _grpcDataSource!.calculateDepositFee(amountInKobo: amountKobo);
+        return await _grpcDataSource!
+            .calculateDepositFee(amountInKobo: amountKobo);
       }
     } catch (_) {/* hide preview on error */}
     return null;
@@ -990,7 +994,8 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
           months: months,
         );
       } else {
-        throw UnimplementedError('Credit score history is only available via gRPC');
+        throw UnimplementedError(
+            'Credit score history is only available via gRPC');
       }
 
       if (isClosed) return;
@@ -1017,7 +1022,8 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
           linkedAccountId: linkedAccountId,
         );
       } else {
-        throw UnimplementedError('Credit score refresh is only available via gRPC');
+        throw UnimplementedError(
+            'Credit score refresh is only available via gRPC');
       }
 
       if (isClosed) return;
@@ -1044,7 +1050,8 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
           linkedAccountId: linkedAccountId,
         );
       } else {
-        throw UnimplementedError('Multi-source credit scores only available via gRPC');
+        throw UnimplementedError(
+            'Multi-source credit scores only available via gRPC');
       }
 
       if (isClosed) return;

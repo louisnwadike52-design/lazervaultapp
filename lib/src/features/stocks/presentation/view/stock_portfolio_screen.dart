@@ -81,15 +81,12 @@ class _StockPortfolioScreenState extends State<StockPortfolioScreen>
   Widget _buildHeader() {
     return BlocBuilder<StockCubit, StockState>(
       builder: (context, state) {
-        final portfolioValue = state is PortfolioLoaded
-            ? state.portfolio.totalValue
-            : 0.0;
-        final dayChange = state is PortfolioLoaded
-            ? state.portfolio.dayChange
-            : 0.0;
-        final dayChangePercent = state is PortfolioLoaded
-            ? state.portfolio.dayChangePercent
-            : 0.0;
+        final portfolioValue =
+            state is PortfolioLoaded ? state.portfolio.totalValue : 0.0;
+        final dayChange =
+            state is PortfolioLoaded ? state.portfolio.dayChange : 0.0;
+        final dayChangePercent =
+            state is PortfolioLoaded ? state.portfolio.dayChangePercent : 0.0;
 
         return Container(
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
@@ -155,7 +152,8 @@ class _StockPortfolioScreenState extends State<StockPortfolioScreen>
                 ],
               ),
               SizedBox(height: 24.h),
-              _buildPortfolioSummary(portfolioValue, dayChange, dayChangePercent),
+              _buildPortfolioSummary(
+                  portfolioValue, dayChange, dayChangePercent),
             ],
           ),
         );
@@ -163,7 +161,8 @@ class _StockPortfolioScreenState extends State<StockPortfolioScreen>
     );
   }
 
-  Widget _buildPortfolioSummary(double value, double dayChange, double dayChangePercent) {
+  Widget _buildPortfolioSummary(
+      double value, double dayChange, double dayChangePercent) {
     final isPositive = dayChange >= 0;
 
     return Container(
@@ -211,18 +210,15 @@ class _StockPortfolioScreenState extends State<StockPortfolioScreen>
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: (isPositive
-                      ? Colors.green
-                      : Colors.red).withValues(alpha: 0.2),
+                  color: (isPositive ? Colors.green : Colors.red)
+                      .withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      isPositive
-                          ? Icons.arrow_upward
-                          : Icons.arrow_downward,
+                      isPositive ? Icons.arrow_upward : Icons.arrow_downward,
                       color: isPositive ? Colors.green : Colors.red,
                       size: 14.sp,
                     ),
@@ -268,7 +264,8 @@ class _StockPortfolioScreenState extends State<StockPortfolioScreen>
         ),
         labelColor: Colors.white.withValues(alpha: 0.7),
         unselectedLabelColor: Colors.white.withValues(alpha: 0.5),
-        labelStyle: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
+        labelStyle:
+            GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
         unselectedLabelStyle: GoogleFonts.inter(fontSize: 14.sp),
         indicatorPadding: EdgeInsets.all(4.w),
         dividerColor: Colors.transparent,
@@ -320,9 +317,7 @@ class _StockPortfolioScreenState extends State<StockPortfolioScreen>
   Widget _buildAnalyticsTab() {
     return BlocBuilder<StockCubit, StockState>(
       builder: (context, state) {
-        final portfolio = state is PortfolioLoaded
-            ? state.portfolio
-            : null;
+        final portfolio = state is PortfolioLoaded ? state.portfolio : null;
 
         return SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -331,19 +326,19 @@ class _StockPortfolioScreenState extends State<StockPortfolioScreen>
             children: [
               SizedBox(height: 16.h),
               _buildAnalyticsCard('Performance', [
-                _buildAnalyticsItem('Today\'s Return',
-                    portfolio?.dayChangePercent ?? 0.0, '%'),
-                _buildAnalyticsItem('Total Return',
-                    portfolio?.totalReturnPercent ?? 0.0, '%'),
-                _buildAnalyticsItem('Dividend Income',
-                    portfolio?.dividendIncome ?? 0.0, 'NGN'),
+                _buildAnalyticsItem(
+                    'Today\'s Return', portfolio?.dayChangePercent ?? 0.0, '%'),
+                _buildAnalyticsItem(
+                    'Total Return', portfolio?.totalReturnPercent ?? 0.0, '%'),
+                _buildAnalyticsItem(
+                    'Dividend Income', portfolio?.dividendIncome ?? 0.0, 'NGN'),
               ]),
               SizedBox(height: 16.h),
               _buildAnalyticsCard('Allocation', [
                 _buildAnalyticsItem('Stocks',
                     (portfolio?.stockCount ?? 0).toDouble(), 'stocks'),
-                _buildAnalyticsItem('Total Invested',
-                    portfolio?.totalInvested ?? 0.0, 'NGN'),
+                _buildAnalyticsItem(
+                    'Total Invested', portfolio?.totalInvested ?? 0.0, 'NGN'),
               ]),
               SizedBox(height: 16.h),
               _buildSectorBreakdown(portfolio),
@@ -546,7 +541,8 @@ class _StockPortfolioScreenState extends State<StockPortfolioScreen>
     final totalValue = holding.quantity * stock.currentPrice;
     final totalCost = holding.quantity * holding.averagePrice;
     final totalGain = totalValue - totalCost;
-    final totalGainPercent = totalCost > 0 ? (totalGain / totalCost) * 100 : 0.0;
+    final totalGainPercent =
+        totalCost > 0 ? (totalGain / totalCost) * 100 : 0.0;
 
     return GestureDetector(
       onTap: () => Get.to(() => StockDetailsScreen(stock: stock)),
@@ -612,7 +608,8 @@ class _StockPortfolioScreenState extends State<StockPortfolioScreen>
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  CurrencySymbols.formatAmountWithCurrency(totalValue, stock.currency),
+                  CurrencySymbols.formatAmountWithCurrency(
+                      totalValue, stock.currency),
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 16.sp,
@@ -623,9 +620,8 @@ class _StockPortfolioScreenState extends State<StockPortfolioScreen>
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                   decoration: BoxDecoration(
-                    color: (totalGainPercent >= 0
-                        ? Colors.green
-                        : Colors.red).withValues(alpha: 0.15),
+                    color: (totalGainPercent >= 0 ? Colors.green : Colors.red)
+                        .withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6.r),
                   ),
                   child: Text(

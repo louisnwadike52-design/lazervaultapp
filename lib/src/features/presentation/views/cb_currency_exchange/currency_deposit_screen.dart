@@ -6,7 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 class CurrencyDepositScreen extends StatefulWidget {
   final String currencyCode;
-  
+
   const CurrencyDepositScreen({super.key, required this.currencyCode});
 
   @override
@@ -17,60 +17,62 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  
+
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _bankNameController = TextEditingController();
-  final TextEditingController _accountNumberController = TextEditingController();
+  final TextEditingController _accountNumberController =
+      TextEditingController();
   final TextEditingController _sortCodeController = TextEditingController();
   final TextEditingController _referenceController = TextEditingController();
-  
+
   bool _isProcessing = false;
   String _selectedDepositMethod = 'bank_transfer';
-  
+
   // Mock bank account details for the selected currency
   Map<String, dynamic> get _depositDetails {
     return {
-      'GBP': {
-        'accountName': 'Lazervault Ltd',
-        'accountNumber': '12345678',
-        'sortCode': '12-34-56',
-        'bankName': 'Barclays Bank',
-        'iban': 'GB29 NWBK 6016 1331 9268 19',
-        'swift': 'BARCGB22',
-        'reference': 'LV${DateTime.now().millisecondsSinceEpoch}',
-      },
-      'USD': {
-        'accountName': 'Lazervault Inc',
-        'accountNumber': '987654321',
-        'routingNumber': '021000021',
-        'bankName': 'Chase Bank',
-        'swift': 'CHASUS33',
-        'reference': 'LV${DateTime.now().millisecondsSinceEpoch}',
-      },
-      'EUR': {
-        'accountName': 'Lazervault SARL',
-        'accountNumber': '1234567890',
-        'iban': 'FR14 2004 1010 0505 0001 3M02 606',
-        'bankName': 'BNP Paribas',
-        'swift': 'BNPAFRPP',
-        'reference': 'LV${DateTime.now().millisecondsSinceEpoch}',
-      },
-      'JPY': {
-        'accountName': 'Lazervault KK',
-        'accountNumber': '1234567',
-        'bankName': 'Mitsubishi UFJ Bank',
-        'swift': 'BOTKJPJT',
-        'reference': 'LV${DateTime.now().millisecondsSinceEpoch}',
-      },
-      'CAD': {
-        'accountName': 'Lazervault Corp',
-        'accountNumber': '123456789',
-        'transitNumber': '12345',
-        'bankName': 'Royal Bank of Canada',
-        'swift': 'ROYCCAT2',
-        'reference': 'LV${DateTime.now().millisecondsSinceEpoch}',
-      },
-    }[widget.currencyCode] ?? {};
+          'GBP': {
+            'accountName': 'Lazervault Ltd',
+            'accountNumber': '12345678',
+            'sortCode': '12-34-56',
+            'bankName': 'Barclays Bank',
+            'iban': 'GB29 NWBK 6016 1331 9268 19',
+            'swift': 'BARCGB22',
+            'reference': 'LV${DateTime.now().millisecondsSinceEpoch}',
+          },
+          'USD': {
+            'accountName': 'Lazervault Inc',
+            'accountNumber': '987654321',
+            'routingNumber': '021000021',
+            'bankName': 'Chase Bank',
+            'swift': 'CHASUS33',
+            'reference': 'LV${DateTime.now().millisecondsSinceEpoch}',
+          },
+          'EUR': {
+            'accountName': 'Lazervault SARL',
+            'accountNumber': '1234567890',
+            'iban': 'FR14 2004 1010 0505 0001 3M02 606',
+            'bankName': 'BNP Paribas',
+            'swift': 'BNPAFRPP',
+            'reference': 'LV${DateTime.now().millisecondsSinceEpoch}',
+          },
+          'JPY': {
+            'accountName': 'Lazervault KK',
+            'accountNumber': '1234567',
+            'bankName': 'Mitsubishi UFJ Bank',
+            'swift': 'BOTKJPJT',
+            'reference': 'LV${DateTime.now().millisecondsSinceEpoch}',
+          },
+          'CAD': {
+            'accountName': 'Lazervault Corp',
+            'accountNumber': '123456789',
+            'transitNumber': '12345',
+            'bankName': 'Royal Bank of Canada',
+            'swift': 'ROYCCAT2',
+            'reference': 'LV${DateTime.now().millisecondsSinceEpoch}',
+          },
+        }[widget.currencyCode] ??
+        {};
   }
 
   @override
@@ -84,7 +86,7 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
     _animationController.forward();
-    
+
     // Pre-fill reference
     _referenceController.text = _depositDetails['reference'] ?? '';
   }
@@ -102,11 +104,31 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
 
   Map<String, dynamic> _getCurrencyData(String code) {
     const currencies = {
-      'GBP': {'name': 'British Pound', 'symbol': '£', 'flag': 'https://flagcdn.com/w320/gb.png'},
-      'USD': {'name': 'US Dollar', 'symbol': '\$', 'flag': 'https://flagcdn.com/w320/us.png'},
-      'EUR': {'name': 'Euro', 'symbol': '€', 'flag': 'https://flagcdn.com/w320/eu.png'},
-      'JPY': {'name': 'Japanese Yen', 'symbol': '¥', 'flag': 'https://flagcdn.com/w320/jp.png'},
-      'CAD': {'name': 'Canadian Dollar', 'symbol': 'C\$', 'flag': 'https://flagcdn.com/w320/ca.png'},
+      'GBP': {
+        'name': 'British Pound',
+        'symbol': '£',
+        'flag': 'https://flagcdn.com/w320/gb.png'
+      },
+      'USD': {
+        'name': 'US Dollar',
+        'symbol': '\$',
+        'flag': 'https://flagcdn.com/w320/us.png'
+      },
+      'EUR': {
+        'name': 'Euro',
+        'symbol': '€',
+        'flag': 'https://flagcdn.com/w320/eu.png'
+      },
+      'JPY': {
+        'name': 'Japanese Yen',
+        'symbol': '¥',
+        'flag': 'https://flagcdn.com/w320/jp.png'
+      },
+      'CAD': {
+        'name': 'Canadian Dollar',
+        'symbol': 'C\$',
+        'flag': 'https://flagcdn.com/w320/ca.png'
+      },
     };
     return currencies[code] ?? {};
   }
@@ -114,7 +136,7 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
   @override
   Widget build(BuildContext context) {
     final currency = _getCurrencyData(widget.currencyCode);
-    
+
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F23),
       body: Container(
@@ -231,12 +253,12 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8.r),
               boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8.r),
@@ -312,9 +334,10 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
     );
   }
 
-  Widget _buildMethodOption(String value, String title, String subtitle, IconData icon) {
+  Widget _buildMethodOption(
+      String value, String title, String subtitle, IconData icon) {
     final isSelected = _selectedDepositMethod == value;
-    
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -323,13 +346,13 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
         child: Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: isSelected 
-                ? Colors.blue.withValues(alpha: 0.2) 
+            color: isSelected
+                ? Colors.blue.withValues(alpha: 0.2)
                 : Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
-              color: isSelected 
-                  ? Colors.blue.withValues(alpha: 0.5) 
+              color: isSelected
+                  ? Colors.blue.withValues(alpha: 0.5)
                   : Colors.white.withValues(alpha: 0.1),
               width: isSelected ? 2 : 1,
             ),
@@ -340,14 +363,16 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
                 width: 40.w,
                 height: 40.h,
                 decoration: BoxDecoration(
-                  color: isSelected 
-                      ? Colors.blue.withValues(alpha: 0.3) 
+                  color: isSelected
+                      ? Colors.blue.withValues(alpha: 0.3)
                       : Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Icon(
                   icon,
-                  color: isSelected ? Colors.blue : Colors.white.withValues(alpha: 0.7),
+                  color: isSelected
+                      ? Colors.blue
+                      : Colors.white.withValues(alpha: 0.7),
                   size: 20.sp,
                 ),
               ),
@@ -406,13 +431,12 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -433,7 +457,8 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w600,
                   ),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: '0.00',
@@ -487,8 +512,9 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
   }
 
   Widget _buildBankDetails() {
-    if (_selectedDepositMethod != 'bank_transfer') return const SizedBox.shrink();
-    
+    if (_selectedDepositMethod != 'bank_transfer')
+      return const SizedBox.shrink();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -507,26 +533,30 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             children: [
-              _buildDetailRow('Account Name', _depositDetails['accountName'] ?? ''),
-              _buildDetailRow('Account Number', _depositDetails['accountNumber'] ?? ''),
+              _buildDetailRow(
+                  'Account Name', _depositDetails['accountName'] ?? ''),
+              _buildDetailRow(
+                  'Account Number', _depositDetails['accountNumber'] ?? ''),
               if (_depositDetails['sortCode'] != null)
                 _buildDetailRow('Sort Code', _depositDetails['sortCode']),
               if (_depositDetails['routingNumber'] != null)
-                _buildDetailRow('Routing Number', _depositDetails['routingNumber']),
+                _buildDetailRow(
+                    'Routing Number', _depositDetails['routingNumber']),
               if (_depositDetails['iban'] != null)
                 _buildDetailRow('IBAN', _depositDetails['iban']),
               _buildDetailRow('Bank Name', _depositDetails['bankName'] ?? ''),
               _buildDetailRow('SWIFT/BIC', _depositDetails['swift'] ?? ''),
-              _buildDetailRow('Reference', _depositDetails['reference'] ?? '', isReference: true),
+              _buildDetailRow('Reference', _depositDetails['reference'] ?? '',
+                  isReference: true),
             ],
           ),
         ),
@@ -534,7 +564,8 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
     );
   }
 
-  Widget _buildDetailRow(String label, String value, {bool isReference = false}) {
+  Widget _buildDetailRow(String label, String value,
+      {bool isReference = false}) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 8.h),
       child: Row(
@@ -684,7 +715,7 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() => _isProcessing = false);
-        
+
         Get.snackbar(
           'Deposit Instructions Sent',
           'Check your email for complete deposit instructions',
@@ -696,7 +727,7 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
 
         // Navigate back and show success
         Navigator.of(context).pop();
-        
+
         Future.delayed(const Duration(milliseconds: 500), () {
           _showDepositSuccessDialog();
         });
@@ -706,7 +737,7 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
 
   void _showDepositSuccessDialog() {
     final currency = _getCurrencyData(widget.currencyCode);
-    
+
     Get.dialog(
       AlertDialog(
         backgroundColor: Colors.grey[900],
@@ -785,4 +816,4 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
       ),
     );
   }
-} 
+}

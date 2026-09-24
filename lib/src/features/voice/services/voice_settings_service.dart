@@ -37,10 +37,13 @@ class VoiceSettingsService {
     GetIt? getIt,
   ])  : _client = client ?? http.Client(),
         _getIt = getIt ?? serviceLocator,
-        _languageApiUrl = dotenv.env['VOICE_LANGUAGE_API_URL'] ?? endpointRegistry.httpVoiceLang,
-        _voiceGatewayUrl = dotenv.env['VOICE_AGENT_GATEWAY_URL'] ?? endpointRegistry.httpVoiceAgent;
+        _languageApiUrl = dotenv.env['VOICE_LANGUAGE_API_URL'] ??
+            endpointRegistry.httpVoiceLang,
+        _voiceGatewayUrl = dotenv.env['VOICE_AGENT_GATEWAY_URL'] ??
+            endpointRegistry.httpVoiceAgent;
 
-  Future<List<VoiceLanguage>> getSupportedLanguages({String country = 'NG'}) async {
+  Future<List<VoiceLanguage>> getSupportedLanguages(
+      {String country = 'NG'}) async {
     try {
       final token = await _getAuthToken();
       final response = await _client.get(
@@ -60,10 +63,12 @@ class VoiceSettingsService {
             id: 0,
             code: map['code'] as String? ?? '',
             name: map['name'] as String? ?? '',
-            nativeName: map['nativeName'] as String? ?? map['name'] as String? ?? '',
+            nativeName:
+                map['nativeName'] as String? ?? map['name'] as String? ?? '',
             flagEmoji: map['flag'] as String?,
             ttsProvider: map['provider'] as String? ?? 'openai',
-            supportsCustomVoice: map['supportsVoiceCustomization'] as bool? ?? false,
+            supportsCustomVoice:
+                map['supportsVoiceCustomization'] as bool? ?? false,
             supportsVoiceCloning: map['supportsVoiceCloning'] as bool? ?? false,
             cloningProvider: map['cloningProvider'] as String?,
             requiresTranslation: false,
@@ -164,7 +169,8 @@ class VoiceSettingsService {
     try {
       final token = await _getAuthToken();
       final response = await _client.post(
-        Uri.parse('$_voiceGatewayUrl/voice/clone/enable/$userId?enabled=$enabled'),
+        Uri.parse(
+            '$_voiceGatewayUrl/voice/clone/enable/$userId?enabled=$enabled'),
         headers: {
           'Content-Type': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',
@@ -183,7 +189,9 @@ class VoiceSettingsService {
             await _getIt<VoiceSessionCubit>().notifyCustomVoiceChanged(enabled);
           }
         } catch (e) {
-          AppLogger.error('Failed to signal active voice session of custom voice change', error: e);
+          AppLogger.error(
+              'Failed to signal active voice session of custom voice change',
+              error: e);
         }
       }
       return ok;
@@ -241,14 +249,16 @@ class VoiceSettingsService {
       if (interactionMode != null) {
         body['interaction_mode'] = interactionMode;
       }
-      final response = await _client.put(
-        Uri.parse('$_voiceGatewayUrl/voice/txpin/settings'),
-        headers: {
-          'Content-Type': 'application/json',
-          if (token != null) 'Authorization': 'Bearer $token',
-        },
-        body: json.encode(body),
-      ).timeout(const Duration(seconds: 8));
+      final response = await _client
+          .put(
+            Uri.parse('$_voiceGatewayUrl/voice/txpin/settings'),
+            headers: {
+              'Content-Type': 'application/json',
+              if (token != null) 'Authorization': 'Bearer $token',
+            },
+            body: json.encode(body),
+          )
+          .timeout(const Duration(seconds: 8));
       return response.statusCode == 200;
     } catch (e) {
       AppLogger.error('Error updating voice txpin settings', error: e);
@@ -312,7 +322,8 @@ class VoiceTxPinSettings {
     this.adminInteractionMode = 'continuous',
   });
 
-  factory VoiceTxPinSettings.fromJson(Map<String, dynamic> j) => VoiceTxPinSettings(
+  factory VoiceTxPinSettings.fromJson(Map<String, dynamic> j) =>
+      VoiceTxPinSettings(
         requirePin: j['require_pin'] as bool?,
         thresholdKobo: (j['threshold_kobo'] as num?)?.toInt(),
         entryMode: (j['entry_mode'] as String?) ?? '',
@@ -341,7 +352,8 @@ class VoiceTxPinSettings {
   /// The effective interaction mode the user experiences right now — per-user
   /// override wins, else the admin default. Never empty (falls back to 'continuous').
   String get effectiveInteractionMode {
-    final v = interactionMode.isNotEmpty ? interactionMode : adminInteractionMode;
+    final v =
+        interactionMode.isNotEmpty ? interactionMode : adminInteractionMode;
     return v.isNotEmpty ? v : 'continuous';
   }
 }

@@ -48,8 +48,7 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
               child: BlocBuilder<BatchTransferCubit, BatchTransferState>(
                 builder: (context, state) {
                   if (state is BatchTransferDetailLoading) {
-                    return const Center(
-                        child: LazerVaultLoader.small());
+                    return const Center(child: LazerVaultLoader.small());
                   }
 
                   if (state is BatchTransferDetailError) {
@@ -60,8 +59,7 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
                     return _buildDetail(state.detail);
                   }
 
-                  return const Center(
-                      child: LazerVaultLoader.small());
+                  return const Center(child: LazerVaultLoader.small());
                 },
               ),
             ),
@@ -125,12 +123,14 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
     final beneficiary = item.beneficiaryName;
     final recipient = item.recipientName;
 
-    if (beneficiary != null && beneficiary.isNotEmpty &&
+    if (beneficiary != null &&
+        beneficiary.isNotEmpty &&
         beneficiary.toLowerCase() != 'unknown' &&
         beneficiary.toLowerCase() != 'external account') {
       return beneficiary;
     }
-    if (recipient != null && recipient.isNotEmpty &&
+    if (recipient != null &&
+        recipient.isNotEmpty &&
         recipient.toLowerCase() != 'unknown' &&
         recipient.toLowerCase() != 'business') {
       return recipient;
@@ -143,9 +143,8 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
     final currencySymbol = CurrencyUtils.getSymbol(summary.currency);
     final statusColor = batchStatusColor(summary.status);
     // Use summary.totalRecipients as fallback when items list is empty
-    final recipientCount = detail.items.isNotEmpty
-        ? detail.items.length
-        : summary.totalRecipients;
+    final recipientCount =
+        detail.items.isNotEmpty ? detail.items.length : summary.totalRecipients;
 
     return SingleChildScrollView(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -160,10 +159,8 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
           _buildLifecycleBanner(summary.status),
 
           // Source account card
-          if (detail.sourceAccountNumber.isNotEmpty)
-            _buildSourceCard(detail),
-          if (detail.sourceAccountNumber.isNotEmpty)
-            SizedBox(height: 16.h),
+          if (detail.sourceAccountNumber.isNotEmpty) _buildSourceCard(detail),
+          if (detail.sourceAccountNumber.isNotEmpty) SizedBox(height: 16.h),
 
           // Recipients header
           Padding(
@@ -240,18 +237,21 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
       case 'processing':
       case 'pending':
       case 'awaiting_webhook':
-        message = 'Your batch transfer is being processed. This may take a few minutes.';
+        message =
+            'Your batch transfer is being processed. This may take a few minutes.';
         color = btOrange;
         icon = Icons.access_time_rounded;
         break;
       case 'pending_verification':
-        message = 'We are verifying this transfer with the payment provider. No action needed.';
+        message =
+            'We are verifying this transfer with the payment provider. No action needed.';
         color = btBlue;
         icon = Icons.search_rounded;
         break;
       case 'refund_pending':
       case 'refunding':
-        message = 'A refund is in progress. Funds will return to your wallet within 5 minutes.';
+        message =
+            'A refund is in progress. Funds will return to your wallet within 5 minutes.';
         color = btBlue;
         icon = Icons.replay_rounded;
         break;
@@ -261,12 +261,14 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
         icon = Icons.replay_rounded;
         break;
       case 'auto_released':
-        message = 'This transfer was cancelled before reaching the provider. Your funds have been returned.';
+        message =
+            'This transfer was cancelled before reaching the provider. Your funds have been returned.';
         color = btGreen;
         icon = Icons.check_circle_outline_rounded;
         break;
       case 'manual_review':
-        message = 'This transfer is under review by our support team. You will be notified of the outcome.';
+        message =
+            'This transfer is under review by our support team. You will be notified of the outcome.';
         color = btPurple;
         icon = Icons.support_agent_rounded;
         break;
@@ -305,8 +307,8 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
     );
   }
 
-  Widget _buildSummaryCard(
-      BatchTransferHistoryEntity summary, String currencySymbol, Color statusColor) {
+  Widget _buildSummaryCard(BatchTransferHistoryEntity summary,
+      String currencySymbol, Color statusColor) {
     final dateStr =
         DateFormat('EEEE, MMM dd, yyyy \u2022 HH:mm').format(summary.createdAt);
 
@@ -363,9 +365,11 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
               children: [
                 _buildDetailRow('Date', dateStr),
                 SizedBox(height: 10.h),
-                _buildDetailRow('Batch ID', summary.batchId.length > 12
-                    ? '${summary.batchId.substring(0, 12)}...'
-                    : summary.batchId),
+                _buildDetailRow(
+                    'Batch ID',
+                    summary.batchId.length > 12
+                        ? '${summary.batchId.substring(0, 12)}...'
+                        : summary.batchId),
                 SizedBox(height: 10.h),
                 _buildDetailRow('Recipients', '${summary.totalRecipients}'),
                 SizedBox(height: 10.h),
@@ -409,8 +413,8 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
               color: btBlue.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12.r),
             ),
-            child: Icon(Icons.account_balance_wallet,
-                color: btBlue, size: 22.sp),
+            child:
+                Icon(Icons.account_balance_wallet, color: btBlue, size: 22.sp),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -451,7 +455,8 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
     );
   }
 
-  Widget _buildRecipientCard(BatchTransferResult item, String currencySymbol, BatchTransferDetailEntity detail) {
+  Widget _buildRecipientCard(BatchTransferResult item, String currencySymbol,
+      BatchTransferDetailEntity detail) {
     final amount = item.amount.toDouble() / 100;
     final fee = item.fee.toDouble() / 100;
     final statusColor = batchStatusColor(item.status);
@@ -576,7 +581,8 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
             ),
 
             // Fee + reference
-            if (fee > 0 || (item.reference != null && item.reference!.isNotEmpty))
+            if (fee > 0 ||
+                (item.reference != null && item.reference!.isNotEmpty))
               Padding(
                 padding: EdgeInsets.only(top: 10.h),
                 child: Container(
@@ -641,7 +647,8 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
     );
   }
 
-  void _showRecipientDetailSheet(BatchTransferResult item, String currencySymbol, BatchTransferDetailEntity detail) {
+  void _showRecipientDetailSheet(BatchTransferResult item,
+      String currencySymbol, BatchTransferDetailEntity detail) {
     final amount = item.amount.toDouble() / 100;
     final fee = item.fee.toDouble() / 100;
     final statusColor = batchStatusColor(item.status);
@@ -693,11 +700,15 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
                           ),
                           child: Center(
                             child: isFailed
-                                ? Icon(Icons.close_rounded, color: btRed, size: 22.sp)
+                                ? Icon(Icons.close_rounded,
+                                    color: btRed, size: 22.sp)
                                 : isExternal
-                                    ? Icon(Icons.account_balance, color: btOrange, size: 22.sp)
+                                    ? Icon(Icons.account_balance,
+                                        color: btOrange, size: 22.sp)
                                     : Text(
-                                        name.isNotEmpty ? name[0].toUpperCase() : '?',
+                                        name.isNotEmpty
+                                            ? name[0].toUpperCase()
+                                            : '?',
                                         style: GoogleFonts.inter(
                                           color: statusColor,
                                           fontSize: 20.sp,
@@ -741,7 +752,8 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
                               color: btCardElevated,
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(Icons.close, color: btTextSecondary, size: 18.sp),
+                            child: Icon(Icons.close,
+                                color: btTextSecondary, size: 18.sp),
                           ),
                         ),
                       ],
@@ -779,32 +791,49 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
                               children: [
                                 _buildDetailRow('Recipient', name),
                                 SizedBox(height: 10.h),
-                                _buildDetailRow('Account', item.recipientAccount ?? 'N/A'),
+                                _buildDetailRow(
+                                    'Account', item.recipientAccount ?? 'N/A'),
                                 SizedBox(height: 10.h),
-                                _buildDetailRow('Amount', '$currencySymbol${amount.toStringAsFixed(2)}'),
+                                _buildDetailRow('Amount',
+                                    '$currencySymbol${amount.toStringAsFixed(2)}'),
                                 SizedBox(height: 10.h),
-                                _buildDetailRow('Fee', fee == 0 ? 'Free' : '$currencySymbol${fee.toStringAsFixed(2)}',
+                                _buildDetailRow(
+                                    'Fee',
+                                    fee == 0
+                                        ? 'Free'
+                                        : '$currencySymbol${fee.toStringAsFixed(2)}',
                                     valueColor: fee == 0 ? btGreen : null),
                                 SizedBox(height: 10.h),
-                                _buildDetailRow('Type', isExternal ? 'Bank Transfer' : 'Lazervault'),
-                                if (isExternal && item.destinationBankName != null) ...[
+                                _buildDetailRow(
+                                    'Type',
+                                    isExternal
+                                        ? 'Bank Transfer'
+                                        : 'Lazervault'),
+                                if (isExternal &&
+                                    item.destinationBankName != null) ...[
                                   SizedBox(height: 10.h),
-                                  _buildDetailRow('Bank', item.destinationBankName!),
+                                  _buildDetailRow(
+                                      'Bank', item.destinationBankName!),
                                 ],
-                                if (item.reference != null && item.reference!.isNotEmpty) ...[
+                                if (item.reference != null &&
+                                    item.reference!.isNotEmpty) ...[
                                   SizedBox(height: 10.h),
                                   _buildDetailRow('Reference', item.reference!),
                                 ],
                                 SizedBox(height: 10.h),
-                                _buildDetailRow('Transfer ID', item.transferId.length > 16
-                                    ? '${item.transferId.substring(0, 16)}...'
-                                    : item.transferId),
+                                _buildDetailRow(
+                                    'Transfer ID',
+                                    item.transferId.length > 16
+                                        ? '${item.transferId.substring(0, 16)}...'
+                                        : item.transferId),
                               ],
                             ),
                           ),
 
                           // Failure reason
-                          if (isFailed && item.failureReason != null && item.failureReason!.isNotEmpty) ...[
+                          if (isFailed &&
+                              item.failureReason != null &&
+                              item.failureReason!.isNotEmpty) ...[
                             SizedBox(height: 14.h),
                             Container(
                               width: double.infinity,
@@ -812,12 +841,14 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
                               decoration: BoxDecoration(
                                 color: btRed.withValues(alpha: 0.06),
                                 borderRadius: BorderRadius.circular(10.r),
-                                border: Border.all(color: btRed.withValues(alpha: 0.15)),
+                                border: Border.all(
+                                    color: btRed.withValues(alpha: 0.15)),
                               ),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Icon(Icons.info_outline_rounded, color: btRed, size: 16.sp),
+                                  Icon(Icons.info_outline_rounded,
+                                      color: btRed, size: 16.sp),
                                   SizedBox(width: 8.w),
                                   Expanded(
                                     child: Text(
@@ -858,7 +889,8 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
                                   color: btGreen,
                                   isLoading: _isDownloading,
                                   onTap: () async {
-                                    await _downloadIndividualReceipt(item, detail);
+                                    await _downloadIndividualReceipt(
+                                        item, detail);
                                     setSheetState(() {});
                                   },
                                 ),
@@ -894,7 +926,8 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
 
   /// Opens one batch leg as its own full receipt — identical to the receipt
   /// a single SendFunds transfer gets, including live status by reference.
-  void _openItemFullReceipt(BatchTransferResult item, BatchTransferDetailEntity detail) {
+  void _openItemFullReceipt(
+      BatchTransferResult item, BatchTransferDetailEntity detail) {
     final currency = detail.summary.currency;
     final symbol = currency == 'NGN' ? '₦' : currency;
     Get.toNamed(AppRoutes.transferProof, arguments: <String, dynamic>{
@@ -957,7 +990,8 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
     );
   }
 
-  Map<String, dynamic> _buildReceiptDataFromDetail(BatchTransferDetailEntity detail) {
+  Map<String, dynamic> _buildReceiptDataFromDetail(
+      BatchTransferDetailEntity detail) {
     final summary = detail.summary;
     return {
       'batchId': summary.batchId,
@@ -973,19 +1007,22 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
       'senderAccountInfo': detail.sourceAccountNumber.isNotEmpty
           ? '\u2022\u2022\u2022\u2022 ${detail.sourceAccountNumber.length > 4 ? detail.sourceAccountNumber.substring(detail.sourceAccountNumber.length - 4) : detail.sourceAccountNumber}'
           : null,
-      'transfers': detail.items.map((r) => {
-        'recipientName': _resolveRecipientName(r),
-        'recipientAccount': r.recipientAccount ?? '',
-        'amount': r.amount.toDouble() / 100,
-        'fee': r.fee.toDouble() / 100,
-        'status': r.status,
-        'failureReason': r.failureReason,
-        'reference': r.reference,
-      }).toList(),
+      'transfers': detail.items
+          .map((r) => {
+                'recipientName': _resolveRecipientName(r),
+                'recipientAccount': r.recipientAccount ?? '',
+                'amount': r.amount.toDouble() / 100,
+                'fee': r.fee.toDouble() / 100,
+                'status': r.status,
+                'failureReason': r.failureReason,
+                'reference': r.reference,
+              })
+          .toList(),
     };
   }
 
-  Future<void> _downloadIndividualReceipt(BatchTransferResult item, BatchTransferDetailEntity detail) async {
+  Future<void> _downloadIndividualReceipt(
+      BatchTransferResult item, BatchTransferDetailEntity detail) async {
     if (_isDownloading) return;
     setState(() => _isDownloading = true);
 
@@ -1031,7 +1068,8 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
     }
   }
 
-  Future<void> _shareIndividualReceipt(BatchTransferResult item, BatchTransferDetailEntity detail) async {
+  Future<void> _shareIndividualReceipt(
+      BatchTransferResult item, BatchTransferDetailEntity detail) async {
     if (_isSharing) return;
     setState(() => _isSharing = true);
 

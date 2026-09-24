@@ -143,5 +143,6 @@ abstract class IPlanMyDayRepository {
 
   // Weekly summary + productivity insights (raw maps — screens shape their own view)
   Future<Map<String, dynamic>> getWeeklySummary({String? startDate});
-  Future<Map<String, dynamic>> getProductivityInsights({String period = 'week'});
+  Future<Map<String, dynamic>> getProductivityInsights(
+      {String period = 'week'});
 }

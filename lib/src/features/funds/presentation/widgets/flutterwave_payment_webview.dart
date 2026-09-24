@@ -23,7 +23,8 @@ class FlutterwavePaymentResult {
     this.errorMessage,
   });
 
-  factory FlutterwavePaymentResult.success({String? status, String? txRef, String? transactionId}) {
+  factory FlutterwavePaymentResult.success(
+      {String? status, String? txRef, String? transactionId}) {
     return FlutterwavePaymentResult(
       success: true,
       status: status,
@@ -103,7 +104,8 @@ class _FlutterwavePaymentSheet extends StatefulWidget {
   });
 
   @override
-  State<_FlutterwavePaymentSheet> createState() => _FlutterwavePaymentSheetState();
+  State<_FlutterwavePaymentSheet> createState() =>
+      _FlutterwavePaymentSheetState();
 }
 
 class _FlutterwavePaymentSheetState extends State<_FlutterwavePaymentSheet> {
@@ -145,7 +147,7 @@ class _FlutterwavePaymentSheetState extends State<_FlutterwavePaymentSheet> {
             // Intercept redirect back to app (guard against multiple redirects)
             if (!_redirectHandled &&
                 (uri.scheme == widget.redirectScheme ||
-                 request.url.contains(widget.redirectPath))) {
+                    request.url.contains(widget.redirectPath))) {
               _redirectHandled = true;
               _handleRedirect(uri);
               return NavigationDecision.prevent;
@@ -205,70 +207,71 @@ class _FlutterwavePaymentSheetState extends State<_FlutterwavePaymentSheet> {
         if (!didPop) _showCancelConfirmation();
       },
       child: Container(
-      height: MediaQuery.of(context).size.height * 0.92,
-      decoration: BoxDecoration(
-        color: const Color(0xFF0A0A0A),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20.r),
-          topRight: Radius.circular(20.r),
+        height: MediaQuery.of(context).size.height * 0.92,
+        decoration: BoxDecoration(
+          color: const Color(0xFF0A0A0A),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20.r),
+            topRight: Radius.circular(20.r),
+          ),
         ),
-      ),
-      child: Column(
-        children: [
-          // Header bar
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-            decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: Color(0xFF2D2D2D), width: 0.5),
+        child: Column(
+          children: [
+            // Header bar
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              decoration: const BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: Color(0xFF2D2D2D), width: 0.5),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Complete Payment',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => _showCancelConfirmation(),
+                    icon: const Icon(Icons.close, color: Colors.white70),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
               ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Complete Payment',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => _showCancelConfirmation(),
-                  icon: const Icon(Icons.close, color: Colors.white70),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ],
+            // WebView content
+            Expanded(
+              child: Stack(
+                children: [
+                  if (_hasError)
+                    _buildErrorState()
+                  else
+                    WebViewWidget(
+                      controller: _controller,
+                      // Vertical-drag recognizer so the payment page scrolls fully
+                      // inside the sheet (button at the bottom stays reachable).
+                      gestureRecognizers: <Factory<
+                          OneSequenceGestureRecognizer>>{
+                        Factory<VerticalDragGestureRecognizer>(
+                            () => VerticalDragGestureRecognizer()),
+                      },
+                    ),
+                  if (_isLoading)
+                    const Center(
+                      child: LazerVaultLoader.small(),
+                    ),
+                ],
+              ),
             ),
-          ),
-          // WebView content
-          Expanded(
-            child: Stack(
-              children: [
-                if (_hasError)
-                  _buildErrorState()
-                else
-                  WebViewWidget(
-                    controller: _controller,
-                    // Vertical-drag recognizer so the payment page scrolls fully
-                    // inside the sheet (button at the bottom stays reachable).
-                    gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
-                      Factory<VerticalDragGestureRecognizer>(
-                          () => VerticalDragGestureRecognizer()),
-                    },
-                  ),
-                if (_isLoading)
-                  const Center(
-                    child: LazerVaultLoader.small(),
-                  ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
     );
   }
 
@@ -279,7 +282,8 @@ class _FlutterwavePaymentSheetState extends State<_FlutterwavePaymentSheet> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 48.sp),
+            Icon(Icons.error_outline,
+                color: const Color(0xFFEF4444), size: 48.sp),
             SizedBox(height: 16.h),
             Text(
               'Unable to load payment page',
@@ -303,10 +307,12 @@ class _FlutterwavePaymentSheetState extends State<_FlutterwavePaymentSheet> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop(FlutterwavePaymentResult.cancelled()),
+                  onPressed: () => Navigator.of(context)
+                      .pop(FlutterwavePaymentResult.cancelled()),
                   child: Text(
                     'Cancel',
-                    style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+                    style: TextStyle(
+                        color: const Color(0xFF9CA3AF), fontSize: 14.sp),
                   ),
                 ),
                 SizedBox(width: 16.w),
@@ -342,7 +348,8 @@ class _FlutterwavePaymentSheetState extends State<_FlutterwavePaymentSheet> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text(
           'Cancel Payment?',
           style: TextStyle(color: Colors.white, fontSize: 16.sp),

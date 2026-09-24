@@ -216,8 +216,8 @@ class AiScanCubit extends Cubit<AiScanState> {
 
     // Ensure a session id exists for the OCR call (server-side session is
     // optional — the OCR endpoint is stateless HTTP).
-    final sessionId = _currentSession?.id ??
-        'local-${DateTime.now().microsecondsSinceEpoch}';
+    final sessionId =
+        _currentSession?.id ?? 'local-${DateTime.now().microsecondsSinceEpoch}';
     _currentSession ??= ScanSession(
       id: sessionId,
       scanType: ScanType.bankDetails,
@@ -409,8 +409,7 @@ class AiScanCubit extends Cubit<AiScanState> {
     } on ScanException catch (e) {
       _failPayment(intent, e.getUserMessage(), e.canRetry);
     } catch (e) {
-      _failPayment(
-          intent, e.toString().replaceAll('Exception: ', ''), true);
+      _failPayment(intent, e.toString().replaceAll('Exception: ', ''), true);
     }
   }
 
@@ -473,9 +472,8 @@ class AiScanCubit extends Cubit<AiScanState> {
         emit(AiScanPaymentCompleted(PaymentReceipt(
           id: txn.id,
           reference: txn.referenceNumber,
-          recipientName: txn.recipientName.isNotEmpty
-              ? txn.recipientName
-              : (intent.title),
+          recipientName:
+              txn.recipientName.isNotEmpty ? txn.recipientName : (intent.title),
           accountNumber: txn.recipientUsername,
           bankName: 'LazerVault',
           amount: txn.amount,
@@ -526,7 +524,8 @@ class AiScanCubit extends Cubit<AiScanState> {
         isExternal: false,
       )));
     } else {
-      _failPayment(intent, result.errorMessage ?? 'Invoice payment failed.', true);
+      _failPayment(
+          intent, result.errorMessage ?? 'Invoice payment failed.', true);
     }
   }
 
@@ -546,7 +545,8 @@ class AiScanCubit extends Cubit<AiScanState> {
     if (toAccountNumber == null || toAccountNumber.isEmpty) {
       final query = intent.username ?? intent.userId;
       if (query != null && query.isNotEmpty) {
-        final matches = await profileRepository.searchUsers(query: query, limit: 5);
+        final matches =
+            await profileRepository.searchUsers(query: query, limit: 5);
         if (matches.isNotEmpty) {
           final match = matches.first;
           toAccountId = match.primaryAccountId ?? toAccountId ?? match.userId;
@@ -560,7 +560,8 @@ class AiScanCubit extends Cubit<AiScanState> {
     toAccountId ??= intent.userId;
     toAccountNumber ??= toAccountId ?? '';
 
-    if ((toAccountId == null || toAccountId.isEmpty) && toAccountNumber.isEmpty) {
+    if ((toAccountId == null || toAccountId.isEmpty) &&
+        toAccountNumber.isEmpty) {
       _failPayment(intent, 'Could not resolve the recipient account.', false);
       return;
     }
@@ -609,7 +610,8 @@ class AiScanCubit extends Cubit<AiScanState> {
       ));
 
       // Extract bank details via OCR
-      final bankDetails = await scanBankDetailsUseCase(imagePath, _currentSession!.id);
+      final bankDetails =
+          await scanBankDetailsUseCase(imagePath, _currentSession!.id);
 
       // Re-journal — the user has invested OCR work; persist both the
       // session and the extracted details so a nav-away can resume
@@ -661,5 +663,4 @@ class AiScanCubit extends Cubit<AiScanState> {
       ));
     }
   }
-
-} 
+}

@@ -244,7 +244,8 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                     controller: _amountController,
                     keyboardType: TextInputType.number,
                     inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                      FilteringTextInputFormatter.allow(
+                          RegExp(r'^\d+\.?\d{0,2}')),
                     ],
                     decoration: InputDecoration(
                       prefixText: '₦ ',
@@ -266,7 +267,8 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.r),
-                        borderSide: const BorderSide(color: Color.fromARGB(255, 78, 3, 208)),
+                        borderSide: const BorderSide(
+                            color: Color.fromARGB(255, 78, 3, 208)),
                       ),
                     ),
                     style: TextStyle(
@@ -370,7 +372,8 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.r),
-                        borderSide: const BorderSide(color: Color.fromARGB(255, 78, 3, 208)),
+                        borderSide: const BorderSide(
+                            color: Color.fromARGB(255, 78, 3, 208)),
                       ),
                       suffixIcon: _isResolvingAccount
                           ? Padding(
@@ -470,7 +473,8 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.r),
-                        borderSide: const BorderSide(color: Color.fromARGB(255, 78, 3, 208)),
+                        borderSide: const BorderSide(
+                            color: Color.fromARGB(255, 78, 3, 208)),
                       ),
                     ),
                   ),
@@ -587,7 +591,8 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
             onTap: () => setState(() => _showConfirmation = false),
             child: Row(
               children: [
-                Icon(Icons.arrow_back_ios, size: 18.sp, color: Colors.grey[600]),
+                Icon(Icons.arrow_back_ios,
+                    size: 18.sp, color: Colors.grey[600]),
                 Text(
                   'Back',
                   style: TextStyle(
@@ -731,7 +736,8 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.6),
+                disabledBackgroundColor: const Color.fromARGB(255, 78, 3, 208)
+                    .withValues(alpha: 0.6),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16.r),
                 ),

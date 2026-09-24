@@ -151,9 +151,8 @@ class _PriceQuoteCardState extends State<PriceQuoteCard> {
     // blank error. The error string still surfaces below for transparency.
     setState(() {
       _price = _lastGoodPrice;
-      _error = _lastGoodPrice != null
-          ? 'Rate paused, retrying'
-          : 'Rate unavailable';
+      _error =
+          _lastGoodPrice != null ? 'Rate paused, retrying' : 'Rate unavailable';
       _loading = false;
     });
     _notifyRate();
@@ -161,7 +160,8 @@ class _PriceQuoteCardState extends State<PriceQuoteCard> {
     // intent is clear: we've surfaced what the user needs to see.
     assert(() {
       if (lastErr != null) {
-        debugPrint('PriceQuoteCard load failed after $_maxAttempts attempts: $lastErr');
+        debugPrint(
+            'PriceQuoteCard load failed after $_maxAttempts attempts: $lastErr');
       }
       return true;
     }());
@@ -172,7 +172,8 @@ class _PriceQuoteCardState extends State<PriceQuoteCard> {
     if (_loading) {
       return _container(
         child: Text('Fetching ${widget.cryptoSymbol.toUpperCase()} price…',
-            style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+            style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
       );
     }
     // Hard error: no rate at all, and no prior reading to fall back on.
@@ -260,8 +261,7 @@ class _PriceQuoteCardState extends State<PriceQuoteCard> {
                     fontWeight: FontWeight.w600)),
           if (isStale) ...[
             SizedBox(width: 6.w),
-            Icon(Icons.refresh,
-                color: const Color(0xFF3B82F6), size: 14.sp),
+            Icon(Icons.refresh, color: const Color(0xFF3B82F6), size: 14.sp),
           ],
         ]),
       ),

@@ -118,6 +118,7 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
   // couldn't confirm the customer name — we let the user proceed anyway
   // (many prepaid meters accept payment without a name lookup).
   bool _manualUnverified = false;
+
   /// True when the last verification attempt could not reach any provider, as
   /// opposed to a provider answering that the meter is not theirs. Only the
   /// former lets the customer continue on their own confirmation.
@@ -175,9 +176,8 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
             isValid: v.isValid,
             customerName: v.customerName,
             customerAddress: v.customerAddress,
-            meterType: (v.meterType == MeterType.postpaid)
-                ? 'postpaid'
-                : 'prepaid',
+            meterType:
+                (v.meterType == MeterType.postpaid) ? 'postpaid' : 'prepaid',
             meterNumber: v.meterNumber,
             providerCode: s.providerCode,
             providerName: disco?.providerName ?? '',
@@ -230,8 +230,10 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
   /// already-saved meter and avoid a duplicate save.
   Future<void> _loadSavedMeters() async {
     try {
-      final res =
-          await context.read<ElectricityBillCubit>().repository.getBeneficiaries();
+      final res = await context
+          .read<ElectricityBillCubit>()
+          .repository
+          .getBeneficiaries();
       if (!mounted) return;
       res.fold((_) {}, (list) {
         setState(() => _beneficiaries = list);
@@ -244,8 +246,7 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
   /// is known, also require the provider code to match so two discos sharing a
   /// meter number aren't conflated.
   void _recomputeExistingBeneficiary() {
-    final typed =
-        _effMeterNumber.replaceAll(RegExp(r'[^\d]'), '');
+    final typed = _effMeterNumber.replaceAll(RegExp(r'[^\d]'), '');
     final code = _effProviderCode;
     BillBeneficiaryEntity? found;
     if (typed.isNotEmpty) {
@@ -277,8 +278,8 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
 
   Future<void> _prefillPhone() async {
     try {
-      final raw =
-          await serviceLocator<FlutterSecureStorage>().read(key: 'stored_phone');
+      final raw = await serviceLocator<FlutterSecureStorage>()
+          .read(key: 'stored_phone');
       var d = (raw ?? '').replaceAll(RegExp(r'[^\d]'), '');
       if (d.startsWith('234')) d = d.substring(3);
       if (d.startsWith('0')) d = d.substring(1);
@@ -306,7 +307,9 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
     _recomputeExistingBeneficiary();
     if (meter.length < 10) return;
     _debounce = Timer(const Duration(milliseconds: 500), () {
-      context.read<ElectricityBillCubit>().smartValidateMeter(meterNumber: meter);
+      context
+          .read<ElectricityBillCubit>()
+          .smartValidateMeter(meterNumber: meter);
     });
   }
 
@@ -355,8 +358,7 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
     return m != null && m.isValid && m.customerName.trim().isNotEmpty;
   }
 
-  bool get _hasTarget =>
-      _meterConfirmed || (_manualMode && _manualUnverified);
+  bool get _hasTarget => _meterConfirmed || (_manualMode && _manualUnverified);
   bool get _ready => _hasTarget && _amountValid && _phoneValid;
 
   MeterType get _meterType => _meter != null
@@ -453,7 +455,8 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
               transactionId: txnId,
               verificationToken: token,
             );
-            result = await completer.future.timeout(const Duration(seconds: 90));
+            result =
+                await completer.future.timeout(const Duration(seconds: 90));
           } finally {
             await sub.cancel();
           }
@@ -848,13 +851,15 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
       decoration: BoxDecoration(
         color: const Color(0xFF10B981).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
+        border:
+            Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
       ),
       child: Row(children: [
         Icon(Icons.verified, color: const Color(0xFF10B981), size: 16.sp),
         SizedBox(width: 8.w),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(m.customerName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -877,8 +882,7 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       if (_validateError != null && disco == null) ...[
         Row(children: [
-          Icon(Icons.info_outline,
-              color: const Color(0xFFFB923C), size: 15.sp),
+          Icon(Icons.info_outline, color: const Color(0xFFFB923C), size: 15.sp),
           SizedBox(width: 6.w),
           Expanded(
             // Two different situations, two different messages. Saying "we
@@ -941,8 +945,8 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
           decoration: BoxDecoration(
             color: const Color(0xFFFB923C).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10.r),
-            border:
-                Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.35)),
+            border: Border.all(
+                color: const Color(0xFFFB923C).withValues(alpha: 0.35)),
           ),
           child: Row(children: [
             Icon(Icons.warning_amber_rounded,
@@ -1127,7 +1131,8 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
     );
   }
 
-  Widget _row(String label, String value, {Color? valueColor, bool bold = false}) {
+  Widget _row(String label, String value,
+      {Color? valueColor, bool bold = false}) {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Text(label, style: GoogleFonts.inter(color: _muted, fontSize: 13.sp)),
       Flexible(
@@ -1158,7 +1163,8 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
         ),
         child: _submitting
-            ? SizedBox(width: 20.w, height: 20.w, child: LazerVaultLoader.small())
+            ? SizedBox(
+                width: 20.w, height: 20.w, child: LazerVaultLoader.small())
             : Text(
                 _amount != null && _amount! > 0
                     ? 'Pay ₦${_amount!.toStringAsFixed(0)}'

@@ -255,7 +255,8 @@ class _EmailThreadScreenState extends State<EmailThreadScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.reply_rounded, color: EmailPalette.primary, size: 18.sp),
+              Icon(Icons.reply_rounded,
+                  color: EmailPalette.primary, size: 18.sp),
               SizedBox(width: 8.w),
               Text('AI reply',
                   style: GoogleFonts.inter(
@@ -264,7 +265,8 @@ class _EmailThreadScreenState extends State<EmailThreadScreen> {
                       fontWeight: FontWeight.w600)),
               const Spacer(),
               IconButton(
-                icon: const Icon(Icons.close, color: EmailPalette.textSecondary),
+                icon:
+                    const Icon(Icons.close, color: EmailPalette.textSecondary),
                 onPressed: () => setState(() => _composerOpen = false),
               ),
             ],

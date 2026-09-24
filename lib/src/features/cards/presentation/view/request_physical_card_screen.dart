@@ -11,7 +11,8 @@ class RequestPhysicalCardScreen extends StatefulWidget {
   const RequestPhysicalCardScreen({super.key});
 
   @override
-  State<RequestPhysicalCardScreen> createState() => _RequestPhysicalCardScreenState();
+  State<RequestPhysicalCardScreen> createState() =>
+      _RequestPhysicalCardScreenState();
 }
 
 class _RequestPhysicalCardScreenState extends State<RequestPhysicalCardScreen> {
@@ -59,17 +60,21 @@ class _RequestPhysicalCardScreenState extends State<RequestPhysicalCardScreen> {
   void _submitRequest() {
     if (_accountId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Account not selected'), backgroundColor: Color(0xFFEF4444)),
+        const SnackBar(
+            content: Text('Account not selected'),
+            backgroundColor: Color(0xFFEF4444)),
       );
       return;
     }
 
     context.read<CardCubit>().requestPhysicalCard(
-      accountId: _accountId!,
-      nickname: _nicknameController.text.trim().isNotEmpty ? _nicknameController.text.trim() : null,
-      currency: _currency,
-      shippingAddress: _shippingAddress,
-    );
+          accountId: _accountId!,
+          nickname: _nicknameController.text.trim().isNotEmpty
+              ? _nicknameController.text.trim()
+              : null,
+          currency: _currency,
+          shippingAddress: _shippingAddress,
+        );
   }
 
   @override
@@ -80,7 +85,9 @@ class _RequestPhysicalCardScreenState extends State<RequestPhysicalCardScreen> {
           Get.offNamed(AppRoutes.cardCreationReceipt, arguments: state.card);
         } else if (state is CardError) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: const Color(0xFFEF4444)),
+            SnackBar(
+                content: Text(state.message),
+                backgroundColor: const Color(0xFFEF4444)),
           );
         }
       },
@@ -94,7 +101,8 @@ class _RequestPhysicalCardScreenState extends State<RequestPhysicalCardScreen> {
               onPressed: () => Get.back(),
               icon: const Icon(Icons.arrow_back, color: Colors.white),
             ),
-            title: const Text('Request Physical Card', style: TextStyle(color: Colors.white)),
+            title: const Text('Request Physical Card',
+                style: TextStyle(color: Colors.white)),
             centerTitle: true,
           ),
           body: SafeArea(
@@ -126,23 +134,28 @@ class _RequestPhysicalCardScreenState extends State<RequestPhysicalCardScreen> {
                     children: [
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: state is CardCreating ? null : details.onStepContinue,
+                          onPressed: state is CardCreating
+                              ? null
+                              : details.onStepContinue,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF3B82F6),
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
                           ),
                           child: state is CardCreating
                               ? LazerVaultLoader.small()
-                              : Text(isLastStep ? 'Confirm Request' : 'Continue'),
+                              : Text(
+                                  isLastStep ? 'Confirm Request' : 'Continue'),
                         ),
                       ),
                       const SizedBox(width: 12),
                       if (_currentStep > 0)
                         TextButton(
                           onPressed: details.onStepCancel,
-                          child: const Text('Back', style: TextStyle(color: Color(0xFF9CA3AF))),
+                          child: const Text('Back',
+                              style: TextStyle(color: Color(0xFF9CA3AF))),
                         ),
                     ],
                   ),
@@ -150,13 +163,15 @@ class _RequestPhysicalCardScreenState extends State<RequestPhysicalCardScreen> {
               },
               steps: [
                 Step(
-                  title: const Text('Card Details', style: TextStyle(color: Colors.white)),
+                  title: const Text('Card Details',
+                      style: TextStyle(color: Colors.white)),
                   content: Column(
                     children: [
                       TextField(
                         controller: _nicknameController,
                         style: const TextStyle(color: Colors.white),
-                        decoration: _inputDecoration('Card Nickname (optional)', 'e.g. My ATM Card'),
+                        decoration: _inputDecoration(
+                            'Card Nickname (optional)', 'e.g. My ATM Card'),
                       ),
                       const SizedBox(height: 12),
                       Container(
@@ -169,11 +184,17 @@ class _RequestPhysicalCardScreenState extends State<RequestPhysicalCardScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Card Type', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12)),
+                            const Text('Card Type',
+                                style: TextStyle(
+                                    color: Color(0xFF9CA3AF), fontSize: 12)),
                             const SizedBox(height: 4),
-                            const Text('Physical Debit Card', style: TextStyle(color: Colors.white, fontSize: 16)),
+                            const Text('Physical Debit Card',
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 16)),
                             const SizedBox(height: 8),
-                            Text('Currency: $_currency', style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14)),
+                            Text('Currency: $_currency',
+                                style: const TextStyle(
+                                    color: Color(0xFF9CA3AF), fontSize: 14)),
                           ],
                         ),
                       ),
@@ -182,7 +203,8 @@ class _RequestPhysicalCardScreenState extends State<RequestPhysicalCardScreen> {
                   isActive: _currentStep >= 0,
                 ),
                 Step(
-                  title: const Text('Shipping Address', style: TextStyle(color: Colors.white)),
+                  title: const Text('Shipping Address',
+                      style: TextStyle(color: Colors.white)),
                   content: Form(
                     key: _formKey,
                     child: Column(
@@ -190,8 +212,11 @@ class _RequestPhysicalCardScreenState extends State<RequestPhysicalCardScreen> {
                         TextFormField(
                           controller: _streetController,
                           style: const TextStyle(color: Colors.white),
-                          decoration: _inputDecoration('Street Address', '123 Main Street'),
-                          validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                          decoration: _inputDecoration(
+                              'Street Address', '123 Main Street'),
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Required'
+                              : null,
                         ),
                         const SizedBox(height: 12),
                         Row(
@@ -201,7 +226,10 @@ class _RequestPhysicalCardScreenState extends State<RequestPhysicalCardScreen> {
                                 controller: _cityController,
                                 style: const TextStyle(color: Colors.white),
                                 decoration: _inputDecoration('City', 'Lagos'),
-                                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                                validator: (v) =>
+                                    (v == null || v.trim().isEmpty)
+                                        ? 'Required'
+                                        : null,
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -221,7 +249,8 @@ class _RequestPhysicalCardScreenState extends State<RequestPhysicalCardScreen> {
                               child: TextFormField(
                                 controller: _postalCodeController,
                                 style: const TextStyle(color: Colors.white),
-                                decoration: _inputDecoration('Postal Code', '100001'),
+                                decoration:
+                                    _inputDecoration('Postal Code', '100001'),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -229,8 +258,12 @@ class _RequestPhysicalCardScreenState extends State<RequestPhysicalCardScreen> {
                               child: TextFormField(
                                 controller: _countryController,
                                 style: const TextStyle(color: Colors.white),
-                                decoration: _inputDecoration('Country', 'Nigeria'),
-                                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                                decoration:
+                                    _inputDecoration('Country', 'Nigeria'),
+                                validator: (v) =>
+                                    (v == null || v.trim().isEmpty)
+                                        ? 'Required'
+                                        : null,
                               ),
                             ),
                           ],
@@ -241,7 +274,8 @@ class _RequestPhysicalCardScreenState extends State<RequestPhysicalCardScreen> {
                   isActive: _currentStep >= 1,
                 ),
                 Step(
-                  title: const Text('Review', style: TextStyle(color: Colors.white)),
+                  title: const Text('Review',
+                      style: TextStyle(color: Colors.white)),
                   content: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
@@ -252,31 +286,43 @@ class _RequestPhysicalCardScreenState extends State<RequestPhysicalCardScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Order Summary', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                        const Text('Order Summary',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold)),
                         const SizedBox(height: 16),
                         _reviewRow('Card Type', 'Physical Debit Card'),
                         if (_nicknameController.text.trim().isNotEmpty)
-                          _reviewRow('Nickname', _nicknameController.text.trim()),
+                          _reviewRow(
+                              'Nickname', _nicknameController.text.trim()),
                         _reviewRow('Currency', _currency ?? 'NGN'),
                         const Divider(color: Color(0xFF2D2D2D), height: 24),
-                        const Text('Shipping To', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12)),
+                        const Text('Shipping To',
+                            style: TextStyle(
+                                color: Color(0xFF9CA3AF), fontSize: 12)),
                         const SizedBox(height: 4),
-                        Text(_shippingAddress, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                        Text(_shippingAddress,
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 14)),
                         const SizedBox(height: 16),
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                            color:
+                                const Color(0xFF3B82F6).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Row(
                             children: [
-                              Icon(Icons.info_outline, color: Color(0xFF3B82F6), size: 16),
+                              Icon(Icons.info_outline,
+                                  color: Color(0xFF3B82F6), size: 16),
                               SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                   'Delivery typically takes 5-10 business days.',
-                                  style: TextStyle(color: Color(0xFF3B82F6), fontSize: 12),
+                                  style: TextStyle(
+                                      color: Color(0xFF3B82F6), fontSize: 12),
                                 ),
                               ),
                             ],
@@ -301,8 +347,10 @@ class _RequestPhysicalCardScreenState extends State<RequestPhysicalCardScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14)),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 14)),
+          Text(label,
+              style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14)),
+          Text(value,
+              style: const TextStyle(color: Colors.white, fontSize: 14)),
         ],
       ),
     );

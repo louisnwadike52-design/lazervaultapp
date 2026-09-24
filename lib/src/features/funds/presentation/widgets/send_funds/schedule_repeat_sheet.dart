@@ -120,15 +120,24 @@ class _ScheduleRepeatSheetState extends State<ScheduleRepeatSheet> {
         Navigator.of(context)
             .pop(ScheduleRepeatResult(scheduledAt: _scheduledAt));
       case _Mode.repeat:
-        Navigator.of(context)
-            .pop(ScheduleRepeatResult(recurring: _recurring));
+        Navigator.of(context).pop(ScheduleRepeatResult(recurring: _recurring));
     }
   }
 
   String _formatSchedule(DateTime d) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     final hh = d.hour.toString().padLeft(2, '0');
     final mn = d.minute.toString().padLeft(2, '0');
@@ -138,7 +147,8 @@ class _ScheduleRepeatSheetState extends State<ScheduleRepeatSheet> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       // Tap empty space to dismiss any lingering keyboard (e.g. left over from the
       // amount sheet underneath) so the fixed Done button below is always reachable.
       child: GestureDetector(

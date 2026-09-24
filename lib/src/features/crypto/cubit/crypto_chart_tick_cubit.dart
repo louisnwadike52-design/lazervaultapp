@@ -209,8 +209,8 @@ class CryptoChartTickCubit extends Cubit<ChartTickState> {
       final k = obj['k'] as Map<String, dynamic>?;
       if (k == null) return;
       final tick = ChartTick(
-        openTime: DateTime.fromMillisecondsSinceEpoch(
-            (k['t'] as num?)?.toInt() ?? 0),
+        openTime:
+            DateTime.fromMillisecondsSinceEpoch((k['t'] as num?)?.toInt() ?? 0),
         open: double.tryParse('${k['o']}') ?? 0,
         high: double.tryParse('${k['h']}') ?? 0,
         low: double.tryParse('${k['l']}') ?? 0,

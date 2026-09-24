@@ -18,15 +18,16 @@ import 'crypto_receipt_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'crypto_transaction_history_screen_widgets.dart';
 
-
 class CryptoTransactionHistoryScreen extends StatefulWidget {
   const CryptoTransactionHistoryScreen({super.key});
 
   @override
-  State<CryptoTransactionHistoryScreen> createState() => _CryptoTransactionHistoryScreenState();
+  State<CryptoTransactionHistoryScreen> createState() =>
+      _CryptoTransactionHistoryScreenState();
 }
 
-class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistoryScreen>
+class _CryptoTransactionHistoryScreenState
+    extends State<CryptoTransactionHistoryScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
   late AnimationController _animationController;
@@ -39,23 +40,32 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
 
   bool _isExporting = false;
 
-  final List<String> _filters = ['All', 'Buy', 'Sell', 'Swap', 'Send', 'Deposit'];
+  final List<String> _filters = [
+    'All',
+    'Buy',
+    'Sell',
+    'Swap',
+    'Send',
+    'Deposit'
+  ];
 
   /// Transactions loaded from the backend via CryptoCubit state
   List<CryptoTransactionHistory> get _transactions {
     final state = context.read<CryptoCubit>().state;
     if (state is CryptosLoaded) {
-      return state.transactions.map((t) => CryptoTransactionHistory(
-        id: t.id,
-        type: _mapTransactionType(t.type),
-        cryptoName: t.cryptoName,
-        cryptoSymbol: t.cryptoSymbol,
-        amount: t.quantity.toStringAsFixed(6),
-        gbpAmount: t.totalAmount,
-        status: _mapStatus(t.status),
-        timestamp: t.timestamp,
-        fee: t.fees,
-      )).toList();
+      return state.transactions
+          .map((t) => CryptoTransactionHistory(
+                id: t.id,
+                type: _mapTransactionType(t.type),
+                cryptoName: t.cryptoName,
+                cryptoSymbol: t.cryptoSymbol,
+                amount: t.quantity.toStringAsFixed(6),
+                gbpAmount: t.totalAmount,
+                status: _mapStatus(t.status),
+                timestamp: t.timestamp,
+                fee: t.fees,
+              ))
+          .toList();
     }
     return [];
   }
@@ -113,11 +123,11 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _animationController.forward();
   }
 
@@ -132,7 +142,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
 
   List<CryptoTransactionHistory> get _filteredTransactions {
     var filtered = _transactions;
-    
+
     // Filter by type
     if (_selectedFilter != 'All') {
       filtered = filtered.where((transaction) {
@@ -152,16 +162,20 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
         }
       }).toList();
     }
-    
+
     // Filter by search query
     if (_searchQuery.isNotEmpty) {
       filtered = filtered.where((transaction) {
-        return transaction.cryptoName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-               transaction.cryptoSymbol.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-               transaction.id.toLowerCase().contains(_searchQuery.toLowerCase());
+        return transaction.cryptoName
+                .toLowerCase()
+                .contains(_searchQuery.toLowerCase()) ||
+            transaction.cryptoSymbol
+                .toLowerCase()
+                .contains(_searchQuery.toLowerCase()) ||
+            transaction.id.toLowerCase().contains(_searchQuery.toLowerCase());
       }).toList();
     }
-    
+
     return filtered;
   }
 
@@ -191,11 +205,11 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                   _buildSummaryStats(),
                   Expanded(
                     child: state is CryptoLoading
-                      ? const Center(child: LazerVaultLoader.small())
-                      : FadeTransition(
-                          opacity: _fadeAnimation,
-                          child: _buildTransactionList(),
-                        ),
+                        ? const Center(child: LazerVaultLoader.small())
+                        : FadeTransition(
+                            opacity: _fadeAnimation,
+                            child: _buildTransactionList(),
+                          ),
                   ),
                 ],
               ),
@@ -293,7 +307,8 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                 borderRadius: BorderRadius.circular(12.r),
                 borderSide: BorderSide.none,
               ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
             ),
           ),
           SizedBox(height: 16.h),
@@ -308,9 +323,12 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                   onTap: () => setState(() => _selectedFilter = filter),
                   child: Container(
                     margin: EdgeInsets.only(right: 8.w),
-                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : const Color(0xFF1F1F1F),
+                      color: isSelected
+                          ? const Color.fromARGB(255, 78, 3, 208)
+                          : const Color(0xFF1F1F1F),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Text(
@@ -333,8 +351,9 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
 
   Widget _buildSummaryStats() {
     final filteredTxns = _filteredTransactions;
-    final totalValue = filteredTxns.fold(0.0, (sum, txn) => sum + txn.gbpAmount);
-    
+    final totalValue =
+        filteredTxns.fold(0.0, (sum, txn) => sum + txn.gbpAmount);
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
       padding: EdgeInsets.all(20.w),
@@ -348,13 +367,13 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildStatItem('Transactions', '${filteredTxns.length}'),
-          _buildStatItem('Total Value', '${CurrencySymbols.currentSymbol}${totalValue.toStringAsFixed(2)}'),
+          _buildStatItem('Total Value',
+              '${CurrencySymbols.currentSymbol}${totalValue.toStringAsFixed(2)}'),
           // 'Total Fees' removed: the platform margin is priced into each
           // trade's rate and never presented as a fee. See
           // cryptoPlatformFeePolicy.
@@ -486,7 +505,6 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: GestureDetector(
         // opaque = the WHOLE card is the hit target. A bare GestureDetector
@@ -502,7 +520,8 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                 Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: _getTransactionTypeColor(transaction.type).withValues(alpha: 0.2),
+                    color: _getTransactionTypeColor(transaction.type)
+                        .withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Icon(
@@ -528,9 +547,11 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                             ),
                           ),
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8.w, vertical: 4.h),
                             decoration: BoxDecoration(
-                              color: _getStatusColor(transaction.status).withValues(alpha: 0.2),
+                              color: _getStatusColor(transaction.status)
+                                  .withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(12.r),
                             ),
                             child: Text(
@@ -605,8 +626,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                 // See cryptoPlatformFeePolicy.
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                  ],
+                  children: [],
                 ),
               ],
             ),
@@ -702,7 +722,8 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
   Future<void> _downloadStatement() async {
     final txns = _filteredTransactions;
     if (txns.isEmpty) {
-      Get.snackbar('Nothing to export', 'There are no transactions to download.',
+      Get.snackbar(
+          'Nothing to export', 'There are no transactions to download.',
           backgroundColor: const Color(0xFF1F1F1F), colorText: Colors.white);
       return;
     }
@@ -715,14 +736,16 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
             'Lazervault_Crypto_Statement_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.pdf',
       );
     } catch (_) {
-      Get.snackbar('Export failed', 'Could not generate the statement. Please try again.',
+      Get.snackbar('Export failed',
+          'Could not generate the statement. Please try again.',
           backgroundColor: const Color(0xFF1F1F1F), colorText: Colors.white);
     } finally {
       if (mounted) setState(() => _isExporting = false);
     }
   }
 
-  Future<Uint8List> _buildStatementPdf(List<CryptoTransactionHistory> txns) async {
+  Future<Uint8List> _buildStatementPdf(
+      List<CryptoTransactionHistory> txns) async {
     final doc = pw.Document();
     final df = DateFormat('dd MMM yyyy, HH:mm');
     final now = DateTime.now();
@@ -732,89 +755,110 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
     final purple = PdfColor.fromInt(0xFF4E03D0);
     final grey = PdfColors.grey700;
 
-    doc.addPage(pw.MultiPage(
-      pageFormat: PdfPageFormat.a4,
-      margin: const pw.EdgeInsets.all(28),
-      build: (ctx) => [
-        pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-              pw.Text('Lazervault',
-                  style: pw.TextStyle(
-                      fontSize: 22, fontWeight: pw.FontWeight.bold, color: purple)),
-              pw.SizedBox(height: 2),
-              pw.Text('Crypto Transaction Statement',
-                  style: pw.TextStyle(fontSize: 12, color: grey)),
-            ]),
-            pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
-              pw.Text('Generated', style: pw.TextStyle(fontSize: 9, color: grey)),
-              pw.Text(df.format(now), style: const pw.TextStyle(fontSize: 10)),
-            ]),
-          ],
-        ),
-        pw.SizedBox(height: 10),
-        pw.Divider(color: PdfColors.grey400),
-        pw.SizedBox(height: 6),
-        pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
-          pw.Text('${txns.length} transaction(s)',
-              style: pw.TextStyle(fontSize: 10, color: grey)),
-          pw.Text('Amounts in $fiatCode',
-              style: pw.TextStyle(fontSize: 10, color: grey)),
-        ]),
-        pw.SizedBox(height: 12),
-        pw.TableHelper.fromTextArray(
-          // No 'Fee' column: see cryptoPlatformFeePolicy.
-          headers: ['Date', 'Type', 'Asset', 'Amount', 'Value ($fiatSym)', 'Status'],
-          data: txns
-              .map((t) => [
-                    df.format(t.timestamp),
-                    _pdfLabel(t.type.name),
-                    t.cryptoSymbol.toUpperCase(),
-                    t.amount,
-                    '$fiatSym${t.gbpAmount.toStringAsFixed(2)}',
-                    _pdfLabel(t.status.name),
-                  ])
-              .toList(),
-          border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
-          headerStyle: pw.TextStyle(
-              fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.white),
-          headerDecoration: pw.BoxDecoration(color: purple),
-          cellStyle: const pw.TextStyle(fontSize: 9),
-          cellAlignment: pw.Alignment.centerLeft,
-          cellPadding: const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-          columnWidths: {
-            0: const pw.FlexColumnWidth(2.4),
-            1: const pw.FlexColumnWidth(1.2),
-            2: const pw.FlexColumnWidth(1),
-            3: const pw.FlexColumnWidth(1.6),
-            4: const pw.FlexColumnWidth(1.6),
-            // One fewer column now that the Fee column is gone.
-            5: const pw.FlexColumnWidth(1.3),
-          },
-        ),
-        pw.SizedBox(height: 14),
-        pw.Container(
-          alignment: pw.Alignment.centerRight,
-          child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.end,
+    doc.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(28),
+        build: (ctx) => [
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text('Total value: $fiatSym${totalValue.toStringAsFixed(2)}',
-                  style:
-                      pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
-              // No 'Total fees' line — the platform margin is priced into each
-              // trade's rate, never presented to the user as a fee. See
-              // cryptoPlatformFeePolicy.
+              pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('Lazervault',
+                        style: pw.TextStyle(
+                            fontSize: 22,
+                            fontWeight: pw.FontWeight.bold,
+                            color: purple)),
+                    pw.SizedBox(height: 2),
+                    pw.Text('Crypto Transaction Statement',
+                        style: pw.TextStyle(fontSize: 12, color: grey)),
+                  ]),
+              pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                  children: [
+                    pw.Text('Generated',
+                        style: pw.TextStyle(fontSize: 9, color: grey)),
+                    pw.Text(df.format(now),
+                        style: const pw.TextStyle(fontSize: 10)),
+                  ]),
             ],
           ),
-        ),
-      ],
-    ),
-  );
+          pw.SizedBox(height: 10),
+          pw.Divider(color: PdfColors.grey400),
+          pw.SizedBox(height: 6),
+          pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text('${txns.length} transaction(s)',
+                    style: pw.TextStyle(fontSize: 10, color: grey)),
+                pw.Text('Amounts in $fiatCode',
+                    style: pw.TextStyle(fontSize: 10, color: grey)),
+              ]),
+          pw.SizedBox(height: 12),
+          pw.TableHelper.fromTextArray(
+            // No 'Fee' column: see cryptoPlatformFeePolicy.
+            headers: [
+              'Date',
+              'Type',
+              'Asset',
+              'Amount',
+              'Value ($fiatSym)',
+              'Status'
+            ],
+            data: txns
+                .map((t) => [
+                      df.format(t.timestamp),
+                      _pdfLabel(t.type.name),
+                      t.cryptoSymbol.toUpperCase(),
+                      t.amount,
+                      '$fiatSym${t.gbpAmount.toStringAsFixed(2)}',
+                      _pdfLabel(t.status.name),
+                    ])
+                .toList(),
+            border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+            headerStyle: pw.TextStyle(
+                fontSize: 9,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.white),
+            headerDecoration: pw.BoxDecoration(color: purple),
+            cellStyle: const pw.TextStyle(fontSize: 9),
+            cellAlignment: pw.Alignment.centerLeft,
+            cellPadding:
+                const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+            columnWidths: {
+              0: const pw.FlexColumnWidth(2.4),
+              1: const pw.FlexColumnWidth(1.2),
+              2: const pw.FlexColumnWidth(1),
+              3: const pw.FlexColumnWidth(1.6),
+              4: const pw.FlexColumnWidth(1.6),
+              // One fewer column now that the Fee column is gone.
+              5: const pw.FlexColumnWidth(1.3),
+            },
+          ),
+          pw.SizedBox(height: 14),
+          pw.Container(
+            alignment: pw.Alignment.centerRight,
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.end,
+              children: [
+                pw.Text('Total value: $fiatSym${totalValue.toStringAsFixed(2)}',
+                    style: pw.TextStyle(
+                        fontSize: 11, fontWeight: pw.FontWeight.bold)),
+                // No 'Total fees' line — the platform margin is priced into each
+                // trade's rate, never presented to the user as a fee. See
+                // cryptoPlatformFeePolicy.
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
     return doc.save();
   }
 
   String _pdfLabel(String n) =>
       n.isEmpty ? n : n[0].toUpperCase() + n.substring(1);
-} 
+}

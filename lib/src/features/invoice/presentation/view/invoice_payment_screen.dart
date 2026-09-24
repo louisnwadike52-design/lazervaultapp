@@ -18,7 +18,8 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
-import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart' show AuthenticationSuccess;
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart'
+    show AuthenticationSuccess;
 import '../notifiers/invoice_refresh_notifier.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -57,22 +58,33 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
 
   // The fee (and the active wallet balance) are denominated in the account
   // currency, which the fee quote reports.
-  String get _feeCurrencySymbol =>
-      _getCurrencySymbol(_feeQuote?.currency ?? widget.invoice?.currency ?? 'NGN');
-  String get _feeCurrencyCode => _feeQuote?.currency ?? widget.invoice?.currency ?? 'NGN';
+  String get _feeCurrencySymbol => _getCurrencySymbol(
+      _feeQuote?.currency ?? widget.invoice?.currency ?? 'NGN');
+  String get _feeCurrencyCode =>
+      _feeQuote?.currency ?? widget.invoice?.currency ?? 'NGN';
 
   String _getCurrencySymbol(String currency) {
     switch (currency.toUpperCase()) {
-      case 'NGN': return '\u20a6';
-      case 'GBP': return '\u00a3';
-      case 'EUR': return '\u20ac';
-      case 'ZAR': return 'R';
-      case 'CAD': return 'C\$';
-      case 'AUD': return 'A\$';
-      case 'INR': return '\u20b9';
-      case 'JPY': return '\u00a5';
-      case 'USD': return '\$';
-      default: return '₦';
+      case 'NGN':
+        return '\u20a6';
+      case 'GBP':
+        return '\u00a3';
+      case 'EUR':
+        return '\u20ac';
+      case 'ZAR':
+        return 'R';
+      case 'CAD':
+        return 'C\$';
+      case 'AUD':
+        return 'A\$';
+      case 'INR':
+        return '\u20b9';
+      case 'JPY':
+        return '\u00a5';
+      case 'USD':
+        return '\$';
+      default:
+        return '₦';
     }
   }
 
@@ -141,8 +153,8 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is AuthenticationSuccess) {
       context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
-        userId: authState.profile.userId,
-      );
+            userId: authState.profile.userId,
+          );
     }
   }
 
@@ -158,7 +170,8 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
       listener: (context, state) {
         if (state is InvoiceServiceFeePaid) {
           setState(() => _isProcessingPayment = false);
-          Get.offNamed(AppRoutes.createInvoice, arguments: {'serviceFeeRef': state.serviceFeeRef});
+          Get.offNamed(AppRoutes.createInvoice,
+              arguments: {'serviceFeeRef': state.serviceFeeRef});
         } else if (state is InvoiceUnlockSuccess) {
           setState(() => _isProcessingPayment = false);
           // Notify the shared notifier so the home screen reloads on return
@@ -260,7 +273,9 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  widget.isPrePayment ? 'Pay service fee to create an invoice' : 'Complete your payment securely',
+                  widget.isPrePayment
+                      ? 'Pay service fee to create an invoice'
+                      : 'Complete your payment securely',
                   style: GoogleFonts.inter(
                     color: const Color(0xFF9CA3AF),
                     fontSize: 14.sp,
@@ -500,8 +515,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
         final feeCurrency = _feeCurrencyCode.toUpperCase();
         final eligible = accounts
             .where((a) =>
-                feeCurrency.isEmpty ||
-                a.currency.toUpperCase() == feeCurrency)
+                feeCurrency.isEmpty || a.currency.toUpperCase() == feeCurrency)
             .toList();
 
         final match = eligible.where((a) => a.id == activeId);
@@ -538,9 +552,11 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
           icon: _getAccountIcon(displayAccount.accountType),
           iconColor: _getAccountColor(displayAccount.accountType),
           title: 'Pay with Lazervault Wallet',
-          subtitle: '${displayAccount.accountType} Account  •  ${_getCurrencySymbol(displayAccount.currency)}${displayAccount.availableBalance.toStringAsFixed(2)}',
+          subtitle:
+              '${displayAccount.accountType} Account  •  ${_getCurrencySymbol(displayAccount.currency)}${displayAccount.availableBalance.toStringAsFixed(2)}',
           insufficientFunds: !hasEnough,
-          trailing: Icon(Icons.check_circle, color: const Color(0xFF3B82F6), size: 22.sp),
+          trailing: Icon(Icons.check_circle,
+              color: const Color(0xFF3B82F6), size: 22.sp),
           onTap: null,
           onChangeTap: null,
         );
@@ -592,7 +608,8 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                     Container(
                       padding: EdgeInsets.all(8.w),
                       decoration: BoxDecoration(
-                        color: (iconColor ?? Colors.blue).withValues(alpha: 0.15),
+                        color:
+                            (iconColor ?? Colors.blue).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Icon(icon, color: iconColor, size: 22.sp),
@@ -614,7 +631,9 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                       Text(
                         subtitle,
                         style: GoogleFonts.inter(
-                          color: insufficientFunds ? Colors.red[400] : const Color(0xFF9CA3AF),
+                          color: insufficientFunds
+                              ? Colors.red[400]
+                              : const Color(0xFF9CA3AF),
                           fontSize: 13.sp,
                         ),
                         maxLines: 1,
@@ -633,7 +652,8 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
               SizedBox(height: 8.h),
               Row(
                 children: [
-                  Icon(Icons.warning_amber_rounded, color: Colors.red[400], size: 14.sp),
+                  Icon(Icons.warning_amber_rounded,
+                      color: Colors.red[400], size: 14.sp),
                   SizedBox(width: 4.w),
                   Flexible(
                     child: Text(
@@ -642,7 +662,8 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                       // tap it sent them looking for a control that isn't there.
                       'Insufficient balance. Top up this wallet, or switch your '
                       'active account on the dashboard.',
-                      style: GoogleFonts.inter(color: Colors.red[400], fontSize: 11.sp),
+                      style: GoogleFonts.inter(
+                          color: Colors.red[400], fontSize: 11.sp),
                     ),
                   ),
                 ],
@@ -655,7 +676,8 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.swap_horiz, color: Color(0xFF3B82F6), size: 16.sp),
+                    Icon(Icons.swap_horiz,
+                        color: Color(0xFF3B82F6), size: 16.sp),
                     SizedBox(width: 4.w),
                     Text(
                       'Change',
@@ -735,9 +757,11 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                 // Retry state uses a light purple so it reads as a distinct,
                 // actionable state (not the primary blue "pay" action); the
                 // foreground below switches to dark for contrast on it.
-                backgroundColor:
-                    _feeQuoteFailed ? const Color(0xFFC4B5FD) : const Color(0xFF3B82F6),
-                disabledBackgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.6),
+                backgroundColor: _feeQuoteFailed
+                    ? const Color(0xFFC4B5FD)
+                    : const Color(0xFF3B82F6),
+                disabledBackgroundColor:
+                    const Color(0xFF3B82F6).withValues(alpha: 0.6),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16.r),
                 ),
@@ -805,7 +829,8 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
     }
 
     // Validate balance for wallet payments
-    if (_selectedPaymentMethod.startsWith('account_') && _selectedAccountId.isNotEmpty) {
+    if (_selectedPaymentMethod.startsWith('account_') &&
+        _selectedAccountId.isNotEmpty) {
       final accountState = context.read<AccountCardsSummaryCubit>().state;
       List<AccountSummaryEntity> accounts = [];
       if (accountState is AccountCardsSummaryLoaded) {
@@ -882,7 +907,8 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
     final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
-      transactionType: widget.isPrePayment ? 'invoice_service_fee' : 'invoice_payment',
+      transactionType:
+          widget.isPrePayment ? 'invoice_service_fee' : 'invoice_payment',
       amount: _fee,
       currency: _feeCurrencyCode,
       title: widget.isPrePayment ? 'Confirm Service Fee' : 'Confirm Payment',

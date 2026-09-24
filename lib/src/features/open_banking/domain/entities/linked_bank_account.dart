@@ -101,7 +101,8 @@ class LinkedBankAccount extends Equatable {
       accountType: json['account_type'] as String? ?? 'savings',
       currency: json['currency'] as String? ?? 'NGN',
       lastKnownBalance: (json['last_known_balance'] as num?)?.toDouble() ?? 0.0,
-      status: LinkedAccountStatus.fromString(json['status'] as String? ?? 'active'),
+      status:
+          LinkedAccountStatus.fromString(json['status'] as String? ?? 'active'),
       isDefault: json['is_default'] as bool? ?? false,
       isVerified: json['is_verified'] as bool? ?? false,
       linkedAt: json['linked_at'] != null

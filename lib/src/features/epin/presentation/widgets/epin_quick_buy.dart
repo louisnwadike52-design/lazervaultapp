@@ -97,8 +97,8 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
 
   Future<void> _prefillPhone() async {
     try {
-      final raw =
-          await serviceLocator<FlutterSecureStorage>().read(key: 'stored_phone');
+      final raw = await serviceLocator<FlutterSecureStorage>()
+          .read(key: 'stored_phone');
       var d = (raw ?? '').replaceAll(RegExp(r'[^\d]'), '');
       if (d.startsWith('234')) d = d.substring(3);
       if (d.startsWith('0')) d = d.substring(1);
@@ -220,7 +220,8 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
               verificationToken: token,
               idempotencyKey: txnId,
             );
-            result = await completer.future.timeout(const Duration(seconds: 90));
+            result =
+                await completer.future.timeout(const Duration(seconds: 90));
           } finally {
             await sub.cancel();
           }
@@ -331,7 +332,10 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
               borderRadius: BorderRadius.circular(10.r),
               border: Border.all(color: selected ? _accent : _border),
             ),
-            child: Text(d.label.isNotEmpty ? d.label : '₦${d.amount.toStringAsFixed(0)}',
+            child: Text(
+                d.label.isNotEmpty
+                    ? d.label
+                    : '₦${d.amount.toStringAsFixed(0)}',
                 style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 13.sp,
@@ -358,7 +362,8 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
           ),
         );
     return Row(children: [
-      btn(Icons.remove, _quantity > 1 ? () => setState(() => _quantity--) : null),
+      btn(Icons.remove,
+          _quantity > 1 ? () => setState(() => _quantity--) : null),
       SizedBox(width: 16.w),
       Text('$_quantity',
           style: GoogleFonts.inter(
@@ -408,7 +413,8 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
           hintText: '0803 000 0000',
           hintStyle: GoogleFonts.inter(color: const Color(0xFF6B7280)),
           prefixIcon: _dialCodePrefix(),
-          prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+          prefixIconConstraints:
+              const BoxConstraints(minWidth: 0, minHeight: 0),
           border: InputBorder.none,
           contentPadding:
               EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
@@ -428,7 +434,8 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
       child: Column(children: [
         _row('Network', _network!.name),
         SizedBox(height: 10.h),
-        _row('Denomination',
+        _row(
+            'Denomination',
             _denomination!.label.isNotEmpty
                 ? _denomination!.label
                 : '₦${_denomination!.amount.toStringAsFixed(0)}'),
@@ -443,7 +450,8 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
     );
   }
 
-  Widget _row(String label, String value, {Color? valueColor, bool bold = false}) {
+  Widget _row(String label, String value,
+      {Color? valueColor, bool bold = false}) {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Text(label, style: GoogleFonts.inter(color: _muted, fontSize: 13.sp)),
       Flexible(
@@ -474,7 +482,8 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
         ),
         child: _submitting
-            ? SizedBox(width: 20.w, height: 20.w, child: LazerVaultLoader.small())
+            ? SizedBox(
+                width: 20.w, height: 20.w, child: LazerVaultLoader.small())
             : Text(
                 _denomination != null
                     ? 'Buy ₦${_total.toStringAsFixed(0)}'

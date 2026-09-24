@@ -248,7 +248,8 @@ class _VoiceSetupPromptModalState extends State<VoiceSetupPromptModal>
                         ),
 
                         // Maybe Later button (only if dismissible)
-                        if (widget.canDismiss && widget.onSetupLater != null) ...[
+                        if (widget.canDismiss &&
+                            widget.onSetupLater != null) ...[
                           SizedBox(height: 12.h),
                           TextButton(
                             onPressed: widget.onSetupLater,

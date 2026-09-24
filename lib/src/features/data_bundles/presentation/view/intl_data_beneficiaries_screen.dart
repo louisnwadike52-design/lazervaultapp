@@ -43,12 +43,10 @@ class _IntlDataBeneficiariesScreenState
   }
 
   /// Filter to only international beneficiaries.
-  List<DataBeneficiary> _filterIntl(List<DataBeneficiary> all) =>
-      all
-          .where((b) =>
-              b.countryCode.isNotEmpty &&
-              b.countryCode.toUpperCase() != 'NG')
-          .toList();
+  List<DataBeneficiary> _filterIntl(List<DataBeneficiary> all) => all
+      .where((b) =>
+          b.countryCode.isNotEmpty && b.countryCode.toUpperCase() != 'NG')
+      .toList();
 
   DataAutoRecharge? _autoFor(DataBeneficiary b) {
     for (final ar in _autoRecharges) {
@@ -66,8 +64,8 @@ class _IntlDataBeneficiariesScreenState
         elevation: 0,
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: Icon(Icons.arrow_back_ios_new,
-              color: Colors.white, size: 20.sp),
+          icon:
+              Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20.sp),
         ),
         title: Text('Intl Data Contacts',
             style: TextStyle(
@@ -177,8 +175,7 @@ class _IntlDataBeneficiariesScreenState
             Text(
               'After sending international data, tap "Save Contact" on the receipt to add the recipient here.',
               textAlign: TextAlign.center,
-              style:
-                  TextStyle(fontSize: 14.sp, color: const Color(0xFF9CA3AF)),
+              style: TextStyle(fontSize: 14.sp, color: const Color(0xFF9CA3AF)),
             ),
           ],
         ),
@@ -193,10 +190,9 @@ class _IntlDataBeneficiariesScreenState
       identifier: '${b.countryCode} ${b.phoneNumber}',
       providerName: b.networkName.isNotEmpty ? b.networkName : 'Intl',
       providerColor: _primary,
-      lastPlanOrAmount:
-          (b.lastPlanName != null && b.lastPlanName!.isNotEmpty)
-              ? b.lastPlanName
-              : null,
+      lastPlanOrAmount: (b.lastPlanName != null && b.lastPlanName!.isNotEmpty)
+          ? b.lastPlanName
+          : null,
       usageCount: b.topupCount,
       trailing: ar != null ? _autoBadge(ar) : null,
       onTap: () => _showOptions(b),
@@ -208,8 +204,7 @@ class _IntlDataBeneficiariesScreenState
 
   Widget _autoBadge(DataAutoRecharge ar) {
     final isActive = ar.status.toLowerCase() == 'active';
-    final color =
-        isActive ? const Color(0xFF10B981) : const Color(0xFFFB923C);
+    final color = isActive ? const Color(0xFF10B981) : const Color(0xFFFB923C);
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
@@ -224,9 +219,7 @@ class _IntlDataBeneficiariesScreenState
           SizedBox(width: 4.w),
           Text('Auto',
               style: TextStyle(
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w600,
-                  color: color)),
+                  fontSize: 11.sp, fontWeight: FontWeight.w600, color: color)),
         ],
       ),
     );
@@ -269,8 +262,7 @@ class _IntlDataBeneficiariesScreenState
             ),
             const Divider(color: Color(0xFF2D2D2D), height: 1),
             ListTile(
-              leading:
-                  Icon(Icons.autorenew, color: const Color(0xFF10B981)),
+              leading: Icon(Icons.autorenew, color: const Color(0xFF10B981)),
               title: Text('Set Auto-Recharge',
                   style: TextStyle(color: Colors.white, fontSize: 15.sp)),
               onTap: () {
@@ -283,8 +275,8 @@ class _IntlDataBeneficiariesScreenState
             ),
             const Divider(color: Color(0xFF2D2D2D), height: 1),
             ListTile(
-              leading: Icon(Icons.delete_outline,
-                  color: const Color(0xFFEF4444)),
+              leading:
+                  Icon(Icons.delete_outline, color: const Color(0xFFEF4444)),
               title: Text('Delete Contact',
                   style: TextStyle(
                       color: const Color(0xFFEF4444), fontSize: 15.sp)),
@@ -305,13 +297,12 @@ class _IntlDataBeneficiariesScreenState
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text('Delete Contact',
             style: TextStyle(color: Colors.white, fontSize: 17.sp)),
         content: Text('Delete $name? This cannot be undone.',
-            style:
-                TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
+            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
         actions: [
           TextButton(
               onPressed: () => Navigator.of(ctx).pop(),

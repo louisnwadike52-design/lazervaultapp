@@ -40,7 +40,8 @@ class BulkSmsCubit extends Cubit<BulkSmsState> {
     }
   }
 
-  Future<void> loadPackages({String country = 'NG', String currency = 'NGN'}) async {
+  Future<void> loadPackages(
+      {String country = 'NG', String currency = 'NGN'}) async {
     if (isClosed) return;
     emit(state.copyWith(packagesStatus: SectionStatus.loading));
     try {
@@ -71,7 +72,8 @@ class BulkSmsCubit extends Cubit<BulkSmsState> {
     }
   }
 
-  Future<void> loadHistory({int page = 1, int pageSize = 20, String statusFilter = ''}) async {
+  Future<void> loadHistory(
+      {int page = 1, int pageSize = 20, String statusFilter = ''}) async {
     if (isClosed) return;
     emit(state.copyWith(historyStatus: SectionStatus.loading));
     try {
@@ -102,15 +104,16 @@ class BulkSmsCubit extends Cubit<BulkSmsState> {
     }
   }
 
-  Future<void> loadDeliveryReport(String campaignId, {String statusFilter = ''}) async {
+  Future<void> loadDeliveryReport(String campaignId,
+      {String statusFilter = ''}) async {
     if (isClosed) return;
     emit(state.copyWith(reportStatus: SectionStatus.loading));
     try {
       final reports = await repository.getDeliveryReport(
           campaignId: campaignId, statusFilter: statusFilter);
       if (isClosed) return;
-      emit(state.copyWith(
-          reportStatus: SectionStatus.loaded, reports: reports));
+      emit(
+          state.copyWith(reportStatus: SectionStatus.loaded, reports: reports));
     } catch (e) {
       if (isClosed) return;
       emit(state.copyWith(
@@ -287,8 +290,7 @@ class BulkSmsCubit extends Cubit<BulkSmsState> {
     try {
       final groups = await repository.listGroups();
       if (isClosed) return;
-      emit(state.copyWith(
-          groupsStatus: SectionStatus.loaded, groups: groups));
+      emit(state.copyWith(groupsStatus: SectionStatus.loaded, groups: groups));
     } catch (e) {
       if (isClosed) return;
       emit(state.copyWith(

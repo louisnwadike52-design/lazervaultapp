@@ -58,7 +58,6 @@ class ExchangeWsEvent {
       timestamp: json['timestamp'] as int? ?? 0,
     );
   }
-
 }
 
 /// WebSocket client for exchange transaction events. Maintains a single

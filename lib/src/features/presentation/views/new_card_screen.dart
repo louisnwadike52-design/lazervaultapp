@@ -12,7 +12,6 @@ class NewCardScreen extends StatefulWidget {
 }
 
 class _NewCardScreenState extends State<NewCardScreen> {
-
   void _showBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -68,36 +67,36 @@ class _NewCardScreenState extends State<NewCardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () {
-                if (Navigator.canPop(context)) {
-                  print("popping screen.......");
-                  Get.back();
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("No route to go back.")),
-                  );
-                }
-              },
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              print("popping screen.......");
+              Get.back();
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("No route to go back.")),
+              );
+            }
+          },
+        ),
+        title: const Text("Add New Card"),
+        centerTitle: true,
+        // toolbarHeight:
+        //     MediaQuery.of(context).size.height * 0.2, // Responsive height
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.scanner_outlined,
+              color: HybridHexColor.fromHex("#262626"),
             ),
-            title: const Text("Add New Card"),
-            centerTitle: true,
-            // toolbarHeight:
-            //     MediaQuery.of(context).size.height * 0.2, // Responsive height
-            actions: [
-              IconButton(
-                icon: Icon(
-                  Icons.scanner_outlined,
-                  color: HybridHexColor.fromHex("#262626"),
-                ),
-                onPressed: () => _showBottomSheet(context), // Open BottomSheet
-              ),
-            ],
+            onPressed: () => _showBottomSheet(context), // Open BottomSheet
           ),
-          body: NewCard(),
-        );
+        ],
+      ),
+      body: NewCard(),
+    );
   }
 }

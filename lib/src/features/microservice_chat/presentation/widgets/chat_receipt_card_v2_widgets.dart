@@ -96,20 +96,11 @@ class _ChatReceiptFullScreenState extends State<ChatReceiptFullScreen> {
     final fee = _s('fee');
     final total = _s('total_amount');
     final feeNum = double.tryParse(fee) ?? 0.0;
-    final extra = widget.payload['extra'];
-    final extraRows = <MapEntry<String, String>>[];
-    if (extra is Map) {
-      extra.forEach((k, v) {
-        if (v == null || v is Map || v is List) return;
-        final label = k
-            .toString()
-            .split('_')
-            .map(
-                (w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
-            .join(' ');
-        extraRows.add(MapEntry(label, v.toString()));
-      });
-    }
+    // Filtered, labelled and ordered by the shared helper. This used to
+    // title-case the raw keys and render every one of them, so the receipt
+    // carried a "Source Account Id" row with a UUID in it and a second fee in
+    // kobo — on the artefact people screenshot and send to each other.
+    final extraRows = chatReceiptExtraRows(widget.payload['extra']);
     final color = _statusColor;
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),

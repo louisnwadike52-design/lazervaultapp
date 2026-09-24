@@ -4,7 +4,6 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'pin_entry_workflow_widgets.dart';
 
-
 /// PIN Entry Screen
 class PINEntryScreen extends StatefulWidget {
   final PINWorkflowManager workflowManager;
@@ -53,7 +52,8 @@ class _PINEntryScreenState extends State<PINEntryScreen> {
         case PINWorkflowEventType.pinInvalid:
           setState(() {
             _errorMessage = event.message ?? 'Invalid PIN';
-            _retriesRemaining = event.data?['retries_remaining'] ?? _retriesRemaining - 1;
+            _retriesRemaining =
+                event.data?['retries_remaining'] ?? _retriesRemaining - 1;
             _isLoading = false;
             _clearPIN();
           });
@@ -238,7 +238,8 @@ class _PINEntryScreenState extends State<PINEntryScreen> {
                   children: List.generate(4, (index) {
                     return _PINDigitField(
                       focusNode: _pinFocusNodes[index],
-                      value: _currentPIN.length > index ? _currentPIN[index] : '',
+                      value:
+                          _currentPIN.length > index ? _currentPIN[index] : '',
                       isLoading: _isLoading && index == _currentPIN.length - 1,
                       onChanged: (value) {
                         if (value.isEmpty) return;
@@ -256,7 +257,8 @@ class _PINEntryScreenState extends State<PINEntryScreen> {
                     decoration: BoxDecoration(
                       color: _isBlocked
                           ? theme.colorScheme.errorContainer
-                          : theme.colorScheme.errorContainer.withValues(alpha: 0.5),
+                          : theme.colorScheme.errorContainer
+                              .withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(

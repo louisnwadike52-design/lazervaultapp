@@ -22,7 +22,13 @@ class AdminAlertsScreen extends StatefulWidget {
 /// Whether a roles list grants access to the Admin Alerts surface.
 bool isAdminRoles(List<String>? roles) {
   if (roles == null) return false;
-  const adminRoles = {'admin', 'super_admin', 'operations', 'support', 'auditor'};
+  const adminRoles = {
+    'admin',
+    'super_admin',
+    'operations',
+    'support',
+    'auditor'
+  };
   return roles.any((r) => adminRoles.contains(r.toLowerCase()));
 }
 
@@ -80,7 +86,9 @@ class _AdminAlertsScreenState extends State<AdminAlertsScreen> {
       final dio = serviceLocator<Dio>();
       final resp = await dio.get(endpointRegistry.opsAlerts);
       final data = resp.data;
-      final list = (data is Map && data['alerts'] is List) ? data['alerts'] as List : const [];
+      final list = (data is Map && data['alerts'] is List)
+          ? data['alerts'] as List
+          : const [];
       setState(() {
         _alerts = list
             .whereType<Map>()
@@ -90,7 +98,8 @@ class _AdminAlertsScreenState extends State<AdminAlertsScreen> {
       });
     } catch (e) {
       setState(() {
-        _err = 'Could not load alerts. ${e is DioException ? (e.message ?? '') : e}';
+        _err =
+            'Could not load alerts. ${e is DioException ? (e.message ?? '') : e}';
         _loading = false;
       });
     }
@@ -114,10 +123,13 @@ class _AdminAlertsScreenState extends State<AdminAlertsScreen> {
       appBar: AppBar(
         backgroundColor: _bg,
         elevation: 0,
-        title: const Text('Admin Alerts', style: TextStyle(color: Colors.white)),
+        title:
+            const Text('Admin Alerts', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
-          IconButton(onPressed: _load, icon: const Icon(Icons.refresh, color: Colors.white)),
+          IconButton(
+              onPressed: _load,
+              icon: const Icon(Icons.refresh, color: Colors.white)),
         ],
       ),
       body: RefreshIndicator(
@@ -129,19 +141,24 @@ class _AdminAlertsScreenState extends State<AdminAlertsScreen> {
             : _err != null
                 ? ListView(children: [
                     const SizedBox(height: 120),
-                    Center(child: Text(_err!, style: const TextStyle(color: _error))),
+                    Center(
+                        child:
+                            Text(_err!, style: const TextStyle(color: _error))),
                   ])
                 : _alerts.isEmpty
                     ? ListView(children: const [
                         SizedBox(height: 140),
                         Icon(Icons.shield_outlined, color: _success, size: 48),
                         SizedBox(height: 12),
-                        Center(child: Text('All clear — no ops alerts.', style: TextStyle(color: _textSecondary))),
+                        Center(
+                            child: Text('All clear — no ops alerts.',
+                                style: TextStyle(color: _textSecondary))),
                       ])
                     : ListView.separated(
                         padding: const EdgeInsets.all(16),
                         itemCount: _alerts.length,
-                        separatorBuilder: (_, __) => const Divider(color: _divider, height: 16),
+                        separatorBuilder: (_, __) =>
+                            const Divider(color: _divider, height: 16),
                         itemBuilder: (_, i) => _tile(_alerts[i]),
                       ),
       ),
@@ -153,7 +170,8 @@ class _AdminAlertsScreenState extends State<AdminAlertsScreen> {
     final resolved = a.status.toLowerCase() == 'resolved';
     return Container(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: _card, borderRadius: BorderRadius.circular(12)),
+      decoration:
+          BoxDecoration(color: _card, borderRadius: BorderRadius.circular(12)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -161,23 +179,38 @@ class _AdminAlertsScreenState extends State<AdminAlertsScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(color: sev.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(6)),
+                decoration: BoxDecoration(
+                    color: sev.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(6)),
                 child: Text(a.severity.toUpperCase(),
-                    style: TextStyle(color: sev, fontSize: 10, fontWeight: FontWeight.w700)),
+                    style: TextStyle(
+                        color: sev, fontSize: 10, fontWeight: FontWeight.w700)),
               ),
               const SizedBox(width: 8),
               if (resolved)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(color: _success.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(6)),
-                  child: const Text('RESOLVED', style: TextStyle(color: _success, fontSize: 10, fontWeight: FontWeight.w700)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                      color: _success.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(6)),
+                  child: const Text('RESOLVED',
+                      style: TextStyle(
+                          color: _success,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700)),
                 ),
               const Spacer(),
-              Text(a.service, style: const TextStyle(color: _textSecondary, fontSize: 11)),
+              Text(a.service,
+                  style: const TextStyle(color: _textSecondary, fontSize: 11)),
             ],
           ),
           const SizedBox(height: 8),
-          Text(a.alertName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)),
+          Text(a.alertName,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14)),
           if (a.summary.isNotEmpty || a.description.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(a.summary.isNotEmpty ? a.summary : a.description,

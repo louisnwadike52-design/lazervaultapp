@@ -163,43 +163,43 @@ class _MyQRCodeScreenState extends State<MyQRCodeScreen> {
       body: BlocListener<QRPaymentCubit, QRPaymentState>(
         listener: _onQrState,
         child: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF1A1A3E),
-              Color(0xFF0A0E27),
-              Color(0xFF0F0F23),
-            ],
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF1A1A3E),
+                Color(0xFF0A0E27),
+                Color(0xFF0F0F23),
+              ],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(context),
-              Expanded(
-                child: BlocBuilder<ProfileCubit, ProfileState>(
-                  builder: (context, state) {
-                    if (state is ProfileLoaded) {
-                      return _buildQRCodeContent(context, state.user);
-                    }
+          child: SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(context),
+                Expanded(
+                  child: BlocBuilder<ProfileCubit, ProfileState>(
+                    builder: (context, state) {
+                      if (state is ProfileLoaded) {
+                        return _buildQRCodeContent(context, state.user);
+                      }
 
-                    // Fallback to auth cubit if profile not loaded
-                    final authCubit = context.read<AuthenticationCubit>();
-                    final user = authCubit.currentProfile?.user;
+                      // Fallback to auth cubit if profile not loaded
+                      final authCubit = context.read<AuthenticationCubit>();
+                      final user = authCubit.currentProfile?.user;
 
-                    if (user != null) {
-                      return _buildQRCodeContent(context, user);
-                    }
+                      if (user != null) {
+                        return _buildQRCodeContent(context, user);
+                      }
 
-                    return _buildLoadingState();
-                  },
+                      return _buildLoadingState();
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
         ),
       ),
     );
@@ -265,7 +265,9 @@ class _MyQRCodeScreenState extends State<MyQRCodeScreen> {
 
     // Create QR code data - use v2 format if amount is set
     final Map<String, dynamic> qrData;
-    if (_requestAmount != null && _requestAmount! > 0 && _serverQrCode != null) {
+    if (_requestAmount != null &&
+        _requestAmount! > 0 &&
+        _serverQrCode != null) {
       // Server-backed payment QR: encode ONLY the `QR-…` reference. The scanner
       // re-validates it via the backend (GetQRDetails), so the amount/recipient
       // can't be tampered with client-side.
@@ -517,7 +519,8 @@ class _MyQRCodeScreenState extends State<MyQRCodeScreen> {
     );
   }
 
-  Widget _buildInstructionItem(String number, String title, String description) {
+  Widget _buildInstructionItem(
+      String number, String title, String description) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -592,7 +595,8 @@ class _MyQRCodeScreenState extends State<MyQRCodeScreen> {
         ),
         style: OutlinedButton.styleFrom(
           padding: EdgeInsets.symmetric(vertical: 14.h),
-          side: BorderSide(color: const Color(0xFF4E03D0).withValues(alpha: 0.5)),
+          side:
+              BorderSide(color: const Color(0xFF4E03D0).withValues(alpha: 0.5)),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),
           ),
@@ -610,17 +614,20 @@ class _MyQRCodeScreenState extends State<MyQRCodeScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A3E),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Text(
           'Request Amount',
-          style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w700),
+          style: GoogleFonts.inter(
+              color: Colors.white, fontWeight: FontWeight.w700),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               'Enter the amount you want to receive. The QR code will expire in 30 minutes.',
-              style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp),
+              style:
+                  GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp),
             ),
             SizedBox(height: 16.h),
             TextField(
@@ -629,7 +636,8 @@ class _MyQRCodeScreenState extends State<MyQRCodeScreen> {
               style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp),
               decoration: InputDecoration(
                 prefixText: '\u20a6 ',
-                prefixStyle: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp),
+                prefixStyle:
+                    GoogleFonts.inter(color: Colors.white, fontSize: 18.sp),
                 hintText: '0.00',
                 hintStyle: GoogleFonts.inter(color: Colors.grey[600]),
                 filled: true,
@@ -657,11 +665,13 @@ class _MyQRCodeScreenState extends State<MyQRCodeScreen> {
                   _expiryText = '';
                 });
               },
-              child: Text('Clear', style: GoogleFonts.inter(color: Colors.orange[400])),
+              child: Text('Clear',
+                  style: GoogleFonts.inter(color: Colors.orange[400])),
             ),
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: GoogleFonts.inter(color: Colors.grey[400])),
+            child: Text('Cancel',
+                style: GoogleFonts.inter(color: Colors.grey[400])),
           ),
           ElevatedButton(
             onPressed: () {
@@ -673,9 +683,12 @@ class _MyQRCodeScreenState extends State<MyQRCodeScreen> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF4E03D0),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r)),
             ),
-            child: Text('Set Amount', style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600)),
+            child: Text('Set Amount',
+                style: GoogleFonts.inter(
+                    color: Colors.white, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -783,9 +796,9 @@ class _MyQRCodeScreenState extends State<MyQRCodeScreen> {
       final file = await _captureQrPng();
       if (file != null) {
         await SharePlus.instance.share(ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+          // iOS: a non-zero popover anchor is required — CGRectZero throws
+          // PlatformException and the share silently fails on iPhone/iPad.
+          sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
           files: [XFile(file.path)],
           text: caption,
           subject: 'My Lazervault QR Code',
@@ -794,9 +807,9 @@ class _MyQRCodeScreenState extends State<MyQRCodeScreen> {
         // Image capture unavailable — share the caption alone rather than the
         // unscannable JSON payload.
         await SharePlus.instance.share(ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+          // iOS: a non-zero popover anchor is required — CGRectZero throws
+          // PlatformException and the share silently fails on iPhone/iPad.
+          sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
           text: caption,
           subject: 'My Lazervault QR Code',
         ));

@@ -6,7 +6,8 @@ import 'package:grpc/grpc.dart';
 import 'package:dartz/dartz.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/error/failure.dart';
-import 'package:lazervault/src/core/errors/failures.dart' show friendlyGrpcError;
+import 'package:lazervault/src/core/errors/failures.dart'
+    show friendlyGrpcError;
 import 'package:lazervault/core/config/country_config.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/services/device_service.dart';
@@ -19,7 +20,8 @@ import 'package:lazervault/src/features/authentication/data/models/phone_verific
 import 'package:lazervault/src/features/authentication/domain/entities/two_factor_entity.dart';
 import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
 import 'package:lazervault/src/features/authentication/domain/usecases/sign_up_usecase.dart';
-import 'package:lazervault/src/generated/auth.pbgrpc.dart' hide VirtualAccountInfo;
+import 'package:lazervault/src/generated/auth.pbgrpc.dart'
+    hide VirtualAccountInfo;
 import 'package:lazervault/src/generated/auth.pbenum.dart' as auth_enum;
 import 'package:lazervault/src/generated/auth.pb.dart' as auth_req_resp;
 import 'package:lazervault/src/generated/user.pbgrpc.dart';
@@ -82,7 +84,8 @@ class AuthRepositoryImpl implements IAuthRepository {
       return const Right(null);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: friendlyGrpcError(e, 'Request failed.'), statusCode: e.code));
+          message: friendlyGrpcError(e, 'Request failed.'),
+          statusCode: e.code));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 0));
     }
@@ -116,14 +119,16 @@ class AuthRepositoryImpl implements IAuthRepository {
       return Right(devices);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: friendlyGrpcError(e, 'Request failed.'), statusCode: e.code));
+          message: friendlyGrpcError(e, 'Request failed.'),
+          statusCode: e.code));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 0));
     }
   }
 
   @override
-  Future<Either<Failure, void>> revokeDevice({required String deviceUuid}) async {
+  Future<Either<Failure, void>> revokeDevice(
+      {required String deviceUuid}) async {
     try {
       await _authServiceClient.revokeDevice(
         auth_req_resp.RevokeDeviceRequest(deviceUuid: deviceUuid),
@@ -132,7 +137,8 @@ class AuthRepositoryImpl implements IAuthRepository {
       return const Right(null);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: friendlyGrpcError(e, 'Request failed.'), statusCode: e.code));
+          message: friendlyGrpcError(e, 'Request failed.'),
+          statusCode: e.code));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 0));
     }
@@ -154,13 +160,16 @@ class AuthRepositoryImpl implements IAuthRepository {
           deviceName: e.deviceName,
           userAgent: e.userAgent,
           failReason: e.failReason,
-          at: secs > 0 ? DateTime.fromMillisecondsSinceEpoch(secs * 1000) : null,
+          at: secs > 0
+              ? DateTime.fromMillisecondsSinceEpoch(secs * 1000)
+              : null,
         );
       }).toList();
       return Right(items);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: friendlyGrpcError(e, 'Request failed.'), statusCode: e.code));
+          message: friendlyGrpcError(e, 'Request failed.'),
+          statusCode: e.code));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 0));
     }
@@ -200,13 +209,16 @@ class AuthRepositoryImpl implements IAuthRepository {
           refreshTokenExpiresAt: expiresAt,
         );
 
-        final profileModel = ProfileModel(user: userModel, session: sessionModel);
+        final profileModel =
+            ProfileModel(user: userModel, session: sessionModel);
         return Right(profileModel); // Explicitly use Right()
       } else if (response.twoFactorRequired) {
         // 2FA enabled: no session yet — route to the 2FA verification flow.
         return Left(TwoFactorRequiredFailure(
           twoFactorToken: response.twoFactorToken,
-          method: response.twoFactorMethod.isNotEmpty ? response.twoFactorMethod : 'totp',
+          method: response.twoFactorMethod.isNotEmpty
+              ? response.twoFactorMethod
+              : 'totp',
         ));
       } else if (response.stepUpRequired) {
         // Risk-based step-up: no session yet — route to the OTP flow.
@@ -230,21 +242,25 @@ class AuthRepositoryImpl implements IAuthRepository {
         return Left(ServerFailure(
             message: response.msg.isNotEmpty
                 ? response.msg
-                : 'Authentication failed.', statusCode: 401));
+                : 'Authentication failed.',
+            statusCode: 401));
       }
     } on GrpcError catch (e) {
       print('gRPC Error during authentication: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: friendlyGrpcError(e, 'Authentication failed due to server error.'),
+        message:
+            friendlyGrpcError(e, 'Authentication failed due to server error.'),
         statusCode: e.code,
       ));
     } catch (e) {
       print('Unexpected error during authentication: $e');
-      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred.', statusCode: 500));
     }
   }
 
   @override
+
   /// Asks for a fresh step-up code. Returns the NEW lifetime in seconds so the
   /// screen can restart its countdown from what the server will honour.
   ///
@@ -343,7 +359,8 @@ class AuthRepositoryImpl implements IAuthRepository {
       return Right(ProfileModel(user: userModel, session: sessionModel));
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: friendlyGrpcError(e, 'Invalid verification code.'), statusCode: e.code));
+          message: friendlyGrpcError(e, 'Invalid verification code.'),
+          statusCode: e.code));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 0));
     }
@@ -367,7 +384,8 @@ class AuthRepositoryImpl implements IAuthRepository {
       return const Right(null);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: friendlyGrpcError(e, 'Could not send code.'), statusCode: e.code));
+          message: friendlyGrpcError(e, 'Could not send code.'),
+          statusCode: e.code));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 0));
     }
@@ -417,8 +435,8 @@ class AuthRepositoryImpl implements IAuthRepository {
   @override
   Future<Either<Failure, String>> getAuthenticationMode() async {
     try {
-      final response = await _authServiceClient
-          .getAuthenticationConfig(auth_req_resp.GetAuthenticationConfigRequest());
+      final response = await _authServiceClient.getAuthenticationConfig(
+          auth_req_resp.GetAuthenticationConfigRequest());
       final mode = response.authenticationMode.isNotEmpty
           ? response.authenticationMode
           : 'phone_passcode';
@@ -444,7 +462,8 @@ class AuthRepositoryImpl implements IAuthRepository {
         statusCode: e.code,
       ));
     } catch (e) {
-      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred.', statusCode: 500));
     }
   }
 
@@ -463,7 +482,8 @@ class AuthRepositoryImpl implements IAuthRepository {
       );
       if (!response.success) {
         return Left(ServerFailure(
-          message: response.msg.isNotEmpty ? response.msg : 'Could not send code.',
+          message:
+              response.msg.isNotEmpty ? response.msg : 'Could not send code.',
           statusCode: 400,
         ));
       }
@@ -477,7 +497,8 @@ class AuthRepositoryImpl implements IAuthRepository {
         statusCode: e.code,
       ));
     } catch (e) {
-      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred.', statusCode: 500));
     }
   }
 
@@ -493,7 +514,9 @@ class AuthRepositoryImpl implements IAuthRepository {
       );
       if (!response.success || response.signupToken.isEmpty) {
         return Left(ServerFailure(
-          message: response.msg.isNotEmpty ? response.msg : 'Invalid verification code.',
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'Invalid verification code.',
           statusCode: 400,
         ));
       }
@@ -504,7 +527,8 @@ class AuthRepositoryImpl implements IAuthRepository {
         statusCode: e.code,
       ));
     } catch (e) {
-      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred.', statusCode: 500));
     }
   }
 
@@ -580,7 +604,8 @@ class AuthRepositoryImpl implements IAuthRepository {
       );
       if (!response.success) {
         return Left(ServerFailure(
-          message: response.msg.isNotEmpty ? response.msg : 'Could not send code.',
+          message:
+              response.msg.isNotEmpty ? response.msg : 'Could not send code.',
           statusCode: 400,
         ));
       }
@@ -594,7 +619,8 @@ class AuthRepositoryImpl implements IAuthRepository {
         statusCode: e.code,
       ));
     } catch (e) {
-      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred.', statusCode: 500));
     }
   }
 
@@ -614,7 +640,9 @@ class AuthRepositoryImpl implements IAuthRepository {
       );
       if (!response.success) {
         return Left(ServerFailure(
-          message: response.msg.isNotEmpty ? response.msg : 'Invalid or expired code.',
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'Invalid or expired code.',
           statusCode: 400,
         ));
       }
@@ -625,7 +653,8 @@ class AuthRepositoryImpl implements IAuthRepository {
         statusCode: e.code,
       ));
     } catch (e) {
-      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred.', statusCode: 500));
     }
   }
 
@@ -645,7 +674,9 @@ class AuthRepositoryImpl implements IAuthRepository {
       );
       if (!response.success) {
         return Left(ServerFailure(
-          message: response.msg.isNotEmpty ? response.msg : 'Could not reset passcode.',
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'Could not reset passcode.',
           statusCode: 400,
         ));
       }
@@ -656,7 +687,8 @@ class AuthRepositoryImpl implements IAuthRepository {
         statusCode: e.code,
       ));
     } catch (e) {
-      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred.', statusCode: 500));
     }
   }
 
@@ -687,7 +719,8 @@ class AuthRepositoryImpl implements IAuthRepository {
         statusCode: e.code,
       ));
     } catch (e) {
-      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred.', statusCode: 500));
     }
   }
 
@@ -705,7 +738,8 @@ class AuthRepositoryImpl implements IAuthRepository {
         return const Right(null);
       }
       return Left(ServerFailure(
-        message: response.msg.isNotEmpty ? response.msg : 'Failed to set password',
+        message:
+            response.msg.isNotEmpty ? response.msg : 'Failed to set password',
         statusCode: 400,
       ));
     } on GrpcError catch (e) {
@@ -714,7 +748,8 @@ class AuthRepositoryImpl implements IAuthRepository {
         statusCode: e.code,
       ));
     } catch (e) {
-      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred.', statusCode: 500));
     }
   }
 
@@ -804,7 +839,8 @@ class AuthRepositoryImpl implements IAuthRepository {
     String? phoneNumber,
     String? username,
     String? referralCode,
-    String? locale, // Locale format: "en-NG", "en-US", etc. - we derive country/currency from this
+    String?
+        locale, // Locale format: "en-NG", "en-US", etc. - we derive country/currency from this
     String? bvn,
     String? nin,
   }) async {
@@ -819,7 +855,8 @@ class AuthRepositoryImpl implements IAuthRepository {
       final derivedCountryCode = _getCountryCodeFromLocale(locale);
       final derivedCurrencyCode = _getCurrencyCodeFromLocale(locale);
 
-      print('Signup with locale: $locale -> countryCode: $derivedCountryCode, currencyCode: $derivedCurrencyCode');
+      print(
+          'Signup with locale: $locale -> countryCode: $derivedCountryCode, currencyCode: $derivedCurrencyCode');
 
       // Use new AuthService.Signup endpoint that returns tokens directly
       final dev = await _deviceFields();
@@ -833,31 +870,32 @@ class AuthRepositoryImpl implements IAuthRepository {
         deviceId: dev.id,
         deviceName: dev.name,
         primaryContactType: protoPrimaryContact,
-        username: username ?? '', // Pass empty string if not provided - backend handles as optional
+        username: username ??
+            '', // Pass empty string if not provided - backend handles as optional
         referralCode: referralCode ?? '',
       );
-      print('Sending gRPC Signup request with countryCode: $derivedCountryCode...');
+      print(
+          'Sending gRPC Signup request with countryCode: $derivedCountryCode...');
       final signupResponse = await _authServiceClient.signup(
         signupRequest,
         options: await _callOptionsHelper.withAppCheck(),
       );
 
       // Check if signup returned tokens
-      if (signupResponse.accessToken.isEmpty || signupResponse.refreshToken.isEmpty) {
+      if (signupResponse.accessToken.isEmpty ||
+          signupResponse.refreshToken.isEmpty) {
         print('gRPC Signup succeeded but no tokens returned');
         return Left(ServerFailure(
-          message: 'Signup partially failed (no tokens returned).',
-          statusCode: 500
-        ));
+            message: 'Signup partially failed (no tokens returned).',
+            statusCode: 500));
       }
 
       // Check if user data is present
       if (!signupResponse.hasUser()) {
         print('gRPC Signup succeeded but no user data returned');
         return Left(ServerFailure(
-          message: 'Signup partially failed (no user data).',
-          statusCode: 500
-        ));
+            message: 'Signup partially failed (no user data).',
+            statusCode: 500));
       }
 
       print('gRPC Signup successful. User created with tokens.');
@@ -867,7 +905,8 @@ class AuthRepositoryImpl implements IAuthRepository {
 
       // Create session model with tokens
       final now = DateTime.now();
-      final expiresAt = now.add(Duration(seconds: signupResponse.expiresIn.toInt()));
+      final expiresAt =
+          now.add(Duration(seconds: signupResponse.expiresIn.toInt()));
       final sessionModel = SessionModel(
         id: signupResponse.user.id,
         userId: signupResponse.user.id,
@@ -880,11 +919,12 @@ class AuthRepositoryImpl implements IAuthRepository {
       final profileModel = ProfileModel(user: userModel, session: sessionModel);
 
       return Right(profileModel);
-
     } on GrpcError catch (e) {
       print('gRPC Error during signUp: ${e.codeName} - ${e.message}');
       if (e.code == StatusCode.alreadyExists) {
-        return Left(ServerFailure(message: friendlyGrpcError(e, 'Account already exists.'), statusCode: e.code));
+        return Left(ServerFailure(
+            message: friendlyGrpcError(e, 'Account already exists.'),
+            statusCode: e.code));
       }
       return Left(ServerFailure(
         message: friendlyGrpcError(e, 'Signup failed due to server error.'),
@@ -892,9 +932,11 @@ class AuthRepositoryImpl implements IAuthRepository {
       ));
     } catch (e) {
       print('Unexpected error during signUp: $e');
-      return Left(ServerFailure(message: 'An unexpected error occurred during signup.', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred during signup.',
+          statusCode: 500));
     }
-  }     
+  }
 
   // ── Google / Apple sign-in ────────────────────────────────────────────────
   //
@@ -942,7 +984,8 @@ class AuthRepositoryImpl implements IAuthRepository {
       final idToken = account.authentication.idToken;
       if (idToken == null) {
         return Left(ServerFailure(
-            message: 'Google did not return an identity token. Please try again.',
+            message:
+                'Google did not return an identity token. Please try again.',
             statusCode: 401));
       }
       return _processSocialLogin(provider: 'google', providerToken: idToken);
@@ -956,7 +999,8 @@ class AuthRepositoryImpl implements IAuthRepository {
     } catch (e) {
       AppLogger.error('Google sign-in failed', error: e);
       return Left(ServerFailure(
-          message: 'Google sign-in failed. Please try again.', statusCode: 500));
+          message: 'Google sign-in failed. Please try again.',
+          statusCode: 500));
     }
   }
 
@@ -972,7 +1016,8 @@ class AuthRepositoryImpl implements IAuthRepository {
       final identityToken = cred.identityToken;
       if (identityToken == null) {
         return Left(ServerFailure(
-            message: 'Apple did not return an identity token. Please try again.',
+            message:
+                'Apple did not return an identity token. Please try again.',
             statusCode: 401));
       }
       // Apple sends the name exactly once (first authorization) and never
@@ -1080,7 +1125,8 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Future<Either<Failure, void>> requestPasswordReset({required String email}) async {
+  Future<Either<Failure, void>> requestPasswordReset(
+      {required String email}) async {
     try {
       // Use ForgotPassword RPC which sends a reset token via email
       final request = auth_req_resp.ForgotPasswordRequest(email: email);
@@ -1118,11 +1164,13 @@ class AuthRepositoryImpl implements IAuthRepository {
         resetToken: token, // proto uses resetToken, not token
         newPassword: newPassword,
       );
-      print('Sending gRPC ResetPassword request with token: ${token.length > 8 ? token.substring(0, 8) : token}...');
+      print(
+          'Sending gRPC ResetPassword request with token: ${token.length > 8 ? token.substring(0, 8) : token}...');
 
       // Get CallOptions with auth and account metadata
       final options = await _callOptionsHelper.withAuth();
-      final response = await _authServiceClient.resetPassword(request, options: options);
+      final response =
+          await _authServiceClient.resetPassword(request, options: options);
 
       if (response.success) {
         print('Password reset successful');
@@ -1130,19 +1178,23 @@ class AuthRepositoryImpl implements IAuthRepository {
       } else {
         print('Password reset failed: ${response.msg}');
         return Left(ServerFailure(
-          message: response.msg.isNotEmpty ? response.msg : 'Failed to reset password.',
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'Failed to reset password.',
           statusCode: 400,
         ));
       }
     } on GrpcError catch (e) {
       print('gRPC Error during resetPassword: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: friendlyGrpcError(e, 'Failed to reset password. The reset token may be invalid or expired.'),
+        message: friendlyGrpcError(e,
+            'Failed to reset password. The reset token may be invalid or expired.'),
         statusCode: e.code,
       ));
     } catch (e) {
       print('Unexpected error during resetPassword: $e');
-      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred.', statusCode: 500));
     }
   }
 
@@ -1156,25 +1208,34 @@ class AuthRepositoryImpl implements IAuthRepository {
       final request = auth_req_resp.ForgotPasswordRequest(
         email: email ?? '',
         phone: phone ?? '',
-        deliveryMethod: deliveryMethod ?? auth_enum.PasswordResetDeliveryMethod.DELIVERY_METHOD_UNSPECIFIED,
+        deliveryMethod: deliveryMethod ??
+            auth_enum.PasswordResetDeliveryMethod.DELIVERY_METHOD_UNSPECIFIED,
       );
-      print('Sending gRPC ForgotPasswordV2 request: email=$email, phone=$phone, deliveryMethod=$deliveryMethod');
+      print(
+          'Sending gRPC ForgotPasswordV2 request: email=$email, phone=$phone, deliveryMethod=$deliveryMethod');
 
       // Get CallOptions with auth and account metadata
       // Note: For password reset, user may not be logged in, but we pass headers if available
       final options = await _callOptionsHelper.withAuth();
-      final response = await _authServiceClient.forgotPassword(request, options: options);
+      final response =
+          await _authServiceClient.forgotPassword(request, options: options);
 
-      print('Password reset response: success=${response.success}, userFound=${response.hasUserFound() ? response.userFound : false}, deliveryMethod=${response.deliveryMethod}, maskedContact=${response.maskedContact}');
+      print(
+          'Password reset response: success=${response.success}, userFound=${response.hasUserFound() ? response.userFound : false}, deliveryMethod=${response.deliveryMethod}, maskedContact=${response.maskedContact}');
 
       return Right(PasswordResetResult(
         success: response.success,
         message: response.message,
         deliveryMethod: response.deliveryMethod,
         maskedContact: response.maskedContact,
-        expiresInSeconds: response.hasExpiresInSeconds() ? response.expiresInSeconds.toInt() : 900,
-        resetToken: null, // resetToken is only returned after verifying the code, not in ForgotPasswordResponse
-        userFound: response.hasUserFound() ? response.userFound : true, // Default to true for backward compatibility
+        expiresInSeconds: response.hasExpiresInSeconds()
+            ? response.expiresInSeconds.toInt()
+            : 900,
+        resetToken:
+            null, // resetToken is only returned after verifying the code, not in ForgotPasswordResponse
+        userFound: response.hasUserFound()
+            ? response.userFound
+            : true, // Default to true for backward compatibility
       ));
     } on GrpcError catch (e) {
       print('gRPC Error during forgotPassword: ${e.codeName} - ${e.message}');
@@ -1202,7 +1263,8 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Future<Either<Failure, PasswordResetVerificationResult>> verifyPasswordResetCode({
+  Future<Either<Failure, PasswordResetVerificationResult>>
+      verifyPasswordResetCode({
     required String contact,
     required String code,
     required auth_enum.PasswordResetDeliveryMethod deliveryMethod,
@@ -1213,36 +1275,46 @@ class AuthRepositoryImpl implements IAuthRepository {
         code: code,
         deliveryMethod: deliveryMethod,
       );
-      print('Sending gRPC VerifyPasswordResetCode request: contact=$contact, deliveryMethod=$deliveryMethod');
+      print(
+          'Sending gRPC VerifyPasswordResetCode request: contact=$contact, deliveryMethod=$deliveryMethod');
 
       // Get CallOptions with auth and account metadata
       final options = await _callOptionsHelper.withAuth();
-      final response = await _authServiceClient.verifyPasswordResetCode(request, options: options);
+      final response = await _authServiceClient.verifyPasswordResetCode(request,
+          options: options);
 
-      print('Verify response: success=${response.success}, resetToken=${response.resetToken.isNotEmpty ? response.resetToken.substring(0, 8) : "empty"}...');
+      print(
+          'Verify response: success=${response.success}, resetToken=${response.resetToken.isNotEmpty ? response.resetToken.substring(0, 8) : "empty"}...');
 
       if (response.success) {
         return Right(PasswordResetVerificationResult(
           success: true,
           message: response.message,
           resetToken: response.resetToken,
-          expiresInSeconds: response.hasExpiresInSeconds() ? response.expiresInSeconds.toInt() : 900,
+          expiresInSeconds: response.hasExpiresInSeconds()
+              ? response.expiresInSeconds.toInt()
+              : 900,
         ));
       } else {
         return Left(ServerFailure(
-          message: response.message.isNotEmpty ? response.message : 'Failed to verify code',
+          message: response.message.isNotEmpty
+              ? response.message
+              : 'Failed to verify code',
           statusCode: 400,
         ));
       }
     } on GrpcError catch (e) {
-      print('gRPC Error during verifyPasswordResetCode: ${e.codeName} - ${e.message}');
+      print(
+          'gRPC Error during verifyPasswordResetCode: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: friendlyGrpcError(e, 'Failed to verify code. Please try again.'),
+        message:
+            friendlyGrpcError(e, 'Failed to verify code. Please try again.'),
         statusCode: e.code,
       ));
     } catch (e) {
       print('Unexpected error during verifyPasswordResetCode: $e');
-      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred.', statusCode: 500));
     }
   }
 
@@ -1256,11 +1328,13 @@ class AuthRepositoryImpl implements IAuthRepository {
         resetToken: resetToken,
         newPassword: newPassword,
       );
-      print('Sending gRPC ResetPasswordWithToken request with token: ${resetToken.substring(0, 8)}...');
+      print(
+          'Sending gRPC ResetPasswordWithToken request with token: ${resetToken.substring(0, 8)}...');
 
       // Get CallOptions with auth and account metadata
       final options = await _callOptionsHelper.withAuth();
-      final response = await _authServiceClient.resetPassword(request, options: options);
+      final response =
+          await _authServiceClient.resetPassword(request, options: options);
 
       if (response.success) {
         print('Password reset successful');
@@ -1268,31 +1342,39 @@ class AuthRepositoryImpl implements IAuthRepository {
       } else {
         print('Password reset failed: ${response.msg}');
         return Left(ServerFailure(
-          message: response.msg.isNotEmpty ? response.msg : 'Failed to reset password.',
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'Failed to reset password.',
           statusCode: 400,
         ));
       }
     } on GrpcError catch (e) {
-      print('gRPC Error during resetPasswordWithToken: ${e.codeName} - ${e.message}');
+      print(
+          'gRPC Error during resetPasswordWithToken: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: friendlyGrpcError(e, 'Failed to reset password. The reset token may be invalid or expired.'),
+        message: friendlyGrpcError(e,
+            'Failed to reset password. The reset token may be invalid or expired.'),
         statusCode: e.code,
       ));
     } catch (e) {
       print('Unexpected error during resetPasswordWithToken: $e');
-      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred.', statusCode: 500));
     }
   }
 
   @override
-  Future<Either<Failure, ProfileEntity>> verifyEmail({required String verificationCode}) async {
+  Future<Either<Failure, ProfileEntity>> verifyEmail(
+      {required String verificationCode}) async {
     try {
-      final request = auth_req_resp.VerifyEmailRequest(verificationCode: verificationCode);
+      final request =
+          auth_req_resp.VerifyEmailRequest(verificationCode: verificationCode);
       print('Sending gRPC VerifyEmail request');
 
       // Use helper to get call options with authorization header from secure storage
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _authServiceClient.verifyEmail(request, options: callOptions);
+      final response =
+          await _authServiceClient.verifyEmail(request, options: callOptions);
 
       if (response.success) {
         print('Email verified successfully on backend');
@@ -1302,8 +1384,10 @@ class AuthRepositoryImpl implements IAuthRepository {
         // On next login, the backend will return the updated state.
 
         // Get current tokens from storage
-        final accessToken = await _callOptionsHelper.storage.read(key: 'access_token');
-        final refreshToken = await _callOptionsHelper.storage.read(key: 'refresh_token');
+        final accessToken =
+            await _callOptionsHelper.storage.read(key: 'access_token');
+        final refreshToken =
+            await _callOptionsHelper.storage.read(key: 'refresh_token');
 
         if (accessToken == null || refreshToken == null) {
           print('Tokens not found in storage after email verification');
@@ -1315,10 +1399,14 @@ class AuthRepositoryImpl implements IAuthRepository {
 
         // Read user data from storage (saved during signup)
         final userId = await _callOptionsHelper.storage.read(key: 'user_id');
-        final userEmail = await _callOptionsHelper.storage.read(key: 'user_email');
-        final userFirstName = await _callOptionsHelper.storage.read(key: 'user_first_name');
-        final userLastName = await _callOptionsHelper.storage.read(key: 'user_last_name');
-        final userAvatarUrl = await _callOptionsHelper.storage.read(key: 'user_avatar_url');
+        final userEmail =
+            await _callOptionsHelper.storage.read(key: 'user_email');
+        final userFirstName =
+            await _callOptionsHelper.storage.read(key: 'user_first_name');
+        final userLastName =
+            await _callOptionsHelper.storage.read(key: 'user_last_name');
+        final userAvatarUrl =
+            await _callOptionsHelper.storage.read(key: 'user_avatar_url');
 
         if (userId != null && userId.isNotEmpty) {
           // Construct profile with isEmailVerified=true - backend already confirmed it
@@ -1335,7 +1423,8 @@ class AuthRepositoryImpl implements IAuthRepository {
             isEmailVerified: true, // Backend verified it, update frontend state
             createdAt: now,
             updatedAt: now,
-            profilePicture: userAvatarUrl?.isNotEmpty == true ? userAvatarUrl : null,
+            profilePicture:
+                userAvatarUrl?.isNotEmpty == true ? userAvatarUrl : null,
           ).withRolesFromAccessToken(accessToken);
 
           final sessionModel = SessionModel(
@@ -1348,7 +1437,8 @@ class AuthRepositoryImpl implements IAuthRepository {
           );
 
           final profileModel = ProfileModel(user: user, session: sessionModel);
-          print('Email verified - returning updated profile with isEmailVerified=true (no getMe call needed)');
+          print(
+              'Email verified - returning updated profile with isEmailVerified=true (no getMe call needed)');
           return Right(profileModel);
         } else {
           // No stored user data - session lost
@@ -1361,7 +1451,9 @@ class AuthRepositoryImpl implements IAuthRepository {
       } else {
         print('Email verification failed: ${response.msg}');
         return Left(ServerFailure(
-          message: response.msg.isNotEmpty ? response.msg : 'Failed to verify email.',
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'Failed to verify email.',
           statusCode: 400,
         ));
       }
@@ -1373,56 +1465,71 @@ class AuthRepositoryImpl implements IAuthRepository {
       ));
     } catch (e) {
       print('Unexpected error during verifyEmail: $e');
-      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred.', statusCode: 500));
     }
   }
 
   @override
-  Future<Either<Failure, int>> resendVerificationEmail({required String email}) async {
+  Future<Either<Failure, int>> resendVerificationEmail(
+      {required String email}) async {
     try {
-      final request = auth_req_resp.ResendVerificationEmailRequest(email: email);
+      final request =
+          auth_req_resp.ResendVerificationEmailRequest(email: email);
       print('Sending gRPC ResendVerificationEmail request for email: $email');
 
       // Use helper to get call options with authorization header from secure storage
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _authServiceClient.resendVerificationEmail(request, options: callOptions);
+      final response = await _authServiceClient.resendVerificationEmail(request,
+          options: callOptions);
 
       if (response.success) {
-        print('Verification email sent successfully, cooldown: ${response.cooldownSeconds}s');
+        print(
+            'Verification email sent successfully, cooldown: ${response.cooldownSeconds}s');
         // Return the cooldown seconds from the backend (default 60 if not set)
-        return Right(response.cooldownSeconds > 0 ? response.cooldownSeconds : 60);
+        return Right(
+            response.cooldownSeconds > 0 ? response.cooldownSeconds : 60);
       } else {
         print('Resend verification email failed: ${response.message}');
         // Return the cooldown seconds even on failure (rate limit scenario)
         if (response.cooldownSeconds > 0) {
           return Left(ServerFailure(
-            message: response.message.isNotEmpty ? response.message : 'Please wait before requesting another code.',
+            message: response.message.isNotEmpty
+                ? response.message
+                : 'Please wait before requesting another code.',
             statusCode: 429, // Too Many Requests
             cooldownSeconds: response.cooldownSeconds,
           ));
         }
         return Left(ServerFailure(
-          message: response.message.isNotEmpty ? response.message : 'Failed to send verification email.',
+          message: response.message.isNotEmpty
+              ? response.message
+              : 'Failed to send verification email.',
           statusCode: 400,
         ));
       }
     } on GrpcError catch (e) {
-      print('gRPC Error during resendVerificationEmail: ${e.codeName} - ${e.message}');
+      print(
+          'gRPC Error during resendVerificationEmail: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
         message: friendlyGrpcError(e, 'Failed to send verification email.'),
         statusCode: e.code,
       ));
     } catch (e) {
       print('Unexpected error during resendVerificationEmail: $e');
-      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred.', statusCode: 500));
     }
   }
 
   @override
-  Future<Either<Failure, ProfileEntity>> refreshToken({required String refreshToken}) async {
+  Future<Either<Failure, ProfileEntity>> refreshToken(
+      {required String refreshToken}) async {
     try {
-      print('Calling RefreshToken endpoint with token: ${refreshToken.substring(0, 20)}...');
-      final request = auth_req_resp.RefreshTokenRequest(refreshToken: refreshToken);
+      print(
+          'Calling RefreshToken endpoint with token: ${refreshToken.substring(0, 20)}...');
+      final request =
+          auth_req_resp.RefreshTokenRequest(refreshToken: refreshToken);
       final response = await _authServiceClient.refreshToken(request);
 
       print('RefreshToken response received');
@@ -1452,7 +1559,8 @@ class AuthRepositoryImpl implements IAuthRepository {
         }
 
         final now = DateTime.now();
-        final expiresAt = now.add(Duration(seconds: response.expiresIn.toInt()));
+        final expiresAt =
+            now.add(Duration(seconds: response.expiresIn.toInt()));
         final sessionModel = SessionModel(
           id: userModel.id,
           userId: userModel.id,
@@ -1462,23 +1570,28 @@ class AuthRepositoryImpl implements IAuthRepository {
           refreshTokenExpiresAt: expiresAt,
         );
 
-        final profileModel = ProfileModel(user: userModel, session: sessionModel);
+        final profileModel =
+            ProfileModel(user: userModel, session: sessionModel);
         print('RefreshToken successful, returning new profile');
         return Right(profileModel);
       } else {
         print('RefreshToken response missing tokens');
         return Left(ServerFailure(
-            message: 'Token refresh failed - no tokens returned.', statusCode: 401));
+            message: 'Token refresh failed - no tokens returned.',
+            statusCode: 401));
       }
     } on GrpcError catch (e) {
       print('gRPC Error during token refresh: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: friendlyGrpcError(e, 'Token refresh failed due to server error.'),
+        message:
+            friendlyGrpcError(e, 'Token refresh failed due to server error.'),
         statusCode: e.code,
       ));
     } catch (e) {
       print('Unexpected error during token refresh: $e');
-      return Left(ServerFailure(message: 'An unexpected error occurred during token refresh.', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred during token refresh.',
+          statusCode: 500));
     }
   }
 
@@ -1515,7 +1628,8 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Future<Either<Failure, ProfileEntity>> validateToken({required String accessToken}) async {
+  Future<Either<Failure, ProfileEntity>> validateToken(
+      {required String accessToken}) async {
     try {
       final request = auth_req_resp.ValidateTokenRequest(token: accessToken);
       print('Validating access token...');
@@ -1541,7 +1655,8 @@ class AuthRepositoryImpl implements IAuthRepository {
         // Create a minimal session model
         final now = DateTime.now();
         final expiresAt = response.hasExpiresAt()
-            ? DateTime.fromMillisecondsSinceEpoch(response.expiresAt.toInt() * 1000)
+            ? DateTime.fromMillisecondsSinceEpoch(
+                response.expiresAt.toInt() * 1000)
             : now.add(const Duration(hours: 1));
 
         final sessionModel = SessionModel(
@@ -1553,7 +1668,8 @@ class AuthRepositoryImpl implements IAuthRepository {
           refreshTokenExpiresAt: expiresAt,
         );
 
-        final profileModel = ProfileModel(user: userModel, session: sessionModel);
+        final profileModel =
+            ProfileModel(user: userModel, session: sessionModel);
         return Right(profileModel);
       } else {
         print('Token validation failed: token is invalid');
@@ -1581,7 +1697,8 @@ class AuthRepositoryImpl implements IAuthRepository {
   /// This is used by GrpcCallOptionsHelper for automatic token refresh
   @override
   @override
-  Future<Either<Failure, DateTime>> requestAccountLock({required int durationSeconds, String? reason}) async {
+  Future<Either<Failure, DateTime>> requestAccountLock(
+      {required int durationSeconds, String? reason}) async {
     try {
       final response = await _authServiceClient.requestAccountLock(
         auth_req_resp.RequestAccountLockRequest(
@@ -1592,24 +1709,29 @@ class AuthRepositoryImpl implements IAuthRepository {
       );
       if (!response.success) {
         return Left(ServerFailure(
-            message: response.message.isNotEmpty ? response.message : 'Could not lock your account.',
+            message: response.message.isNotEmpty
+                ? response.message
+                : 'Could not lock your account.',
             statusCode: 400));
       }
       final until = DateTime.tryParse(response.lockedUntil);
       if (until == null) {
-        return Left(ServerFailure(message: 'Invalid lock response.', statusCode: 0));
+        return Left(
+            ServerFailure(message: 'Invalid lock response.', statusCode: 0));
       }
       return Right(until);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: friendlyGrpcError(e, 'Could not lock your account.'), statusCode: e.code));
+          message: friendlyGrpcError(e, 'Could not lock your account.'),
+          statusCode: e.code));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 0));
     }
   }
 
   @override
-  Future<Either<Failure, AccountDeletionOutcome>> requestAccountDeletion({String? reason}) async {
+  Future<Either<Failure, AccountDeletionOutcome>> requestAccountDeletion(
+      {String? reason}) async {
     try {
       final response = await _authServiceClient.requestAccountDeletion(
         auth_req_resp.RequestAccountDeletionRequest(reason: reason ?? ''),
@@ -1625,7 +1747,8 @@ class AuthRepositoryImpl implements IAuthRepository {
       ));
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: friendlyGrpcError(e, 'Could not delete your account.'), statusCode: e.code));
+          message: friendlyGrpcError(e, 'Could not delete your account.'),
+          statusCode: e.code));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 0));
     }
@@ -1641,7 +1764,8 @@ class AuthRepositoryImpl implements IAuthRepository {
       return Right(response.message);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: friendlyGrpcError(e, 'Could not cancel your deletion.'), statusCode: e.code));
+          message: friendlyGrpcError(e, 'Could not cancel your deletion.'),
+          statusCode: e.code));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 0));
     }
@@ -1750,24 +1874,28 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> checkEmailAvailability({required String email}) async {
+  Future<Either<Failure, bool>> checkEmailAvailability(
+      {required String email}) async {
     try {
       final request = auth_req_resp.CheckEmailAvailabilityRequest(email: email);
       print('Sending gRPC CheckEmailAvailability request for email: $email');
 
       final response = await _authServiceClient.checkEmailAvailability(request);
 
-      print('Email availability check response: available=${response.available}, msg=${response.msg}');
+      print(
+          'Email availability check response: available=${response.available}, msg=${response.msg}');
       return Right(response.available);
     } on GrpcError catch (e) {
-      print('gRPC Error during checkEmailAvailability: ${e.codeName} - ${e.message}');
+      print(
+          'gRPC Error during checkEmailAvailability: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
         message: friendlyGrpcError(e, 'Failed to check email availability.'),
         statusCode: e.code,
       ));
     } catch (e) {
       print('Unexpected error during checkEmailAvailability: $e');
-      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred.', statusCode: 500));
     }
   }
 
@@ -1783,25 +1911,33 @@ class AuthRepositoryImpl implements IAuthRepository {
 
       // Use helper to get call options with authorization header from secure storage
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _authServiceClient.requestPhoneVerification(request, options: callOptions);
+      final response = await _authServiceClient
+          .requestPhoneVerification(request, options: callOptions);
 
-      print('Phone verification request response: success=${response.success}, msg=${response.msg}');
+      print(
+          'Phone verification request response: success=${response.success}, msg=${response.msg}');
 
       if (response.success) {
         return Right(PhoneVerificationModel(
           success: true,
-          message: response.msg.isNotEmpty ? response.msg : 'Verification code sent to your phone',
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'Verification code sent to your phone',
           verificationId: response.verificationId,
-          expiresIn: response.hasExpiresIn() ? response.expiresIn.toInt() : null,
+          expiresIn:
+              response.hasExpiresIn() ? response.expiresIn.toInt() : null,
         ));
       } else {
         return Left(ServerFailure(
-          message: response.msg.isNotEmpty ? response.msg : 'Failed to send verification code.',
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'Failed to send verification code.',
           statusCode: 400,
         ));
       }
     } on GrpcError catch (e) {
-      print('gRPC Error during requestPhoneVerification: ${e.codeName} - ${e.message}');
+      print(
+          'gRPC Error during requestPhoneVerification: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
         message: friendlyGrpcError(e, 'Failed to send verification code.'),
         statusCode: e.code,
@@ -1809,7 +1945,8 @@ class AuthRepositoryImpl implements IAuthRepository {
     } catch (e) {
       print('Unexpected error during requestPhoneVerification: $e');
       return Left(ServerFailure(
-        message: 'An unexpected error occurred while sending verification code.',
+        message:
+            'An unexpected error occurred while sending verification code.',
         statusCode: 500,
       ));
     }
@@ -1829,24 +1966,31 @@ class AuthRepositoryImpl implements IAuthRepository {
 
       // Use helper to get call options with authorization header from secure storage
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _authServiceClient.verifyPhoneNumber(request, options: callOptions);
+      final response = await _authServiceClient.verifyPhoneNumber(request,
+          options: callOptions);
 
-      print('Phone verification response: success=${response.success}, isVerified=${response.isVerified}, msg=${response.msg}');
+      print(
+          'Phone verification response: success=${response.success}, isVerified=${response.isVerified}, msg=${response.msg}');
 
       if (response.success) {
         return Right(VerifyPhoneModel(
           success: true,
-          message: response.msg.isNotEmpty ? response.msg : 'Phone number verified successfully',
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'Phone number verified successfully',
           isVerified: response.isVerified,
         ));
       } else {
         return Left(ServerFailure(
-          message: response.msg.isNotEmpty ? response.msg : 'Failed to verify phone number.',
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'Failed to verify phone number.',
           statusCode: 400,
         ));
       }
     } on GrpcError catch (e) {
-      print('gRPC Error during verifyPhoneNumber: ${e.codeName} - ${e.message}');
+      print(
+          'gRPC Error during verifyPhoneNumber: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
         message: friendlyGrpcError(e, 'Failed to verify phone number.'),
         statusCode: e.code,
@@ -1871,15 +2015,17 @@ class AuthRepositoryImpl implements IAuthRepository {
         countryCode: countryCode,
       );
       final callOptions = await _callOptionsHelper.withAuth();
-      final response =
-          await _authServiceClient.requestPhoneChange(request, options: callOptions);
+      final response = await _authServiceClient.requestPhoneChange(request,
+          options: callOptions);
       if (response.success) {
         return Right(response.msg.isNotEmpty
             ? response.msg
             : 'A verification code has been sent to the new number');
       }
       return Left(ServerFailure(
-        message: response.msg.isNotEmpty ? response.msg : 'Could not start the phone change.',
+        message: response.msg.isNotEmpty
+            ? response.msg
+            : 'Could not start the phone change.',
         statusCode: 400,
       ));
     } on GrpcError catch (e) {
@@ -1908,13 +2054,15 @@ class AuthRepositoryImpl implements IAuthRepository {
         countryCode: countryCode,
       );
       final callOptions = await _callOptionsHelper.withAuth();
-      final response =
-          await _authServiceClient.verifyPhoneChange(request, options: callOptions);
+      final response = await _authServiceClient.verifyPhoneChange(request,
+          options: callOptions);
       if (response.success) {
         return Right(response.phone.isNotEmpty ? response.phone : newPhone);
       }
       return Left(ServerFailure(
-        message: response.msg.isNotEmpty ? response.msg : 'Could not verify the new number.',
+        message: response.msg.isNotEmpty
+            ? response.msg
+            : 'Could not verify the new number.',
         statusCode: 400,
       ));
     } on GrpcError catch (e) {
@@ -1969,13 +2117,16 @@ class AuthRepositoryImpl implements IAuthRepository {
         dateOfBirth: dateOfBirth,
       );
 
-      print('Sending gRPC VerifyIdentity request: type=$identityType, country=$country, number=${identityNumber.length > 4 ? identityNumber.substring(0, 4) : identityNumber}****, dob=$dateOfBirth');
+      print(
+          'Sending gRPC VerifyIdentity request: type=$identityType, country=$country, number=${identityNumber.length > 4 ? identityNumber.substring(0, 4) : identityNumber}****, dob=$dateOfBirth');
 
       // Use helper to get call options with authorization header from secure storage
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _authServiceClient.verifyIdentity(request, options: callOptions);
+      final response = await _authServiceClient.verifyIdentity(request,
+          options: callOptions);
 
-      print('VerifyIdentity response: success=${response.success}, verified=${response.verified}');
+      print(
+          'VerifyIdentity response: success=${response.success}, verified=${response.verified}');
 
       if (response.success && response.verified) {
         // Build virtual account info if present
@@ -1993,11 +2144,15 @@ class AuthRepositoryImpl implements IAuthRepository {
 
         return Right(IdentityVerificationResult(
           verified: true,
-          firstName: response.hasIdentity() ? response.identity.firstName : null,
+          firstName:
+              response.hasIdentity() ? response.identity.firstName : null,
           lastName: response.hasIdentity() ? response.identity.lastName : null,
-          middleName: response.hasIdentity() ? response.identity.middleName : null,
-          phoneNumber: response.hasIdentity() ? response.identity.phoneNumber : null,
-          dateOfBirth: response.hasIdentity() ? response.identity.dateOfBirth : null,
+          middleName:
+              response.hasIdentity() ? response.identity.middleName : null,
+          phoneNumber:
+              response.hasIdentity() ? response.identity.phoneNumber : null,
+          dateOfBirth:
+              response.hasIdentity() ? response.identity.dateOfBirth : null,
           gender: response.hasIdentity() ? response.identity.gender : null,
           photoUrl: response.hasIdentity() ? response.identity.photoUrl : null,
           virtualAccount: virtualAccount,

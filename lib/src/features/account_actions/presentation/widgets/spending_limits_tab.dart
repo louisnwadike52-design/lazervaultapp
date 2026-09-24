@@ -10,7 +10,6 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/core/utils/edge_case_validator.dart';
 part 'spending_limits_tab_widgets.dart';
 
-
 /// Spending Limits Tab - View and edit spending limits
 class SpendingLimitsTab extends StatelessWidget {
   final Map<String, dynamic> accountArgs;
@@ -151,8 +150,7 @@ class SpendingLimitsTab extends StatelessWidget {
           // (daily_spent vs daily_limit). Only shown when a daily limit is set.
           Builder(
             builder: (context) {
-              final accountId =
-                  AccountIdValidator.extractFromArgs(accountArgs);
+              final accountId = AccountIdValidator.extractFromArgs(accountArgs);
               if (accountId == null) return const SizedBox.shrink();
               return _LimitUsageSection(
                 accountId: accountId,
@@ -194,7 +192,8 @@ class SpendingLimitsTab extends StatelessWidget {
                 width: 40.w,
                 height: 40.w,
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+                  color: const Color.fromARGB(255, 78, 3, 208)
+                      .withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Icon(
@@ -218,9 +217,12 @@ class SpendingLimitsTab extends StatelessWidget {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      hasLimit ? '$currencySymbol${limit.toStringAsFixed(2)}' : placeholder,
+                      hasLimit
+                          ? '$currencySymbol${limit.toStringAsFixed(2)}'
+                          : placeholder,
                       style: TextStyle(
-                        color: hasLimit ? Colors.white : const Color(0xFF9CA3AF),
+                        color:
+                            hasLimit ? Colors.white : const Color(0xFF9CA3AF),
                         fontSize: 20.sp,
                         fontWeight: FontWeight.w600,
                       ),
@@ -247,7 +249,8 @@ class SpendingLimitsTab extends StatelessWidget {
     );
   }
 
-  void _onEditLimit(BuildContext context, String limitType, double? currentValue) {
+  void _onEditLimit(
+      BuildContext context, String limitType, double? currentValue) {
     final TextEditingController controller = TextEditingController(
       text: currentValue != null && currentValue > 0
           ? currentValue.toStringAsFixed(2)
@@ -359,21 +362,21 @@ class SpendingLimitsTab extends StatelessWidget {
               switch (limitType) {
                 case 'daily':
                   context.read<AccountActionsCubit>().updateSpendingLimits(
-                    accountId: accountId,
-                    dailyLimit: value,
-                  );
+                        accountId: accountId,
+                        dailyLimit: value,
+                      );
                   break;
                 case 'monthly':
                   context.read<AccountActionsCubit>().updateSpendingLimits(
-                    accountId: accountId,
-                    monthlyLimit: value,
-                  );
+                        accountId: accountId,
+                        monthlyLimit: value,
+                      );
                   break;
                 case 'single':
                   context.read<AccountActionsCubit>().updateSpendingLimits(
-                    accountId: accountId,
-                    singleTransactionLimit: value,
-                  );
+                        accountId: accountId,
+                        singleTransactionLimit: value,
+                      );
                   break;
               }
             },

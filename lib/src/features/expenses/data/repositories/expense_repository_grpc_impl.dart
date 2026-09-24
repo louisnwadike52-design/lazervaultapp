@@ -54,7 +54,8 @@ class ExpenseRepositoryGrpcImpl implements ExpenseRepository {
               payroll_pb.ExpenseStatus.EXPENSE_STATUS_PENDING;
           req.hasStatus_12 = true; // enum-0 (PENDING) is a real filter too
         }
-        if (startDate != null && startDate.isNotEmpty) req.startDate = startDate;
+        if (startDate != null && startDate.isNotEmpty)
+          req.startDate = startDate;
         if (endDate != null && endDate.isNotEmpty) req.endDate = endDate;
         if (tag != null && tag.isNotEmpty) req.tag = tag;
         if (minAmountMinor != null && minAmountMinor > 0) {
@@ -69,8 +70,7 @@ class ExpenseRepositoryGrpcImpl implements ExpenseRepository {
         if (!resp.success) {
           throw Exception(resp.message);
         }
-        final items =
-            resp.expenses.map(_fromProto).toList(growable: false);
+        final items = resp.expenses.map(_fromProto).toList(growable: false);
         final total = resp.pagination.totalItems;
         final totalPages = (total / limit).ceil().clamp(1, 1 << 30);
         return ExpensesPageResult(
@@ -121,12 +121,11 @@ class ExpenseRepositoryGrpcImpl implements ExpenseRepository {
           ..description = description
           ..amount = Int64(amountMinor)
           ..currency = currency
-          ..category =
-              payroll_pb.ExpenseCategory.valueOf(category.index) ??
-                  payroll_pb.ExpenseCategory.EXPENSE_CATEGORY_OTHER
-          ..paymentMethod = payroll_pb.ExpensePaymentMethod.valueOf(
-                  paymentMethod.index) ??
-              payroll_pb.ExpensePaymentMethod.EXPENSE_PAYMENT_METHOD_CASH
+          ..category = payroll_pb.ExpenseCategory.valueOf(category.index) ??
+              payroll_pb.ExpenseCategory.EXPENSE_CATEGORY_OTHER
+          ..paymentMethod =
+              payroll_pb.ExpensePaymentMethod.valueOf(paymentMethod.index) ??
+                  payroll_pb.ExpensePaymentMethod.EXPENSE_PAYMENT_METHOD_CASH
           ..vendor = vendor
           ..supplierId = supplierId
           ..reference = reference
@@ -181,9 +180,9 @@ class ExpenseRepositoryGrpcImpl implements ExpenseRepository {
               payroll_pb.ExpenseStatus.EXPENSE_STATUS_PENDING;
         }
         if (paymentMethod != null) {
-          req.paymentMethod = payroll_pb.ExpensePaymentMethod.valueOf(
-                  paymentMethod.index) ??
-              payroll_pb.ExpensePaymentMethod.EXPENSE_PAYMENT_METHOD_CASH;
+          req.paymentMethod =
+              payroll_pb.ExpensePaymentMethod.valueOf(paymentMethod.index) ??
+                  payroll_pb.ExpensePaymentMethod.EXPENSE_PAYMENT_METHOD_CASH;
         }
         if (expenseDate != null) req.expenseDate = expenseDate;
         if (vendor != null) req.vendor = vendor;
@@ -227,7 +226,8 @@ class ExpenseRepositoryGrpcImpl implements ExpenseRepository {
     return retryWithBackoff(
       operation: () async {
         final req = payroll_pb.GetExpenseSummaryRequest();
-        if (startDate != null && startDate.isNotEmpty) req.startDate = startDate;
+        if (startDate != null && startDate.isNotEmpty)
+          req.startDate = startDate;
         if (endDate != null && endDate.isNotEmpty) req.endDate = endDate;
         final opts = await _callOptionsHelper.withAuth();
         final resp = await _client.getExpenseSummary(req, options: opts);
@@ -297,8 +297,7 @@ class ExpenseRepositoryGrpcImpl implements ExpenseRepository {
           ..expenseId = expenseId
           ..reimbursementReference = reimbursementReference;
         final opts = await _callOptionsHelper.withAuth();
-        final resp =
-            await _client.markExpenseReimbursed(req, options: opts);
+        final resp = await _client.markExpenseReimbursed(req, options: opts);
         if (!resp.success) {
           throw Exception(resp.message);
         }
@@ -319,9 +318,8 @@ class ExpenseRepositoryGrpcImpl implements ExpenseRepository {
       category: ExpenseCategory.fromInt(e.category.value),
       status: ExpenseStatus.fromInt(e.status.value),
       paymentMethod: ExpensePaymentMethod.fromInt(e.paymentMethod.value),
-      expenseDate: e.hasExpenseDate()
-          ? e.expenseDate.toDateTime()
-          : DateTime.now(),
+      expenseDate:
+          e.hasExpenseDate() ? e.expenseDate.toDateTime() : DateTime.now(),
       vendor: e.vendor,
       reference: e.reference,
       receiptUrl: e.receiptUrl,
@@ -330,12 +328,9 @@ class ExpenseRepositoryGrpcImpl implements ExpenseRepository {
       createdBy: e.createdBy,
       approvedBy: e.approvedBy,
       approvedAt: e.hasApprovedAt() ? e.approvedAt.toDateTime() : null,
-      reimbursedAt:
-          e.hasReimbursedAt() ? e.reimbursedAt.toDateTime() : null,
-      createdAt:
-          e.hasCreatedAt() ? e.createdAt.toDateTime() : DateTime.now(),
-      updatedAt:
-          e.hasUpdatedAt() ? e.updatedAt.toDateTime() : DateTime.now(),
+      reimbursedAt: e.hasReimbursedAt() ? e.reimbursedAt.toDateTime() : null,
+      createdAt: e.hasCreatedAt() ? e.createdAt.toDateTime() : DateTime.now(),
+      updatedAt: e.hasUpdatedAt() ? e.updatedAt.toDateTime() : DateTime.now(),
     );
   }
 }

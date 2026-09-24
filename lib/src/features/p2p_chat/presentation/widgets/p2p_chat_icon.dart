@@ -8,7 +8,8 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_grpc;
-import 'package:lazervault/core/services/grpc_call_options_helper.dart' as grpc_helper;
+import 'package:lazervault/core/services/grpc_call_options_helper.dart'
+    as grpc_helper;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Chat icon button for recipient list items.
@@ -37,7 +38,8 @@ class _P2PChatIconState extends State<P2PChatIcon> {
   bool _resolving = false;
 
   Future<void> _onTap() async {
-    debugPrint('[P2PChatIcon] _onTap called. tapped=$_tapped resolving=$_resolving isInternal=${widget.isInternal} otherUserId=${widget.otherUserId} accountNumber=${widget.accountNumber}');
+    debugPrint(
+        '[P2PChatIcon] _onTap called. tapped=$_tapped resolving=$_resolving isInternal=${widget.isInternal} otherUserId=${widget.otherUserId} accountNumber=${widget.accountNumber}');
     if (_tapped || _resolving) return;
 
     _tapped = true;
@@ -55,7 +57,8 @@ class _P2PChatIconState extends State<P2PChatIcon> {
         AuthenticationSuccess s => s.profile.userId,
         _ => '',
       };
-      debugPrint('[P2PChatIcon] internal path. userId=$userId currentUserId=$currentUserId');
+      debugPrint(
+          '[P2PChatIcon] internal path. userId=$userId currentUserId=$currentUserId');
       if (userId != null && userId == currentUserId) {
         debugPrint('[P2PChatIcon] Self-chat guard triggered, returning');
         return;
@@ -63,7 +66,8 @@ class _P2PChatIconState extends State<P2PChatIcon> {
 
       // Resolve userId from account number if missing
       if (userId == null && widget.accountNumber != null) {
-        debugPrint('[P2PChatIcon] Resolving userId from account ${widget.accountNumber}');
+        debugPrint(
+            '[P2PChatIcon] Resolving userId from account ${widget.accountNumber}');
         setState(() => _resolving = true);
         userId = await _resolveUserIdFromAccount(widget.accountNumber!);
         if (mounted) setState(() => _resolving = false);
@@ -71,12 +75,14 @@ class _P2PChatIconState extends State<P2PChatIcon> {
       }
 
       if (userId == null || !mounted) {
-        debugPrint('[P2PChatIcon] userId null or not mounted, cannot open chat');
+        debugPrint(
+            '[P2PChatIcon] userId null or not mounted, cannot open chat');
         return;
       }
 
       if (userId == currentUserId) {
-        debugPrint('[P2PChatIcon] Resolved userId equals currentUserId, returning');
+        debugPrint(
+            '[P2PChatIcon] Resolved userId equals currentUserId, returning');
         return;
       }
 

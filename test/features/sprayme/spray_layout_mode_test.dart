@@ -31,7 +31,14 @@ void main() {
     test('a bad or missing admin value falls back to the default, never throws',
         () {
       // A typo in the dashboard must not stop a live from rendering.
-      for (final bad in <String?>[null, '', '   ', 'nonsense', '42', 'GRID!!']) {
+      for (final bad in <String?>[
+        null,
+        '',
+        '   ',
+        'nonsense',
+        '42',
+        'GRID!!'
+      ]) {
         expect(sprayLayoutModeFromSetting(bad), kSprayDefaultLayoutMode);
       }
     });

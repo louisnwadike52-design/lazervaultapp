@@ -4,11 +4,14 @@ import '../entities/locale_account_group.dart';
 
 abstract class IMultiCountryRepository {
   /// Get all accounts grouped by locale
-  Future<Either<Failure, ({
-    List<LocaleAccountGroupEntity> locales,
-    String activeLocale,
-    String signupLocale,
-  })>> getAccountsByLocale();
+  Future<
+      Either<
+          Failure,
+          ({
+            List<LocaleAccountGroupEntity> locales,
+            String activeLocale,
+            String signupLocale,
+          })>> getAccountsByLocale();
 
   /// Create an account for a specific locale
   Future<Either<Failure, LocaleAccountEntity>> createLocaleAccount({
@@ -21,11 +24,22 @@ abstract class IMultiCountryRepository {
   Future<Either<Failure, List<SupportedLocaleEntity>>> getSupportedLocales();
 
   /// Get user's current locale preference
-  Future<Either<Failure, ({String locale, String countryCode, String currencyCode, String signupLocale})>> getUserLocale();
+  Future<
+      Either<
+          Failure,
+          ({
+            String locale,
+            String countryCode,
+            String currencyCode,
+            String signupLocale
+          })>> getUserLocale();
 
   /// Set user's active locale
   Future<Either<Failure, String>> setUserLocale(String locale);
 
   /// Get account creation status
-  Future<Either<Failure, ({String overallStatus, int totalLocales, int completedLocales})>> getAccountCreationStatus({String? jobId});
+  Future<
+          Either<Failure,
+              ({String overallStatus, int totalLocales, int completedLocales})>>
+      getAccountCreationStatus({String? jobId});
 }

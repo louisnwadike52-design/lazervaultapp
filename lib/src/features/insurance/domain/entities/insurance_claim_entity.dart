@@ -164,7 +164,8 @@ class InsuranceClaim extends Equatable {
   bool get isApproved => status == ClaimStatus.approved;
   bool get isRejected => status == ClaimStatus.rejected;
   bool get isSettled => status == ClaimStatus.settled;
-  bool get isPending => status == ClaimStatus.submitted || status == ClaimStatus.underReview;
+  bool get isPending =>
+      status == ClaimStatus.submitted || status == ClaimStatus.underReview;
 
   InsuranceClaim copyWith({
     String? id,
@@ -241,4 +242,4 @@ class InsuranceClaim extends Equatable {
         updatedAt,
         userId,
       ];
-} 
+}

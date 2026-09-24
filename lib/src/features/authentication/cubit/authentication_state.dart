@@ -2,7 +2,6 @@ import 'package:equatable/equatable.dart';
 import '../domain/entities/profile_entity.dart';
 part 'authentication_state_widgets.dart';
 
-
 class SignUpInProgress extends AuthenticationState {
   const SignUpInProgress({
     this.currentPage = 0,
@@ -122,7 +121,8 @@ class SignUpInProgress extends AuthenticationState {
       selectedDate: selectedDate ?? this.selectedDate,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       isLoading: isLoading ?? this.isLoading,
-      errorMessage: clearErrorMessage ? null : errorMessage ?? this.errorMessage,
+      errorMessage:
+          clearErrorMessage ? null : errorMessage ?? this.errorMessage,
       primaryContactType: primaryContactType ?? this.primaryContactType,
       countryCode: countryCode ?? this.countryCode,
       countryName: countryName ?? this.countryName,
@@ -138,7 +138,8 @@ class SignUpInProgress extends AuthenticationState {
       kycSkipped: kycSkipped ?? this.kycSkipped,
       accountCreated: accountCreated ?? this.accountCreated,
       isReferralCodeValid: isReferralCodeValid ?? this.isReferralCodeValid,
-      isReferralCodeValidating: isReferralCodeValidating ?? this.isReferralCodeValidating,
+      isReferralCodeValidating:
+          isReferralCodeValidating ?? this.isReferralCodeValidating,
     );
   }
 

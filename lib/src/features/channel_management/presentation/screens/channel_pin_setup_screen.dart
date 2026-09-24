@@ -56,7 +56,8 @@ class _ChannelPinSetupScreenState extends State<ChannelPinSetupScreen> {
 
   String get _stepTitle {
     if (_step == 0) return 'Enter Current PIN';
-    if (_step == 1) return widget.isChange ? 'Enter New PIN' : 'Create Your PIN';
+    if (_step == 1)
+      return widget.isChange ? 'Enter New PIN' : 'Create Your PIN';
     return 'Confirm Your PIN';
   }
 
@@ -181,8 +182,7 @@ class _ChannelPinSetupScreenState extends State<ChannelPinSetupScreen> {
                       child: isLoading
                           ? LazerVaultLoader.small()
                           : Text(
-                              _step == 2 ||
-                                      (!widget.isChange && _step == 1)
+                              _step == 2 || (!widget.isChange && _step == 1)
                                   ? 'Confirm'
                                   : 'Next',
                               style: const TextStyle(
@@ -209,9 +209,8 @@ class _ChannelPinSetupScreenState extends State<ChannelPinSetupScreen> {
             margin: EdgeInsets.only(right: index < 2 ? 8 : 0),
             height: 4,
             decoration: BoxDecoration(
-              color: isActive
-                  ? const Color(0xFF3B82F6)
-                  : const Color(0xFF2D2D2D),
+              color:
+                  isActive ? const Color(0xFF3B82F6) : const Color(0xFF2D2D2D),
               borderRadius: BorderRadius.circular(2),
             ),
           ),

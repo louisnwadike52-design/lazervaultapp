@@ -9,13 +9,13 @@ void main() {
           NovaThinkingStage.reading);
       expect(novaStageFor(const Duration(milliseconds: 1200)),
           NovaThinkingStage.thinking);
-      expect(novaStageFor(const Duration(seconds: 3)),
-          NovaThinkingStage.thinking);
-      expect(novaStageFor(const Duration(seconds: 4)),
-          NovaThinkingStage.typing);
+      expect(
+          novaStageFor(const Duration(seconds: 3)), NovaThinkingStage.thinking);
+      expect(
+          novaStageFor(const Duration(seconds: 4)), NovaThinkingStage.typing);
       // A long agent turn stays on the last stage rather than resetting.
-      expect(novaStageFor(const Duration(minutes: 2)),
-          NovaThinkingStage.typing);
+      expect(
+          novaStageFor(const Duration(minutes: 2)), NovaThinkingStage.typing);
     });
 
     test('never goes backwards as elapsed time increases', () {

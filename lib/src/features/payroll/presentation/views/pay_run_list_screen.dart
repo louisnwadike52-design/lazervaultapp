@@ -131,7 +131,8 @@ class _PayRunListScreenState extends State<PayRunListScreen>
                   ))
                   .then((_) => _onRefresh());
             },
-            icon: const Icon(Icons.add, color: InvoiceThemeColors.primaryPurple),
+            icon:
+                const Icon(Icons.add, color: InvoiceThemeColors.primaryPurple),
           ),
         ],
       ),
@@ -392,7 +393,8 @@ class _PayRunListScreenState extends State<PayRunListScreen>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.error_outline, size: 48.sp, color: InvoiceThemeColors.errorRed),
+          Icon(Icons.error_outline,
+              size: 48.sp, color: InvoiceThemeColors.errorRed),
           SizedBox(height: 16.h),
           Text(
             message,

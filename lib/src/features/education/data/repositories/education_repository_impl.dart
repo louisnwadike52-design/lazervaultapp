@@ -13,12 +13,16 @@ class EducationRepositoryImpl implements EducationRepository {
   EducationRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, List<EducationProviderEntity>>> getProviders({bool activeOnly = true}) async {
+  Future<Either<Failure, List<EducationProviderEntity>>> getProviders(
+      {bool activeOnly = true}) async {
     try {
-      final result = await remoteDataSource.getProviders(activeOnly: activeOnly);
+      final result =
+          await remoteDataSource.getProviders(activeOnly: activeOnly);
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to get education providers', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to get education providers',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
@@ -48,7 +52,9 @@ class EducationRepositoryImpl implements EducationRepository {
       );
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to purchase education pin', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to purchase education pin',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
@@ -60,22 +66,28 @@ class EducationRepositoryImpl implements EducationRepository {
     int offset = 0,
   }) async {
     try {
-      final result = await remoteDataSource.getHistory(limit: limit, offset: offset);
+      final result =
+          await remoteDataSource.getHistory(limit: limit, offset: offset);
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to get education PIN history', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to get education PIN history',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
   @override
-  Future<Either<Failure, EducationHistoryEntity>> getPurchaseById(String id) async {
+  Future<Either<Failure, EducationHistoryEntity>> getPurchaseById(
+      String id) async {
     try {
       final result = await remoteDataSource.getPurchaseById(id);
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to get purchase details', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to get purchase details',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }

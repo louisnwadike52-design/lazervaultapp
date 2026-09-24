@@ -78,9 +78,9 @@ class _TypingBubbles extends StatefulWidget {
 
 class _TypingBubblesState extends State<_TypingBubbles>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _c =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))
-        ..repeat();
+  late final AnimationController _c = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 1200))
+    ..repeat();
 
   @override
   void dispose() {
@@ -155,7 +155,8 @@ class _EmojiStreamOverlayState extends State<_EmojiStreamOverlay> {
       final id = _seq++;
       final dxFactor = 0.30 + 0.40 * (i / 4); // spread across lower area
       final size = 22.0 + (i.isEven ? 6.0 : 0.0);
-      final item = _FloatingEmoji(id: id, emoji: emoji, dxFactor: dxFactor, size: size);
+      final item =
+          _FloatingEmoji(id: id, emoji: emoji, dxFactor: dxFactor, size: size);
       setState(() => _items.add(item));
       Future.delayed(Duration(milliseconds: 1500 + i * 40), () {
         if (mounted) setState(() => _items.removeWhere((e) => e.id == id));
@@ -274,8 +275,7 @@ class _ChatNotificationSettingsState extends State<_ChatNotificationSettings> {
                   if (mounted) setState(() {});
                 },
               ),
-              Divider(
-                  height: 1, color: const Color(0xFF2D2D2D), indent: 12.w),
+              Divider(height: 1, color: const Color(0xFF2D2D2D), indent: 12.w),
               _row(
                 icon: Icons.vibration_rounded,
                 label: 'Vibration',

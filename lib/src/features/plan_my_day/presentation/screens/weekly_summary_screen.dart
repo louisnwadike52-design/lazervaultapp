@@ -56,7 +56,8 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
             icon: const Icon(Icons.chevron_left, color: Colors.white),
             onPressed: () {
               setState(() {
-                _currentWeekStart = _currentWeekStart.subtract(const Duration(days: 7));
+                _currentWeekStart =
+                    _currentWeekStart.subtract(const Duration(days: 7));
               });
               _loadSummary();
             },
@@ -72,7 +73,8 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
             icon: const Icon(Icons.chevron_right, color: Colors.white),
             onPressed: () {
               setState(() {
-                _currentWeekStart = _currentWeekStart.add(const Duration(days: 7));
+                _currentWeekStart =
+                    _currentWeekStart.add(const Duration(days: 7));
               });
               _loadSummary();
             },
@@ -135,7 +137,10 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [const Color(0xFF3B82F6).withOpacity(0.2), const Color(0xFF8B5CF6).withOpacity(0.2)],
+          colors: [
+            const Color(0xFF3B82F6).withOpacity(0.2),
+            const Color(0xFF8B5CF6).withOpacity(0.2)
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -197,7 +202,11 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
             ),
             child: FractionallySizedBox(
               alignment: Alignment.centerLeft,
-              widthFactor: (((_summary?['average_completion_rate'] as num?)?.toDouble() ?? 0) / 100).clamp(0.0, 1.0),
+              widthFactor: (((_summary?['average_completion_rate'] as num?)
+                              ?.toDouble() ??
+                          0) /
+                      100)
+                  .clamp(0.0, 1.0),
               child: Container(
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
@@ -212,8 +221,10 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildStatItem('Focus Time', _focusTimeLabel(), Icons.timer_outlined),
-              _buildStatItem('Avg Rate', '${_avgRate().round()}%', Icons.percent),
+              _buildStatItem(
+                  'Focus Time', _focusTimeLabel(), Icons.timer_outlined),
+              _buildStatItem(
+                  'Avg Rate', '${_avgRate().round()}%', Icons.percent),
               _buildStatItem('Top', _topCategory(), Icons.category),
             ],
           ),
@@ -259,7 +270,9 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
-        color: isToday ? const Color(0xFF2D2D2D).withOpacity(0.5) : const Color(0xFF1F1F1F),
+        color: isToday
+            ? const Color(0xFF2D2D2D).withOpacity(0.5)
+            : const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
         border: isToday
             ? Border.all(color: const Color(0xFF3B82F6).withOpacity(0.5))
@@ -372,9 +385,11 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
   List<Widget> _buildRealInsights() {
     final items = <Widget>[];
     final trend = (_summary?['trend'] as String?)?.trim() ?? '';
-    final completed = (_summary?['total_tasks_completed'] as num?)?.toInt() ?? 0;
+    final completed =
+        (_summary?['total_tasks_completed'] as num?)?.toInt() ?? 0;
     final created = (_summary?['total_tasks_created'] as num?)?.toInt() ?? 0;
-    final cats = (_summary?['top_categories'] as List?)?.cast<dynamic>() ?? const [];
+    final cats =
+        (_summary?['top_categories'] as List?)?.cast<dynamic>() ?? const [];
 
     if (trend.isNotEmpty) {
       items.add(_buildInsightItem(

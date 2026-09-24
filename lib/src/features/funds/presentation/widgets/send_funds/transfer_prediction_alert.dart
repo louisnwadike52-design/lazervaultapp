@@ -35,8 +35,7 @@ class TransferPredictionAlert extends StatelessWidget {
         return switch (state) {
           TransferPredictionLoaded(prediction: final p) =>
             _PredictionCard(prediction: p, margin: margin),
-          TransferPredictionUnavailable() =>
-            _NeutralCard(margin: margin),
+          TransferPredictionUnavailable() => _NeutralCard(margin: margin),
           // Initial + Loading: render nothing (non-blocking, no spinner noise).
           _ => const SizedBox.shrink(),
         };

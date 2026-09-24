@@ -11,7 +11,8 @@ class CategoryManagementScreen extends StatefulWidget {
   const CategoryManagementScreen({super.key});
 
   @override
-  State<CategoryManagementScreen> createState() => _CategoryManagementScreenState();
+  State<CategoryManagementScreen> createState() =>
+      _CategoryManagementScreenState();
 }
 
 class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
@@ -83,7 +84,8 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
     );
   }
 
-  Widget _buildCategoryItem(Category category, {VoidCallback? onEdit, VoidCallback? onDelete}) {
+  Widget _buildCategoryItem(Category category,
+      {VoidCallback? onEdit, VoidCallback? onDelete}) {
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(16.w),
@@ -149,12 +151,14 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
           // Actions
           if (onEdit != null)
             IconButton(
-              icon: const Icon(Icons.edit_outlined, color: Color(0xFF4E03D0), size: 20),
+              icon: const Icon(Icons.edit_outlined,
+                  color: Color(0xFF4E03D0), size: 20),
               onPressed: onEdit,
             ),
           if (onDelete != null)
             IconButton(
-              icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 20),
+              icon: const Icon(Icons.delete_outline,
+                  color: Color(0xFFEF4444), size: 20),
               onPressed: onDelete,
             ),
         ],
@@ -259,25 +263,25 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
-                  controller: nameController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    labelText: 'Name',
-                    labelStyle: TextStyle(color: Colors.grey[400]),
-                    hintText: 'e.g., Work',
-                    hintStyle: TextStyle(color: Colors.grey[600]),
-                    filled: true,
-                    fillColor: const Color(0xFF2D2D2D),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.r),
-                      borderSide: BorderSide(color: Colors.grey[800]!),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.r),
-                      borderSide: const BorderSide(color: Color(0xFF4E03D0)),
+                    controller: nameController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Name',
+                      labelStyle: TextStyle(color: Colors.grey[400]),
+                      hintText: 'e.g., Work',
+                      hintStyle: TextStyle(color: Colors.grey[600]),
+                      filled: true,
+                      fillColor: const Color(0xFF2D2D2D),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                        borderSide: BorderSide(color: Colors.grey[800]!),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                        borderSide: const BorderSide(color: Color(0xFF4E03D0)),
+                      ),
                     ),
                   ),
-                ),
                   SizedBox(height: 16.h),
                   _buildIconSelector(selectedIcon, (icon) {
                     setDialogState(() {
@@ -317,11 +321,11 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                   }
 
                   context.read<PlanMyDayCubit>().createCategory(
-                    name: nameController.text.trim(),
-                    icon: selectedIcon,
-                    color: selectedColor,
-                    type: selectedType,
-                  );
+                        name: nameController.text.trim(),
+                        icon: selectedIcon,
+                        color: selectedColor,
+                        type: selectedType,
+                      );
 
                   if (mounted) Navigator.pop(context);
                   if (mounted) {
@@ -333,7 +337,8 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4E03D0),
                 ),
-                child: const Text('Create', style: TextStyle(color: Colors.white)),
+                child:
+                    const Text('Create', style: TextStyle(color: Colors.white)),
               ),
             ],
           );
@@ -419,11 +424,11 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                   }
 
                   context.read<PlanMyDayCubit>().updateCategory(
-                    id: category.id,
-                    name: nameController.text.trim(),
-                    icon: selectedIcon,
-                    color: selectedColor,
-                  );
+                        id: category.id,
+                        name: nameController.text.trim(),
+                        icon: selectedIcon,
+                        color: selectedColor,
+                      );
 
                   if (mounted) Navigator.pop(context);
                   if (mounted) {
@@ -435,7 +440,8 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4E03D0),
                 ),
-                child: const Text('Save', style: TextStyle(color: Colors.white)),
+                child:
+                    const Text('Save', style: TextStyle(color: Colors.white)),
               ),
             ],
           );
@@ -548,7 +554,8 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
     );
   }
 
-  Widget _buildColorSelector(String selectedColor, Function(String) onSelected) {
+  Widget _buildColorSelector(
+      String selectedColor, Function(String) onSelected) {
     final colors = [
       '#4E03D0', // Blue
       '#10B981', // Green

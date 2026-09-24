@@ -26,4 +26,4 @@ class SessionEntity extends Equatable {
         accessTokenExpiresAt,
         refreshTokenExpiresAt,
       ];
-} 
+}

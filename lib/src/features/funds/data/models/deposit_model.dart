@@ -69,7 +69,8 @@ class DepositModel extends DepositDetails {
       status: status ?? this.status,
       message: message ?? this.message,
       completedAt: completedAt ?? this.completedAt,
-      requiresAuthorization: requiresAuthorization ?? this.requiresAuthorization,
+      requiresAuthorization:
+          requiresAuthorization ?? this.requiresAuthorization,
       paymentUrl: paymentUrl ?? this.paymentUrl,
       provider: provider ?? this.provider,
       countryCode: countryCode ?? this.countryCode,

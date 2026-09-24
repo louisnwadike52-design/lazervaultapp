@@ -13,7 +13,8 @@ import 'package:lazervault/core/utils/api_headers.dart';
 /// (`GET /api/v1/notifications`). Mirrors the proto `Notification` message.
 class AppNotification {
   final String id;
-  final String type; // transfer | payment | deposit | withdrawal | account | security | investment | giftcard | bill | ...
+  final String
+      type; // transfer | payment | deposit | withdrawal | account | security | investment | giftcard | bill | ...
   final String title;
   final String body;
   final bool read;
@@ -151,7 +152,8 @@ class NotificationsRemoteDataSource {
       normalised = normalised.substring(0, normalised.length - 1);
     }
     if (normalised.endsWith('/api/v1')) {
-      normalised = normalised.substring(0, normalised.length - '/api/v1'.length);
+      normalised =
+          normalised.substring(0, normalised.length - '/api/v1'.length);
     }
     return normalised;
   }

@@ -111,11 +111,9 @@ class LifestyleViewModeButton extends StatelessWidget {
                   child: Text(
                     m.label,
                     style: TextStyle(
-                      color:
-                          m == mode ? Colors.white : const Color(0xFF9CA3AF),
+                      color: m == mode ? Colors.white : const Color(0xFF9CA3AF),
                       fontSize: 14.sp,
-                      fontWeight:
-                          m == mode ? FontWeight.w600 : FontWeight.w400,
+                      fontWeight: m == mode ? FontWeight.w600 : FontWeight.w400,
                     ),
                   ),
                 ),

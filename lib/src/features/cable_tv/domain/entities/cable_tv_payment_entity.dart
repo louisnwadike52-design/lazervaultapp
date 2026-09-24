@@ -39,5 +39,20 @@ class CableTVPaymentEntity extends Equatable {
   bool get isProcessing => status == 'processing';
 
   @override
-  List<Object?> get props => [id, userId, accountId, billType, providerId, reference, amount, status, customerNumber, metadata, createdAt, newBalance, renewalDate, customerName];
+  List<Object?> get props => [
+        id,
+        userId,
+        accountId,
+        billType,
+        providerId,
+        reference,
+        amount,
+        status,
+        customerNumber,
+        metadata,
+        createdAt,
+        newBalance,
+        renewalDate,
+        customerName
+      ];
 }

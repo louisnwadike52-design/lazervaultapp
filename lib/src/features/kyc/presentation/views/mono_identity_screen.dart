@@ -350,7 +350,9 @@ class _MonoIdentityScreenState extends State<MonoIdentityScreen> {
                   child: _isLaunching
                       ? LazerVaultLoader(size: 22)
                       : Text(
-                          _hasError ? 'Retry Verification' : 'Start Verification',
+                          _hasError
+                              ? 'Retry Verification'
+                              : 'Start Verification',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -427,4 +429,3 @@ class _MonoIdentityScreenState extends State<MonoIdentityScreen> {
     );
   }
 }
-

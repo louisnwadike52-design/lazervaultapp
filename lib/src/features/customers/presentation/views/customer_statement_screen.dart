@@ -23,12 +23,13 @@ class CustomerStatementScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final money = NumberFormat.currency(locale: 'en_NG', symbol: '₦', decimalDigits: 2);
+    final money =
+        NumberFormat.currency(locale: 'en_NG', symbol: '₦', decimalDigits: 2);
     final dateFmt = DateFormat('dd MMM yyyy');
 
     return BlocProvider(
-      create: (_) =>
-          serviceLocator<CustomerCubit>()..getStatement(customerId: customer.id),
+      create: (_) => serviceLocator<CustomerCubit>()
+        ..getStatement(customerId: customer.id),
       child: Scaffold(
         backgroundColor: _bg,
         appBar: AppBar(
@@ -36,7 +37,9 @@ class CustomerStatementScreen extends StatelessWidget {
           elevation: 0,
           title: Text('Statement',
               style: GoogleFonts.inter(
-                  color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w600)),
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w600)),
           centerTitle: true,
         ),
         body: BlocBuilder<CustomerCubit, CustomerState>(
@@ -49,8 +52,10 @@ class CustomerStatementScreen extends StatelessWidget {
             }
             if (state is StatementLoaded) {
               final entries = (state.data['entries'] as List?) ?? const [];
-              final opening = (state.data['openingBalance'] as num?)?.toDouble() ?? 0;
-              final closing = (state.data['closingBalance'] as num?)?.toDouble() ?? 0;
+              final opening =
+                  (state.data['openingBalance'] as num?)?.toDouble() ?? 0;
+              final closing =
+                  (state.data['closingBalance'] as num?)?.toDouble() ?? 0;
               return ListView(
                 padding: EdgeInsets.all(20.w),
                 children: [
@@ -71,7 +76,8 @@ class CustomerStatementScreen extends StatelessWidget {
     );
   }
 
-  Widget _summaryCard(String name, double opening, double closing, NumberFormat money) {
+  Widget _summaryCard(
+      String name, double opening, double closing, NumberFormat money) {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -81,7 +87,9 @@ class CustomerStatementScreen extends StatelessWidget {
         children: [
           Text(name,
               style: GoogleFonts.inter(
-                  color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700)),
+                  color: Colors.white,
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w700)),
           SizedBox(height: 12.h),
           _kv('Opening balance', money.format(opening), Colors.white),
           SizedBox(height: 6.h),
@@ -100,11 +108,14 @@ class CustomerStatementScreen extends StatelessWidget {
                   color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
           Text(v,
               style: GoogleFonts.inter(
-                  color: valueColor, fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                  color: valueColor,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600)),
         ],
       );
 
-  Widget _entryRow(Map<String, dynamic> e, NumberFormat money, DateFormat dateFmt) {
+  Widget _entryRow(
+      Map<String, dynamic> e, NumberFormat money, DateFormat dateFmt) {
     final isInvoice = (e['type'] as String?) == 'INVOICE';
     DateTime? date;
     final ds = e['date'] as String?;
@@ -120,13 +131,18 @@ class CustomerStatementScreen extends StatelessWidget {
             width: 36.w,
             height: 36.w,
             decoration: BoxDecoration(
-              color: (isInvoice ? const Color(0xFFFB923C) : const Color(0xFF10B981))
+              color: (isInvoice
+                      ? const Color(0xFFFB923C)
+                      : const Color(0xFF10B981))
                   .withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(
-              isInvoice ? Icons.receipt_long_rounded : Icons.check_circle_rounded,
-              color: isInvoice ? const Color(0xFFFB923C) : const Color(0xFF10B981),
+              isInvoice
+                  ? Icons.receipt_long_rounded
+                  : Icons.check_circle_rounded,
+              color:
+                  isInvoice ? const Color(0xFFFB923C) : const Color(0xFF10B981),
               size: 18.sp,
             ),
           ),
@@ -139,7 +155,8 @@ class CustomerStatementScreen extends StatelessWidget {
                   (e['description'] as String?)?.isNotEmpty == true
                       ? e['description'] as String
                       : (isInvoice ? 'Sale (unpaid)' : 'Sale (paid)'),
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 13.5.sp),
+                  style:
+                      GoogleFonts.inter(color: Colors.white, fontSize: 13.5.sp),
                   overflow: TextOverflow.ellipsis,
                 ),
                 SizedBox(height: 2.h),
@@ -157,9 +174,12 @@ class CustomerStatementScreen extends StatelessWidget {
             children: [
               Text(money.format((e['amount'] as num?)?.toDouble() ?? 0),
                   style: GoogleFonts.inter(
-                      color: Colors.white, fontSize: 13.5.sp, fontWeight: FontWeight.w600)),
+                      color: Colors.white,
+                      fontSize: 13.5.sp,
+                      fontWeight: FontWeight.w600)),
               SizedBox(height: 2.h),
-              Text('Bal ${money.format((e['balance'] as num?)?.toDouble() ?? 0)}',
+              Text(
+                  'Bal ${money.format((e['balance'] as num?)?.toDouble() ?? 0)}',
                   style: GoogleFonts.inter(
                       color: const Color(0xFF6B7280), fontSize: 10.5.sp)),
             ],
@@ -183,7 +203,8 @@ class CustomerStatementScreen extends StatelessWidget {
         ),
       );
 
-  Widget _error(BuildContext context, String message, String customerId) => Center(
+  Widget _error(BuildContext context, String message, String customerId) =>
+      Center(
         child: Padding(
           padding: EdgeInsets.all(24.w),
           child: Column(
@@ -198,8 +219,9 @@ class CustomerStatementScreen extends StatelessWidget {
                       color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
               SizedBox(height: 12.h),
               TextButton.icon(
-                onPressed: () =>
-                    context.read<CustomerCubit>().getStatement(customerId: customerId),
+                onPressed: () => context
+                    .read<CustomerCubit>()
+                    .getStatement(customerId: customerId),
                 icon: Icon(Icons.refresh_rounded, size: 18.sp, color: _accent),
                 label: Text('Retry',
                     style: GoogleFonts.inter(

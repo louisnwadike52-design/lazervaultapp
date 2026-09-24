@@ -95,8 +95,7 @@ class MandateHealthBanner extends StatelessWidget {
           MandateAuthAttemptStore.openedRecently(mandate.id)) {
         return const _BannerCopy(
           title: 'Direct Debit is setting up',
-          body:
-              'Your bank is confirming your authorization — this can take up '
+          body: 'Your bank is confirming your authorization — this can take up '
               'to 30 minutes and completes automatically.',
           cta: 'View status',
           info: true,
@@ -120,8 +119,10 @@ class MandateHealthBanner extends StatelessWidget {
     );
   }
 
-  Widget _banner(BuildContext context, _BannerCopy copy, MandateEntity? mandate) {
-    final accent = copy.info ? const Color(0xFF3B82F6) : const Color(0xFFFB923C);
+  Widget _banner(
+      BuildContext context, _BannerCopy copy, MandateEntity? mandate) {
+    final accent =
+        copy.info ? const Color(0xFF3B82F6) : const Color(0xFFFB923C);
     return Container(
       width: double.infinity,
       margin: EdgeInsets.only(bottom: 20.h),
@@ -194,7 +195,8 @@ class MandateHealthBanner extends StatelessWidget {
 
   Future<void> _openReauthSheet(
       BuildContext context, MandateEntity? mandate) async {
-    final bank = rule.sourceBankName.isNotEmpty ? rule.sourceBankName : 'Linked bank';
+    final bank =
+        rule.sourceBankName.isNotEmpty ? rule.sourceBankName : 'Linked bank';
     await showMandateManagementBottomSheet(
       context: context,
       linkedAccountId: rule.sourceLinkedAccountId,

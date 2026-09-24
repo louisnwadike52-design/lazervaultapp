@@ -76,7 +76,6 @@ class StockEventsSection extends StatelessWidget {
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Row(
         children: [
@@ -149,4 +148,4 @@ class StockEventsSection extends StatelessWidget {
       ),
     );
   }
-} 
+}

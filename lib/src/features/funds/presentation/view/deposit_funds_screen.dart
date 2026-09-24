@@ -62,7 +62,6 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/m
 import 'package:lazervault/src/features/move_money/domain/mandate_auth_attempt_store.dart';
 part 'deposit_funds_screen_widgets.dart';
 
-
 class DepositFundsScreen extends StatefulWidget {
   final Map<String, dynamic> selectedCard;
   const DepositFundsScreen({
@@ -121,7 +120,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   bool _bvnKycFetched = false;
   bool _bvnKycFetchInFlight = false;
 
-
   /// Methods available for the current currency + platform. The backend
   /// (banking-service routing + system_settings) remains the source of truth;
   /// this list only governs what we OFFER:
@@ -146,7 +144,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   }
 
   // DirectPay progress controller for animated bottomsheet
-  final DirectPayProgressController _progressController = DirectPayProgressController();
+  final DirectPayProgressController _progressController =
+      DirectPayProgressController();
   bool _isProgressSheetShown = false;
 
   // Guards a single resume after the KYC detour. The deposit screen is
@@ -188,7 +187,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     _linkWatchdog = Timer(const Duration(seconds: 60), () {
       if (!mounted || !_isProgressSheetShown) return;
       final stage = _progressController.stage;
-      if (stage == DirectPayStage.linking || stage == DirectPayStage.initiating) {
+      if (stage == DirectPayStage.linking ||
+          stage == DirectPayStage.initiating) {
         _progressController.updateStage(
           DirectPayStage.failed,
           errorTitle: 'Taking too long',
@@ -218,7 +218,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   // One-time "how to refresh a linked-bank balance" guide is evaluated once per
   // screen instance (persisted per-user so it's shown once, ever).
   bool _refreshGuideChecked = false;
-
 
   /// Get currency from selected card
   String get _currency {
@@ -403,7 +402,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     );
   }
 
-
   /// Fetch the user's previously-linked bank accounts for the carousel.
   void _loadLinkedAccounts() {
     if (!mounted) return;
@@ -425,7 +423,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       _linkedAccountsLoading = _linkedAccounts.isEmpty;
       _linkedAccountsError = false;
     });
-    debugPrint('[Deposit] _loadLinkedAccounts: fetching for ${authState.profile.user.id}');
+    debugPrint(
+        '[Deposit] _loadLinkedAccounts: fetching for ${authState.profile.user.id}');
     serviceLocator<OpenBankingCubit>().fetchLinkedAccounts(
       userId: authState.profile.user.id,
       accessToken: authState.profile.session.accessToken,
@@ -529,19 +528,21 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
             ),
             SizedBox(width: 12.w),
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(title,
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 13.5.sp,
-                        fontWeight: FontWeight.w700)),
-                SizedBox(height: 2.h),
-                Text(body,
-                    style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.66),
-                        fontSize: 12.sp,
-                        height: 1.35)),
-              ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13.5.sp,
+                            fontWeight: FontWeight.w700)),
+                    SizedBox(height: 2.h),
+                    Text(body,
+                        style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.66),
+                            fontSize: 12.sp,
+                            height: 1.35)),
+                  ]),
             ),
           ]),
         );
@@ -553,119 +554,124 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
         insetPadding: EdgeInsets.symmetric(horizontal: 24.w),
         child: StatefulBuilder(
           builder: (context, setDlgState) => Container(
-          padding: EdgeInsets.fromLTRB(20.w, 22.h, 20.w, 18.h),
-          decoration: BoxDecoration(
-            color: card,
-            borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(color: brand.withValues(alpha: 0.35)),
-            boxShadow: [
-              BoxShadow(
-                  color: brand.withValues(alpha: 0.25),
-                  blurRadius: 24,
-                  offset: const Offset(0, 10)),
-            ],
-          ),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Container(
-              width: 52.w,
-              height: 52.w,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [Color(0xFF6D28D9), brand],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              child: Icon(Icons.sync_rounded, color: Colors.white, size: 26.sp),
+            padding: EdgeInsets.fromLTRB(20.w, 22.h, 20.w, 18.h),
+            decoration: BoxDecoration(
+              color: card,
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(color: brand.withValues(alpha: 0.35)),
+              boxShadow: [
+                BoxShadow(
+                    color: brand.withValues(alpha: 0.25),
+                    blurRadius: 24,
+                    offset: const Offset(0, 10)),
+              ],
             ),
-            SizedBox(height: 14.h),
-            Text('Your linked bank balances',
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Container(
+                width: 52.w,
+                height: 52.w,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF6D28D9), brand],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child:
+                    Icon(Icons.sync_rounded, color: Colors.white, size: 26.sp),
+              ),
+              SizedBox(height: 14.h),
+              Text('Your linked bank balances',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 17.sp,
+                      fontWeight: FontWeight.w800)),
+              SizedBox(height: 8.h),
+              Text(
+                'Each linked bank shows its last saved balance and the time it '
+                'was updated. To keep your data costs low, we do not refresh it '
+                'automatically. Refresh any card when you want the current figure '
+                'from your bank.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 17.sp,
-                    fontWeight: FontWeight.w800)),
-            SizedBox(height: 8.h),
-            Text(
-              'Each linked bank shows its last saved balance and the time it '
-              'was updated. To keep your data costs low, we do not refresh it '
-              'automatically. Refresh any card when you want the current figure '
-              'from your bank.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.7),
-                  fontSize: 12.5.sp,
-                  height: 1.4),
-            ),
-            SizedBox(height: 18.h),
-            step(Icons.account_balance_rounded, 'Choose a linked bank',
-                'Open a card under "Deposit again" and select the bank you want.'),
-            step(Icons.sync_rounded, 'Tap "Refresh balance"',
-                'The refresh control on the card fetches a live balance '
-                'securely from your bank.'),
-            step(Icons.check_circle_rounded, 'See the updated balance',
-                'The card updates in place with a new timestamp. A small bank '
-                'fee may apply per refresh.'),
-            SizedBox(height: 14.h),
-            // Opt-out. Unchecked by default: the guide reappears each visit
-            // UNTIL the user ticks this, which persists the suppress flag.
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => setDlgState(() => dontShowAgain = !dontShowAgain),
-              child: Row(mainAxisSize: MainAxisSize.min, children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 120),
-                  width: 20.w,
-                  height: 20.w,
-                  decoration: BoxDecoration(
-                    color: dontShowAgain ? brand : Colors.transparent,
-                    borderRadius: BorderRadius.circular(6.r),
-                    border: Border.all(
-                        color: dontShowAgain
-                            ? brand
-                            : Colors.white.withValues(alpha: 0.4),
-                        width: 1.5),
-                  ),
-                  child: dontShowAgain
-                      ? Icon(Icons.check, size: 14.sp, color: Colors.white)
-                      : null,
-                ),
-                SizedBox(width: 10.w),
-                Text("Don't show this again",
-                    style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.75),
-                        fontSize: 12.5.sp)),
-              ]),
-            ),
-            SizedBox(height: 14.h),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () async {
-                  // Persist the choice ONLY when the user opted out.
-                  if (dontShowAgain) {
-                    try {
-                      final prefs = await SharedPreferences.getInstance();
-                      await prefs.setBool(suppressKey, true);
-                    } catch (_) {/* best-effort */}
-                  }
-                  if (dialogCtx.mounted) Navigator.of(dialogCtx).pop();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: brand,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 13.h),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r)),
-                  elevation: 0,
-                ),
-                child: Text('Got it',
-                    style: TextStyle(
-                        fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
+                    color: Colors.white.withValues(alpha: 0.7),
+                    fontSize: 12.5.sp,
+                    height: 1.4),
               ),
-            ),
-          ]),
+              SizedBox(height: 18.h),
+              step(Icons.account_balance_rounded, 'Choose a linked bank',
+                  'Open a card under "Deposit again" and select the bank you want.'),
+              step(
+                  Icons.sync_rounded,
+                  'Tap "Refresh balance"',
+                  'The refresh control on the card fetches a live balance '
+                      'securely from your bank.'),
+              step(
+                  Icons.check_circle_rounded,
+                  'See the updated balance',
+                  'The card updates in place with a new timestamp. A small bank '
+                      'fee may apply per refresh.'),
+              SizedBox(height: 14.h),
+              // Opt-out. Unchecked by default: the guide reappears each visit
+              // UNTIL the user ticks this, which persists the suppress flag.
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => setDlgState(() => dontShowAgain = !dontShowAgain),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 120),
+                    width: 20.w,
+                    height: 20.w,
+                    decoration: BoxDecoration(
+                      color: dontShowAgain ? brand : Colors.transparent,
+                      borderRadius: BorderRadius.circular(6.r),
+                      border: Border.all(
+                          color: dontShowAgain
+                              ? brand
+                              : Colors.white.withValues(alpha: 0.4),
+                          width: 1.5),
+                    ),
+                    child: dontShowAgain
+                        ? Icon(Icons.check, size: 14.sp, color: Colors.white)
+                        : null,
+                  ),
+                  SizedBox(width: 10.w),
+                  Text("Don't show this again",
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.75),
+                          fontSize: 12.5.sp)),
+                ]),
+              ),
+              SizedBox(height: 14.h),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    // Persist the choice ONLY when the user opted out.
+                    if (dontShowAgain) {
+                      try {
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setBool(suppressKey, true);
+                      } catch (_) {/* best-effort */}
+                    }
+                    if (dialogCtx.mounted) Navigator.of(dialogCtx).pop();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: brand,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 13.h),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r)),
+                    elevation: 0,
+                  ),
+                  child: Text('Got it',
+                      style: TextStyle(
+                          fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ]),
           ),
         ),
       ),
@@ -797,37 +803,44 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   Future<void> _loadBanks() async {
     try {
       // Fetch banks from Mono API (cached)
-      final monoInstitutions = await MonoInstitutionsService.instance.getInstitutions();
+      final monoInstitutions =
+          await MonoInstitutionsService.instance.getInstitutions();
 
       if (mounted) {
         setState(() {
           if (monoInstitutions.isNotEmpty) {
             // Convert Mono institution data to display format
-            _banks = monoInstitutions.map((inst) => <String, dynamic>{
-              'name': inst.name,
-              'code': inst.bankCode ?? '',
-              'monoId': inst.id, // Store Mono institution ID for later use
-              'icon': Icons.account_balance,
-              'color': _getBankColor(inst.name),
-              'monoSupported': true,
-              'supportsMobileBanking': inst.supportsMobileBanking,
-              'supportsInternetBanking': inst.supportsInternetBanking,
-            }).toList();
+            _banks = monoInstitutions
+                .map((inst) => <String, dynamic>{
+                      'name': inst.name,
+                      'code': inst.bankCode ?? '',
+                      'monoId':
+                          inst.id, // Store Mono institution ID for later use
+                      'icon': Icons.account_balance,
+                      'color': _getBankColor(inst.name),
+                      'monoSupported': true,
+                      'supportsMobileBanking': inst.supportsMobileBanking,
+                      'supportsInternetBanking': inst.supportsInternetBanking,
+                    })
+                .toList();
 
             // Sort alphabetically
-            _banks.sort((a, b) =>
-                (a['name'] as String).compareTo(b['name'] as String));
+            _banks.sort(
+                (a, b) => (a['name'] as String).compareTo(b['name'] as String));
           } else {
             // Fallback to config banks if API returns empty
             final monoBanks = MonoConfig.supportedBanks;
-            _banks = monoBanks.entries.map((entry) => <String, dynamic>{
-              'name': entry.key,
-              'code': entry.value,
-              'monoId': MonoConfig.getMonoInstitutionId(entry.key), // May be null
-              'icon': Icons.account_balance,
-              'color': _getBankColor(entry.key),
-              'monoSupported': true,
-            }).toList();
+            _banks = monoBanks.entries
+                .map((entry) => <String, dynamic>{
+                      'name': entry.key,
+                      'code': entry.value,
+                      'monoId': MonoConfig.getMonoInstitutionId(
+                          entry.key), // May be null
+                      'icon': Icons.account_balance,
+                      'color': _getBankColor(entry.key),
+                      'monoSupported': true,
+                    })
+                .toList();
           }
         });
       }
@@ -845,14 +858,18 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   /// Get a consistent color for a bank based on its name
   Color _getBankColor(String bankName) {
     final colors = [
-      Colors.blue, Colors.red, Colors.green, Colors.orange,
-      Colors.purple, Colors.teal, Colors.indigo, Colors.pink,
+      Colors.blue,
+      Colors.red,
+      Colors.green,
+      Colors.orange,
+      Colors.purple,
+      Colors.teal,
+      Colors.indigo,
+      Colors.pink,
     ];
     final index = bankName.hashCode.abs() % colors.length;
     return colors[index];
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -882,7 +899,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Color(0xFF1A1430), Color(0xFF120F1C), Color(0xFF0A090F)],
+                colors: [
+                  Color(0xFF1A1430),
+                  Color(0xFF120F1C),
+                  Color(0xFF0A090F)
+                ],
                 stops: [0.0, 0.42, 1.0],
               ),
             ),
@@ -890,59 +911,63 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
               backgroundColor: Colors.transparent,
               appBar: _buildAppBar(),
               body: BlocListener<OpenBankingCubit, OpenBankingState>(
-              listener: _openBankingListener,
-              child: BlocConsumer<DepositCubit, DepositState>(
-                listener: _blocListener,
-                builder: (context, state) {
-                  final isLoading = state is DepositLoading;
-                  final openBankingState = context.watch<OpenBankingCubit>().state;
-                  final isOpenBankingLoading = openBankingState is OpenBankingLoading ||
-                                               openBankingState is AccountLinkingInProgress;
-                  return RefreshIndicator(
-                    onRefresh: _pullToRefresh,
-                    color: const Color(0xFF8B5CF6),
-                    backgroundColor: const Color(0xFF1A1A1A),
-                    child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: Padding(
-                      padding: EdgeInsets.all(24.w),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildSelectedCardSummary(),
-                          SizedBox(height: 28.h),
-                          // Saved banks first (deposit again with one tap),
-                          // then the method-first picker. While the linked-
-                          // accounts fetch is in flight, the carousel slot
-                          // renders a labelled loading row instead of an
-                          // invisible gap.
-                          _buildSavedBanksCarousel(context, isOpenBankingLoading),
-                          Text(
-                            'How would you like to deposit?',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
+                listener: _openBankingListener,
+                child: BlocConsumer<DepositCubit, DepositState>(
+                  listener: _blocListener,
+                  builder: (context, state) {
+                    final isLoading = state is DepositLoading;
+                    final openBankingState =
+                        context.watch<OpenBankingCubit>().state;
+                    final isOpenBankingLoading =
+                        openBankingState is OpenBankingLoading ||
+                            openBankingState is AccountLinkingInProgress;
+                    return RefreshIndicator(
+                      onRefresh: _pullToRefresh,
+                      color: const Color(0xFF8B5CF6),
+                      backgroundColor: const Color(0xFF1A1A1A),
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: Padding(
+                          padding: EdgeInsets.all(24.w),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSelectedCardSummary(),
+                              SizedBox(height: 28.h),
+                              // Saved banks first (deposit again with one tap),
+                              // then the method-first picker. While the linked-
+                              // accounts fetch is in flight, the carousel slot
+                              // renders a labelled loading row instead of an
+                              // invisible gap.
+                              _buildSavedBanksCarousel(
+                                  context, isOpenBankingLoading),
+                              Text(
+                                'How would you like to deposit?',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(height: 4.h),
+                              Text(
+                                'Choose a method to continue.',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.5),
+                                  fontSize: 13.sp,
+                                ),
+                              ),
+                              SizedBox(height: 16.h),
+                              _buildMethodList(
+                                  isLoading || isOpenBankingLoading),
+                            ],
                           ),
-                          SizedBox(height: 4.h),
-                          Text(
-                            'Choose a method to continue.',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.5),
-                              fontSize: 13.sp,
-                            ),
-                          ),
-                          SizedBox(height: 16.h),
-                          _buildMethodList(isLoading || isOpenBankingLoading),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
             ),
           );
         },
@@ -965,7 +990,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     if (methods.isEmpty) {
       return Text(
         'No deposit methods are available for this wallet yet.',
-        style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 13.sp),
+        style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.6), fontSize: 13.sp),
       );
     }
     return Column(
@@ -1023,17 +1049,23 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                 children: [
                   Text(
                     method.label,
-                    style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600),
                   ),
                   SizedBox(height: 2.h),
                   Text(
                     method.subtitle,
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12.sp),
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        fontSize: 12.sp),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: Colors.white.withValues(alpha: 0.4), size: 22.sp),
+            Icon(Icons.chevron_right,
+                color: Colors.white.withValues(alpha: 0.4), size: 22.sp),
           ],
         ),
       ),
@@ -1043,14 +1075,13 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   /// True when the destination account already has a real, provisioned NUBAN —
   /// i.e. it can receive deposits. A non-empty account number on a virtual
   /// account is the signal (the backend leaves it empty until the mint lands).
-  bool get _targetHasVirtualAccount =>
-      (_provisionedAccountNumber ??
-              widget.selectedCard['accountNumber'] ??
-              widget.selectedCard['account_number'] ??
-              '')
-          .toString()
-          .trim()
-          .isNotEmpty;
+  bool get _targetHasVirtualAccount => (_provisionedAccountNumber ??
+          widget.selectedCard['accountNumber'] ??
+          widget.selectedCard['account_number'] ??
+          '')
+      .toString()
+      .trim()
+      .isNotEmpty;
 
   /// Entry point from a method card — the SAME gate for EVERY method (transfer,
   /// card, link, Apple Pay). The primary check is whether the destination can
@@ -1077,7 +1108,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       isPrimary: widget.selectedCard['isPrimary'] == true,
     );
     if (!mounted) return;
-    if (res.status == DepositReadiness.needsKyc) return; // verification took over
+    if (res.status == DepositReadiness.needsKyc)
+      return; // verification took over
     if (res.status == DepositReadiness.provisioning) {
       // The NUBAN mint didn't complete this attempt — BLOCK the flow with a modal
       // and do NOT open the method sheet, so the user never lands in a deposit
@@ -1105,7 +1137,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       backgroundColor: Colors.transparent,
       builder: (sheetCtx) {
         return Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(sheetCtx).viewInsets.bottom),
+          padding: EdgeInsets.only(
+              bottom: MediaQuery.of(sheetCtx).viewInsets.bottom),
           child: Container(
             decoration: BoxDecoration(
               color: const Color(0xFF1A1A1A),
@@ -1167,15 +1200,21 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(method.label,
-                      style: TextStyle(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w700)),
                   Text(method.subtitle,
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12.sp)),
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: 12.sp)),
                 ],
               ),
             ),
             IconButton(
               onPressed: () => Navigator.of(sheetCtx).pop(),
-              icon: Icon(Icons.close, color: Colors.white.withValues(alpha: 0.6), size: 22.sp),
+              icon: Icon(Icons.close,
+                  color: Colors.white.withValues(alpha: 0.6), size: 22.sp),
             ),
           ],
         ),
@@ -1214,7 +1253,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
           RecurringAccessToggle(
             isRecurringEnabled: _useRecurringAccess,
             kycVerified: _bvnVerifiedForMandate,
-            onToggle: (v) => setSheetState(() => setState(() => _useRecurringAccess = v)),
+            onToggle: (v) =>
+                setSheetState(() => setState(() => _useRecurringAccess = v)),
             onVerifyRequested: () {
               Navigator.of(sheetCtx).pop();
               _promptVerifyThenKyc();
@@ -1252,7 +1292,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
             },
           ),
           SizedBox(height: 10.h),
-          _sheetSecureNote('You will confirm with Apple Pay on the secure checkout.'),
+          _sheetSecureNote(
+              'You will confirm with Apple Pay on the secure checkout.'),
         ];
       case _DepositMethod.card:
         return [
@@ -1272,7 +1313,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
             },
           ),
           SizedBox(height: 10.h),
-          _sheetSecureNote('You will enter your card details on the secure checkout.'),
+          _sheetSecureNote(
+              'You will enter your card details on the secure checkout.'),
         ];
     }
   }
@@ -1289,24 +1331,34 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Amount',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 13.sp)),
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7), fontSize: 13.sp)),
           SizedBox(height: 8.h),
           Row(
             children: [
               Text(_currencySymbol,
-                  style: TextStyle(color: Colors.white, fontSize: 28.sp, fontWeight: FontWeight.w700)),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 28.sp,
+                      fontWeight: FontWeight.w700)),
               SizedBox(width: 8.w),
               Expanded(
                 child: TextField(
                   controller: _amountController,
                   autofocus: true,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
                   onChanged: (_) => setSheetState(() {}),
-                  style: TextStyle(color: Colors.white, fontSize: 28.sp, fontWeight: FontWeight.w700),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 28.sp,
+                      fontWeight: FontWeight.w700),
                   decoration: InputDecoration(
                     hintText: '0.00',
                     hintStyle: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.3), fontSize: 28.sp, fontWeight: FontWeight.w700),
+                        color: Colors.white.withValues(alpha: 0.3),
+                        fontSize: 28.sp,
+                        fontWeight: FontWeight.w700),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.zero,
                   ),
@@ -1317,7 +1369,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
           if (_isNGN) ...[
             SizedBox(height: 6.h),
             Text('Min: ₦200 • Max: ₦1,000,000',
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11.sp)),
+                style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.5),
+                    fontSize: 11.sp)),
           ],
           // Inline aggregated fee + net credit (the user sees ONE fee; the
           // Mono/LazerVault split is a settlement concern). Hidden when 0.
@@ -1342,14 +1396,17 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                       children: [
                         Text('Transaction fee',
                             style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.6), fontSize: 12.sp)),
+                                color: Colors.white.withValues(alpha: 0.6),
+                                fontSize: 12.sp)),
                         Flexible(
                           child: Text(
                             feeText,
                             textAlign: TextAlign.right,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                color: Colors.white, fontSize: 12.sp, fontWeight: FontWeight.w600),
+                                color: Colors.white,
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w600),
                           ),
                         ),
                       ],
@@ -1382,7 +1439,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     if (amount <= 0 || amount < min) {
       Get.snackbar(
         'Invalid Amount',
-        min > 0 ? 'Enter at least $_currencySymbol${min.toStringAsFixed(0)}.' : 'Please enter a valid amount.',
+        min > 0
+            ? 'Enter at least $_currencySymbol${min.toStringAsFixed(0)}.'
+            : 'Please enter a valid amount.',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
@@ -1406,7 +1465,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
           backgroundColor: color ?? const Color.fromARGB(255, 78, 3, 208),
           foregroundColor: Colors.white,
           padding: EdgeInsets.symmetric(vertical: 16.h),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
           elevation: 0,
         ),
         child: Row(
@@ -1414,7 +1474,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
           children: [
             Icon(icon, size: 20.sp),
             SizedBox(width: 8.w),
-            Text(label, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
+            Text(label,
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
           ],
         ),
       ),
@@ -1424,15 +1485,17 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   Widget _sheetSecureNote(String text) {
     return Row(
       children: [
-        Icon(Icons.lock_outline, color: Colors.white.withValues(alpha: 0.5), size: 14.sp),
+        Icon(Icons.lock_outline,
+            color: Colors.white.withValues(alpha: 0.5), size: 14.sp),
         SizedBox(width: 6.w),
         Expanded(
-          child: Text(text, style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
+          child: Text(text,
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
         ),
       ],
     );
   }
-
 
   /// LINK ACCOUNT (Mono direct debit) — recurring toggle + Link & Deposit.
 
@@ -1525,10 +1588,16 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Deposit again',
-                          style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600)),
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w600)),
                       SizedBox(height: 2.h),
-                      Text('Your linked banks. Tap to deposit, swipe to browse.',
-                          style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
+                      Text(
+                          'Your linked banks. Tap to deposit, swipe to browse.',
+                          style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.5),
+                              fontSize: 12.sp)),
                     ],
                   ),
                 ),
@@ -1539,7 +1608,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                       foregroundColor: const Color.fromARGB(255, 78, 3, 208),
                       padding: EdgeInsets.symmetric(horizontal: 8.w),
                     ),
-                    child: Text('View all', style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                    child: Text('View all',
+                        style: TextStyle(
+                            fontSize: 13.sp, fontWeight: FontWeight.w600)),
                   ),
               ],
             ),
@@ -1576,7 +1647,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     return (m != null && m.isActive) ? m : null;
   }
 
-  Widget _buildLinkedAccountCard(BuildContext context, LinkedBankAccount account) {
+  Widget _buildLinkedAccountCard(
+      BuildContext context, LinkedBankAccount account) {
     // Deposit-access state for this card:
     //   persistent → active Direct Debit (auto-debit, no approval)
     //   pending    → Direct Debit authorized but awaiting NIBSS activation; THIS
@@ -1632,7 +1704,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
           children: [
             Row(
               children: [
-                _bankLogoAvatar(account.bankName, bankCode: account.bankCode, size: 36),
+                _bankLogoAvatar(account.bankName,
+                    bankCode: account.bankCode, size: 36),
                 const Spacer(),
                 _accessChip(
                   mode: chipMode,
@@ -1645,7 +1718,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                   onTap: () => _showAccountActions(context, account),
                   child: Padding(
                     padding: EdgeInsets.all(4.w),
-                    child: Icon(Icons.more_vert, color: Colors.white.withValues(alpha: 0.6), size: 18.sp),
+                    child: Icon(Icons.more_vert,
+                        color: Colors.white.withValues(alpha: 0.6),
+                        size: 18.sp),
                   ),
                 ),
               ],
@@ -1655,14 +1730,18 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
               account.bankName.isNotEmpty ? account.bankName : 'Linked bank',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w700),
             ),
             SizedBox(height: 3.h),
             Text(
               account.displayAccountNumber,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12.sp),
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.6), fontSize: 12.sp),
             ),
             SizedBox(height: 4.h),
             // COST-AWARE: balances are the last-known (cached) figure — a live
@@ -1696,12 +1775,13 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
               }
               final hasBalance = account.balanceUpdatedAt != null;
               final fresh = hasBalance &&
-                  DateTime.now().difference(account.balanceUpdatedAt!).inMinutes <
+                  DateTime.now()
+                          .difference(account.balanceUpdatedAt!)
+                          .inMinutes <
                       3;
-              final dot =
-                  !hasBalance ? const Color(0xFF6B7280) : (fresh
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFFFB923C));
+              final dot = !hasBalance
+                  ? const Color(0xFF6B7280)
+                  : (fresh ? const Color(0xFF10B981) : const Color(0xFFFB923C));
               return Row(children: [
                 Expanded(
                   // Tapping the balance/updated area opens the full details
@@ -1732,8 +1812,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                           Container(
                             width: 6.w,
                             height: 6.w,
-                            decoration:
-                                BoxDecoration(color: dot, shape: BoxShape.circle),
+                            decoration: BoxDecoration(
+                                color: dot, shape: BoxShape.circle),
                           ),
                           SizedBox(width: 5.w),
                           Flexible(
@@ -1811,8 +1891,18 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   }
 
   static const List<String> _monthsShort = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec'
   ];
 
   /// Short, truncatable "last updated" label for a linked-bank card. Relative
@@ -1861,7 +1951,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                 ? 'Setting up Direct Debit'
                 : 'One-time';
 
-    Widget detailRow(String label, String value, {Color? valueColor}) => Padding(
+    Widget detailRow(String label, String value, {Color? valueColor}) =>
+        Padding(
           padding: EdgeInsets.symmetric(vertical: 7.h),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1912,23 +2003,25 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                 bankCode: account.bankCode, size: 42),
             SizedBox(width: 12.w),
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(
-                    account.bankName.isNotEmpty
-                        ? account.bankName
-                        : 'Linked bank',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w800)),
-                SizedBox(height: 2.h),
-                Text(account.displayAccountNumber,
-                    style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.55),
-                        fontSize: 12.sp)),
-              ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                        account.bankName.isNotEmpty
+                            ? account.bankName
+                            : 'Linked bank',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w800)),
+                    SizedBox(height: 2.h),
+                    Text(account.displayAccountNumber,
+                        style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.55),
+                            fontSize: 12.sp)),
+                  ]),
             ),
           ]),
           SizedBox(height: 18.h),
@@ -1996,8 +2089,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
               },
               icon: Icon(Icons.sync_rounded, size: 18.sp),
               label: Text('Refresh balance',
-                  style:
-                      TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
+                  style: TextStyle(
+                      fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: brand,
                 foregroundColor: Colors.white,
@@ -2038,10 +2131,14 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
               child: Text('Setting up Direct Debit',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: amber, fontSize: 10.sp, fontWeight: FontWeight.w700)),
+                  style: TextStyle(
+                      color: amber,
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.w700)),
             ),
             SizedBox(width: 4.w),
-            Icon(Icons.info_outline, color: amber.withValues(alpha: 0.85), size: 11.sp),
+            Icon(Icons.info_outline,
+                color: amber.withValues(alpha: 0.85), size: 11.sp),
           ],
         ),
       ),
@@ -2058,7 +2155,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.r)),
         child: Padding(
           padding: EdgeInsets.all(20.w),
           child: Column(
@@ -2074,12 +2172,16 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                       color: amber.withValues(alpha: 0.14),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.hourglass_bottom, color: amber, size: 19.sp),
+                    child:
+                        Icon(Icons.hourglass_bottom, color: amber, size: 19.sp),
                   ),
                   SizedBox(width: 12.w),
                   Expanded(
                     child: Text('Direct Debit is being set up',
-                        style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w700)),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w700)),
                   ),
                 ],
               ),
@@ -2087,7 +2189,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
               Text(
                 'You authorized recurring Direct Debit for $bank. Your bank is now '
                 'activating it with NIBSS. This can take a little while, sometimes up to 24 hours.',
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 13.sp, height: 1.45),
+                style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.7),
+                    fontSize: 13.sp,
+                    height: 1.45),
               ),
               SizedBox(height: 14.h),
               _setupInfoBullet(Icons.bolt, const Color(0xFF3B82F6),
@@ -2100,8 +2205,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () => Navigator.of(ctx).pop(),
-                  style: TextButton.styleFrom(foregroundColor: const Color(0xFF3B82F6)),
-                  child: Text('Got it', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700)),
+                  style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF3B82F6)),
+                  child: Text('Got it',
+                      style: TextStyle(
+                          fontSize: 14.sp, fontWeight: FontWeight.w700)),
                 ),
               ),
             ],
@@ -2135,12 +2243,14 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
         SizedBox(width: 10.w),
         Expanded(
           child: Text(text,
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.78), fontSize: 12.5.sp, height: 1.4)),
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.78),
+                  fontSize: 12.5.sp,
+                  height: 1.4)),
         ),
       ],
     );
   }
-
 
   /// Deposit-amount sheet for a linked account. Reuses the mandate when one is
   /// active (DebitMandate, no re-auth); otherwise a one-time DirectPay deposit.
@@ -2149,7 +2259,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     // Read the latest mandate for this account (ANY status), so a paused or
     // expired Direct Debit is handled explicitly instead of silently falling
     // back to a one-time payment.
-    final mandate = serviceLocator<MandateCubit>().getMandateForAccount(account.id);
+    final mandate =
+        serviceLocator<MandateCubit>().getMandateForAccount(account.id);
     if (mandate != null && mandate.isPaused) {
       _showMandateActionSheet(
         screenCtx,
@@ -2165,7 +2276,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       _showMandateActionSheet(
         screenCtx,
         title: 'Direct Debit ${mandate.isExpired ? 'expired' : 'ended'}',
-        body: 'Your saved Direct Debit for ${account.bankName} can no longer be '
+        body:
+            'Your saved Direct Debit for ${account.bankName} can no longer be '
             'used. Re-authorize once to keep depositing without a bank login '
             'each time.',
         actionLabel: 'Re-authorize Direct Debit',
@@ -2179,7 +2291,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetCtx) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(sheetCtx).viewInsets.bottom),
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(sheetCtx).viewInsets.bottom),
         child: Container(
           decoration: BoxDecoration(
             color: const Color(0xFF1A1A1A),
@@ -2207,22 +2320,35 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                     ),
                     Row(
                       children: [
-                        Icon(Icons.account_balance, color: Colors.white.withValues(alpha: 0.85), size: 22.sp),
+                        Icon(Icons.account_balance,
+                            color: Colors.white.withValues(alpha: 0.85),
+                            size: 22.sp),
                         SizedBox(width: 10.w),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text('Deposit from ${account.bankName}',
-                                  style: TextStyle(color: Colors.white, fontSize: 17.sp, fontWeight: FontWeight.w700)),
-                              Text(recurring ? 'Reusing your saved authorization' : 'You will authorize this one-time payment',
-                                  style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12.sp)),
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 17.sp,
+                                      fontWeight: FontWeight.w700)),
+                              Text(
+                                  recurring
+                                      ? 'Reusing your saved authorization'
+                                      : 'You will authorize this one-time payment',
+                                  style: TextStyle(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.6),
+                                      fontSize: 12.sp)),
                             ],
                           ),
                         ),
                         IconButton(
                           onPressed: () => Navigator.of(sheetCtx).pop(),
-                          icon: Icon(Icons.close, color: Colors.white.withValues(alpha: 0.6), size: 22.sp),
+                          icon: Icon(Icons.close,
+                              color: Colors.white.withValues(alpha: 0.6),
+                              size: 22.sp),
                         ),
                       ],
                     ),
@@ -2233,7 +2359,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                       label: recurring ? 'Deposit again' : 'Continue',
                       icon: recurring ? Icons.refresh : Icons.arrow_forward,
                       onPressed: () {
-                        if (!_validateSheetAmount(min: _isNGN ? 200 : 0)) return;
+                        if (!_validateSheetAmount(min: _isNGN ? 200 : 0))
+                          return;
                         Navigator.of(sheetCtx).pop();
                         // NGN bank deposits require a verified identity — gate
                         // before re-depositing; a KYC detour resumes by
@@ -2361,7 +2488,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
 
   /// Re-authorize an expired/cancelled mandate by creating a fresh one (in-app),
   /// then reopen the deposit sheet so the user can deposit via the new mandate.
-  Future<void> _reauthorizeMandateThenRedeposit(LinkedBankAccount account) async {
+  Future<void> _reauthorizeMandateThenRedeposit(
+      LinkedBankAccount account) async {
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) return;
     final user = authState.profile.user;
@@ -2810,7 +2938,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       feeNaira = 0.0;
     }
 
-    final txnId = 'deposit-${account.id}-${DateTime.now().millisecondsSinceEpoch}';
+    final txnId =
+        'deposit-${account.id}-${DateTime.now().millisecondsSinceEpoch}';
     String? token;
     final ok = await validateTransactionPin(
       context: context,
@@ -2887,7 +3016,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   void _showAccountActions(BuildContext screenCtx, LinkedBankAccount account) {
     final mandate = _mandateForAccount(account); // active mandate (for Manage)
     // Raw mandate of ANY status — drives the DirectPay⇄Direct-Debit switch.
-    final rawMandate = serviceLocator<MandateCubit>().getMandateForAccount(account.id);
+    final rawMandate =
+        serviceLocator<MandateCubit>().getMandateForAccount(account.id);
     final isPersistent = rawMandate != null && rawMandate.isActive;
     // Direct Debit authorized but still activating with NIBSS — it's already
     // being set up, so we show status (not a "switch to Direct Debit" CTA).
@@ -2896,7 +3026,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     // read-only "in progress" tile instead of a switch CTA so we don't fire a
     // second pause/reinstate before the first settles.
     final isSwitching = rawMandate != null && rawMandate.switchProcessing;
-    final switchingToDirectDebit = isSwitching && rawMandate.isSwitchingToDirectDebit;
+    final switchingToDirectDebit =
+        isSwitching && rawMandate.isSwitchingToDirectDebit;
     // Awaiting authorization BUT the auth widget was opened recently (this or
     // any device): the payment leg is likely done and Mono is confirming at
     // the bank — the link is SPENT, so show "Setting up" status instead of a
@@ -2923,12 +3054,16 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
               Container(
                 width: 40.w,
                 height: 4.h,
-                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(2.r)),
+                decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2.r)),
               ),
               SizedBox(height: 8.h),
               ListTile(
-                leading: Icon(Icons.refresh, color: Colors.white.withValues(alpha: 0.85)),
-                title: Text('Deposit from ${account.bankName}', style: TextStyle(color: Colors.white, fontSize: 15.sp)),
+                leading: Icon(Icons.refresh,
+                    color: Colors.white.withValues(alpha: 0.85)),
+                title: Text('Deposit from ${account.bankName}',
+                    style: TextStyle(color: Colors.white, fontSize: 15.sp)),
                 onTap: () {
                   Navigator.of(sheetCtx).pop();
                   _openRedepositSheet(context, account);
@@ -2945,14 +3080,21 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                       style: TextStyle(color: Colors.white, fontSize: 15.sp)),
                   subtitle: Text(
                       'We’re confirming this change with your bank. It’ll settle shortly.',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontSize: 12.sp)),
                   onTap: () => Navigator.of(sheetCtx).pop(),
                 )
               else if (isPersistent)
                 ListTile(
                   leading: Icon(Icons.schedule, color: const Color(0xFF9CA3AF)),
-                  title: Text('Switch to DirectPay (one-time)', style: TextStyle(color: Colors.white, fontSize: 15.sp)),
-                  subtitle: Text('Approve each deposit at your bank; switch back anytime', style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
+                  title: Text('Switch to DirectPay (one-time)',
+                      style: TextStyle(color: Colors.white, fontSize: 15.sp)),
+                  subtitle: Text(
+                      'Approve each deposit at your bank; switch back anytime',
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontSize: 12.sp)),
                   onTap: () async {
                     Navigator.of(sheetCtx).pop();
                     final ok = await _confirmPaymentMethodSwitch(
@@ -2967,14 +3109,20 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                 // show status, not a "Finish setup" CTA. Tap opens the same
                 // info modal as the card badge.
                 ListTile(
-                  leading: Icon(Icons.hourglass_bottom, color: const Color(0xFFFB923C)),
-                  title: Text('Setting up Direct Debit', style: TextStyle(color: Colors.white, fontSize: 15.sp)),
+                  leading: Icon(Icons.hourglass_bottom,
+                      color: const Color(0xFFFB923C)),
+                  title: Text('Setting up Direct Debit',
+                      style: TextStyle(color: Colors.white, fontSize: 15.sp)),
                   subtitle: Text(
                       isActivating
                           ? 'Authorized. Activating with your bank. Deposits use one-time approval until it is live.'
                           : 'Confirming your authorization with your bank — this can take up to 30 minutes and completes automatically.',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
-                  trailing: Icon(Icons.info_outline, color: const Color(0xFFFB923C).withValues(alpha: 0.85), size: 18.sp),
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontSize: 12.sp)),
+                  trailing: Icon(Icons.info_outline,
+                      color: const Color(0xFFFB923C).withValues(alpha: 0.85),
+                      size: 18.sp),
                   onTap: () {
                     Navigator.of(sheetCtx).pop();
                     _showDirectDebitSetupInfo(account);
@@ -2986,7 +3134,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                       rawMandate != null && rawMandate.awaitingUserAuthorization
                           ? Icons.touch_app_outlined
                           : Icons.link,
-                      color: rawMandate != null && rawMandate.awaitingUserAuthorization
+                      color: rawMandate != null &&
+                              rawMandate.awaitingUserAuthorization
                           ? const Color(0xFFF59E0B)
                           : const Color(0xFF10B981)),
                   title: Text(
@@ -2998,14 +3147,17 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                       rawMandate != null && rawMandate.awaitingUserAuthorization
                           ? 'Your bank authorization wasn\'t completed. Tap to finish.'
                           : 'Skip bank login on future deposits',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontSize: 12.sp)),
                   onTap: () async {
                     Navigator.of(sheetCtx).pop();
                     // A paused mandate reinstates instantly (a real Mono state
                     // change) — confirm first. With no reusable mandate,
                     // _switchToDirectDebit opens the Mono authorization setup
                     // sheet, which is itself the confirmation + auth step.
-                    final hasReusable = rawMandate != null && rawMandate.isPaused;
+                    final hasReusable =
+                        rawMandate != null && rawMandate.isPaused;
                     if (hasReusable) {
                       final ok = await _confirmPaymentMethodSwitch(
                           account: account, toDirectDebit: true);
@@ -3016,9 +3168,14 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                 ),
               if (mandate != null)
                 ListTile(
-                  leading: Icon(Icons.tune, color: Colors.white.withValues(alpha: 0.7)),
-                  title: Text('Manage Direct Debit', style: TextStyle(color: Colors.white, fontSize: 15.sp)),
-                  subtitle: Text('Pause, reinstate or cancel', style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
+                  leading: Icon(Icons.tune,
+                      color: Colors.white.withValues(alpha: 0.7)),
+                  title: Text('Manage Direct Debit',
+                      style: TextStyle(color: Colors.white, fontSize: 15.sp)),
+                  subtitle: Text('Pause, reinstate or cancel',
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontSize: 12.sp)),
                   onTap: () {
                     Navigator.of(sheetCtx).pop();
                     _manageMandate(context, mandate);
@@ -3026,7 +3183,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                 ),
               ListTile(
                 leading: Icon(Icons.link_off, color: const Color(0xFFEF4444)),
-                title: Text('Unlink ${account.bankName}', style: TextStyle(color: const Color(0xFFEF4444), fontSize: 15.sp)),
+                title: Text('Unlink ${account.bankName}',
+                    style: TextStyle(
+                        color: const Color(0xFFEF4444), fontSize: 15.sp)),
                 onTap: () {
                   Navigator.of(sheetCtx).pop();
                   _confirmUnlink(account);
@@ -3047,7 +3206,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        title: Text('Unlink ${account.bankName}?', style: const TextStyle(color: Colors.white)),
+        title: Text('Unlink ${account.bankName}?',
+            style: const TextStyle(color: Colors.white)),
         content: Text(
           'You will need to re-link this bank to deposit from it again. Any persistent authorisation will be cancelled.',
           style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
@@ -3055,11 +3215,14 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Cancel', style: TextStyle(color: Colors.white.withValues(alpha: 0.7))),
+            child: Text('Cancel',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.7))),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Unlink', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.w700)),
+            child: const Text('Unlink',
+                style: TextStyle(
+                    color: Color(0xFFEF4444), fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -3081,7 +3244,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetCtx) => Container(
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(sheetCtx).size.height * 0.8),
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(sheetCtx).size.height * 0.8),
         decoration: BoxDecoration(
           // Lighter, airier surface than the old near-black sheet.
           color: const Color(0xFF26262E),
@@ -3098,26 +3262,35 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                 child: Container(
                   width: 44.w,
                   height: 4.h,
-                  decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.25), borderRadius: BorderRadius.circular(2.r)),
+                  decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(2.r)),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.fromLTRB(22.w, 18.h, 22.w, 2.h),
                 child: Text('Your linked banks',
-                    style: TextStyle(color: Colors.white, fontSize: 19.sp, fontWeight: FontWeight.w700)),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 19.sp,
+                        fontWeight: FontWeight.w700)),
               ),
               Padding(
                 padding: EdgeInsets.fromLTRB(22.w, 0, 22.w, 10.h),
                 child: Text(
                   '${_linkedAccounts.length} ${_linkedAccounts.length == 1 ? 'account' : 'accounts'}. Persistent banks let you deposit again without re-approving.',
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp),
+                  style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: 12.sp),
                 ),
               ),
               Flexible(
                 child: ListView(
                   shrinkWrap: true,
                   padding: EdgeInsets.fromLTRB(18.w, 4.h, 18.w, 24.h),
-                  children: _linkedAccounts.map((a) => _buildLinkedAccountRow(context, a)).toList(),
+                  children: _linkedAccounts
+                      .map((a) => _buildLinkedAccountRow(context, a))
+                      .toList(),
                 ),
               ),
             ],
@@ -3128,7 +3301,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   }
 
   /// Bank logo (bundled asset keyed by bank code, gradient-initials fallback).
-  Widget _bankLogoAvatar(String bankName, {String? bankCode, double size = 42}) {
+  Widget _bankLogoAvatar(String bankName,
+      {String? bankCode, double size = 42}) {
     return BankLogo(
       bankName: bankName,
       bankCode: bankCode,
@@ -3213,7 +3387,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   /// Thin mapper onto the shared [LinkedAccountStateChip] so Deposit, Beam,
   /// Withdrawal and budgeting all render the SAME pill. Pass [onTap] to open
   /// the access-mode info modal.
-  Widget _accessChip({required String mode, VoidCallback? onTap, bool showInfo = false}) {
+  Widget _accessChip(
+      {required String mode, VoidCallback? onTap, bool showInfo = false}) {
     // Every state the canonical mapper can produce is rendered honestly — a
     // paused or bank-rejected mandate no longer masquerades as "One-time".
     const map = <String, LinkedAccountState>{
@@ -3226,10 +3401,12 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       'cancelled': LinkedAccountState.cancelled,
     };
     final state = map[mode] ?? LinkedAccountState.oneTime;
-    return LinkedAccountStateChip(state: state, onTap: onTap, showInfoAffordance: showInfo);
+    return LinkedAccountStateChip(
+        state: state, onTap: onTap, showInfoAffordance: showInfo);
   }
 
-  Widget _buildLinkedAccountRow(BuildContext context, LinkedBankAccount account) {
+  Widget _buildLinkedAccountRow(
+      BuildContext context, LinkedBankAccount account) {
     return Container(
       margin: EdgeInsets.only(bottom: 10.h),
       padding: EdgeInsets.all(13.w),
@@ -3247,9 +3424,14 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  account.bankName.isNotEmpty ? account.bankName : 'Linked bank',
+                  account.bankName.isNotEmpty
+                      ? account.bankName
+                      : 'Linked bank',
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w700),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700),
                 ),
                 SizedBox(height: 3.h),
                 Row(
@@ -3257,7 +3439,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                     Flexible(
                       child: Text(account.displayAccountNumber,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: Colors.white.withValues(alpha: 0.55), fontSize: 12.sp)),
+                          style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.55),
+                              fontSize: 12.sp)),
                     ),
                     SizedBox(width: 8.w),
                     Builder(builder: (rowCtx) {
@@ -3275,7 +3459,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
           ),
           IconButton(
             onPressed: () => _showAccountActions(context, account),
-            icon: Icon(Icons.more_vert, color: Colors.white.withValues(alpha: 0.7), size: 20.sp),
+            icon: Icon(Icons.more_vert,
+                color: Colors.white.withValues(alpha: 0.7), size: 20.sp),
           ),
         ],
       ),
@@ -3284,7 +3469,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
 
   void _manageMandate(BuildContext context, MandateEntity mandate) {
     final authState = context.read<AuthenticationCubit>().state;
-    final userId = authState is AuthenticationSuccess ? authState.profile.user.id : '';
+    final userId =
+        authState is AuthenticationSuccess ? authState.profile.user.id : '';
     showMandateManagementBottomSheet(
       context: context,
       linkedAccountId: mandate.linkedAccountId,
@@ -3300,7 +3486,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     });
   }
 
-
   /// BANK TRANSFER — show the account details to copy. accounts-service is the
   /// single source of truth for accounts + virtual-account details; the
   /// selectedCard already carries them (account_name / account_number /
@@ -3310,13 +3495,16 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     // the details appear immediately without needing to re-open the screen.
     final accountNumber = (_provisionedAccountNumber ??
         widget.selectedCard['accountNumber'] ??
-        widget.selectedCard['account_number'] ?? '') as String;
+        widget.selectedCard['account_number'] ??
+        '') as String;
     final accountName = (_provisionedAccountName ??
         widget.selectedCard['accountName'] ??
-        widget.selectedCard['account_name'] ?? '') as String;
+        widget.selectedCard['account_name'] ??
+        '') as String;
     final bankName = (_provisionedBankName ??
         widget.selectedCard['bankName'] ??
-        widget.selectedCard['bank_name'] ?? '') as String;
+        widget.selectedCard['bank_name'] ??
+        '') as String;
     final authState = context.read<AuthenticationCubit>().state;
     final userId =
         authState is AuthenticationSuccess ? authState.profile.user.id : null;
@@ -3400,7 +3588,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r)),
               ),
-              onPressed: _activatingAccount ? null : _activateBankTransferAccount,
+              onPressed:
+                  _activatingAccount ? null : _activateBankTransferAccount,
               child: _activatingAccount
                   ? SizedBox(
                       height: 18.r,
@@ -3437,10 +3626,12 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     );
     if (!mounted) return;
     setState(() => _activatingAccount = false);
-    if (res.status == DepositReadiness.ready && res.mintedAccountNumber != null) {
+    if (res.status == DepositReadiness.ready &&
+        res.mintedAccountNumber != null) {
       setState(() {
         _provisionedAccountNumber = res.mintedAccountNumber;
-        _provisionedAccountName = res.mintedAccountName ?? _provisionedAccountName;
+        _provisionedAccountName =
+            res.mintedAccountName ?? _provisionedAccountName;
         _provisionedBankName = res.mintedBankName ?? _provisionedBankName;
       });
     } else if (res.status == DepositReadiness.provisioning) {
@@ -3472,7 +3663,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     }
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) {
-      Get.snackbar('Authentication Error', 'You need to be logged in to make a deposit.',
+      Get.snackbar(
+          'Authentication Error', 'You need to be logged in to make a deposit.',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red.withValues(alpha: 0.9),
           colorText: Colors.white);
@@ -3487,19 +3679,20 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       return;
     }
     serviceLocator<DepositCubit>().initiateDeposit(
-          targetAccountId: targetAccountId,
-          amount: amount,
-          currency: _currency,
-          sourceBankName: sourceLabel,
-          countryCode: _countryCodeForCurrency(_currency),
-          accessToken: authState.profile.session.accessToken,
-          paymentMethod: paymentMethod,
-        );
+      targetAccountId: targetAccountId,
+      amount: amount,
+      currency: _currency,
+      sourceBankName: sourceLabel,
+      countryCode: _countryCodeForCurrency(_currency),
+      accessToken: authState.profile.session.accessToken,
+      paymentMethod: paymentMethod,
+    );
   }
 
   /// Open the Flutterwave hosted checkout for an authorization-required
   /// deposit (Apple Pay / Card). Shared by the bloc listener.
-  Future<void> _openFlutterwaveCheckout(String paymentUrl, String depositId) async {
+  Future<void> _openFlutterwaveCheckout(
+      String paymentUrl, String depositId) async {
     if (!mounted) return;
     final result = await showFlutterwavePaymentSheet(
       context: context,
@@ -3545,7 +3738,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
             children: [
               Row(
                 children: [
-                  Icon(Icons.info_outline, color: Colors.white.withValues(alpha: 0.7), size: 18.sp),
+                  Icon(Icons.info_outline,
+                      color: Colors.white.withValues(alpha: 0.7), size: 18.sp),
                   SizedBox(width: 8.w),
                   Text(
                     'How Mono Direct Debit Works',
@@ -3699,13 +3893,15 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     if (quote != null && !quote.isFree) {
       final proceed = await showDepositFeeAgreementSheet(context, quote);
       if (!proceed || !mounted) {
-        debugPrint('[MonoConnect] User declined the fee agreement — aborting link');
+        debugPrint(
+            '[MonoConnect] User declined the fee agreement — aborting link');
         return;
       }
     } else if (quote == null) {
       final proceed = await showBankConnectionFeeNotice(context);
       if (!proceed || !mounted) {
-        debugPrint('[MonoConnect] User declined the connection-fee notice — aborting link');
+        debugPrint(
+            '[MonoConnect] User declined the connection-fee notice — aborting link');
         return;
       }
     }
@@ -3727,8 +3923,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     );
 
     if (result != null) {
-      debugPrint('[MonoConnect] Success - Code: ${result.code.substring(0, result.code.length > 10 ? 10 : result.code.length)}...');
-      debugPrint('[MonoConnect] Institution: ${result.institutionName ?? result.institutionId ?? 'unknown'}');
+      debugPrint(
+          '[MonoConnect] Success - Code: ${result.code.substring(0, result.code.length > 10 ? 10 : result.code.length)}...');
+      debugPrint(
+          '[MonoConnect] Institution: ${result.institutionName ?? result.institutionId ?? 'unknown'}');
 
       // Show progress bottomsheet + link. Fresh-link journeys start at "Linking
       // Account"; with the recurring toggle ON the rail reads as Direct Debit
@@ -3925,7 +4123,14 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       );
     }
     if (has(['mandate']) &&
-        has(['paused', 'expired', 'inactive', 'cancelled', 'canceled', 'revoked'])) {
+        has([
+          'paused',
+          'expired',
+          'inactive',
+          'cancelled',
+          'canceled',
+          'revoked'
+        ])) {
       return const _DepositFailureInfo(
         'Authorization Needed',
         'Your saved bank authorization is no longer active. Link your bank again to continue.',
@@ -4120,7 +4325,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                   decoration: BoxDecoration(
                     color: const Color(0xFF161616),
                     borderRadius: BorderRadius.circular(24.r),
-                    border: Border.all(color: const Color(0xFF2A2A2A), width: 1),
+                    border:
+                        Border.all(color: const Color(0xFF2A2A2A), width: 1),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.55),
@@ -4139,9 +4345,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                         height: 74.w,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: const Color(0xFF2962FF).withValues(alpha: 0.10),
+                          color:
+                              const Color(0xFF2962FF).withValues(alpha: 0.10),
                           border: Border.all(
-                            color: const Color(0xFF2962FF).withValues(alpha: 0.18),
+                            color:
+                                const Color(0xFF2962FF).withValues(alpha: 0.18),
                             width: 1,
                           ),
                         ),
@@ -4180,8 +4388,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                           width: 150.w,
                           child: const LinearProgressIndicator(
                             backgroundColor: Color(0xFF262626),
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Color(0xFF2962FF)),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Color(0xFF2962FF)),
                           ),
                         ),
                       ),
@@ -4242,9 +4450,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     _showResolvingOverlay();
 
     try {
-      final status = await ProveKycHttpService(serviceLocator<SecureStorageService>())
-          .status()
-          .timeout(const Duration(seconds: 8));
+      final status =
+          await ProveKycHttpService(serviceLocator<SecureStorageService>())
+              .status()
+              .timeout(const Duration(seconds: 8));
       if (!mounted) {
         _hideResolvingOverlay();
         return;
@@ -4258,7 +4467,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     } catch (e) {
       // Network / timeout / parse error → fail open. The backend re-gates and
       // the reactive KYC net will catch an unverified user after linking.
-      debugPrint('[Deposit] KYC pre-check failed, proceeding (backend re-gates): $e');
+      debugPrint(
+          '[Deposit] KYC pre-check failed, proceeding (backend re-gates): $e');
       _hideResolvingOverlay();
       if (!mounted) return;
       proceed();
@@ -4278,9 +4488,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     if (_bvnKycFetched || _bvnKycFetchInFlight) return;
     _bvnKycFetchInFlight = true;
     try {
-      final status = await ProveKycHttpService(serviceLocator<SecureStorageService>())
-          .status()
-          .timeout(const Duration(seconds: 8));
+      final status =
+          await ProveKycHttpService(serviceLocator<SecureStorageService>())
+              .status()
+              .timeout(const Duration(seconds: 8));
       if (!mounted) return;
       final verified = status.tier >= 2;
       setSheetState(() {
@@ -4306,7 +4517,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     Get.dialog(
       AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: const Text(
           'Verify your identity',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
@@ -4314,7 +4526,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
         content: Text(
           'To deposit from your bank account, we need to verify your identity '
           'with a quick BVN check. It only takes a moment.',
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp),
+          style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp),
         ),
         actions: [
           TextButton(
@@ -4365,7 +4578,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
 
   /// Handle DirectPay authorization in-app using WebView
   Future<void> _handleDirectPayAuth(String paymentUrl, String paymentId) async {
-    debugPrint('[DirectPay] Opening authorization WebView for payment: $paymentId');
+    debugPrint(
+        '[DirectPay] Opening authorization WebView for payment: $paymentId');
     debugPrint('[DirectPay] URL: $paymentUrl');
 
     final result = await showDirectPayAuthorizationSheet(
@@ -4384,14 +4598,16 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       // deposit. When the backend settles (webhook → credit → NotifyDeposit), it
       // pushes DepositWebSocketCompleted, which advances the progress sheet to
       // success. DepositCubit owns the WS; arm it on the deposit reference.
-      serviceLocator<DepositCubit>().onPaymentCompleted(_currentDepositId ?? paymentId);
+      serviceLocator<DepositCubit>()
+          .onPaymentCompleted(_currentDepositId ?? paymentId);
       // FALLBACK only: a sparse settlement watchdog that also triggers the
       // backend's poll-on-read crediting for environments where Mono's webhook
       // can't reach us (local dev / a delayed webhook). Not a tight UI loop.
       _pollDepositSettlement(context);
     } else {
       debugPrint('[DirectPay] Authorization failed: ${result.errorMessage}');
-      _showDepositFailure(result.errorMessage ?? 'Payment authorization was cancelled');
+      _showDepositFailure(
+          result.errorMessage ?? 'Payment authorization was cancelled');
     }
   }
 
@@ -4411,8 +4627,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       return;
     }
     final authState = context.read<AuthenticationCubit>().state;
-    final accessToken =
-        authState is AuthenticationSuccess ? authState.profile.session.accessToken : '';
+    final accessToken = authState is AuthenticationSuccess
+        ? authState.profile.session.accessToken
+        : '';
     final userId =
         authState is AuthenticationSuccess ? authState.profile.user.id : '';
     if (accessToken.isEmpty || userId.isEmpty) return;
@@ -4442,7 +4659,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
         await Future<void>.delayed(Duration(seconds: delay));
         if (!mounted) return;
       }
-      debugPrint('[Deposit] settlement watchdog check (t+${delay}s) id=$depositId');
+      debugPrint(
+          '[Deposit] settlement watchdog check (t+${delay}s) id=$depositId');
       try {
         openBankingCubit.checkDepositStatus(
           depositId: depositId,
@@ -4450,7 +4668,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
           accessToken: accessToken,
         );
       } catch (e) {
-        debugPrint('[Deposit] watchdog checkDepositStatus threw (continuing): $e');
+        debugPrint(
+            '[Deposit] watchdog checkDepositStatus threw (continuing): $e');
       }
     }
 
@@ -4503,11 +4722,13 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
 
   /// Handle open banking state changes
   void _openBankingListener(BuildContext context, OpenBankingState state) {
-    debugPrint('[Deposit] OpenBankingListener received state: ${state.runtimeType}');
+    debugPrint(
+        '[Deposit] OpenBankingListener received state: ${state.runtimeType}');
 
     if (state is AccountLinked) {
       // Account successfully linked
-      debugPrint('[Deposit] Account linked: ${state.account.id}, bankName: ${state.account.bankName}, isNew: ${state.isNewAccount}');
+      debugPrint(
+          '[Deposit] Account linked: ${state.account.id}, bankName: ${state.account.bankName}, isNew: ${state.isNewAccount}');
       // Already-linked edge case: the backend deduped to an existing row
       // (same bank account for this user) instead of creating a duplicate.
       // Tell the user we're reusing their existing connection rather than
@@ -4532,7 +4753,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       // redeposit path (rail starts at "Preparing Deposit", no linking step) so
       // a failed DEPOSIT retries the deposit — reusing the saved mandate /
       // DirectPay — instead of re-linking an already-linked account.
-      _retryDeposit = () => _confirmFeeAndDepositFromLinkedAccount(state.account);
+      _retryDeposit =
+          () => _confirmFeeAndDepositFromLinkedAccount(state.account);
 
       // Update progress to initiating stage
       _progressController.updateStage(DirectPayStage.initiating);
@@ -4546,7 +4768,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       if (_useRecurringAccess) {
         _offerMandateSetupThenProceed(context, state);
       } else {
-        debugPrint('[Deposit] Calling _proceedWithMonoDeposit (one-time DirectPay)');
+        debugPrint(
+            '[Deposit] Calling _proceedWithMonoDeposit (one-time DirectPay)');
         _proceedWithMonoDeposit(context);
       }
     } else if (state is AccountLinkedWithMandate) {
@@ -4565,7 +4788,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       // Linked (with mandate) now — re-point "Try Again" at the redeposit path
       // so a failed deposit reuses this connection instead of re-linking. See
       // the AccountLinked branch above for the full rationale.
-      _retryDeposit = () => _confirmFeeAndDepositFromLinkedAccount(state.account);
+      _retryDeposit =
+          () => _confirmFeeAndDepositFromLinkedAccount(state.account);
 
       _progressController.updateStage(DirectPayStage.initiating);
 
@@ -4601,7 +4825,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
           deposit.paymentUrl != null &&
           deposit.paymentUrl!.isNotEmpty) {
         // DirectPay authorization needed - update progress and open in-app WebView
-        debugPrint('[Deposit] DirectPay authorization required: ${deposit.paymentUrl}');
+        debugPrint(
+            '[Deposit] DirectPay authorization required: ${deposit.paymentUrl}');
         _progressController.updateStage(DirectPayStage.authorizing);
         _handleDirectPayAuth(
           deposit.paymentUrl!,
@@ -4664,10 +4889,12 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
         );
       }
     } else if (state is OpenBankingError) {
-      debugPrint('[Deposit] OpenBankingError: ${state.message}, code: ${state.errorCode}, operation: ${state.operation}');
+      debugPrint(
+          '[Deposit] OpenBankingError: ${state.message}, code: ${state.errorCode}, operation: ${state.operation}');
       // Don't surface link/unlink-list errors as a deposit failure (they're
       // background loads for the carousel); only deposit-flow errors matter.
-      if (state.operation == 'fetchLinkedAccounts' || state.operation == 'unlinkAccount') {
+      if (state.operation == 'fetchLinkedAccounts' ||
+          state.operation == 'unlinkAccount') {
         // But DO resolve the carousel's section state so it can't spin
         // forever — an empty carousel shows a compact retry row instead.
         if (mounted && state.operation == 'fetchLinkedAccounts') {
@@ -4768,7 +4995,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     } else if (state is AccountUnlinked) {
       // Drop it from the carousel + refresh.
       if (mounted) {
-        setState(() => _linkedAccounts.removeWhere((a) => a.id == state.accountId));
+        setState(
+            () => _linkedAccounts.removeWhere((a) => a.id == state.accountId));
       }
       Get.snackbar('Unlinked', 'Bank account removed.',
           snackPosition: SnackPosition.BOTTOM,
@@ -4882,7 +5110,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       );
     }
   }
-  
+
   /// Refreshes the account balances - DISABLED: WebSocket handles real-time updates
   /// The ws-balance-service pushes balance updates to the Flutter app via WebSocket,
   /// which triggers the balance animation on the dashboard automatically.
@@ -4909,46 +5137,45 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
         ),
       ),
       actions: [
-            // Deposit history — every past deposit with its live status.
-            IconButton(
-              tooltip: 'Deposit history',
-              onPressed: () => Get.to(() => const DepositHistoryScreen()),
-              icon: Container(
-                padding: EdgeInsets.all(6.w),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.07),
-                  borderRadius: BorderRadius.circular(10.r),
-                  border:
-                      Border.all(color: Colors.white.withValues(alpha: 0.12)),
-                ),
-                child: Icon(Icons.receipt_long_rounded,
-                    color: Colors.white.withValues(alpha: 0.9), size: 17.sp),
-              ),
+        // Deposit history — every past deposit with its live status.
+        IconButton(
+          tooltip: 'Deposit history',
+          onPressed: () => Get.to(() => const DepositHistoryScreen()),
+          icon: Container(
+            padding: EdgeInsets.all(6.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.07),
+              borderRadius: BorderRadius.circular(10.r),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
             ),
-            // Single integrated voice surface: ServiceVoiceButton drives the
-            // production voice agent (the old local speech_to_text Icons.mic
-            // toggle was a duplicate and has been removed).
-            // serviceName='deposits' so the voice agent routes to the
-            // deposit-funds tools (the previous 'loans' string was a
-            // copy-paste leftover that sent the agent to the wrong
-            // service). Chat icon follows so users can also drive the
-            // same flow via text.
-            // Sized to MATCH the history chip (≈17.sp icon in a ~30px chip) so
-            // the three app-bar actions read as one consistent row.
-            ServiceVoiceButton(
-              serviceName: 'deposits',
-              buttonSize: 30.w,
-              iconSize: 17.sp,
-            ),
-            SizedBox(width: 8.w),
-            MicroserviceChatIcon(
-              serviceName: 'Deposits',
-              sourceContext: 'deposits',
-              size: 30,
-              iconSize: 17,
-            ),
-            SizedBox(width: 8.w),
-],
+            child: Icon(Icons.receipt_long_rounded,
+                color: Colors.white.withValues(alpha: 0.9), size: 17.sp),
+          ),
+        ),
+        // Single integrated voice surface: ServiceVoiceButton drives the
+        // production voice agent (the old local speech_to_text Icons.mic
+        // toggle was a duplicate and has been removed).
+        // serviceName='deposits' so the voice agent routes to the
+        // deposit-funds tools (the previous 'loans' string was a
+        // copy-paste leftover that sent the agent to the wrong
+        // service). Chat icon follows so users can also drive the
+        // same flow via text.
+        // Sized to MATCH the history chip (≈17.sp icon in a ~30px chip) so
+        // the three app-bar actions read as one consistent row.
+        ServiceVoiceButton(
+          serviceName: 'deposits',
+          buttonSize: 30.w,
+          iconSize: 17.sp,
+        ),
+        SizedBox(width: 8.w),
+        MicroserviceChatIcon(
+          serviceName: 'Deposits',
+          sourceContext: 'deposits',
+          size: 30,
+          iconSize: 17,
+        ),
+        SizedBox(width: 8.w),
+      ],
     );
   }
 
@@ -5012,125 +5239,118 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       builder: (context, summaryState) {
         final live = _liveSelectedSummary(summaryState);
         final double cardBalance = live?.balance ?? _cardBalance();
-        final bool cardIsUp = live?.isUp ?? (widget.selectedCard['isUp'] == true);
+        final bool cardIsUp =
+            live?.isUp ?? (widget.selectedCard['isUp'] == true);
         final String cardTrend = live != null
             ? '${live.trendPercentage >= 0 ? '+' : ''}${live.trendPercentage.toStringAsFixed(1)}%'
             : (widget.selectedCard['trend']?.toString() ?? '—');
         return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color.fromARGB(255, 78, 3, 208),
-            Color.fromARGB(255, 95, 20, 225),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                widget.selectedCard['accountType']?.toString() ?? 'Account',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w500,
-                ),
+          padding: EdgeInsets.all(20.w),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color.fromARGB(255, 78, 3, 208),
+                Color.fromARGB(255, 95, 20, 225),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(24.r),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 20,
+                offset: Offset(0, 10),
               ),
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 12.w,
-                  vertical: 6.h,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
-                child: Text(
-                  widget.selectedCard['accountNumber']?.toString() ??
-                      widget.selectedCard['account_number']?.toString() ??
-                      '••••',
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    widget.selectedCard['accountType']?.toString() ?? 'Account',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 6.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                    child: Text(
+                      widget.selectedCard['accountNumber']?.toString() ??
+                          widget.selectedCard['account_number']?.toString() ??
+                          '••••',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 20.h),
+              TweenAnimationBuilder<double>(
+                // begin = the snapshot the screen opened with; end = the live
+                // balance. TweenAnimationBuilder re-animates from the current value
+                // to `end` whenever it changes, so a credit counts up smoothly.
+                tween: Tween<double>(begin: _cardBalance(), end: cardBalance),
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeOut,
+                builder: (context, value, _) => Text(
+                  "$_currencySymbol${value.toStringAsFixed(2)}",
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 20.h),
-          TweenAnimationBuilder<double>(
-            // begin = the snapshot the screen opened with; end = the live
-            // balance. TweenAnimationBuilder re-animates from the current value
-            // to `end` whenever it changes, so a credit counts up smoothly.
-            tween: Tween<double>(begin: _cardBalance(), end: cardBalance),
-            duration: const Duration(milliseconds: 600),
-            curve: Curves.easeOut,
-            builder: (context, value, _) => Text(
-              "$_currencySymbol${value.toStringAsFixed(2)}",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 32.sp,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 12.w,
-                  vertical: 6.h,
-                ),
-                decoration: BoxDecoration(
-                  color: cardIsUp
-                      ? Colors.green.withValues(alpha: 0.2)
-                      : Colors.red.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
-                child: Text(
-                  cardTrend,
-                  style: TextStyle(
-                    color: cardIsUp ? Colors.green[300] : Colors.red[300],
-                    fontSize: 12.sp,
+                    fontSize: 32.sp,
                     fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ),
+              SizedBox(height: 8.h),
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 6.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color: cardIsUp
+                          ? Colors.green.withValues(alpha: 0.2)
+                          : Colors.red.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                    child: Text(
+                      cardTrend,
+                      style: TextStyle(
+                        color: cardIsUp ? Colors.green[300] : Colors.red[300],
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
-        ],
-      ),
         );
       },
     );
   }
 
-
-
-
-
-
-
-
   /// Build the deposit button content based on loading states
-
 
   /// Launch Mono Connect widget to link bank and authorize deposit
 
@@ -5155,8 +5375,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     }
 
     final authState = context.read<AuthenticationCubit>().state;
-    final userId = authState is AuthenticationSuccess ? authState.profile.user.id : '';
-    final user = authState is AuthenticationSuccess ? authState.profile.user : null;
+    final userId =
+        authState is AuthenticationSuccess ? authState.profile.user.id : '';
+    final user =
+        authState is AuthenticationSuccess ? authState.profile.user : null;
 
     // Set when the mandate sheet's KYC gate fires. In that case we DON'T fall
     // through to re-show the progress sheet / deposit here — we've detoured the
@@ -5173,9 +5395,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
         bankName: state.account.bankName,
         accountName: state.account.accountName,
         userEmail: user?.email,
-        userName: user != null
-            ? '${user.firstName} ${user.lastName}'.trim()
-            : null,
+        userName:
+            user != null ? '${user.firstName} ${user.lastName}'.trim() : null,
         // phone is captured by the backend MonoCustomer record on first
         // mandate creation; we don't ship one from Flutter today.
         onKycRequired: () {
@@ -5230,7 +5451,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
 
     final amountText = _amountController.text;
     final amount = double.tryParse(amountText) ?? 0;
-    debugPrint('[Deposit] Amount text: "$amountText", parsed amount: $amount, linkedAccountId: $_linkedAccountId');
+    debugPrint(
+        '[Deposit] Amount text: "$amountText", parsed amount: $amount, linkedAccountId: $_linkedAccountId');
 
     if (amount <= 0) {
       debugPrint('[Deposit] ERROR: Amount is <= 0, cannot proceed');
@@ -5266,7 +5488,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     } else if (widget.selectedCard['id'] is String) {
       destinationAccountId = widget.selectedCard['id'] as String;
     }
-    debugPrint('[Deposit] Destination account ID: $destinationAccountId (from widget.selectedCard["id"]: ${widget.selectedCard['id']})');
+    debugPrint(
+        '[Deposit] Destination account ID: $destinationAccountId (from widget.selectedCard["id"]: ${widget.selectedCard['id']})');
 
     if (destinationAccountId == null) {
       debugPrint('[Deposit] ERROR: destinationAccountId is null');
@@ -5280,7 +5503,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       return;
     }
 
-    debugPrint('[Deposit] Initiating deposit: userId=$userId, linkedAccountId=$_linkedAccountId, destAccountId=$destinationAccountId, amount=$amount');
+    debugPrint(
+        '[Deposit] Initiating deposit: userId=$userId, linkedAccountId=$_linkedAccountId, destAccountId=$destinationAccountId, amount=$amount');
 
     // Initiate deposit via open banking. Pass the destination wallet's
     // currency + derived country so the backend routes NGN → Mono instead
@@ -5305,7 +5529,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       useRecurringAccess: _useRecurringAccess,
     );
   }
-
 
   @override
   void dispose() {

@@ -23,7 +23,6 @@ import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_m
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 part 'rmb_send_sheet_widgets.dart';
 
-
 /// Opens the short RMB send flow for [rail] as a bottom sheet: one step for
 /// the recipient + amount, one step to review, then the transaction PIN.
 Future<void> showRmbSendSheet(
@@ -491,59 +490,59 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
               ),
             )
           : _quoting || _quote == null
-          ? Container(
-              padding: EdgeInsets.all(16.w),
-              decoration: BoxDecoration(
-                color: RmbUi.card,
-                borderRadius: BorderRadius.circular(14.r),
-                border: Border.all(color: RmbUi.border),
-              ),
-              child: Row(
-                children: [
-                  SizedBox(
-                    height: 16.w,
-                    width: 16.w,
-                    child: const CircularProgressIndicator(
-                        color: RmbUi.accent, strokeWidth: 2),
-                  ),
-                  SizedBox(width: 12.w),
-                  Text('Getting today’s rate…',
-                      style: TextStyle(
-                          color: RmbUi.textSecondary, fontSize: 13.sp)),
-                ],
-              ),
-            )
-          : Column(
-              children: [
-                Container(
+              ? Container(
                   padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
                     color: RmbUi.card,
                     borderRadius: BorderRadius.circular(14.r),
                     border: Border.all(color: RmbUi.border),
                   ),
-                  // No separate fee lines — the rate is all-in, so a payout
-                  // reads as fee-free. Bigger sends get a better rate (tiers).
-                  // No fee lines — the rate is all-in.
-                  child: Column(
+                  child: Row(
                     children: [
-                      _row(
-                          'Rate', '₦${_quote!.fxRate.toStringAsFixed(2)} / ¥1'),
-                      _row('Recipient gets',
-                          RmbUi.cny(_quote!.destAmountMinor.toInt())),
-                      // A transaction fee shows ONLY when it's not folded into
-                      // the rate (admin "separate" mode → ourFeeMinor > 0).
-                      if (_quote!.ourFeeMinor.toInt() > 0)
-                        _row('Transaction fee',
-                            RmbUi.ngn(_quote!.ourFeeMinor.toInt())),
-                      Divider(color: RmbUi.border, height: 20.h),
-                      _row('You pay', RmbUi.ngn(_quote!.totalMinor.toInt()),
-                          bold: true),
+                      SizedBox(
+                        height: 16.w,
+                        width: 16.w,
+                        child: const CircularProgressIndicator(
+                            color: RmbUi.accent, strokeWidth: 2),
+                      ),
+                      SizedBox(width: 12.w),
+                      Text('Getting today’s rate…',
+                          style: TextStyle(
+                              color: RmbUi.textSecondary, fontSize: 13.sp)),
                     ],
                   ),
+                )
+              : Column(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(16.w),
+                      decoration: BoxDecoration(
+                        color: RmbUi.card,
+                        borderRadius: BorderRadius.circular(14.r),
+                        border: Border.all(color: RmbUi.border),
+                      ),
+                      // No separate fee lines — the rate is all-in, so a payout
+                      // reads as fee-free. Bigger sends get a better rate (tiers).
+                      // No fee lines — the rate is all-in.
+                      child: Column(
+                        children: [
+                          _row('Rate',
+                              '₦${_quote!.fxRate.toStringAsFixed(2)} / ¥1'),
+                          _row('Recipient gets',
+                              RmbUi.cny(_quote!.destAmountMinor.toInt())),
+                          // A transaction fee shows ONLY when it's not folded into
+                          // the rate (admin "separate" mode → ourFeeMinor > 0).
+                          if (_quote!.ourFeeMinor.toInt() > 0)
+                            _row('Transaction fee',
+                                RmbUi.ngn(_quote!.ourFeeMinor.toInt())),
+                          Divider(color: RmbUi.border, height: 20.h),
+                          _row('You pay', RmbUi.ngn(_quote!.totalMinor.toInt()),
+                              bold: true),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
     );
   }
 
@@ -1605,7 +1604,8 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
   // Klasha accepts either and does NOT translate Pinyin to Hanzi. Mirrors the
   // rmb-service validReceiverName gate. Latin form must start with a letter and
   // contain only letters/space/hyphen/apostrophe/period; digits/symbols fail.
-  static final RegExp _latinName = RegExp(r"^\p{L}[\p{L} .'-]*$", unicode: true);
+  static final RegExp _latinName =
+      RegExp(r"^\p{L}[\p{L} .'-]*$", unicode: true);
   bool _nameValid(String s) {
     final t = s.trim();
     if (t.isEmpty) return false;
@@ -1623,7 +1623,8 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
   // China mobile: 11 digits, first digit 1, second 3-9 — no leading zero.
   static final RegExp _cnMobile = RegExp(r'^1[3-9]\d{9}$');
   static final RegExp _emailRe = RegExp(r'^[\w.+-]+@[\w-]+\.[\w.-]+$');
-  static final RegExp _cnIdCard = RegExp(r'^\d{17}[0-9Xx]$'); // 18-char resident ID
+  static final RegExp _cnIdCard =
+      RegExp(r'^\d{17}[0-9Xx]$'); // 18-char resident ID
   static final RegExp _cnIdCardLegacy = RegExp(r'^\d{15}$'); // legacy 15-digit
   static final RegExp _passportRe = RegExp(r'^[A-Za-z0-9]{5,18}$');
 
@@ -1654,7 +1655,8 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
   String? _emailError(String raw) {
     final v = raw.trim();
     if (v.isEmpty) return 'Enter the email address';
-    if (!_emailRe.hasMatch(v)) return 'That does not look like an email address';
+    if (!_emailRe.hasMatch(v))
+      return 'That does not look like an email address';
     return null;
   }
 
@@ -1683,7 +1685,8 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
   String? _bankAcctError(String raw) {
     final v = raw.trim();
     if (v.isEmpty) return 'Enter the account number';
-    if (!RegExp(r'^\d{6,30}$').hasMatch(v)) return 'Enter a valid account number';
+    if (!RegExp(r'^\d{6,30}$').hasMatch(v))
+      return 'Enter a valid account number';
     return null;
   }
 
@@ -1712,7 +1715,8 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
       final acctErr = _walletAccountError();
       if (acctErr != null) return acctErr;
       // Receiver ID number is optional for wallet payouts (Klasha C2C WALLET).
-      final idErr = _idNumberError(_c('idNumber').text, 'PASSPORT', required: false);
+      final idErr =
+          _idNumberError(_c('idNumber').text, 'PASSPORT', required: false);
       if (idErr != null) return idErr;
     } else if (_rail == RmbRail.UNIONPAY) {
       final cardErr = _cardError(_c('cardNumber').text);
@@ -1732,7 +1736,8 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
       if (_bank == null) return 'Choose the receiver’s bank';
       final mobErr = _cnMobileError(_c('mobile').text, required: true);
       if (mobErr != null) return mobErr;
-      final idErr = _idNumberError(_c('idNumber').text, _idType, required: true);
+      final idErr =
+          _idNumberError(_c('idNumber').text, _idType, required: true);
       if (idErr != null) return idErr;
     }
     return null;
@@ -1832,8 +1837,8 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
         ? existing.senderNationality
         : 'NG';
     DateTime? dob;
-    final dobMatch =
-        RegExp(r'^(\d{4})-(\d{2})-(\d{2})$').firstMatch(existing.senderBirthDate);
+    final dobMatch = RegExp(r'^(\d{4})-(\d{2})-(\d{2})$')
+        .firstMatch(existing.senderBirthDate);
     if (dobMatch != null) {
       dob = DateTime(int.parse(dobMatch.group(1)!),
           int.parse(dobMatch.group(2)!), int.parse(dobMatch.group(3)!));
@@ -1987,9 +1992,7 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
                             children: [
                               Expanded(
                                 child: Text(
-                                    dob == null
-                                        ? 'Date of birth'
-                                        : iso(dob!),
+                                    dob == null ? 'Date of birth' : iso(dob!),
                                     style: TextStyle(
                                         color: dob == null
                                             ? RmbUi.label
@@ -2081,8 +2084,9 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
     // Inline error appears only once the user has typed something (so an
     // untouched required field doesn't shout before it's been reached).
     final value = _c(key).text;
-    final error =
-        (validator != null && value.trim().isNotEmpty) ? validator(value) : null;
+    final error = (validator != null && value.trim().isNotEmpty)
+        ? validator(value)
+        : null;
     return Padding(
       padding: EdgeInsets.only(bottom: 10.h),
       child: TextField(
@@ -2241,8 +2245,9 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
     // Guard against an out-of-range prefill (a saved/repeated value that isn't
     // valid for the current rail) — DropdownButtonFormField asserts exactly one
     // matching item, so coerce an unknown value to the first option.
-    final safeValue =
-        options.contains(value) ? value : (options.isNotEmpty ? options.first : value);
+    final safeValue = options.contains(value)
+        ? value
+        : (options.isNotEmpty ? options.first : value);
     return Padding(
       padding: EdgeInsets.only(bottom: 10.h),
       child: DropdownButtonFormField<String>(

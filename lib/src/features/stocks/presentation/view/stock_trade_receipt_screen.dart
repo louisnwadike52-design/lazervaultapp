@@ -16,7 +16,8 @@ class StockTradeReceiptScreen extends StatefulWidget {
   const StockTradeReceiptScreen({super.key});
 
   @override
-  State<StockTradeReceiptScreen> createState() => _StockTradeReceiptScreenState();
+  State<StockTradeReceiptScreen> createState() =>
+      _StockTradeReceiptScreenState();
 }
 
 class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
@@ -24,7 +25,7 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
-  
+
   Stock? _selectedStock;
   String _tradeType = 'buy';
   double _amount = 0.0;
@@ -56,13 +57,14 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
     _shares = args['shares'] ?? 0;
     _fees = args['fees'] ?? 0.0;
     _total = args['total'] ?? 0.0;
-    _transactionId = args['transactionId'] ?? 'STK${DateTime.now().millisecondsSinceEpoch}';
+    _transactionId =
+        args['transactionId'] ?? 'STK${DateTime.now().millisecondsSinceEpoch}';
     _transactionDate = args['transactionDate'] ?? DateTime.now();
     _paymentMethod = args['paymentMethod'] ?? '';
     _paymentDetails = args['paymentDetails'] ?? {};
     _investCollectionId = args['investCollection'] as String?;
-    _hubAccent = InvestAssetHubConfig.forCollectionId(_investCollectionId)
-        .accentColor;
+    _hubAccent =
+        InvestAssetHubConfig.forCollectionId(_investCollectionId).accentColor;
   }
 
   void _setupAnimations() {
@@ -70,15 +72,15 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
     );
-    
+
     _animationController.forward();
   }
 
@@ -327,7 +329,7 @@ Powered by Lazervault''';
 
   Widget _buildStockHeader() {
     if (_selectedStock == null) return const SizedBox.shrink();
-    
+
     return Row(
       children: [
         Container(
@@ -349,14 +351,29 @@ Powered by Lazervault''';
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16.r),
             child: _selectedStock!.logoUrl.isNotEmpty
-              ? CachedNetworkImage(
-                  imageUrl: _selectedStock!.logoUrl,
-                  fit: BoxFit.contain,
-                  placeholder: (context, url) => Container(
-                    color: Colors.grey[200],
-                    child: Icon(Icons.business, color: Colors.grey[600], size: 24.sp),
-                  ),
-                  errorWidget: (context, url, error) => Container(
+                ? CachedNetworkImage(
+                    imageUrl: _selectedStock!.logoUrl,
+                    fit: BoxFit.contain,
+                    placeholder: (context, url) => Container(
+                      color: Colors.grey[200],
+                      child: Icon(Icons.business,
+                          color: Colors.grey[600], size: 24.sp),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      color: Colors.grey[200],
+                      child: Center(
+                        child: Text(
+                          _selectedStock!.symbol[0],
+                          style: GoogleFonts.inter(
+                            color: Colors.grey[700],
+                            fontSize: 24.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                : Container(
                     color: Colors.grey[200],
                     child: Center(
                       child: Text(
@@ -369,20 +386,6 @@ Powered by Lazervault''';
                       ),
                     ),
                   ),
-                )
-              : Container(
-                  color: Colors.grey[200],
-                  child: Center(
-                    child: Text(
-                      _selectedStock!.symbol[0],
-                      style: GoogleFonts.inter(
-                        color: Colors.grey[700],
-                        fontSize: 24.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
           ),
         ),
         SizedBox(width: 16.w),
@@ -413,9 +416,8 @@ Powered by Lazervault''';
                     child: Text(
                       _tradeType.toUpperCase(),
                       style: GoogleFonts.inter(
-                        color: _tradeType == 'buy'
-                            ? Colors.black
-                            : Colors.white,
+                        color:
+                            _tradeType == 'buy' ? Colors.black : Colors.white,
                         fontSize: 11.sp,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0.6,
@@ -462,8 +464,14 @@ Powered by Lazervault''';
                   _amount / _shares, _selectedStock?.currency ?? 'USD')
               : '—',
         ),
-        _buildDetailRow('Subtotal', CurrencySymbols.formatAmountWithCurrency(_amount, _selectedStock?.currency ?? 'USD')),
-        _buildDetailRow('Trading Fees', CurrencySymbols.formatAmountWithCurrency(_fees, _selectedStock?.currency ?? 'USD')),
+        _buildDetailRow(
+            'Subtotal',
+            CurrencySymbols.formatAmountWithCurrency(
+                _amount, _selectedStock?.currency ?? 'USD')),
+        _buildDetailRow(
+            'Trading Fees',
+            CurrencySymbols.formatAmountWithCurrency(
+                _fees, _selectedStock?.currency ?? 'USD')),
         SizedBox(height: 12.h),
         Container(
           padding: EdgeInsets.all(16.w),
@@ -679,7 +687,7 @@ Powered by Lazervault''';
 
   String _getAccountDetails() {
     if (_paymentDetails.isEmpty) return 'N/A';
-    
+
     switch (_paymentMethod) {
       case 'account':
         return _paymentDetails['name'] ?? 'Personal Account';
@@ -695,4 +703,4 @@ Powered by Lazervault''';
   String _formatDateTime(DateTime dateTime) {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year} at ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
-} 
+}

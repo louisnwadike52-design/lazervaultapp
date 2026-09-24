@@ -210,10 +210,12 @@ class CryptoShimmerLoading extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           // 3 trending coin rows
-          ...List.generate(3, (i) => Padding(
-            padding: EdgeInsets.only(bottom: i < 2 ? 12.h : 0),
-            child: _buildListItemShimmer(),
-          )),
+          ...List.generate(
+              3,
+              (i) => Padding(
+                    padding: EdgeInsets.only(bottom: i < 2 ? 12.h : 0),
+                    child: _buildListItemShimmer(),
+                  )),
         ],
       ),
     );
@@ -241,10 +243,13 @@ class CryptoShimmerLoading extends StatelessWidget {
             ),
             SizedBox(height: 16.h),
           ],
-          ...List.generate(itemCount, (i) => Padding(
-            padding: EdgeInsets.only(bottom: i < itemCount - 1 ? 12.h : 0),
-            child: _buildListItemShimmer(),
-          )),
+          ...List.generate(
+              itemCount,
+              (i) => Padding(
+                    padding:
+                        EdgeInsets.only(bottom: i < itemCount - 1 ? 12.h : 0),
+                    child: _buildListItemShimmer(),
+                  )),
         ],
       ),
     );
@@ -402,10 +407,12 @@ class CryptoShimmerLoading extends StatelessWidget {
             ],
           ),
           SizedBox(height: 16.h),
-          ...List.generate(3, (i) => Padding(
-            padding: EdgeInsets.only(bottom: 12.h),
-            child: _buildListItemShimmer(),
-          )),
+          ...List.generate(
+              3,
+              (i) => Padding(
+                    padding: EdgeInsets.only(bottom: 12.h),
+                    child: _buildListItemShimmer(),
+                  )),
         ],
       ),
     );

@@ -44,8 +44,8 @@ class _TrendingCrowdfundsState extends State<TrendingCrowdfunds> {
               if (state.isStale)
                 LinearProgressIndicator(
                   minHeight: 2,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                      Color(0xFF3B82F6)),
+                  valueColor:
+                      const AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
                   // A dark track is invisible on a light card.
                   backgroundColor: DashboardLightStyle.trackColor,
                 ),

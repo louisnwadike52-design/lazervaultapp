@@ -54,35 +54,44 @@ class PaymentResult {
 abstract class PayInvoiceRepository {
   // Invoice retrieval methods
   Future<List<TaggedInvoice>> getTaggedInvoices(String userId);
-  Future<List<TaggedInvoice>> getTaggedInvoicesByStatus(String userId, PaymentStatus status);
+  Future<List<TaggedInvoice>> getTaggedInvoicesByStatus(
+      String userId, PaymentStatus status);
   Future<List<TaggedInvoice>> getOverdueInvoices(String userId);
-  Future<List<TaggedInvoice>> getUpcomingInvoices(String userId, {int days = 7});
+  Future<List<TaggedInvoice>> getUpcomingInvoices(String userId,
+      {int days = 7});
   Future<TaggedInvoice?> getTaggedInvoiceById(String invoiceId);
-  
+
   // Search and filter methods
   Future<List<TaggedInvoice>> searchTaggedInvoices(String userId, String query);
-  Future<List<TaggedInvoice>> filterInvoicesByPriority(String userId, InvoicePriority priority);
-  Future<List<TaggedInvoice>> filterInvoicesByDateRange(String userId, DateTime start, DateTime end);
-  
+  Future<List<TaggedInvoice>> filterInvoicesByPriority(
+      String userId, InvoicePriority priority);
+  Future<List<TaggedInvoice>> filterInvoicesByDateRange(
+      String userId, DateTime start, DateTime end);
+
   // Payment methods
-  Future<PaymentResult> payInvoice(String invoiceId, PaymentDetails paymentDetails);
-  Future<PaymentResult> processPartialPayment(String invoiceId, PaymentDetails paymentDetails);
-  Future<bool> requestPaymentExtension(String invoiceId, DateTime newDueDate, String? reason);
+  Future<PaymentResult> payInvoice(
+      String invoiceId, PaymentDetails paymentDetails);
+  Future<PaymentResult> processPartialPayment(
+      String invoiceId, PaymentDetails paymentDetails);
+  Future<bool> requestPaymentExtension(
+      String invoiceId, DateTime newDueDate, String? reason);
   Future<bool> disputeInvoice(String invoiceId, String reason);
-  
+
   // Payment tracking
   Future<List<Map<String, dynamic>>> getPaymentHistory(String invoiceId);
   Future<Map<String, dynamic>> getPaymentStatistics(String userId);
-  Future<List<Map<String, dynamic>>> getRecentTransactions(String userId, {int limit = 20});
-  
+  Future<List<Map<String, dynamic>>> getRecentTransactions(String userId,
+      {int limit = 20});
+
   // Notification methods
   Future<bool> markInvoiceAsViewed(String invoiceId);
   Future<bool> setPaymentReminder(String invoiceId, DateTime reminderDate);
   Future<bool> requestInvoiceDetails(String invoiceId);
-  
+
   // User account methods
   Future<Map<String, dynamic>> getUserAccountBalance(String userId);
   Future<List<Map<String, dynamic>>> getUserPaymentMethods(String userId);
-  Future<bool> addPaymentMethod(String userId, Map<String, dynamic> paymentMethodData);
+  Future<bool> addPaymentMethod(
+      String userId, Map<String, dynamic> paymentMethodData);
   Future<bool> removePaymentMethod(String userId, String paymentMethodId);
-} 
+}

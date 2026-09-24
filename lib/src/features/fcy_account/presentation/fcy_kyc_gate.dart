@@ -60,7 +60,8 @@ Future<bool> ensureFcyKycForPayout(
   // to a screen that will re-check, so this always returns false: proceeding now
   // would let someone through on the strength of having merely tapped "continue".
   if (proceed == true) {
-    await Get.toNamed(AppRoutes.fcyActivation, arguments: {'currency': currency});
+    await Get.toNamed(AppRoutes.fcyActivation,
+        arguments: {'currency': currency});
   }
   return false;
 }
@@ -164,8 +165,8 @@ class _FcyKycPrompt extends StatelessWidget {
                 ),
                 child: Text(
                   'Verify my details',
-                  style: TextStyle(
-                      fontSize: 15.sp, fontWeight: FontWeight.w600),
+                  style:
+                      TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
                 ),
               ),
             ),

@@ -36,13 +36,16 @@ class BusinessOverviewService {
   }) async {
     final token = await _storage.read(key: _accessTokenKey);
     if (token == null || token.isEmpty) {
-      throw const BusinessOverviewException('Please sign in to view your business.');
+      throw const BusinessOverviewException(
+          'Please sign in to view your business.');
     }
 
     // httpBusiness already ends in /api/v1 → /api/v1/business/overview.
     final params = <String, String>{};
-    if (periodStart != null && periodStart.isNotEmpty) params['period_start'] = periodStart;
-    if (periodEnd != null && periodEnd.isNotEmpty) params['period_end'] = periodEnd;
+    if (periodStart != null && periodStart.isNotEmpty)
+      params['period_start'] = periodStart;
+    if (periodEnd != null && periodEnd.isNotEmpty)
+      params['period_end'] = periodEnd;
     final uri = Uri.parse('${_endpoints.httpBusiness}/business/overview')
         .replace(queryParameters: params.isEmpty ? null : params);
 
@@ -52,7 +55,8 @@ class BusinessOverviewService {
     ).timeout(_timeout);
 
     if (resp.statusCode == 401 || resp.statusCode == 403) {
-      throw const BusinessOverviewException('Session expired. Please sign in again.');
+      throw const BusinessOverviewException(
+          'Session expired. Please sign in again.');
     }
     if (resp.statusCode < 200 || resp.statusCode >= 300) {
       throw BusinessOverviewException(
@@ -61,7 +65,8 @@ class BusinessOverviewService {
     }
     final decoded = jsonDecode(resp.body);
     if (decoded is! Map<String, dynamic>) {
-      throw const BusinessOverviewException('Unexpected response from the server.');
+      throw const BusinessOverviewException(
+          'Unexpected response from the server.');
     }
     // The /business/overview aggregate leaves revenue/receivables at 0 — the
     // revenue engine is the SALES ledger, served by the wired /sales/summary.

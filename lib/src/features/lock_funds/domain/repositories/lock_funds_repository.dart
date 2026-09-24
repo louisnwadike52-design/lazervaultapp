@@ -2,7 +2,8 @@ import '../entities/lock_fund_entity.dart';
 
 abstract class LockFundsRepository {
   /// Get all lock funds for the current user
-  Future<List<LockFund>> getLockFunds({LockStatus? status, int page = 1, int perPage = 20});
+  Future<List<LockFund>> getLockFunds(
+      {LockStatus? status, int page = 1, int perPage = 20});
 
   /// Get a single lock fund by ID
   Future<LockFund> getLockFund(String id);

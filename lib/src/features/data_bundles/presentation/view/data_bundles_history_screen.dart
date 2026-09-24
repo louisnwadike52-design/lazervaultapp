@@ -185,7 +185,8 @@ class _DataBundlesHistoryScreenState extends State<DataBundlesHistoryScreen> {
                     // stored-phone-format mismatches between purchases
                     // (`+234...`, `234...`) and beneficiaries (`0...`).
                     filtered = filtered
-                        .where((p) => _phoneMatches(p.phoneNumber, _filterPhone!))
+                        .where(
+                            (p) => _phoneMatches(p.phoneNumber, _filterPhone!))
                         .toList();
                   }
 
@@ -201,7 +202,8 @@ class _DataBundlesHistoryScreenState extends State<DataBundlesHistoryScreen> {
                     color: _primary,
                     backgroundColor: _card,
                     child: ListView.separated(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                       physics: const AlwaysScrollableScrollPhysics(),
                       itemCount: filtered.length,
                       separatorBuilder: (_, __) => SizedBox(height: 10.h),
@@ -250,10 +252,10 @@ class _DataBundlesHistoryScreenState extends State<DataBundlesHistoryScreen> {
   }
 
   Widget _buildContactFilterChip() {
-    final networkSuffix = (_filterNetworkName != null &&
-            _filterNetworkName!.isNotEmpty)
-        ? ' • $_filterNetworkName'
-        : '';
+    final networkSuffix =
+        (_filterNetworkName != null && _filterNetworkName!.isNotEmpty)
+            ? ' • $_filterNetworkName'
+            : '';
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Container(
@@ -322,9 +324,7 @@ class _DataBundlesHistoryScreenState extends State<DataBundlesHistoryScreen> {
             color: selected ? _primary : _card,
             borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
-              color: selected
-                  ? _primary
-                  : Colors.white.withValues(alpha: 0.08),
+              color: selected ? _primary : Colors.white.withValues(alpha: 0.08),
             ),
           ),
           child: Text(
@@ -372,9 +372,10 @@ class _DataBundlesHistoryScreenState extends State<DataBundlesHistoryScreen> {
     // debited in the active locale currency.
     final destAmt = p.destAmount;
     final destCur = p.destCurrency;
-    final intlBundle = p.isInternational && destAmt != null && destCur.isNotEmpty
-        ? '$destCur ${destAmt.toStringAsFixed(2)}'
-        : null;
+    final intlBundle =
+        p.isInternational && destAmt != null && destCur.isNotEmpty
+            ? '$destCur ${destAmt.toStringAsFixed(2)}'
+            : null;
 
     final title = hasNickname
         ? saved!.nickname!.trim()

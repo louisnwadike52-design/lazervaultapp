@@ -69,7 +69,8 @@ class BeneficiaryCubit extends Cubit<BeneficiaryState> {
     if (isClosed) return;
     result.fold(
       (failure) => emit(BeneficiaryError(message: failure.message)),
-      (beneficiaries) => emit(BeneficiariesLoaded(beneficiaries: beneficiaries)),
+      (beneficiaries) =>
+          emit(BeneficiariesLoaded(beneficiaries: beneficiaries)),
     );
   }
 
@@ -85,18 +86,19 @@ class BeneficiaryCubit extends Cubit<BeneficiaryState> {
     String? phoneNumber,
     required String nickname,
     bool isDefault = false,
-  }) => saveBeneficiary(
-    providerId: providerId,
-    meterNumber: meterNumber,
-    meterType: meterType,
-    customerName: customerName,
-    customerAddress: customerAddress,
-    phoneNumber: phoneNumber,
-    nickname: nickname,
-    isDefault: isDefault,
-    providerCode: providerCode,
-    providerName: providerName,
-  );
+  }) =>
+      saveBeneficiary(
+        providerId: providerId,
+        meterNumber: meterNumber,
+        meterType: meterType,
+        customerName: customerName,
+        customerAddress: customerAddress,
+        phoneNumber: phoneNumber,
+        nickname: nickname,
+        isDefault: isDefault,
+        providerCode: providerCode,
+        providerName: providerName,
+      );
 
   Future<void> setDefaultBeneficiary(String beneficiaryId) async {
     if (isClosed) return;
@@ -143,7 +145,8 @@ class BeneficiaryCubit extends Cubit<BeneficiaryState> {
     if (isClosed) return;
     emit(BeneficiaryDeleting());
 
-    final result = await repository.deleteBeneficiary(beneficiaryId: beneficiaryId);
+    final result =
+        await repository.deleteBeneficiary(beneficiaryId: beneficiaryId);
 
     if (isClosed) return;
     result.fold(
@@ -162,8 +165,7 @@ class BeneficiaryCubit extends Cubit<BeneficiaryState> {
     if (isClosed) return;
     final current = state;
     if (current is! BeneficiariesLoaded) return;
-    final idx =
-        current.beneficiaries.indexWhere((b) => b.id == updated.id);
+    final idx = current.beneficiaries.indexWhere((b) => b.id == updated.id);
     if (idx < 0) return;
     final next = List<BillBeneficiaryEntity>.of(current.beneficiaries);
     next[idx] = updated;

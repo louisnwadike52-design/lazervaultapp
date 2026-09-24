@@ -46,8 +46,7 @@ class WaterReminderUpdated extends WaterReminderState {
 
 class WaterReminderCompleted extends WaterReminderState {
   final String message;
-  const WaterReminderCompleted(
-      {this.message = 'Reminder marked as complete'});
+  const WaterReminderCompleted({this.message = 'Reminder marked as complete'});
 
   @override
   List<Object?> get props => [message];

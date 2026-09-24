@@ -107,7 +107,8 @@ class _StockTradeFlowScreenState extends State<StockTradeFlowScreen> {
           : Scaffold(
               backgroundColor: InvestTradingUi.background,
               body: DecoratedBox(
-                decoration: BoxDecoration(gradient: InvestTradingUi.scaffoldGradient),
+                decoration:
+                    BoxDecoration(gradient: InvestTradingUi.scaffoldGradient),
                 child: SafeArea(
                   child: Stack(
                     children: [
@@ -163,7 +164,8 @@ class _StockTradeFlowScreenState extends State<StockTradeFlowScreen> {
                                   RegExp(r'[A-Za-z0-9.\-]'),
                                 ),
                               ],
-                              decoration: InvestTradingUi.tradingInputDecoration(
+                              decoration:
+                                  InvestTradingUi.tradingInputDecoration(
                                 hintText: 'e.g. AAPL',
                                 accentColor: accent,
                               ),
@@ -171,7 +173,8 @@ class _StockTradeFlowScreenState extends State<StockTradeFlowScreen> {
                             ),
                             SizedBox(height: 20.h),
                             FilledButton(
-                              onPressed: _loadingSymbol ? null : _onLookupSymbol,
+                              onPressed:
+                                  _loadingSymbol ? null : _onLookupSymbol,
                               style: FilledButton.styleFrom(
                                 padding: EdgeInsets.symmetric(vertical: 16.h),
                                 backgroundColor: accent,

@@ -16,7 +16,6 @@ import '../../../transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'education_payment_confirmation_screen_widgets.dart';
 
-
 class EducationPaymentConfirmationScreen extends StatefulWidget {
   const EducationPaymentConfirmationScreen({super.key});
 
@@ -26,8 +25,7 @@ class EducationPaymentConfirmationScreen extends StatefulWidget {
 }
 
 class _EducationPaymentConfirmationScreenState
-    extends State<EducationPaymentConfirmationScreen>
-    with TransactionPinMixin {
+    extends State<EducationPaymentConfirmationScreen> with TransactionPinMixin {
   late EducationProviderEntity _provider;
   late int _quantity;
   late String _phone;
@@ -100,7 +98,8 @@ class _EducationPaymentConfirmationScreenState
       amount: _totalAmount,
       currency: 'NGN',
       title: 'Confirm Purchase',
-      message: 'Confirm education purchase of \u20A6${_totalAmount.toStringAsFixed(0)}',
+      message:
+          'Confirm education purchase of \u20A6${_totalAmount.toStringAsFixed(0)}',
       onPinValidated: (token) async {
         verificationToken = token;
       },
@@ -276,7 +275,8 @@ class _EducationPaymentConfirmationScreenState
         children: [
           _buildDetailRow('Provider', _provider.name),
           _buildDivider(),
-          _buildDetailRow('Quantity', '$_quantity ${_quantity == 1 ? 'PIN' : 'PINs'}'),
+          _buildDetailRow(
+              'Quantity', '$_quantity ${_quantity == 1 ? 'PIN' : 'PINs'}'),
           _buildDivider(),
           _buildDetailRow('Phone Number', _phone),
           if (_billersCode != null && _billersCode!.isNotEmpty) ...[
@@ -284,7 +284,8 @@ class _EducationPaymentConfirmationScreenState
             _buildDetailRow('JAMB Profile Code', _billersCode!),
           ],
           _buildDivider(),
-          _buildDetailRow('Unit Price', '\u20A6${_formatAmount(_provider.amount)}'),
+          _buildDetailRow(
+              'Unit Price', '\u20A6${_formatAmount(_provider.amount)}'),
           _buildDivider(),
           _buildDetailRow(
             'Total Amount',
@@ -444,9 +445,11 @@ class _EducationPaymentConfirmationScreenState
           summaries = state.accountSummaries;
         }
 
-        final selected = summaries.where(
-          (a) => a.id == _selectedAccountId,
-        ).firstOrNull ??
+        final selected = summaries
+                .where(
+                  (a) => a.id == _selectedAccountId,
+                )
+                .firstOrNull ??
             (summaries.isNotEmpty ? summaries.first : null);
 
         return Column(
@@ -513,8 +516,7 @@ class _EducationPaymentConfirmationScreenState
                                 ),
                               )
                             : Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     selected.accountType,
@@ -552,9 +554,7 @@ class _EducationPaymentConfirmationScreenState
     // Prefer NGN matches first — education purchases are NGN-only on
     // the backend — but fall back to all so the user can still see
     // wallets even if none match (rare case).
-    final ngn = all
-        .where((a) => a.currency.toUpperCase() == 'NGN')
-        .toList();
+    final ngn = all.where((a) => a.currency.toUpperCase() == 'NGN').toList();
     final list = ngn.isNotEmpty ? ngn : all;
 
     showModalBottomSheet<void>(
@@ -625,9 +625,7 @@ class _EducationPaymentConfirmationScreenState
               : const Color(0xFF0A0A0A),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: selected
-                ? const Color(0xFF4E03D0)
-                : const Color(0xFF2D2D2D),
+            color: selected ? const Color(0xFF4E03D0) : const Color(0xFF2D2D2D),
             width: selected ? 1.5 : 1,
           ),
         ),

@@ -1,6 +1,7 @@
 import '../../domain/entities/provider_entity.dart';
 import 'package:lazervault/src/generated/electricity_bill.pb.dart' as pb;
-import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart' as $timestamp;
+import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart'
+    as $timestamp;
 
 class ElectricityProviderModel extends ElectricityProviderEntity {
   const ElectricityProviderModel({

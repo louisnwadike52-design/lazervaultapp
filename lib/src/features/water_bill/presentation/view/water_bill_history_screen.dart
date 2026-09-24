@@ -232,8 +232,7 @@ class _WaterBillHistoryScreenState extends State<WaterBillHistoryScreen> {
             GestureDetector(
               onTap: () => Get.back(),
               child: Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 32.w, vertical: 16.h),
+                padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 16.h),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -277,17 +276,15 @@ class _WaterBillHistoryScreenState extends State<WaterBillHistoryScreen> {
           size: 22.sp,
         ),
       ),
-      title: payment.providerName.isNotEmpty
-          ? payment.providerName
-          : 'Water Bill',
+      title:
+          payment.providerName.isNotEmpty ? payment.providerName : 'Water Bill',
       subtitle: payment.customerNumber.isNotEmpty
           ? payment.customerNumber
           : (payment.customerName.isNotEmpty
               ? payment.customerName
               : 'Account'),
       reference: payment.transactionReference,
-      date: DateFormat('MMM dd, yyyy • hh:mm a')
-          .format(payment.createdAt),
+      date: DateFormat('MMM dd, yyyy • hh:mm a').format(payment.createdAt),
       amount: payment.amount,
       // BillHistoryItem takes a String status (same chip contract
       // airtime/data pass). Use the enum's name — the widget lowercases

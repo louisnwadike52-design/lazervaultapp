@@ -41,9 +41,10 @@ Future<bool> ensureVerifiedForBankLink(BuildContext context) async {
   }
 
   try {
-    final status = await ProveKycHttpService(serviceLocator<SecureStorageService>())
-        .status()
-        .timeout(const Duration(seconds: 8));
+    final status =
+        await ProveKycHttpService(serviceLocator<SecureStorageService>())
+            .status()
+            .timeout(const Duration(seconds: 8));
     if (!context.mounted) {
       hideLoader();
       return false;
@@ -159,7 +160,9 @@ Future<DepositGateResult> ensureDepositReady(
     hideLoader();
     final number = minted?.accountNumber ?? '';
     return DepositGateResult(
-      number.isNotEmpty ? DepositReadiness.ready : DepositReadiness.provisioning,
+      number.isNotEmpty
+          ? DepositReadiness.ready
+          : DepositReadiness.provisioning,
       mintedAccountNumber: number.isNotEmpty ? number : null,
       mintedAccountName: number.isNotEmpty ? minted?.accountName : null,
       mintedBankName: number.isNotEmpty ? minted?.bankName : null,
@@ -184,7 +187,8 @@ Future<bool> ensureVirtualAccountForLink(BuildContext context) async {
   bool hasVirtualAccount = false;
   try {
     final userId =
-        (await serviceLocator<SecureStorageService>().getUserId())?.trim() ?? '';
+        (await serviceLocator<SecureStorageService>().getUserId())?.trim() ??
+            '';
     if (userId.isNotEmpty) {
       final res = await serviceLocator<GetAccountSummariesUseCase>()
           .call(userId: userId, country: 'NG');
@@ -272,7 +276,8 @@ class _AccountSetupModal extends StatelessWidget {
       canPop: false, // can't be dismissed while provisioning is in flight
       child: Dialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.r)),
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 28.h),
           child: Column(
@@ -299,7 +304,9 @@ class _AccountSetupModal extends StatelessWidget {
                 'please don\'t close this screen.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF), fontSize: 13.sp, height: 1.45),
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 13.sp,
+                    height: 1.45),
               ),
             ],
           ),

@@ -16,4 +16,4 @@ class ProfileEntity extends Equatable {
 
   @override
   List<Object?> get props => [user, session];
-} 
+}

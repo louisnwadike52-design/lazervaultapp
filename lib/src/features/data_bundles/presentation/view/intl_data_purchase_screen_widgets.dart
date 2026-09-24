@@ -123,10 +123,9 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                         final isSelected = c.code == widget.selectedCode;
                         return ListTile(
                           onTap: () => Navigator.of(ctx).pop(c),
-                          contentPadding:
-                              EdgeInsets.symmetric(horizontal: 4.w),
-                          leading: Text(c.flag,
-                              style: TextStyle(fontSize: 24.sp)),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 4.w),
+                          leading:
+                              Text(c.flag, style: TextStyle(fontSize: 24.sp)),
                           title: Text(
                             c.name,
                             style: TextStyle(

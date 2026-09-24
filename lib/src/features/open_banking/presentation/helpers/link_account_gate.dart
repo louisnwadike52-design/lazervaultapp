@@ -23,7 +23,8 @@ import 'package:lazervault/src/features/kyc/data/services/prove_kyc_http_service
 /// (`_showRefreshFeeInsufficientDialog`): dark card, brand-purple accent,
 /// rounded 20.r, icon disc + title + body + a single full-width action.
 
-const Color _kBrand = Color(0xFF4E03D0); // app primary purple (AppColors.backgroundColor)
+const Color _kBrand =
+    Color(0xFF4E03D0); // app primary purple (AppColors.backgroundColor)
 const Color _kCard = Color(0xFF1B1626); // dark modal surface
 
 /// The backend error code returned by LinkBankAccount when a user is already at
@@ -130,8 +131,8 @@ void showPersonalAccountOnlyLinkDialog(BuildContext context) {
                 elevation: 0,
               ),
               child: Text('Got it',
-                  style:
-                      TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
+                  style: TextStyle(
+                      fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
             ),
           ),
         ]),
@@ -231,8 +232,8 @@ Future<void> _showVerifyIdentityDialog(BuildContext context, String operation) {
                 elevation: 0,
               ),
               child: Text('Verify now',
-                  style:
-                      TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
+                  style: TextStyle(
+                      fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
             ),
           ),
           SizedBox(height: 8.h),
@@ -244,8 +245,8 @@ Future<void> _showVerifyIdentityDialog(BuildContext context, String operation) {
                   foregroundColor: Colors.white.withValues(alpha: 0.7),
                   padding: EdgeInsets.symmetric(vertical: 11.h)),
               child: Text('Not now',
-                  style:
-                      TextStyle(fontSize: 13.5.sp, fontWeight: FontWeight.w600)),
+                  style: TextStyle(
+                      fontSize: 13.5.sp, fontWeight: FontWeight.w600)),
             ),
           ),
         ]),
@@ -256,9 +257,7 @@ Future<void> _showVerifyIdentityDialog(BuildContext context, String operation) {
 
 /// One alternative-method row inside [showPersonalAccountOnlyLinkDialog].
 Widget _altRow(
-    {required IconData icon,
-    required String title,
-    required String subtitle}) {
+    {required IconData icon, required String title, required String subtitle}) {
   return Row(children: [
     Container(
       width: 38.w,
@@ -267,7 +266,8 @@ Widget _altRow(
         shape: BoxShape.circle,
         color: Colors.white.withValues(alpha: 0.06),
       ),
-      child: Icon(icon, color: Colors.white.withValues(alpha: 0.85), size: 19.sp),
+      child:
+          Icon(icon, color: Colors.white.withValues(alpha: 0.85), size: 19.sp),
     ),
     SizedBox(width: 12.w),
     Expanded(
@@ -324,7 +324,8 @@ Future<void> showLinkLimitReachedDialog(BuildContext context, String message) {
               shape: BoxShape.circle,
               color: warn.withValues(alpha: 0.16),
             ),
-            child: Icon(Icons.account_balance_rounded, color: warn, size: 26.sp),
+            child:
+                Icon(Icons.account_balance_rounded, color: warn, size: 26.sp),
           ),
           SizedBox(height: 14.h),
           Text('Linked-bank limit reached',
@@ -369,8 +370,8 @@ Future<void> showLinkLimitReachedDialog(BuildContext context, String message) {
                 elevation: 0,
               ),
               child: Text('Manage linked banks',
-                  style:
-                      TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
+                  style: TextStyle(
+                      fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
             ),
           ),
           SizedBox(height: 8.h),
@@ -383,8 +384,8 @@ Future<void> showLinkLimitReachedDialog(BuildContext context, String message) {
                 padding: EdgeInsets.symmetric(vertical: 11.h),
               ),
               child: Text('Not now',
-                  style:
-                      TextStyle(fontSize: 13.5.sp, fontWeight: FontWeight.w600)),
+                  style: TextStyle(
+                      fontSize: 13.5.sp, fontWeight: FontWeight.w600)),
             ),
           ),
         ]),
@@ -477,8 +478,8 @@ Future<void> showServiceUnavailableDialog(
                 elevation: 0,
               ),
               child: Text(onRetry != null ? 'Try again' : 'Got it',
-                  style:
-                      TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
+                  style: TextStyle(
+                      fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
             ),
           ),
           if (onRetry != null) ...[
@@ -589,8 +590,8 @@ Future<void> showLinkingCapacityDialog(BuildContext context) {
                 elevation: 0,
               ),
               child: Text('Got it',
-                  style:
-                      TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
+                  style: TextStyle(
+                      fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
             ),
           ),
         ]),

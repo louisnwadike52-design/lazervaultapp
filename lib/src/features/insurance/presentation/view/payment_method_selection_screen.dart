@@ -183,7 +183,8 @@ class _PaymentMethodSelectionScreenState
           SizedBox(height: 16.h),
           _buildSummaryRow('Provider', widget.insurance.provider),
           SizedBox(height: 8.h),
-          _buildSummaryRow('Coverage', '\$${widget.insurance.coverageAmount.toStringAsFixed(2)}'),
+          _buildSummaryRow('Coverage',
+              '\$${widget.insurance.coverageAmount.toStringAsFixed(2)}'),
           SizedBox(height: 16.h),
           Divider(color: Colors.white.withValues(alpha: 0.3), height: 1),
           SizedBox(height: 16.h),
@@ -334,7 +335,10 @@ class _PaymentMethodSelectionScreenState
             decoration: BoxDecoration(
               gradient: _selectedMethod != null
                   ? const LinearGradient(
-                      colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                      colors: [
+                        Color(0xFF6366F1),
+                        Color.fromARGB(255, 78, 3, 208)
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     )
@@ -386,9 +390,8 @@ class _PaymentMethodSelectionScreenState
     // Create payment entity
     final payment = InsurancePayment(
       id: const Uuid().v4(),
-      insuranceId: widget.insurance.id.isEmpty
-          ? const Uuid().v4()
-          : widget.insurance.id,
+      insuranceId:
+          widget.insurance.id.isEmpty ? const Uuid().v4() : widget.insurance.id,
       policyNumber: widget.insurance.policyNumber,
       amount: widget.insurance.premiumAmount,
       currency: widget.insurance.currency,
@@ -400,7 +403,8 @@ class _PaymentMethodSelectionScreenState
       referenceNumber: 'PAY-${DateTime.now().millisecondsSinceEpoch}',
       transactionId: '',
       paymentDetails: {
-        'description': 'Premium payment for ${widget.insurance.type.displayName}',
+        'description':
+            'Premium payment for ${widget.insurance.type.displayName}',
       },
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),

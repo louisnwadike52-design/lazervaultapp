@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 part 'qr_scan_confirmation_sheet_widgets.dart';
 
-
 class QrScanConfirmationSheet extends StatefulWidget {
   final UserSearchResultEntity user;
   final int? requestedAmount;

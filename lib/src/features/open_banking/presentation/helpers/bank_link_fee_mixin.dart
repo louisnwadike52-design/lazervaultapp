@@ -81,8 +81,7 @@ Future<T> runWithLinkProgress<T>(
               // second line instead of running off the edge.
               constraints: BoxConstraints(maxWidth: 0.72.sw),
               child: Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(16.r),
@@ -121,7 +120,8 @@ Future<T> runWithLinkProgress<T>(
   } finally {
     // Let the dialog's first frame land before popping it, otherwise a fast
     // task can try to dismiss a route that hasn't been pushed yet.
-    if (!dialogShown) await Future<void>.delayed(const Duration(milliseconds: 16));
+    if (!dialogShown)
+      await Future<void>.delayed(const Duration(milliseconds: 16));
     if (navigator.canPop()) navigator.pop();
   }
 }
@@ -284,8 +284,7 @@ Future<bool> showDepositFeeAgreementSheet(
           ),
           SizedBox(height: 4.h),
           Text('Here\'s what applies before we continue.',
-              style:
-                  GoogleFonts.inter(color: textSecondary, fontSize: 12.sp)),
+              style: GoogleFonts.inter(color: textSecondary, fontSize: 12.sp)),
           SizedBox(height: 12.h),
           // Connection fee — only for a first-time link. Rows show the
           // UNDISCOUNTED amount (total + discount) so together with the green
@@ -343,8 +342,8 @@ Future<bool> showDepositFeeAgreementSheet(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('You\'ll receive',
-                    style:
-                        GoogleFonts.inter(color: textSecondary, fontSize: 12.sp)),
+                    style: GoogleFonts.inter(
+                        color: textSecondary, fontSize: 12.sp)),
                 Text(_formatKobo(quote.netAmount),
                     style: GoogleFonts.inter(
                         color: const Color(0xFF10B981),
@@ -407,7 +406,9 @@ Future<bool> showDepositFeeAgreementSheet(
 /// (auto-mandate, set-as-default) inside [doLink].
 Future<void> linkBankWithConnectionNotice({
   required BuildContext context,
-  required Future<void> Function(String? verificationToken, String? transactionId) doLink,
+  required Future<void> Function(
+          String? verificationToken, String? transactionId)
+      doLink,
 }) async {
   // The virtual-account gate + fee notice both live inside
   // showBankConnectionFeeNotice now (the universal chokepoint), so callers get
@@ -422,7 +423,9 @@ Future<void> linkBankWithConnectionNotice({
 mixin BankLinkFeeMixin<T extends StatefulWidget> on State<T> {
   Future<void> linkBankWithFee({
     required BuildContext context,
-    required Future<void> Function(String? verificationToken, String? transactionId) doLink,
+    required Future<void> Function(
+            String? verificationToken, String? transactionId)
+        doLink,
   }) =>
       linkBankWithConnectionNotice(context: context, doLink: doLink);
 }

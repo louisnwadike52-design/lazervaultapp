@@ -202,13 +202,15 @@ class VoiceWebSocketManager {
 
   Duration _calculateReconnectDelay() {
     // Exponential backoff: 2s, 4s, 8s, 16s, 32s, 60s (max)
-    final exponentialDelay = _initialReconnectDelay * (1 << (_reconnectAttempts - 1));
+    final exponentialDelay =
+        _initialReconnectDelay * (1 << (_reconnectAttempts - 1));
     final cappedDelay = exponentialDelay > _maxReconnectDelay
         ? _maxReconnectDelay
         : exponentialDelay;
 
     // Edge case: Add jitter to prevent thundering herd
-    final jitter = Duration(milliseconds: (cappedDelay.inMilliseconds * 0.1).round());
+    final jitter =
+        Duration(milliseconds: (cappedDelay.inMilliseconds * 0.1).round());
     return cappedDelay + jitter;
   }
 
@@ -218,7 +220,8 @@ class VoiceWebSocketManager {
       if (_isConnected && _channel != null) {
         try {
           // Send ping to keep connection alive
-          _channel!.sink.add(jsonEncode({'type': 'ping', 'timestamp': DateTime.now().toIso8601String()}));
+          _channel!.sink.add(jsonEncode(
+              {'type': 'ping', 'timestamp': DateTime.now().toIso8601String()}));
         } catch (e) {
           onError?.call('Heartbeat failed: $e');
           _isConnected = false;
@@ -233,7 +236,8 @@ class VoiceWebSocketManager {
     _staleConnectionTimer = Timer(_staleConnectionTimeout, () {
       // Edge case: No messages received in 90 seconds - connection might be stale
       if (_isConnected) {
-        onError?.call('Connection appears stale (no messages in ${_staleConnectionTimeout.inSeconds}s)');
+        onError?.call(
+            'Connection appears stale (no messages in ${_staleConnectionTimeout.inSeconds}s)');
         _isConnected = false;
         _scheduleReconnect();
       }

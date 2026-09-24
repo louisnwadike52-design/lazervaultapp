@@ -91,7 +91,8 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
 class ErrorCapturingWidget extends SingleChildRenderObjectWidget {
   final void Function(Object error, StackTrace? stackTrace) onError;
 
-  const ErrorCapturingWidget({super.key, 
+  const ErrorCapturingWidget({
+    super.key,
     super.child,
     required this.onError,
   });
@@ -299,9 +300,9 @@ class ErrorBoundaryObserver extends WidgetsBindingObserver {
   /// End measuring performance
   void endPerformanceMeasure(String name) {
     final metric = metrics.cast<PerformanceMetric?>().firstWhere(
-      (m) => m?.name == name,
-      orElse: () => null,
-    );
+          (m) => m?.name == name,
+          orElse: () => null,
+        );
 
     if (metric != null) {
       final duration = DateTime.now().difference(metric.startTime);

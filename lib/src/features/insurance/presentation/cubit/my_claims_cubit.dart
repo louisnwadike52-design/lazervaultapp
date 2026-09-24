@@ -223,7 +223,9 @@ class MyClaimsCubit extends Cubit<MyClaimsState> {
 
   String _friendlyError(Object e) {
     final m = e.toString().toLowerCase();
-    if (m.contains('connection') || m.contains('unavailable') || m.contains('socket')) {
+    if (m.contains('connection') ||
+        m.contains('unavailable') ||
+        m.contains('socket')) {
       return 'Unable to connect. Please check your connection and try again.';
     }
     if (m.contains('timeout') || m.contains('deadline')) {

@@ -34,13 +34,12 @@ class PortfolioSummaryCard extends StatelessWidget {
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
+          ],
         ),
         child: Column(
           children: [
@@ -187,8 +186,9 @@ class PortfolioSummaryCard extends StatelessWidget {
   }
 
   Widget _buildHoldingItem(CryptoHolding holding) {
-    final percentage = totalValue > 0 ? (holding.totalValue / totalValue) * 100 : 0.0;
-    
+    final percentage =
+        totalValue > 0 ? (holding.totalValue / totalValue) * 100 : 0.0;
+
     return Padding(
       padding: EdgeInsets.only(bottom: 8.h),
       child: Row(
@@ -258,4 +258,4 @@ class PortfolioSummaryCard extends StatelessWidget {
       ),
     );
   }
-} 
+}

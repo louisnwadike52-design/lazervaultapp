@@ -33,7 +33,9 @@ class _ServiceTransactionHistoryScreenState
   @override
   void initState() {
     super.initState();
-    context.read<TransactionHistoryCubit>().loadServiceTransactions(widget.serviceType);
+    context
+        .read<TransactionHistoryCubit>()
+        .loadServiceTransactions(widget.serviceType);
     _scrollController.addListener(_onScroll);
   }
 
@@ -60,7 +62,9 @@ class _ServiceTransactionHistoryScreenState
     setState(() => _selectedStatus = status);
 
     if (status == null) {
-      context.read<TransactionHistoryCubit>().loadServiceTransactions(widget.serviceType);
+      context
+          .read<TransactionHistoryCubit>()
+          .loadServiceTransactions(widget.serviceType);
     } else {
       final filters = TransactionFilters(statuses: [status]);
       context
@@ -77,7 +81,8 @@ class _ServiceTransactionHistoryScreenState
       List<UnifiedTransaction> transactions) {
     final grouped = <DateTime, List<UnifiedTransaction>>{};
     for (var tx in transactions) {
-      final date = DateTime(tx.createdAt.year, tx.createdAt.month, tx.createdAt.day);
+      final date =
+          DateTime(tx.createdAt.year, tx.createdAt.month, tx.createdAt.day);
       (grouped[date] ??= []).add(tx);
     }
     return Map.fromEntries(
@@ -100,7 +105,8 @@ class _ServiceTransactionHistoryScreenState
             ),
             SizedBox(height: 8.h),
             Expanded(
-              child: BlocBuilder<TransactionHistoryCubit, TransactionHistoryState>(
+              child:
+                  BlocBuilder<TransactionHistoryCubit, TransactionHistoryState>(
                 builder: (context, state) {
                   if (state is TransactionHistoryLoading) {
                     return const TransactionInitialLoading();
@@ -182,7 +188,8 @@ class _ServiceTransactionHistoryScreenState
     final grouped = _groupByDate(transactions);
 
     return RefreshIndicator(
-      onRefresh: () => context.read<TransactionHistoryCubit>().refreshTransactions(),
+      onRefresh: () =>
+          context.read<TransactionHistoryCubit>().refreshTransactions(),
       backgroundColor: const Color(0xFF1F1F1F),
       color: const Color(0xFF581CD9),
       child: ListView.builder(

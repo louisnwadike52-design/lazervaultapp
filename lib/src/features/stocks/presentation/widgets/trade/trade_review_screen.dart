@@ -172,7 +172,8 @@ class TradeReviewScreen extends StatelessWidget {
                     stock.currentPrice, stock.currency),
                 valueColor: InvestTradingUi.textPrimary,
               ),
-            if (orderType == OrderType.limit || orderType == OrderType.stopLimit) ...[
+            if (orderType == OrderType.limit ||
+                orderType == OrderType.stopLimit) ...[
               _buildDetailRow(
                 'Limit price',
                 limitPrice != null
@@ -183,7 +184,8 @@ class TradeReviewScreen extends StatelessWidget {
               ),
               _buildDivider(),
             ],
-            if (orderType == OrderType.stopLoss || orderType == OrderType.stopLimit) ...[
+            if (orderType == OrderType.stopLoss ||
+                orderType == OrderType.stopLimit) ...[
               _buildDetailRow(
                 'Stop price',
                 stopPrice != null
@@ -196,18 +198,21 @@ class TradeReviewScreen extends StatelessWidget {
             ],
             _buildDetailRow(
               'Execution price',
-              CurrencySymbols.formatAmountWithCurrency(_executionPrice, stock.currency),
+              CurrencySymbols.formatAmountWithCurrency(
+                  _executionPrice, stock.currency),
               valueColor: accent,
             ),
             _buildDivider(),
             _buildDetailRow(
               'Subtotal',
-              CurrencySymbols.formatAmountWithCurrency(_estimatedTotal, stock.currency),
+              CurrencySymbols.formatAmountWithCurrency(
+                  _estimatedTotal, stock.currency),
             ),
             _buildDivider(),
             _buildDetailRow(
               'Est. Fees',
-              CurrencySymbols.formatAmountWithCurrency(_estimatedFees, stock.currency),
+              CurrencySymbols.formatAmountWithCurrency(
+                  _estimatedFees, stock.currency),
               labelColor: Colors.grey[500],
             ),
           ]),
@@ -390,7 +395,8 @@ class TradeReviewScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoBox(IconData icon, String title, String message, Color color) {
+  Widget _buildInfoBox(
+      IconData icon, String title, String message, Color color) {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(

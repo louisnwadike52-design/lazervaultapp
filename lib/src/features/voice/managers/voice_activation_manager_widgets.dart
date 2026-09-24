@@ -114,5 +114,6 @@ class _EnrollmentCacheEntry {
   final DateTime fetchedAt;
   _EnrollmentCacheEntry(this.isEnrolled) : fetchedAt = DateTime.now();
   bool get isExpired =>
-      DateTime.now().difference(fetchedAt) > VoiceActivationManager._enrollmentTtl;
+      DateTime.now().difference(fetchedAt) >
+      VoiceActivationManager._enrollmentTtl;
 }

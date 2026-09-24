@@ -116,8 +116,7 @@ class AiScanHistoryStore {
       if (decoded is! List) return [];
       return decoded
           .whereType<Map>()
-          .map((m) =>
-              AiScanHistoryEntry.fromJson(Map<String, dynamic>.from(m)))
+          .map((m) => AiScanHistoryEntry.fromJson(Map<String, dynamic>.from(m)))
           .toList();
     } catch (_) {
       return [];
@@ -178,7 +177,8 @@ class AiScanHistoryStore {
     entries[idx] = AiScanHistoryEntry(
       id: old.id,
       createdAt: old.createdAt,
-      title: receipt.recipientName.isNotEmpty ? receipt.recipientName : old.title,
+      title:
+          receipt.recipientName.isNotEmpty ? receipt.recipientName : old.title,
       subtitle: old.subtitle,
       typeName: old.typeName,
       amount: receipt.amount,

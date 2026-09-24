@@ -6,7 +6,6 @@ import 'package:lazervault/core/utils/api_headers.dart';
 import 'package:lazervault/src/features/recipients/data/services/bank_scan_upload_service.dart';
 part 'bank_scan_datasource_widgets.dart';
 
-
 /// Data source for smart OCR scanning via Chat Agent Gateway.
 ///
 /// New 3-step pipeline (replaces the old inline base64 POST):
@@ -77,7 +76,8 @@ class BankScanDataSource {
     }
 
     if (bytes.isEmpty) {
-      throw BankScanException('Image file is empty. Please capture a new photo.');
+      throw BankScanException(
+          'Image file is empty. Please capture a new photo.');
     }
 
     if (bytes.length > 10 * 1024 * 1024) {
@@ -208,7 +208,8 @@ class BankScanDataSource {
 
       final responseData = response.data;
       if (responseData is! Map<String, dynamic>) {
-        throw BankScanException('Unexpected server response. Please try again.');
+        throw BankScanException(
+            'Unexpected server response. Please try again.');
       }
 
       final rawScans = responseData['scans'];

@@ -48,7 +48,8 @@ class PortfolioLoaded extends PortfolioState {
   }
 
   @override
-  List<Object?> get props => [portfolio, history, historyPeriod, historyLoading];
+  List<Object?> get props =>
+      [portfolio, history, historyPeriod, historyLoading];
 }
 
 /// Portfolio summary loaded

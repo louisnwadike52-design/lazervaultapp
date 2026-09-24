@@ -168,108 +168,108 @@ class _BillsHubScreenState extends State<BillsHubScreen> {
         if (!didPop) Get.offAllNamed(AppRoutes.dashboard);
       },
       child: Scaffold(
-      backgroundColor: InvoiceThemeColors.primaryBackground,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
-          icon: Container(
-            padding: EdgeInsets.all(8.w),
-            decoration: const BoxDecoration(
-              color: InvoiceThemeColors.secondaryBackground,
-              shape: BoxShape.circle,
+        backgroundColor: InvoiceThemeColors.primaryBackground,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
+            icon: Container(
+              padding: EdgeInsets.all(8.w),
+              decoration: const BoxDecoration(
+                color: InvoiceThemeColors.secondaryBackground,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20.sp,
+              ),
             ),
-            child: Icon(
-              Icons.arrow_back,
+          ),
+          title: Text(
+            'Bills Hub',
+            style: GoogleFonts.inter(
               color: Colors.white,
-              size: 20.sp,
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w700,
             ),
           ),
+          centerTitle: true,
+          actions: [
+            // Chat icon — Utility Payments chat microservice (commerce chat agent).
+            Padding(
+              padding: EdgeInsets.only(right: 8.w),
+              child: MicroserviceChatIcon(
+                serviceName: 'Utility Payments',
+                sourceContext: 'bills',
+                icon: Icons.chat_bubble_outline,
+                iconColor: InvoiceThemeColors.primaryPurple,
+                iconSize: 20,
+                size: 40,
+              ),
+            ),
+            // Voice icon — routes to the 'bills' voice agent.
+            Padding(
+              padding: EdgeInsets.only(right: 12.w),
+              child: ServiceVoiceButton(
+                serviceName: 'bills',
+                iconColor: InvoiceThemeColors.primaryPurple,
+                backgroundColor: InvoiceThemeColors.primaryPurple,
+                buttonSize: 40.w,
+                iconSize: 20.sp,
+              ),
+            ),
+          ],
         ),
-        title: Text(
-          'Bills Hub',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          // Chat icon — Utility Payments chat microservice (commerce chat agent).
-          Padding(
-            padding: EdgeInsets.only(right: 8.w),
-            child: MicroserviceChatIcon(
-              serviceName: 'Utility Payments',
-              sourceContext: 'bills',
-              icon: Icons.chat_bubble_outline,
-              iconColor: InvoiceThemeColors.primaryPurple,
-              iconSize: 20,
-              size: 40,
-            ),
-          ),
-          // Voice icon — routes to the 'bills' voice agent.
-          Padding(
-            padding: EdgeInsets.only(right: 12.w),
-            child: ServiceVoiceButton(
-              serviceName: 'bills',
-              iconColor: InvoiceThemeColors.primaryPurple,
-              backgroundColor: InvoiceThemeColors.primaryPurple,
-              buttonSize: 40.w,
-              iconSize: 20.sp,
-            ),
-          ),
-        ],
-      ),
-      body: ServiceEntranceAnimation(
-        child: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(20.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeaderCard(),
-              SizedBox(height: 16.h),
-              if (_loading)
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 48.h),
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        InvoiceThemeColors.primaryPurple,
+        body: ServiceEntranceAnimation(
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(20.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeaderCard(),
+                  SizedBox(height: 16.h),
+                  if (_loading)
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 48.h),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            InvoiceThemeColors.primaryPurple,
+                          ),
+                        ),
                       ),
+                    )
+                  else
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12.w,
+                        mainAxisSpacing: 12.h,
+                        // Compact tiles so bill types fit on screen at a glance.
+                        childAspectRatio: 1.18,
+                      ),
+                      itemCount: bills.length,
+                      itemBuilder: (context, index) {
+                        final b = bills[index];
+                        return _BillTile(
+                          icon: b.icon,
+                          title: b.title,
+                          description: b.description,
+                          onTap: () => Get.toNamed(b.route),
+                        );
+                      },
                     ),
-                  ),
-                )
-              else
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 12.w,
-                    mainAxisSpacing: 12.h,
-                    // Compact tiles so bill types fit on screen at a glance.
-                    childAspectRatio: 1.18,
-                  ),
-                  itemCount: bills.length,
-                  itemBuilder: (context, index) {
-                    final b = bills[index];
-                    return _BillTile(
-                      icon: b.icon,
-                      title: b.title,
-                      description: b.description,
-                      onTap: () => Get.toNamed(b.route),
-                    );
-                  },
-                ),
-            ],
+                ],
+              ),
+            ),
           ),
         ),
-      ),
-      ),
       ),
     );
   }
@@ -289,8 +289,7 @@ class _BillsHubScreenState extends State<BillsHubScreen> {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color:
-                InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
+            color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -423,10 +422,8 @@ class _BillTileState extends State<_BillTile> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    InvoiceThemeColors.primaryPurple
-                        .withValues(alpha: 0.2),
-                    InvoiceThemeColors.primaryPurple
-                        .withValues(alpha: 0.1),
+                    InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
+                    InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
                   ],
                 ),
                 shape: BoxShape.circle,

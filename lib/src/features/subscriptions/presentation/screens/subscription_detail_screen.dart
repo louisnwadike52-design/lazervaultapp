@@ -186,7 +186,8 @@ class _DetailView extends StatelessWidget {
           _buildDivider(),
           _buildDetailRow('Amount', _formatAmount(subscription.amount)),
           _buildDivider(),
-          _buildDetailRow('Purchased', _formatDateTime(subscription.purchasedAt)),
+          _buildDetailRow(
+              'Purchased', _formatDateTime(subscription.purchasedAt)),
           if (subscription.hasExpiry) ...[
             _buildDivider(),
             _buildDetailRow(

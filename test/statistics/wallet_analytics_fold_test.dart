@@ -65,7 +65,8 @@ void main() {
       expect(r.incomeChangePercent, closeTo(0, 0.0001));
     });
 
-    test('a zero previous period reports 100 percent rather than dividing by zero',
+    test(
+        'a zero previous period reports 100 percent rather than dividing by zero',
         () {
       final r = WalletAnalyticsFold.financial([
         financial(income: 500, expenses: 0, prevIncome: 0),
@@ -92,7 +93,8 @@ void main() {
       final r = WalletAnalyticsFold.categories([
         pb.GetCategoryAnalyticsResponse()
           ..totalExpenses = 300
-          ..expenseCategories.addAll([cat('Transfers', 200), cat('Airtime', 100)]),
+          ..expenseCategories
+              .addAll([cat('Transfers', 200), cat('Airtime', 100)]),
         pb.GetCategoryAnalyticsResponse()
           ..totalExpenses = 100
           ..expenseCategories.add(cat('Transfers', 100, count: 2)),
@@ -143,12 +145,14 @@ void main() {
         pb.GetCategoryAnalyticsResponse()
           ..totalExpenses = 100
           ..expenseCategories.add(cat('Bills & Utilities', 100, subs: [
-            pb.SubCategoryItem(name: 'Airtime', amount: 100, transactionCount: 1),
+            pb.SubCategoryItem(
+                name: 'Airtime', amount: 100, transactionCount: 1),
           ])),
         pb.GetCategoryAnalyticsResponse()
           ..totalExpenses = 100
           ..expenseCategories.add(cat('Bills & Utilities', 100, subs: [
-            pb.SubCategoryItem(name: 'Airtime', amount: 40, transactionCount: 1),
+            pb.SubCategoryItem(
+                name: 'Airtime', amount: 40, transactionCount: 1),
             pb.SubCategoryItem(name: 'Data', amount: 60, transactionCount: 1),
           ])),
       ]);
@@ -169,8 +173,7 @@ void main() {
       final r = WalletAnalyticsFold.categories([
         pb.GetCategoryAnalyticsResponse()
           ..totalExpenses = 600
-          ..expenseCategories
-              .addAll([cat('Small', 100), cat('Big', 500)]),
+          ..expenseCategories.addAll([cat('Small', 100), cat('Big', 500)]),
       ]);
       expect(r.expenseCategories.first.categoryName, 'Big');
     });
@@ -186,7 +189,8 @@ void main() {
             pb.DailyExpensePoint(date: '2026-09-02', amount: 50),
           ]),
         pb.GetExpenseTimeSeriesResponse()
-          ..dataPoints.add(pb.DailyExpensePoint(date: '2026-09-01', amount: 25)),
+          ..dataPoints
+              .add(pb.DailyExpensePoint(date: '2026-09-01', amount: 25)),
       ]);
 
       expect(r.dataPoints.length, 2);
@@ -203,8 +207,8 @@ void main() {
             pb.DailyExpensePoint(date: '2026-09-01', amount: 1),
           ]),
       ]);
-      expect([for (final p in r.dataPoints) p.date],
-          ['2026-09-01', '2026-09-03']);
+      expect(
+          [for (final p in r.dataPoints) p.date], ['2026-09-01', '2026-09-03']);
     });
 
     test('daily average divides by days with data, not by the window', () {

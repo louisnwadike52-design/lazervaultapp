@@ -49,7 +49,8 @@ class UpdateBanner extends StatelessWidget {
                 style: TextButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),

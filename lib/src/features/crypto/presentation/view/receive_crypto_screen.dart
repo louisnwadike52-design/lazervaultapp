@@ -67,7 +67,9 @@ class _ReceiveCryptoScreenState extends State<ReceiveCryptoScreen> {
       // Default network = the row flagged is_default OR the first one.
       final defaultNet = _networks.firstWhere(
         (n) => n.isDefault,
-        orElse: () => _networks.isNotEmpty ? _networks.first : QuidaxAssetNetwork.create(),
+        orElse: () => _networks.isNotEmpty
+            ? _networks.first
+            : QuidaxAssetNetwork.create(),
       );
       _selectedNetwork = defaultNet.network.isEmpty ? null : defaultNet.network;
       _minDeposit = defaultNet.minDepositDecimal;
@@ -239,8 +241,8 @@ class _ReceiveCryptoScreenState extends State<ReceiveCryptoScreen> {
     if (_networks.isEmpty) {
       return Text(
         'No networks configured for this asset yet. Contact support.',
-        style: GoogleFonts.inter(
-            color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+        style:
+            GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
       );
     }
     // Opens the shared picker (deposit-enabled networks) instead of a raw
@@ -263,8 +265,8 @@ class _ReceiveCryptoScreenState extends State<ReceiveCryptoScreen> {
               Expanded(
                 child: Text(
                   label,
-                  style: GoogleFonts.inter(
-                      color: Colors.white, fontSize: 14.sp),
+                  style:
+                      GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
                 ),
               ),
               Icon(Icons.keyboard_arrow_down_rounded,
@@ -348,7 +350,8 @@ class _ReceiveCryptoScreenState extends State<ReceiveCryptoScreen> {
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
                     color: const Color(0xFFFB923C).withValues(alpha: 0.15),
-                    border: Border.all(color: const Color(0xFFFB923C), width: 1),
+                    border:
+                        Border.all(color: const Color(0xFFFB923C), width: 1),
                     borderRadius: BorderRadius.circular(8.r)),
                 child: Column(children: [
                   Text('Destination tag (required)',
@@ -389,8 +392,7 @@ class _ReceiveCryptoScreenState extends State<ReceiveCryptoScreen> {
             border: Border.all(
                 color: const Color(0xFFFB923C).withValues(alpha: 0.5))),
         child: Row(children: [
-          Icon(Icons.info_outline,
-              color: const Color(0xFFFB923C), size: 18.sp),
+          Icon(Icons.info_outline, color: const Color(0xFFFB923C), size: 18.sp),
           SizedBox(width: 8.w),
           Expanded(
             child: Text(

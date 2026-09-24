@@ -69,7 +69,8 @@ class _UpdateModalContent extends StatelessWidget {
                   color: primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.system_update, color: primary, size: 24),
+                child:
+                    const Icon(Icons.system_update, color: primary, size: 24),
               ),
               const SizedBox(width: 14),
               Expanded(

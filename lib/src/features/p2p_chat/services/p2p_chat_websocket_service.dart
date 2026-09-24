@@ -10,7 +10,6 @@ import 'package:lazervault/src/features/p2p_chat/data/models/p2p_message_model.d
 import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_message_entity.dart';
 part 'p2p_chat_websocket_service_widgets.dart';
 
-
 /// WebSocket service for real-time P2P chat messaging.
 class P2PChatWebSocketService {
   WebSocketChannel? _channel;
@@ -24,8 +23,7 @@ class P2PChatWebSocketService {
       StreamController<P2PChatConnectionState>.broadcast();
   final _connectionAcceptedStream =
       StreamController<Map<String, dynamic>>.broadcast();
-  final _serverErrorStream =
-      StreamController<Map<String, dynamic>>.broadcast();
+  final _serverErrorStream = StreamController<Map<String, dynamic>>.broadcast();
   final _editedStream = StreamController<P2PMessageModel>.broadcast();
   final _reactionStream = StreamController<P2PReactionEvent>.broadcast();
   final _emojiStreamCtrl = StreamController<P2PEmojiStreamEvent>.broadcast();
@@ -279,8 +277,7 @@ class P2PChatWebSocketService {
                   messageId: payload['message_id'] as String? ?? '',
                   clientMessageId:
                       payload['client_message_id'] as String? ?? '',
-                  conversationId:
-                      payload['conversation_id'] as String? ?? '',
+                  conversationId: payload['conversation_id'] as String? ?? '',
                   createdAt: payload['created_at'] as String? ?? '',
                 ));
           }

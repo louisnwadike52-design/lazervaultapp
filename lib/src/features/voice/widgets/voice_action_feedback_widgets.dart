@@ -54,13 +54,15 @@ class VoiceActionFeedback extends StatelessWidget {
               ),
             if (state.isProcessing || state.isVerifying || state.isExecuting)
               const VoiceProcessingOverlay(),
-            if (state.isAwaitingPin)
-              const VoicePinPromptOverlay(),
-            if (state.isPendingConfirmation && state.pendingConfirmation != null)
+            if (state.isAwaitingPin) const VoicePinPromptOverlay(),
+            if (state.isPendingConfirmation &&
+                state.pendingConfirmation != null)
               VoiceConfirmationOverlay(
                 confirmation: state.pendingConfirmation!,
-                onConfirm: () => context.read<VoiceTransactionCubit>().confirmTransaction(),
-                onCancel: () => context.read<VoiceTransactionCubit>().cancelTransaction(),
+                onConfirm: () =>
+                    context.read<VoiceTransactionCubit>().confirmTransaction(),
+                onCancel: () =>
+                    context.read<VoiceTransactionCubit>().cancelTransaction(),
               ),
             if (state.isAudioActive && state.hasAudio)
               Positioned(
@@ -78,7 +80,8 @@ class VoiceActionFeedback extends StatelessWidget {
   bool get isAudioActive => true;
 
   void _showSuccessSnackBar(BuildContext context, VoiceTransactionState state) {
-    final message = state.result?.message ?? 'Transaction completed successfully';
+    final message =
+        state.result?.message ?? 'Transaction completed successfully';
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -125,7 +128,8 @@ class VoiceActionFeedback extends StatelessWidget {
     );
   }
 
-  void _showFatalErrorDialog(BuildContext context, VoiceTransactionState state) {
+  void _showFatalErrorDialog(
+      BuildContext context, VoiceTransactionState state) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -177,7 +181,8 @@ class _ListeningPulseAnimation extends StatefulWidget {
   const _ListeningPulseAnimation();
 
   @override
-  State<_ListeningPulseAnimation> createState() => _ListeningPulseAnimationState();
+  State<_ListeningPulseAnimation> createState() =>
+      _ListeningPulseAnimationState();
 }
 
 class _ListeningPulseAnimationState extends State<_ListeningPulseAnimation>
@@ -474,7 +479,9 @@ class _VoicePinPromptOverlayState extends State<VoicePinPromptOverlay> {
                     child: OutlinedButton(
                       onPressed: () {
                         Navigator.pop(context);
-                        context.read<VoiceTransactionCubit>().cancelTransaction();
+                        context
+                            .read<VoiceTransactionCubit>()
+                            .cancelTransaction();
                       },
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.grey[400],
@@ -484,14 +491,16 @@ class _VoicePinPromptOverlayState extends State<VoicePinPromptOverlay> {
                           borderRadius: BorderRadius.circular(8.r),
                         ),
                       ),
-                      child: Text('Cancel', style: GoogleFonts.inter(fontSize: 14.sp)),
+                      child: Text('Cancel',
+                          style: GoogleFonts.inter(fontSize: 14.sp)),
                     ),
                   ),
                   SizedBox(width: 16.w),
                   Expanded(
                     flex: 2,
                     child: ElevatedButton(
-                      onPressed: _pinController.text.length == 4 ? _submitPin : null,
+                      onPressed:
+                          _pinController.text.length == 4 ? _submitPin : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.purple,
                         foregroundColor: Colors.white,
@@ -537,7 +546,8 @@ class VoiceConfirmationOverlay extends StatefulWidget {
   });
 
   @override
-  State<VoiceConfirmationOverlay> createState() => _VoiceConfirmationOverlayState();
+  State<VoiceConfirmationOverlay> createState() =>
+      _VoiceConfirmationOverlayState();
 }
 
 class _VoiceConfirmationOverlayState extends State<VoiceConfirmationOverlay> {
@@ -603,11 +613,13 @@ class _VoiceConfirmationOverlayState extends State<VoiceConfirmationOverlay> {
                   borderRadius: BorderRadius.circular(2),
                 ),
                 child: FractionallySizedBox(
-                  widthFactor: _remainingSeconds / widget.confirmation.timeoutSeconds,
+                  widthFactor:
+                      _remainingSeconds / widget.confirmation.timeoutSeconds,
                   alignment: Alignment.centerLeft,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: _remainingSeconds <= 10 ? Colors.red : Colors.orange,
+                      color:
+                          _remainingSeconds <= 10 ? Colors.red : Colors.orange,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -654,7 +666,8 @@ class _VoiceConfirmationOverlayState extends State<VoiceConfirmationOverlay> {
                           borderRadius: BorderRadius.circular(8.r),
                         ),
                       ),
-                      child: Text('Cancel', style: GoogleFonts.inter(fontSize: 14.sp)),
+                      child: Text('Cancel',
+                          style: GoogleFonts.inter(fontSize: 14.sp)),
                     ),
                   ),
                   SizedBox(width: 16.w),
@@ -740,7 +753,8 @@ class _VoiceConfirmationOverlayState extends State<VoiceConfirmationOverlay> {
     return key
         .replaceAll('_', ' ')
         .split(' ')
-        .map((word) => word.isEmpty ? '' : '${word[0].toUpperCase()}${word.substring(1)}')
+        .map((word) =>
+            word.isEmpty ? '' : '${word[0].toUpperCase()}${word.substring(1)}')
         .join(' ');
   }
 

@@ -30,9 +30,8 @@ class AuthenticationRemoteDataSourceImpl
     required String avatar,
   }) async {
     try {
-      final baseUrl = kBaseUrl.startsWith('http')
-          ? kBaseUrl
-          : 'https://$kBaseUrl';
+      final baseUrl =
+          kBaseUrl.startsWith('http') ? kBaseUrl : 'https://$kBaseUrl';
       final uri = Uri.parse('$baseUrl$kCreateUserEndpoint');
 
       final response = await _client.post(
@@ -61,9 +60,8 @@ class AuthenticationRemoteDataSourceImpl
   @override
   Future<List<UserModel>> getUsers() async {
     try {
-      final baseUrl = kBaseUrl.startsWith('http')
-          ? kBaseUrl
-          : 'https://$kBaseUrl';
+      final baseUrl =
+          kBaseUrl.startsWith('http') ? kBaseUrl : 'https://$kBaseUrl';
       final uri = Uri.parse('$baseUrl$kGetUserEndpoint');
 
       final response = await _client.get(uri);

@@ -166,7 +166,8 @@ class TrendingStocksCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  CurrencySymbols.formatAmountWithCurrency(stock.currentPrice, stock.currency),
+                  CurrencySymbols.formatAmountWithCurrency(
+                      stock.currentPrice, stock.currency),
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 15.sp,

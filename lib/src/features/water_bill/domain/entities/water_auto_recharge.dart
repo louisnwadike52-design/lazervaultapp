@@ -49,8 +49,7 @@ class WaterAutoRecharge extends Equatable {
 
   factory WaterAutoRecharge.fromProto(pb.WaterAutoRecharge proto) {
     String? tsToIso(bool has, dynamic ts) => has
-        ? DateTime.fromMillisecondsSinceEpoch(
-                ts.seconds.toInt() * 1000,
+        ? DateTime.fromMillisecondsSinceEpoch(ts.seconds.toInt() * 1000,
                 isUtc: true)
             .toIso8601String()
         : null;
@@ -80,6 +79,5 @@ class WaterAutoRecharge extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [id, accountNumber, amount, frequency, status];
+  List<Object?> get props => [id, accountNumber, amount, frequency, status];
 }

@@ -29,7 +29,8 @@ class _RecipientsState extends State<Recipients> {
   List<RecipientModel> selectedRecipients = [];
 
   String? _getAccessToken() {
-    final authState = BlocProvider.of<AuthenticationCubit>(context, listen: false).state;
+    final authState =
+        BlocProvider.of<AuthenticationCubit>(context, listen: false).state;
     if (authState is AuthenticationSuccess) {
       return authState.profile.session.accessToken;
     }
@@ -68,7 +69,8 @@ class _RecipientsState extends State<Recipients> {
     SharePlus.instance.share(ShareParams(
         // iOS: a non-zero popover anchor is required — CGRectZero throws
         // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),text: shareText));
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+        text: shareText));
   }
 
   void _showUpdateAliasDialog(BuildContext context, RecipientModel recipient) {
@@ -96,7 +98,8 @@ class _RecipientsState extends State<Recipients> {
                 final trimmedValue = controller.text.trim();
                 final accessToken = _getAccessToken();
                 if (accessToken != null) {
-                  BlocProvider.of<RecipientCubit>(context, listen: false).updateAlias(
+                  BlocProvider.of<RecipientCubit>(context, listen: false)
+                      .updateAlias(
                     recipientId: recipient.id,
                     alias: trimmedValue.isEmpty ? null : trimmedValue,
                     accessToken: accessToken,
@@ -238,7 +241,8 @@ class _RecipientsState extends State<Recipients> {
             // Scrollable content
             Flexible(
               child: SingleChildScrollView(
-                padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 24.h),
+                padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).padding.bottom + 24.h),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -247,12 +251,15 @@ class _RecipientsState extends State<Recipients> {
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 24.w),
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 12.w, vertical: 8.h),
                           decoration: BoxDecoration(
-                            color: _recipientTypeColor(recipient.type).withValues(alpha: 0.1),
+                            color: _recipientTypeColor(recipient.type)
+                                .withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8.r),
                             border: Border.all(
-                              color: _recipientTypeColor(recipient.type).withValues(alpha: 0.3),
+                              color: _recipientTypeColor(recipient.type)
+                                  .withValues(alpha: 0.3),
                             ),
                           ),
                           child: Row(
@@ -296,7 +303,8 @@ class _RecipientsState extends State<Recipients> {
                           borderRadius: BorderRadius.circular(16.r),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                              color: const Color(0xFF4E03D0)
+                                  .withValues(alpha: 0.2),
                               blurRadius: 20,
                               offset: const Offset(0, 8),
                             ),
@@ -319,7 +327,8 @@ class _RecipientsState extends State<Recipients> {
                                   child: Text(
                                     recipient.displayBankName,
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.9),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.9),
                                       fontSize: 14.sp,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -377,7 +386,8 @@ class _RecipientsState extends State<Recipients> {
                             ),
 
                             // Alias
-                            if (recipient.alias != null && recipient.alias!.isNotEmpty) ...[
+                            if (recipient.alias != null &&
+                                recipient.alias!.isNotEmpty) ...[
                               SizedBox(height: 12.h),
                               Row(
                                 children: [
@@ -390,7 +400,8 @@ class _RecipientsState extends State<Recipients> {
                                   Text(
                                     'Alias: ${recipient.alias}',
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.9),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.9),
                                       fontSize: 14.sp,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -420,21 +431,29 @@ class _RecipientsState extends State<Recipients> {
                         ),
                         child: Column(
                           children: [
-                            if (recipient.type != null && recipient.type!.isNotEmpty)
-                              _detailRow('Added Via', _formatRecipientType(recipient.type)),
+                            if (recipient.type != null &&
+                                recipient.type!.isNotEmpty)
+                              _detailRow('Added Via',
+                                  _formatRecipientType(recipient.type)),
                             if (recipient.sortCode.isNotEmpty)
                               _detailRow('Sort Code', recipient.sortCode),
-                            if (recipient.countryCode != null && recipient.countryCode!.isNotEmpty)
+                            if (recipient.countryCode != null &&
+                                recipient.countryCode!.isNotEmpty)
                               _detailRow('Country', recipient.countryCode!),
-                            if (recipient.currency != null && recipient.currency!.isNotEmpty)
+                            if (recipient.currency != null &&
+                                recipient.currency!.isNotEmpty)
                               _detailRow('Currency', recipient.currency!),
-                            if (recipient.iban != null && recipient.iban!.isNotEmpty)
+                            if (recipient.iban != null &&
+                                recipient.iban!.isNotEmpty)
                               _detailRow('IBAN', recipient.iban!),
-                            if (recipient.swiftCode != null && recipient.swiftCode!.isNotEmpty)
+                            if (recipient.swiftCode != null &&
+                                recipient.swiftCode!.isNotEmpty)
                               _detailRow('SWIFT/BIC', recipient.swiftCode!),
-                            if (recipient.email != null && recipient.email!.isNotEmpty)
+                            if (recipient.email != null &&
+                                recipient.email!.isNotEmpty)
                               _detailRow('Email', recipient.email!),
-                            if (recipient.phoneNumber != null && recipient.phoneNumber!.isNotEmpty)
+                            if (recipient.phoneNumber != null &&
+                                recipient.phoneNumber!.isNotEmpty)
                               _detailRow('Phone', recipient.phoneNumber!),
                           ],
                         ),
@@ -493,7 +512,8 @@ class _RecipientsState extends State<Recipients> {
                 Navigator.of(dialogContext).pop();
                 final accessToken = _getAccessToken();
                 if (accessToken != null) {
-                  BlocProvider.of<RecipientCubit>(context, listen: false).deleteRecipient(
+                  BlocProvider.of<RecipientCubit>(context, listen: false)
+                      .deleteRecipient(
                     recipientId: recipient.id,
                     accessToken: accessToken,
                   );
@@ -534,8 +554,8 @@ class _RecipientsState extends State<Recipients> {
             color: Colors.transparent,
             child: InkWell(
               borderRadius: BorderRadius.circular(16.r),
-              onTap: () =>
-                  SendFundsLauncher.open(recipient: recipient, autoContinue: true),
+              onTap: () => SendFundsLauncher.open(
+                  recipient: recipient, autoContinue: true),
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                 child: Row(
@@ -551,7 +571,10 @@ class _RecipientsState extends State<Recipients> {
                       child: Center(
                         child: Text(
                           _getInitials(recipient.name),
-                          style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.grey[700]),
+                          style: TextStyle(
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[700]),
                         ),
                       ),
                     ),
@@ -571,7 +594,8 @@ class _RecipientsState extends State<Recipients> {
                               letterSpacing: 0.2,
                             ),
                           ),
-                          if (recipient.alias != null && recipient.alias!.isNotEmpty) ...[
+                          if (recipient.alias != null &&
+                              recipient.alias!.isNotEmpty) ...[
                             SizedBox(height: 2.h),
                             Row(
                               children: [
@@ -609,7 +633,8 @@ class _RecipientsState extends State<Recipients> {
                       color: Colors.transparent,
                       child: InkWell(
                         borderRadius: BorderRadius.circular(20.r),
-                        onTap: () => _openTransactionHistory(context, recipient),
+                        onTap: () =>
+                            _openTransactionHistory(context, recipient),
                         child: Padding(
                           padding: EdgeInsets.all(8.w),
                           child: Icon(

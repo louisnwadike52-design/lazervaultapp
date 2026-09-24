@@ -40,7 +40,8 @@ class IntlDataCubit extends Cubit<IntlDataState> {
         operatorsError: e.message ?? 'Failed to load operators',
       ));
     } catch (e) {
-      emit(state.copyWith(operatorsLoading: false, operatorsError: e.toString()));
+      emit(state.copyWith(
+          operatorsLoading: false, operatorsError: e.toString()));
     }
   }
 

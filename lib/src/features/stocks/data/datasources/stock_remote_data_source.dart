@@ -47,7 +47,8 @@ abstract class IStockRemoteDataSource {
 
   Future<WatchlistModel> createWatchlist(String name, List<String> symbols);
 
-  Future<WatchlistModel> updateWatchlist(String watchlistId, String name, List<String> symbols);
+  Future<WatchlistModel> updateWatchlist(
+      String watchlistId, String name, List<String> symbols);
 
   Future<WatchlistModel> addToWatchlist(String watchlistId, String symbol);
 

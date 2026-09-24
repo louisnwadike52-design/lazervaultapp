@@ -98,8 +98,7 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen> {
   /// Returns empty when the code is unrecognised — caller refuses to
   /// save in that case.
   String _resolveNetworkName(String networkCode, String networkName) {
-    if (networkName.isNotEmpty &&
-        networkName.toLowerCase() != 'unknown') {
+    if (networkName.isNotEmpty && networkName.toLowerCase() != 'unknown') {
       return networkName;
     }
     final code = networkCode.toUpperCase().replaceAll('-DATA', '');
@@ -300,9 +299,10 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen> {
     // label "MTN 10MB - 1 Day N100" even when the history row re-opens
     // the receipt days later with just the purchase entity in hand.
     final meta = purchase.metadataMap;
-    final networkName = (args['networkName'] as String?)?.trim().isNotEmpty == true
-        ? args['networkName'] as String
-        : (meta['network_name']?.toString() ?? '');
+    final networkName =
+        (args['networkName'] as String?)?.trim().isNotEmpty == true
+            ? args['networkName'] as String
+            : (meta['network_name']?.toString() ?? '');
     final planName = (args['planName'] as String?)?.trim().isNotEmpty == true
         ? args['planName'] as String
         : (meta['plan_name']?.toString().trim().isNotEmpty == true
@@ -421,7 +421,8 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen> {
                 onPressed: () => Get.offAllNamed(AppRoutes.dataBundlesHome),
                 child: Text(
                   'Go to Data',
-                  style: TextStyle(color: const Color(0xFF3B82F6), fontSize: 14.sp),
+                  style: TextStyle(
+                      color: const Color(0xFF3B82F6), fontSize: 14.sp),
                 ),
               ),
             ],
@@ -542,8 +543,7 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.autorenew,
-              color: const Color(0xFF10B981), size: 18.sp),
+          Icon(Icons.autorenew, color: const Color(0xFF10B981), size: 18.sp),
           SizedBox(width: 8.w),
           Text(
             'Non-Expiring Data Enabled',
@@ -573,8 +573,7 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline,
-              size: 18.sp, color: const Color(0xFFFB923C)),
+          Icon(Icons.info_outline, size: 18.sp, color: const Color(0xFFFB923C)),
           SizedBox(width: 10.w),
           Expanded(
             child: Text(
@@ -730,8 +729,8 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen> {
                       Get.snackbar(
                         'Copied',
                         'Reference copied to clipboard',
-                        backgroundColor: const Color(0xFF3B82F6)
-                            .withValues(alpha: 0.9),
+                        backgroundColor:
+                            const Color(0xFF3B82F6).withValues(alpha: 0.9),
                         colorText: Colors.white,
                         snackPosition: SnackPosition.TOP,
                         duration: const Duration(seconds: 2),
@@ -823,7 +822,9 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen> {
               'the provider handling this purchase, so please choose again from '
               'the current list.',
               style: GoogleFonts.inter(
-                  color: const Color(0xFFFB923C), fontSize: 12.5.sp, height: 1.35),
+                  color: const Color(0xFFFB923C),
+                  fontSize: 12.5.sp,
+                  height: 1.35),
             ),
             SizedBox(height: 10.h),
             ElevatedButton(

@@ -147,7 +147,8 @@ class _InvoiceVoiceAgentButtonState extends State<InvoiceVoiceAgentButton>
           ? Colors.red.shade600
           : (_isConnecting
               ? Colors.orange.shade600
-              : const Color.fromARGB(255, 78, 3, 208)), // Purple color for invoices
+              : const Color.fromARGB(
+                  255, 78, 3, 208)), // Purple color for invoices
       elevation: 6,
       child: _isConnecting
           ? RotationTransition(
@@ -274,7 +275,9 @@ class _InvoiceVoiceAgentControlState extends State<InvoiceVoiceAgentControl> {
                 IconButton(
                   onPressed: _isConnected ? _toggleMute : null,
                   icon: Icon(_isMuted ? Icons.mic_off : Icons.mic),
-                  color: _isMuted ? Colors.red : const Color.fromARGB(255, 78, 3, 208),
+                  color: _isMuted
+                      ? Colors.red
+                      : const Color.fromARGB(255, 78, 3, 208),
                 ),
                 // Connect/Disconnect button
                 ElevatedButton.icon(
@@ -282,16 +285,16 @@ class _InvoiceVoiceAgentControlState extends State<InvoiceVoiceAgentControl> {
                   icon: Icon(_isConnected ? Icons.call_end : Icons.call),
                   label: Text(_isConnected ? 'Disconnect' : 'Connect'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        _isConnected ? Colors.red : const Color.fromARGB(255, 78, 3, 208),
+                    backgroundColor: _isConnected
+                        ? Colors.red
+                        : const Color.fromARGB(255, 78, 3, 208),
                     foregroundColor: Colors.white,
                   ),
                 ),
                 // Speaker button
                 IconButton(
                   onPressed: _isConnected ? _toggleSpeaker : null,
-                  icon: Icon(
-                      _isSpeakerOn ? Icons.volume_up : Icons.volume_off),
+                  icon: Icon(_isSpeakerOn ? Icons.volume_up : Icons.volume_off),
                   color: const Color.fromARGB(255, 78, 3, 208),
                 ),
               ],

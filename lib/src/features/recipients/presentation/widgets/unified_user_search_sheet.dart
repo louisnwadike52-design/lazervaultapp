@@ -3,7 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:permission_handler/permission_handler.dart' show openAppSettings;
+import 'package:permission_handler/permission_handler.dart'
+    show openAppSettings;
 
 import 'package:lazervault/core/models/device_contact.dart';
 import 'package:lazervault/core/services/contact_service.dart';
@@ -14,7 +15,6 @@ import 'package:lazervault/src/features/contacts/domain/usecases/find_lazervault
 import 'package:lazervault/src/features/recipients/presentation/cubit/unified_user_search_cubit.dart';
 import 'package:lazervault/src/features/recipients/domain/entities/unified_search_result.dart';
 part 'unified_user_search_sheet_widgets.dart';
-
 
 /// THE shared user-search bottom sheet for the whole app.
 ///
@@ -150,8 +150,7 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
   }
 
   void _onScroll() {
-    if (_scroll.position.pixels >=
-        _scroll.position.maxScrollExtent - 300) {
+    if (_scroll.position.pixels >= _scroll.position.maxScrollExtent - 300) {
       _cubit.loadMore();
     }
   }
@@ -169,8 +168,7 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeOutCubic,
-        height:
-            MediaQuery.of(context).size.height * (_hasQuery ? 0.90 : 0.75),
+        height: MediaQuery.of(context).size.height * (_hasQuery ? 0.90 : 0.75),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
@@ -309,8 +307,7 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon,
-                  size: 16.w,
-                  color: selected ? _brand : Colors.grey[600]),
+                  size: 16.w, color: selected ? _brand : Colors.grey[600]),
               SizedBox(width: 6.w),
               Flexible(
                 child: Text(
@@ -365,14 +362,15 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
           hintStyle: GoogleFonts.inter(
               fontSize: 12.sp, color: const Color(0xFF9CA3AF)),
           prefixIcon: Icon(Icons.search, size: 18.w, color: Colors.grey[500]),
-          prefixIconConstraints: BoxConstraints(minWidth: 38.w, minHeight: 38.w),
+          prefixIconConstraints:
+              BoxConstraints(minWidth: 38.w, minHeight: 38.w),
           suffixIcon: ValueListenableBuilder<TextEditingValue>(
             valueListenable: _controller,
             builder: (_, value, __) => value.text.isEmpty
                 ? const SizedBox.shrink()
                 : IconButton(
-                    icon: Icon(Icons.clear,
-                        size: 18.w, color: Colors.grey[500]),
+                    icon:
+                        Icon(Icons.clear, size: 18.w, color: Colors.grey[500]),
                     onPressed: () {
                       _controller.clear();
                       // Shrink back to 75% and rebuild (contacts re-filter over
@@ -398,13 +396,12 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
       case UnifiedSearchStatus.loading:
         return const Center(child: LazerVaultLoader.small());
       case UnifiedSearchStatus.error:
-        return _hint(Icons.error_outline,
-            state.error ?? 'Something went wrong', isError: true);
+        return _hint(Icons.error_outline, state.error ?? 'Something went wrong',
+            isError: true);
       case UnifiedSearchStatus.success:
       case UnifiedSearchStatus.loadingMore:
         if (state.results.isEmpty) {
-          return _hint(Icons.search_off,
-              'No matches for “${state.query}”');
+          return _hint(Icons.search_off, 'No matches for “${state.query}”');
         }
         return _buildList(state);
     }
@@ -441,8 +438,8 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
         local.isEmpty &&
         global.isEmpty &&
         state.status == UnifiedSearchStatus.success) {
-      return _hint(Icons.search_off,
-          'No Lazervault user found for “${state.query}”');
+      return _hint(
+          Icons.search_off, 'No Lazervault user found for “${state.query}”');
     }
 
     final children = <Widget>[];
@@ -464,7 +461,8 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
         child: const Center(child: LazerVaultLoader.small()),
       ));
     }
-    children.add(SizedBox(height: MediaQuery.of(context).padding.bottom + 16.h));
+    children
+        .add(SizedBox(height: MediaQuery.of(context).padding.bottom + 16.h));
 
     return ListView(
       controller: _scroll,
@@ -579,7 +577,9 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
   /// best identifier (@username, masked phone/email, or bank • account).
   String _subtitleFor(UnifiedSearchResult r) {
     final bits = <String>[];
-    if (r.isSavedHit && r.alias.isNotEmpty && r.name.isNotEmpty &&
+    if (r.isSavedHit &&
+        r.alias.isNotEmpty &&
+        r.name.isNotEmpty &&
         r.name.toLowerCase() != r.displayName.toLowerCase()) {
       bits.add(r.name);
     }
@@ -600,7 +600,8 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
   }
 
   Widget _avatar(UnifiedSearchResult r) {
-    final initials = _initials(r.displayName.isNotEmpty ? r.displayName : r.name);
+    final initials =
+        _initials(r.displayName.isNotEmpty ? r.displayName : r.name);
     return Container(
       width: 44.w,
       height: 44.w,
@@ -635,8 +636,8 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
     return (48 * dpr).round(); // 48.logical ≥ 44.w avatar, crisp on all DPRs
   }
 
-  ImageProvider _avatarImage(String url) =>
-      ResizeImage(NetworkImage(url), width: _avatarCachePx, height: _avatarCachePx);
+  ImageProvider _avatarImage(String url) => ResizeImage(NetworkImage(url),
+      width: _avatarCachePx, height: _avatarCachePx);
 
   String _initials(String name) {
     final parts =
@@ -734,9 +735,8 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
       // Bound the device-contacts read: on a huge address book (or a wedged
       // plugin channel) this could otherwise never return and leave the spinner
       // stuck. A timeout surfaces the friendly error via the outer catch.
-      final contacts = await svc
-          .getContactsWithPhone()
-          .timeout(const Duration(seconds: 20));
+      final contacts =
+          await svc.getContactsWithPhone().timeout(const Duration(seconds: 20));
       if (contacts.isEmpty) {
         if (!mounted) return;
         setState(() {
@@ -790,9 +790,7 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
         return byName[c.name.trim().toLowerCase()];
       }
 
-      final rows = contacts
-          .map((c) => _ContactRow(c, matchFor(c)))
-          .toList()
+      final rows = contacts.map((c) => _ContactRow(c, matchFor(c))).toList()
         // On-Lazervault contacts first, then alphabetical.
         ..sort((a, b) {
           if (a.isLazervaultUser != b.isLazervaultUser) {
@@ -850,12 +848,14 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.contacts_outlined, size: 48.w, color: Colors.grey[400]),
+              Icon(Icons.contacts_outlined,
+                  size: 48.w, color: Colors.grey[400]),
               SizedBox(height: 12.h),
               Text(
                 _contactsError!,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.grey[600]),
+                style:
+                    GoogleFonts.inter(fontSize: 14.sp, color: Colors.grey[600]),
               ),
               SizedBox(height: 16.h),
               if (_needsContactPermission)
@@ -864,16 +864,24 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
                 ElevatedButton.icon(
                   onPressed: _onGrantContactAccess,
                   icon: Icon(
-                    _contactPermPermanentlyDenied ? Icons.settings_outlined : Icons.contacts_rounded,
-                    size: 18.w, color: Colors.white),
+                      _contactPermPermanentlyDenied
+                          ? Icons.settings_outlined
+                          : Icons.contacts_rounded,
+                      size: 18.w,
+                      color: Colors.white),
                   label: Text(
-                    _contactPermPermanentlyDenied ? 'Open settings' : 'Allow contact access',
-                    style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600)),
+                      _contactPermPermanentlyDenied
+                          ? 'Open settings'
+                          : 'Allow contact access',
+                      style: GoogleFonts.inter(
+                          color: Colors.white, fontWeight: FontWeight.w600)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _brand,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r)),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                   ),
                 )
               else
@@ -881,7 +889,8 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
                   onPressed: _fetchContacts,
                   icon: Icon(Icons.refresh, size: 18.w, color: _brand),
                   label: Text('Retry',
-                      style: GoogleFonts.inter(color: _brand, fontWeight: FontWeight.w600)),
+                      style: GoogleFonts.inter(
+                          color: _brand, fontWeight: FontWeight.w600)),
                 ),
             ],
           ),
@@ -890,8 +899,11 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
     }
     final rows = _filteredContactRows;
     if (rows.isEmpty) {
-      return _hint(Icons.search_off,
-          _contactRows.isEmpty ? 'No contacts to show' : 'No contacts match your filter');
+      return _hint(
+          Icons.search_off,
+          _contactRows.isEmpty
+              ? 'No contacts to show'
+              : 'No contacts match your filter');
     }
     return ListView.builder(
       controller: _scroll,
@@ -942,7 +954,8 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
                         : (row.contact.phoneNumber ?? row.contact.email ?? ''),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.grey[600]),
+                    style: GoogleFonts.inter(
+                        fontSize: 12.sp, color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -992,7 +1005,9 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
           Text(
             'Invite',
             style: GoogleFonts.inter(
-                fontSize: 11.sp, fontWeight: FontWeight.w600, color: Colors.grey[700]),
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[700]),
           ),
         ],
       ),
@@ -1007,7 +1022,8 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
         color: _brand.withValues(alpha: 0.10),
         shape: BoxShape.circle,
         image: (c.photoUrl ?? '').isNotEmpty
-            ? DecorationImage(image: _avatarImage(c.photoUrl!), fit: BoxFit.cover)
+            ? DecorationImage(
+                image: _avatarImage(c.photoUrl!), fit: BoxFit.cover)
             : null,
       ),
       alignment: Alignment.center,
@@ -1024,7 +1040,8 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
   /// Build a [UnifiedSearchResult] for a matched device contact so every caller
   /// (which already consumes UnifiedSearchResult) treats it exactly like a
   /// directory hit — internal, on-Lazervault, with the resolved @handle + id.
-  UnifiedSearchResult _matchToResult(LazerVaultUserMatchModel m, DeviceContact c) {
+  UnifiedSearchResult _matchToResult(
+      LazerVaultUserMatchModel m, DeviceContact c) {
     final display = m.name.trim().isNotEmpty ? m.name.trim() : c.name;
     return UnifiedSearchResult(
       source: 'global',
@@ -1042,9 +1059,9 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
   void _inviteContact(DeviceContact contact) {
     final to = contact.name.isNotEmpty ? contact.name : 'there';
     SharePlus.instance.share(ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+      // iOS: a non-zero popover anchor is required — CGRectZero throws
+      // PlatformException and the share silently fails on iPhone/iPad.
+      sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       text: 'Hi $to, join me on Lazervault — fast, secure transfers. '
           'Download the app: https://lazervault.app',
     ));

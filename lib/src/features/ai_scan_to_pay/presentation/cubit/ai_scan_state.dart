@@ -220,4 +220,3 @@ class AiScanBankDetailsExtracted extends AiScanState {
   @override
   List<Object?> get props => [session, bankDetails];
 }
-

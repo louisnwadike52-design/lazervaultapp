@@ -96,13 +96,15 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
         request,
         options: options,
       );
-      return response.countries.map((c) => GiftCardCountry(
-        isoCode: c.isoCode,
-        name: c.name,
-        flagUrl: c.flagUrl,
-        currencyCode: c.currencyCode,
-        currencyName: c.currencyName,
-      )).toList();
+      return response.countries
+          .map((c) => GiftCardCountry(
+                isoCode: c.isoCode,
+                name: c.name,
+                flagUrl: c.flagUrl,
+                currencyCode: c.currencyCode,
+                currencyName: c.currencyName,
+              ))
+          .toList();
     } on GrpcError catch (e) {
       throw Exception('Failed to fetch supported countries: ${e.message}');
     }
@@ -181,21 +183,26 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
         } else if (msg.contains('unavailable')) {
           throw Exception('temporarily unavailable');
         } else if (msg.contains('provider mismatch')) {
-          throw Exception('Gift card catalog has been updated. Please browse brands again and try your purchase.');
-        } else if (msg.contains('invalid amount') || msg.contains('check the price')) {
-          throw Exception('Invalid amount for this gift card. Please check and try again.');
+          throw Exception(
+              'Gift card catalog has been updated. Please browse brands again and try your purchase.');
+        } else if (msg.contains('invalid amount') ||
+            msg.contains('check the price')) {
+          throw Exception(
+              'Invalid amount for this gift card. Please check and try again.');
         }
         throw Exception(e.message ?? 'Purchase failed');
       } else if (e.code == StatusCode.notFound) {
         throw Exception('Gift card brand not found');
       } else if (e.code == StatusCode.unavailable) {
-        throw Exception(e.message ?? 'Service temporarily busy. Please try again.');
+        throw Exception(
+            e.message ?? 'Service temporarily busy. Please try again.');
       } else if (e.code == StatusCode.resourceExhausted) {
         throw Exception('Too many attempts. Please wait a moment.');
       } else if (e.code == StatusCode.alreadyExists) {
         throw Exception('This order is already being processed.');
       } else if (e.code == StatusCode.invalidArgument) {
-        throw Exception(e.message ?? 'Invalid request. Please check your details.');
+        throw Exception(
+            e.message ?? 'Invalid request. Please check your details.');
       }
       throw Exception(e.message ?? 'Purchase failed. Please try again.');
     } catch (e) {
@@ -363,7 +370,8 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
       if (e.code == StatusCode.notFound) {
         throw Exception('Gift card not found');
       } else if (e.code == StatusCode.permissionDenied) {
-        throw Exception('You can only view redeem codes for your own gift cards');
+        throw Exception(
+            'You can only view redeem codes for your own gift cards');
       }
       throw Exception('Failed to get redeem code: ${e.message}');
     } catch (e) {
@@ -374,7 +382,8 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
   // Sell flow methods
 
   @override
-  Future<List<SellableCardModel>> getSellableCards({String? countryCode}) async {
+  Future<List<SellableCardModel>> getSellableCards(
+      {String? countryCode}) async {
     try {
       final request = pb.GetSellableCardsRequest();
       request.countryCode = countryCode ?? '';
@@ -542,7 +551,8 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
       if (e.code == StatusCode.failedPrecondition &&
           e.message != null &&
           e.message!.toLowerCase().contains('provider mismatch')) {
-        throw Exception('Provider mismatch: Sellable cards catalog has been updated. Please check available card types again and try your sell.');
+        throw Exception(
+            'Provider mismatch: Sellable cards catalog has been updated. Please check available card types again and try your sell.');
       }
       throw Exception('Sell failed: ${e.message}');
     } catch (e) {
@@ -614,7 +624,8 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
         filename: filename,
       );
       final options = await grpcClient.callOptions;
-      final response = await grpcClient.giftCardClient.uploadSellImage(request, options: options);
+      final response = await grpcClient.giftCardClient
+          .uploadSellImage(request, options: options);
       return {'imageUrl': response.imageUrl, 'imageKey': response.imageKey};
     } on GrpcError catch (e) {
       throw Exception('Failed to upload image: ${e.message}');
@@ -628,7 +639,8 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
     try {
       final request = pb.ExtractCardDetailsRequest(imageUrls: imageUrls);
       final options = await grpcClient.callOptions;
-      final response = await grpcClient.giftCardClient.extractCardDetails(request, options: options);
+      final response = await grpcClient.giftCardClient
+          .extractCardDetails(request, options: options);
       return {
         'brand': response.brand,
         'cardNumber': response.cardNumber,
@@ -662,5 +674,4 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
       throw Exception('Failed to get sell provider: ${e.message}');
     }
   }
-
 }

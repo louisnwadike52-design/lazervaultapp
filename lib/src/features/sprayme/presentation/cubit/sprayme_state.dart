@@ -58,14 +58,16 @@ class WalletFunded extends SprayMeState {
   final SprayWallet wallet;
   final String reference;
   final String message;
-  WalletFunded({required this.wallet, required this.reference, required this.message});
+  WalletFunded(
+      {required this.wallet, required this.reference, required this.message});
 }
 
 class WalletWithdrawn extends SprayMeState {
   final SprayWallet wallet;
   final String reference;
   final String message;
-  WalletWithdrawn({required this.wallet, required this.reference, required this.message});
+  WalletWithdrawn(
+      {required this.wallet, required this.reference, required this.message});
 }
 
 class GiftCreditPurchased extends SprayMeState {
@@ -80,14 +82,20 @@ class GiftSent extends SprayMeState {
   final SprayWallet wallet;
   final String transactionId;
   final String message;
-  GiftSent({required this.wallet, required this.transactionId, required this.message});
+  GiftSent(
+      {required this.wallet,
+      required this.transactionId,
+      required this.message});
 }
 
 class MoneySprayed extends SprayMeState {
   final SprayWallet wallet;
   final int totalSprayed;
   final String transactionId;
-  MoneySprayed({required this.wallet, required this.totalSprayed, required this.transactionId});
+  MoneySprayed(
+      {required this.wallet,
+      required this.totalSprayed,
+      required this.transactionId});
 }
 
 class LikeSent extends SprayMeState {

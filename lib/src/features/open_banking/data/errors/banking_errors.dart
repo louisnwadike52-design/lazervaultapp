@@ -5,7 +5,6 @@ import 'dart:convert';
 import 'dart:io';
 part 'banking_errors_widgets.dart';
 
-
 /// Error parser utility
 class BankingErrorParser {
   /// Parse HTTP response into appropriate exception

@@ -229,7 +229,8 @@ class _InvestMarketLandingScrollState extends State<InvestMarketLandingScroll> {
 
   /// Same destinations as top pills — jump without duplicating full UIs here.
   Widget _shortcutsStrip(Color accent) {
-    final shortcuts = <({InvestHubPrimarySegment seg, IconData icon, String label})>[
+    final shortcuts =
+        <({InvestHubPrimarySegment seg, IconData icon, String label})>[
       (
         seg: InvestHubPrimarySegment.portfolio,
         icon: Icons.pie_chart_outline_rounded,
@@ -753,13 +754,9 @@ class _InvestMarketLandingScrollState extends State<InvestMarketLandingScroll> {
   }
 
   Widget _moversSection(Color accent) {
-    final gainers = [..._filtered]
-        .where((s) => s.changePercent > 0)
-        .toList()
+    final gainers = [..._filtered].where((s) => s.changePercent > 0).toList()
       ..sort((a, b) => b.changePercent.compareTo(a.changePercent));
-    final losers = [..._filtered]
-        .where((s) => s.changePercent < 0)
-        .toList()
+    final losers = [..._filtered].where((s) => s.changePercent < 0).toList()
       ..sort((a, b) => a.changePercent.compareTo(b.changePercent));
 
     return Padding(

@@ -77,8 +77,7 @@ class WalletTransferCubit extends Cubit<WalletTransferState> {
         offset: 0,
       );
       if (isClosed) return;
-      final scoped =
-          WalletBeamScope.filter(result.transfers, ownAccounts);
+      final scoped = WalletBeamScope.filter(result.transfers, ownAccounts);
       emit(WalletTransferHistoryLoaded(
         // `total` drives the count the UI prints, so it must describe the list
         // the user is looking at — the unscoped server total would read
@@ -107,8 +106,7 @@ class WalletTransferCubit extends Cubit<WalletTransferState> {
         offset: offset,
       );
       if (isClosed) return;
-      final scoped =
-          WalletBeamScope.filter(result.transfers, ownAccounts);
+      final scoped = WalletBeamScope.filter(result.transfers, ownAccounts);
       emit(WalletTransferHistoryLoaded(
         transfers: scoped,
         total: scoped.length,

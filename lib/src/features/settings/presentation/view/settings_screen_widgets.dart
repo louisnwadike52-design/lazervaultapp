@@ -58,6 +58,7 @@ class _SectionSpec {
   final String? subtitle;
   final IconData icon;
   final Widget body;
+
   /// Searchable labels of the items inside this section (so a query like
   /// "biometric" or "panic" matches even though it isn't in the title).
   final List<String> keywords;
@@ -139,8 +140,7 @@ class _AccordionSection extends StatelessWidget {
               highlightColor: _kBrand.withValues(alpha: 0.05),
               onTap: onTap,
               child: Padding(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                 child: Row(
                   children: [
                     Container(

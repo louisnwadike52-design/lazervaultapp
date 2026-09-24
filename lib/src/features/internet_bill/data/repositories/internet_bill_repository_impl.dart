@@ -14,12 +14,16 @@ class InternetBillRepositoryImpl implements InternetBillRepository {
   InternetBillRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, List<InternetProviderEntity>>> getProviders({bool activeOnly = true}) async {
+  Future<Either<Failure, List<InternetProviderEntity>>> getProviders(
+      {bool activeOnly = true}) async {
     try {
-      final result = await remoteDataSource.getProviders(activeOnly: activeOnly);
+      final result =
+          await remoteDataSource.getProviders(activeOnly: activeOnly);
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to get internet providers', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to get internet providers',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
@@ -37,19 +41,24 @@ class InternetBillRepositoryImpl implements InternetBillRepository {
       );
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to validate internet account', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to validate internet account',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
   @override
-  Future<Either<Failure, List<InternetPackageEntity>>> getPackages({required String providerId}) async {
+  Future<Either<Failure, List<InternetPackageEntity>>> getPackages(
+      {required String providerId}) async {
     try {
       final result = await remoteDataSource.getPackages(providerId: providerId);
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to get internet packages', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to get internet packages',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
@@ -79,7 +88,9 @@ class InternetBillRepositoryImpl implements InternetBillRepository {
       );
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to pay internet bill', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to pay internet bill',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }

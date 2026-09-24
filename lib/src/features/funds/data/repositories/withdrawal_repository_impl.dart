@@ -30,10 +30,12 @@ class WithdrawalRepositoryImpl implements IWithdrawalRepository {
   }) async {
     try {
       // Use executeWithTokenRotation for automatic token refresh on auth errors
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final amountMinorUnits = Int64((amount * 100).round());
 
-        print('WithdrawalRepository: Preparing request with sourceAccountId: $sourceAccountId, amount: $amount, currency: $currency, targetBankName: $targetBankName');
+        print(
+            'WithdrawalRepository: Preparing request with sourceAccountId: $sourceAccountId, amount: $amount, currency: $currency, targetBankName: $targetBankName');
 
         final request = req_resp.InitiateWithdrawalRequest(
           sourceAccountId: Int64(sourceAccountId),
@@ -47,15 +49,19 @@ class WithdrawalRepositoryImpl implements IWithdrawalRepository {
         // Use helper to get call options with authorization header from secure storage
         final callOptions = await _callOptionsHelper.withAuth();
 
-        print('WithdrawalRepository: Sending gRPC InitiateWithdrawal Request: $request');
+        print(
+            'WithdrawalRepository: Sending gRPC InitiateWithdrawal Request: $request');
 
-        return await _withdrawServiceClient.initiateWithdrawal(request, options: callOptions);
+        return await _withdrawServiceClient.initiateWithdrawal(request,
+            options: callOptions);
       });
 
-      print('WithdrawalRepository: gRPC InitiateWithdrawal Response received: ${response.message} with status ${response.status.name}, withdrawalId: ${response.withdrawalId}');
+      print(
+          'WithdrawalRepository: gRPC InitiateWithdrawal Response received: ${response.message} with status ${response.status.name}, withdrawalId: ${response.withdrawalId}');
 
       final withdrawalModel = WithdrawalModel.fromProto(response);
-      print('WithdrawalRepository: Successfully created WithdrawalModel from response');
+      print(
+          'WithdrawalRepository: Successfully created WithdrawalModel from response');
 
       return Right(withdrawalModel);
     } catch (e) {
@@ -78,4 +84,4 @@ class WithdrawalRepositoryImpl implements IWithdrawalRepository {
       );
     }
   }
-} 
+}

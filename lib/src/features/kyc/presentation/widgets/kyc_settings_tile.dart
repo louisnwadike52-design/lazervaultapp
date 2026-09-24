@@ -73,7 +73,8 @@ class _KYCSettingsTileState extends State<KYCSettingsTile> {
           current is AuthenticationSuccess ||
           current is AuthenticationAuthenticated,
       listener: (_, __) => _load(),
-      child: _buildTile(responsiveController, tier, verified, isMax, avatarColor),
+      child:
+          _buildTile(responsiveController, tier, verified, isMax, avatarColor),
     );
   }
 
@@ -90,56 +91,56 @@ class _KYCSettingsTileState extends State<KYCSettingsTile> {
     return Padding(
       padding: EdgeInsets.only(left: 16.w, right: 4.w),
       child: Row(
-      children: [
-        Stack(
-          children: [
-            RoundedCenteredImage(
-              size: responsiveController.isMobile ? 40.w : 48.0,
-              backgroundColor: HybridHexColor.fromHex(avatarColor),
-              imagePath: 'assets/images/profile/shield-tick.png',
-            ),
-            if (verified)
-              Positioned.fill(
-                child: Align(
-                  child: Icon(Icons.check,
-                      color: Colors.white,
-                      size: responsiveController.isMobile ? 20.w : 24.0),
+        children: [
+          Stack(
+            children: [
+              RoundedCenteredImage(
+                size: responsiveController.isMobile ? 40.w : 48.0,
+                backgroundColor: HybridHexColor.fromHex(avatarColor),
+                imagePath: 'assets/images/profile/shield-tick.png',
+              ),
+              if (verified)
+                Positioned.fill(
+                  child: Align(
+                    child: Icon(Icons.check,
+                        color: Colors.white,
+                        size: responsiveController.isMobile ? 20.w : 24.0),
+                  ),
+                ),
+            ],
+          ),
+          Expanded(
+            child: ListTile(
+              onTap: () async {
+                await Get.toNamed(AppRoutes.kycBVNVerification);
+                // Refresh after the user returns so a new tier reflects at once.
+                _load();
+              },
+              title: const Text('Identity Verification'),
+              subtitle: Text(
+                _subtitle(tier, verified, isMax),
+                style: TextStyle(
+                  color: verified
+                      ? const Color(0xFF4CAF50)
+                      : const Color(0xFF9E9E9E),
+                  fontSize: responsiveController.isMobile ? 12.sp : 14,
                 ),
               ),
-          ],
-        ),
-        Expanded(
-          child: ListTile(
-            onTap: () async {
-              await Get.toNamed(AppRoutes.kycBVNVerification);
-              // Refresh after the user returns so a new tier reflects at once.
-              _load();
-            },
-            title: const Text('Identity Verification'),
-            subtitle: Text(
-              _subtitle(tier, verified, isMax),
-              style: TextStyle(
-                color: verified
-                    ? const Color(0xFF4CAF50)
-                    : const Color(0xFF9E9E9E),
-                fontSize: responsiveController.isMobile ? 12.sp : 14,
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildBadge(tier, verified),
+                  const SizedBox(width: 8),
+                  if (_loading)
+                    LazerVaultLoader(size: 14)
+                  else
+                    const Icon(Icons.arrow_forward_ios,
+                        size: 16.0, color: Colors.grey),
+                ],
               ),
             ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildBadge(tier, verified),
-                const SizedBox(width: 8),
-                if (_loading)
-                  LazerVaultLoader(size: 14)
-                else
-                  const Icon(Icons.arrow_forward_ios,
-                      size: 16.0, color: Colors.grey),
-              ],
-            ),
           ),
-        ),
-      ],
+        ],
       ),
     );
   }
@@ -159,8 +160,8 @@ class _KYCSettingsTileState extends State<KYCSettingsTile> {
       ),
       child: Text(
         text,
-        style: TextStyle(
-            color: color, fontSize: 11, fontWeight: FontWeight.w600),
+        style:
+            TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -168,7 +169,8 @@ class _KYCSettingsTileState extends State<KYCSettingsTile> {
   String _subtitle(int tier, bool verified, bool isMax) {
     if (isMax) return 'Fully verified - Tier 3, highest limits';
     // Tier 2: one step (NIN + liveness) from the top — point them at Tier 3.
-    if (verified) return 'Verified - Tier $tier. Upgrade to Tier 3 for unlimited limits';
+    if (verified)
+      return 'Verified - Tier $tier. Upgrade to Tier 3 for unlimited limits';
     if (tier == 1) return 'Tier 1 - add your second ID to raise limits';
     return 'Verify your identity to unlock higher limits';
   }

@@ -57,8 +57,7 @@ class InternetAutoRecharge extends Equatable {
 
   factory InternetAutoRecharge.fromProto(pb.InternetAutoRecharge proto) {
     String? tsToIso(bool has, dynamic ts) => has
-        ? DateTime.fromMillisecondsSinceEpoch(
-                ts.seconds.toInt() * 1000,
+        ? DateTime.fromMillisecondsSinceEpoch(ts.seconds.toInt() * 1000,
                 isUtc: true)
             .toIso8601String()
         : null;

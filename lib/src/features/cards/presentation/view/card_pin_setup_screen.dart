@@ -73,9 +73,9 @@ class _CardPinSetupScreenState extends State<CardPinSetupScreen> {
     }
 
     context.read<CardCubit>().setCardPIN(
-      cardUuid: _cardUuid,
-      pin: _pin,
-    );
+          cardUuid: _cardUuid,
+          pin: _pin,
+        );
   }
 
   @override
@@ -112,7 +112,8 @@ class _CardPinSetupScreenState extends State<CardPinSetupScreen> {
               onPressed: () => Get.back(),
               icon: const Icon(Icons.arrow_back, color: Colors.white),
             ),
-            title: const Text('Set Card PIN', style: TextStyle(color: Colors.white)),
+            title: const Text('Set Card PIN',
+                style: TextStyle(color: Colors.white)),
             centerTitle: true,
           ),
           body: SafeArea(
@@ -122,14 +123,18 @@ class _CardPinSetupScreenState extends State<CardPinSetupScreen> {
                 // Title
                 Text(
                   _isConfirmStep ? 'Confirm your PIN' : 'Enter a 4-digit PIN',
-                  style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   _isConfirmStep
                       ? 'Re-enter your PIN to confirm'
                       : 'This PIN will be used for card transactions',
-                  style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                  style:
+                      const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
                 ),
                 const SizedBox(height: 32),
                 // PIN dots
@@ -143,9 +148,13 @@ class _CardPinSetupScreenState extends State<CardPinSetupScreen> {
                       height: 20,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: isFilled ? const Color(0xFF3B82F6) : Colors.transparent,
+                        color: isFilled
+                            ? const Color(0xFF3B82F6)
+                            : Colors.transparent,
                         border: Border.all(
-                          color: isFilled ? const Color(0xFF3B82F6) : const Color(0xFF9CA3AF),
+                          color: isFilled
+                              ? const Color(0xFF3B82F6)
+                              : const Color(0xFF9CA3AF),
                           width: 2,
                         ),
                       ),
@@ -159,7 +168,8 @@ class _CardPinSetupScreenState extends State<CardPinSetupScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 32),
                     child: Text(
                       _error!,
-                      style: const TextStyle(color: Color(0xFFEF4444), fontSize: 14),
+                      style: const TextStyle(
+                          color: Color(0xFFEF4444), fontSize: 14),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -195,7 +205,9 @@ class _CardPinSetupScreenState extends State<CardPinSetupScreen> {
                     for (int col = 0; col < 3; col++)
                       _buildKey(
                         label: '${row * 3 + col + 1}',
-                        onTap: isLoading ? null : () => _onDigitPressed(row * 3 + col + 1),
+                        onTap: isLoading
+                            ? null
+                            : () => _onDigitPressed(row * 3 + col + 1),
                       ),
                   if (row == 3) ...[
                     const SizedBox(width: 72, height: 56),
@@ -231,7 +243,10 @@ class _CardPinSetupScreenState extends State<CardPinSetupScreen> {
             ? Icon(icon, color: Colors.white, size: 24)
             : Text(
                 label ?? '',
-                style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w600),
               ),
       ),
     );

@@ -8,7 +8,8 @@ import '../../domain/repositories/intl_airtime_repository.dart';
 abstract class IntlAirtimeRemoteDatasource {
   Future<List<IntlAirtimeCountry>> getCountries({bool includeInactive = false});
   Future<IntlAirtimeOperatorsResult> getOperators(String countryCode);
-  Future<IntlAirtimeOperator?> autoDetectOperator(String phoneNumber, String countryCode);
+  Future<IntlAirtimeOperator?> autoDetectOperator(
+      String phoneNumber, String countryCode);
   Future<IntlAirtimePurchaseResult> buyIntlAirtime({
     required String accountId,
     required String operatorId,
@@ -32,11 +33,12 @@ class IntlAirtimeRemoteDatasourceImpl implements IntlAirtimeRemoteDatasource {
   IntlAirtimeRemoteDatasourceImpl({required this.grpcClient});
 
   @override
-  Future<List<IntlAirtimeCountry>> getCountries({bool includeInactive = false}) async {
+  Future<List<IntlAirtimeCountry>> getCountries(
+      {bool includeInactive = false}) async {
     try {
       final options = await grpcClient.callOptions;
-      final response = await grpcClient.utilityPaymentsClient
-          .getIntlAirtimeCountries(
+      final response =
+          await grpcClient.utilityPaymentsClient.getIntlAirtimeCountries(
         pb.GetIntlAirtimeCountriesRequest(includeInactive: includeInactive),
         options: options,
       );
@@ -50,8 +52,8 @@ class IntlAirtimeRemoteDatasourceImpl implements IntlAirtimeRemoteDatasource {
   Future<IntlAirtimeOperatorsResult> getOperators(String countryCode) async {
     try {
       final options = await grpcClient.callOptions;
-      final response = await grpcClient.utilityPaymentsClient
-          .getIntlAirtimeOperators(
+      final response =
+          await grpcClient.utilityPaymentsClient.getIntlAirtimeOperators(
         pb.GetIntlAirtimeOperatorsRequest(countryCode: countryCode),
         options: options,
       );
@@ -62,7 +64,8 @@ class IntlAirtimeRemoteDatasourceImpl implements IntlAirtimeRemoteDatasource {
         currencySymbol: response.currencySymbol,
       );
     } on GrpcError catch (e) {
-      throw Exception('Failed to fetch operators for $countryCode: ${e.message}');
+      throw Exception(
+          'Failed to fetch operators for $countryCode: ${e.message}');
     }
   }
 
@@ -71,8 +74,8 @@ class IntlAirtimeRemoteDatasourceImpl implements IntlAirtimeRemoteDatasource {
       String phoneNumber, String countryCode) async {
     try {
       final options = await grpcClient.callOptions;
-      final response = await grpcClient.utilityPaymentsClient
-          .autoDetectIntlOperator(
+      final response =
+          await grpcClient.utilityPaymentsClient.autoDetectIntlOperator(
         pb.AutoDetectIntlOperatorRequest(
           phoneNumber: phoneNumber,
           countryCode: countryCode,

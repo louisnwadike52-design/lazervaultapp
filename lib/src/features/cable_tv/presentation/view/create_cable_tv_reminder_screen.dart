@@ -17,7 +17,6 @@ import '../cubit/cable_tv_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'create_cable_tv_reminder_screen_widgets.dart';
 
-
 class CreateCableTVReminderScreen extends StatefulWidget {
   const CreateCableTVReminderScreen({super.key});
 
@@ -182,7 +181,8 @@ class _CreateCableTVReminderScreenState
             surface: Color(0xFF1A1A1A),
             onSurface: Colors.white,
           ),
-          dialogTheme: const DialogThemeData(backgroundColor: Color(0xFF1A1A1A)),
+          dialogTheme:
+              const DialogThemeData(backgroundColor: Color(0xFF1A1A1A)),
         ),
         child: child!,
       ),
@@ -202,7 +202,8 @@ class _CreateCableTVReminderScreenState
             surface: Color(0xFF1A1A1A),
             onSurface: Colors.white,
           ),
-          dialogTheme: const DialogThemeData(backgroundColor: Color(0xFF1A1A1A)),
+          dialogTheme:
+              const DialogThemeData(backgroundColor: Color(0xFF1A1A1A)),
         ),
         child: child!,
       ),
@@ -216,8 +217,7 @@ class _CreateCableTVReminderScreenState
         _selectedDate.day, _selectedTime.hour, _selectedTime.minute);
     if (dt.isBefore(DateTime.now())) {
       Get.snackbar('Invalid Time', 'Please choose a time in the future',
-          backgroundColor: const Color(0xFFEF4444),
-          colorText: Colors.white);
+          backgroundColor: const Color(0xFFEF4444), colorText: Colors.white);
       return;
     }
 
@@ -229,15 +229,13 @@ class _CreateCableTVReminderScreenState
     if (_selectedPackage != null && _selectedBeneficiary != null) {
       if (_packagesLoading) {
         Get.snackbar('Loading', 'Still loading plans. Please wait.',
-            backgroundColor: const Color(0xFFFB923C),
-            colorText: Colors.white);
+            backgroundColor: const Color(0xFFFB923C), colorText: Colors.white);
         return;
       }
       if (_loadedPackages == null) {
         Get.snackbar('Plans unavailable',
             'Plans failed to load. Retry or clear the plan before saving.',
-            backgroundColor: const Color(0xFFEF4444),
-            colorText: Colors.white);
+            backgroundColor: const Color(0xFFEF4444), colorText: Colors.white);
         return;
       }
       final match = _loadedPackages!.where(
@@ -246,8 +244,7 @@ class _CreateCableTVReminderScreenState
       if (match.isEmpty) {
         Get.snackbar('Plan not found',
             'Selected plan is no longer available. Pick another or clear it.',
-            backgroundColor: const Color(0xFFEF4444),
-            colorText: Colors.white);
+            backgroundColor: const Color(0xFFEF4444), colorText: Colors.white);
         return;
       }
       // Pin to the catalog entry so the stored values match VTpass exactly.
@@ -344,7 +341,9 @@ class _CreateCableTVReminderScreenState
                 _packagesError = null;
                 if (_prefillFallbackPackage != null) {
                   final match = state.packages.where(
-                    (p) => p.variationCode == _prefillFallbackPackage!.variationCode,
+                    (p) =>
+                        p.variationCode ==
+                        _prefillFallbackPackage!.variationCode,
                   );
                   _selectedPackage =
                       match.isNotEmpty ? match.first : _prefillFallbackPackage;
@@ -572,8 +571,7 @@ class _CreateCableTVReminderScreenState
           ),
           SizedBox(height: 8.h),
           TextButton.icon(
-            onPressed: () =>
-                _loadPackages(_selectedBeneficiary!.providerCode),
+            onPressed: () => _loadPackages(_selectedBeneficiary!.providerCode),
             icon: Icon(Icons.refresh, size: 16.sp),
             label: Text('Retry', style: TextStyle(fontSize: 13.sp)),
             style: TextButton.styleFrom(
@@ -599,14 +597,13 @@ class _CreateCableTVReminderScreenState
         child: Row(
           children: [
             Icon(Icons.live_tv,
-                color: _selectedPackage != null ? _purple : _dim,
-                size: 20.sp),
+                color: _selectedPackage != null ? _purple : _dim, size: 20.sp),
             SizedBox(width: 12.w),
             Expanded(
               child: _selectedPackage == null
                   ? Text('Select a plan (optional)',
-                      style:
-                          TextStyle(color: const Color(0xFF4B5563), fontSize: 15.sp))
+                      style: TextStyle(
+                          color: const Color(0xFF4B5563), fontSize: 15.sp))
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -624,8 +621,7 @@ class _CreateCableTVReminderScreenState
             if (_packagesLoading)
               LazerVaultLoader.tiny()
             else
-              Icon(Icons.keyboard_arrow_down,
-                  color: _secondary, size: 20.sp),
+              Icon(Icons.keyboard_arrow_down, color: _secondary, size: 20.sp),
           ],
         ),
       ),
@@ -916,8 +912,8 @@ class _CreateCableTVReminderScreenState
         style: GoogleFonts.inter(fontSize: 15.sp, color: Colors.white),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle:
-              GoogleFonts.inter(fontSize: 15.sp, color: Colors.white.withValues(alpha: 0.3)),
+          hintStyle: GoogleFonts.inter(
+              fontSize: 15.sp, color: Colors.white.withValues(alpha: 0.3)),
           filled: true,
           fillColor: Colors.white.withValues(alpha: 0.05),
           border: OutlineInputBorder(
@@ -1049,8 +1045,7 @@ class _CreateCableTVReminderScreenState
             child: Text(label,
                 style: GoogleFonts.inter(
                     fontSize: 13.sp,
-                    fontWeight:
-                        selected ? FontWeight.w600 : FontWeight.w500,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                     color: Colors.white)),
           ),
         ),

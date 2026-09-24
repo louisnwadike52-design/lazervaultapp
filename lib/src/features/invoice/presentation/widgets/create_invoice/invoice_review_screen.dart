@@ -8,7 +8,6 @@ import '../../../../account_cards_summary/cubit/account_cards_summary_state.dart
 import '../../cubit/create_invoice_cubit.dart';
 part 'invoice_review_screen_widgets.dart';
 
-
 /// Screen 5: Review & Confirm
 ///
 /// Final review of all invoice details before creation
@@ -29,7 +28,8 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
   String get _currencySymbol {
     try {
       final state = context.read<AccountCardsSummaryCubit>().state;
-      if (state is AccountCardsSummaryLoaded && state.accountSummaries.isNotEmpty) {
+      if (state is AccountCardsSummaryLoaded &&
+          state.accountSummaries.isNotEmpty) {
         return _getCurrencySymbol(state.accountSummaries.first.currency);
       }
     } catch (_) {}
@@ -38,16 +38,26 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
 
   String _getCurrencySymbol(String currency) {
     switch (currency.toUpperCase()) {
-      case 'NGN': return '₦';
-      case 'GBP': return '£';
-      case 'EUR': return '€';
-      case 'ZAR': return 'R';
-      case 'CAD': return 'C\$';
-      case 'AUD': return 'A\$';
-      case 'INR': return '₹';
-      case 'JPY': return '¥';
-      case 'USD': return '\$';
-      default: return '₦';
+      case 'NGN':
+        return '₦';
+      case 'GBP':
+        return '£';
+      case 'EUR':
+        return '€';
+      case 'ZAR':
+        return 'R';
+      case 'CAD':
+        return 'C\$';
+      case 'AUD':
+        return 'A\$';
+      case 'INR':
+        return '₹';
+      case 'JPY':
+        return '¥';
+      case 'USD':
+        return '\$';
+      default:
+        return '₦';
     }
   }
 
@@ -81,8 +91,7 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
 
   void _checkScrollable() {
     if (!_scrollController.hasClients) return;
-    final isScrollable =
-        _scrollController.position.maxScrollExtent > 0;
+    final isScrollable = _scrollController.position.maxScrollExtent > 0;
     if (isScrollable && !_showScrollIndicator) {
       setState(() {
         _showScrollIndicator = true;
@@ -307,7 +316,8 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
                     color: const Color(0xFF2D2D2D),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
-                  child: Icon(Icons.broken_image, color: Colors.grey[600], size: 32.sp),
+                  child: Icon(Icons.broken_image,
+                      color: Colors.grey[600], size: 32.sp),
                 ),
               ),
             ),
@@ -325,14 +335,16 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
           ],
           if (cubit.recipientAddress1.isNotEmpty) ...[
             SizedBox(height: 12.h),
-            _buildInfoRow('Address', _formatAddress(
-              cubit.recipientAddress1,
-              cubit.recipientAddress2,
-              cubit.recipientCity,
-              cubit.recipientState,
-              cubit.recipientPostcode,
-              cubit.recipientCountry,
-            )),
+            _buildInfoRow(
+                'Address',
+                _formatAddress(
+                  cubit.recipientAddress1,
+                  cubit.recipientAddress2,
+                  cubit.recipientCity,
+                  cubit.recipientState,
+                  cubit.recipientPostcode,
+                  cubit.recipientCountry,
+                )),
           ],
         ],
       ),
@@ -390,7 +402,8 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
                     color: const Color(0xFF2D2D2D),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
-                  child: Icon(Icons.broken_image, color: Colors.grey[600], size: 32.sp),
+                  child: Icon(Icons.broken_image,
+                      color: Colors.grey[600], size: 32.sp),
                 ),
               ),
             ),
@@ -410,14 +423,16 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
           ],
           if (cubit.payerAddress1.isNotEmpty) ...[
             SizedBox(height: 12.h),
-            _buildInfoRow('Address', _formatAddress(
-              cubit.payerAddress1,
-              cubit.payerAddress2,
-              cubit.payerCity,
-              cubit.payerState,
-              cubit.payerPostcode,
-              cubit.payerCountry,
-            )),
+            _buildInfoRow(
+                'Address',
+                _formatAddress(
+                  cubit.payerAddress1,
+                  cubit.payerAddress2,
+                  cubit.payerCity,
+                  cubit.payerState,
+                  cubit.payerPostcode,
+                  cubit.payerCountry,
+                )),
           ],
         ],
       ),

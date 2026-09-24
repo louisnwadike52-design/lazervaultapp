@@ -15,7 +15,6 @@ import '../../services/exchange_pdf_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'exchange_detail_screen_widgets.dart';
 
-
 /// Transaction detail for a past exchange — opened from the history list.
 /// Visually identical to the post-transaction receipt: LazerVault logo
 /// top-right, international/globe icon, QR code, and Download/Share
@@ -112,7 +111,7 @@ class _ExchangeDetailScreenState extends State<ExchangeDetailScreen> {
     if (tx == null) return _buildMissingData();
 
     return AppGradientBackground(
-      child: Scaffold(
+        child: Scaffold(
       backgroundColor: Colors.transparent,
       body: SafeArea(
         // Flex layout fills the viewport height with Spacers so the
@@ -277,8 +276,7 @@ class _ExchangeDetailScreenState extends State<ExchangeDetailScreen> {
               ),
             ),
           ),
-          _row('Type',
-              isConversion ? 'Conversion' : 'International Transfer'),
+          _row('Type', isConversion ? 'Conversion' : 'International Transfer'),
           _row('You sent',
               '${_code(tx.fromCurrency)}${tx.fromAmount.toStringAsFixed(2)}'),
           _row(
@@ -324,8 +322,7 @@ class _ExchangeDetailScreenState extends State<ExchangeDetailScreen> {
                   version: QrVersions.auto,
                   size: 96.w,
                   backgroundColor: Colors.transparent,
-                  dataModuleStyle:
-                      const QrDataModuleStyle(color: Colors.white),
+                  dataModuleStyle: const QrDataModuleStyle(color: Colors.white),
                   eyeStyle: const QrEyeStyle(color: Colors.white),
                 ),
               ),
@@ -523,7 +520,7 @@ class _ExchangeDetailScreenState extends State<ExchangeDetailScreen> {
 
   Widget _buildMissingData() {
     return AppGradientBackground(
-      child: Scaffold(
+        child: Scaffold(
       backgroundColor: Colors.transparent,
       body: SafeArea(
         child: Center(

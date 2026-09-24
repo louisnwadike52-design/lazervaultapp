@@ -9,7 +9,10 @@ class UpdateAliasUseCase {
   UpdateAliasUseCase(this._repository);
 
   Future<Either<Failure, RecipientModel>> call(
-      {required String recipientId, required String? alias, required String accessToken}) async {
-    return await _repository.updateAlias(recipientId: recipientId, alias: alias, accessToken: accessToken);
+      {required String recipientId,
+      required String? alias,
+      required String accessToken}) async {
+    return await _repository.updateAlias(
+        recipientId: recipientId, alias: alias, accessToken: accessToken);
   }
 }

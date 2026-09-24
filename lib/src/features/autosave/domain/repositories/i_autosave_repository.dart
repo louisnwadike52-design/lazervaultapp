@@ -66,12 +66,12 @@ class AutoSaveFeeQuote {
 
   static const none = AutoSaveFeeQuote(enabled: false, fee: 0, net: 0);
 
-
   /// "0.5% (max ₦100)" / "₦25" — the rule, for disclosure copy.
   String describe(String symbol) {
     if (!enabled) return '';
     if (feeType == 'fixed') return '$symbol${fixed.toStringAsFixed(2)}';
-    final pct = (percentBps / 100).toStringAsFixed(percentBps % 100 == 0 ? 0 : 2);
+    final pct =
+        (percentBps / 100).toStringAsFixed(percentBps % 100 == 0 ? 0 : 2);
     return cap > 0 ? '$pct% (max $symbol${cap.toStringAsFixed(2)})' : '$pct%';
   }
 }
@@ -160,7 +160,8 @@ abstract class IAutoSaveRepository {
   });
 
   /// Get auto-save transaction history
-  Future<Either<Failure, List<AutoSaveTransactionEntity>>> getAutoSaveTransactions({
+  Future<Either<Failure, List<AutoSaveTransactionEntity>>>
+      getAutoSaveTransactions({
     String? ruleId,
     String? accountId,
     int? limit,

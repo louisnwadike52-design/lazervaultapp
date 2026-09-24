@@ -11,8 +11,6 @@ class RequestFundsScreen extends StatefulWidget {
 }
 
 class _RequestFundsScreenState extends State<RequestFundsScreen> {
-
-
   @override
   void initState() {
     super.initState();

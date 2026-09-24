@@ -47,7 +47,8 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
     try {
       final boundary = _pinHostBoundaryRoute;
       Navigator.of(context).popUntil(
-        (route) => (boundary != null && route == boundary) || route is! PopupRoute,
+        (route) =>
+            (boundary != null && route == boundary) || route is! PopupRoute,
       );
     } catch (_) {}
   }
@@ -130,7 +131,8 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
       } catch (e) {
         print('[TransactionPinMixin] checkUserHasPin error: $e');
         if (!mounted) return false;
-        _showErrorMessage(context, 'Failed to check PIN status. Please try again.');
+        _showErrorMessage(
+            context, 'Failed to check PIN status. Please try again.');
         return false;
       }
 
@@ -150,7 +152,8 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
       // so the callback always resolves the current completer even after retries
       int currentAttempt = 1;
       String? errorMessage;
-      final completerRef = _MutableRef<Completer<String?>>(Completer<String?>());
+      final completerRef =
+          _MutableRef<Completer<String?>>(Completer<String?>());
 
       // Set when the user chooses "Forgot PIN?" rather than "Cancel". Both
       // resolve the completer with null, so without this the two are
@@ -309,7 +312,9 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
                 // off to the caller (usually a receipt screen) immediately.
                 await Future.delayed(const Duration(milliseconds: 350));
                 if (mounted) {
-                  try { Navigator.of(context).pop(); } catch (_) {}
+                  try {
+                    Navigator.of(context).pop();
+                  } catch (_) {}
                 }
               }
               AnalyticsService.instance.trackPinOutcome('success');
@@ -355,8 +360,8 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
               await Get.toNamed(AppRoutes.transactionPinSetup,
                   arguments: {'returnOnComplete': true, 'forceSetup': true});
               // Authoritative re-check (bypass the session cache).
-              final hasPinNow =
-                  await transactionPinService.checkUserHasPin(forceRefresh: true);
+              final hasPinNow = await transactionPinService.checkUserHasPin(
+                  forceRefresh: true);
               if (hasPinNow && mounted) {
                 _showErrorMessage(context,
                     'Your transaction PIN is set. Please confirm your payment again.');
@@ -477,10 +482,9 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
         ),
         title: const Text('PIN Locked'),
         content: Text(
-          'Your transaction PIN has been locked due to too many failed attempts. '
-          'Please try again in $minutes minute${minutes == 1 ? "" : "s"} '
-          'and $seconds second${seconds == 1 ? "" : "s"}.'
-        ),
+            'Your transaction PIN has been locked due to too many failed attempts. '
+            'Please try again in $minutes minute${minutes == 1 ? "" : "s"} '
+            'and $seconds second${seconds == 1 ? "" : "s"}.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),

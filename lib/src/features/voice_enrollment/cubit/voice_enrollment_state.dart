@@ -11,10 +11,13 @@ const List<String> enrollmentPhrases = [
 enum VoiceEnrollmentStage {
   /// No enrollment exists
   notEnrolled,
+
   /// Enrollment started but not completed (user quit mid-process)
   partiallyEnrolled,
+
   /// Voice registered in vector DB (recognition works)
   voiceRegistered,
+
   /// Voice registered + custom voice cloning completed
   fullyEnrolled,
 }
@@ -34,10 +37,9 @@ class VoiceEnrollmentInitial extends VoiceEnrollmentState {
 
   List<String> get phrases => enrollmentPhrases;
 
-  String get currentPhrase =>
-      currentStep >= 0 && currentStep < phrases.length
-          ? phrases[currentStep]
-          : phrases[0];
+  String get currentPhrase => currentStep >= 0 && currentStep < phrases.length
+      ? phrases[currentStep]
+      : phrases[0];
 }
 
 /// Loading state - processing enrollment
@@ -59,10 +61,9 @@ class VoiceEnrollmentRecording extends VoiceEnrollmentState {
 
   List<String> get phrases => enrollmentPhrases;
 
-  String get currentPhrase =>
-      currentStep >= 0 && currentStep < phrases.length
-          ? phrases[currentStep]
-          : phrases[0];
+  String get currentPhrase => currentStep >= 0 && currentStep < phrases.length
+      ? phrases[currentStep]
+      : phrases[0];
 
   VoiceEnrollmentRecording copyWith({double? soundLevel}) {
     return VoiceEnrollmentRecording(
@@ -84,11 +85,11 @@ class VoiceEnrollmentProcessing extends VoiceEnrollmentState {
   });
 
   String get message => switch (currentStep) {
-    0 => 'Analyzing first sample...',
-    1 => 'Analyzing second sample...',
-    2 => 'Analyzing final sample...',
-    _ => 'Processing...',
-  };
+        0 => 'Analyzing first sample...',
+        1 => 'Analyzing second sample...',
+        2 => 'Analyzing final sample...',
+        _ => 'Processing...',
+      };
 }
 
 /// Success state - enrollment completed
@@ -117,6 +118,7 @@ class VoiceEnrollmentPoorQuality extends VoiceEnrollmentState {
 class VoiceEnrollmentError extends VoiceEnrollmentState {
   final String message;
   final String? errorCode;
+
   /// Whether the error occurred during re-enrollment (so UI can show appropriate recovery)
   final bool duringReEnrollment;
 

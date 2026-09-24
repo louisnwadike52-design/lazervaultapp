@@ -10,4 +10,4 @@ class RemoveFromWatchlistUseCase {
   Future<Either<Failure, void>> call(String watchlistId, String symbol) async {
     return await repository.removeFromWatchlist(watchlistId, symbol);
   }
-} 
+}

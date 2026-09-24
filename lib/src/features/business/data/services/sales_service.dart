@@ -80,7 +80,8 @@ class SalesService {
         (body['sale'] as Map?)?.cast<String, dynamic>() ?? {});
   }
 
-  Future<List<SaleEntity>> listSales({int page = 1, int limit = 30, String status = ''}) async {
+  Future<List<SaleEntity>> listSales(
+      {int page = 1, int limit = 30, String status = ''}) async {
     final token = await _token();
     final uri = Uri.parse('${_endpoints.httpBusiness}/sales').replace(
       queryParameters: {
@@ -104,7 +105,8 @@ class SalesService {
   /// All-time (or date-ranged) revenue/receivables totals from the backend
   /// aggregate — the headline stat cards must use THIS, not a fold over the
   /// currently-loaded page (which understates totals past one page of sales).
-  Future<SalesSummary> getSummary({String startDate = '', String endDate = ''}) async {
+  Future<SalesSummary> getSummary(
+      {String startDate = '', String endDate = ''}) async {
     final token = await _token();
     final uri = Uri.parse('${_endpoints.httpBusiness}/sales/summary').replace(
       queryParameters: {

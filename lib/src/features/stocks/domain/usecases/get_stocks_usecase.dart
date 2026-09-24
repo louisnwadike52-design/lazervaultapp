@@ -21,4 +21,4 @@ class GetStocksUseCase {
       limit: limit,
     );
   }
-} 
+}

@@ -22,11 +22,13 @@ class InvoiceFilterChip extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: isSelected ? InvoiceThemeColors.primaryPurple : InvoiceThemeColors.borderColor,
+          color: isSelected
+              ? InvoiceThemeColors.primaryPurple
+              : InvoiceThemeColors.borderColor,
           borderRadius: BorderRadius.circular(20.r),
-          border: isSelected 
-            ? Border.all(color: InvoiceThemeColors.primaryPurple, width: 1)
-            : Border.all(color: Colors.grey[700]!, width: 1),
+          border: isSelected
+              ? Border.all(color: InvoiceThemeColors.primaryPurple, width: 1)
+              : Border.all(color: Colors.grey[700]!, width: 1),
         ),
         child: Text(
           label,
@@ -39,4 +41,4 @@ class InvoiceFilterChip extends StatelessWidget {
       ),
     );
   }
-} 
+}

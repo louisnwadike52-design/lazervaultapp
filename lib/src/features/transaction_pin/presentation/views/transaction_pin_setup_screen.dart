@@ -22,7 +22,8 @@ class TransactionPinSetupScreen extends StatefulWidget {
   const TransactionPinSetupScreen({super.key});
 
   @override
-  State<TransactionPinSetupScreen> createState() => _TransactionPinSetupScreenState();
+  State<TransactionPinSetupScreen> createState() =>
+      _TransactionPinSetupScreenState();
 }
 
 class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
@@ -264,7 +265,8 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
         case StatusCode.deadlineExceeded:
           // Server unreachable / timed out — never surface the raw
           // "transport: Error while dialing …" string to the user.
-          msg = 'Can\'t reach the server right now. Check your connection and try again.';
+          msg =
+              'Can\'t reach the server right now. Check your connection and try again.';
           break;
         default:
           // Don't leak raw gRPC transport text; keep it short + actionable.
@@ -506,207 +508,214 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
     return PopScope(
       canPop: _returnToCaller && !_isCreating,
       child: Scaffold(
-      extendBodyBehindAppBar: true,
-      // No AppBar/back button: this is a forward-only signup step. Users move on
-      // via "Skip for now" or by completing the PIN.
-      body: Stack(
-        children: [
-          // Background image
-          DecoratedBox(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(AuthBackground.current),
-                fit: BoxFit.cover,
+        extendBodyBehindAppBar: true,
+        // No AppBar/back button: this is a forward-only signup step. Users move on
+        // via "Skip for now" or by completing the PIN.
+        body: Stack(
+          children: [
+            // Background image
+            DecoratedBox(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage(AuthBackground.current),
+                  fit: BoxFit.cover,
+                ),
               ),
+              child: const SizedBox.expand(),
             ),
-            child: const SizedBox.expand(),
-          ),
-          // Dark overlay — darkened (0.6) so the PIN dots, prompts and keypad
-          // read clearly over the bright auth background. Kept in sync with the
-          // passcode setup screen.
-          Container(
-            color: Colors.black.withValues(alpha: 0.6),
-          ),
-          SafeArea(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.w),
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: availableHeight,
-                  ),
-                  child: Column(
-                    // Two zones (like the passcode LOGIN screen): header + dots
-                    // on top, number pad anchored LOW like a system keyboard.
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // ===== TOP zone: logo + heading + dots =====
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                      SizedBox(height: 40.h),
-                      Center(
-                        child: UniversalImageLoader(
-                          imagePath: AppData.appLogo,
-                          height: 80.h,
-                          width: 80.w,
-                        ),
-                      ),
-                      SizedBox(height: 40.h),
-                      // Lock icon for transaction PIN
-                      Icon(
-                        Icons.lock_outline,
-                        color: Colors.white,
-                        size: 48.sp,
-                      ),
-                      SizedBox(height: 20.h),
-                      Text(
-                        _getTitle(),
-                        style: TextStyle(
-                          fontSize: 28.sp,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 12.h),
-                      Text(
-                        _getSubtitle(),
-                        style: textTheme.titleMedium?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.8),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 8.h),
-                      // Info text (only on the initial PIN-entry step)
-                      if (!_isConfirmMode)
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16.w),
-                          child: Text(
-                            'This PIN will be required for all payments and transfers',
-                            style: textTheme.bodySmall?.copyWith(
-                              color: Colors.white.withValues(alpha: 0.6),
+            // Dark overlay — darkened (0.6) so the PIN dots, prompts and keypad
+            // read clearly over the bright auth background. Kept in sync with the
+            // passcode setup screen.
+            Container(
+              color: Colors.black.withValues(alpha: 0.6),
+            ),
+            SafeArea(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: availableHeight,
+                    ),
+                    child: Column(
+                      // Two zones (like the passcode LOGIN screen): header + dots
+                      // on top, number pad anchored LOW like a system keyboard.
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // ===== TOP zone: logo + heading + dots =====
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(height: 40.h),
+                            Center(
+                              child: UniversalImageLoader(
+                                imagePath: AppData.appLogo,
+                                height: 80.h,
+                                width: 80.w,
+                              ),
                             ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      SizedBox(height: 40.h),
-                      // Error message
-                      if (_errorMessage != null)
-                        Container(
-                          margin: EdgeInsets.only(bottom: 20.h),
-                          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(8.r),
-                            border: Border.all(color: Colors.red.withValues(alpha: 0.5)),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.error_outline, color: Colors.red, size: 20.sp),
-                              SizedBox(width: 8.w),
-                              Expanded(
+                            SizedBox(height: 40.h),
+                            // Lock icon for transaction PIN
+                            Icon(
+                              Icons.lock_outline,
+                              color: Colors.white,
+                              size: 48.sp,
+                            ),
+                            SizedBox(height: 20.h),
+                            Text(
+                              _getTitle(),
+                              style: TextStyle(
+                                fontSize: 28.sp,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 12.h),
+                            Text(
+                              _getSubtitle(),
+                              style: textTheme.titleMedium?.copyWith(
+                                color: Colors.white.withValues(alpha: 0.8),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 8.h),
+                            // Info text (only on the initial PIN-entry step)
+                            if (!_isConfirmMode)
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 16.w),
                                 child: Text(
-                                  _errorMessage!,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: Colors.red.shade200,
-                                    fontSize: 13.sp,
+                                  'This PIN will be required for all payments and transfers',
+                                  style: textTheme.bodySmall?.copyWith(
+                                    color: Colors.white.withValues(alpha: 0.6),
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            SizedBox(height: 40.h),
+                            // Error message
+                            if (_errorMessage != null)
+                              Container(
+                                margin: EdgeInsets.only(bottom: 20.h),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 16.w, vertical: 12.h),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(8.r),
+                                  border: Border.all(
+                                      color: Colors.red.withValues(alpha: 0.5)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.error_outline,
+                                        color: Colors.red, size: 20.sp),
+                                    SizedBox(width: 8.w),
+                                    Expanded(
+                                      child: Text(
+                                        _errorMessage!,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: Colors.red.shade200,
+                                          fontSize: 13.sp,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            // PIN dots indicator
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(
+                                _pinLength,
+                                (index) => AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  margin:
+                                      EdgeInsets.symmetric(horizontal: 12.w),
+                                  width: 20.w,
+                                  height: 20.w,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: index < currentPin.length
+                                        ? Colors.white
+                                        : Colors.white.withValues(alpha: 0.3),
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                      // PIN dots indicator
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(
-                          _pinLength,
-                          (index) => AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            margin: EdgeInsets.symmetric(horizontal: 12.w),
-                            width: 20.w,
-                            height: 20.w,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: index < currentPin.length
-                                  ? Colors.white
-                                  : Colors.white.withValues(alpha: 0.3),
                             ),
-                          ),
+                          ],
                         ),
-                      ),
-                        ],
-                      ),
-                      // ===== BOTTOM zone: number pad anchored low =====
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                      // Number pad
-                      GridView.count(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        crossAxisCount: 3,
-                        mainAxisSpacing: 18.h,
-                        crossAxisSpacing: 25.w,
-                        childAspectRatio: 1.6,
-                        children: [
-                          ...List.generate(9, (index) {
-                            final number = (index + 1).toString();
-                            return _buildNumberButton(number, _isCreating);
-                          }),
-                          Container(), // Empty space
-                          _buildNumberButton('0', _isCreating),
-                          _buildIconButton(
-                            icon: Icons.backspace_outlined,
-                            onPressed: _isCreating ? null : _onBackspacePressed,
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 30.h),
-                      // Skip button (only on the initial PIN-entry step)
-                      if (!_isConfirmMode && !_isCreating)
-                        TextButton(
-                          onPressed: _skipPinSetup,
-                          child: Text(
-                            'Skip for now',
-                            style: textTheme.bodyMedium?.copyWith(
-                              color: Colors.white.withValues(alpha: 0.8),
-                              fontWeight: FontWeight.w600,
+                        // ===== BOTTOM zone: number pad anchored low =====
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Number pad
+                            GridView.count(
+                              physics: const NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              crossAxisCount: 3,
+                              mainAxisSpacing: 18.h,
+                              crossAxisSpacing: 25.w,
+                              childAspectRatio: 1.6,
+                              children: [
+                                ...List.generate(9, (index) {
+                                  final number = (index + 1).toString();
+                                  return _buildNumberButton(
+                                      number, _isCreating);
+                                }),
+                                Container(), // Empty space
+                                _buildNumberButton('0', _isCreating),
+                                _buildIconButton(
+                                  icon: Icons.backspace_outlined,
+                                  onPressed:
+                                      _isCreating ? null : _onBackspacePressed,
+                                ),
+                              ],
                             ),
-                          ),
-                        ),
-                      if (_isCreating)
-                        Padding(
-                          padding: EdgeInsets.symmetric(vertical: 20.h),
-                          child: Column(
-                            children: [
-                              const LazerVaultLoader.small(),
-                              SizedBox(height: 12.h),
-                              Text(
-                                'Creating your PIN...',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.8),
-                                  fontSize: 14.sp,
+                            SizedBox(height: 30.h),
+                            // Skip button (only on the initial PIN-entry step)
+                            if (!_isConfirmMode && !_isCreating)
+                              TextButton(
+                                onPressed: _skipPinSetup,
+                                child: Text(
+                                  'Skip for now',
+                                  style: textTheme.bodyMedium?.copyWith(
+                                    color: Colors.white.withValues(alpha: 0.8),
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
-                            ],
-                          ),
+                            if (_isCreating)
+                              Padding(
+                                padding: EdgeInsets.symmetric(vertical: 20.h),
+                                child: Column(
+                                  children: [
+                                    const LazerVaultLoader.small(),
+                                    SizedBox(height: 12.h),
+                                    Text(
+                                      'Creating your PIN...',
+                                      style: TextStyle(
+                                        color:
+                                            Colors.white.withValues(alpha: 0.8),
+                                        fontSize: 14.sp,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            SizedBox(height: 24.h),
+                          ],
                         ),
-                      SizedBox(height: 24.h),
-                        ],
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
@@ -727,9 +736,9 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
           child: Text(
             number,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w500,
-              color: isDisabled ? Colors.grey : Colors.white,
-            ),
+                  fontWeight: FontWeight.w500,
+                  color: isDisabled ? Colors.grey : Colors.white,
+                ),
           ),
         ),
       ),

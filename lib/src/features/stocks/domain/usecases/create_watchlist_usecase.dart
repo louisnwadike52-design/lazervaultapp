@@ -8,7 +8,8 @@ class CreateWatchlistUseCase {
 
   CreateWatchlistUseCase(this.repository);
 
-  Future<Either<Failure, Watchlist>> call(String name, List<String> symbols) async {
+  Future<Either<Failure, Watchlist>> call(
+      String name, List<String> symbols) async {
     return await repository.createWatchlist(name, symbols);
   }
-} 
+}

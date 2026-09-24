@@ -256,8 +256,9 @@ String? titleForDomain(String domain, String typeLower) {
 /// contributes nothing rather than a wrong guess.
 ({String? triggerReason, String? ruleName}) autoSaveDetailsFromDescription(
     String description) {
-  final m = RegExp(r'^\s*AutoSave\s*\(([^)]*)\)\s*:\s*(.*)$', caseSensitive: false)
-      .firstMatch(description);
+  final m =
+      RegExp(r'^\s*AutoSave\s*\(([^)]*)\)\s*:\s*(.*)$', caseSensitive: false)
+          .firstMatch(description);
   if (m == null) return (triggerReason: null, ruleName: null);
   final reason = (m.group(1) ?? '').trim();
   final name = (m.group(2) ?? '').trim();
@@ -505,7 +506,8 @@ TransactionServiceType inferServiceTypeFromCategory(
     return TransactionServiceType.autosave;
   } else if (cat.contains('lock') || cat.contains('piggy')) {
     return TransactionServiceType.lockFunds;
-  } else if (cat.contains('contribution') || text.contains('contribution payment')) {
+  } else if (cat.contains('contribution') ||
+      text.contains('contribution payment')) {
     return TransactionServiceType.groupContribution;
   } else if (cat.contains('group')) {
     return TransactionServiceType.groupFunds;

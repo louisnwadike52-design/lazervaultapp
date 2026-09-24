@@ -76,7 +76,8 @@ void main() {
       expect(backendName, equals('crypto-service'));
     });
 
-    test('AppServiceName.transfer (sendFunds) maps to core-payments-service', () {
+    test('AppServiceName.transfer (sendFunds) maps to core-payments-service',
+        () {
       const transferService = AppServiceName.sendFunds;
       final backendName = transferService.backendServiceName;
 

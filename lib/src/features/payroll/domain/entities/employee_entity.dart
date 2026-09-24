@@ -32,7 +32,8 @@ class EmployeeEntity extends Equatable {
   final String bankCode;
   final String bankName;
   final String bankAccountName;
-  final String payoutType; // "internal" (Lazervault user) | "external" (bank account)
+  final String
+      payoutType; // "internal" (Lazervault user) | "external" (bank account)
   final EmploymentType employmentType;
   final double payRate; // Display amount (major units)
   final PayFrequency payFrequency;

@@ -110,13 +110,15 @@ ${widget.trades.map((trade) => '  ${trade.action} ${trade.sharesToTrade} ${trade
 🚀 Generated with Claude Code
 ''';
 
-    SharePlus.instance.share(ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+    SharePlus.instance
+        .share(ShareParams(
+      // iOS: a non-zero popover anchor is required — CGRectZero throws
+      // PlatformException and the share silently fails on iPhone/iPad.
+      sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       text: receiptText,
       subject: 'Rebalance Receipt - $_rebalanceId',
-    )).then((_) {
+    ))
+        .then((_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -396,7 +398,8 @@ ${widget.trades.map((trade) => '  ${trade.action} ${trade.sharesToTrade} ${trade
                     ],
                   ),
                   Text(
-                    CurrencySymbols.formatAmountWithCurrency(trade.estimatedTotal, 'USD'),
+                    CurrencySymbols.formatAmountWithCurrency(
+                        trade.estimatedTotal, 'USD'),
                     style: GoogleFonts.inter(
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w600,
@@ -418,11 +421,13 @@ ${widget.trades.map((trade) => '  ${trade.action} ${trade.sharesToTrade} ${trade
             decoration: BoxDecoration(
               color: const Color(0xFF6366F1).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+              border: Border.all(
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
-                Icon(Icons.info_outline, color: const Color(0xFF6366F1), size: 20.sp),
+                Icon(Icons.info_outline,
+                    color: const Color(0xFF6366F1), size: 20.sp),
                 SizedBox(width: 12.w),
                 Expanded(
                   child: Text(

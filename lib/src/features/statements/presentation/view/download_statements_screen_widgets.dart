@@ -20,10 +20,13 @@ class _FormatButton extends StatelessWidget {
       child: Container(
         height: 56.h,
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF4E03D0).withValues(alpha: 0.1) : const Color(0xFFF9FAFB),
+          color: isSelected
+              ? const Color(0xFF4E03D0).withValues(alpha: 0.1)
+              : const Color(0xFFF9FAFB),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: isSelected ? const Color(0xFF4E03D0) : const Color(0xFFE5E7EB),
+            color:
+                isSelected ? const Color(0xFF4E03D0) : const Color(0xFFE5E7EB),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -32,7 +35,9 @@ class _FormatButton extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? const Color(0xFF4E03D0) : const Color(0xFF6B7280),
+              color: isSelected
+                  ? const Color(0xFF4E03D0)
+                  : const Color(0xFF6B7280),
               size: 20.sp,
             ),
             SizedBox(height: 4.h),
@@ -41,7 +46,9 @@ class _FormatButton extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 12.sp,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                color: isSelected ? const Color(0xFF4E03D0) : const Color(0xFF6B7280),
+                color: isSelected
+                    ? const Color(0xFF4E03D0)
+                    : const Color(0xFF6B7280),
               ),
             ),
           ],

@@ -46,9 +46,11 @@ class _RecipientTransactionHistoryModalState
     try {
       final cubit = GetIt.I<RecurringTransferCubit>();
       cubit.loadByRecipient(widget.recipient.accountNumber);
-      cubit.stream.firstWhere(
+      cubit.stream
+          .firstWhere(
         (s) => s is RecurringTransferListLoaded || s is RecurringTransferError,
-      ).then((state) {
+      )
+          .then((state) {
         if (state is RecurringTransferListLoaded && mounted) {
           final active = state.transfers.where((t) => t.isActive).toList();
           if (active.isNotEmpty) {
@@ -66,8 +68,7 @@ class _RecipientTransactionHistoryModalState
     if (_activeRecurringTransfers.isEmpty) return null;
     if (tx.flow != TransactionFlow.outgoing) return null;
     for (final rt in _activeRecurringTransfers) {
-      if ((rt.amount - tx.amount).abs() < 0.01 &&
-          rt.currency == tx.currency) {
+      if ((rt.amount - tx.amount).abs() < 0.01 && rt.currency == tx.currency) {
         return rt;
       }
     }
@@ -346,7 +347,8 @@ class _RecipientTransactionHistoryModalState
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4E03D0),
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),

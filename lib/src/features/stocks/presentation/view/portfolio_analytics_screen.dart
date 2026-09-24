@@ -9,14 +9,16 @@ class PortfolioAnalyticsScreen extends StatefulWidget {
   const PortfolioAnalyticsScreen({super.key, this.currency = 'USD'});
 
   @override
-  State<PortfolioAnalyticsScreen> createState() => _PortfolioAnalyticsScreenState();
+  State<PortfolioAnalyticsScreen> createState() =>
+      _PortfolioAnalyticsScreenState();
 }
 
-class _PortfolioAnalyticsScreenState extends State<PortfolioAnalyticsScreen> with TickerProviderStateMixin {
+class _PortfolioAnalyticsScreenState extends State<PortfolioAnalyticsScreen>
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _slideAnimation;
-  
+
   String _selectedTimeframe = '1M';
   final List<String> _timeframes = ['1W', '1M', '3M', '6M', '1Y', 'ALL'];
 
@@ -31,15 +33,15 @@ class _PortfolioAnalyticsScreenState extends State<PortfolioAnalyticsScreen> wit
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _slideAnimation = Tween<double>(begin: 30.0, end: 0.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _animationController.forward();
   }
 
@@ -256,7 +258,8 @@ class _PortfolioAnalyticsScreenState extends State<PortfolioAnalyticsScreen> wit
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      CurrencySymbols.formatAmountWithCurrency(24567.89, widget.currency),
+                      CurrencySymbols.formatAmountWithCurrency(
+                          24567.89, widget.currency),
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 28.sp,
@@ -306,7 +309,7 @@ class _PortfolioAnalyticsScreenState extends State<PortfolioAnalyticsScreen> wit
         itemBuilder: (context, index) {
           final timeframe = _timeframes[index];
           final isSelected = _selectedTimeframe == timeframe;
-          
+
           return Container(
             margin: EdgeInsets.only(right: 12.w),
             child: GestureDetector(
@@ -323,16 +326,16 @@ class _PortfolioAnalyticsScreenState extends State<PortfolioAnalyticsScreen> wit
                           colors: [Colors.purple, Colors.purple.shade700],
                         )
                       : null,
-                  color: isSelected ? null : Colors.white.withValues(alpha: 0.1),
+                  color:
+                      isSelected ? null : Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Text(
                   timeframe,
@@ -400,8 +403,10 @@ class _PortfolioAnalyticsScreenState extends State<PortfolioAnalyticsScreen> wit
                 ),
                 titlesData: FlTitlesData(
                   show: true,
-                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles:
+                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles:
+                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
@@ -437,11 +442,11 @@ class _PortfolioAnalyticsScreenState extends State<PortfolioAnalyticsScreen> wit
                             text = const Text('', style: style);
                             break;
                         }
-                                                 return SideTitleWidget(
-                           space: 0,
-                           meta: meta,
-                           child: text,
-                         );
+                        return SideTitleWidget(
+                          space: 0,
+                          meta: meta,
+                          child: text,
+                        );
                       },
                     ),
                   ),
@@ -520,24 +525,33 @@ class _PortfolioAnalyticsScreenState extends State<PortfolioAnalyticsScreen> wit
         SizedBox(height: 16.h),
         Row(
           children: [
-            Expanded(child: _buildMetricCard('Sharpe Ratio', '1.45', Icons.speed, Colors.blue)),
+            Expanded(
+                child: _buildMetricCard(
+                    'Sharpe Ratio', '1.45', Icons.speed, Colors.blue)),
             SizedBox(width: 12.w),
-            Expanded(child: _buildMetricCard('Beta', '0.85', Icons.show_chart, Colors.green)),
+            Expanded(
+                child: _buildMetricCard(
+                    'Beta', '0.85', Icons.show_chart, Colors.green)),
           ],
         ),
         SizedBox(height: 12.h),
         Row(
           children: [
-            Expanded(child: _buildMetricCard('Max Drawdown', '-8.2%', Icons.trending_down, Colors.red)),
+            Expanded(
+                child: _buildMetricCard(
+                    'Max Drawdown', '-8.2%', Icons.trending_down, Colors.red)),
             SizedBox(width: 12.w),
-            Expanded(child: _buildMetricCard('Volatility', '12.4%', Icons.waves, Colors.orange)),
+            Expanded(
+                child: _buildMetricCard(
+                    'Volatility', '12.4%', Icons.waves, Colors.orange)),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildMetricCard(String title, String value, IconData icon, Color color) {
+  Widget _buildMetricCard(
+      String title, String value, IconData icon, Color color) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -746,9 +760,14 @@ class _PortfolioAnalyticsScreenState extends State<PortfolioAnalyticsScreen> wit
             ],
           ),
           SizedBox(height: 20.h),
-          _buildRiskItem('Value at Risk (95%)', CurrencySymbols.formatAmountWithCurrency(1234, widget.currency), 'Maximum potential loss'),
-          _buildRiskItem('Correlation to S&P 500', '0.78', 'Market correlation'),
-          _buildRiskItem('Diversification Ratio', '8.5/10', 'Portfolio diversification'),
+          _buildRiskItem(
+              'Value at Risk (95%)',
+              CurrencySymbols.formatAmountWithCurrency(1234, widget.currency),
+              'Maximum potential loss'),
+          _buildRiskItem(
+              'Correlation to S&P 500', '0.78', 'Market correlation'),
+          _buildRiskItem(
+              'Diversification Ratio', '8.5/10', 'Portfolio diversification'),
         ],
       ),
     );
@@ -842,7 +861,8 @@ class _PortfolioAnalyticsScreenState extends State<PortfolioAnalyticsScreen> wit
     );
   }
 
-  Widget _buildComparisonItem(String name, String performance, Color color, bool isPortfolio) {
+  Widget _buildComparisonItem(
+      String name, String performance, Color color, bool isPortfolio) {
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(16.w),
@@ -864,7 +884,6 @@ class _PortfolioAnalyticsScreenState extends State<PortfolioAnalyticsScreen> wit
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Row(
         children: [
@@ -904,4 +923,4 @@ class _PortfolioAnalyticsScreenState extends State<PortfolioAnalyticsScreen> wit
       ),
     );
   }
-} 
+}

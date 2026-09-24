@@ -129,4 +129,5 @@ Widget buildBatchStatusBadge(String status) {
 }
 
 /// Convenience: get currency symbol from code.
-String batchCurrencySymbol(String currency) => CurrencyUtils.getSymbol(currency);
+String batchCurrencySymbol(String currency) =>
+    CurrencyUtils.getSymbol(currency);

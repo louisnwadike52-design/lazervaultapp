@@ -8,7 +8,8 @@ import 'tagged_invoice_state.dart';
 class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
   final TaggedInvoiceRepository repository;
 
-  TaggedInvoiceCubit({required this.repository}) : super(const TaggedInvoiceInitial());
+  TaggedInvoiceCubit({required this.repository})
+      : super(const TaggedInvoiceInitial());
 
   static const int _defaultPageSize = 20;
 
@@ -405,7 +406,8 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
       if (isClosed) return;
       // If data already loaded, show revalidating state instead of full loading shimmer
       if (state is IncomingTaggedInvoicesLoaded) {
-        emit((state as IncomingTaggedInvoicesLoaded).copyWith(isRevalidating: true));
+        emit((state as IncomingTaggedInvoicesLoaded)
+            .copyWith(isRevalidating: true));
       } else {
         emit(const TaggedInvoiceLoading());
       }
@@ -457,7 +459,8 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
         ));
       } else {
         // Fallback to standard method
-        await loadIncomingInvoices(page: page, statusFilter: statusFilter, currency: currency);
+        await loadIncomingInvoices(
+            page: page, statusFilter: statusFilter, currency: currency);
       }
     } catch (e) {
       if (isClosed) return;

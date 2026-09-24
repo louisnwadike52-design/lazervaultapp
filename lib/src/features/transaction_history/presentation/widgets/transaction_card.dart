@@ -156,8 +156,8 @@ class TransactionCard extends StatelessWidget {
     // generic transfer glyph, so history reads "which bank" at a glance.
     final md = transaction.metadata;
     final bankName = md?['bank_name'] as String?;
-    final bankCode =
-        (md?['bank_code'] as String?) ?? (md?['destination_bank_code'] as String?);
+    final bankCode = (md?['bank_code'] as String?) ??
+        (md?['destination_bank_code'] as String?);
     if (bankName != null && bankName.isNotEmpty) {
       return BankLogo(
         bankName: bankName,

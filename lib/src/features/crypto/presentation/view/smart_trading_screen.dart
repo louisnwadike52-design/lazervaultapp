@@ -14,7 +14,6 @@ import '../../../../core/grpc/crypto_grpc_client.dart';
 import '../../../../generated/crypto.pb.dart';
 part 'smart_trading_screen_widgets.dart';
 
-
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -241,12 +240,15 @@ class _SmartTradingScreenState extends State<SmartTradingScreen> {
         ),
         child: Row(
           children: [
-            Icon(Icons.sentiment_neutral, color: Colors.white.withValues(alpha: 0.4), size: 22.sp),
+            Icon(Icons.sentiment_neutral,
+                color: Colors.white.withValues(alpha: 0.4), size: 22.sp),
             SizedBox(width: 12.w),
             Expanded(
               child: Text(
                 'Fear & Greed index unavailable right now — pull to refresh.',
-                style: GoogleFonts.inter(fontSize: 13.sp, color: Colors.white.withValues(alpha: 0.6)),
+                style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    color: Colors.white.withValues(alpha: 0.6)),
               ),
             ),
           ],
@@ -413,8 +415,8 @@ class _SmartTradingScreenState extends State<SmartTradingScreen> {
                     color: _kTextPrimary)),
             SizedBox(height: 2.h),
             Text(label,
-                style: GoogleFonts.inter(
-                    fontSize: 11.sp, color: _kTextSecondary)),
+                style:
+                    GoogleFonts.inter(fontSize: 11.sp, color: _kTextSecondary)),
           ],
         ),
       ),
@@ -433,7 +435,9 @@ class _SmartTradingScreenState extends State<SmartTradingScreen> {
         children: [
           Text('News Sentiment',
               style: GoogleFonts.inter(
-                  fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white)),
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white)),
           SizedBox(height: 12.h),
           Container(
             padding: EdgeInsets.all(16.w),
@@ -773,8 +777,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen> {
             GestureDetector(
               onTap: _loadData,
               child: Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                 decoration: BoxDecoration(
                   color: _kAccent,
                   borderRadius: BorderRadius.circular(12.r),

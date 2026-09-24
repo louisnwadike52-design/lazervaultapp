@@ -83,8 +83,7 @@ class ExchangeHistoryActionsSheet {
                   'recipientSwiftCode': tx.recipient.swiftCode ?? '',
                   'recipientIban': tx.recipient.iban ?? '',
                   'recipientCountry': tx.recipient.countryCode,
-                  'recipientRoutingNumber':
-                      tx.recipient.routingNumber ?? '',
+                  'recipientRoutingNumber': tx.recipient.routingNumber ?? '',
                   'recipientAddress': tx.recipient.address ?? '',
                 },
               );

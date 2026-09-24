@@ -36,7 +36,6 @@ import 'package:lazervault/src/features/recipients/presentation/widgets/unified_
 part 'batch_transfer_form_part1.dart';
 part 'batch_transfer_form_part2.dart';
 
-
 // --- Batch Transfer Form ---
 class BatchTransferForm extends StatefulWidget {
   final List<dynamic>? preSelectedRecipients;
@@ -69,7 +68,8 @@ class BatchTransferForm extends StatefulWidget {
 
 /// Public so the host screen can address the live form (via a GlobalKey) —
 /// the Beneficiaries strip toggles saved people straight into the batch.
-class BatchTransferFormState extends State<BatchTransferForm> with TickerProviderStateMixin {
+class BatchTransferFormState extends State<BatchTransferForm>
+    with TickerProviderStateMixin {
   static const int _maxRecipients = 20;
   final List<BatchRecipientItem> _selectedRecipients = [];
   final TextEditingController _categoryController = TextEditingController();
@@ -109,9 +109,12 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
       _calculateTotal();
     });
   }
-  final TextEditingController _batchReferenceController = TextEditingController();
+
+  final TextEditingController _batchReferenceController =
+      TextEditingController();
   final TextEditingController _bulkAmountController = TextEditingController();
-  final TextEditingController _bulkReferenceController = TextEditingController();
+  final TextEditingController _bulkReferenceController =
+      TextEditingController();
 
   double _totalAmount = 0.0;
   final bool _isLoading = false;
@@ -158,10 +161,10 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
     if (authState is AuthenticationSuccess) {
       final localeManager = serviceLocator<LocaleManager>();
       context.read<RecipientCubit>().getRecipients(
-        accessToken: authState.profile.session.accessToken,
-        countryCode: localeManager.currentCountry,
-        currency: localeManager.currentCurrency,
-      );
+            accessToken: authState.profile.session.accessToken,
+            countryCode: localeManager.currentCountry,
+            currency: localeManager.currentCurrency,
+          );
     }
   }
 
@@ -204,7 +207,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
         : -1;
     if (index < 0) {
       index = _accounts.indexWhere(
-        (acc) => acc.accountType.toLowerCase() == 'personal' &&
+        (acc) =>
+            acc.accountType.toLowerCase() == 'personal' &&
             acc.currency == _currency,
       );
     }
@@ -229,7 +233,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
   }
 
   void _populatePreSelectedRecipients() {
-    if (widget.preSelectedRecipients != null && widget.preSelectedRecipients!.isNotEmpty) {
+    if (widget.preSelectedRecipients != null &&
+        widget.preSelectedRecipients!.isNotEmpty) {
       setState(() {
         _selectedRecipients.clear();
 
@@ -295,7 +300,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
               ),
               backgroundColor: btGreen,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r)),
               duration: const Duration(seconds: 3),
             ),
           );
@@ -324,7 +330,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
           ),
           backgroundColor: btOrange,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         ),
       );
       return;
@@ -368,7 +375,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
                   ),
                   backgroundColor: btOrange,
                   behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r)),
                 ),
               );
             }
@@ -396,7 +404,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           backgroundColor: btCardElevated,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
           contentPadding: EdgeInsets.all(24.w),
           title: Column(
             children: [
@@ -407,7 +416,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
                   color: btBlue.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(26.r),
                 ),
-                child: Icon(Icons.payments_outlined, color: btBlue, size: 26.sp),
+                child:
+                    Icon(Icons.payments_outlined, color: btBlue, size: 26.sp),
               ),
               SizedBox(height: 12.h),
               Text(
@@ -437,7 +447,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
               // Amount input
               TextField(
                 controller: _bulkAmountController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
                 ],
@@ -449,7 +460,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
                 onChanged: (value) => setDialogState(() {}),
                 decoration: InputDecoration(
                   labelText: 'Amount per recipient',
-                  labelStyle: GoogleFonts.inter(color: btTextSecondary, fontSize: 14.sp),
+                  labelStyle: GoogleFonts.inter(
+                      color: btTextSecondary, fontSize: 14.sp),
                   hintText: '0.00',
                   hintStyle: GoogleFonts.inter(color: btTextTertiary),
                   prefixText: '$_currencySymbol ',
@@ -472,7 +484,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
                     borderRadius: BorderRadius.circular(12.r),
                     borderSide: const BorderSide(color: btBlue, width: 1.5),
                   ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
                 ),
               ),
 
@@ -484,9 +497,11 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
                 style: GoogleFonts.inter(color: btTextPrimary, fontSize: 14.sp),
                 decoration: InputDecoration(
                   labelText: 'Reference (Optional)',
-                  labelStyle: GoogleFonts.inter(color: btTextSecondary, fontSize: 14.sp),
+                  labelStyle: GoogleFonts.inter(
+                      color: btTextSecondary, fontSize: 14.sp),
                   hintText: 'e.g., Monthly allowance',
-                  hintStyle: GoogleFonts.inter(color: btTextTertiary, fontSize: 14.sp),
+                  hintStyle:
+                      GoogleFonts.inter(color: btTextTertiary, fontSize: 14.sp),
                   filled: true,
                   fillColor: btBackground,
                   border: OutlineInputBorder(
@@ -501,7 +516,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
                     borderRadius: BorderRadius.circular(12.r),
                     borderSide: const BorderSide(color: btBlue, width: 1.5),
                   ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
                 ),
               ),
 
@@ -525,7 +541,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
                           children: [
                             Text(
                               'Per recipient',
-                              style: GoogleFonts.inter(color: btTextSecondary, fontSize: 13.sp),
+                              style: GoogleFonts.inter(
+                                  color: btTextSecondary, fontSize: 13.sp),
                             ),
                             Text(
                               '$_currencySymbol${double.parse(_bulkAmountController.text).toStringAsFixed(2)}',
@@ -582,11 +599,13 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
                       foregroundColor: btTextSecondary,
                       side: const BorderSide(color: btBorder),
                       padding: EdgeInsets.symmetric(vertical: 14.h),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r)),
                     ),
                     child: Text(
                       'Skip',
-                      style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                      style: GoogleFonts.inter(
+                          fontSize: 14.sp, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -595,54 +614,67 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
                   flex: 2,
                   child: ElevatedButton(
                     onPressed: _bulkAmountController.text.isNotEmpty &&
-                        double.tryParse(_bulkAmountController.text) != null &&
-                        double.parse(_bulkAmountController.text) > 0
-                      ? () {
-                          final appliedAmount = double.parse(_bulkAmountController.text);
-                          final appliedAmountText = '$_currencySymbol${appliedAmount.toStringAsFixed(2)}';
+                            double.tryParse(_bulkAmountController.text) !=
+                                null &&
+                            double.parse(_bulkAmountController.text) > 0
+                        ? () {
+                            final appliedAmount =
+                                double.parse(_bulkAmountController.text);
+                            final appliedAmountText =
+                                '$_currencySymbol${appliedAmount.toStringAsFixed(2)}';
 
-                          for (int i = 0; i < _selectedRecipients.length; i++) {
-                            _selectedRecipients[i].amountController.text = _bulkAmountController.text;
-                            if (_bulkReferenceController.text.isNotEmpty) {
-                              _selectedRecipients[i].referenceController.text = _bulkReferenceController.text;
+                            for (int i = 0;
+                                i < _selectedRecipients.length;
+                                i++) {
+                              _selectedRecipients[i].amountController.text =
+                                  _bulkAmountController.text;
+                              if (_bulkReferenceController.text.isNotEmpty) {
+                                _selectedRecipients[i]
+                                    .referenceController
+                                    .text = _bulkReferenceController.text;
+                              }
                             }
-                          }
 
-                          setState(() {
-                            _calculateTotal();
-                          });
+                            setState(() {
+                              _calculateTotal();
+                            });
 
-                          _bulkAmountController.clear();
-                          _bulkReferenceController.clear();
-                          Navigator.pop(dialogContext);
+                            _bulkAmountController.clear();
+                            _bulkReferenceController.clear();
+                            Navigator.pop(dialogContext);
 
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Applied $appliedAmountText to all $recipientCount recipients',
-                                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Applied $appliedAmountText to all $recipientCount recipients',
+                                  style: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w600),
+                                ),
+                                backgroundColor: btGreen,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12.r)),
                               ),
-                              backgroundColor: btGreen,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-                            ),
-                          );
-                        }
-                      : null,
+                            );
+                          }
+                        : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _bulkAmountController.text.isNotEmpty &&
-                          double.tryParse(_bulkAmountController.text) != null &&
-                          double.parse(_bulkAmountController.text) > 0
-                        ? btBlue
-                        : btBorder,
+                              double.tryParse(_bulkAmountController.text) !=
+                                  null &&
+                              double.parse(_bulkAmountController.text) > 0
+                          ? btBlue
+                          : btBorder,
                       foregroundColor: btTextPrimary,
                       padding: EdgeInsets.symmetric(vertical: 14.h),
                       elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r)),
                     ),
                     child: Text(
                       'Apply to All',
-                      style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                      style: GoogleFonts.inter(
+                          fontSize: 14.sp, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -664,7 +696,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
 
   void _toggleRecipientExpansion(int index) {
     setState(() {
-      _selectedRecipients[index].isExpanded = !_selectedRecipients[index].isExpanded;
+      _selectedRecipients[index].isExpanded =
+          !_selectedRecipients[index].isExpanded;
     });
   }
 
@@ -676,7 +709,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
 
   bool get _canProceed {
     return _selectedRecipients.isNotEmpty &&
-        _selectedRecipients.every((r) => r.isValid && r.amount >= _minAmountFor(r));
+        _selectedRecipients
+            .every((r) => r.isValid && r.amount >= _minAmountFor(r));
   }
 
   void _proceedToBatchTransfer() {
@@ -684,7 +718,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
 
     // Self-transfer check
     final accountManager = GetIt.I<AccountManager>();
-    final myAccountNumber = accountManager.activeAccountDetails?.accountNumber ?? '';
+    final myAccountNumber =
+        accountManager.activeAccountDetails?.accountNumber ?? '';
     if (myAccountNumber.isNotEmpty) {
       final selfTransfers = _selectedRecipients
           .where((r) => r.recipient.accountNumber == myAccountNumber)
@@ -698,7 +733,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
             ),
             backgroundColor: btRed,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r)),
           ),
         );
         return;
@@ -717,7 +753,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
             ),
             backgroundColor: btRed,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r)),
           ),
         );
         return;
@@ -731,8 +768,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
           ? refText.substring(0, min(200, refText.length))
           : null;
       // For external bank transfers, use CBN/NIBSS-compliant default narration
-      final narration = userNarration
-          ?? (item.isExternal
+      final narration = userNarration ??
+          (item.isExternal
               ? 'Lazervault/$recipientName'
               : 'Transfer to $recipientName');
       // SendFunds parity: the account-number field carries the display
@@ -756,7 +793,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
             : null,
         destinationBankCode: item.bankCode,
         beneficiaryName: recipientName,
-        destinationBankName: item.bankName ?? (item.recipient.type == 'internal' ? 'LazerVault' : null),
+        destinationBankName: item.bankName ??
+            (item.recipient.type == 'internal' ? 'LazerVault' : null),
       );
     }).toList();
 
@@ -796,13 +834,15 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
       'batchReference': _batchReferenceController.text,
       'currency': _currency,
       'currencySymbol': _currencySymbol,
-      'selectedAccount': _accounts.isNotEmpty && _selectedAccountIndex < _accounts.length
-          ? _accounts[_selectedAccountIndex]
-          : null,
+      'selectedAccount':
+          _accounts.isNotEmpty && _selectedAccountIndex < _accounts.length
+              ? _accounts[_selectedAccountIndex]
+              : null,
       // The review screen owns the visible source-account choice now.
       'accounts': _accounts,
       'recipientNames': Map.fromEntries(
-        _selectedRecipients.map((item) => MapEntry(item.recipient.accountNumber, item.recipient.name)),
+        _selectedRecipients.map((item) =>
+            MapEntry(item.recipient.accountNumber, item.recipient.name)),
       ),
     };
 
@@ -829,7 +869,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
           setState(() {
             _accounts = state.accountSummaries;
             if (_selectedAccountIndex >= _accounts.length) {
-              _selectedAccountIndex = _accounts.isEmpty ? 0 : _accounts.length - 1;
+              _selectedAccountIndex =
+                  _accounts.isEmpty ? 0 : _accounts.length - 1;
               _updateCurrencyFromAccount();
             }
           });
@@ -871,7 +912,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
                 GestureDetector(
                   onTap: _showMultipleRecipientSelection,
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
                     decoration: BoxDecoration(
                       color: btBlue,
                       borderRadius: BorderRadius.circular(20.r),
@@ -901,7 +943,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
               Padding(
                 padding: EdgeInsets.only(top: 12.h),
                 child: GestureDetector(
-                  onTap: () => _showBulkAmountDialog(_selectedRecipients.length),
+                  onTap: () =>
+                      _showBulkAmountDialog(_selectedRecipients.length),
                   child: Container(
                     width: double.infinity,
                     padding: EdgeInsets.all(14.w),
@@ -919,7 +962,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
                             color: btBlue.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(18.r),
                           ),
-                          child: Icon(Icons.attach_money, color: btBlue, size: 18.sp),
+                          child: Icon(Icons.attach_money,
+                              color: btBlue, size: 18.sp),
                         ),
                         SizedBox(width: 12.w),
                         Expanded(
@@ -944,7 +988,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
                             ],
                           ),
                         ),
-                        Icon(Icons.chevron_right, color: btTextSecondary, size: 20.sp),
+                        Icon(Icons.chevron_right,
+                            color: btTextSecondary, size: 20.sp),
                       ],
                     ),
                   ),
@@ -982,19 +1027,20 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
                   backgroundColor: _canProceed ? btBlue : btBorder,
                   foregroundColor: btTextPrimary,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16.r)),
                 ),
                 child: _isLoading
-                  ? LazerVaultLoader.small()
-                  : Text(
-                      _selectedRecipients.isEmpty
-                        ? 'Add Recipients to Continue'
-                        : (widget.proceedLabel ?? 'Continue to Review'),
-                      style: GoogleFonts.inter(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w600,
+                    ? LazerVaultLoader.small()
+                    : Text(
+                        _selectedRecipients.isEmpty
+                            ? 'Add Recipients to Continue'
+                            : (widget.proceedLabel ?? 'Continue to Review'),
+                        style: GoogleFonts.inter(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
               ),
             ),
           ],
@@ -1025,7 +1071,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
               SizedBox(width: 12.w),
               Text(
                 'Loading accounts...',
-                style: GoogleFonts.inter(color: btTextSecondary, fontSize: 14.sp),
+                style:
+                    GoogleFonts.inter(color: btTextSecondary, fontSize: 14.sp),
               ),
             ],
           ),
@@ -1233,63 +1280,64 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
                     child: Opacity(
                       opacity: isLocked ? 0.4 : 1.0,
                       child: Container(
-                      margin: EdgeInsets.only(bottom: 8.h),
-                      padding: EdgeInsets.all(14.w),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? typeColor.withValues(alpha: 0.1)
-                            : btCardElevated,
-                        borderRadius: BorderRadius.circular(14.r),
-                        border: Border.all(
-                          color: isSelected ? typeColor : btBorder,
-                          width: isSelected ? 1.5 : 1,
+                        margin: EdgeInsets.only(bottom: 8.h),
+                        padding: EdgeInsets.all(14.w),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? typeColor.withValues(alpha: 0.1)
+                              : btCardElevated,
+                          borderRadius: BorderRadius.circular(14.r),
+                          border: Border.all(
+                            color: isSelected ? typeColor : btBorder,
+                            width: isSelected ? 1.5 : 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 40.w,
+                              height: 40.w,
+                              decoration: BoxDecoration(
+                                color: typeColor.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              child: Icon(
+                                _getAccountTypeIcon(account.accountType),
+                                color: typeColor,
+                                size: 20.sp,
+                              ),
+                            ),
+                            SizedBox(width: 12.w),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    account.displayName,
+                                    style: GoogleFonts.inter(
+                                      color: btTextPrimary,
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  SizedBox(height: 2.h),
+                                  Text(
+                                    '${CurrencyUtils.getSymbol(account.currency)}${account.availableBalance.toStringAsFixed(2)} \u2022 \u2022\u2022\u2022\u2022 ${account.accountNumberLast4}',
+                                    style: GoogleFonts.inter(
+                                      color: btTextSecondary,
+                                      fontSize: 13.sp,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (isSelected)
+                              Icon(Icons.check_circle,
+                                  color: typeColor, size: 22.sp),
+                          ],
                         ),
                       ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 40.w,
-                            height: 40.w,
-                            decoration: BoxDecoration(
-                              color: typeColor.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12.r),
-                            ),
-                            child: Icon(
-                              _getAccountTypeIcon(account.accountType),
-                              color: typeColor,
-                              size: 20.sp,
-                            ),
-                          ),
-                          SizedBox(width: 12.w),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  account.displayName,
-                                  style: GoogleFonts.inter(
-                                    color: btTextPrimary,
-                                    fontSize: 14.sp,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                SizedBox(height: 2.h),
-                                Text(
-                                  '${CurrencyUtils.getSymbol(account.currency)}${account.availableBalance.toStringAsFixed(2)} \u2022 \u2022\u2022\u2022\u2022 ${account.accountNumberLast4}',
-                                  style: GoogleFonts.inter(
-                                    color: btTextSecondary,
-                                    fontSize: 13.sp,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (isSelected)
-                            Icon(Icons.check_circle, color: typeColor, size: 22.sp),
-                        ],
-                      ),
-                    ),
                     ),
                   );
                 },
@@ -1314,7 +1362,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
         color: btCardElevated,
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: hasInsufficientBalance ? btRed.withValues(alpha: 0.5) : btBorder,
+          color:
+              hasInsufficientBalance ? btRed.withValues(alpha: 0.5) : btBorder,
         ),
       ),
       child: Column(
@@ -1346,7 +1395,9 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
               Text(
                 '$_currencySymbol${_totalAmount.toStringAsFixed(2)}',
                 style: GoogleFonts.inter(
-                  color: hasInsufficientBalance ? btRed : (_totalAmount > 0 ? btGreen : btTextPrimary),
+                  color: hasInsufficientBalance
+                      ? btRed
+                      : (_totalAmount > 0 ? btGreen : btTextPrimary),
                   fontSize: 22.sp,
                   fontWeight: FontWeight.w700,
                 ),
@@ -1552,10 +1603,10 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           color: recipientItem.isValid
-            ? btGreen.withValues(alpha: 0.3)
-            : recipientItem.amount == 0
-              ? btBorder
-              : btRed.withValues(alpha: 0.3),
+              ? btGreen.withValues(alpha: 0.3)
+              : recipientItem.amount == 0
+                  ? btBorder
+                  : btRed.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -1576,23 +1627,26 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
                       height: 44.w,
                       decoration: BoxDecoration(
                         color: isLazerTag
-                          ? btPurple.withValues(alpha: 0.15)
-                          : btBlue.withValues(alpha: 0.15),
+                            ? btPurple.withValues(alpha: 0.15)
+                            : btBlue.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(22.r),
                       ),
                       child: Center(
                         child: isLazerTag
-                          ? Icon(Icons.alternate_email, color: btPurple, size: 20.sp)
-                          : Text(
-                              recipient.name.isNotEmpty
-                                ? recipient.name.substring(0, 1).toUpperCase()
-                                : '?',
-                              style: GoogleFonts.inter(
-                                color: btBlue,
-                                fontSize: 18.sp,
-                                fontWeight: FontWeight.w700,
+                            ? Icon(Icons.alternate_email,
+                                color: btPurple, size: 20.sp)
+                            : Text(
+                                recipient.name.isNotEmpty
+                                    ? recipient.name
+                                        .substring(0, 1)
+                                        .toUpperCase()
+                                    : '?',
+                                style: GoogleFonts.inter(
+                                  color: btBlue,
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
-                            ),
                       ),
                     ),
                     SizedBox(width: 12.w),
@@ -1618,7 +1672,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
                               if (isLazerTag) ...[
                                 SizedBox(width: 6.w),
                                 Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 6.w, vertical: 2.h),
                                   decoration: BoxDecoration(
                                     color: btPurple.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(4.r),
@@ -1654,7 +1709,9 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
                         GestureDetector(
                           onTap: () => _toggleRecipientExpansion(index),
                           child: Icon(
-                            recipientItem.isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                            recipientItem.isExpanded
+                                ? Icons.keyboard_arrow_up
+                                : Icons.keyboard_arrow_down,
                             color: btTextSecondary,
                             size: 22.sp,
                           ),
@@ -1681,7 +1738,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
             padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.w),
             child: TextFormField(
               controller: recipientItem.amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
               ],
@@ -1710,7 +1768,9 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.r),
                   borderSide: BorderSide(
-                    color: recipientItem.isValid ? btGreen.withValues(alpha: 0.3) : btBorder,
+                    color: recipientItem.isValid
+                        ? btGreen.withValues(alpha: 0.3)
+                        : btBorder,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
@@ -1725,7 +1785,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
                   borderRadius: BorderRadius.circular(10.r),
                   borderSide: const BorderSide(color: btRed, width: 1.5),
                 ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
                 errorText: recipientItem.amount > 0 &&
                         recipientItem.amount < _minAmountFor(recipientItem)
                     ? 'Minimum amount is $_currencySymbol${_minAmountFor(recipientItem).toStringAsFixed(2)}${recipientItem.recipient.type == 'external' ? ' for bank transfers' : ''}'
@@ -1749,12 +1810,15 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
                   // Reference input
                   TextFormField(
                     controller: recipientItem.referenceController,
-                    style: GoogleFonts.inter(color: btTextPrimary, fontSize: 14.sp),
+                    style: GoogleFonts.inter(
+                        color: btTextPrimary, fontSize: 14.sp),
                     decoration: InputDecoration(
                       labelText: 'Narration (Optional)',
-                      labelStyle: GoogleFonts.inter(color: btTextSecondary, fontSize: 14.sp),
+                      labelStyle: GoogleFonts.inter(
+                          color: btTextSecondary, fontSize: 14.sp),
                       hintText: 'e.g., Salary payment',
-                      hintStyle: GoogleFonts.inter(color: btTextTertiary, fontSize: 14.sp),
+                      hintStyle: GoogleFonts.inter(
+                          color: btTextTertiary, fontSize: 14.sp),
                       filled: true,
                       fillColor: btBackground,
                       border: OutlineInputBorder(
@@ -1769,7 +1833,8 @@ class BatchTransferFormState extends State<BatchTransferForm> with TickerProvide
                         borderRadius: BorderRadius.circular(12.r),
                         borderSide: const BorderSide(color: btBlue, width: 1.5),
                       ),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                      contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16.w, vertical: 14.h),
                     ),
                   ),
                 ],

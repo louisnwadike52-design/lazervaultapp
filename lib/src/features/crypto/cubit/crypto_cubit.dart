@@ -311,7 +311,8 @@ class CryptoCubit extends Cubit<CryptoState> {
       if (isClosed) return;
       final s = state;
       if (s is CryptosLoaded) {
-        emit(s.copyWith(autoOrders: res.orders.toList(), autoOrdersLoading: false));
+        emit(s.copyWith(
+            autoOrders: res.orders.toList(), autoOrdersLoading: false));
       }
     } catch (_) {
       // keep existing list on failure
@@ -476,7 +477,8 @@ class CryptoCubit extends Cubit<CryptoState> {
     final s0 = state;
     if (s0 is! CryptosLoaded) return;
     try {
-      final txns = await repository.getTransactions(limit: txPageSize, offset: 0);
+      final txns =
+          await repository.getTransactions(limit: txPageSize, offset: 0);
       if (isClosed) return;
       final s = state;
       if (s is CryptosLoaded) {
@@ -575,13 +577,15 @@ class CryptoCubit extends Cubit<CryptoState> {
     }
   }
 
-  Future<void> loadCryptoDetails(String cryptoId, {String timeframe = '7d'}) async {
+  Future<void> loadCryptoDetails(String cryptoId,
+      {String timeframe = '7d'}) async {
     try {
       if (isClosed) return;
       emit(CryptoLoading());
 
       final crypto = await repository.getCryptoById(cryptoId);
-      final priceHistory = await repository.getCryptoPriceHistory(cryptoId, range: timeframe);
+      final priceHistory =
+          await repository.getCryptoPriceHistory(cryptoId, range: timeframe);
 
       if (isClosed) return;
       emit(CryptoDetailsLoaded(
@@ -1026,7 +1030,8 @@ class CryptoCubit extends Cubit<CryptoState> {
 
   Future<void> loadSupportedAssets({int page = 1, int perPage = 50}) async {
     try {
-      final assets = await repository.getSupportedAssets(page: page, perPage: perPage);
+      final assets =
+          await repository.getSupportedAssets(page: page, perPage: perPage);
       final currentState = state;
       if (isClosed) return;
       if (currentState is CryptosLoaded) {
@@ -1137,7 +1142,8 @@ class CryptoCubit extends Cubit<CryptoState> {
     final current = state;
     if (current is! SwapQuotePending) return;
     try {
-      final refreshed = await repository.refreshSwapQuote(current.transactionId);
+      final refreshed =
+          await repository.refreshSwapQuote(current.transactionId);
       if (isClosed) return;
       emit(SwapQuotePending(
         transactionId: current.transactionId,
@@ -1146,9 +1152,15 @@ class CryptoCubit extends Cubit<CryptoState> {
         expiresAt: refreshed.expiresAt,
         fromCurrency: current.fromCurrency,
         toCurrency: current.toCurrency,
-        fromAmount: refreshed.fromAmount.isNotEmpty ? refreshed.fromAmount : current.fromAmount,
-        toAmount: refreshed.toAmount.isNotEmpty ? refreshed.toAmount : current.toAmount,
-        quotedPrice: refreshed.quotedPrice.isNotEmpty ? refreshed.quotedPrice : current.quotedPrice,
+        fromAmount: refreshed.fromAmount.isNotEmpty
+            ? refreshed.fromAmount
+            : current.fromAmount,
+        toAmount: refreshed.toAmount.isNotEmpty
+            ? refreshed.toAmount
+            : current.toAmount,
+        quotedPrice: refreshed.quotedPrice.isNotEmpty
+            ? refreshed.quotedPrice
+            : current.quotedPrice,
         spreadBps: current.spreadBps,
         spreadMinorUnits: current.spreadMinorUnits,
       ));
@@ -1184,8 +1196,12 @@ class CryptoCubit extends Cubit<CryptoState> {
           fromCurrency: current.fromCurrency,
           toCurrency: current.toCurrency,
           fromAmount: current.fromAmount,
-          receivedAmount: receipt.receivedAmount.isNotEmpty ? receipt.receivedAmount : current.toAmount,
-          executionPrice: receipt.executionPrice.isNotEmpty ? receipt.executionPrice : current.quotedPrice,
+          receivedAmount: receipt.receivedAmount.isNotEmpty
+              ? receipt.receivedAmount
+              : current.toAmount,
+          executionPrice: receipt.executionPrice.isNotEmpty
+              ? receipt.executionPrice
+              : current.quotedPrice,
         ));
       } else {
         emit(SwapPending(

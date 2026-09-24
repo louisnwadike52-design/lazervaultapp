@@ -25,7 +25,6 @@ import 'package:lazervault/src/features/widgets/user_avatar.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_chat_snapshot_cache.dart';
 part 'financial_connections_screen_widgets.dart';
 
-
 class FinancialConnectionsScreen extends StatefulWidget {
   const FinancialConnectionsScreen({super.key});
 
@@ -349,7 +348,8 @@ class _FinancialConnectionsScreenState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.person_search, size: 48.w, color: const Color(0xFF9CA3AF)),
+            Icon(Icons.person_search,
+                size: 48.w, color: const Color(0xFF9CA3AF)),
             SizedBox(height: 12.h),
             Text(
               'No users found',
@@ -465,55 +465,57 @@ class _FinancialConnectionsScreenState
           // Enables Slidable `groupTag` auto-close: opening one row's swipe
           // actions closes any other open row.
           child: SlidableAutoCloseBehavior(
-          child: RefreshIndicator(
-            onRefresh: _refreshAll,
-            color: const Color(0xFF3B82F6),
-            backgroundColor: const Color(0xFF1A1A1C),
-            child: (!anything && !_contactsLoading)
-                ? ListView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    children: [
-                      SizedBox(height: 100.h),
-                      _emptyForFilter(),
-                    ],
-                  )
-                : ListView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 96.h),
-                    children: onBirthdays
-                        ? [
-                            // Birthdays tab: only upcoming-birthday tiles (7-day window).
-                            _buildSectionHeader('UPCOMING BIRTHDAYS'),
-                            ...state.upcomingBirthdays.map(_buildBirthdayTile),
-                          ]
-                        : [
-                            if (hasRequests) ...[
-                              _buildRequestsSection(requests),
-                              SizedBox(height: 8.h),
-                            ],
-                            if (hasConnections) ...[
-                              _buildSectionHeader(switch (_filter) {
-                                _ChatFilter.chats => 'CONNECTIONS',
-                                _ChatFilter.unread => 'UNREAD',
-                                _ChatFilter.archived => 'ARCHIVED',
-                                _ChatFilter.birthdays => 'BIRTHDAYS',
-                              }),
-                              ...conversations.map(_buildConnectionTile),
-                            ],
-                            if (_kManualAddVisible &&
-                                (hasContacts ||
-                                    (_contactsLoading && !hasConnections))) ...[
-                              if (hasConnections) SizedBox(height: 8.h),
-                              if (_contactsLoading && !hasContacts)
-                                _buildContactsLoadingIndicator()
-                              else if (hasContacts) ...[
-                                _buildSectionHeader('SAVED CONTACTS'),
-                                ...contactsWithoutConv.map(_buildContactTile),
+            child: RefreshIndicator(
+              onRefresh: _refreshAll,
+              color: const Color(0xFF3B82F6),
+              backgroundColor: const Color(0xFF1A1A1C),
+              child: (!anything && !_contactsLoading)
+                  ? ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        SizedBox(height: 100.h),
+                        _emptyForFilter(),
+                      ],
+                    )
+                  : ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 96.h),
+                      children: onBirthdays
+                          ? [
+                              // Birthdays tab: only upcoming-birthday tiles (7-day window).
+                              _buildSectionHeader('UPCOMING BIRTHDAYS'),
+                              ...state.upcomingBirthdays
+                                  .map(_buildBirthdayTile),
+                            ]
+                          : [
+                              if (hasRequests) ...[
+                                _buildRequestsSection(requests),
+                                SizedBox(height: 8.h),
+                              ],
+                              if (hasConnections) ...[
+                                _buildSectionHeader(switch (_filter) {
+                                  _ChatFilter.chats => 'CONNECTIONS',
+                                  _ChatFilter.unread => 'UNREAD',
+                                  _ChatFilter.archived => 'ARCHIVED',
+                                  _ChatFilter.birthdays => 'BIRTHDAYS',
+                                }),
+                                ...conversations.map(_buildConnectionTile),
+                              ],
+                              if (_kManualAddVisible &&
+                                  (hasContacts ||
+                                      (_contactsLoading &&
+                                          !hasConnections))) ...[
+                                if (hasConnections) SizedBox(height: 8.h),
+                                if (_contactsLoading && !hasContacts)
+                                  _buildContactsLoadingIndicator()
+                                else if (hasContacts) ...[
+                                  _buildSectionHeader('SAVED CONTACTS'),
+                                  ...contactsWithoutConv.map(_buildContactTile),
+                                ],
                               ],
                             ],
-                          ],
-                  ),
-          ),
+                    ),
+            ),
           ),
         ),
       ],
@@ -654,8 +656,7 @@ class _FinancialConnectionsScreenState
   /// itself; otherwise shows a soft "in N days" pill.
   Widget _buildBirthdayTile(ConnectionBirthdayEntity b) {
     final today = b.isToday;
-    final accent =
-        today ? const Color(0xFFDB2777) : const Color(0xFF7C3AED);
+    final accent = today ? const Color(0xFFDB2777) : const Color(0xFF7C3AED);
     return _cardShell(
       child: Row(
         children: [
@@ -852,8 +853,7 @@ class _FinancialConnectionsScreenState
             child: Row(
               children: [
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFB923C).withOpacity(0.15),
                     borderRadius: BorderRadius.circular(12.r),
@@ -889,8 +889,7 @@ class _FinancialConnectionsScreenState
             ),
           ),
         ),
-        if (_requestsExpanded)
-          ...requests.map(_buildRequestTile),
+        if (_requestsExpanded) ...requests.map(_buildRequestTile),
       ],
     );
   }
@@ -912,31 +911,31 @@ class _FinancialConnectionsScreenState
         children: [
           _peerAvatar(name: name, imageUrl: request.otherUserAvatar, size: 42),
           SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                if (request.lastMessagePreview != null)
                   Text(
-                    name,
+                    request.lastMessagePreview!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 13.sp,
                     ),
                   ),
-                  if (request.lastMessagePreview != null)
-                    Text(
-                      request.lastMessagePreview!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF9CA3AF),
-                        fontSize: 13.sp,
-                      ),
-                    ),
-                ],
-              ),
+              ],
             ),
+          ),
           SizedBox(width: 8.w),
           _buildAcceptButton(request.id),
           SizedBox(width: 6.w),
@@ -970,8 +969,7 @@ class _FinancialConnectionsScreenState
 
   Widget _buildDeclineButton(String convId) {
     return InkWell(
-      onTap: () =>
-          context.read<P2PConversationsCubit>().declineRequest(convId),
+      onTap: () => context.read<P2PConversationsCubit>().declineRequest(convId),
       borderRadius: BorderRadius.circular(8.r),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
@@ -1037,110 +1035,110 @@ class _FinancialConnectionsScreenState
           onTap: () => _openChat(conversation),
           onLongPress: () => _showConversationActions(conversation),
           child: Row(
-          children: [
-            _peerAvatar(name: name, imageUrl: conversation.otherUserAvatar),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      if (conversation.safetyWarning) ...[
-                        Text('⚠️', style: TextStyle(fontSize: 13.sp)),
-                        SizedBox(width: 4.w),
-                      ],
-                      Expanded(
-                        child: Text(
-                          name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 15.sp,
-                            fontWeight:
-                                hasUnread ? FontWeight.w600 : FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      if (timeStr.isNotEmpty)
-                        Text(
-                          timeStr,
-                          style: GoogleFonts.inter(
-                            color: hasUnread
-                                ? const Color(0xFF3B82F6)
-                                : const Color(0xFF9CA3AF),
-                            fontSize: 12.sp,
-                          ),
-                        ),
-                    ],
-                  ),
-                  SizedBox(height: 4.h),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ValueListenableBuilder<Set<String>>(
-                          valueListenable: context
-                              .read<P2PConversationsCubit>()
-                              .typingConversations,
-                          builder: (context, typingIds, _) {
-                            // When the peer is typing, replace the last-message
-                            // preview with a live "typing…" indicator (same
-                            // signal the chat screen shows), for THIS peer only.
-                            if (typingIds.contains(conversation.id)) {
-                              return const _ConnectionTypingIndicator();
-                            }
-                            return Text(
-                              isPendingOutgoing &&
-                                      conversation.lastMessagePreview == null
-                                  ? 'Connection pending'
-                                  : conversation.lastMessagePreview ??
-                                      'No messages yet',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
-                                color: isPendingOutgoing
-                                    ? const Color(0xFFFB923C)
-                                    : hasUnread
-                                        ? Colors.white70
-                                        : const Color(0xFF9CA3AF),
-                                fontSize: 13.sp,
-                                fontWeight: hasUnread
-                                    ? FontWeight.w500
-                                    : FontWeight.w400,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      if (hasUnread) ...[
-                        SizedBox(width: 8.w),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 7.w, vertical: 2.h),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF3B82F6),
-                            borderRadius: BorderRadius.circular(10.r),
-                          ),
+            children: [
+              _peerAvatar(name: name, imageUrl: conversation.otherUserAvatar),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        if (conversation.safetyWarning) ...[
+                          Text('⚠️', style: TextStyle(fontSize: 13.sp)),
+                          SizedBox(width: 4.w),
+                        ],
+                        Expanded(
                           child: Text(
-                            conversation.unreadCount > 99
-                                ? '99+'
-                                : '${conversation.unreadCount}',
+                            name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.inter(
                               color: Colors.white,
-                              fontSize: 11.sp,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 15.sp,
+                              fontWeight:
+                                  hasUnread ? FontWeight.w600 : FontWeight.w500,
                             ),
                           ),
                         ),
+                        if (timeStr.isNotEmpty)
+                          Text(
+                            timeStr,
+                            style: GoogleFonts.inter(
+                              color: hasUnread
+                                  ? const Color(0xFF3B82F6)
+                                  : const Color(0xFF9CA3AF),
+                              fontSize: 12.sp,
+                            ),
+                          ),
                       ],
-                    ],
-                  ),
-                ],
+                    ),
+                    SizedBox(height: 4.h),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ValueListenableBuilder<Set<String>>(
+                            valueListenable: context
+                                .read<P2PConversationsCubit>()
+                                .typingConversations,
+                            builder: (context, typingIds, _) {
+                              // When the peer is typing, replace the last-message
+                              // preview with a live "typing…" indicator (same
+                              // signal the chat screen shows), for THIS peer only.
+                              if (typingIds.contains(conversation.id)) {
+                                return const _ConnectionTypingIndicator();
+                              }
+                              return Text(
+                                isPendingOutgoing &&
+                                        conversation.lastMessagePreview == null
+                                    ? 'Connection pending'
+                                    : conversation.lastMessagePreview ??
+                                        'No messages yet',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(
+                                  color: isPendingOutgoing
+                                      ? const Color(0xFFFB923C)
+                                      : hasUnread
+                                          ? Colors.white70
+                                          : const Color(0xFF9CA3AF),
+                                  fontSize: 13.sp,
+                                  fontWeight: hasUnread
+                                      ? FontWeight.w500
+                                      : FontWeight.w400,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        if (hasUnread) ...[
+                          SizedBox(width: 8.w),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 7.w, vertical: 2.h),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF3B82F6),
+                              borderRadius: BorderRadius.circular(10.r),
+                            ),
+                            child: Text(
+                              conversation.unreadCount > 99
+                                  ? '99+'
+                                  : '${conversation.unreadCount}',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
       ),
     );
@@ -1167,8 +1165,7 @@ class _FinancialConnectionsScreenState
           },
           child: Text('Undo',
               style: GoogleFonts.inter(
-                  color: const Color(0xFF3B82F6),
-                  fontWeight: FontWeight.w700)),
+                  color: const Color(0xFF3B82F6), fontWeight: FontWeight.w700)),
         ),
       );
     }
@@ -1180,7 +1177,8 @@ class _FinancialConnectionsScreenState
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text('Delete chat?',
             style: GoogleFonts.inter(
                 color: Colors.white,
@@ -1441,10 +1439,10 @@ class _FinancialConnectionsScreenState
 
   void _onUserTapped(Map<String, dynamic> user) {
     // gRPC-Gateway returns camelCase JSON keys; also handle snake_case for safety
-    final userId = user['userId'] as String?
-        ?? user['user_id'] as String?
-        ?? user['id'] as String?
-        ?? '';
+    final userId = user['userId'] as String? ??
+        user['user_id'] as String? ??
+        user['id'] as String? ??
+        '';
     final name = _getUserDisplayName(user);
 
     if (userId.isEmpty) return;
@@ -1454,8 +1452,8 @@ class _FinancialConnectionsScreenState
       arguments: {
         'otherUserId': userId,
         'otherUserName': name,
-        'otherUserAvatar': user['profilePicture'] as String?
-            ?? user['profile_picture'] as String?,
+        'otherUserAvatar': user['profilePicture'] as String? ??
+            user['profile_picture'] as String?,
         'isSavedRecipient': false,
       },
     )?.then((_) {
@@ -1465,12 +1463,10 @@ class _FinancialConnectionsScreenState
 
   String _getUserDisplayName(Map<String, dynamic> user) {
     // gRPC-Gateway returns camelCase JSON keys; also handle snake_case for safety
-    final first = user['firstName'] as String?
-        ?? user['first_name'] as String?
-        ?? '';
-    final last = user['lastName'] as String?
-        ?? user['last_name'] as String?
-        ?? '';
+    final first =
+        user['firstName'] as String? ?? user['first_name'] as String? ?? '';
+    final last =
+        user['lastName'] as String? ?? user['last_name'] as String? ?? '';
     final full = '$first $last'.trim();
     if (full.isNotEmpty) return full;
     return user['username'] as String? ?? 'Unknown';

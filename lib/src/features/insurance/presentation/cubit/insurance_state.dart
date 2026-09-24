@@ -337,4 +337,3 @@ class InsuranceRefundStatusLoaded extends InsuranceState {
   @override
   List<Object?> get props => [refund];
 }
-

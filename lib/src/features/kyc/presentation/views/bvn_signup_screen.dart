@@ -203,7 +203,8 @@ class _BVNSignupViewState extends State<_BVNSignupView> {
       child: Row(
         children: [
           IconButton(
-            icon: Icon(Icons.arrow_back_ios_new, size: 18.sp, color: Colors.black87),
+            icon: Icon(Icons.arrow_back_ios_new,
+                size: 18.sp, color: Colors.black87),
             onPressed: _submitting ? null : () => Get.back(),
           ),
           const Spacer(),
@@ -249,7 +250,8 @@ class _BVNSignupViewState extends State<_BVNSignupView> {
               ),
             ],
           ),
-          child: Icon(Icons.verified_user_rounded, color: Colors.white, size: 28.sp),
+          child: Icon(Icons.verified_user_rounded,
+              color: Colors.white, size: 28.sp),
         ),
         SizedBox(height: 16.h),
         Text(
@@ -362,7 +364,9 @@ class _BVNSignupViewState extends State<_BVNSignupView> {
                   color: _brandPurple.withValues(alpha: 0.7), size: 20.sp),
               suffixIcon: IconButton(
                 icon: Icon(
-                  _obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                  _obscure
+                      ? Icons.visibility_off_rounded
+                      : Icons.visibility_rounded,
                   color: Colors.black38,
                   size: 20.sp,
                 ),
@@ -370,11 +374,13 @@ class _BVNSignupViewState extends State<_BVNSignupView> {
               ),
               filled: true,
               fillColor: const Color(0xFFF6F5FB),
-              contentPadding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 8.w),
+              contentPadding:
+                  EdgeInsets.symmetric(vertical: 16.h, horizontal: 8.w),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
                 borderSide: BorderSide(
-                  color: hasError ? const Color(0xFFE53935) : Colors.transparent,
+                  color:
+                      hasError ? const Color(0xFFE53935) : Colors.transparent,
                 ),
               ),
               focusedBorder: OutlineInputBorder(
@@ -477,7 +483,8 @@ class _BVNSignupViewState extends State<_BVNSignupView> {
               ? LazerVaultLoader(size: 22)
               : Text(
                   'Verify & Continue',
-                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700),
+                  style:
+                      TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700),
                 ),
         ),
       ),

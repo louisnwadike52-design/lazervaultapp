@@ -167,7 +167,8 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen> {
           // Gifts-to-spray (spendable) — bought from your personal account.
           Text(
             'Gifts to spray',
-            style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13.sp),
+            style: TextStyle(
+                color: Colors.white.withOpacity(0.7), fontSize: 13.sp),
           ),
           SizedBox(height: 6.h),
           TweenAnimationBuilder<double>(
@@ -192,15 +193,20 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.savings_outlined, color: const Color(0xFF10B981), size: 16.sp),
+                  Icon(Icons.savings_outlined,
+                      color: const Color(0xFF10B981), size: 16.sp),
                   SizedBox(width: 6.w),
                   Text('Earnings (withdrawable)',
-                      style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 12.sp)),
+                      style: TextStyle(
+                          color: Colors.white.withOpacity(0.75),
+                          fontSize: 12.sp)),
                 ],
               ),
               Text('NGN ${_formatAmount(earnings)}',
                   style: TextStyle(
-                      color: const Color(0xFF10B981), fontSize: 16.sp, fontWeight: FontWeight.w700)),
+                      color: const Color(0xFF10B981),
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700)),
             ],
           ),
         ],
@@ -398,13 +404,15 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen> {
             width: 36.w,
             height: 36.w,
             decoration: BoxDecoration(
-              color: (isCredit ? const Color(0xFF10B981) : const Color(0xFFEF4444))
-                  .withOpacity(0.12),
+              color:
+                  (isCredit ? const Color(0xFF10B981) : const Color(0xFFEF4444))
+                      .withOpacity(0.12),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Icon(
               isCredit ? Icons.arrow_downward : Icons.arrow_upward,
-              color: isCredit ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+              color:
+                  isCredit ? const Color(0xFF10B981) : const Color(0xFFEF4444),
               size: 18.sp,
             ),
           ),
@@ -437,7 +445,8 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen> {
           Text(
             '${isCredit ? '+' : '-'} NGN ${_formatAmount(amountMajor)}',
             style: TextStyle(
-              color: isCredit ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+              color:
+                  isCredit ? const Color(0xFF10B981) : const Color(0xFFEF4444),
               fontSize: 14.sp,
               fontWeight: FontWeight.w600,
             ),

@@ -73,7 +73,9 @@ String normalizeUsernameIdentifier(String raw) {
 
 /// Whether [raw] is a usable login identifier (a valid email, phone or username).
 bool isValidLoginIdentifier(String raw) =>
-    isEmailIdentifier(raw) || isPhoneIdentifier(raw) || isUsernameIdentifier(raw);
+    isEmailIdentifier(raw) ||
+    isPhoneIdentifier(raw) ||
+    isUsernameIdentifier(raw);
 
 /// Normalize a phone identifier to E.164. A leading "+" is respected as an
 /// explicit international number; otherwise the dialing code for [countryIso]
@@ -101,7 +103,10 @@ String normalizePhoneIdentifier(String raw, {String countryIso = 'NG'}) {
     {String countryIso = 'NG'}) {
   final value = raw.trim();
   if (isPhoneIdentifier(value) && !isEmailIdentifier(value)) {
-    return (email: '', phone: normalizePhoneIdentifier(value, countryIso: countryIso));
+    return (
+      email: '',
+      phone: normalizePhoneIdentifier(value, countryIso: countryIso)
+    );
   }
   if (!isEmailIdentifier(value) && isUsernameIdentifier(value)) {
     return (email: normalizeUsernameIdentifier(value), phone: '');

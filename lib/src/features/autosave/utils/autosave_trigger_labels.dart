@@ -113,7 +113,8 @@ class AutoSaveTriggerLabels {
   /// would tell the user the trigger is off when it may well be on, and strand
   /// a rule they own. When we don't know, let the attempt through and quote
   /// the server's answer, which is authoritative either way.
-  static String? resumeBlockedReason(TriggerType t, AutoSaveCapabilities? caps) {
+  static String? resumeBlockedReason(
+      TriggerType t, AutoSaveCapabilities? caps) {
     if (t != TriggerType.externalInflow || caps == null) return null;
     if (caps.bankInflowEnabled) return null;
     return caps.bankInflowDisabledReason.isNotEmpty

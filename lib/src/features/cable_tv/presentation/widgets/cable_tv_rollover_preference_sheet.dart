@@ -65,7 +65,13 @@ class _CableTVRolloverPreferenceSheetState
   static const _textSecondary = Color(0xFF9CA3AF);
 
   static const _weekdayLabels = [
-    'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat',
+    'Sun',
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
   ];
 
   void _submit() {
@@ -194,8 +200,7 @@ class _CableTVRolloverPreferenceSheetState
             for (final freq in ['weekly', 'monthly'])
               Expanded(
                 child: Padding(
-                  padding:
-                      EdgeInsets.only(right: freq == 'monthly' ? 0 : 8.w),
+                  padding: EdgeInsets.only(right: freq == 'monthly' ? 0 : 8.w),
                   child: _chip(
                     label: freq[0].toUpperCase() + freq.substring(1),
                     selected: _frequency == freq,

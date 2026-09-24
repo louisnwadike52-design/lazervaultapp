@@ -189,8 +189,7 @@ class CreateLockCubit extends Cubit<CreateLockState> {
   int getMaxDuration(LockType type) =>
       getConfigForType(type)?.maxDurationDays ?? 0;
 
-  double getMinAmount(LockType type) =>
-      getConfigForType(type)?.minAmount ?? 0;
+  double getMinAmount(LockType type) => getConfigForType(type)?.minAmount ?? 0;
 
   bool getAllowsEarlyWithdrawal(LockType type) =>
       getConfigForType(type)?.allowsEarlyWithdrawal ?? false;
@@ -204,8 +203,7 @@ class CreateLockCubit extends Cubit<CreateLockState> {
   bool getSupportsAutoSave(LockType type) =>
       getConfigForType(type)?.supportsAutoSave ?? false;
 
-  bool isTypeActive(LockType type) =>
-      getConfigForType(type)?.isActive ?? true;
+  bool isTypeActive(LockType type) => getConfigForType(type)?.isActive ?? true;
 
   /// True when the plan locks every deposit to the configured
   /// fixed amount; the wizard hides the amount field in this case.
@@ -245,11 +243,7 @@ class CreateLockCubit extends Cubit<CreateLockState> {
   }
 
   static List<String> _splitNotes(String raw) =>
-      raw
-          .split('\n')
-          .map((s) => s.trim())
-          .where((s) => s.isNotEmpty)
-          .toList();
+      raw.split('\n').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
 
   // Backend slug — re-exposed via the enum's `backendKey` getter.
   String _lockTypeToConfigString(LockType type) => type.backendKey;
@@ -383,7 +377,8 @@ class CreateLockCubit extends Cubit<CreateLockState> {
     }
     if (!isTypeActive(_lockType!)) {
       if (isClosed) return false;
-      emit(CreateLockValidationError('${getDisplayName(_lockType!)} is currently unavailable'));
+      emit(CreateLockValidationError(
+          '${getDisplayName(_lockType!)} is currently unavailable'));
       return false;
     }
     return true;
@@ -399,7 +394,8 @@ class CreateLockCubit extends Cubit<CreateLockState> {
       final minAmount = getMinAmount(_lockType!);
       if (_amount! < minAmount) {
         if (isClosed) return false;
-        emit(CreateLockValidationError('Minimum amount is ${minAmount.toStringAsFixed(0)}'));
+        emit(CreateLockValidationError(
+            'Minimum amount is ${minAmount.toStringAsFixed(0)}'));
         return false;
       }
     }
@@ -453,7 +449,8 @@ class CreateLockCubit extends Cubit<CreateLockState> {
   bool validateStep5() {
     if (_selectedAccountId == null || _selectedAccountId!.isEmpty) {
       if (isClosed) return false;
-      emit(CreateLockValidationError('Please select an account to fund your lock'));
+      emit(CreateLockValidationError(
+          'Please select an account to fund your lock'));
       return false;
     }
     if (_paymentMethod == null || _paymentMethod!.isEmpty) {

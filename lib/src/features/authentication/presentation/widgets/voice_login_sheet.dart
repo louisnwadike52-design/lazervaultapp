@@ -68,7 +68,8 @@ class _VoiceLoginSheetState extends State<VoiceLoginSheet> {
   static const _recordDuration = Duration(seconds: 4);
 
   final AudioRecorder _recorder = AudioRecorder();
-  final VoiceBiometricsService _voice = serviceLocator<VoiceBiometricsService>();
+  final VoiceBiometricsService _voice =
+      serviceLocator<VoiceBiometricsService>();
 
   _Phase _phase = _Phase.idle;
   String _message = 'Tap the mic and say your passphrase clearly.';
@@ -109,10 +110,12 @@ class _VoiceLoginSheetState extends State<VoiceLoginSheet> {
       }
 
       final dir = await getTemporaryDirectory();
-      _path = '${dir.path}/voice_login_${DateTime.now().microsecondsSinceEpoch}.wav';
+      _path =
+          '${dir.path}/voice_login_${DateTime.now().microsecondsSinceEpoch}.wav';
 
       await _recorder.start(
-        const RecordConfig(encoder: AudioEncoder.wav, sampleRate: 16000, numChannels: 1),
+        const RecordConfig(
+            encoder: AudioEncoder.wav, sampleRate: 16000, numChannels: 1),
         path: _path!,
       );
       if (!mounted) return;
@@ -127,7 +130,8 @@ class _VoiceLoginSheetState extends State<VoiceLoginSheet> {
       if (!mounted) return;
       setState(() {
         _phase = _Phase.failed;
-        _message = 'Could not start recording. Close other apps using the mic and try again.';
+        _message =
+            'Could not start recording. Close other apps using the mic and try again.';
       });
     }
   }
@@ -191,7 +195,8 @@ class _VoiceLoginSheetState extends State<VoiceLoginSheet> {
       if (!mounted) return;
       setState(() {
         _phase = _Phase.failed;
-        _message = 'Could not verify your voice. Try again or use your passcode.';
+        _message =
+            'Could not verify your voice. Try again or use your passcode.';
       });
     }
   }
@@ -216,7 +221,10 @@ class _VoiceLoginSheetState extends State<VoiceLoginSheet> {
             ),
             const SizedBox(height: 24),
             const Text('Voice Login',
-                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700)),
             const SizedBox(height: 24),
             GestureDetector(
               onTap: busy ? null : _start,
@@ -225,13 +233,16 @@ class _VoiceLoginSheetState extends State<VoiceLoginSheet> {
                 height: 96,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: (recording ? _error : _primary).withValues(alpha: 0.15),
-                  border: Border.all(color: recording ? _error : _primary, width: 2),
+                  color:
+                      (recording ? _error : _primary).withValues(alpha: 0.15),
+                  border: Border.all(
+                      color: recording ? _error : _primary, width: 2),
                 ),
                 child: _phase == _Phase.verifying
                     ? const Padding(
                         padding: EdgeInsets.all(28),
-                        child: CircularProgressIndicator(strokeWidth: 2, color: _primary),
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: _primary),
                       )
                     : Icon(recording ? Icons.graphic_eq : Icons.mic,
                         color: recording ? _error : _primary, size: 40),
@@ -240,7 +251,8 @@ class _VoiceLoginSheetState extends State<VoiceLoginSheet> {
             const SizedBox(height: 20),
             Text(_message,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: _textSecondary, fontSize: 14, height: 1.4)),
+                style: const TextStyle(
+                    color: _textSecondary, fontSize: 14, height: 1.4)),
             const SizedBox(height: 20),
             if (_phase == _Phase.failed)
               Row(
@@ -252,7 +264,8 @@ class _VoiceLoginSheetState extends State<VoiceLoginSheet> {
                         side: const BorderSide(color: Color(0xFF2D2D2D)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
-                      child: const Text('Use passcode', style: TextStyle(color: _textSecondary)),
+                      child: const Text('Use passcode',
+                          style: TextStyle(color: _textSecondary)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -263,7 +276,8 @@ class _VoiceLoginSheetState extends State<VoiceLoginSheet> {
                         backgroundColor: _primary,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
-                      child: const Text('Try again', style: TextStyle(color: Colors.white)),
+                      child: const Text('Try again',
+                          style: TextStyle(color: Colors.white)),
                     ),
                   ),
                 ],

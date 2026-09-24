@@ -71,7 +71,8 @@ class DashboardRatesCubit extends Cubit<DashboardRatesState> {
         if (!isRefresh && !isClosed) {
           currenciesResult.fold(
             (failure) => emit(DashboardRatesError(message: failure.message)),
-            (_) => emit(const DashboardRatesError(message: 'No currencies available')),
+            (_) => emit(
+                const DashboardRatesError(message: 'No currencies available')),
           );
         }
         return;
@@ -84,7 +85,8 @@ class DashboardRatesCubit extends Cubit<DashboardRatesState> {
     final targets = currencies.where((c) => c.code != _baseCurrency).toList();
     if (targets.isEmpty) {
       if (!isRefresh && !isClosed) {
-        emit(const DashboardRatesError(message: 'No target currencies available'));
+        emit(const DashboardRatesError(
+            message: 'No target currencies available'));
       }
       return;
     }

@@ -87,7 +87,10 @@ class _IspInputRules {
 
   static final _IspInputRules _spectranet = _IspInputRules(
     keyboardType: TextInputType.phone,
-    formatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(11)],
+    formatters: [
+      FilteringTextInputFormatter.digitsOnly,
+      LengthLimitingTextInputFormatter(11)
+    ],
     // VTpass merchant-verify DOES work for Spectranet — the previous
     // "no verify" flag was added to route around a backend JSON-
     // unmarshal crash (the VTpass response for some Spectranet codes
@@ -110,7 +113,10 @@ class _IspInputRules {
 
   static final _IspInputRules _genericNumeric = _IspInputRules(
     keyboardType: TextInputType.number,
-    formatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(20)],
+    formatters: [
+      FilteringTextInputFormatter.digitsOnly,
+      LengthLimitingTextInputFormatter(20)
+    ],
     requiresVerification: true,
     hint: 'Enter your account number',
     help: 'Enter the account number from your internet provider.',

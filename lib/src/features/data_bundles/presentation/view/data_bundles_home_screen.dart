@@ -11,7 +11,6 @@ import '../widgets/data_recent_purchases_card.dart';
 import '../widgets/data_quick_buy.dart';
 part 'data_bundles_home_screen_widgets.dart';
 
-
 /// Two-tab landing for data bundles mirroring the airtime landing page:
 ///   - Local: NGN network grid → BuyData / GetDataPlans (eBills Africa).
 ///   - International: country picker CTA → BuyIntlData / GetIntlData*
@@ -40,7 +39,6 @@ class _DataBundlesHomeScreenState extends State<DataBundlesHomeScreen> {
   // palette. `_localColor` kept as an alias for call-site symmetry.
   static const _intlColor = Color(0xFF4E03D0);
   static const _localColor = _intlColor;
-
 
   @override
   Widget build(BuildContext context) {
@@ -72,27 +70,27 @@ class _DataBundlesHomeScreenState extends State<DataBundlesHomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                    SizedBox(height: 16.h),
-                    // Quick actions sit above the tabs so Beneficiaries /
-                    // Rollover / Reminders apply to whichever scope is
-                    // active — mirrors the airtime landing where the
-                    // generic Quick Actions card sits above the tabbed
-                    // content. Routes resolve to local vs intl variants
-                    // based on the active tab.
-                    _buildQuickActionsRow(),
-                    SizedBox(height: 20.h),
-                    _buildTabToggle(),
-                    SizedBox(height: 20.h),
-                    if (_selectedTab == 0) ..._buildLocalContent(),
-                    if (_selectedTab == 1) ..._buildIntlContent(),
-                    SizedBox(height: 24.h),
-                    DataRecentPurchasesCard(
-                      accent: _selectedTab == 0 ? _localColor : _intlColor,
-                      scope: _selectedTab == 0
-                          ? DataPurchaseScope.buy
-                          : DataPurchaseScope.intl,
-                    ),
-                    SizedBox(height: 20.h),
+                      SizedBox(height: 16.h),
+                      // Quick actions sit above the tabs so Beneficiaries /
+                      // Rollover / Reminders apply to whichever scope is
+                      // active — mirrors the airtime landing where the
+                      // generic Quick Actions card sits above the tabbed
+                      // content. Routes resolve to local vs intl variants
+                      // based on the active tab.
+                      _buildQuickActionsRow(),
+                      SizedBox(height: 20.h),
+                      _buildTabToggle(),
+                      SizedBox(height: 20.h),
+                      if (_selectedTab == 0) ..._buildLocalContent(),
+                      if (_selectedTab == 1) ..._buildIntlContent(),
+                      SizedBox(height: 24.h),
+                      DataRecentPurchasesCard(
+                        accent: _selectedTab == 0 ? _localColor : _intlColor,
+                        scope: _selectedTab == 0
+                            ? DataPurchaseScope.buy
+                            : DataPurchaseScope.intl,
+                      ),
+                      SizedBox(height: 20.h),
                     ],
                   ),
                 ),
@@ -241,7 +239,6 @@ class _DataBundlesHomeScreenState extends State<DataBundlesHomeScreen> {
     ];
   }
 
-
   // -------------------- INTERNATIONAL TAB --------------------
 
   List<Widget> _buildIntlContent() {
@@ -304,17 +301,16 @@ class _DataBundlesHomeScreenState extends State<DataBundlesHomeScreen> {
         ),
       ),
       SizedBox(height: 12.h),
-      _buildStep('1', 'Pick the destination country',
-          'Browse 100+ supported markets'),
+      _buildStep(
+          '1', 'Pick the destination country', 'Browse 100+ supported markets'),
       SizedBox(height: 10.h),
       _buildStep('2', 'Select operator & bundle',
           "See bundles in the recipient's currency"),
       SizedBox(height: 10.h),
-      _buildStep('3', 'Enter recipient phone',
-          'Validated against country format'),
+      _buildStep(
+          '3', 'Enter recipient phone', 'Validated against country format'),
       SizedBox(height: 10.h),
-      _buildStep('4', 'Confirm & pay',
-          'Wallet debited in your currency'),
+      _buildStep('4', 'Confirm & pay', 'Wallet debited in your currency'),
       SizedBox(height: 24.h),
       SizedBox(
         width: double.infinity,

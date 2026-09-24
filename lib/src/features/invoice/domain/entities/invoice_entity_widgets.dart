@@ -152,7 +152,8 @@ class AddressDetails extends Equatable {
       sortCode: sortCode ?? this.sortCode,
       bankAddress: bankAddress ?? this.bankAddress,
       intermediaryBankName: intermediaryBankName ?? this.intermediaryBankName,
-      intermediaryBankSwift: intermediaryBankSwift ?? this.intermediaryBankSwift,
+      intermediaryBankSwift:
+          intermediaryBankSwift ?? this.intermediaryBankSwift,
       accountHolderName: accountHolderName ?? this.accountHolderName,
       logoUrl: logoUrl ?? this.logoUrl,
     );
@@ -241,9 +242,12 @@ class TaggedUserInfo extends Equatable {
 
   String get tagMethodLabel {
     switch (tagType) {
-      case 'email': return 'Via Email';
-      case 'phone': return 'Via SMS';
-      default: return 'On Platform';
+      case 'email':
+        return 'Via Email';
+      case 'phone':
+        return 'Via SMS';
+      default:
+        return 'On Platform';
     }
   }
 
@@ -280,7 +284,21 @@ class TaggedUserInfo extends Equatable {
   }
 
   @override
-  List<Object?> get props => [userId, username, firstName, lastName, profilePicture, status, tagType, tagValue, taggedAt, viewedAt, paidAt, shareAmount, amountPaid];
+  List<Object?> get props => [
+        userId,
+        username,
+        firstName,
+        lastName,
+        profilePicture,
+        status,
+        tagType,
+        tagValue,
+        taggedAt,
+        viewedAt,
+        paidAt,
+        shareAmount,
+        amountPaid
+      ];
 }
 
 class InvoiceItem extends Equatable {

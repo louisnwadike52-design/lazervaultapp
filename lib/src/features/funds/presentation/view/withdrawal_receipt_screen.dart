@@ -58,7 +58,8 @@ class WithdrawalReceiptScreen extends StatefulWidget {
   });
 
   @override
-  State<WithdrawalReceiptScreen> createState() => _WithdrawalReceiptScreenState();
+  State<WithdrawalReceiptScreen> createState() =>
+      _WithdrawalReceiptScreenState();
 }
 
 class _WithdrawalReceiptScreenState extends State<WithdrawalReceiptScreen> {
@@ -94,8 +95,11 @@ class _WithdrawalReceiptScreenState extends State<WithdrawalReceiptScreen> {
     // Poll every 5s while non-terminal; the settlement webhook usually lands
     // within seconds, the reconciler within ~2 minutes. Stops itself once the
     // status is final (and never starts for an already-settled receipt).
-    if (!_terminal && widget.withdrawalId != null && widget.withdrawalId!.isNotEmpty) {
-      _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) => _refreshStatus());
+    if (!_terminal &&
+        widget.withdrawalId != null &&
+        widget.withdrawalId!.isNotEmpty) {
+      _pollTimer =
+          Timer.periodic(const Duration(seconds: 5), (_) => _refreshStatus());
     }
     // Live status over /ws/banking: banking-service publishes
     // withdrawal.status_update events keyed to this reference — an event
@@ -241,64 +245,73 @@ class _WithdrawalReceiptScreenState extends State<WithdrawalReceiptScreen> {
                   backgroundColor: _card,
                   onRefresh: _refreshStatus,
                   child: Screenshot(
-                  controller: _shot,
-                  child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: EdgeInsets.all(16.w),
-                  child: Column(
-                    children: [
-                      // Status icon
-                      Container(
-                        width: 80.w,
-                        height: 80.w,
-                        decoration: BoxDecoration(
-                          color: _statusColor.withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(_statusIcon, color: _statusColor, size: 42.sp),
-                      ),
-                      SizedBox(height: 16.h),
-                      Text(_statusTitle,
-                          style: GoogleFonts.inter(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w700)),
-                      SizedBox(height: 6.h),
-                      Text(_money(amount),
-                          style: GoogleFonts.inter(color: _textSecondary, fontSize: 16.sp, fontWeight: FontWeight.w500)),
-                      SizedBox(height: 10.h),
-                      _statusBadge(),
-                      SizedBox(height: 24.h),
+                    controller: _shot,
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsets.all(16.w),
+                      child: Column(
+                        children: [
+                          // Status icon
+                          Container(
+                            width: 80.w,
+                            height: 80.w,
+                            decoration: BoxDecoration(
+                              color: _statusColor.withValues(alpha: 0.15),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(_statusIcon,
+                                color: _statusColor, size: 42.sp),
+                          ),
+                          SizedBox(height: 16.h),
+                          Text(_statusTitle,
+                              style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 20.sp,
+                                  fontWeight: FontWeight.w700)),
+                          SizedBox(height: 6.h),
+                          Text(_money(amount),
+                              style: GoogleFonts.inter(
+                                  color: _textSecondary,
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w500)),
+                          SizedBox(height: 10.h),
+                          _statusBadge(),
+                          SizedBox(height: 24.h),
 
-                      // QR code for the reference
-                      _buildQrCard(),
-                      SizedBox(height: 16.h),
+                          // QR code for the reference
+                          _buildQrCard(),
+                          SizedBox(height: 16.h),
 
-                      // Details card
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.all(16.w),
-                        decoration: BoxDecoration(
-                          color: _card,
-                          borderRadius: BorderRadius.circular(14.r),
-                          border: Border.all(color: _divider),
-                        ),
-                        child: Column(
-                          children: [
-                            _row('Reference', reference, isCopyable: true, context: context),
-                            _dividerLine(),
-                            _row('To', '$destBank\n$accountNumber'),
-                            _dividerLine(),
-                            _row('Amount', _money(amount)),
-                            _row('Fee', _money(fee)),
-                            _row('Total debited', _money(totalDebited),
-                                isBold: true, valueColor: _orange),
-                            _dividerLine(),
-                            _row('Status', _statusLabel, valueColor: _statusColor),
-                          ],
-                        ),
+                          // Details card
+                          Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.all(16.w),
+                            decoration: BoxDecoration(
+                              color: _card,
+                              borderRadius: BorderRadius.circular(14.r),
+                              border: Border.all(color: _divider),
+                            ),
+                            child: Column(
+                              children: [
+                                _row('Reference', reference,
+                                    isCopyable: true, context: context),
+                                _dividerLine(),
+                                _row('To', '$destBank\n$accountNumber'),
+                                _dividerLine(),
+                                _row('Amount', _money(amount)),
+                                _row('Fee', _money(fee)),
+                                _row('Total debited', _money(totalDebited),
+                                    isBold: true, valueColor: _orange),
+                                _dividerLine(),
+                                _row('Status', _statusLabel,
+                                    valueColor: _statusColor),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-                ),
                 ),
               ),
               _buildActions(context),
@@ -318,7 +331,10 @@ class _WithdrawalReceiptScreenState extends State<WithdrawalReceiptScreen> {
         border: Border.all(color: _statusColor.withValues(alpha: 0.4)),
       ),
       child: Text(_statusLabel,
-          style: GoogleFonts.inter(color: _statusColor, fontSize: 12.sp, fontWeight: FontWeight.w700)),
+          style: GoogleFonts.inter(
+              color: _statusColor,
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w700)),
     );
   }
 
@@ -336,16 +352,24 @@ class _WithdrawalReceiptScreenState extends State<WithdrawalReceiptScreen> {
             version: QrVersions.auto,
             size: 150.w,
             backgroundColor: Colors.white,
-            eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: Color(0xFF0A0A0A)),
+            eyeStyle: const QrEyeStyle(
+                eyeShape: QrEyeShape.square, color: Color(0xFF0A0A0A)),
             dataModuleStyle: const QrDataModuleStyle(
-                dataModuleShape: QrDataModuleShape.square, color: Color(0xFF0A0A0A)),
+                dataModuleShape: QrDataModuleShape.square,
+                color: Color(0xFF0A0A0A)),
           ),
           SizedBox(height: 10.h),
           Text('Scan to verify this withdrawal',
-              style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 11.sp, fontWeight: FontWeight.w500)),
+              style: GoogleFonts.inter(
+                  color: const Color(0xFF6B7280),
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w500)),
           SizedBox(height: 2.h),
           Text(reference,
-              style: GoogleFonts.inter(color: const Color(0xFF111827), fontSize: 12.sp, fontWeight: FontWeight.w700)),
+              style: GoogleFonts.inter(
+                  color: const Color(0xFF111827),
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w700)),
         ],
       ),
     );
@@ -366,7 +390,8 @@ class _WithdrawalReceiptScreenState extends State<WithdrawalReceiptScreen> {
                 Clipboard.setData(ClipboardData(text: reference));
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Reference copied', style: GoogleFonts.inter()),
+                    content:
+                        Text('Reference copied', style: GoogleFonts.inter()),
                     backgroundColor: _success,
                     duration: const Duration(seconds: 1),
                   ),
@@ -374,12 +399,14 @@ class _WithdrawalReceiptScreenState extends State<WithdrawalReceiptScreen> {
               },
               icon: Icon(Icons.copy_rounded, size: 18.sp),
               label: Text('Copy ref',
-                  style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                  style: GoogleFonts.inter(
+                      fontSize: 13.sp, fontWeight: FontWeight.w600)),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white,
                 side: const BorderSide(color: _divider),
                 padding: EdgeInsets.symmetric(vertical: 14.h),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
               ),
             ),
           ),
@@ -389,12 +416,14 @@ class _WithdrawalReceiptScreenState extends State<WithdrawalReceiptScreen> {
               onPressed: _shareStyledReceipt,
               icon: Icon(Icons.ios_share_rounded, size: 18.sp),
               label: Text('Share',
-                  style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                  style: GoogleFonts.inter(
+                      fontSize: 13.sp, fontWeight: FontWeight.w600)),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white,
                 side: const BorderSide(color: _divider),
                 padding: EdgeInsets.symmetric(vertical: 14.h),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
               ),
             ),
           ),
@@ -406,11 +435,15 @@ class _WithdrawalReceiptScreenState extends State<WithdrawalReceiptScreen> {
                 backgroundColor: _orange,
                 foregroundColor: _onOrange,
                 padding: EdgeInsets.symmetric(vertical: 14.h),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
                 elevation: 0,
               ),
               child: Text('Done',
-                  style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w800, color: _onOrange)),
+                  style: GoogleFonts.inter(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w800,
+                      color: _onOrange)),
             ),
           ),
         ],
@@ -421,14 +454,18 @@ class _WithdrawalReceiptScreenState extends State<WithdrawalReceiptScreen> {
   Widget _dividerLine() => Divider(color: _divider, height: 16.h);
 
   Widget _row(String label, String value,
-      {bool isBold = false, bool isCopyable = false, Color? valueColor, BuildContext? context}) {
+      {bool isBold = false,
+      bool isCopyable = false,
+      Color? valueColor,
+      BuildContext? context}) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 6.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: GoogleFonts.inter(color: _textSecondary, fontSize: 13.sp)),
+          Text(label,
+              style: GoogleFonts.inter(color: _textSecondary, fontSize: 13.sp)),
           SizedBox(width: 16.w),
           Flexible(
             child: GestureDetector(
@@ -437,7 +474,8 @@ class _WithdrawalReceiptScreenState extends State<WithdrawalReceiptScreen> {
                       Clipboard.setData(ClipboardData(text: value));
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Copied to clipboard', style: GoogleFonts.inter()),
+                          content: Text('Copied to clipboard',
+                              style: GoogleFonts.inter()),
                           backgroundColor: _success,
                           duration: const Duration(seconds: 1),
                         ),
@@ -453,12 +491,14 @@ class _WithdrawalReceiptScreenState extends State<WithdrawalReceiptScreen> {
                         style: GoogleFonts.inter(
                           color: valueColor ?? Colors.white,
                           fontSize: 13.sp,
-                          fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
+                          fontWeight:
+                              isBold ? FontWeight.w700 : FontWeight.w500,
                         )),
                   ),
                   if (isCopyable) ...[
                     SizedBox(width: 4.w),
-                    Icon(Icons.copy_rounded, color: const Color(0xFF6B7280), size: 14.sp),
+                    Icon(Icons.copy_rounded,
+                        color: const Color(0xFF6B7280), size: 14.sp),
                   ],
                 ],
               ),

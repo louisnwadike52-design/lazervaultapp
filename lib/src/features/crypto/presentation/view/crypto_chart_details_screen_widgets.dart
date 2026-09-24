@@ -1,6 +1,14 @@
 part of 'crypto_chart_details_screen.dart';
 
-enum ChartType { line, candlestick, area, ohlc, volume, heikinAshi, hollowCandles }
+enum ChartType {
+  line,
+  candlestick,
+  area,
+  ohlc,
+  volume,
+  heikinAshi,
+  hollowCandles
+}
 
 // CryptoPrice data model for chart
 class CryptoPrice {

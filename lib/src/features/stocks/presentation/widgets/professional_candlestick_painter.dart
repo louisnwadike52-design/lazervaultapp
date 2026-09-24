@@ -49,7 +49,7 @@ class ProfessionalCandlestickPainter extends CustomPainter {
     // Reserve space for price labels and margins
     final chartHeight = size.height * 0.85; // Use 85% of available height
     final chartTop = size.height * 0.075; // 7.5% margin at top
-    
+
     // Draw grid first
     if (showGrid) {
       _drawGrid(canvas, size, chartTop, chartHeight);
@@ -59,16 +59,16 @@ class ProfessionalCandlestickPainter extends CustomPainter {
     final availableWidth = size.width * 0.9; // Use 90% of width for chart
     final chartLeft = size.width * 0.05; // 5% margin on left
     final candleSpacing = availableWidth / priceHistory.length;
-    final actualCandleWidth = (candleSpacing * 0.6).clamp(1.0, 15.0); // Limit candle width
+    final actualCandleWidth =
+        (candleSpacing * 0.6).clamp(1.0, 15.0); // Limit candle width
     final wickWidth = 1.0;
 
     // Paint objects
     final wickPaint = Paint()
       ..strokeWidth = wickWidth
       ..strokeCap = StrokeCap.round;
-    
-    final bodyPaint = Paint()
-      ..strokeWidth = 1.0;
+
+    final bodyPaint = Paint()..strokeWidth = 1.0;
 
     for (int i = 0; i < priceHistory.length; i++) {
       final price = priceHistory[i];
@@ -86,11 +86,23 @@ class ProfessionalCandlestickPainter extends CustomPainter {
       final x = chartLeft + (i + 0.5) * candleSpacing;
 
       // Calculate Y positions with proper scaling
-      final highY = chartTop + chartHeight - ((price.high - chartMinPrice) / chartPriceRange) * chartHeight;
-      final lowY = chartTop + chartHeight - ((price.low - chartMinPrice) / chartPriceRange) * chartHeight;
-      final openY = chartTop + chartHeight - ((price.open - chartMinPrice) / chartPriceRange) * chartHeight;
-      final closeY = chartTop + chartHeight - ((price.close - chartMinPrice) / chartPriceRange) * chartHeight;
-      if (!x.isFinite || !highY.isFinite || !lowY.isFinite || !openY.isFinite || !closeY.isFinite) {
+      final highY = chartTop +
+          chartHeight -
+          ((price.high - chartMinPrice) / chartPriceRange) * chartHeight;
+      final lowY = chartTop +
+          chartHeight -
+          ((price.low - chartMinPrice) / chartPriceRange) * chartHeight;
+      final openY = chartTop +
+          chartHeight -
+          ((price.open - chartMinPrice) / chartPriceRange) * chartHeight;
+      final closeY = chartTop +
+          chartHeight -
+          ((price.close - chartMinPrice) / chartPriceRange) * chartHeight;
+      if (!x.isFinite ||
+          !highY.isFinite ||
+          !lowY.isFinite ||
+          !openY.isFinite ||
+          !closeY.isFinite) {
         continue;
       }
 
@@ -112,7 +124,8 @@ class ProfessionalCandlestickPainter extends CustomPainter {
 
       // Ensure minimum body height for very small / doji moves.
       final minBodyHeight = 1.5;
-      final actualBodyHeight = bodyHeight < minBodyHeight ? minBodyHeight : bodyHeight;
+      final actualBodyHeight =
+          bodyHeight < minBodyHeight ? minBodyHeight : bodyHeight;
       final adjustedBodyTop = bodyHeight < minBodyHeight
           ? (bodyTop + bodyBottom) / 2 - minBodyHeight / 2
           : bodyTop;
@@ -141,10 +154,12 @@ class ProfessionalCandlestickPainter extends CustomPainter {
     }
 
     // Draw price labels on the right
-    _drawPriceLabels(canvas, size, chartTop, chartHeight, chartMinPrice, chartMaxPrice);
+    _drawPriceLabels(
+        canvas, size, chartTop, chartHeight, chartMinPrice, chartMaxPrice);
   }
 
-  void _drawGrid(Canvas canvas, Size size, double chartTop, double chartHeight) {
+  void _drawGrid(
+      Canvas canvas, Size size, double chartTop, double chartHeight) {
     final gridPaint = Paint()
       ..color = gridColor.withValues(alpha: 0.1)
       ..strokeWidth = 0.5;
@@ -172,8 +187,8 @@ class ProfessionalCandlestickPainter extends CustomPainter {
     }
   }
 
-  void _drawPriceLabels(Canvas canvas, Size size, double chartTop, double chartHeight, 
-                       double chartMinPrice, double chartMaxPrice) {
+  void _drawPriceLabels(Canvas canvas, Size size, double chartTop,
+      double chartHeight, double chartMinPrice, double chartMaxPrice) {
     final textPainter = TextPainter(
       textDirection: TextDirection.ltr,
     );
@@ -184,7 +199,7 @@ class ProfessionalCandlestickPainter extends CustomPainter {
       final ratio = i / labelCount;
       final price = chartMaxPrice - (chartMaxPrice - chartMinPrice) * ratio;
       final y = chartTop + ratio * chartHeight;
-      
+
       // Format price based on value
       String priceText;
       if (price >= 1000) {
@@ -194,7 +209,7 @@ class ProfessionalCandlestickPainter extends CustomPainter {
       } else {
         priceText = price.toStringAsFixed(2);
       }
-      
+
       textPainter.text = TextSpan(
         text: priceText,
         style: TextStyle(
@@ -203,13 +218,13 @@ class ProfessionalCandlestickPainter extends CustomPainter {
           fontFamily: 'monospace',
         ),
       );
-      
+
       textPainter.layout();
-      
+
       // Position label on the right edge
       final labelX = size.width - textPainter.width - 4;
       final labelY = y - textPainter.height / 2;
-      
+
       // Draw background for better readability
       final bgRect = Rect.fromLTWH(
         labelX - 2,
@@ -217,16 +232,16 @@ class ProfessionalCandlestickPainter extends CustomPainter {
         textPainter.width + 4,
         textPainter.height + 2,
       );
-      
+
       canvas.drawRect(
         bgRect,
         Paint()..color = Colors.black.withValues(alpha: 0.7),
       );
-      
+
       textPainter.paint(canvas, Offset(labelX, labelY));
     }
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-} 
+}

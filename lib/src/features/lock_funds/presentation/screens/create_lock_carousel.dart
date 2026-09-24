@@ -27,7 +27,6 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 part 'create_lock_carousel_widgets.dart';
 
-
 /// Main carousel controller for lock fund creation
 ///
 /// Manages a consolidated 3-step flow with PageView, progress
@@ -142,7 +141,8 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
       return;
     }
     if (selectedAccountId == '0') {
-      _showErrorSnackBar('Invalid account selected. Please select a different account.');
+      _showErrorSnackBar(
+          'Invalid account selected. Please select a different account.');
       return;
     }
 
@@ -183,8 +183,9 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
     // PiggyVaultConfig UUID, not by lock_type name. Empty only if
     // the config list hasn't loaded (the wizard blocks submit before
     // then), in which case the backend falls back to lock_type.
-    final configId =
-        createCubit.selectedConfigId ?? createCubit.getConfigForType(lockType)?.id ?? '';
+    final configId = createCubit.selectedConfigId ??
+        createCubit.getConfigForType(lockType)?.id ??
+        '';
     final amount = createCubit.amount!;
     final currency = createCubit.currency;
     final lockDurationDays = createCubit.lockDurationDays ?? 0;
@@ -259,8 +260,8 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
         );
 
         try {
-          final lockFund = await completer.future
-              .timeout(const Duration(seconds: 60));
+          final lockFund =
+              await completer.future.timeout(const Duration(seconds: 60));
           // Success: validateTransactionPin will fire setSuccess()
           // and dismiss the sheet. We schedule the receipt jump on
           // a microtask so navigation runs after the bottomsheet
@@ -488,7 +489,10 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
                   gradient: LinearGradient(
                     colors: _currentPage == _totalPages - 1
                         ? [Colors.green, Colors.green.shade700]
-                        : [const Color(0xFF6366F1), const Color.fromARGB(255, 78, 3, 208)],
+                        : [
+                            const Color(0xFF6366F1),
+                            const Color.fromARGB(255, 78, 3, 208)
+                          ],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
@@ -565,7 +569,10 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                      colors: [
+                        Color(0xFF6366F1),
+                        Color.fromARGB(255, 78, 3, 208)
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),

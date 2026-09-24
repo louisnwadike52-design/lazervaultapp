@@ -17,7 +17,8 @@ class SettingsTierBadge extends StatelessWidget {
   /// solid white pills with the tier colour as text so they stay legible.
   final bool onDark;
 
-  const SettingsTierBadge({super.key, required this.userId, this.onDark = false});
+  const SettingsTierBadge(
+      {super.key, required this.userId, this.onDark = false});
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +73,8 @@ class _TierBadgeView extends StatelessWidget {
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(20.r),
-        border: onDark ? null : Border.all(color: color.withValues(alpha: 0.35)),
+        border:
+            onDark ? null : Border.all(color: color.withValues(alpha: 0.35)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -122,13 +124,17 @@ class _TierBadgeView extends StatelessWidget {
   _TierSpec _specFor(KYCTier tier) {
     switch (tier) {
       case KYCTier.tier1:
-        return const _TierSpec('Tier 1', Color(0xFF3B82F6), Icons.shield_outlined);
+        return const _TierSpec(
+            'Tier 1', Color(0xFF3B82F6), Icons.shield_outlined);
       case KYCTier.tier2:
-        return const _TierSpec('Tier 2', Color(0xFFFB923C), Icons.verified_user_outlined);
+        return const _TierSpec(
+            'Tier 2', Color(0xFFFB923C), Icons.verified_user_outlined);
       case KYCTier.tier3:
-        return const _TierSpec('Tier 3', Color(0xFF10B981), Icons.workspace_premium_outlined);
+        return const _TierSpec(
+            'Tier 3', Color(0xFF10B981), Icons.workspace_premium_outlined);
       case KYCTier.unknown:
-        return const _TierSpec('Unverified', Color(0xFF9CA3AF), Icons.shield_outlined);
+        return const _TierSpec(
+            'Unverified', Color(0xFF9CA3AF), Icons.shield_outlined);
     }
   }
 }

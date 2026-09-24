@@ -13,8 +13,7 @@ class RevenueExpenseBarChart extends StatelessWidget {
     if (months.isEmpty) return _buildEmptyState();
 
     final maxVal = months.fold<double>(0, (max, m) {
-      final mMax =
-          m.income > m.expenses ? m.income : m.expenses;
+      final mMax = m.income > m.expenses ? m.income : m.expenses;
       return mMax > max ? mMax : max;
     });
 
@@ -58,7 +57,8 @@ class RevenueExpenseBarChart extends StatelessWidget {
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
                       final month = months[group.x.toInt()];
                       final label = rodIndex == 0 ? 'Income' : 'Expenses';
-                      final value = rodIndex == 0 ? month.income : month.expenses;
+                      final value =
+                          rodIndex == 0 ? month.income : month.expenses;
                       return BarTooltipItem(
                         '$label\nNGN ${_formatAmount(value)}',
                         TextStyle(

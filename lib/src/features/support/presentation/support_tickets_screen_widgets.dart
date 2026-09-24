@@ -56,7 +56,8 @@ class _NewTicketSheetState extends State<_NewTicketSheet> {
     final open = widget.openTickets;
     return Padding(
       // Lift the sheet above the keyboard.
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
         decoration: BoxDecoration(
           color: _bg,
@@ -124,8 +125,8 @@ class _NewTicketSheetState extends State<_NewTicketSheet> {
                             color: _textSecondary.withValues(alpha: 0.4)),
                       ),
                       child: Text('Cancel',
-                          style: TextStyle(
-                              color: Colors.white, fontSize: 14.sp)),
+                          style:
+                              TextStyle(color: Colors.white, fontSize: 14.sp)),
                     ),
                   ),
                   SizedBox(width: 12.w),
@@ -161,8 +162,8 @@ class _NewTicketSheetState extends State<_NewTicketSheet> {
       decoration: BoxDecoration(
         color: const Color(0xFFFB923C).withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(
-            color: const Color(0xFFFB923C).withValues(alpha: 0.30)),
+        border:
+            Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.30)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,7 +223,9 @@ class _NewTicketSheetState extends State<_NewTicketSheet> {
       style: TextStyle(color: Colors.white, fontSize: 14.sp),
       // Dark-theme styled live counter (turns red at the limit).
       buildCounter: (context,
-          {required int currentLength, required bool isFocused, int? maxLength}) {
+          {required int currentLength,
+          required bool isFocused,
+          int? maxLength}) {
         final max = maxLength ?? 0;
         return Padding(
           padding: EdgeInsets.only(top: 4.h, right: 2.w),
@@ -242,8 +245,7 @@ class _NewTicketSheetState extends State<_NewTicketSheet> {
         hintStyle: TextStyle(color: _textSecondary, fontSize: 13.sp),
         filled: true,
         fillColor: _card,
-        contentPadding:
-            EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+        contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
           borderSide: BorderSide.none,

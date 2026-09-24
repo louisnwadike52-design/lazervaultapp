@@ -227,8 +227,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               Get.back();
             },
             child: Text('Set',
-                style:
-                    GoogleFonts.inter(color: const Color(0xFFA78BFA))),
+                style: GoogleFonts.inter(color: const Color(0xFFA78BFA))),
           ),
         ],
       ),
@@ -400,8 +399,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             child: ListView(
               padding: EdgeInsets.all(20.w),
               children: [
-                _input(_description, 'Description',
-                    validator: _required),
+                _input(_description, 'Description', validator: _required),
                 SizedBox(height: 12.h),
                 _input(
                   _amount,

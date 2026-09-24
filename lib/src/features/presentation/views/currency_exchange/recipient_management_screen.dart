@@ -10,14 +10,15 @@ class RecipientManagementScreen extends StatefulWidget {
   const RecipientManagementScreen({super.key});
 
   @override
-  State<RecipientManagementScreen> createState() => _RecipientManagementScreenState();
+  State<RecipientManagementScreen> createState() =>
+      _RecipientManagementScreenState();
 }
 
 class _RecipientManagementScreenState extends State<RecipientManagementScreen>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  
+
   final TextEditingController _searchController = TextEditingController();
   List<Recipient> _allRecipients = [];
   List<Recipient> _filteredRecipients = [];
@@ -34,7 +35,7 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
     _animationController.forward();
-    
+
     _loadMockRecipients();
   }
 
@@ -45,7 +46,6 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
     super.dispose();
   }
 
-
   void _filterRecipients() {
     final query = _searchController.text.toLowerCase();
     setState(() {
@@ -54,9 +54,10 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
             recipient.name.toLowerCase().contains(query) ||
             recipient.email.toLowerCase().contains(query) ||
             recipient.bankName.toLowerCase().contains(query);
-        
-        final matchesFilter = _selectedFilter == null || recipient.type == _selectedFilter;
-        
+
+        final matchesFilter =
+            _selectedFilter == null || recipient.type == _selectedFilter;
+
         return matchesSearch && matchesFilter;
       }).toList();
     });
@@ -240,13 +241,12 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
           color: isSelected ? Colors.blue : Colors.grey[900],
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
+          ],
         ),
         child: Text(
           label,
@@ -277,7 +277,7 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
 
   Widget _buildRecipientCard(Recipient recipient, int index) {
     final currency = CurrencyData.getCurrencyByCode(recipient.currency);
-    
+
     return FadeTransition(
       opacity: _fadeAnimation,
       child: Container(
@@ -328,7 +328,8 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
                             decoration: BoxDecoration(
                               color: Colors.orange,
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.grey[900]!, width: 2),
+                              border: Border.all(
+                                  color: Colors.grey[900]!, width: 2),
                             ),
                             child: Icon(
                               Icons.star,
@@ -362,7 +363,9 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
                                 height: 16.h,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(2.r),
-                                  border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                                  border: Border.all(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.3)),
                                 ),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(2.r),
@@ -371,11 +374,14 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
                                     fit: BoxFit.cover,
                                     placeholder: (context, url) => Container(
                                       color: Colors.grey[300],
-                                      child: Icon(Icons.flag, size: 12.sp, color: Colors.grey[600]),
+                                      child: Icon(Icons.flag,
+                                          size: 12.sp, color: Colors.grey[600]),
                                     ),
-                                    errorWidget: (context, url, error) => Container(
+                                    errorWidget: (context, url, error) =>
+                                        Container(
                                       color: Colors.grey[300],
-                                      child: Icon(Icons.flag, size: 12.sp, color: Colors.grey[600]),
+                                      child: Icon(Icons.flag,
+                                          size: 12.sp, color: Colors.grey[600]),
                                     ),
                                   ),
                                 ),
@@ -422,9 +428,11 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
                   ),
                   SizedBox(width: 8.w),
                   PopupMenuButton<String>(
-                    icon: Icon(Icons.more_vert, color: Colors.grey[400], size: 20.sp),
+                    icon: Icon(Icons.more_vert,
+                        color: Colors.grey[400], size: 20.sp),
                     color: Colors.grey[800],
-                    onSelected: (value) => _handleRecipientAction(value, recipient),
+                    onSelected: (value) =>
+                        _handleRecipientAction(value, recipient),
                     itemBuilder: (context) => [
                       PopupMenuItem(
                         value: 'send',
@@ -432,7 +440,8 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
                           children: [
                             Icon(Icons.send, color: Colors.blue, size: 16.sp),
                             SizedBox(width: 8.w),
-                            Text('Send Money', style: TextStyle(color: Colors.white)),
+                            Text('Send Money',
+                                style: TextStyle(color: Colors.white)),
                           ],
                         ),
                       ),
@@ -451,13 +460,17 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
                         child: Row(
                           children: [
                             Icon(
-                              recipient.isFavorite ? Icons.star : Icons.star_border,
+                              recipient.isFavorite
+                                  ? Icons.star
+                                  : Icons.star_border,
                               color: Colors.orange,
                               size: 16.sp,
                             ),
                             SizedBox(width: 8.w),
                             Text(
-                              recipient.isFavorite ? 'Remove from Favorites' : 'Add to Favorites',
+                              recipient.isFavorite
+                                  ? 'Remove from Favorites'
+                                  : 'Add to Favorites',
                               style: TextStyle(color: Colors.white),
                             ),
                           ],
@@ -469,7 +482,8 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
                           children: [
                             Icon(Icons.delete, color: Colors.red, size: 16.sp),
                             SizedBox(width: 8.w),
-                            Text('Delete', style: TextStyle(color: Colors.white)),
+                            Text('Delete',
+                                style: TextStyle(color: Colors.white)),
                           ],
                         ),
                       ),
@@ -564,7 +578,7 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date).inDays;
-    
+
     if (difference == 0) {
       return 'today';
     } else if (difference == 1) {
@@ -650,7 +664,8 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
               _buildDetailRow('SWIFT/BIC', recipient.swiftCode!),
             _buildDetailRow('Currency', recipient.currency),
             if (recipient.address != null)
-              _buildDetailRow('Address', '${recipient.address}, ${recipient.city}'),
+              _buildDetailRow(
+                  'Address', '${recipient.address}, ${recipient.city}'),
             SizedBox(height: 24.h),
             Row(
               children: [
@@ -685,7 +700,8 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
                       _handleRecipientAction('edit', recipient);
                     },
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                      side: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.3)),
                       padding: EdgeInsets.symmetric(vertical: 12.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
@@ -833,7 +849,8 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
           });
           break;
         case 'Recently Added':
-          _filteredRecipients.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          _filteredRecipients
+              .sort((a, b) => b.createdAt.compareTo(a.createdAt));
           break;
         case 'Favorites First':
           _filteredRecipients.sort((a, b) {
@@ -865,7 +882,8 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
         setState(() {
           final index = _allRecipients.indexWhere((r) => r.id == recipient.id);
           if (index != -1) {
-            _allRecipients[index] = recipient.copyWith(isFavorite: !recipient.isFavorite);
+            _allRecipients[index] =
+                recipient.copyWith(isFavorite: !recipient.isFavorite);
           }
         });
         _filterRecipients();

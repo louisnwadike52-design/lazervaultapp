@@ -381,7 +381,8 @@ class _InventoryListScreenState extends State<InventoryListScreen>
                             vertical: 3.h,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFB923C).withValues(alpha: 0.15),
+                            color:
+                                const Color(0xFFFB923C).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(6.r),
                           ),
                           child: Text(

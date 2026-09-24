@@ -163,7 +163,8 @@ class _DebugSettingsScreenState extends State<DebugSettingsScreen> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700),
+                      Icon(Icons.warning_amber_rounded,
+                          color: Colors.orange.shade700),
                       SizedBox(width: 12.w),
                       Expanded(
                         child: Text(
@@ -205,9 +206,13 @@ class _DebugSettingsScreenState extends State<DebugSettingsScreen> {
 
                 _buildStateCard(
                   'Login Status',
-                  _storageData.containsKey('user_id') ? 'Logged In' : 'Not Logged In',
+                  _storageData.containsKey('user_id')
+                      ? 'Logged In'
+                      : 'Not Logged In',
                   Icons.login,
-                  _storageData.containsKey('user_id') ? Colors.blue : Colors.grey,
+                  _storageData.containsKey('user_id')
+                      ? Colors.blue
+                      : Colors.grey,
                 ),
                 SizedBox(height: 12.h),
 
@@ -361,7 +366,8 @@ class _DebugSettingsScreenState extends State<DebugSettingsScreen> {
     );
   }
 
-  Widget _buildStateCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStateCard(
+      String title, String value, IconData icon, Color color) {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(

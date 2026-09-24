@@ -93,9 +93,8 @@ class _StockWatchlistScreenState extends State<StockWatchlistScreen> {
                       return _buildLoadingState();
                     }
 
-                    final loaded = state is WatchlistLoaded
-                        ? state.stocks
-                        : <Stock>[];
+                    final loaded =
+                        state is WatchlistLoaded ? state.stocks : <Stock>[];
 
                     if (loaded.isEmpty) {
                       return _buildEmptyState();
@@ -311,7 +310,8 @@ class _StockWatchlistScreenState extends State<StockWatchlistScreen> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    CurrencySymbols.formatAmountWithCurrency(stock.currentPrice, stock.currency),
+                    CurrencySymbols.formatAmountWithCurrency(
+                        stock.currentPrice, stock.currency),
                     style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 16.sp,

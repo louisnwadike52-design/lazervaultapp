@@ -12,8 +12,6 @@ class EnableBiometricAccessScreen extends StatefulWidget {
 
 class _EnableBiometricAccessScreenState
     extends State<EnableBiometricAccessScreen> {
-
-
   @override
   void initState() {
     super.initState();

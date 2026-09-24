@@ -15,4 +15,4 @@ class WithdrawalDetails extends Equatable {
 
   @override
   List<Object?> get props => [withdrawalId, status, message, completedAt];
-} 
+}

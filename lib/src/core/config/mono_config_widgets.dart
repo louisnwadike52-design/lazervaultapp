@@ -15,7 +15,8 @@ class MonoInstitution {
   });
 
   @override
-  String toString() => 'MonoInstitution(id: $id, name: $name, bankCode: $bankCode)';
+  String toString() =>
+      'MonoInstitution(id: $id, name: $name, bankCode: $bankCode)';
 }
 
 /// Result from Mono Connect flow
@@ -55,7 +56,8 @@ class MonoConnectResult {
   }
 
   @override
-  String toString() => 'MonoConnectResult(code: ${code.substring(0, code.length > 10 ? 10 : code.length)}..., bank: $bankDisplayName)';
+  String toString() =>
+      'MonoConnectResult(code: ${code.substring(0, code.length > 10 ? 10 : code.length)}..., bank: $bankDisplayName)';
 }
 
 /// Mono operation types for determining the correct scope

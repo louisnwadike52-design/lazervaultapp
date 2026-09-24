@@ -108,7 +108,8 @@ class _BatchTransferHistoryScreenState
         options: options,
       );
       if (!mounted) return;
-      Get.snackbar('Cancelled', 'Scheduled batch cancelled — nothing will be sent.',
+      Get.snackbar(
+          'Cancelled', 'Scheduled batch cancelled — nothing will be sent.',
           backgroundColor: const Color(0xFF10B981),
           colorText: Colors.white,
           snackPosition: SnackPosition.TOP);
@@ -144,9 +145,12 @@ class _BatchTransferHistoryScreenState
               child: BlocConsumer<BatchTransferCubit, BatchTransferState>(
                 listener: (context, state) {
                   if (state is BatchTransferHistoryLoaded) {
-                    final activeCurrency = GetIt.I<LocaleManager>().currentCurrency;
+                    final activeCurrency =
+                        GetIt.I<LocaleManager>().currentCurrency;
                     final filtered = state.batches
-                        .where((b) => b.currency.toUpperCase() == activeCurrency.toUpperCase())
+                        .where((b) =>
+                            b.currency.toUpperCase() ==
+                            activeCurrency.toUpperCase())
                         .toList();
                     setState(() {
                       _isLoadingMore = false;
@@ -161,12 +165,10 @@ class _BatchTransferHistoryScreenState
                 builder: (context, state) {
                   if (state is BatchTransferHistoryLoading &&
                       _batches.isEmpty) {
-                    return const Center(
-                        child: LazerVaultLoader.small());
+                    return const Center(child: LazerVaultLoader.small());
                   }
 
-                  if (state is BatchTransferHistoryError &&
-                      _batches.isEmpty) {
+                  if (state is BatchTransferHistoryError && _batches.isEmpty) {
                     return _buildErrorState(state.message);
                   }
 
@@ -188,8 +190,7 @@ class _BatchTransferHistoryScreenState
                         if (index >= _batches.length) {
                           return Padding(
                             padding: EdgeInsets.all(20.w),
-                            child: const Center(
-                                child: LazerVaultLoader.tiny()),
+                            child: const Center(child: LazerVaultLoader.tiny()),
                           );
                         }
                         return _buildBatchTile(_batches[index]);
@@ -255,7 +256,8 @@ class _BatchTransferHistoryScreenState
   Widget _buildBatchTile(BatchTransferHistoryEntity batch) {
     final statusColor = batchStatusColor(batch.status);
     final currencySymbol = CurrencyUtils.getSymbol(batch.currency);
-    final dateStr = DateFormat('MMM dd, yyyy \u2022 HH:mm').format(batch.createdAt);
+    final dateStr =
+        DateFormat('MMM dd, yyyy \u2022 HH:mm').format(batch.createdAt);
 
     return GestureDetector(
       onTap: () => Get.toNamed(AppRoutes.batchTransferDetail,
@@ -279,8 +281,8 @@ class _BatchTransferHistoryScreenState
                     color: statusColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
-                  child: Icon(Icons.send_rounded,
-                      color: statusColor, size: 22.sp),
+                  child:
+                      Icon(Icons.send_rounded, color: statusColor, size: 22.sp),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
@@ -312,8 +314,7 @@ class _BatchTransferHistoryScreenState
             if (batch.status == 'scheduled') ...[
               SizedBox(height: 10.h),
               Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
                 decoration: BoxDecoration(
                   color: const Color(0xFF9B6DFF).withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(10.r),
@@ -366,8 +367,8 @@ class _BatchTransferHistoryScreenState
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildStatChip(
-                      Icons.people_outline, '${batch.totalRecipients}', 'Total'),
+                  _buildStatChip(Icons.people_outline,
+                      '${batch.totalRecipients}', 'Total'),
                   _buildStatChip(
                       Icons.check_circle_outline, '${batch.successful}', 'OK',
                       color: btGreen),
@@ -375,8 +376,12 @@ class _BatchTransferHistoryScreenState
                     _buildStatChip(
                         Icons.cancel_outlined, '${batch.failed}', 'Failed',
                         color: btRed),
-                  _buildStatChip(Icons.bolt_outlined,
-                      batch.totalFees == 0 ? 'Free' : '$currencySymbol${batch.totalFees.toStringAsFixed(2)}', 'Fee'),
+                  _buildStatChip(
+                      Icons.bolt_outlined,
+                      batch.totalFees == 0
+                          ? 'Free'
+                          : '$currencySymbol${batch.totalFees.toStringAsFixed(2)}',
+                      'Fee'),
                 ],
               ),
             ),

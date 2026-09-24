@@ -205,7 +205,8 @@ class ViewTransactionHistoryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveServiceType = serviceType ?? serviceName?.toTransactionServiceType;
+    final effectiveServiceType =
+        serviceType ?? serviceName?.toTransactionServiceType;
 
     if (effectiveServiceType == null && serviceName == null) {
       return const SizedBox.shrink();
@@ -217,10 +218,14 @@ class ViewTransactionHistoryButton extends StatelessWidget {
             : 'View All Transactions');
 
     final effectiveIcon = icon ??
-        (effectiveServiceType != null ? effectiveServiceType.icon : Icons.history);
+        (effectiveServiceType != null
+            ? effectiveServiceType.icon
+            : Icons.history);
 
     final effectiveColor = buttonColor ??
-        (effectiveServiceType != null ? effectiveServiceType.color : const Color(0xFF581CD9));
+        (effectiveServiceType != null
+            ? effectiveServiceType.color
+            : const Color(0xFF581CD9));
 
     if (isFullWidth) {
       return SizedBox(
@@ -250,9 +255,8 @@ class ViewTransactionHistoryButton extends StatelessWidget {
         ),
       ),
       style: ElevatedButton.styleFrom(
-        backgroundColor: isOutlined
-            ? Colors.transparent
-            : color.withValues(alpha: 0.15),
+        backgroundColor:
+            isOutlined ? Colors.transparent : color.withValues(alpha: 0.15),
         foregroundColor: color,
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
         shape: RoundedRectangleBorder(
@@ -268,11 +272,13 @@ class ViewTransactionHistoryButton extends StatelessWidget {
   }
 
   void _handleNavigation() {
-    final effectiveServiceType = serviceType ?? serviceName?.toTransactionServiceType;
+    final effectiveServiceType =
+        serviceType ?? serviceName?.toTransactionServiceType;
 
     if (effectiveServiceType != null) {
       // Navigate to service-specific history
-      TransactionHistoryNavigationHelper.navigateToServiceHistory(effectiveServiceType);
+      TransactionHistoryNavigationHelper.navigateToServiceHistory(
+          effectiveServiceType);
     } else {
       // Navigate to dashboard (all transactions)
       TransactionHistoryNavigationHelper.navigateToDashboard();
@@ -299,9 +305,12 @@ class ViewTransactionHistoryTextButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveServiceType = serviceType ?? serviceName?.toTransactionServiceType;
+    final effectiveServiceType =
+        serviceType ?? serviceName?.toTransactionServiceType;
     final effectiveColor = textColor ??
-        (effectiveServiceType != null ? effectiveServiceType.color : const Color(0xFF581CD9));
+        (effectiveServiceType != null
+            ? effectiveServiceType.color
+            : const Color(0xFF581CD9));
 
     final label = customLabel ??
         (effectiveServiceType != null
@@ -313,7 +322,8 @@ class ViewTransactionHistoryTextButton extends StatelessWidget {
         if (onPressed != null) {
           onPressed!();
         } else if (effectiveServiceType != null) {
-          TransactionHistoryNavigationHelper.navigateToServiceHistory(effectiveServiceType);
+          TransactionHistoryNavigationHelper.navigateToServiceHistory(
+              effectiveServiceType);
         } else {
           TransactionHistoryNavigationHelper.navigateToDashboard();
         }
@@ -358,16 +368,20 @@ class ViewTransactionHistoryIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveServiceType = serviceType ?? serviceName?.toTransactionServiceType;
+    final effectiveServiceType =
+        serviceType ?? serviceName?.toTransactionServiceType;
     final effectiveColor = iconColor ??
-        (effectiveServiceType != null ? effectiveServiceType.color : Colors.white70);
+        (effectiveServiceType != null
+            ? effectiveServiceType.color
+            : Colors.white70);
 
     return IconButton(
       onPressed: () {
         if (onPressed != null) {
           onPressed!();
         } else if (effectiveServiceType != null) {
-          TransactionHistoryNavigationHelper.navigateToServiceHistory(effectiveServiceType);
+          TransactionHistoryNavigationHelper.navigateToServiceHistory(
+              effectiveServiceType);
         } else {
           TransactionHistoryNavigationHelper.navigateToDashboard();
         }

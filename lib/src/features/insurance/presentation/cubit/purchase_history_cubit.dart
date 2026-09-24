@@ -89,7 +89,8 @@ class PurchaseHistoryCubit extends Cubit<PurchaseHistoryState> {
   int _generation = 0;
   static const int _pageSize = 20;
 
-  PurchaseHistoryCubit(this._repository) : super(const PurchaseHistoryInitial());
+  PurchaseHistoryCubit(this._repository)
+      : super(const PurchaseHistoryInitial());
 
   void setUserId(String userId) {
     _userId = userId;
@@ -107,7 +108,9 @@ class PurchaseHistoryCubit extends Cubit<PurchaseHistoryState> {
     final myGen = _generation;
     try {
       final UserInsurancesPage page = await _repository.getUserInsurancesPage(
-        userId: uid, page: 1, limit: _pageSize,
+        userId: uid,
+        page: 1,
+        limit: _pageSize,
       );
       if (isClosed || myGen != _generation) return;
       if (page.insurances.isEmpty) {
@@ -139,7 +142,9 @@ class PurchaseHistoryCubit extends Cubit<PurchaseHistoryState> {
     try {
       final nextPage = current.currentPage + 1;
       final page = await _repository.getUserInsurancesPage(
-        userId: uid, page: nextPage, limit: _pageSize,
+        userId: uid,
+        page: nextPage,
+        limit: _pageSize,
       );
       if (isClosed || myGen != _generation) return;
       final latest = state;
@@ -161,7 +166,9 @@ class PurchaseHistoryCubit extends Cubit<PurchaseHistoryState> {
 
   String _friendlyError(Object e) {
     final m = e.toString().toLowerCase();
-    if (m.contains('connection') || m.contains('unavailable') || m.contains('socket')) {
+    if (m.contains('connection') ||
+        m.contains('unavailable') ||
+        m.contains('socket')) {
       return 'Unable to connect. Please check your connection and try again.';
     }
     if (m.contains('timeout') || m.contains('deadline')) {

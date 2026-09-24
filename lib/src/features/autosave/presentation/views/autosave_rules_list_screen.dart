@@ -225,7 +225,9 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
           ),
           TextButton(
             onPressed: () {
-              context.read<AutoSaveCubit>().bulkDelete(_selectedRuleIds.toList());
+              context
+                  .read<AutoSaveCubit>()
+                  .bulkDelete(_selectedRuleIds.toList());
               Navigator.pop(dialogContext);
             },
             child: Text(
@@ -255,8 +257,7 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
   // refresh-in-flight branch of the builder reuses _buildContent
   // exactly. Mirrors what the cubit would emit if the in-flight
   // request had already returned without any data changes.
-  AutoSaveRulesLoadedState _cachedLoadedState(
-      List<AutoSaveRuleEntity> cached) {
+  AutoSaveRulesLoadedState _cachedLoadedState(List<AutoSaveRuleEntity> cached) {
     return AutoSaveRulesLoadedState(
       rules: cached,
       lastRefreshed: DateTime.now(),
@@ -493,8 +494,7 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
                     padding: EdgeInsets.all(16.w),
                     // +1 row at the tail when there's another page to
                     // fetch — that row is the "loading more" spinner.
-                    itemCount:
-                        state.rules.length + (state.hasMore ? 1 : 0),
+                    itemCount: state.rules.length + (state.hasMore ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index >= state.rules.length) {
                         return Padding(
@@ -689,7 +689,9 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
           SizedBox(height: 24.h),
           ElevatedButton.icon(
             onPressed: () {
-              context.read<AutoSaveCubit>().getRulesWithCache(forceRefresh: true);
+              context
+                  .read<AutoSaveCubit>()
+                  .getRulesWithCache(forceRefresh: true);
             },
             icon: const Icon(Icons.refresh),
             label: const Text('Retry'),
@@ -708,7 +710,9 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
     if (state is AutoSaveRuleToggleSuccess) {
       Get.snackbar(
         'Success',
-        state.rule.isActive ? 'Rule resumed successfully' : 'Rule paused successfully',
+        state.rule.isActive
+            ? 'Rule resumed successfully'
+            : 'Rule paused successfully',
         backgroundColor: const Color(0xFF10B981),
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,

@@ -28,7 +28,8 @@ class PurchaseDetailUserScreen extends StatefulWidget {
   const PurchaseDetailUserScreen({super.key, required this.purchaseId});
 
   @override
-  State<PurchaseDetailUserScreen> createState() => _PurchaseDetailUserScreenState();
+  State<PurchaseDetailUserScreen> createState() =>
+      _PurchaseDetailUserScreenState();
 }
 
 class _PurchaseDetailUserScreenState extends State<PurchaseDetailUserScreen> {
@@ -91,7 +92,8 @@ class _PurchaseDetailUserScreenState extends State<PurchaseDetailUserScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_off_outlined, size: 48.sp, color: const Color(0xFFEF4444)),
+            Icon(Icons.cloud_off_outlined,
+                size: 48.sp, color: const Color(0xFFEF4444)),
             SizedBox(height: 12.h),
             Text("Couldn't load purchase",
                 style: GoogleFonts.inter(
@@ -101,8 +103,10 @@ class _PurchaseDetailUserScreenState extends State<PurchaseDetailUserScreen> {
                 )),
             if (msg != null) ...[
               SizedBox(height: 6.h),
-              Text(msg, textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF6B7280))),
+              Text(msg,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                      fontSize: 12.sp, color: const Color(0xFF6B7280))),
             ],
             SizedBox(height: 16.h),
             GestureDetector(
@@ -155,7 +159,10 @@ class _PurchaseDetailUserScreenState extends State<PurchaseDetailUserScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(p.productName.isNotEmpty ? p.productName : 'Insurance purchase',
+                  Text(
+                      p.productName.isNotEmpty
+                          ? p.productName
+                          : 'Insurance purchase',
                       style: GoogleFonts.inter(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w700,
@@ -171,7 +178,8 @@ class _PurchaseDetailUserScreenState extends State<PurchaseDetailUserScreen> {
                   ],
                   SizedBox(height: 12.h),
                   Text(
-                    NumberFormat.currency(locale: 'en_NG', symbol: '₦', decimalDigits: 2)
+                    NumberFormat.currency(
+                            locale: 'en_NG', symbol: '₦', decimalDigits: 2)
                         .format(amount),
                     style: GoogleFonts.inter(
                       fontSize: 24.sp,
@@ -182,7 +190,8 @@ class _PurchaseDetailUserScreenState extends State<PurchaseDetailUserScreen> {
                   if (p.isRenewal) ...[
                     SizedBox(height: 4.h),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFB923C).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(4.r),
@@ -212,8 +221,10 @@ class _PurchaseDetailUserScreenState extends State<PurchaseDetailUserScreen> {
                 children: [
                   _row('Policy number', p.policyNumber),
                   if (p.policyAmount.isNotEmpty)
-                    _row('Sum insured',
-                        NumberFormat.currency(locale: 'en_NG', symbol: '₦', decimalDigits: 2)
+                    _row(
+                        'Sum insured',
+                        NumberFormat.currency(
+                                locale: 'en_NG', symbol: '₦', decimalDigits: 2)
                             .format(policyAmount)),
                   _row('Category', p.productCategoryName),
                   _row('Payment option', p.paymentOption),
@@ -233,10 +244,12 @@ class _PurchaseDetailUserScreenState extends State<PurchaseDetailUserScreen> {
                   onPressed: () async {
                     final uri = Uri.tryParse(p.certificateUrl);
                     if (uri != null) {
-                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      await launchUrl(uri,
+                          mode: LaunchMode.externalApplication);
                     }
                   },
-                  icon: Icon(Icons.description_outlined, color: Colors.white, size: 18.sp),
+                  icon: Icon(Icons.description_outlined,
+                      color: Colors.white, size: 18.sp),
                   label: Text('View Certificate',
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
@@ -245,7 +258,8 @@ class _PurchaseDetailUserScreenState extends State<PurchaseDetailUserScreen> {
                       )),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF6366F1),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r)),
                   ),
                 ),
               )
@@ -284,11 +298,15 @@ class _PurchaseDetailUserScreenState extends State<PurchaseDetailUserScreen> {
           SizedBox(
             width: 120.w,
             child: Text(label,
-                style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF9CA3AF))),
+                style: GoogleFonts.inter(
+                    fontSize: 12.sp, color: const Color(0xFF9CA3AF))),
           ),
           Expanded(
             child: Text(value,
-                style: GoogleFonts.inter(fontSize: 13.sp, color: Colors.white, fontWeight: FontWeight.w500),
+                style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500),
                 textAlign: TextAlign.right),
           ),
         ],

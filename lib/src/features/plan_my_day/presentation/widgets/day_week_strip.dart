@@ -68,7 +68,8 @@ class DayWeekStrip extends StatelessWidget {
     );
   }
 
-  Widget _dayChip(DateTime day, {required bool selected, required bool isToday}) {
+  Widget _dayChip(DateTime day,
+      {required bool selected, required bool isToday}) {
     final count = _countFor(day);
     return DragTarget<Task>(
       onWillAcceptWithDetails: (d) =>

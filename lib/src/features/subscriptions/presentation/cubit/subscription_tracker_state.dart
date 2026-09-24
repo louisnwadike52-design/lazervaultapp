@@ -37,4 +37,3 @@ class SubscriptionDashboardLoaded extends SubscriptionTrackerState {
   @override
   List<Object?> get props => [summary, subscriptions, spending, isStale];
 }
-

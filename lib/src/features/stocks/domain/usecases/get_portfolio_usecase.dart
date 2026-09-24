@@ -11,4 +11,4 @@ class GetPortfolioUseCase {
   Future<Either<Failure, Portfolio>> call() async {
     return await repository.getPortfolio();
   }
-} 
+}

@@ -25,10 +25,8 @@ final _src = File(
 
 /// Source with `//` comment lines removed — the fixes are documented in comments
 /// that name the very colours being asserted against.
-String get _code => _src
-    .split('\n')
-    .where((l) => !l.trimLeft().startsWith('//'))
-    .join('\n');
+String get _code =>
+    _src.split('\n').where((l) => !l.trimLeft().startsWith('//')).join('\n');
 
 void main() {
   test('brand purple is not used as a text colour', () {
@@ -68,7 +66,8 @@ void main() {
       // Every non-accepted state used to render in the same purple, so DECLINED
       // and EXPIRED looked identical to PENDING. A declined invite reading as
       // "still waiting" means an admin waits on someone who already said no.
-      expect(_code, contains('Color _invitationStatusColor(InvitationStatus s)'));
+      expect(
+          _code, contains('Color _invitationStatusColor(InvitationStatus s)'));
       for (final s in [
         'InvitationStatus.pending',
         'InvitationStatus.declined',

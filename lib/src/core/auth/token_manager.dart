@@ -36,8 +36,10 @@ class TokenManager {
         userId: sessionMap['userId'] as String,
         accessToken: sessionMap['accessToken'] as String,
         refreshToken: sessionMap['refreshToken'] as String,
-        accessTokenExpiresAt: DateTime.parse(sessionMap['accessTokenExpiresAt'] as String),
-        refreshTokenExpiresAt: DateTime.parse(sessionMap['refreshTokenExpiresAt'] as String),
+        accessTokenExpiresAt:
+            DateTime.parse(sessionMap['accessTokenExpiresAt'] as String),
+        refreshTokenExpiresAt:
+            DateTime.parse(sessionMap['refreshTokenExpiresAt'] as String),
       );
     } catch (e) {
       print('Error reading session: $e');
@@ -54,9 +56,11 @@ class TokenManager {
         'accessToken': session.accessToken,
         'refreshToken': session.refreshToken,
         'accessTokenExpiresAt': session.accessTokenExpiresAt.toIso8601String(),
-        'refreshTokenExpiresAt': session.refreshTokenExpiresAt.toIso8601String(),
+        'refreshTokenExpiresAt':
+            session.refreshTokenExpiresAt.toIso8601String(),
       };
-      await _secureStorage.write(key: _sessionKey, value: json.encode(sessionMap));
+      await _secureStorage.write(
+          key: _sessionKey, value: json.encode(sessionMap));
     } catch (e) {
       print('Error saving session: $e');
       rethrow;

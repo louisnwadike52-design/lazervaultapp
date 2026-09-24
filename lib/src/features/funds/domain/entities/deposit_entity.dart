@@ -54,5 +54,6 @@ class DepositMethodInfo extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, name, description, icon, feeDescription, processingTime, available];
+  List<Object?> get props =>
+      [id, name, description, icon, feeDescription, processingTime, available];
 }

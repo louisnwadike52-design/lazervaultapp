@@ -79,7 +79,8 @@ class InvoicePaymentReceiptScreen extends StatelessWidget {
     if (hasFx) {
       metadata['Invoice Amount'] =
           '${_currencySymbol(invoiceCurrency)}${NumberFormat('#,##0.00').format(invoiceAmount ?? 0)}';
-      metadata['Exchange Rate'] = _formatRate(invoiceCurrency, currency, fxRate);
+      metadata['Exchange Rate'] =
+          _formatRate(invoiceCurrency, currency, fxRate);
     }
     if (invoiceNumber != null && invoiceNumber.isNotEmpty) {
       metadata['Invoice No.'] = invoiceNumber;
@@ -93,7 +94,8 @@ class InvoicePaymentReceiptScreen extends StatelessWidget {
       metadata['Bill To'] = toName;
     }
     if (newBalance != null && newBalance > 0) {
-      metadata['New Balance'] = '${_currencySymbol(currency)}${NumberFormat('#,##0.00').format(newBalance)}';
+      metadata['New Balance'] =
+          '${_currencySymbol(currency)}${NumberFormat('#,##0.00').format(newBalance)}';
     }
     if (message != null && message.isNotEmpty) {
       metadata['Message'] = message;
@@ -136,17 +138,27 @@ class InvoicePaymentReceiptScreen extends StatelessWidget {
 
   String _currencySymbol(String currency) {
     switch (currency.toUpperCase()) {
-      case 'NGN': return '\u20a6';
-      case 'GBP': return '\u00a3';
-      case 'EUR': return '\u20ac';
-      case 'ZAR': return 'R';
-      case 'USD': return '\$';
-      case 'CAD': return 'C\$';
-      case 'AUD': return 'A\$';
-      case 'INR': return '\u20b9';
-      case 'JPY': return '\u00a5';
+      case 'NGN':
+        return '\u20a6';
+      case 'GBP':
+        return '\u00a3';
+      case 'EUR':
+        return '\u20ac';
+      case 'ZAR':
+        return 'R';
+      case 'USD':
+        return '\$';
+      case 'CAD':
+        return 'C\$';
+      case 'AUD':
+        return 'A\$';
+      case 'INR':
+        return '\u20b9';
+      case 'JPY':
+        return '\u00a5';
       // Unknown codes show their code, never a wrong \u20a6.
-      default: return '${currency.toUpperCase()} ';
+      default:
+        return '${currency.toUpperCase()} ';
     }
   }
 }

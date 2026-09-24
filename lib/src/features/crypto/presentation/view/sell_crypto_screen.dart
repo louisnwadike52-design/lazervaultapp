@@ -24,7 +24,8 @@ class SellCryptoScreen extends StatefulWidget {
   final CryptoHolding? selectedHolding;
   final bool lockHolding;
 
-  const SellCryptoScreen({super.key, this.selectedHolding, this.lockHolding = false});
+  const SellCryptoScreen(
+      {super.key, this.selectedHolding, this.lockHolding = false});
 
   @override
   State<SellCryptoScreen> createState() => _SellCryptoScreenState();
@@ -34,18 +35,19 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
     with TickerProviderStateMixin, TransactionPinMixin {
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
-  
+
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-  
+
   CryptoHolding? _selectedHolding;
   bool _isAmountInCrypto = true;
   bool _isLoading = false;
   bool _isTransacting = false;
 
   @override
-  ITransactionPinService get transactionPinService => GetIt.I<ITransactionPinService>();
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
 
   /// Display-only fee rate driven by `crypto.fee_display.fallback_bps`. The
   /// authoritative fee comes from the server's swap-quote response.
@@ -95,16 +97,17 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
-    
+    ).animate(
+        CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
+
     _animationController.forward();
   }
 
@@ -126,7 +129,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
     if (_isAmountInCrypto) {
       return amount;
     }
-    if (_selectedHolding == null || _selectedHolding!.currentPrice <= 0) return 0.0;
+    if (_selectedHolding == null || _selectedHolding!.currentPrice <= 0)
+      return 0.0;
     return amount / _selectedHolding!.currentPrice;
   }
 
@@ -156,9 +160,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
     setState(() {
       _isAmountInCrypto = !_isAmountInCrypto;
       if (fiat > 0 && rate > 0) {
-        _amountController.text = _isAmountInCrypto
-            ? _trimNum(fiat / rate)
-            : fiat.toStringAsFixed(2);
+        _amountController.text =
+            _isAmountInCrypto ? _trimNum(fiat / rate) : fiat.toStringAsFixed(2);
       }
     });
   }
@@ -209,9 +212,13 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                           SizedBox(height: 24.h),
                           _buildAmountInput(),
                           SizedBox(height: 24.h),
-                          if (_selectedHolding != null && _amountController.text.isNotEmpty && _hasValidAmount)
+                          if (_selectedHolding != null &&
+                              _amountController.text.isNotEmpty &&
+                              _hasValidAmount)
                             _buildOrderSummary(),
-                          if (_selectedHolding != null && _amountController.text.isNotEmpty && _hasValidAmount)
+                          if (_selectedHolding != null &&
+                              _amountController.text.isNotEmpty &&
+                              _hasValidAmount)
                             SizedBox(height: 24.h),
                           _buildTransactionDetails(),
                           SizedBox(height: 24.h),
@@ -300,8 +307,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                 ),
                 child: Row(children: [
                   Icon(Icons.account_balance_wallet_outlined,
-                      color: Colors.white.withValues(alpha: 0.92),
-                      size: 16.sp),
+                      color: Colors.white.withValues(alpha: 0.92), size: 16.sp),
                   SizedBox(width: 6.w),
                   Text(
                     'Wallet',
@@ -345,7 +351,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
@@ -383,13 +390,12 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                 color: const Color(0xFF0A0A0A),
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
@@ -399,7 +405,10 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                       height: 40.w,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Colors.orange, Colors.orange.withValues(alpha: 0.7)],
+                          colors: [
+                            Colors.orange,
+                            Colors.orange.withValues(alpha: 0.7)
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -448,21 +457,24 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                         Row(
                           children: [
                             Icon(
-                              _selectedHolding!.totalGainLossPercentage >= 0 
-                                ? Icons.arrow_upward 
-                                : Icons.arrow_downward,
-                              color: _selectedHolding!.totalGainLossPercentage >= 0 
-                                ? Colors.green 
-                                : Colors.red,
+                              _selectedHolding!.totalGainLossPercentage >= 0
+                                  ? Icons.arrow_upward
+                                  : Icons.arrow_downward,
+                              color:
+                                  _selectedHolding!.totalGainLossPercentage >= 0
+                                      ? Colors.green
+                                      : Colors.red,
                               size: 12.sp,
                             ),
                             Text(
                               '${_selectedHolding!.totalGainLossPercentage.abs().toStringAsFixed(2)}%',
                               style: GoogleFonts.inter(
                                 fontSize: 12.sp,
-                                color: _selectedHolding!.totalGainLossPercentage >= 0 
-                                  ? Colors.green 
-                                  : Colors.red,
+                                color:
+                                    _selectedHolding!.totalGainLossPercentage >=
+                                            0
+                                        ? Colors.green
+                                        : Colors.red,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -513,7 +525,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
@@ -549,7 +562,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                 GestureDetector(
                   onTap: _toggleAmountUnit,
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -559,13 +573,12 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                       ),
                       borderRadius: BorderRadius.circular(20.r),
                       boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -577,7 +590,9 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                         ),
                         SizedBox(width: 4.w),
                         Text(
-                          _isAmountInCrypto ? CurrencySymbols.currentCurrency : 'Crypto',
+                          _isAmountInCrypto
+                              ? CurrencySymbols.currentCurrency
+                              : 'Crypto',
                           style: GoogleFonts.inter(
                             fontSize: 12.sp,
                             color: Colors.red,
@@ -612,13 +627,12 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
               color: const Color(0xFF0A0A0A),
               borderRadius: BorderRadius.circular(12.r),
               boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -626,7 +640,9 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                 Row(
                   children: [
                     Text(
-                      _isAmountInCrypto ? (_selectedHolding?.cryptoSymbol.toUpperCase() ?? '') : CurrencySymbols.currentSymbol,
+                      _isAmountInCrypto
+                          ? (_selectedHolding?.cryptoSymbol.toUpperCase() ?? '')
+                          : CurrencySymbols.currentSymbol,
                       style: GoogleFonts.inter(
                         fontSize: 24.sp,
                         fontWeight: FontWeight.bold,
@@ -637,9 +653,11 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                     Expanded(
                       child: TextField(
                         controller: _amountController,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')),
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d*\.?\d*$')),
                         ],
                         style: GoogleFonts.inter(
                           fontSize: 24.sp,
@@ -660,12 +678,13 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                     ),
                   ],
                 ),
-                if (_selectedHolding != null && _amountController.text.isNotEmpty) ...[
+                if (_selectedHolding != null &&
+                    _amountController.text.isNotEmpty) ...[
                   SizedBox(height: 8.h),
                   Text(
-                    _isAmountInCrypto 
-                      ? '≈ ${CurrencySymbols.currentSymbol}${_fiatAmount.toStringAsFixed(2)}'
-                      : '≈ ${_cryptoAmount.toStringAsFixed(6)} ${_selectedHolding!.cryptoSymbol.toUpperCase()}',
+                    _isAmountInCrypto
+                        ? '≈ ${CurrencySymbols.currentSymbol}${_fiatAmount.toStringAsFixed(2)}'
+                        : '≈ ${_cryptoAmount.toStringAsFixed(6)} ${_selectedHolding!.cryptoSymbol.toUpperCase()}',
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
                       color: Colors.white.withValues(alpha: 0.6),
@@ -769,7 +788,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
           BoxShadow(
             color: Colors.red.withValues(alpha: 0.1),
             blurRadius: 10,
@@ -799,11 +819,14 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
             ],
           ),
           SizedBox(height: 16.h),
-          _buildSummaryRow('You sell', '${_cryptoAmount.toStringAsFixed(6)} ${_selectedHolding!.cryptoSymbol.toUpperCase()}'),
+          _buildSummaryRow('You sell',
+              '${_cryptoAmount.toStringAsFixed(6)} ${_selectedHolding!.cryptoSymbol.toUpperCase()}'),
           SizedBox(height: 8.h),
-          _buildSummaryRow('Market value', '${CurrencySymbols.currentSymbol}${_fiatAmount.toStringAsFixed(2)}'),
+          _buildSummaryRow('Market value',
+              '${CurrencySymbols.currentSymbol}${_fiatAmount.toStringAsFixed(2)}'),
           SizedBox(height: 8.h),
-          _buildSummaryRow('Fee', '${CurrencySymbols.currentSymbol}${fee.toStringAsFixed(2)}'),
+          _buildSummaryRow('Fee',
+              '${CurrencySymbols.currentSymbol}${fee.toStringAsFixed(2)}'),
           SizedBox(height: 12.h),
           Container(
             height: 1.h,
@@ -818,7 +841,9 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
             ),
           ),
           SizedBox(height: 12.h),
-          _buildSummaryRow('You receive', '${CurrencySymbols.currentSymbol}${netProceeds.toStringAsFixed(2)}', isTotal: true),
+          _buildSummaryRow('You receive',
+              '${CurrencySymbols.currentSymbol}${netProceeds.toStringAsFixed(2)}',
+              isTotal: true),
         ],
       ),
     );
@@ -860,7 +885,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
@@ -943,7 +969,6 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -970,7 +995,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
   }
 
   Widget _buildSellButton() {
-    final isEnabled = _selectedHolding != null && _hasValidAmount && !_isTransacting;
+    final isEnabled =
+        _selectedHolding != null && _hasValidAmount && !_isTransacting;
 
     // Build validation error message
     String? validationError;
@@ -1018,52 +1044,54 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
             padding: EdgeInsets.symmetric(vertical: 18.h),
             decoration: BoxDecoration(
               gradient: isEnabled
-                ? LinearGradient(
-                    colors: [
-                      Colors.red,
-                      Colors.red.withValues(alpha: 0.8),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  )
-                : LinearGradient(
-                    colors: [
-                      Colors.grey.withValues(alpha: 0.3),
-                      Colors.grey.withValues(alpha: 0.1),
-                    ],
-                  ),
+                  ? LinearGradient(
+                      colors: [
+                        Colors.red,
+                        Colors.red.withValues(alpha: 0.8),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : LinearGradient(
+                      colors: [
+                        Colors.grey.withValues(alpha: 0.3),
+                        Colors.grey.withValues(alpha: 0.1),
+                      ],
+                    ),
               borderRadius: BorderRadius.circular(16.r),
-              boxShadow: isEnabled ? [
-                BoxShadow(
-                  color: Colors.red.withValues(alpha: 0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ] : null,
+              boxShadow: isEnabled
+                  ? [
+                      BoxShadow(
+                        color: Colors.red.withValues(alpha: 0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
+                  : null,
             ),
             child: _isTransacting
-              ? Center(
-                  child: LazerVaultLoader.small(),
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.remove_circle_outline,
-                      color: isEnabled ? Colors.white : Colors.grey,
-                      size: 20.sp,
-                    ),
-                    SizedBox(width: 8.w),
-                    Text(
-                      'Sell ${_selectedHolding?.cryptoSymbol.toUpperCase() ?? 'Crypto'}',
-                      style: GoogleFonts.inter(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
+                ? Center(
+                    child: LazerVaultLoader.small(),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.remove_circle_outline,
                         color: isEnabled ? Colors.white : Colors.grey,
+                        size: 20.sp,
                       ),
-                    ),
-                  ],
-                ),
+                      SizedBox(width: 8.w),
+                      Text(
+                        'Sell ${_selectedHolding?.cryptoSymbol.toUpperCase() ?? 'Crypto'}',
+                        style: GoogleFonts.inter(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: isEnabled ? Colors.white : Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
           ),
         ),
       ],
@@ -1107,12 +1135,14 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
     if (cubitState is! CryptosLoaded) return;
 
     // Only show holdings for Quidax-supported assets
-    final supportedSymbols = cubitState.supportedAssets
-        .map((a) => a.symbol.toLowerCase())
-        .toSet();
+    final supportedSymbols =
+        cubitState.supportedAssets.map((a) => a.symbol.toLowerCase()).toSet();
     final allHoldings = cubitState.holdings;
     final holdings = supportedSymbols.isNotEmpty
-        ? allHoldings.where((h) => supportedSymbols.contains(h.cryptoSymbol.toLowerCase())).toList()
+        ? allHoldings
+            .where(
+                (h) => supportedSymbols.contains(h.cryptoSymbol.toLowerCase()))
+            .toList()
         : allHoldings;
 
     // Resolve holdings to Crypto objects for detail navigation
@@ -1185,8 +1215,10 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                 style: GoogleFonts.inter(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'Search your holdings...',
-                  hintStyle: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.5)),
-                  prefixIcon: Icon(Icons.search, color: Colors.white.withValues(alpha: 0.5)),
+                  hintStyle: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.5)),
+                  prefixIcon: Icon(Icons.search,
+                      color: Colors.white.withValues(alpha: 0.5)),
                   filled: true,
                   fillColor: const Color(0xFF1F1F1F),
                   border: OutlineInputBorder(
@@ -1200,43 +1232,51 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
             SizedBox(height: 16.h),
             Expanded(
               child: holdings.isEmpty
-                ? Center(
-                    child: Text(
-                      'No holdings to sell',
-                      style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 14.sp),
-                    ),
-                  )
-                : ValueListenableBuilder<String>(
-                    valueListenable: searchNotifier,
-                    builder: (context, query, _) {
-                      final filtered = query.isEmpty
-                          ? holdings
-                          : holdings.where((h) =>
-                              h.cryptoName.toLowerCase().contains(query) ||
-                              h.cryptoSymbol.toLowerCase().contains(query)
-                            ).toList();
+                  ? Center(
+                      child: Text(
+                        'No holdings to sell',
+                        style: GoogleFonts.inter(
+                            color: Colors.grey[400], fontSize: 14.sp),
+                      ),
+                    )
+                  : ValueListenableBuilder<String>(
+                      valueListenable: searchNotifier,
+                      builder: (context, query, _) {
+                        final filtered = query.isEmpty
+                            ? holdings
+                            : holdings
+                                .where((h) =>
+                                    h.cryptoName
+                                        .toLowerCase()
+                                        .contains(query) ||
+                                    h.cryptoSymbol
+                                        .toLowerCase()
+                                        .contains(query))
+                                .toList();
 
-                      if (filtered.isEmpty) {
-                        return Center(
-                          child: Text(
-                            'No matching holdings',
-                            style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 14.sp),
-                          ),
-                        );
-                      }
-
-                      return ListView.builder(
-                        padding: EdgeInsets.symmetric(horizontal: 24.w),
-                        itemCount: filtered.length,
-                        itemBuilder: (context, index) {
-                          return _buildHoldingItem(
-                            filtered[index],
-                            cryptoForDetail: cryptoLookup[filtered[index].cryptoSymbol.toLowerCase()],
+                        if (filtered.isEmpty) {
+                          return Center(
+                            child: Text(
+                              'No matching holdings',
+                              style: GoogleFonts.inter(
+                                  color: Colors.grey[400], fontSize: 14.sp),
+                            ),
                           );
-                        },
-                      );
-                    },
-                  ),
+                        }
+
+                        return ListView.builder(
+                          padding: EdgeInsets.symmetric(horizontal: 24.w),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            return _buildHoldingItem(
+                              filtered[index],
+                              cryptoForDetail: cryptoLookup[
+                                  filtered[index].cryptoSymbol.toLowerCase()],
+                            );
+                          },
+                        );
+                      },
+                    ),
             ),
           ],
         ),
@@ -1270,7 +1310,10 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                   height: 40.w,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Colors.orange, Colors.orange.withValues(alpha: 0.7)],
+                      colors: [
+                        Colors.orange,
+                        Colors.orange.withValues(alpha: 0.7)
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(20.r),
                   ),
@@ -1318,11 +1361,11 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                       children: [
                         Icon(
                           holding.totalGainLossPercentage >= 0
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
                           color: holding.totalGainLossPercentage >= 0
-                            ? Colors.green
-                            : Colors.red,
+                              ? Colors.green
+                              : Colors.red,
                           size: 12.sp,
                         ),
                         Text(
@@ -1330,8 +1373,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                           style: GoogleFonts.inter(
                             fontSize: 12.sp,
                             color: holding.totalGainLossPercentage >= 0
-                              ? Colors.green
-                              : Colors.red,
+                                ? Colors.green
+                                : Colors.red,
                           ),
                         ),
                       ],
@@ -1346,7 +1389,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
             GestureDetector(
               onTap: () {
                 Get.back(); // close bottom sheet
-                Get.toNamed(AppRoutes.cryptoDetails, arguments: cryptoForDetail);
+                Get.toNamed(AppRoutes.cryptoDetails,
+                    arguments: cryptoForDetail);
               },
               child: Container(
                 width: double.infinity,
@@ -1383,7 +1427,10 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
   }
 
   void _processSellOrder() async {
-    if (_selectedHolding == null || !_hasValidAmount || _isLoading || _isTransacting) return;
+    if (_selectedHolding == null ||
+        !_hasValidAmount ||
+        _isLoading ||
+        _isTransacting) return;
 
     // Fee display still shown to user via the PIN sheet; the actual platform
     // spread is computed server-side from system_settings.crypto.spread.*
@@ -1444,4 +1491,4 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
     }
     setState(() => _isTransacting = false);
   }
-} 
+}

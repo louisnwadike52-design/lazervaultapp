@@ -33,8 +33,6 @@ class _CableTVHomeScreenState extends State<CableTVHomeScreen> {
     context.read<CableTVCubit>().getProviders();
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -127,8 +125,6 @@ class _CableTVHomeScreenState extends State<CableTVHomeScreen> {
       ],
     );
   }
-
-
 }
 
 class _QuickActionCard extends StatelessWidget {

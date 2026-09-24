@@ -13,7 +13,6 @@ import '../../domain/entities/crypto_entity.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'crypto_wallets_screen_widgets.dart';
 
-
 /// Screen showing user's crypto wallets with deposit addresses and balances.
 /// Each wallet mirrors a Quidax sub-account wallet.
 class CryptoWalletsScreen extends StatefulWidget {
@@ -100,9 +99,11 @@ class _CryptoWalletsScreenState extends State<CryptoWalletsScreen> {
 
                   return ListView.builder(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                     itemCount: wallets.length,
-                    itemBuilder: (context, index) => _buildWalletItem(wallets[index], state),
+                    itemBuilder: (context, index) =>
+                        _buildWalletItem(wallets[index], state),
                   );
                 },
               ),
@@ -165,15 +166,18 @@ class _CryptoWalletsScreenState extends State<CryptoWalletsScreen> {
         style: GoogleFonts.inter(color: Colors.white),
         decoration: InputDecoration(
           hintText: 'Search wallets...',
-          hintStyle: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.5)),
-          prefixIcon: Icon(Icons.search, color: Colors.white.withValues(alpha: 0.5)),
+          hintStyle:
+              GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.5)),
+          prefixIcon:
+              Icon(Icons.search, color: Colors.white.withValues(alpha: 0.5)),
           suffixIcon: _searchQuery.isNotEmpty
               ? GestureDetector(
                   onTap: () {
                     _searchController.clear();
                     setState(() => _searchQuery = '');
                   },
-                  child: Icon(Icons.close, color: Colors.white.withValues(alpha: 0.5), size: 18.sp),
+                  child: Icon(Icons.close,
+                      color: Colors.white.withValues(alpha: 0.5), size: 18.sp),
                 )
               : null,
           filled: true,
@@ -182,7 +186,8 @@ class _CryptoWalletsScreenState extends State<CryptoWalletsScreen> {
             borderRadius: BorderRadius.circular(12.r),
             borderSide: BorderSide.none,
           ),
-          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+          contentPadding:
+              EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         ),
         onChanged: (value) => setState(() => _searchQuery = value),
       ),
@@ -196,10 +201,13 @@ class _CryptoWalletsScreenState extends State<CryptoWalletsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.account_balance_wallet_outlined, size: 64.sp, color: Colors.grey[600]),
+            Icon(Icons.account_balance_wallet_outlined,
+                size: 64.sp, color: Colors.grey[600]),
             SizedBox(height: 16.h),
             Text(
-              _searchQuery.isNotEmpty ? 'No matching wallets' : 'No crypto wallets',
+              _searchQuery.isNotEmpty
+                  ? 'No matching wallets'
+                  : 'No crypto wallets',
               style: GoogleFonts.inter(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w600,
@@ -225,12 +233,12 @@ class _CryptoWalletsScreenState extends State<CryptoWalletsScreen> {
 
   Widget _buildWalletItem(CryptoWalletModel wallet, CryptosLoaded state) {
     final crypto = state.cryptos.firstWhere(
-          (c) => c.symbol.toLowerCase() == wallet.cryptoSymbol.toLowerCase(),
-          orElse: () => state.supportedAssets.firstWhere(
-                (c) => c.symbol.toLowerCase() == wallet.cryptoSymbol.toLowerCase(),
-                orElse: () => state.cryptos.first,
-              ),
-        );
+      (c) => c.symbol.toLowerCase() == wallet.cryptoSymbol.toLowerCase(),
+      orElse: () => state.supportedAssets.firstWhere(
+        (c) => c.symbol.toLowerCase() == wallet.cryptoSymbol.toLowerCase(),
+        orElse: () => state.cryptos.first,
+      ),
+    );
     final currentPrice = crypto?.currentPrice ?? 0.0;
     final fiatValue = wallet.balance * currentPrice;
 
@@ -268,7 +276,8 @@ class _CryptoWalletsScreenState extends State<CryptoWalletsScreen> {
                           crypto.image,
                           width: 30.w,
                           height: 30.w,
-                          errorBuilder: (context, error, stackTrace) => Container(),
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(),
                         ),
                       )
                     : Text(
@@ -314,7 +323,8 @@ class _CryptoWalletsScreenState extends State<CryptoWalletsScreen> {
                       if (wallet.chain.isNotEmpty) ...[
                         SizedBox(width: 6.w),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 6.w, vertical: 2.h),
                           decoration: BoxDecoration(
                             color: const Color(0xFF2D2D2D),
                             borderRadius: BorderRadius.circular(4.r),
@@ -344,7 +354,8 @@ class _CryptoWalletsScreenState extends State<CryptoWalletsScreen> {
             ),
 
             // Chevron
-            Icon(Icons.chevron_right, color: Colors.white.withValues(alpha: 0.4), size: 20.sp),
+            Icon(Icons.chevron_right,
+                color: Colors.white.withValues(alpha: 0.4), size: 20.sp),
           ],
         ),
       ),

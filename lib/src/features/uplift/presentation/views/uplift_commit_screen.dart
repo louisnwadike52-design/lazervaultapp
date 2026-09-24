@@ -40,7 +40,8 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
   Future<void> _confirm() async {
     final major = double.tryParse(_amount.text.trim());
     if (major == null || major <= 0) {
-      Get.snackbar('Enter an amount', 'Type the amount to commit to the fund pool',
+      Get.snackbar(
+          'Enter an amount', 'Type the amount to commit to the fund pool',
           backgroundColor: kUpError,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM);

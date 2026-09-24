@@ -31,11 +31,14 @@ class ScanHistoryItem {
     final rawId = json['id'];
     final int? id = rawId is int
         ? rawId
-        : (rawId is num ? rawId.toInt() : int.tryParse(rawId?.toString() ?? ''));
+        : (rawId is num
+            ? rawId.toInt()
+            : int.tryParse(rawId?.toString() ?? ''));
     if (id == null) return null;
 
     final rawData = json['data'];
-    final data = rawData is Map<String, dynamic> ? rawData : <String, dynamic>{};
+    final data =
+        rawData is Map<String, dynamic> ? rawData : <String, dynamic>{};
 
     final rawConfidence = json['confidence'];
     final confidence = rawConfidence is num
@@ -43,8 +46,9 @@ class ScanHistoryItem {
         : double.tryParse(rawConfidence?.toString() ?? '') ?? 0.0;
 
     final rawImage = json['image_url'];
-    final imageUrl =
-        rawImage is String && rawImage.trim().isNotEmpty ? rawImage.trim() : null;
+    final imageUrl = rawImage is String && rawImage.trim().isNotEmpty
+        ? rawImage.trim()
+        : null;
 
     DateTime? createdAt;
     final rawCreated = json['created_at'];
@@ -153,7 +157,8 @@ class SmartScanResult {
   factory SmartScanResult.fromJson(Map<String, dynamic> json) {
     // Safely extract nested data map
     final rawData = json['data'];
-    final data = rawData is Map<String, dynamic> ? rawData : <String, dynamic>{};
+    final data =
+        rawData is Map<String, dynamic> ? rawData : <String, dynamic>{};
 
     // 4.5: Safely parse field_confidence — skip non-numeric values
     final rawFieldConf = data['field_confidence'];
@@ -172,9 +177,8 @@ class SmartScanResult {
 
     // Safely parse missing_fields
     final rawMissing = json['missing_fields'];
-    final List<String> missingFields = rawMissing is List
-        ? rawMissing.map((e) => e.toString()).toList()
-        : [];
+    final List<String> missingFields =
+        rawMissing is List ? rawMissing.map((e) => e.toString()).toList() : [];
 
     // Safely parse possible_types
     final rawPossible = data['possible_types'];
@@ -208,10 +212,12 @@ class SmartScanResult {
         }
       }
     }
-    final rawDescription = data['description'] ?? data['memo'] ?? data['narration'];
-    final description = rawDescription is String && rawDescription.trim().isNotEmpty
-        ? rawDescription.trim()
-        : null;
+    final rawDescription =
+        data['description'] ?? data['memo'] ?? data['narration'];
+    final description =
+        rawDescription is String && rawDescription.trim().isNotEmpty
+            ? rawDescription.trim()
+            : null;
 
     return SmartScanResult(
       extractionType: json['extraction_type']?.toString() ?? 'no_data',
@@ -255,9 +261,7 @@ class SmartScanResult {
   /// True when the scan resolved to an existing Lazervault user that we can
   /// send to directly as a free internal transfer.
   bool get hasResolvedUser =>
-      isLazervaultUser &&
-      resolvedUserId != null &&
-      resolvedUserId!.isNotEmpty;
+      isLazervaultUser && resolvedUserId != null && resolvedUserId!.isNotEmpty;
 }
 
 class BankScanException implements Exception {

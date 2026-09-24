@@ -9,12 +9,11 @@ class FlightsScreen extends StatefulWidget {
   State<FlightsScreen> createState() => _FlightsScreenState();
 }
 
-    class _FlightsScreenState extends State<FlightsScreen> {
+class _FlightsScreenState extends State<FlightsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:   AppColors.backgroundColor,
-          body:  SafeArea(child:Flights()) 
-    );
-    }
-} 
+        backgroundColor: AppColors.backgroundColor,
+        body: SafeArea(child: Flights()));
+  }
+}

@@ -119,8 +119,7 @@ class _RecordVATScreenState extends State<RecordVATScreen> {
                 ? _descriptionController.text.trim()
                 : 'VAT at 7.5%',
             metadata: {
-              'Base amount':
-                  '₦${_baseAmountNaira.toStringAsFixed(2)}',
+              'Base amount': '₦${_baseAmountNaira.toStringAsFixed(2)}',
               'VAT (7.5%)': '₦${_vatAmount.toStringAsFixed(2)}',
               if (_periodController.text.trim().isNotEmpty)
                 'Period': _periodController.text.trim(),
@@ -251,8 +250,7 @@ class _RecordVATScreenState extends State<RecordVATScreen> {
             if (value == null || value.trim().isEmpty) {
               return 'Base amount is required';
             }
-            final parsed =
-                double.tryParse(value.replaceAll(',', '').trim());
+            final parsed = double.tryParse(value.replaceAll(',', '').trim());
             if (parsed == null || parsed <= 0) {
               return 'Enter a valid amount';
             }
@@ -374,9 +372,8 @@ class _RecordVATScreenState extends State<RecordVATScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 12.w),
         decoration: BoxDecoration(
-          color: isSelected
-              ? color.withValues(alpha: 0.15)
-              : Colors.transparent,
+          color:
+              isSelected ? color.withValues(alpha: 0.15) : Colors.transparent,
           borderRadius: BorderRadius.horizontal(
             left: isLeft ? Radius.circular(12.r) : Radius.zero,
             right: isLeft ? Radius.zero : Radius.circular(12.r),

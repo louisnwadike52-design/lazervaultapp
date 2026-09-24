@@ -20,8 +20,7 @@ class ElectricityBillPdfService {
   static pw.Font? _boldFont;
 
   /// Get currency symbol - using ASCII-safe alternatives for PDF compatibility
-  static String _currencySymbolFor(String code) =>
-      receiptCurrencySymbol(code);
+  static String _currencySymbolFor(String code) => receiptCurrencySymbol(code);
 
   /// Get display currency name
   static String _currencyNameFor(String code) {
@@ -123,7 +122,8 @@ class ElectricityBillPdfService {
         ? _dateFormat.format(payment.completedAt!)
         : paymentDate;
     final currencySymbol = _currencySymbolFor(payment.currency);
-    final receiptNumber = 'ELEC-${payment.referenceNumber.length > 12 ? payment.referenceNumber.substring(0, 12) : payment.referenceNumber}';
+    final receiptNumber =
+        'ELEC-${payment.referenceNumber.length > 12 ? payment.referenceNumber.substring(0, 12) : payment.referenceNumber}';
 
     pdf.addPage(
       pw.Page(
@@ -160,10 +160,8 @@ class ElectricityBillPdfService {
               pw.SizedBox(height: 32),
 
               // Electricity Token (prominently displayed for prepaid)
-              if (payment.hasToken)
-                _buildTokenSection(token: payment.token!),
-              if (payment.hasToken)
-                pw.SizedBox(height: 32),
+              if (payment.hasToken) _buildTokenSection(token: payment.token!),
+              if (payment.hasToken) pw.SizedBox(height: 32),
 
               // Payment Details
               _buildPaymentDetails(
@@ -598,8 +596,7 @@ class ElectricityBillPdfService {
         // PlatformException and the share silently fails on iPhone/iPad.
         sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         files: [XFile(file.path)],
-        text: _ascii(
-            'LazerVault electricity receipt\n'
+        text: _ascii('LazerVault electricity receipt\n'
             'Provider: ${payment.providerName}\n'
             'Meter: ${payment.meterNumber}\n'
             'Amount: $currencySymbol$amount'),

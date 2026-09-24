@@ -29,7 +29,9 @@ class _RecurringTransfersListScreenState
 
   void _loadTransfers() {
     final status = _selectedFilter == 'all' ? null : _selectedFilter;
-    context.read<RecurringTransferCubit>().loadRecurringTransfers(status: status);
+    context
+        .read<RecurringTransferCubit>()
+        .loadRecurringTransfers(status: status);
   }
 
   @override
@@ -277,7 +279,10 @@ class _RecurringTransfersListScreenState
     final (color, label) = switch (status) {
       RecurringTransferStatus.active => (const Color(0xFF10B981), 'Active'),
       RecurringTransferStatus.paused => (const Color(0xFFFB923C), 'Paused'),
-      RecurringTransferStatus.cancelled => (const Color(0xFFEF4444), 'Cancelled'),
+      RecurringTransferStatus.cancelled => (
+          const Color(0xFFEF4444),
+          'Cancelled'
+        ),
       RecurringTransferStatus.expired => (const Color(0xFF9CA3AF), 'Expired'),
     };
 

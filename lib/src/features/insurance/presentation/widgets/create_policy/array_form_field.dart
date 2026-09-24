@@ -14,7 +14,6 @@ import 'monetary_form_field.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'array_form_field_widgets.dart';
 
-
 /// Renders MyCover.ai `array`-type form fields (e.g. `item_details`
 /// for Marine cargo, `items` for Home Content) as a repeating
 /// {name, value, description} record list.
@@ -110,7 +109,8 @@ class _ArrayFormFieldState extends State<ArrayFormField> {
       if (parsed is List) {
         return parsed
             .whereType<Map>()
-            .map((m) => m.map((k, v) => MapEntry(k.toString(), v?.toString() ?? '')))
+            .map((m) =>
+                m.map((k, v) => MapEntry(k.toString(), v?.toString() ?? '')))
             .toList();
       }
     } catch (_) {
@@ -250,7 +250,8 @@ class _ArrayFormFieldState extends State<ArrayFormField> {
         borderRadius: BorderRadius.circular(10.r),
         border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: children),
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start, children: children),
     );
   }
 
@@ -273,8 +274,7 @@ class _ArrayFormFieldState extends State<ArrayFormField> {
         return TextFormField(
           initialValue: item[sf.name],
           onChanged: (v) => _updateField(idx, sf.name, v),
-          keyboardType:
-              const TextInputType.numberWithOptions(decimal: true),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
           inputFormatters: [
             FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
             LengthLimitingTextInputFormatter(12),
@@ -319,8 +319,7 @@ class _ArrayFormFieldState extends State<ArrayFormField> {
               style: GoogleFonts.inter(
                   fontSize: 13.sp,
                   color: const Color(0xFF9CA3AF).withValues(alpha: 0.6))),
-          icon: const Icon(Icons.keyboard_arrow_down,
-              color: Color(0xFF9CA3AF)),
+          icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF9CA3AF)),
           style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
           items: sf.options
               .map((o) => DropdownMenuItem<String>(
@@ -393,9 +392,7 @@ class _ArrayFormFieldState extends State<ArrayFormField> {
                 : isStaging
                     ? Icons.cloud_upload_outlined
                     : Icons.photo_camera_outlined,
-            color: hasImage
-                ? const Color(0xFF10B981)
-                : const Color(0xFF6366F1),
+            color: hasImage ? const Color(0xFF10B981) : const Color(0xFF6366F1),
             size: 18.sp,
           ),
           SizedBox(width: 10.w),
@@ -487,10 +484,12 @@ class _ArrayFormFieldState extends State<ArrayFormField> {
     if (choice == null || !mounted) return;
     switch (choice) {
       case _ItemImageSource.camera:
-        await _pickItemImageFromCamera(idx, fieldName, picker.ImageSource.camera);
+        await _pickItemImageFromCamera(
+            idx, fieldName, picker.ImageSource.camera);
         break;
       case _ItemImageSource.gallery:
-        await _pickItemImageFromCamera(idx, fieldName, picker.ImageSource.gallery);
+        await _pickItemImageFromCamera(
+            idx, fieldName, picker.ImageSource.gallery);
         break;
       case _ItemImageSource.file:
         await _pickItemImageFromFile(idx, fieldName);

@@ -141,7 +141,8 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
         return;
       }
       if (_quantity > item.quantity) {
-        _snack('Only ${item.quantity} ${item.unit} of ${item.name} in stock', _danger);
+        _snack('Only ${item.quantity} ${item.unit} of ${item.name} in stock',
+            _danger);
         return;
       }
     } else if (_descCtrl.text.trim().isEmpty) {
@@ -160,7 +161,8 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
         paymentMethod: _paymentMethod,
         paid: _paid,
         quantity: _isInventorySale ? _quantity : 1,
-        unitPrice: _isInventorySale ? (_selectedItem!.unitPrice * 100).round() : 0,
+        unitPrice:
+            _isInventorySale ? (_selectedItem!.unitPrice * 100).round() : 0,
         inventoryItemId: _isInventorySale ? _selectedItem!.id : '',
         customerId: _selectedCustomer?.id ?? '',
         idempotencyKey: _idempotencyKey,
@@ -199,7 +201,8 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
 
   void _snack(String m, Color c) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m), backgroundColor: c));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(m), backgroundColor: c));
   }
 
   @override
@@ -211,7 +214,10 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text('Record a sale',
-            style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+            style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w700)),
       ),
       body: SafeArea(
         child: ListView(
@@ -228,7 +234,8 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
               _label('Amount (NGN)'),
               _field(_amountCtrl,
                   hint: '0.00',
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
                   onChanged: (_) => setState(() {})),
               SizedBox(height: 16.h),
               _label('What did you sell?'),
@@ -244,12 +251,14 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.touch_app_rounded, color: _accentText, size: 18.sp),
+                    Icon(Icons.touch_app_rounded,
+                        color: _accentText, size: 18.sp),
                     SizedBox(width: 10.w),
                     Expanded(
                       child: Text(
                         'Tap "Select an item" above to pick from inventory. Quantity is set with the stepper — no manual entry.',
-                        style: GoogleFonts.inter(color: _muted, fontSize: 12.sp),
+                        style:
+                            GoogleFonts.inter(color: _muted, fontSize: 12.sp),
                       ),
                     ),
                   ],
@@ -269,7 +278,8 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
                 return GestureDetector(
                   onTap: () => setState(() => _paymentMethod = m),
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
                     decoration: BoxDecoration(
                       color: sel ? _accent.withValues(alpha: 0.18) : _card,
                       borderRadius: BorderRadius.circular(10.r),
@@ -279,7 +289,8 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
                         style: GoogleFonts.inter(
                             color: sel ? _accentText : _muted,
                             fontSize: 13.sp,
-                            fontWeight: sel ? FontWeight.w600 : FontWeight.w500)),
+                            fontWeight:
+                                sel ? FontWeight.w600 : FontWeight.w500)),
                   ),
                 );
               }).toList(),
@@ -288,14 +299,17 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
               decoration: BoxDecoration(
-                  color: _card, borderRadius: BorderRadius.circular(12.r), border: Border.all(color: _border)),
+                  color: _card,
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(color: _border)),
               child: SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 activeThumbColor: _accent,
                 value: _paid,
                 onChanged: (v) => setState(() => _paid = v),
                 title: Text('Payment received',
-                    style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp)),
+                    style: GoogleFonts.inter(
+                        color: Colors.white, fontSize: 14.sp)),
                 subtitle: Text(
                     _paid
                         ? 'Counts as realised revenue (does not touch your wallet balance)'
@@ -312,14 +326,20 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
                   backgroundColor: _accent,
                   disabledBackgroundColor: _accent.withValues(alpha: 0.4),
                   padding: EdgeInsets.symmetric(vertical: 15.h),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r)),
                 ),
                 child: _submitting
                     ? SizedBox(
-                        height: 20.h, width: 20.h,
-                        child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        height: 20.h,
+                        width: 20.h,
+                        child: const CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2))
                     : Text('Record sale',
-                        style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700)),
+                        style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w700)),
               ),
             ),
           ],
@@ -372,7 +392,9 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
                                 ? 'Custom / one-off item'
                                 : 'Select an item',
                     style: GoogleFonts.inter(
-                        color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600),
+                        color: Colors.white,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600),
                   ),
                   SizedBox(height: 2.h),
                   Text(
@@ -422,7 +444,9 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
                     children: [
                       Text('Select item',
                           style: GoogleFonts.inter(
-                              color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w700)),
+                              color: Colors.white,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w700)),
                     ],
                   ),
                 ),
@@ -463,7 +487,8 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
                           padding: EdgeInsets.symmetric(vertical: 24.h),
                           child: Center(
                             child: Text('No inventory items yet',
-                                style: GoogleFonts.inter(color: _muted, fontSize: 13.sp)),
+                                style: GoogleFonts.inter(
+                                    color: _muted, fontSize: 13.sp)),
                           ),
                         )
                       else
@@ -536,8 +561,12 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
                 color: _accent.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10.r),
               ),
-              child: Icon(c != null ? Icons.person_rounded : Icons.person_outline_rounded,
-                  color: _accentText, size: 20.sp),
+              child: Icon(
+                  c != null
+                      ? Icons.person_rounded
+                      : Icons.person_outline_rounded,
+                  color: _accentText,
+                  size: 20.sp),
             ),
             SizedBox(width: 12.w),
             Expanded(
@@ -551,12 +580,18 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
                             ? c.name
                             : 'Walk-in customer',
                     style: GoogleFonts.inter(
-                        color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600),
+                        color: Colors.white,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600),
                   ),
                   SizedBox(height: 2.h),
                   Text(
                     c != null
-                        ? (c.phone.isNotEmpty ? c.phone : (c.businessName.isNotEmpty ? c.businessName : 'Attributed to this customer'))
+                        ? (c.phone.isNotEmpty
+                            ? c.phone
+                            : (c.businessName.isNotEmpty
+                                ? c.businessName
+                                : 'Attributed to this customer'))
                         : 'Attribute this sale to a customer (for receivables)',
                     style: GoogleFonts.inter(color: _muted, fontSize: 11.5.sp),
                   ),
@@ -599,7 +634,9 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
                     children: [
                       Text('Select customer',
                           style: GoogleFonts.inter(
-                              color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w700)),
+                              color: Colors.white,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w700)),
                     ],
                   ),
                 ),
@@ -636,14 +673,17 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
                           padding: EdgeInsets.symmetric(vertical: 24.h),
                           child: Center(
                             child: Text('No customers yet',
-                                style: GoogleFonts.inter(color: _muted, fontSize: 13.sp)),
+                                style: GoogleFonts.inter(
+                                    color: _muted, fontSize: 13.sp)),
                           ),
                         )
                       else
                         ..._customers.map((c) {
                           final sub = c.phone.isNotEmpty
                               ? c.phone
-                              : (c.businessName.isNotEmpty ? c.businessName : c.email);
+                              : (c.businessName.isNotEmpty
+                                  ? c.businessName
+                                  : c.email);
                           return _pickerRow(
                             icon: Icons.person_rounded,
                             title: c.name,
@@ -709,14 +749,18 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
                   children: [
                     Text(title,
                         style: GoogleFonts.inter(
-                            color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                            color: Colors.white,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600)),
                     SizedBox(height: 2.h),
                     Text(subtitle,
-                        style: GoogleFonts.inter(color: _muted, fontSize: 11.5.sp)),
+                        style: GoogleFonts.inter(
+                            color: _muted, fontSize: 11.5.sp)),
                   ],
                 ),
               ),
-              if (selected) Icon(Icons.check_circle_rounded, color: _accent, size: 20.sp),
+              if (selected)
+                Icon(Icons.check_circle_rounded, color: _accent, size: 20.sp),
             ],
           ),
         ),
@@ -729,7 +773,9 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
-          color: _card, borderRadius: BorderRadius.circular(12.r), border: Border.all(color: _border)),
+          color: _card,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: _border)),
       child: Row(
         children: [
           Expanded(
@@ -738,19 +784,29 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
               children: [
                 Text('Quantity',
                     style: GoogleFonts.inter(
-                        color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                        color: Colors.white,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600)),
                 SizedBox(height: 2.h),
                 Text('${item.quantity} ${item.unit} available',
                     style: GoogleFonts.inter(color: _muted, fontSize: 11.5.sp)),
               ],
             ),
           ),
-          _qtyButton(Icons.remove_rounded, _quantity > 1 ? () => setState(() => _quantity--) : null),
+          _qtyButton(Icons.remove_rounded,
+              _quantity > 1 ? () => setState(() => _quantity--) : null),
           SizedBox(width: 14.w),
           Text('$_quantity',
-              style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+              style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700)),
           SizedBox(width: 14.w),
-          _qtyButton(Icons.add_rounded, _quantity < item.quantity ? () => setState(() => _quantity++) : null),
+          _qtyButton(
+              Icons.add_rounded,
+              _quantity < item.quantity
+                  ? () => setState(() => _quantity++)
+                  : null),
         ],
       ),
     );
@@ -785,10 +841,13 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text('Total',
-              style: GoogleFonts.inter(color: _muted, fontSize: 13.sp, fontWeight: FontWeight.w500)),
+              style: GoogleFonts.inter(
+                  color: _muted, fontSize: 13.sp, fontWeight: FontWeight.w500)),
           Text('₦${_computedAmount.toStringAsFixed(2)}',
               style: GoogleFonts.inter(
-                  color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w700)),
+                  color: Colors.white,
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w700)),
         ],
       ),
     );
@@ -797,11 +856,15 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
   Widget _label(String t) => Padding(
         padding: EdgeInsets.only(bottom: 8.h),
         child: Text(t,
-            style: GoogleFonts.inter(color: _muted, fontSize: 12.5.sp, fontWeight: FontWeight.w600)),
+            style: GoogleFonts.inter(
+                color: _muted, fontSize: 12.5.sp, fontWeight: FontWeight.w600)),
       );
 
   Widget _field(TextEditingController c,
-      {String? hint, int maxLines = 1, TextInputType? keyboardType, ValueChanged<String>? onChanged}) {
+      {String? hint,
+      int maxLines = 1,
+      TextInputType? keyboardType,
+      ValueChanged<String>? onChanged}) {
     return TextField(
       controller: c,
       maxLines: maxLines,
@@ -815,9 +878,11 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
         fillColor: _card,
         contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
         enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12.r), borderSide: const BorderSide(color: _border)),
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: const BorderSide(color: _border)),
         focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12.r), borderSide: const BorderSide(color: _accent)),
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: const BorderSide(color: _accent)),
       ),
     );
   }

@@ -20,7 +20,9 @@ class WatchlistSection extends StatelessWidget {
   });
 
   List<Crypto> get watchlistCryptos {
-    return cryptos.where((crypto) => watchlist.cryptoIds.contains(crypto.id)).toList();
+    return cryptos
+        .where((crypto) => watchlist.cryptoIds.contains(crypto.id))
+        .toList();
   }
 
   @override
@@ -37,7 +39,6 @@ class WatchlistSection extends StatelessWidget {
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,7 +70,8 @@ class WatchlistSection extends StatelessWidget {
             width: 32.w,
             height: 32.w,
             decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+              color:
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(16.r),
             ),
             child: Icon(
@@ -191,7 +193,7 @@ class WatchlistSection extends StatelessWidget {
 
   Widget _buildWatchlistItem(Crypto crypto) {
     final isPositive = crypto.priceChangePercentage24h >= 0;
-    
+
     return Container(
       decoration: BoxDecoration(
         border: Border(
@@ -303,7 +305,7 @@ class WatchlistSection extends StatelessWidget {
       'MATIC': Colors.indigo,
       'LINK': Colors.blue,
     };
-    
+
     return colors[symbol.toUpperCase()] ?? Colors.grey;
   }
-} 
+}

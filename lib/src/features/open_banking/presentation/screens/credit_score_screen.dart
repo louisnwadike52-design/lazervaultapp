@@ -11,7 +11,6 @@ import '../../domain/entities/credit_score_ai_insights.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'credit_score_screen_widgets.dart';
 
-
 class CreditScoreScreen extends StatefulWidget {
   final String userId;
   final bool showAllSources;
@@ -107,7 +106,8 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
                 indicatorColor: const Color(0xFF3B82F6),
                 labelColor: Colors.white,
                 unselectedLabelColor: const Color(0xFF9CA3AF),
-                labelStyle: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
+                labelStyle:
+                    TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
                 unselectedLabelStyle: TextStyle(fontSize: 13.sp),
                 tabs: const [
                   Tab(text: 'Lazervault'),
@@ -124,7 +124,9 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
             context.read<OpenBankingCubit>().fetchCreditScoreHistory(
                   userId: widget.userId,
                 );
-            context.read<OpenBankingCubit>().fetchAICreditInsights(state.creditScore);
+            context
+                .read<OpenBankingCubit>()
+                .fetchAICreditInsights(state.creditScore);
           }
           if (state is MultiSourceCreditScoresLoaded) {
             _multiSourceScores = state.scores;
@@ -160,7 +162,8 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
             current is ServiceUnavailable ||
             current is OpenBankingError,
         builder: (context, state) {
-          final busy = state is OpenBankingLoading || state is CreditScoreRefreshing;
+          final busy =
+              state is OpenBankingLoading || state is CreditScoreRefreshing;
           _busy = busy;
 
           // A BLOCKING loader only when there is genuinely nothing to show.
@@ -386,7 +389,8 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
   /// the backend reports (transactions analysed + its own confidence).
   static const int _minTransactionsForScore = 5;
   bool _hasEnoughDataForScore(CreditScoreEntity s) =>
-      s.transactionsAnalyzed >= _minTransactionsForScore && s.confidence >= 0.35;
+      s.transactionsAnalyzed >= _minTransactionsForScore &&
+      s.confidence >= 0.35;
 
   /// A thin banner above content that is still readable but may be out of date.
   ///
@@ -400,7 +404,8 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
       decoration: BoxDecoration(
         color: const Color(0xFFFB923C).withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.35)),
+        border:
+            Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.35)),
       ),
       child: Row(
         children: [
@@ -469,7 +474,8 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
     );
   }
 
-  Widget _buildContent(CreditScoreEntity? score, CreditScoreHistoryEntity? history) {
+  Widget _buildContent(
+      CreditScoreEntity? score, CreditScoreHistoryEntity? history) {
     if (score != null) _lastScore = score;
     final displayScore = score ?? _lastScore;
 
@@ -617,11 +623,16 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
 
   Widget _buildBreakdownCard(CreditScoreEntity score) {
     final factors = [
-      _FactorData('Payment History', score.paymentHistoryScore, 35, Icons.payment),
-      _FactorData('Income Stability', score.incomeStabilityScore, 25, Icons.trending_up),
-      _FactorData('Spending Discipline', score.spendingDisciplineScore, 20, Icons.savings),
-      _FactorData('Account Age', score.accountAgeScore, 10, Icons.calendar_today),
-      _FactorData('Balance Consistency', score.balanceConsistencyScore, 10, Icons.account_balance),
+      _FactorData(
+          'Payment History', score.paymentHistoryScore, 35, Icons.payment),
+      _FactorData('Income Stability', score.incomeStabilityScore, 25,
+          Icons.trending_up),
+      _FactorData('Spending Discipline', score.spendingDisciplineScore, 20,
+          Icons.savings),
+      _FactorData(
+          'Account Age', score.accountAgeScore, 10, Icons.calendar_today),
+      _FactorData('Balance Consistency', score.balanceConsistencyScore, 10,
+          Icons.account_balance),
     ];
 
     return Container(
@@ -709,8 +720,10 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
       return FlSpot(entry.key.toDouble(), entry.value.score.toDouble());
     }).toList();
 
-    final minScore = history.history.map((h) => h.score).reduce(math.min).toDouble();
-    final maxScore = history.history.map((h) => h.score).reduce(math.max).toDouble();
+    final minScore =
+        history.history.map((h) => h.score).reduce(math.min).toDouble();
+    final maxScore =
+        history.history.map((h) => h.score).reduce(math.max).toDouble();
     final chartMin = (minScore - 50).clamp(300.0, 850.0);
     final chartMax = (maxScore + 50).clamp(300.0, 850.0);
 
@@ -764,15 +777,19 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
-                  horizontalInterval: (chartMax - chartMin) > 0 ? (chartMax - chartMin) / 4 : 50,
+                  horizontalInterval: (chartMax - chartMin) > 0
+                      ? (chartMax - chartMin) / 4
+                      : 50,
                   getDrawingHorizontalLine: (value) => FlLine(
                     color: Colors.white.withValues(alpha: 0.05),
                     strokeWidth: 1,
                   ),
                 ),
                 titlesData: FlTitlesData(
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
@@ -799,8 +816,18 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
                         }
                         final point = history.history[index];
                         final months = [
-                          'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+                          'Jan',
+                          'Feb',
+                          'Mar',
+                          'Apr',
+                          'May',
+                          'Jun',
+                          'Jul',
+                          'Aug',
+                          'Sep',
+                          'Oct',
+                          'Nov',
+                          'Dec'
                         ];
                         return Padding(
                           padding: EdgeInsets.only(top: 8.h),
@@ -917,7 +944,8 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
                       ),
                     ),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                       decoration: BoxDecoration(
                         color: const Color(0xFF10B981).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8.r),
@@ -971,7 +999,8 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
               children: [
                 Row(
                   children: [
-                    Icon(Icons.auto_awesome, color: const Color(0xFF3B82F6), size: 20.r),
+                    Icon(Icons.auto_awesome,
+                        color: const Color(0xFF3B82F6), size: 20.r),
                     SizedBox(width: 8.w),
                     Text(
                       'AI Insights',
@@ -1026,14 +1055,16 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
                     ],
                   ),
                   borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: const Color(0xFF3B82F6).withValues(alpha: 0.3)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.auto_awesome, color: const Color(0xFF3B82F6), size: 20.r),
+                        Icon(Icons.auto_awesome,
+                            color: const Color(0xFF3B82F6), size: 20.r),
                         SizedBox(width: 8.w),
                         Text(
                           'AI Insights',
@@ -1066,7 +1097,8 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
                   decoration: BoxDecoration(
                     color: const Color(0xFF1F1F1F),
                     borderRadius: BorderRadius.circular(16.r),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1080,7 +1112,8 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
                         ),
                       ),
                       SizedBox(height: 12.h),
-                      ...insights.factorAnalysis.map((fa) => _buildFactorAnalysisCard(fa)),
+                      ...insights.factorAnalysis
+                          .map((fa) => _buildFactorAnalysisCard(fa)),
                     ],
                   ),
                 ),
@@ -1093,7 +1126,8 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
                   decoration: BoxDecoration(
                     color: const Color(0xFF1F1F1F),
                     borderRadius: BorderRadius.circular(16.r),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1108,57 +1142,60 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
                       ),
                       SizedBox(height: 12.h),
                       ...insights.actionableRecommendations.asMap().entries.map(
-                        (entry) => Padding(
-                          padding: EdgeInsets.only(bottom: 10.h),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: 24.r,
-                                height: 24.r,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(6.r),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    '${entry.key + 1}',
-                                    style: TextStyle(
-                                      color: const Color(0xFF3B82F6),
-                                      fontSize: 12.sp,
-                                      fontWeight: FontWeight.bold,
+                            (entry) => Padding(
+                              padding: EdgeInsets.only(bottom: 10.h),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 24.r,
+                                    height: 24.r,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF3B82F6)
+                                          .withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(6.r),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        '${entry.key + 1}',
+                                        style: TextStyle(
+                                          color: const Color(0xFF3B82F6),
+                                          fontSize: 12.sp,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
-                              SizedBox(width: 10.w),
-                              Expanded(
-                                child: Text(
-                                  entry.value,
-                                  style: TextStyle(
-                                    color: const Color(0xFF9CA3AF),
-                                    fontSize: 13.sp,
-                                    height: 1.4,
+                                  SizedBox(width: 10.w),
+                                  Expanded(
+                                    child: Text(
+                                      entry.value,
+                                      style: TextStyle(
+                                        color: const Color(0xFF9CA3AF),
+                                        fontSize: 13.sp,
+                                        height: 1.4,
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ),
                     ],
                   ),
                 ),
 
               // Score projection & risk assessment
-              if (insights.scoreProjection.isNotEmpty || insights.riskAssessment.isNotEmpty)
+              if (insights.scoreProjection.isNotEmpty ||
+                  insights.riskAssessment.isNotEmpty)
                 Container(
                   margin: EdgeInsets.only(bottom: 20.h),
                   padding: EdgeInsets.all(20.r),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1F1F1F),
                     borderRadius: BorderRadius.circular(16.r),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1166,7 +1203,8 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
                       if (insights.scoreProjection.isNotEmpty) ...[
                         Row(
                           children: [
-                            Icon(Icons.trending_up, color: const Color(0xFF10B981), size: 18.r),
+                            Icon(Icons.trending_up,
+                                color: const Color(0xFF10B981), size: 18.r),
                             SizedBox(width: 8.w),
                             Text(
                               'Score Projection',
@@ -1188,7 +1226,8 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
                           ),
                         ),
                       ],
-                      if (insights.scoreProjection.isNotEmpty && insights.riskAssessment.isNotEmpty)
+                      if (insights.scoreProjection.isNotEmpty &&
+                          insights.riskAssessment.isNotEmpty)
                         Divider(
                           color: Colors.white.withValues(alpha: 0.1),
                           height: 24.h,
@@ -1196,7 +1235,8 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
                       if (insights.riskAssessment.isNotEmpty) ...[
                         Row(
                           children: [
-                            Icon(Icons.shield_outlined, color: const Color(0xFFFB923C), size: 18.r),
+                            Icon(Icons.shield_outlined,
+                                color: const Color(0xFFFB923C), size: 18.r),
                             SizedBox(width: 8.w),
                             Text(
                               'Risk Assessment',
@@ -1226,7 +1266,8 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
         }
 
         // Check for cached insights from cubit
-        final cachedInsights = context.read<OpenBankingCubit>().cachedAIInsights;
+        final cachedInsights =
+            context.read<OpenBankingCubit>().cachedAIInsights;
         if (cachedInsights != null) {
           // Re-emit to rebuild with cached data
           return const SizedBox.shrink();
@@ -1285,7 +1326,8 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.lightbulb_outline, color: const Color(0xFFFB923C), size: 14.r),
+              Icon(Icons.lightbulb_outline,
+                  color: const Color(0xFFFB923C), size: 14.r),
               SizedBox(width: 4.w),
               Expanded(
                 child: Text(
@@ -1426,8 +1468,8 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
 
   Widget _buildErrorState(OpenBankingError state) {
     final msg = state.message.toLowerCase();
-    final isNoLinkedBank = msg.contains('no linked bank') ||
-        msg.contains('linked account');
+    final isNoLinkedBank =
+        msg.contains('no linked bank') || msg.contains('linked account');
     final isNoScore = msg.contains('not found') ||
         msg.contains('no credit score') ||
         msg.contains('no score') ||
@@ -1483,7 +1525,9 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
                   Navigator.of(context).pop();
                 } else {
                   if (widget.showAllSources) {
-                    context.read<OpenBankingCubit>().fetchMultiSourceCreditScores(
+                    context
+                        .read<OpenBankingCubit>()
+                        .fetchMultiSourceCreditScores(
                           userId: widget.userId,
                         );
                   } else {

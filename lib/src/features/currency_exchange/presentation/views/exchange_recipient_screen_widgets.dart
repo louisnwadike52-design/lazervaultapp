@@ -15,8 +15,10 @@ enum _BeneficiaryKind {
   individual,
   business;
 
-  String get wireValue => this == _BeneficiaryKind.individual ? 'individual' : 'business';
-  String get label => this == _BeneficiaryKind.individual ? 'Individual' : 'Business';
+  String get wireValue =>
+      this == _BeneficiaryKind.individual ? 'individual' : 'business';
+  String get label =>
+      this == _BeneficiaryKind.individual ? 'Individual' : 'Business';
 }
 
 class _CurrencyCountryConfig {

@@ -18,8 +18,8 @@ class FaceRecognitionRepositoryImpl implements IFaceRecognitionRepository {
   FaceRecognitionRepositoryImpl({
     required FacialRecognitionServiceClient facialRecognitionServiceClient,
     required GrpcCallOptionsHelper callOptionsHelper,
-  }) : _facialRecognitionServiceClient = facialRecognitionServiceClient,
-       _callOptionsHelper = callOptionsHelper;
+  })  : _facialRecognitionServiceClient = facialRecognitionServiceClient,
+        _callOptionsHelper = callOptionsHelper;
 
   @override
   Future<Either<Failure, FaceRegistrationEntity>> registerFace({
@@ -49,7 +49,8 @@ class FaceRecognitionRepositoryImpl implements IFaceRecognitionRepository {
       final callOptions = await _callOptionsHelper.withAuth();
       print('Call options created with auth token');
 
-      final response = await _facialRecognitionServiceClient.registerFace(request, options: callOptions);
+      final response = await _facialRecognitionServiceClient
+          .registerFace(request, options: callOptions);
 
       print('=== RegisterFace response ===');
       print('Success: ${response.success}');
@@ -63,7 +64,8 @@ class FaceRecognitionRepositoryImpl implements IFaceRecognitionRepository {
         return Right(result);
       } else {
         return Left(ServerFailure(
-          message: response.error.isNotEmpty ? response.error : response.message,
+          message:
+              response.error.isNotEmpty ? response.error : response.message,
           statusCode: 400,
         ));
       }
@@ -99,9 +101,11 @@ class FaceRecognitionRepositoryImpl implements IFaceRecognitionRepository {
 
       print('Sending gRPC VerifyFace request for user: $userId');
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _facialRecognitionServiceClient.verifyFace(request, options: callOptions);
+      final response = await _facialRecognitionServiceClient.verifyFace(request,
+          options: callOptions);
 
-      print('VerifyFace response: success=${response.success}, verified=${response.verified}, confidence=${response.confidence}');
+      print(
+          'VerifyFace response: success=${response.success}, verified=${response.verified}, confidence=${response.confidence}');
 
       final result = FaceVerificationModel.fromProto(response);
 
@@ -109,7 +113,8 @@ class FaceRecognitionRepositoryImpl implements IFaceRecognitionRepository {
         return Right(result);
       } else {
         return Left(ServerFailure(
-          message: response.error.isNotEmpty ? response.error : response.message,
+          message:
+              response.error.isNotEmpty ? response.error : response.message,
           statusCode: 400,
         ));
       }

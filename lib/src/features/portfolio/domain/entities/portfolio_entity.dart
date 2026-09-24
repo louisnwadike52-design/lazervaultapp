@@ -3,7 +3,8 @@ import 'package:equatable/equatable.dart';
 /// Represents a single asset in the portfolio
 class PortfolioAsset extends Equatable {
   final String id;
-  final String assetType; // "crypto", "stock", "investment", "account", "savings", "financial_goal"
+  final String
+      assetType; // "crypto", "stock", "investment", "account", "savings", "financial_goal"
   final String name;
   final String symbol;
   final double currentValue;
@@ -126,7 +127,8 @@ class PortfolioSummary extends Equatable {
 
   bool get isProfit => totalGainLoss >= 0;
 
-  String get formattedTotalValue => '$currency ${totalValue.toStringAsFixed(2)}';
+  String get formattedTotalValue =>
+      '$currency ${totalValue.toStringAsFixed(2)}';
 
   String get formattedGainLoss {
     final sign = totalGainLoss >= 0 ? '+' : '';

@@ -181,7 +181,9 @@ class MultiAssetCubit extends Cubit<MultiAssetState> {
     emit(MultiAssetLoading());
     try {
       final result = await _dataSource.buyTreasuryBill(
-        assetId, amount, currency,
+        assetId,
+        amount,
+        currency,
         verificationToken: verificationToken,
         idempotencyKey: idempotencyKey,
       );
@@ -204,7 +206,9 @@ class MultiAssetCubit extends Cubit<MultiAssetState> {
     emit(MultiAssetLoading());
     try {
       final result = await _dataSource.buyMutualFund(
-        assetId, amount, currency,
+        assetId,
+        amount,
+        currency,
         verificationToken: verificationToken,
         idempotencyKey: idempotencyKey,
       );

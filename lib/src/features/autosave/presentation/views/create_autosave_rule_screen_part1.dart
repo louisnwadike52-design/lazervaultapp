@@ -541,9 +541,7 @@ class _TriggerCard extends StatelessWidget {
           color: selected ? tint.withValues(alpha: 0.12) : _surface,
           borderRadius: BorderRadius.circular(18.r),
           border: Border.all(
-            color: selected
-                ? tint
-                : Colors.transparent,
+            color: selected ? tint : Colors.transparent,
             width: 2,
           ),
           boxShadow: [
@@ -567,9 +565,7 @@ class _TriggerCard extends StatelessWidget {
                 color: tint.withValues(alpha: selected ? 0.28 : 0.16),
                 borderRadius: BorderRadius.circular(16.r),
               ),
-              child: Icon(icon,
-                  color: tint,
-                  size: 28.sp),
+              child: Icon(icon, color: tint, size: 28.sp),
             ),
             SizedBox(width: 16.w),
             Expanded(
@@ -717,7 +713,8 @@ class _FrequencyTile extends StatelessWidget {
 }
 
 class _WeekDayPicker extends StatelessWidget {
-  final int selectedDay; // 1=Mon … 7=Sun (backend mod-7 keeps both 7 and 0 → Sun)
+  final int
+      selectedDay; // 1=Mon … 7=Sun (backend mod-7 keeps both 7 and 0 → Sun)
   final ValueChanged<int> onChanged;
   const _WeekDayPicker({required this.selectedDay, required this.onChanged});
 

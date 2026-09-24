@@ -69,13 +69,15 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
   @override
   void initState() {
     super.initState();
-    InsuranceQuoteReviewScreen.requestTermsFocus.addListener(_handleTermsFocusRequest);
+    InsuranceQuoteReviewScreen.requestTermsFocus
+        .addListener(_handleTermsFocusRequest);
   }
 
   @override
   void dispose() {
     _countdownTimer?.cancel();
-    InsuranceQuoteReviewScreen.requestTermsFocus.removeListener(_handleTermsFocusRequest);
+    InsuranceQuoteReviewScreen.requestTermsFocus
+        .removeListener(_handleTermsFocusRequest);
     _scrollController.dispose();
     super.dispose();
   }
@@ -136,10 +138,13 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
       builder: (context, state) {
         if (state is InsuranceQuoteLoading) {
           return Center(
-            child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            child:
+                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               LazerVaultLoader.small(),
               SizedBox(height: 16.h),
-              Text('Getting your quote...', style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
+              Text('Getting your quote...',
+                  style: GoogleFonts.inter(
+                      fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
             ]),
           );
         }
@@ -161,8 +166,9 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
           return _buildError(context, state.message);
         }
 
-        return Center(child: Text('Loading quote...',
-          style: GoogleFonts.inter(color: const Color(0xFF9CA3AF))));
+        return Center(
+            child: Text('Loading quote...',
+                style: GoogleFonts.inter(color: const Color(0xFF9CA3AF))));
       },
     );
   }
@@ -172,10 +178,13 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
       child: Padding(
         padding: EdgeInsets.all(24.w),
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 48.sp),
+          Icon(Icons.error_outline,
+              color: const Color(0xFFEF4444), size: 48.sp),
           SizedBox(height: 16.h),
-          Text(message, textAlign: TextAlign.center,
-            style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
+          Text(message,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                  fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
           SizedBox(height: 24.h),
           GestureDetector(
             onTap: () {
@@ -185,8 +194,14 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
             },
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-              decoration: BoxDecoration(color: const Color(0xFF6366F1), borderRadius: BorderRadius.circular(8.r)),
-              child: Text('Get New Quote', style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.white)),
+              decoration: BoxDecoration(
+                  color: const Color(0xFF6366F1),
+                  borderRadius: BorderRadius.circular(8.r)),
+              child: Text('Get New Quote',
+                  style: GoogleFonts.inter(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white)),
             ),
           ),
         ]),
@@ -205,11 +220,18 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
         SingleChildScrollView(
           controller: _scrollController,
           padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             SizedBox(height: 8.h),
-            Text('Your Quote', style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+            Text('Your Quote',
+                style: GoogleFonts.inter(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white)),
             SizedBox(height: 4.h),
-            Text('Review your insurance quote details', style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
+            Text('Review your insurance quote details',
+                style: GoogleFonts.inter(
+                    fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
             SizedBox(height: 20.h),
 
             // Premium amount card
@@ -217,24 +239,34 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
               width: double.infinity,
               padding: EdgeInsets.all(20.w),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
-                  begin: Alignment.topLeft, end: Alignment.bottomRight),
+                gradient: const LinearGradient(colors: [
+                  Color(0xFF6366F1),
+                  Color.fromARGB(255, 78, 3, 208)
+                ], begin: Alignment.topLeft, end: Alignment.bottomRight),
                 borderRadius: BorderRadius.circular(16.r),
               ),
               child: Column(children: [
-                Text('Premium', style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w500, color: Colors.white70)),
+                Text('Premium',
+                    style: GoogleFonts.inter(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white70)),
                 SizedBox(height: 4.h),
-                Text('${_currencySymbol(quote.currency)}${formatter.format(quote.premium)}',
-                  style: GoogleFonts.inter(fontSize: 28.sp, fontWeight: FontWeight.w800, color: Colors.white)),
+                Text(
+                    '${_currencySymbol(quote.currency)}${formatter.format(quote.premium)}',
+                    style: GoogleFonts.inter(
+                        fontSize: 28.sp,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white)),
                 if (quote.validUntil != null) ...[
                   SizedBox(height: 8.h),
                   // Live countdown
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                     decoration: BoxDecoration(
-                      color: _countdownColor().withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12.r)),
+                        color: _countdownColor().withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12.r)),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -245,7 +277,9 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
                         ),
                         SizedBox(width: 4.w),
                         Text(
-                          isExpired ? 'Quote Expired' : 'Expires in ${_formatCountdown()}',
+                          isExpired
+                              ? 'Quote Expired'
+                              : 'Expires in ${_formatCountdown()}',
                           style: GoogleFonts.inter(
                             fontSize: 11.sp,
                             fontWeight: FontWeight.w600,
@@ -261,11 +295,14 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
             SizedBox(height: 20.h),
 
             // Provider info with info button
-            _buildInfoCardWithAction('Provider', [
-              _buildInfoRow('Name', product.providerName),
-              _buildInfoRow('Product', product.name),
-              _buildInfoRow('Category', product.category.displayName),
-            ], onInfo: () => _showProductInfoSheet(context, product)),
+            _buildInfoCardWithAction(
+                'Provider',
+                [
+                  _buildInfoRow('Name', product.providerName),
+                  _buildInfoRow('Product', product.name),
+                  _buildInfoRow('Category', product.category.displayName),
+                ],
+                onInfo: () => _showProductInfoSheet(context, product)),
             SizedBox(height: 12.h),
 
             // AI-generated coverage summary. Replaces the raw HTML
@@ -274,7 +311,8 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
             // concise 2-3 sentence summary + 3-5 bullets. Fires on
             // every new quote and is keyed by quote_id so navigating
             // back+forward doesn't refetch.
-            if (quote.coverageSummary.isNotEmpty || quote.coverageItems.isNotEmpty)
+            if (quote.coverageSummary.isNotEmpty ||
+                quote.coverageItems.isNotEmpty)
               _buildAiCoverageCard(context, state),
 
             // View Terms link
@@ -284,7 +322,8 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.gavel, color: const Color(0xFF6366F1), size: 16.sp),
+                  Icon(Icons.gavel,
+                      color: const Color(0xFF6366F1), size: 16.sp),
                   SizedBox(width: 6.w),
                   Text(
                     'View Terms & Conditions',
@@ -303,8 +342,11 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
             // Quote details
             if (quote.quoteDetails.isNotEmpty) ...[
               SizedBox(height: 12.h),
-              _buildInfoCard('Details',
-                quote.quoteDetails.entries.map((e) => _buildInfoRow(e.key, e.value)).toList()),
+              _buildInfoCard(
+                  'Details',
+                  quote.quoteDetails.entries
+                      .map((e) => _buildInfoRow(e.key, e.value))
+                      .toList()),
             ],
 
             // Account selector + terms — these used to live on the
@@ -312,7 +354,11 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
             // navigation button handles the actual purchase.
             if (!isExpired) ...[
               SizedBox(height: 20.h),
-              Text('Pay with', style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+              Text('Pay with',
+                  style: GoogleFonts.inter(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white)),
               SizedBox(height: 8.h),
               _buildAccountSelector(context, quote.currency, quote.premium),
               SizedBox(height: 16.h),
@@ -332,9 +378,14 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
                   width: double.infinity,
                   padding: EdgeInsets.symmetric(vertical: 14.h),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFB923C), borderRadius: BorderRadius.circular(10.r)),
-                  child: Center(child: Text('Get New Quote',
-                    style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.white))),
+                      color: const Color(0xFFFB923C),
+                      borderRadius: BorderRadius.circular(10.r)),
+                  child: Center(
+                      child: Text('Get New Quote',
+                          style: GoogleFonts.inter(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white))),
                 ),
               ),
             ],
@@ -354,12 +405,14 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
                   decoration: BoxDecoration(
                     color: const Color(0xFF1F1F1F),
                     borderRadius: BorderRadius.circular(16.r),
-                    border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+                    border: Border.all(
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.timer_off, color: const Color(0xFFEF4444), size: 48.sp),
+                      Icon(Icons.timer_off,
+                          color: const Color(0xFFEF4444), size: 48.sp),
                       SizedBox(height: 16.h),
                       Text(
                         'Quote Expired',
@@ -419,7 +472,8 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
   /// reuses the cached result.
   void _maybeFetchCoverageSummary(InsuranceQuoteLoaded state) {
     final qid = state.quote.quoteId;
-    if (_summarisedQuoteId == qid && (_coverageSummary != null || _coverageSummaryError != null)) {
+    if (_summarisedQuoteId == qid &&
+        (_coverageSummary != null || _coverageSummaryError != null)) {
       return;
     }
     if (_coverageSummaryLoading && _summarisedQuoteId == qid) return;
@@ -454,14 +508,17 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
     });
   }
 
-  Widget _buildAiCoverageCard(BuildContext context, InsuranceQuoteLoaded state) {
+  Widget _buildAiCoverageCard(
+      BuildContext context, InsuranceQuoteLoaded state) {
     _maybeFetchCoverageSummary(state);
     if (_coverageSummaryLoading) {
       return _buildInfoCard('Coverage', [
         Row(children: [
           LazerVaultLoader(size: 14),
           SizedBox(width: 10.w),
-          Text('Summarising coverage…', style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
+          Text('Summarising coverage…',
+              style: GoogleFonts.inter(
+                  fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
         ]),
       ]);
     }
@@ -472,34 +529,44 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
       // at nothing.
       return _buildInfoCard('Coverage', [
         if (state.quote.coverageSummary.isNotEmpty)
-          Padding(padding: EdgeInsets.only(bottom: 8.h),
-            child: _buildRichContent(state.quote.coverageSummary, const Color(0xFF9CA3AF))),
+          Padding(
+              padding: EdgeInsets.only(bottom: 8.h),
+              child: _buildRichContent(
+                  state.quote.coverageSummary, const Color(0xFF9CA3AF))),
         ...state.quote.coverageItems.map((item) => Padding(
-          padding: EdgeInsets.only(bottom: 6.h),
-          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 16.sp),
-            SizedBox(width: 8.w),
-            Expanded(child: _buildRichContent(item, Colors.white)),
-          ]),
-        )),
+              padding: EdgeInsets.only(bottom: 6.h),
+              child:
+                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Icon(Icons.check_circle,
+                    color: const Color(0xFF10B981), size: 16.sp),
+                SizedBox(width: 8.w),
+                Expanded(child: _buildRichContent(item, Colors.white)),
+              ]),
+            )),
       ]);
     }
     return _buildInfoCard('Coverage', [
       if (summary.summary.isNotEmpty)
-        Padding(padding: EdgeInsets.only(bottom: summary.bullets.isEmpty ? 0 : 10.h),
+        Padding(
+          padding: EdgeInsets.only(bottom: summary.bullets.isEmpty ? 0 : 10.h),
           child: Text(
             summary.summary,
-            style: GoogleFonts.inter(fontSize: 13.sp, height: 1.4, color: Colors.white),
+            style: GoogleFonts.inter(
+                fontSize: 13.sp, height: 1.4, color: Colors.white),
           ),
         ),
       ...summary.bullets.map((b) => Padding(
-        padding: EdgeInsets.only(bottom: 6.h),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 16.sp),
-          SizedBox(width: 8.w),
-          Expanded(child: Text(b, style: GoogleFonts.inter(fontSize: 13.sp, color: Colors.white))),
-        ]),
-      )),
+            padding: EdgeInsets.only(bottom: 6.h),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Icon(Icons.check_circle,
+                  color: const Color(0xFF10B981), size: 16.sp),
+              SizedBox(width: 8.w),
+              Expanded(
+                  child: Text(b,
+                      style: GoogleFonts.inter(
+                          fontSize: 13.sp, color: Colors.white))),
+            ]),
+          )),
     ]);
   }
 
@@ -511,7 +578,8 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
   /// account switch their active account before starting the purchase.
   /// The currency-mismatch and missing-account error states are kept
   /// so the user always knows why payment is blocked.
-  Widget _buildAccountSelector(BuildContext context, String currency, double premium) {
+  Widget _buildAccountSelector(
+      BuildContext context, String currency, double premium) {
     return BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
       builder: (context, state) {
         final cubit = context.read<CreatePolicyCubit>();
@@ -528,7 +596,9 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
             child: Row(children: [
               LazerVaultLoader(size: 14),
               SizedBox(width: 10.w),
-              Text('Loading account…', style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
+              Text('Loading account…',
+                  style: GoogleFonts.inter(
+                      fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
             ]),
           );
         }
@@ -536,9 +606,7 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
         // Find the active account directly. If it exists and matches
         // the quote currency we use it; otherwise we surface a clear
         // error rather than silently switching accounts.
-        final active = state.accountSummaries
-            .cast<dynamic>()
-            .firstWhere(
+        final active = state.accountSummaries.cast<dynamic>().firstWhere(
               (a) => a.id == activeId,
               orElse: () => null,
             );
@@ -549,14 +617,18 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
             decoration: BoxDecoration(
               color: const Color(0xFFEF4444).withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(10.r),
-              border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+              border: Border.all(
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
             ),
             child: Row(children: [
-              Icon(Icons.warning_amber, color: const Color(0xFFEF4444), size: 18.sp),
+              Icon(Icons.warning_amber,
+                  color: const Color(0xFFEF4444), size: 18.sp),
               SizedBox(width: 8.w),
-              Expanded(child: Text(
+              Expanded(
+                  child: Text(
                 'No active account selected. Choose one on the dashboard before purchasing.',
-                style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFFEF4444)),
+                style: GoogleFonts.inter(
+                    fontSize: 12.sp, color: const Color(0xFFEF4444)),
               )),
             ]),
           );
@@ -573,15 +645,19 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
             decoration: BoxDecoration(
               color: const Color(0xFFEF4444).withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(10.r),
-              border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+              border: Border.all(
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
             ),
             child: Row(children: [
-              Icon(Icons.warning_amber, color: const Color(0xFFEF4444), size: 18.sp),
+              Icon(Icons.warning_amber,
+                  color: const Color(0xFFEF4444), size: 18.sp),
               SizedBox(width: 8.w),
-              Expanded(child: Text(
+              Expanded(
+                  child: Text(
                 'Your active account is in ${CurrencyUtils.normalizeCode(active.currency)}, but this premium is in '
                 '${CurrencyUtils.normalizeCode(currency)}. Switch your active account on the dashboard before purchasing.',
-                style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFFEF4444)),
+                style: GoogleFonts.inter(
+                    fontSize: 12.sp, color: const Color(0xFFEF4444)),
               )),
             ]),
           );
@@ -611,55 +687,68 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
           ),
           child: Row(children: [
             Container(
-              width: 38.w, height: 38.w,
+              width: 38.w,
+              height: 38.w,
               decoration: BoxDecoration(
                 color: const Color(0xFF6366F1).withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.account_balance_wallet, color: const Color(0xFF6366F1), size: 20.sp),
+              child: Icon(Icons.account_balance_wallet,
+                  color: const Color(0xFF6366F1), size: 20.sp),
             ),
             SizedBox(width: 12.w),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                Flexible(child: Text(
-                  (active.accountName?.isNotEmpty ?? false)
-                      ? active.accountName!
-                      : 'Account ${active.accountNumber ?? active.id.substring(0, 6)}',
-                  style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.white),
-                  overflow: TextOverflow.ellipsis,
-                )),
-                SizedBox(width: 6.w),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(4.r),
-                  ),
-                  child: Text('ACTIVE',
-                    style: GoogleFonts.inter(
-                      fontSize: 9.sp,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF10B981),
-                      letterSpacing: 0.3,
+            Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  Row(children: [
+                    Flexible(
+                        child: Text(
+                      (active.accountName?.isNotEmpty ?? false)
+                          ? active.accountName!
+                          : 'Account ${active.accountNumber ?? active.id.substring(0, 6)}',
+                      style: GoogleFonts.inter(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white),
+                      overflow: TextOverflow.ellipsis,
                     )),
-                ),
-              ]),
-              SizedBox(height: 2.h),
-              Text(
-                'Balance: ${_currencySymbol(currency)}${active.availableBalance.toStringAsFixed(2)}',
-                style: GoogleFonts.inter(
-                  fontSize: 12.sp,
-                  color: hasFunds ? const Color(0xFF9CA3AF) : const Color(0xFFEF4444),
-                ),
-              ),
-              if (!hasFunds) ...[
-                SizedBox(height: 2.h),
-                Text(
-                  'Insufficient balance for this premium.',
-                  style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFFEF4444)),
-                ),
-              ],
-            ])),
+                    SizedBox(width: 6.w),
+                    Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(4.r),
+                      ),
+                      child: Text('ACTIVE',
+                          style: GoogleFonts.inter(
+                            fontSize: 9.sp,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF10B981),
+                            letterSpacing: 0.3,
+                          )),
+                    ),
+                  ]),
+                  SizedBox(height: 2.h),
+                  Text(
+                    'Balance: ${_currencySymbol(currency)}${active.availableBalance.toStringAsFixed(2)}',
+                    style: GoogleFonts.inter(
+                      fontSize: 12.sp,
+                      color: hasFunds
+                          ? const Color(0xFF9CA3AF)
+                          : const Color(0xFFEF4444),
+                    ),
+                  ),
+                  if (!hasFunds) ...[
+                    SizedBox(height: 2.h),
+                    Text(
+                      'Insufficient balance for this premium.',
+                      style: GoogleFonts.inter(
+                          fontSize: 11.sp, color: const Color(0xFFEF4444)),
+                    ),
+                  ],
+                ])),
           ]),
         );
       },
@@ -672,7 +761,8 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
 
   /// Terms acceptance — must be checked before the carousel's bottom
   /// "Confirm & Pay" button lets the purchase proceed.
-  Widget _buildTermsCheckbox(BuildContext context, InsuranceProduct product, dynamic quote) {
+  Widget _buildTermsCheckbox(
+      BuildContext context, InsuranceProduct product, dynamic quote) {
     final cubit = context.read<CreatePolicyCubit>();
     final agreed = cubit.agreedToTerms;
     final showError = _termsValidationError && !agreed;
@@ -697,7 +787,8 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
           ),
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             SizedBox(
-              width: 24.w, height: 24.w,
+              width: 24.w,
+              height: 24.w,
               child: Checkbox(
                 value: agreed,
                 onChanged: (v) {
@@ -707,30 +798,38 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
                   });
                 },
                 activeColor: const Color(0xFF6366F1),
-                side: BorderSide(color: const Color(0xFFFB923C).withValues(alpha: 0.5)),
+                side: BorderSide(
+                    color: const Color(0xFFFB923C).withValues(alpha: 0.5)),
               ),
             ),
             SizedBox(width: 8.w),
-            Expanded(child: GestureDetector(
+            Expanded(
+                child: GestureDetector(
               onTap: () => _openTermsBottomSheet(context),
               child: Text.rich(
                 TextSpan(children: [
                   TextSpan(
                     text: 'I agree to the ',
-                    style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFFFB923C).withValues(alpha: 0.8)),
+                    style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        color: const Color(0xFFFB923C).withValues(alpha: 0.8)),
                   ),
                   TextSpan(
                     text: 'insurance terms and conditions',
                     style: GoogleFonts.inter(
-                      fontSize: 12.sp, color: const Color(0xFFFB923C),
+                      fontSize: 12.sp,
+                      color: const Color(0xFFFB923C),
                       fontWeight: FontWeight.w600,
                       decoration: TextDecoration.underline,
                       decorationColor: const Color(0xFFFB923C),
                     ),
                   ),
                   TextSpan(
-                    text: '. I will be charged ${_currencySymbol(quote.currency)}${quote.premium.toStringAsFixed(2)} from my selected account.',
-                    style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFFFB923C).withValues(alpha: 0.8)),
+                    text:
+                        '. I will be charged ${_currencySymbol(quote.currency)}${quote.premium.toStringAsFixed(2)} from my selected account.',
+                    style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        color: const Color(0xFFFB923C).withValues(alpha: 0.8)),
                   ),
                 ]),
               ),
@@ -741,7 +840,8 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
           Padding(
             padding: EdgeInsets.only(top: 6.h, left: 4.w),
             child: Row(children: [
-              Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 14.sp),
+              Icon(Icons.error_outline,
+                  color: const Color(0xFFEF4444), size: 14.sp),
               SizedBox(width: 6.w),
               Text(
                 'Please accept the terms to continue.',
@@ -758,7 +858,8 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
   }
 
   @override
-  ITransactionPinService get transactionPinService => GetIt.I<ITransactionPinService>();
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
 
   /// Open the in-app webview bottom sheet that loads the admin-set
   /// terms link. The link is fetched lazily through the cubit so we
@@ -781,14 +882,19 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
         border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title, style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+        Text(title,
+            style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w700,
+                color: Colors.white)),
         SizedBox(height: 12.h),
         ...children,
       ]),
     );
   }
 
-  Widget _buildInfoCardWithAction(String title, List<Widget> children, {VoidCallback? onInfo}) {
+  Widget _buildInfoCardWithAction(String title, List<Widget> children,
+      {VoidCallback? onInfo}) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(16.w),
@@ -799,17 +905,24 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          Expanded(child: Text(title, style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w700, color: Colors.white))),
+          Expanded(
+              child: Text(title,
+                  style: GoogleFonts.inter(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white))),
           if (onInfo != null)
             GestureDetector(
               onTap: onInfo,
               child: Container(
-                width: 28.w, height: 28.w,
+                width: 28.w,
+                height: 28.w,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: const Color(0xFF6366F1).withValues(alpha: 0.12),
                 ),
-                child: Icon(Icons.info_outline, color: const Color(0xFF6366F1), size: 16.sp),
+                child: Icon(Icons.info_outline,
+                    color: const Color(0xFF6366F1), size: 16.sp),
               ),
             ),
         ]),
@@ -837,10 +950,11 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
             children: [
               Container(
                 margin: EdgeInsets.only(top: 12.h),
-                width: 40.w, height: 4.h,
+                width: 40.w,
+                height: 4.h,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(2.r)),
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2.r)),
               ),
               Expanded(
                 child: ListView(
@@ -849,70 +963,118 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
                   children: [
                     Row(children: [
                       Container(
-                        width: 48.w, height: 48.w,
+                        width: 48.w,
+                        height: 48.w,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF6366F1).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12.r)),
-                        child: Icon(product.category.icon, size: 26.sp, color: const Color(0xFF6366F1)),
+                            color:
+                                const Color(0xFF6366F1).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12.r)),
+                        child: Icon(product.category.icon,
+                            size: 26.sp, color: const Color(0xFF6366F1)),
                       ),
                       SizedBox(width: 14.w),
-                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(product.name, style: GoogleFonts.inter(
-                          fontSize: 18.sp, fontWeight: FontWeight.w700, color: Colors.white)),
-                        SizedBox(height: 2.h),
-                        Text(product.providerName, style: GoogleFonts.inter(
-                          fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
-                      ])),
+                      Expanded(
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                            Text(product.name,
+                                style: GoogleFonts.inter(
+                                    fontSize: 18.sp,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white)),
+                            SizedBox(height: 2.h),
+                            Text(product.providerName,
+                                style: GoogleFonts.inter(
+                                    fontSize: 13.sp,
+                                    color: const Color(0xFF9CA3AF))),
+                          ])),
                     ]),
                     SizedBox(height: 16.h),
                     Row(children: [
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 10.w, vertical: 6.h),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6.r)),
-                        child: Text(product.premiumRange, style: GoogleFonts.inter(
-                          fontSize: 13.sp, fontWeight: FontWeight.w600, color: const Color(0xFF10B981))),
+                            color:
+                                const Color(0xFF10B981).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6.r)),
+                        child: Text(product.premiumRange,
+                            style: GoogleFonts.inter(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF10B981))),
                       ),
                       SizedBox(width: 8.w),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 10.w, vertical: 6.h),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6.r)),
-                        child: Text(product.category.displayName, style: GoogleFonts.inter(
-                          fontSize: 13.sp, fontWeight: FontWeight.w600, color: const Color(0xFF6366F1))),
+                            color:
+                                const Color(0xFF6366F1).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6.r)),
+                        child: Text(product.category.displayName,
+                            style: GoogleFonts.inter(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF6366F1))),
                       ),
                     ]),
                     SizedBox(height: 20.h),
-                    Text('About', style: GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+                    Text('About',
+                        style: GoogleFonts.inter(
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white)),
                     SizedBox(height: 8.h),
-                    _buildRichContent(product.description, const Color(0xFF9CA3AF)),
+                    _buildRichContent(
+                        product.description, const Color(0xFF9CA3AF)),
                     if (product.howItWorks.isNotEmpty) ...[
                       SizedBox(height: 16.h),
-                      Text('How It Works', style: GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+                      Text('How It Works',
+                          style: GoogleFonts.inter(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white)),
                       SizedBox(height: 8.h),
-                      _buildRichContent(product.howItWorks, const Color(0xFF9CA3AF)),
+                      _buildRichContent(
+                          product.howItWorks, const Color(0xFF9CA3AF)),
                     ],
                     if (product.benefits.isNotEmpty) ...[
                       SizedBox(height: 16.h),
-                      Text('Benefits', style: GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+                      Text('Benefits',
+                          style: GoogleFonts.inter(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white)),
                       SizedBox(height: 8.h),
                       ...product.benefits.map((b) => Padding(
-                        padding: EdgeInsets.only(bottom: 8.h),
-                        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Icon(Icons.check_circle, size: 16.sp, color: const Color(0xFF10B981)),
-                          SizedBox(width: 8.w),
-                          Expanded(child: Text(b, style: GoogleFonts.inter(
-                            fontSize: 13.sp, color: Colors.white, height: 1.4))),
-                        ]),
-                      )),
+                            padding: EdgeInsets.only(bottom: 8.h),
+                            child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(Icons.check_circle,
+                                      size: 16.sp,
+                                      color: const Color(0xFF10B981)),
+                                  SizedBox(width: 8.w),
+                                  Expanded(
+                                      child: Text(b,
+                                          style: GoogleFonts.inter(
+                                              fontSize: 13.sp,
+                                              color: Colors.white,
+                                              height: 1.4))),
+                                ]),
+                          )),
                     ],
                     if (product.fullBenefits.isNotEmpty) ...[
                       SizedBox(height: 16.h),
-                      Text('Full Coverage Details', style: GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+                      Text('Full Coverage Details',
+                          style: GoogleFonts.inter(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white)),
                       SizedBox(height: 8.h),
-                      _buildRichContent(product.fullBenefits, const Color(0xFF9CA3AF)),
+                      _buildRichContent(
+                          product.fullBenefits, const Color(0xFF9CA3AF)),
                     ],
                     SizedBox(height: 20.h),
                   ],
@@ -929,26 +1091,37 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
     return Padding(
       padding: EdgeInsets.only(bottom: 8.h),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Text(label, style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
-        Flexible(child: _buildRichContent(value, Colors.white, fontWeight: FontWeight.w500, textAlign: TextAlign.end)),
+        Text(label,
+            style: GoogleFonts.inter(
+                fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
+        Flexible(
+            child: _buildRichContent(value, Colors.white,
+                fontWeight: FontWeight.w500, textAlign: TextAlign.end)),
       ]),
     );
   }
 
   /// Renders HTML content if it contains tags, otherwise renders plain text
-  Widget _buildRichContent(String content, Color color, {FontWeight? fontWeight, TextAlign? textAlign}) {
+  Widget _buildRichContent(String content, Color color,
+      {FontWeight? fontWeight, TextAlign? textAlign}) {
     if (content.contains('<') && content.contains('>')) {
       return HtmlWidget(
         content,
-        textStyle: GoogleFonts.inter(fontSize: 13.sp, color: color, fontWeight: fontWeight),
+        textStyle: GoogleFonts.inter(
+            fontSize: 13.sp, color: color, fontWeight: fontWeight),
         customStylesBuilder: (element) {
           // Override all inline colors to match dark theme
-          return {'color': _colorToCss(color), 'background-color': 'transparent'};
+          return {
+            'color': _colorToCss(color),
+            'background-color': 'transparent'
+          };
         },
       );
     }
-    return Text(content, textAlign: textAlign,
-      style: GoogleFonts.inter(fontSize: 13.sp, color: color, fontWeight: fontWeight));
+    return Text(content,
+        textAlign: textAlign,
+        style: GoogleFonts.inter(
+            fontSize: 13.sp, color: color, fontWeight: fontWeight));
   }
 
   String _colorToCss(Color c) =>

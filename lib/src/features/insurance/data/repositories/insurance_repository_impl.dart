@@ -54,7 +54,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   Future<Insurance?> getInsuranceById(String id) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getInsuranceById(id: id, accessToken: accessToken);
+      return await remoteDataSource.getInsuranceById(
+          id: id, accessToken: accessToken);
     } on GrpcError catch (e) {
       if (e.code == StatusCode.notFound) {
         return null;
@@ -69,7 +70,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   Future<Insurance> createInsurance(Insurance insurance) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.createInsurance(insurance: insurance, accessToken: accessToken);
+      return await remoteDataSource.createInsurance(
+          insurance: insurance, accessToken: accessToken);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -81,7 +83,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   Future<Insurance> updateInsurance(Insurance insurance) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.updateInsurance(insurance: insurance, accessToken: accessToken);
+      return await remoteDataSource.updateInsurance(
+          insurance: insurance, accessToken: accessToken);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -105,7 +108,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   Future<List<Insurance>> searchInsurances(String query, String userId) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.searchInsurances(query: query, accessToken: accessToken);
+      return await remoteDataSource.searchInsurances(
+          query: query, accessToken: accessToken);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -114,10 +118,12 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   }
 
   @override
-  Future<List<InsurancePayment>> getInsurancePayments(String insuranceId) async {
+  Future<List<InsurancePayment>> getInsurancePayments(
+      String insuranceId) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getInsurancePayments(insuranceId: insuranceId, accessToken: accessToken);
+      return await remoteDataSource.getInsurancePayments(
+          insuranceId: insuranceId, accessToken: accessToken);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -141,7 +147,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   Future<InsurancePayment?> getPaymentById(String id) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getPaymentById(id: id, accessToken: accessToken);
+      return await remoteDataSource.getPaymentById(
+          id: id, accessToken: accessToken);
     } on GrpcError catch (e) {
       if (e.code == StatusCode.notFound) {
         return null;
@@ -156,7 +163,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   Future<InsurancePayment> createPayment(InsurancePayment payment) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.createPayment(payment: payment, accessToken: accessToken);
+      return await remoteDataSource.createPayment(
+          payment: payment, accessToken: accessToken);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -168,7 +176,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   Future<List<InsurancePayment>> getOverduePayments(String userId) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getOverduePayments(accessToken: accessToken);
+      return await remoteDataSource.getOverduePayments(
+          accessToken: accessToken);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -180,7 +189,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   Future<List<InsuranceClaim>> getInsuranceClaims(String insuranceId) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getInsuranceClaims(insuranceId: insuranceId, accessToken: accessToken);
+      return await remoteDataSource.getInsuranceClaims(
+          insuranceId: insuranceId, accessToken: accessToken);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -212,7 +222,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   Future<InsuranceClaim?> getClaimById(String id) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getClaimById(id: id, accessToken: accessToken);
+      return await remoteDataSource.getClaimById(
+          id: id, accessToken: accessToken);
     } on GrpcError catch (e) {
       if (e.code == StatusCode.notFound) {
         return null;
@@ -227,7 +238,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   Future<InsuranceClaim> createClaim(InsuranceClaim claim) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.createClaim(claim: claim, accessToken: accessToken);
+      return await remoteDataSource.createClaim(
+          claim: claim, accessToken: accessToken);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -239,7 +251,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   Future<InsuranceClaim> updateClaim(InsuranceClaim claim) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.updateClaim(claim: claim, accessToken: accessToken);
+      return await remoteDataSource.updateClaim(
+          claim: claim, accessToken: accessToken);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -251,7 +264,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   Future<String> generatePaymentReceipt(String paymentId) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.generatePaymentReceipt(paymentId: paymentId, accessToken: accessToken);
+      return await remoteDataSource.generatePaymentReceipt(
+          paymentId: paymentId, accessToken: accessToken);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -275,7 +289,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   Future<Map<String, dynamic>> getInsuranceStatistics(String userId) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getInsuranceStatistics(accessToken: accessToken);
+      return await remoteDataSource.getInsuranceStatistics(
+          accessToken: accessToken);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -284,7 +299,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   }
 
   @override
-  Future<Map<String, dynamic>> getPaymentStatistics(String userId, {DateTime? startDate, DateTime? endDate}) async {
+  Future<Map<String, dynamic>> getPaymentStatistics(String userId,
+      {DateTime? startDate, DateTime? endDate}) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
       return await remoteDataSource.getPaymentStatistics(
@@ -302,10 +318,12 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   // MyCover.ai Marketplace Operations
 
   @override
-  Future<List<InsuranceProduct>> getInsuranceProducts({required String locale, String? category}) async {
+  Future<List<InsuranceProduct>> getInsuranceProducts(
+      {required String locale, String? category}) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getInsuranceProducts(locale: locale, category: category, accessToken: accessToken);
+      return await remoteDataSource.getInsuranceProducts(
+          locale: locale, category: category, accessToken: accessToken);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -337,10 +355,12 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   }
 
   @override
-  Future<List<InsuranceCategoryInfo>> getInsuranceCategories({required String locale}) async {
+  Future<List<InsuranceCategoryInfo>> getInsuranceCategories(
+      {required String locale}) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getInsuranceCategories(locale: locale, accessToken: accessToken);
+      return await remoteDataSource.getInsuranceCategories(
+          locale: locale, accessToken: accessToken);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -364,10 +384,17 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   }
 
   @override
-  Future<InsuranceQuote> getInsuranceQuote({required String productId, required Map<String, String> formData, required String locale}) async {
+  Future<InsuranceQuote> getInsuranceQuote(
+      {required String productId,
+      required Map<String, String> formData,
+      required String locale}) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getInsuranceQuote(productId: productId, formData: formData, locale: locale, accessToken: accessToken);
+      return await remoteDataSource.getInsuranceQuote(
+          productId: productId,
+          formData: formData,
+          locale: locale,
+          accessToken: accessToken);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -407,10 +434,12 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   }
 
   @override
-  Future<InsurancePurchaseResult> getInsurancePurchaseStatus({required String reference}) async {
+  Future<InsurancePurchaseResult> getInsurancePurchaseStatus(
+      {required String reference}) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getInsurancePurchaseStatus(reference: reference, accessToken: accessToken);
+      return await remoteDataSource.getInsurancePurchaseStatus(
+          reference: reference, accessToken: accessToken);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -482,10 +511,12 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   // ===== MyCover Management APIs =====
 
   @override
-  Future<({List<MyCoverCustomer> customers, int total})> getMyCoverCustomers({int page = 1, int limit = 20}) async {
+  Future<({List<MyCoverCustomer> customers, int total})> getMyCoverCustomers(
+      {int page = 1, int limit = 20}) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getMyCoverCustomers(accessToken: accessToken, page: page, limit: limit);
+      return await remoteDataSource.getMyCoverCustomers(
+          accessToken: accessToken, page: page, limit: limit);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -497,7 +528,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   Future<MyCoverCustomer> getMyCoverCustomerById(String customerId) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getMyCoverCustomerById(accessToken: accessToken, customerId: customerId);
+      return await remoteDataSource.getMyCoverCustomerById(
+          accessToken: accessToken, customerId: customerId);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -506,10 +538,16 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   }
 
   @override
-  Future<({List<MyCoverPolicyDetail> policies, int total})> getMyCoverCustomerPolicies(String customerId, {int page = 1, int limit = 20}) async {
+  Future<({List<MyCoverPolicyDetail> policies, int total})>
+      getMyCoverCustomerPolicies(String customerId,
+          {int page = 1, int limit = 20}) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getMyCoverCustomerPolicies(accessToken: accessToken, customerId: customerId, page: page, limit: limit);
+      return await remoteDataSource.getMyCoverCustomerPolicies(
+          accessToken: accessToken,
+          customerId: customerId,
+          page: page,
+          limit: limit);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -518,10 +556,16 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   }
 
   @override
-  Future<({List<MyCoverPurchase> purchases, int total})> getMyCoverCustomerPurchases(String customerId, {int page = 1, int limit = 20}) async {
+  Future<({List<MyCoverPurchase> purchases, int total})>
+      getMyCoverCustomerPurchases(String customerId,
+          {int page = 1, int limit = 20}) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getMyCoverCustomerPurchases(accessToken: accessToken, customerId: customerId, page: page, limit: limit);
+      return await remoteDataSource.getMyCoverCustomerPurchases(
+          accessToken: accessToken,
+          customerId: customerId,
+          page: page,
+          limit: limit);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -530,10 +574,12 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   }
 
   @override
-  Future<({List<MyCoverPurchase> purchases, int total})> getMyCoverPurchases({int page = 1, int limit = 20}) async {
+  Future<({List<MyCoverPurchase> purchases, int total})> getMyCoverPurchases(
+      {int page = 1, int limit = 20}) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getMyCoverPurchases(accessToken: accessToken, page: page, limit: limit);
+      return await remoteDataSource.getMyCoverPurchases(
+          accessToken: accessToken, page: page, limit: limit);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -545,7 +591,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   Future<MyCoverPurchase> getMyCoverPurchaseById(String purchaseId) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getMyCoverPurchaseById(accessToken: accessToken, purchaseId: purchaseId);
+      return await remoteDataSource.getMyCoverPurchaseById(
+          accessToken: accessToken, purchaseId: purchaseId);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -554,10 +601,12 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   }
 
   @override
-  Future<({List<MyCoverProviderClaim> claims, int total})> getMyCoverClaims({String? status, int page = 1, int limit = 20}) async {
+  Future<({List<MyCoverProviderClaim> claims, int total})> getMyCoverClaims(
+      {String? status, int page = 1, int limit = 20}) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getMyCoverClaims(accessToken: accessToken, status: status, page: page, limit: limit);
+      return await remoteDataSource.getMyCoverClaims(
+          accessToken: accessToken, status: status, page: page, limit: limit);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -569,7 +618,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   Future<MyCoverProviderClaim> getMyCoverClaimById(String claimId) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getMyCoverClaimById(accessToken: accessToken, claimId: claimId);
+      return await remoteDataSource.getMyCoverClaimById(
+          accessToken: accessToken, claimId: claimId);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -578,7 +628,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   }
 
   @override
-  Future<({String claimId, String claimNumber, String status})> fileCreditLifeClaim({
+  Future<({String claimId, String claimNumber, String status})>
+      fileCreditLifeClaim({
     required String policyId,
     required String claimType,
     required String description,
@@ -608,7 +659,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   Future<List<AuxiliaryItem>> getInsuranceStates() async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getInsuranceStates(accessToken: accessToken);
+      return await remoteDataSource.getInsuranceStates(
+          accessToken: accessToken);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -620,7 +672,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   Future<List<AuxiliaryItem>> getInsuranceVehicleMakes() async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getInsuranceVehicleMakes(accessToken: accessToken);
+      return await remoteDataSource.getInsuranceVehicleMakes(
+          accessToken: accessToken);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -629,10 +682,12 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   }
 
   @override
-  Future<List<MyCoverNotificationPref>> getMyCoverNotificationPreferences() async {
+  Future<List<MyCoverNotificationPref>>
+      getMyCoverNotificationPreferences() async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getMyCoverNotificationPreferences(accessToken: accessToken);
+      return await remoteDataSource.getMyCoverNotificationPreferences(
+          accessToken: accessToken);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -641,7 +696,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   }
 
   @override
-  Future<void> updateMyCoverNotificationPreferences(List<MyCoverNotificationPref> preferences) async {
+  Future<void> updateMyCoverNotificationPreferences(
+      List<MyCoverNotificationPref> preferences) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
       await remoteDataSource.updateMyCoverNotificationPreferences(
@@ -659,7 +715,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   Future<MyCoverWalletBalance> getMyCoverWalletBalance() async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getMyCoverWalletBalance(accessToken: accessToken);
+      return await remoteDataSource.getMyCoverWalletBalance(
+          accessToken: accessToken);
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -687,7 +744,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   }
 
   @override
-  Future<InsuranceRefund> getInsuranceRefundStatus(String policyReference) async {
+  Future<InsuranceRefund> getInsuranceRefundStatus(
+      String policyReference) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
       return await remoteDataSource.getInsuranceRefundStatus(
@@ -715,11 +773,13 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
       case StatusCode.alreadyExists:
         return Exception('Insurance already exists');
       case StatusCode.failedPrecondition:
-        return Exception('Insurance marketplace is not available. Please contact support.');
+        return Exception(
+            'Insurance marketplace is not available. Please contact support.');
       case StatusCode.unavailable:
-        return Exception('Service temporarily unavailable. Please try again later.');
+        return Exception(
+            'Service temporarily unavailable. Please try again later.');
       default:
         return Exception('An error occurred: ${error.message}');
     }
   }
-} 
+}

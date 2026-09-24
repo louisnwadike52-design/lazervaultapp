@@ -20,7 +20,8 @@ class SubscriptionDashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => serviceLocator<SubscriptionTrackerCubit>()..loadDashboard(),
+      create: (_) =>
+          serviceLocator<SubscriptionTrackerCubit>()..loadDashboard(),
       child: const _DashboardView(),
     );
   }
@@ -164,7 +165,8 @@ class _DashboardViewState extends State<_DashboardView> {
             title: 'Spending Trend',
             icon: Icons.trending_up,
             isExpanded: _spendingExpanded,
-            onToggle: () => setState(() => _spendingExpanded = !_spendingExpanded),
+            onToggle: () =>
+                setState(() => _spendingExpanded = !_spendingExpanded),
             child: SubscriptionSpendingChart(spending: state.spending),
           ),
           SizedBox(height: 12.h),

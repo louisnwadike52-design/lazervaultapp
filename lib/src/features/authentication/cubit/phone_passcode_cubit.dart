@@ -88,12 +88,14 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
       final tsRaw = await _storage.read(key: _draftTsKey);
       final ts = int.tryParse(tsRaw ?? '');
       if (ts != null &&
-          DateTime.now().millisecondsSinceEpoch - ts > _draftTtl.inMilliseconds) {
+          DateTime.now().millisecondsSinceEpoch - ts >
+              _draftTtl.inMilliseconds) {
         await _clearPersistedDraft();
         return;
       }
       _phone = (await _storage.read(key: _draftPhoneKey)) ?? _phone;
-      _countryCode = (await _storage.read(key: _draftCountryKey)) ?? _countryCode;
+      _countryCode =
+          (await _storage.read(key: _draftCountryKey)) ?? _countryCode;
       _signupToken = await _storage.read(key: _draftTokenKey);
       _verificationSkipped =
           (await _storage.read(key: _draftSkippedKey)) == 'true';
@@ -164,7 +166,8 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
         await _storage.write(key: _draftPhoneKey, value: phone);
         await _storage.write(key: _draftCountryKey, value: countryCode);
         await _touchDraft();
-        await _signupStateService.markPhoneStep(SignupStateService.stepPhoneOtp);
+        await _signupStateService
+            .markPhoneStep(SignupStateService.stepPhoneOtp);
         emit(PhoneOtpSent(
           phone: phone,
           expiresInSeconds: otp.expiresInSeconds,
@@ -272,8 +275,7 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
   }) {
     _firstName = firstName.trim();
     _lastName = lastName.trim();
-    _dateOfBirth =
-        dateOfBirth.trim().isEmpty ? null : dateOfBirth.trim();
+    _dateOfBirth = dateOfBirth.trim().isEmpty ? null : dateOfBirth.trim();
     _username = (username != null && username.trim().isNotEmpty)
         ? username.trim()
         : null;
@@ -287,7 +289,8 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
   /// email step. SignupWithPhone sends an email verification code on success,
   /// so the email screen then reveals its code-entry section.
   Future<void> submitSignup({required String email}) async {
-    if (isClosed || state is PhonePasscodeLoading) return; // guard double-submit
+    if (isClosed || state is PhonePasscodeLoading)
+      return; // guard double-submit
     final token = _signupToken ?? '';
     // A token is required UNLESS the user skipped verification.
     if (!_verificationSkipped && token.isEmpty) {

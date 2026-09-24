@@ -46,13 +46,16 @@ class TransactionReceiptScreen extends StatelessWidget {
 
     // Amount breakdown
     if (invoice.items.isNotEmpty) {
-      metadata['Subtotal'] = '$_currencySymbol${invoice.amount.toStringAsFixed(2)}';
+      metadata['Subtotal'] =
+          '$_currencySymbol${invoice.amount.toStringAsFixed(2)}';
     }
     if ((invoice.taxAmount ?? 0) > 0) {
-      metadata['Tax'] = '$_currencySymbol${invoice.taxAmount!.toStringAsFixed(2)}';
+      metadata['Tax'] =
+          '$_currencySymbol${invoice.taxAmount!.toStringAsFixed(2)}';
     }
     if ((invoice.discountAmount ?? 0) > 0) {
-      metadata['Discount'] = '-$_currencySymbol${invoice.discountAmount!.toStringAsFixed(2)}';
+      metadata['Discount'] =
+          '-$_currencySymbol${invoice.discountAmount!.toStringAsFixed(2)}';
     }
     if (invoice.dueDate != null) {
       metadata['Due Date'] = DateFormat('d MMM yyyy').format(invoice.dueDate!);
@@ -84,14 +87,22 @@ class TransactionReceiptScreen extends StatelessWidget {
 
   String get _currencySymbol {
     switch (invoice.currency.toUpperCase()) {
-      case 'NGN': return '\u20a6';
-      case 'GBP': return '\u00a3';
-      case 'EUR': return '\u20ac';
-      case 'ZAR': return 'R';
-      case 'USD': return '\$';
-      case 'CAD': return 'C\$';
-      case 'AUD': return 'A\$';
-      default: return '\u20a6';
+      case 'NGN':
+        return '\u20a6';
+      case 'GBP':
+        return '\u00a3';
+      case 'EUR':
+        return '\u20ac';
+      case 'ZAR':
+        return 'R';
+      case 'USD':
+        return '\$';
+      case 'CAD':
+        return 'C\$';
+      case 'AUD':
+        return 'A\$';
+      default:
+        return '\u20a6';
     }
   }
 

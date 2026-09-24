@@ -27,7 +27,6 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/features/authentication/presentation/widgets/legal_consent_text.dart';
 part 'sign_up_widgets.dart';
 
-
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
 
@@ -340,9 +339,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
           });
           // Push the (now-empty) phone state through so the cubit knows
           // we no longer have a phone until the user re-types.
-          context
-              .read<AuthenticationCubit>()
-              .signUpPhoneNumberChanged('');
+          context.read<AuthenticationCubit>().signUpPhoneNumberChanged('');
           Navigator.of(context).pop();
         },
       ),
@@ -356,7 +353,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
     DateTime initialPickerDate = DateTime(2000, 1, 1);
     final currentState = currentContext.read<AuthenticationCubit>().state;
     if (currentState is SignUpInProgress) {
-       initialPickerDate = currentState.selectedDate ?? initialPickerDate;
+      initialPickerDate = currentState.selectedDate ?? initialPickerDate;
     }
 
     // Age gate: users must be at least 18. Cap the selectable DOB to exactly 18
@@ -423,7 +420,9 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
 
     if (pickedDate != null && currentContext.mounted) {
       // Call the cubit method to update the date
-      currentContext.read<AuthenticationCubit>().signUpDateOfBirthChanged(pickedDate);
+      currentContext
+          .read<AuthenticationCubit>()
+          .signUpDateOfBirthChanged(pickedDate);
     }
   }
 
@@ -437,134 +436,140 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       behavior: HitTestBehavior.opaque,
       child: BlocListener<AuthenticationCubit, AuthenticationState>(
-      listener: (context, state) {
-        // Use object destructuring within the listener
-        switch (state) {
-          // Removed duplicate error snackbar - cubit already shows errors via _showErrorSnackbar
-           case SignUpInProgress(currentPage: final pageNum): // Destructure page number
-             // Handle page changes triggered by cubit state update
-             if (_pageController.hasClients && _pageController.page?.round() != pageNum) {
-                  _pageController.animateToPage(
-                      pageNum,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                  );
-             }
-             // Phone now lives on page 1 (immediately after country select on
-             // page 0). Seed the phone-field country from the country chosen on
-             // page 0 the first time we land on page 1 (while the input is still
-             // empty) so the dial code matches the user's registration country
-             // instead of defaulting to NG. We skip seeding once the user has
-             // typed a number so we never clobber a country they picked manually.
-             if (pageNum == 1 && _phoneController.text.isEmpty) {
-               _syncPhoneCountryFromSignup();
-             }
-             break;
-          case AuthenticationError(message: final msg): // Destructure error message
-            final lower = msg.toLowerCase();
-            final alreadyRegistered = lower.contains('already registered') ||
-                lower.contains('already in use') ||
-                lower.contains('already exists');
-            Get.snackbar(
-              alreadyRegistered ? 'Account exists' : 'Error',
-              msg,
-              snackPosition: SnackPosition.TOP,
-              backgroundColor: Colors.redAccent,
-              colorText: Colors.white,
-              margin: EdgeInsets.all(15.w),
-              borderRadius: 10.r,
-              duration: Duration(seconds: alreadyRegistered ? 6 : 3),
-              // Phone/email already registered → offer to log in instead.
-              mainButton: alreadyRegistered
-                  ? TextButton(
-                      onPressed: () async {
-                        // Account exists on the server but may not be cached on
-                        // THIS device (fresh install trying to sign up) — send
-                        // them to the full login screen for the mode, not the
-                        // passcode lock (which needs a cached identity).
-                        final route =
-                            await LoginFlowResolver.resolveLoginRoute();
-                        Get.offAllNamed(route);
-                      },
-                      child: const Text('Log in',
-                          style: TextStyle(color: Colors.white)),
-                    )
-                  : null,
-            );
-            // IMPORTANT: Ensure the Cubit emits SignUpInProgress state with previous
-            // fullName, selectedDate, and phoneNumber after this error to prevent fields clearing.
-            break;
-          case AuthenticationSuccess():
-            // This case is typically for login, not signup
-            // Signup uses UserCreated state
-            break;
-          case UserCreated(): // Handle successful user creation
-            // Navigate to PRIMARY credential OTP screen only
-            // Secondary verification will be shown after primary is complete
-            final cubit = context.read<AuthenticationCubit>();
-            final signupState = cubit.state;
+        listener: (context, state) {
+          // Use object destructuring within the listener
+          switch (state) {
+            // Removed duplicate error snackbar - cubit already shows errors via _showErrorSnackbar
+            case SignUpInProgress(
+                currentPage: final pageNum
+              ): // Destructure page number
+              // Handle page changes triggered by cubit state update
+              if (_pageController.hasClients &&
+                  _pageController.page?.round() != pageNum) {
+                _pageController.animateToPage(
+                  pageNum,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              }
+              // Phone now lives on page 1 (immediately after country select on
+              // page 0). Seed the phone-field country from the country chosen on
+              // page 0 the first time we land on page 1 (while the input is still
+              // empty) so the dial code matches the user's registration country
+              // instead of defaulting to NG. We skip seeding once the user has
+              // typed a number so we never clobber a country they picked manually.
+              if (pageNum == 1 && _phoneController.text.isEmpty) {
+                _syncPhoneCountryFromSignup();
+              }
+              break;
+            case AuthenticationError(
+                message: final msg
+              ): // Destructure error message
+              final lower = msg.toLowerCase();
+              final alreadyRegistered = lower.contains('already registered') ||
+                  lower.contains('already in use') ||
+                  lower.contains('already exists');
+              Get.snackbar(
+                alreadyRegistered ? 'Account exists' : 'Error',
+                msg,
+                snackPosition: SnackPosition.TOP,
+                backgroundColor: Colors.redAccent,
+                colorText: Colors.white,
+                margin: EdgeInsets.all(15.w),
+                borderRadius: 10.r,
+                duration: Duration(seconds: alreadyRegistered ? 6 : 3),
+                // Phone/email already registered → offer to log in instead.
+                mainButton: alreadyRegistered
+                    ? TextButton(
+                        onPressed: () async {
+                          // Account exists on the server but may not be cached on
+                          // THIS device (fresh install trying to sign up) — send
+                          // them to the full login screen for the mode, not the
+                          // passcode lock (which needs a cached identity).
+                          final route =
+                              await LoginFlowResolver.resolveLoginRoute();
+                          Get.offAllNamed(route);
+                        },
+                        child: const Text('Log in',
+                            style: TextStyle(color: Colors.white)),
+                      )
+                    : null,
+              );
+              // IMPORTANT: Ensure the Cubit emits SignUpInProgress state with previous
+              // fullName, selectedDate, and phoneNumber after this error to prevent fields clearing.
+              break;
+            case AuthenticationSuccess():
+              // This case is typically for login, not signup
+              // Signup uses UserCreated state
+              break;
+            case UserCreated(): // Handle successful user creation
+              // Navigate to PRIMARY credential OTP screen only
+              // Secondary verification will be shown after primary is complete
+              final cubit = context.read<AuthenticationCubit>();
+              final signupState = cubit.state;
 
-            String? phoneNumber;
-            String? email;
-            PrimaryContactType primaryType = PrimaryContactType.email;
+              String? phoneNumber;
+              String? email;
+              PrimaryContactType primaryType = PrimaryContactType.email;
 
-            // Get data from SignUpInProgress state if available
-            if (signupState is SignUpInProgress) {
-              phoneNumber = signupState.phoneNumber;
-              email = signupState.email;
-              primaryType = signupState.primaryContactType;
-            } else if (cubit.currentProfile != null) {
-              // Fallback to profile data
-              phoneNumber = cubit.currentProfile!.user.phoneNumber;
-              email = cubit.currentProfile!.user.email;
-            }
+              // Get data from SignUpInProgress state if available
+              if (signupState is SignUpInProgress) {
+                phoneNumber = signupState.phoneNumber;
+                email = signupState.email;
+                primaryType = signupState.primaryContactType;
+              } else if (cubit.currentProfile != null) {
+                // Fallback to profile data
+                phoneNumber = cubit.currentProfile!.user.phoneNumber;
+                email = cubit.currentProfile!.user.email;
+              }
 
-            // Determine if secondary verification is needed
-            final hasSecondaryPhone = phoneNumber != null && phoneNumber.isNotEmpty;
-            final hasSecondaryEmail = email != null && email.isNotEmpty;
+              // Determine if secondary verification is needed
+              final hasSecondaryPhone =
+                  phoneNumber != null && phoneNumber.isNotEmpty;
+              final hasSecondaryEmail = email != null && email.isNotEmpty;
 
-            // Navigate based on PRIMARY contact type
-            // Note: No "Account Created" snackbar here since email is sent after ID verification
-            if (primaryType == PrimaryContactType.phone) {
-              // Phone OTP — skippable unless the admin requires phone verification.
-              Get.offAllNamed(AppRoutes.phoneVerification, arguments: {
-                'phoneNumber': phoneNumber,
-                'codeSent': true,
-                'expiresIn': 600,
-                'isRequired': FeatureFlags.isPhoneVerificationRequired,
-                'secondaryEmail': hasSecondaryEmail ? email : null,
-              });
-            } else {
-              // Email OTP (email is primary) — skippable unless the admin
-              // requires email verification.
-              Get.offAllNamed(AppRoutes.emailVerification, arguments: {
-                'email': email,
-                'codeSent': true,
-                'isRequired': FeatureFlags.isEmailVerificationRequired,
-                'secondaryPhone': hasSecondaryPhone ? phoneNumber : null,
-              });
-            }
-            break;
-          default:
-             // Handle other states or do nothing
-             break;
-        }
-      },
-      // Use BlocBuilder to react to state changes for UI rendering
-      child: BlocBuilder<AuthenticationCubit, AuthenticationState>(
-        builder: (context, state) {
-           // Destructure state values for UI
-           final (
-             :currentPage,
-             :isLoading,
-             :initialEmail,
-             :firstName,
-             :lastName,
-             :selectedDate,
-             :phoneNumber,
-             :countryCode,
-             :countryName,
-           ) = switch (state) {
+              // Navigate based on PRIMARY contact type
+              // Note: No "Account Created" snackbar here since email is sent after ID verification
+              if (primaryType == PrimaryContactType.phone) {
+                // Phone OTP — skippable unless the admin requires phone verification.
+                Get.offAllNamed(AppRoutes.phoneVerification, arguments: {
+                  'phoneNumber': phoneNumber,
+                  'codeSent': true,
+                  'expiresIn': 600,
+                  'isRequired': FeatureFlags.isPhoneVerificationRequired,
+                  'secondaryEmail': hasSecondaryEmail ? email : null,
+                });
+              } else {
+                // Email OTP (email is primary) — skippable unless the admin
+                // requires email verification.
+                Get.offAllNamed(AppRoutes.emailVerification, arguments: {
+                  'email': email,
+                  'codeSent': true,
+                  'isRequired': FeatureFlags.isEmailVerificationRequired,
+                  'secondaryPhone': hasSecondaryPhone ? phoneNumber : null,
+                });
+              }
+              break;
+            default:
+              // Handle other states or do nothing
+              break;
+          }
+        },
+        // Use BlocBuilder to react to state changes for UI rendering
+        child: BlocBuilder<AuthenticationCubit, AuthenticationState>(
+          builder: (context, state) {
+            // Destructure state values for UI
+            final (
+              :currentPage,
+              :isLoading,
+              :initialEmail,
+              :firstName,
+              :lastName,
+              :selectedDate,
+              :phoneNumber,
+              :countryCode,
+              :countryName,
+            ) = switch (state) {
               SignUpInProgress p => (
                   currentPage: p.currentPage,
                   isLoading: p.isLoading,
@@ -575,7 +580,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                   phoneNumber: p.phoneNumber,
                   countryCode: p.countryCode,
                   countryName: p.countryName,
-              ),
+                ),
               _ => (
                   currentPage: 0,
                   isLoading: false,
@@ -586,47 +591,50 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                   phoneNumber: null,
                   countryCode: 'NG',
                   countryName: 'Nigeria',
-              )
-           };
+                )
+            };
 
-          final bool displayLoading = isLoading;
+            final bool displayLoading = isLoading;
 
-          return Column(
-            children: [
-              // --- Back Button ---
-              Visibility(
-                visible: currentPage > 0,
-                child: Padding(
-                  padding: EdgeInsets.only(top: 50.0.h),
-                  child: Row(children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      // Ensure cubit handles going back correctly
-                      onPressed: () => context.read<AuthenticationCubit>().signUpPreviousPage(),
-                    ),
-                  ]),
+            return Column(
+              children: [
+                // --- Back Button ---
+                Visibility(
+                  visible: currentPage > 0,
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 50.0.h),
+                    child: Row(children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        // Ensure cubit handles going back correctly
+                        onPressed: () => context
+                            .read<AuthenticationCubit>()
+                            .signUpPreviousPage(),
+                      ),
+                    ]),
+                  ),
                 ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                      top: _responsiveController.screenHeight * (currentPage > 0 ? 0.04 : 0.15)),
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 16.0,
-                      horizontal: 16.0,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Center(
-                          child: UniversalImageLoader(
-                              imagePath: AppData.appLogo,
-                              height: 70.0.h,
-                              width: 70.0.w),
-                        ),
-                        Text("Hi there 👋",
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                        top: _responsiveController.screenHeight *
+                            (currentPage > 0 ? 0.04 : 0.15)),
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 16.0,
+                        horizontal: 16.0,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Center(
+                            child: UniversalImageLoader(
+                                imagePath: AppData.appLogo,
+                                height: 70.0.h,
+                                width: 70.0.w),
+                          ),
+                          Text("Hi there 👋",
                               style: TextStyle(
                                   fontSize: 18.0.sp,
                                   fontWeight: FontWeight.w600,
@@ -638,140 +646,153 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                                   fontWeight: FontWeight.w500,
                                   color: Colors.black54)),
                           SizedBox(height: 20.0.h),
-                        // Page content: 0 country, 1 credentials, 2 personal info
-                        if (currentPage == 0)
-                          _buildCountrySelectionPage(context, countryCode: countryCode, countryName: countryName, isLoading: displayLoading)
-                        else if (currentPage == 1)
-                          _buildEmailPasswordPage(context, initialEmail: initialEmail, isLoading: displayLoading)
-                        else if (currentPage == 2)
-                          _buildPersonalInfoPage(context, initialFirstName: firstName, initialLastName: lastName, selectedDate: selectedDate, initialPhoneNumber: phoneNumber, isLoading: displayLoading),
-                        SizedBox(height: 24.0.h),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              // ── Sticky themed bottom action panel ───────────────────
-              // Holds Continue + "Already have an account? Sign In" in a
-              // single brand-purple gradient surface that sits flush at the
-              // bottom; the form above scrolls under it.
-              //
-              // Page 1 (email/password) already exposes its OWN Continue
-              // button under the social row, which is the canonical action
-              // for that step. To avoid a duplicate, we suppress the sticky
-              // Continue on page 1 — pages 0 (country select) and 2
-              // (personal info) still need it as their only action button.
-              // The "Already have an account?" link stays on every page.
-              Container(
-                padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 20.h),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [_brandPurple, _brandPurpleDeep],
-                  ),
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(20.r),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.15),
-                      blurRadius: 12,
-                      offset: const Offset(0, -2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (currentPage != 1) ...[
-                      SizedBox(
-                        width: double.infinity,
-                        height: 52.h,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: _brandPurple,
-                            disabledBackgroundColor:
-                                Colors.white.withValues(alpha: 0.55),
-                            disabledForegroundColor:
-                                _brandPurple.withValues(alpha: 0.5),
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(28.r),
-                            ),
-                          ),
-                          onPressed: (displayLoading ||
-                                  (currentPage == 0 && countryCode.isEmpty))
-                              ? null
-                              : _onContinuePressed,
-                          child: displayLoading
-                              ? LazerVaultLoader(size: 22)
-                              : Text(
-                                  "Continue",
-                                  style: TextStyle(
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                        ),
+                          // Page content: 0 country, 1 credentials, 2 personal info
+                          if (currentPage == 0)
+                            _buildCountrySelectionPage(context,
+                                countryCode: countryCode,
+                                countryName: countryName,
+                                isLoading: displayLoading)
+                          else if (currentPage == 1)
+                            _buildEmailPasswordPage(context,
+                                initialEmail: initialEmail,
+                                isLoading: displayLoading)
+                          else if (currentPage == 2)
+                            _buildPersonalInfoPage(context,
+                                initialFirstName: firstName,
+                                initialLastName: lastName,
+                                selectedDate: selectedDate,
+                                initialPhoneNumber: phoneNumber,
+                                isLoading: displayLoading),
+                          SizedBox(height: 24.0.h),
+                        ],
                       ),
-                      SizedBox(height: 12.h),
+                    ),
+                  ),
+                ),
+                // ── Sticky themed bottom action panel ───────────────────
+                // Holds Continue + "Already have an account? Sign In" in a
+                // single brand-purple gradient surface that sits flush at the
+                // bottom; the form above scrolls under it.
+                //
+                // Page 1 (email/password) already exposes its OWN Continue
+                // button under the social row, which is the canonical action
+                // for that step. To avoid a duplicate, we suppress the sticky
+                // Continue on page 1 — pages 0 (country select) and 2
+                // (personal info) still need it as their only action button.
+                // The "Already have an account?" link stays on every page.
+                Container(
+                  padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 20.h),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [_brandPurple, _brandPurpleDeep],
+                    ),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(20.r),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 12,
+                        offset: const Offset(0, -2),
+                      ),
                     ],
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Already have an account?",
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            color: Colors.white.withValues(alpha: 0.9),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (currentPage != 1) ...[
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52.h,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: _brandPurple,
+                              disabledBackgroundColor:
+                                  Colors.white.withValues(alpha: 0.55),
+                              disabledForegroundColor:
+                                  _brandPurple.withValues(alpha: 0.5),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(28.r),
+                              ),
+                            ),
+                            onPressed: (displayLoading ||
+                                    (currentPage == 0 && countryCode.isEmpty))
+                                ? null
+                                : _onContinuePressed,
+                            child: displayLoading
+                                ? LazerVaultLoader(size: 22)
+                                : Text(
+                                    "Continue",
+                                    style: TextStyle(
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
                           ),
                         ),
-                        SizedBox(width: 4.w),
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(horizontal: 6.w),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          onPressed: () async {
-                            // Route to the correct login screen for the mode +
-                            // whether a returning user is cached: fresh install →
-                            // full phone+passcode / email+password login; returning
-                            // user → passcode lock. Never dead-ends a fresh user on
-                            // the passcode lock screen.
-                            final route =
-                                await LoginFlowResolver.resolveLoginRoute();
-                            Get.toNamed(route);
-                          },
-                          child: Text(
-                            "Sign In",
+                        SizedBox(height: 12.h),
+                      ],
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Already have an account?",
                             style: TextStyle(
                               fontSize: 14.sp,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              decoration: TextDecoration.underline,
-                              decorationColor: Colors.white,
+                              color: Colors.white.withValues(alpha: 0.9),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          SizedBox(width: 4.w),
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(horizontal: 6.w),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            onPressed: () async {
+                              // Route to the correct login screen for the mode +
+                              // whether a returning user is cached: fresh install →
+                              // full phone+passcode / email+password login; returning
+                              // user → passcode lock. Never dead-ends a fresh user on
+                              // the passcode lock screen.
+                              final route =
+                                  await LoginFlowResolver.resolveLoginRoute();
+                              Get.toNamed(route);
+                            },
+                            child: Text(
+                              "Sign In",
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                decoration: TextDecoration.underline,
+                                decorationColor: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          );
-        },
-      ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
 
   // Helper method for Country Selection Page (Page 0)
-  Widget _buildCountrySelectionPage(BuildContext context, {required String countryCode, required String countryName, required bool isLoading}) {
+  Widget _buildCountrySelectionPage(BuildContext context,
+      {required String countryCode,
+      required String countryName,
+      required bool isLoading}) {
     // Get active signup countries. PH/CA are isActive:false in CountryConfigs
     // (exchange-international-only, no Klasha wallet/VA), so they're excluded
     // here automatically.
@@ -835,15 +856,20 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
   }) {
     return GestureDetector(
       onTap: isSupported
-          ? () => context.read<AuthenticationCubit>().signUpCountryChanged(countryCode, countryName, currencyCode)
+          ? () => context
+              .read<AuthenticationCubit>()
+              .signUpCountryChanged(countryCode, countryName, currencyCode)
           : null,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         decoration: BoxDecoration(
-          color: isSelected ? _brandPurple.withValues(alpha: 0.08) : Colors.white,
+          color:
+              isSelected ? _brandPurple.withValues(alpha: 0.08) : Colors.white,
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: isSelected ? _brandPurple : (isSupported ? Colors.grey.shade300 : Colors.grey.shade200),
+            color: isSelected
+                ? _brandPurple
+                : (isSupported ? Colors.grey.shade300 : Colors.grey.shade200),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -867,7 +893,8 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                     currencyCode,
                     style: TextStyle(
                       fontSize: 14.sp,
-                      color: isSupported ? Colors.black54 : Colors.grey.shade400,
+                      color:
+                          isSupported ? Colors.black54 : Colors.grey.shade400,
                     ),
                   ),
                 ],
@@ -910,19 +937,24 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
   }
 
   // Helper method for Email/Password Page (Page 1)
-  Widget _buildEmailPasswordPage(BuildContext context, {String? initialEmail, required bool isLoading}) {
+  Widget _buildEmailPasswordPage(BuildContext context,
+      {String? initialEmail, required bool isLoading}) {
     return BlocBuilder<AuthenticationCubit, AuthenticationState>(
       builder: (context, state) {
         final password = state is SignUpInProgress ? state.password : '';
-        final confirmPassword = state is SignUpInProgress ? state.confirmPassword : '';
+        final confirmPassword =
+            state is SignUpInProgress ? state.confirmPassword : '';
 
         // Password validation checks
         final hasMinLength = password.length >= 8;
         final hasUppercase = RegExp(r'[A-Z]').hasMatch(password);
         final hasLowercase = RegExp(r'[a-z]').hasMatch(password);
         final hasDigit = RegExp(r'[0-9]').hasMatch(password);
-        final hasSpecialChar = RegExp(r'[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/;`~]').hasMatch(password);
-        final passwordsMatch = password.isNotEmpty && confirmPassword.isNotEmpty && password == confirmPassword;
+        final hasSpecialChar = RegExp(r'[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/;`~]')
+            .hasMatch(password);
+        final passwordsMatch = password.isNotEmpty &&
+            confirmPassword.isNotEmpty &&
+            password == confirmPassword;
 
         // All five rules satisfied — the password is good. Once this is
         // true we collapse the rules list down to a single "Strong
@@ -964,7 +996,9 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
               placeholder: "Password",
               obscureText: true,
               prefixIcon: const Icon(Icons.lock, color: Colors.black45),
-              onChanged: (value) => context.read<AuthenticationCubit>().signUpPasswordChanged(value),
+              onChanged: (value) => context
+                  .read<AuthenticationCubit>()
+                  .signUpPasswordChanged(value),
             ),
             // Password strength meter + requirement chips — same style as
             // reset-password screen so the user gets identical feedback in
@@ -1057,11 +1091,15 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                         spacing: 12.w,
                         runSpacing: 4.h,
                         children: [
-                          _buildRequirementItem('At least 8 characters', hasMinLength),
-                          _buildRequirementItem('One uppercase letter', hasUppercase),
-                          _buildRequirementItem('One lowercase letter', hasLowercase),
+                          _buildRequirementItem(
+                              'At least 8 characters', hasMinLength),
+                          _buildRequirementItem(
+                              'One uppercase letter', hasUppercase),
+                          _buildRequirementItem(
+                              'One lowercase letter', hasLowercase),
                           _buildRequirementItem('One number', hasDigit),
-                          _buildRequirementItem('One special character', hasSpecialChar),
+                          _buildRequirementItem(
+                              'One special character', hasSpecialChar),
                         ],
                       ),
                   ],
@@ -1074,7 +1112,9 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
               placeholder: "Confirm password",
               obscureText: true,
               prefixIcon: const Icon(Icons.lock, color: Colors.black45),
-              onChanged: (value) => context.read<AuthenticationCubit>().signUpConfirmPasswordChanged(value),
+              onChanged: (value) => context
+                  .read<AuthenticationCubit>()
+                  .signUpConfirmPasswordChanged(value),
             ),
             // Confirm password match indicator
             if (showConfirmPasswordIndicator && !passwordsMatch) ...[
@@ -1220,7 +1260,12 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
   // an OPTIONAL email as a secondary contact. `initialPhoneNumber` stays in
   // the signature for compat with the BlocBuilder destructure above — it
   // isn't used here.
-  Widget _buildPersonalInfoPage(BuildContext context, {String? initialFirstName, String? initialLastName, DateTime? selectedDate, String? initialPhoneNumber, required bool isLoading}) {
+  Widget _buildPersonalInfoPage(BuildContext context,
+      {String? initialFirstName,
+      String? initialLastName,
+      DateTime? selectedDate,
+      String? initialPhoneNumber,
+      required bool isLoading}) {
     return BlocBuilder<AuthenticationCubit, AuthenticationState>(
       builder: (context, state) {
         final email = state is SignUpInProgress ? state.email : '';
@@ -1237,24 +1282,31 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
             BuildFormField(
               name: "firstname",
               placeholder: "First Name",
-              prefixIcon: const Icon(Icons.person_outline, color: Colors.black45),
+              prefixIcon:
+                  const Icon(Icons.person_outline, color: Colors.black45),
               initialValue: initialFirstName,
-              onChanged: (value) => context.read<AuthenticationCubit>().signUpFirstNameChanged(value),
+              onChanged: (value) => context
+                  .read<AuthenticationCubit>()
+                  .signUpFirstNameChanged(value),
             ),
             SizedBox(height: 10.0.h),
             BuildFormField(
               name: "lastname",
               placeholder: "Last Name",
-              prefixIcon: const Icon(Icons.person_outline, color: Colors.black45),
+              prefixIcon:
+                  const Icon(Icons.person_outline, color: Colors.black45),
               initialValue: initialLastName,
-              onChanged: (value) => context.read<AuthenticationCubit>().signUpLastNameChanged(value),
+              onChanged: (value) => context
+                  .read<AuthenticationCubit>()
+                  .signUpLastNameChanged(value),
             ),
             SizedBox(height: 10.0.h),
             // Username / Lazertag field
             BuildFormField(
               name: "username",
               placeholder: "Username / Lazertag (optional)",
-              prefixIcon: const Icon(Icons.alternate_email, color: Colors.black45),
+              prefixIcon:
+                  const Icon(Icons.alternate_email, color: Colors.black45),
               maxLength: 30,
               autocorrect: false,
               enableSuggestions: false,
@@ -1262,7 +1314,9 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
               // field display matches what's stored/sent (the backend lowercases
               // on create + lookup; a case mismatch could miss a transfer-by-tag).
               inputFormatters: const [_LowercaseTextFormatter()],
-              onChanged: (value) => context.read<AuthenticationCubit>().signUpUsernameChanged(value),
+              onChanged: (value) => context
+                  .read<AuthenticationCubit>()
+                  .signUpUsernameChanged(value),
               validator: (value) {
                 if (value != null && value.trim().isNotEmpty) {
                   final clean = value.trim().replaceAll(RegExp(r'^@'), '');
@@ -1291,32 +1345,42 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
             Focus(
               onFocusChange: (hasFocus) {
                 if (!hasFocus) {
-                  context.read<AuthenticationCubit>().validateReferralCodeOnBlur();
+                  context
+                      .read<AuthenticationCubit>()
+                      .validateReferralCodeOnBlur();
                 }
               },
               child: Builder(
                 builder: (context) {
                   final s = context.read<AuthenticationCubit>().state;
-                  final isValidating = s is SignUpInProgress && s.isReferralCodeValidating;
-                  final isValid = s is SignUpInProgress ? s.isReferralCodeValid : null;
-                  final hasCode = s is SignUpInProgress && s.referralCode.trim().isNotEmpty;
+                  final isValidating =
+                      s is SignUpInProgress && s.isReferralCodeValidating;
+                  final isValid =
+                      s is SignUpInProgress ? s.isReferralCodeValid : null;
+                  final hasCode =
+                      s is SignUpInProgress && s.referralCode.trim().isNotEmpty;
 
                   Widget? suffixIcon;
                   if (isValidating) {
                     suffixIcon = LazerVaultLoader.small();
                   } else if (hasCode && isValid == true) {
-                    suffixIcon = const Icon(Icons.check_circle, color: Color(0xFF10B981));
+                    suffixIcon = const Icon(Icons.check_circle,
+                        color: Color(0xFF10B981));
                   } else if (hasCode && isValid == false) {
-                    suffixIcon = const Icon(Icons.cancel, color: Color(0xFFEF4444));
+                    suffixIcon =
+                        const Icon(Icons.cancel, color: Color(0xFFEF4444));
                   }
 
                   return BuildFormField(
                     name: "referralCode",
                     placeholder: "Referral Code (optional)",
-                    prefixIcon: const Icon(Icons.card_giftcard, color: Colors.black45),
+                    prefixIcon:
+                        const Icon(Icons.card_giftcard, color: Colors.black45),
                     suffixIcon: suffixIcon,
                     textCapitalization: TextCapitalization.characters,
-                    onChanged: (value) => context.read<AuthenticationCubit>().signUpReferralCodeChanged(value.toUpperCase()),
+                    onChanged: (value) => context
+                        .read<AuthenticationCubit>()
+                        .signUpReferralCodeChanged(value.toUpperCase()),
                   );
                 },
               ),
@@ -1368,7 +1432,8 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
               keyboardType: TextInputType.emailAddress,
               prefixIcon: const Icon(Icons.email, color: Colors.black45),
               initialValue: email,
-              onChanged: (value) => context.read<AuthenticationCubit>().signUpEmailChanged(value),
+              onChanged: (value) =>
+                  context.read<AuthenticationCubit>().signUpEmailChanged(value),
             ),
             SizedBox(height: 16.0.h),
             // Implicit legal consent at the point of account creation (this is

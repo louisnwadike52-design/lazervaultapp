@@ -8,7 +8,6 @@ import '../data/errors/banking_errors.dart';
 import '../../move_money/domain/entities/mandate_entity.dart';
 part 'open_banking_state_widgets.dart';
 
-
 /// Error state with detailed error information
 class OpenBankingError extends OpenBankingState {
   final String message;
@@ -65,7 +64,8 @@ class OpenBankingError extends OpenBankingState {
       AccountFrozenException() => BankingErrorType.accountIssue,
       UnauthorizedException() => BankingErrorType.unauthorized,
       NeedsMandateException() => BankingErrorType.needsMandate,
-      ReauthorizationRequiredException() => BankingErrorType.reauthorizationRequired,
+      ReauthorizationRequiredException() =>
+        BankingErrorType.reauthorizationRequired,
       _ => BankingErrorType.general,
     };
   }

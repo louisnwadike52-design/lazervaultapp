@@ -36,7 +36,8 @@ abstract class DataBundlesRepository {
     required String subscriptionId,
   });
 
-  Future<Either<Failure, List<Map<String, dynamic>>>> getAutoRenewSubscriptions({
+  Future<Either<Failure, List<Map<String, dynamic>>>>
+      getAutoRenewSubscriptions({
     int limit = 50,
     int offset = 0,
   });

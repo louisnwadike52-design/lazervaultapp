@@ -27,7 +27,6 @@ import '../../../../../core/services/locale_manager.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 
-
 /// Main carousel controller for crowdfund creation
 ///
 /// Manages 6-screen flow with PageView, progress indicators, and validation
@@ -184,7 +183,8 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
   /// Build currencies list with user's currency first for easy selection
   List<String> _buildCurrenciesList(String userCurrency) {
     final commonCurrencies = ['GBP', 'USD', 'EUR'];
-    final uniqueCurrencies = <String>{...commonCurrencies, userCurrency}.toList();
+    final uniqueCurrencies =
+        <String>{...commonCurrencies, userCurrency}.toList();
     // Sort so user's currency is first, then alphabetically
     uniqueCurrencies.sort((a, b) {
       if (a == userCurrency) return -1;
@@ -284,7 +284,8 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
       _showErrorSnackBar('Please enter target amount');
       return false;
     }
-    final amount = double.tryParse(_targetAmountController.text.trim().replaceAll(',', ''));
+    final amount = double.tryParse(
+        _targetAmountController.text.trim().replaceAll(',', ''));
     if (amount == null || amount <= 0) {
       _showErrorSnackBar('Invalid amount');
       return false;
@@ -314,8 +315,11 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
       _isProcessing = true;
     });
 
-    developer.log('CreateCrowdfund: Starting creation process', name: 'Crowdfund');
-    developer.log('User authenticated: ${authState.profile.user.username ?? 'unknown'}', name: 'Crowdfund');
+    developer.log('CreateCrowdfund: Starting creation process',
+        name: 'Crowdfund');
+    developer.log(
+        'User authenticated: ${authState.profile.user.username ?? 'unknown'}',
+        name: 'Crowdfund');
 
     // Resolve the final image URL.
     //   1. If the user picked a local file: upload now. The server
@@ -355,7 +359,9 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
           title: _titleController.text.trim(),
           description: _descriptionController.text.trim(),
           story: _storyController.text.trim(),
-          targetAmount: double.tryParse(_targetAmountController.text.trim().replaceAll(',', '')) ?? 0,
+          targetAmount: double.tryParse(
+                  _targetAmountController.text.trim().replaceAll(',', '')) ??
+              0,
           currency: _selectedCurrency,
           deadline: _selectedDeadline,
           category: _selectedCategory,
@@ -433,7 +439,8 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
         backgroundColor: const Color(0xFF1F1F1F),
         title: Text(
           'Discard campaign?',
-          style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w700),
+          style: GoogleFonts.inter(
+              color: Colors.white, fontWeight: FontWeight.w700),
         ),
         content: Text(
           'Your draft will be lost. Are you sure?',
@@ -443,12 +450,16 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
             child: Text('Keep editing',
-                style: GoogleFonts.inter(color: PayFlowTheme.accentOnDark, fontWeight: FontWeight.w600)),
+                style: GoogleFonts.inter(
+                    color: PayFlowTheme.accentOnDark,
+                    fontWeight: FontWeight.w600)),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             child: Text('Discard',
-                style: GoogleFonts.inter(color: const Color(0xFFEF4444), fontWeight: FontWeight.w600)),
+                style: GoogleFonts.inter(
+                    color: const Color(0xFFEF4444),
+                    fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -495,85 +506,85 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
           backgroundColor: const Color(0xFF0A0A0A),
           appBar: _buildAppBar(),
           body: Column(
-          children: [
-            _buildProgressIndicators(),
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                onPageChanged: (page) {
-                  setState(() => _currentPage = page);
-                },
-                children: [
-                  BasicInfoStep(
-                    titleController: _titleController,
-                    descriptionController: _descriptionController,
-                  ),
-                  FundingGoalStep(
-                    targetAmountController: _targetAmountController,
-                    selectedCurrency: _selectedCurrency,
-                    currencies: _currencies,
-                    onCurrencyChanged: (value) {
-                      setState(() {
-                        _selectedCurrency = value;
-                      });
-                    },
-                  ),
-                  StoryMediaStep(
-                    storyController: _storyController,
-                    imageUrlController: _imageUrlController,
-                    onLocalFilePicked: (file) {
-                      setState(() {
-                        _pickedImageFile = file;
-                      });
-                    },
-                    onImageUrlChanged: (_) {
-                      setState(() {
-                        // URL paste path: clear any picked file so
-                        // _proceedToCreateCrowdfund takes the URL
-                        // straight through.
-                        _pickedImageFile = null;
-                      });
-                    },
-                  ),
-                  CategoryDeadlineStep(
-                    selectedCategory: _selectedCategory,
-                    categories: _categories,
-                    selectedDeadline: _selectedDeadline,
-                    // Tapping a built-in / custom chip just selects;
-                    // tapping the "Other" sentinel opens the
-                    // add-custom bottom sheet. Both paths flow through
-                    // _onCategoryTapped so the step widget stays
-                    // dumb about the distinction.
-                    onCategoryChanged: _onCategoryTapped,
-                    onDeadlineChanged: (date) {
-                      setState(() {
-                        _selectedDeadline = date;
-                      });
-                    },
-                  ),
-                  SocialLinksStep(
-                    socialLinks: _socialLinks,
-                    onLinksChanged: (links) {
-                      setState(() {
-                        _socialLinks = links;
-                      });
-                    },
-                  ),
-                  ReviewStep(
-                    title: _titleController.text,
-                    description: _descriptionController.text,
-                    story: _storyController.text,
-                    targetAmount: _targetAmountController.text,
-                    currency: _selectedCurrency,
-                    category: _selectedCategory,
-                    deadline: _selectedDeadline,
-                    imageUrl: _imageUrlController.text,
-                    socialLinks: _socialLinks,
-                  ),
-                ],
+            children: [
+              _buildProgressIndicators(),
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  onPageChanged: (page) {
+                    setState(() => _currentPage = page);
+                  },
+                  children: [
+                    BasicInfoStep(
+                      titleController: _titleController,
+                      descriptionController: _descriptionController,
+                    ),
+                    FundingGoalStep(
+                      targetAmountController: _targetAmountController,
+                      selectedCurrency: _selectedCurrency,
+                      currencies: _currencies,
+                      onCurrencyChanged: (value) {
+                        setState(() {
+                          _selectedCurrency = value;
+                        });
+                      },
+                    ),
+                    StoryMediaStep(
+                      storyController: _storyController,
+                      imageUrlController: _imageUrlController,
+                      onLocalFilePicked: (file) {
+                        setState(() {
+                          _pickedImageFile = file;
+                        });
+                      },
+                      onImageUrlChanged: (_) {
+                        setState(() {
+                          // URL paste path: clear any picked file so
+                          // _proceedToCreateCrowdfund takes the URL
+                          // straight through.
+                          _pickedImageFile = null;
+                        });
+                      },
+                    ),
+                    CategoryDeadlineStep(
+                      selectedCategory: _selectedCategory,
+                      categories: _categories,
+                      selectedDeadline: _selectedDeadline,
+                      // Tapping a built-in / custom chip just selects;
+                      // tapping the "Other" sentinel opens the
+                      // add-custom bottom sheet. Both paths flow through
+                      // _onCategoryTapped so the step widget stays
+                      // dumb about the distinction.
+                      onCategoryChanged: _onCategoryTapped,
+                      onDeadlineChanged: (date) {
+                        setState(() {
+                          _selectedDeadline = date;
+                        });
+                      },
+                    ),
+                    SocialLinksStep(
+                      socialLinks: _socialLinks,
+                      onLinksChanged: (links) {
+                        setState(() {
+                          _socialLinks = links;
+                        });
+                      },
+                    ),
+                    ReviewStep(
+                      title: _titleController.text,
+                      description: _descriptionController.text,
+                      story: _storyController.text,
+                      targetAmount: _targetAmountController.text,
+                      currency: _selectedCurrency,
+                      category: _selectedCategory,
+                      deadline: _selectedDeadline,
+                      imageUrl: _imageUrlController.text,
+                      socialLinks: _socialLinks,
+                    ),
+                  ],
+                ),
               ),
-            ),
               _buildNavigationButtons(),
             ],
           ),
@@ -657,7 +668,10 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
                   gradient: LinearGradient(
                     colors: _currentPage == _totalPages - 1
                         ? [Colors.green, Colors.green.shade700]
-                        : [const Color(0xFF4E03D0), const Color.fromARGB(255, 78, 3, 208)],
+                        : [
+                            const Color(0xFF4E03D0),
+                            const Color.fromARGB(255, 78, 3, 208)
+                          ],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
@@ -731,7 +745,10 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
+                      colors: [
+                        Color(0xFF4E03D0),
+                        Color.fromARGB(255, 78, 3, 208)
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),

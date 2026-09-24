@@ -53,20 +53,23 @@ class CrosshairPainter extends CustomPainter {
     );
 
     // Calculate price at crosshair position
-    final priceAtPosition = chartMaxPrice - ((position.dy - chartTop) / chartHeight) * chartPriceRange;
-    
+    final priceAtPosition = chartMaxPrice -
+        ((position.dy - chartTop) / chartHeight) * chartPriceRange;
+
     // Calculate time index at crosshair position
-    final indexAtPosition = ((position.dx - chartLeft) / chartWidth * (priceHistory.length - 1)).round();
-    
+    final indexAtPosition =
+        ((position.dx - chartLeft) / chartWidth * (priceHistory.length - 1))
+            .round();
+
     if (indexAtPosition >= 0 && indexAtPosition < priceHistory.length) {
       final priceData = priceHistory[indexAtPosition];
-      
+
       // Draw price label
       _drawPriceLabel(canvas, size, position.dy, priceAtPosition);
-      
+
       // Draw time label
       _drawTimeLabel(canvas, size, position.dx, priceData.timestamp);
-      
+
       // Draw OHLC info box
       _drawOHLCInfo(canvas, size, position, priceData);
     }
@@ -93,7 +96,8 @@ class CrosshairPainter extends CustomPainter {
     // Background
     final bgPaint = Paint()..color = Colors.black.withValues(alpha: 0.8);
     canvas.drawRect(
-      Rect.fromLTWH(labelX - 4, labelY - 2, textPainter.width + 8, textPainter.height + 4),
+      Rect.fromLTWH(labelX - 4, labelY - 2, textPainter.width + 8,
+          textPainter.height + 4),
       bgPaint,
     );
 
@@ -103,7 +107,8 @@ class CrosshairPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
     canvas.drawRect(
-      Rect.fromLTWH(labelX - 4, labelY - 2, textPainter.width + 8, textPainter.height + 4),
+      Rect.fromLTWH(labelX - 4, labelY - 2, textPainter.width + 8,
+          textPainter.height + 4),
       borderPaint,
     );
 
@@ -111,8 +116,9 @@ class CrosshairPainter extends CustomPainter {
   }
 
   void _drawTimeLabel(Canvas canvas, Size size, double x, DateTime time) {
-    final timeText = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-    
+    final timeText =
+        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+
     final textPainter = TextPainter(
       text: TextSpan(
         text: timeText,
@@ -133,7 +139,8 @@ class CrosshairPainter extends CustomPainter {
     // Background
     final bgPaint = Paint()..color = Colors.black.withValues(alpha: 0.8);
     canvas.drawRect(
-      Rect.fromLTWH(labelX - 4, labelY - 2, textPainter.width + 8, textPainter.height + 4),
+      Rect.fromLTWH(labelX - 4, labelY - 2, textPainter.width + 8,
+          textPainter.height + 4),
       bgPaint,
     );
 
@@ -143,14 +150,16 @@ class CrosshairPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
     canvas.drawRect(
-      Rect.fromLTWH(labelX - 4, labelY - 2, textPainter.width + 8, textPainter.height + 4),
+      Rect.fromLTWH(labelX - 4, labelY - 2, textPainter.width + 8,
+          textPainter.height + 4),
       borderPaint,
     );
 
     textPainter.paint(canvas, Offset(labelX, labelY));
   }
 
-  void _drawOHLCInfo(Canvas canvas, Size size, Offset position, StockPrice priceData) {
+  void _drawOHLCInfo(
+      Canvas canvas, Size size, Offset position, StockPrice priceData) {
     final infoText = '''O: ${priceData.open.toStringAsFixed(2)}
 H: ${priceData.high.toStringAsFixed(2)}
 L: ${priceData.low.toStringAsFixed(2)}
@@ -187,7 +196,8 @@ V: ${_formatVolume(priceData.volume)}''';
     final bgPaint = Paint()..color = Colors.black.withValues(alpha: 0.9);
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(infoX - 8, infoY - 4, textPainter.width + 16, textPainter.height + 8),
+        Rect.fromLTWH(infoX - 8, infoY - 4, textPainter.width + 16,
+            textPainter.height + 8),
         Radius.circular(4),
       ),
       bgPaint,
@@ -200,7 +210,8 @@ V: ${_formatVolume(priceData.volume)}''';
       ..strokeWidth = 1.0;
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(infoX - 8, infoY - 4, textPainter.width + 16, textPainter.height + 8),
+        Rect.fromLTWH(infoX - 8, infoY - 4, textPainter.width + 16,
+            textPainter.height + 8),
         Radius.circular(4),
       ),
       borderPaint,
@@ -223,4 +234,4 @@ V: ${_formatVolume(priceData.volume)}''';
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-} 
+}

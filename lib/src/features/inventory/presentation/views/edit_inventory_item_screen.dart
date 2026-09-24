@@ -63,9 +63,8 @@ class _EditInventoryItemScreenState extends State<EditInventoryItemScreen> {
       text: item.minimumStockLevel.toString(),
     );
     _notesController = TextEditingController(text: item.notes);
-    _selectedCategory = _categories.contains(item.category)
-        ? item.category
-        : 'Other';
+    _selectedCategory =
+        _categories.contains(item.category) ? item.category : 'Other';
     _selectedStatus = item.status;
   }
 
@@ -88,8 +87,7 @@ class _EditInventoryItemScreenState extends State<EditInventoryItemScreen> {
     final unitPriceNaira =
         double.tryParse(_unitPriceController.text.replaceAll(',', '')) ?? 0.0;
     final unitPriceKobo = (unitPriceNaira * 100).toInt();
-    final minimumStock =
-        int.tryParse(_minimumStockController.text.trim()) ?? 0;
+    final minimumStock = int.tryParse(_minimumStockController.text.trim()) ?? 0;
 
     context.read<InventoryCubit>().updateItem(
           itemId: widget.item.id,
@@ -346,8 +344,7 @@ class _EditInventoryItemScreenState extends State<EditInventoryItemScreen> {
                                       color: isSelected
                                           ? color.withValues(alpha: 0.15)
                                           : const Color(0xFF1F1F1F),
-                                      borderRadius:
-                                          BorderRadius.circular(10.r),
+                                      borderRadius: BorderRadius.circular(10.r),
                                       border: Border.all(
                                         color: isSelected
                                             ? color
@@ -442,8 +439,7 @@ class _EditInventoryItemScreenState extends State<EditInventoryItemScreen> {
               color: const Color(0xFF6B7280),
               fontSize: 15.sp,
             ),
-            prefixIcon:
-                Icon(icon, color: const Color(0xFF9CA3AF), size: 20.sp),
+            prefixIcon: Icon(icon, color: const Color(0xFF9CA3AF), size: 20.sp),
             filled: true,
             fillColor: const Color(0xFF1F1F1F),
             border: OutlineInputBorder(

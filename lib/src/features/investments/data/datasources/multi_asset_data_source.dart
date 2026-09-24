@@ -26,7 +26,8 @@ abstract class IMultiAssetDataSource {
     String? idempotencyKey,
   });
   Future<List<CommissionTier>> getCommissionRates();
-  Future<List<IncomeEvent>> getIncomeHistory({String? incomeType, int limit = 50});
+  Future<List<IncomeEvent>> getIncomeHistory(
+      {String? incomeType, int limit = 50});
   Future<double> getTotalIncome();
   Future<List<TreasuryBill>> getTreasuryBills();
   Future<Map<String, dynamic>> buyTreasuryBill(
@@ -75,7 +76,8 @@ class MultiAssetDataSourceImpl implements IMultiAssetDataSource {
     params['limit'] = limit.toString();
     params['offset'] = offset.toString();
 
-    final uri = Uri.parse('$_baseUrl/api/v1/investments/assets').replace(queryParameters: params);
+    final uri = Uri.parse('$_baseUrl/api/v1/investments/assets')
+        .replace(queryParameters: params);
     final response = await _client.get(uri, headers: await _headers);
     _checkResponse(response);
 
@@ -112,7 +114,8 @@ class MultiAssetDataSourceImpl implements IMultiAssetDataSource {
   @override
   Future<FXRate> getFXRate(String fromCurrency, String toCurrency) async {
     final response = await _client.get(
-      Uri.parse('$_baseUrl/api/v1/investments/fx/rate?from_currency=$fromCurrency&to_currency=$toCurrency'),
+      Uri.parse(
+          '$_baseUrl/api/v1/investments/fx/rate?from_currency=$fromCurrency&to_currency=$toCurrency'),
       headers: await _headers,
     );
     _checkResponse(response);
@@ -162,11 +165,13 @@ class MultiAssetDataSourceImpl implements IMultiAssetDataSource {
   }
 
   @override
-  Future<List<IncomeEvent>> getIncomeHistory({String? incomeType, int limit = 50}) async {
+  Future<List<IncomeEvent>> getIncomeHistory(
+      {String? incomeType, int limit = 50}) async {
     final params = <String, String>{'limit': limit.toString()};
     if (incomeType != null) params['income_type'] = incomeType;
 
-    final uri = Uri.parse('$_baseUrl/api/v1/investments/income').replace(queryParameters: params);
+    final uri = Uri.parse('$_baseUrl/api/v1/investments/income')
+        .replace(queryParameters: params);
     final response = await _client.get(uri, headers: await _headers);
     _checkResponse(response);
 

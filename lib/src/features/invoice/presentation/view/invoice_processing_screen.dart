@@ -13,7 +13,6 @@ import '../../../../../core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'invoice_processing_screen_widgets.dart';
 
-
 class InvoiceProcessingScreen extends StatefulWidget {
   final Invoice invoice;
 
@@ -39,16 +38,26 @@ class _InvoiceProcessingScreenState extends State<InvoiceProcessingScreen>
 
   String _symbolFor(String currency) {
     switch (currency.toUpperCase()) {
-      case 'NGN': return '₦';
-      case 'GBP': return '£';
-      case 'EUR': return '€';
-      case 'ZAR': return 'R';
-      case 'CAD': return 'C\$';
-      case 'AUD': return 'A\$';
-      case 'INR': return '₹';
-      case 'JPY': return '¥';
-      case 'USD': return '\$';
-      default: return '₦';
+      case 'NGN':
+        return '₦';
+      case 'GBP':
+        return '£';
+      case 'EUR':
+        return '€';
+      case 'ZAR':
+        return 'R';
+      case 'CAD':
+        return 'C\$';
+      case 'AUD':
+        return 'A\$';
+      case 'INR':
+        return '₹';
+      case 'JPY':
+        return '¥';
+      case 'USD':
+        return '\$';
+      default:
+        return '₦';
     }
   }
 
@@ -99,7 +108,8 @@ class _InvoiceProcessingScreenState extends State<InvoiceProcessingScreen>
 
   Future<void> _loadFeeQuote() async {
     try {
-      final quote = await serviceLocator<InvoiceRepository>().getServiceFeeQuote();
+      final quote =
+          await serviceLocator<InvoiceRepository>().getServiceFeeQuote();
       if (mounted) setState(() => _feeQuote = quote);
     } catch (_) {}
   }
@@ -153,8 +163,7 @@ class _InvoiceProcessingScreenState extends State<InvoiceProcessingScreen>
 
     _timers.add(Timer(const Duration(milliseconds: 4000), () {
       if (mounted && !_isCompleted) {
-        _updateStatus(
-            InvoiceProcessingStatus.completed, 'Payment successful!');
+        _updateStatus(InvoiceProcessingStatus.completed, 'Payment successful!');
         _completePayment();
       }
     }));
@@ -245,9 +254,7 @@ class _InvoiceProcessingScreenState extends State<InvoiceProcessingScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _isCompleted
-                      ? 'Payment Complete!'
-                      : 'Processing Payment...',
+                  _isCompleted ? 'Payment Complete!' : 'Processing Payment...',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 20.sp,
@@ -467,8 +474,7 @@ class _InvoiceProcessingScreenState extends State<InvoiceProcessingScreen>
               ],
             ),
           ),
-          if (isCurrent && !_isCompleted)
-            LazerVaultLoader.tiny(),
+          if (isCurrent && !_isCompleted) LazerVaultLoader.tiny(),
         ],
       ),
     );

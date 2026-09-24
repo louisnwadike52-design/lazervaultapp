@@ -41,15 +41,24 @@ void main() {
 
     // Three push-to-talk modes that read identically would put us straight back
     // where we started, so assert they are actually distinguishable.
-    test('the three push-to-talk modes are distinguishable from each other', () {
+    test('the three push-to-talk modes are distinguishable from each other',
+        () {
       final idle = {
-        for (final m in [VoiceTalkMode.hold, VoiceTalkMode.tap, VoiceTalkMode.doubleTap])
+        for (final m in [
+          VoiceTalkMode.hold,
+          VoiceTalkMode.tap,
+          VoiceTalkMode.doubleTap
+        ])
           VoiceTalkMode.action(m, capturing: false)
       };
       expect(idle.length, 3, reason: 'each gesture needs its own wording');
 
       final busy = {
-        for (final m in [VoiceTalkMode.hold, VoiceTalkMode.tap, VoiceTalkMode.doubleTap])
+        for (final m in [
+          VoiceTalkMode.hold,
+          VoiceTalkMode.tap,
+          VoiceTalkMode.doubleTap
+        ])
           VoiceTalkMode.action(m, capturing: true)
       };
       expect(busy.length, 3);
@@ -57,7 +66,11 @@ void main() {
 
     test('continuous has no gesture to perform', () {
       expect(VoiceTalkMode.isPushToTalk(VoiceTalkMode.continuous), isFalse);
-      for (final m in [VoiceTalkMode.hold, VoiceTalkMode.tap, VoiceTalkMode.doubleTap]) {
+      for (final m in [
+        VoiceTalkMode.hold,
+        VoiceTalkMode.tap,
+        VoiceTalkMode.doubleTap
+      ]) {
         expect(VoiceTalkMode.isPushToTalk(m), isTrue);
       }
       // It must not instruct a tap on a mode where tapping does nothing.
@@ -68,7 +81,8 @@ void main() {
     // An unknown value from the server must not render a blank control.
     test('an unrecognised mode falls back to continuous copy', () {
       expect(VoiceTalkMode.label('something_new'), isNotEmpty);
-      expect(VoiceTalkMode.action('something_new', capturing: false), isNotEmpty);
+      expect(
+          VoiceTalkMode.action('something_new', capturing: false), isNotEmpty);
       expect(VoiceTalkMode.explanation('something_new'), isNotEmpty);
     });
   });

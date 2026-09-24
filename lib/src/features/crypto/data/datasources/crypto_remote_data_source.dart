@@ -12,7 +12,8 @@ abstract class CryptoRemoteDataSource {
   Future<List<CryptoModel>> getCryptos({int page = 1, int perPage = 100});
   Future<CryptoModel> getCryptoById(String id);
   Future<List<CryptoModel>> searchCryptos(String query);
-  Future<List<PricePoint>> getCryptoPriceHistory(String id, {String range = '7d'});
+  Future<List<PricePoint>> getCryptoPriceHistory(String id,
+      {String range = '7d'});
   Future<List<CryptoModel>> getTrendingCryptos();
   Future<List<CryptoModel>> getTopCryptos();
   Future<GlobalMarketData> getGlobalMarketData();
@@ -32,15 +33,18 @@ class CryptoRemoteDataSourceImpl implements CryptoRemoteDataSource {
   String get _userCurrency => localeManager.currentCurrency.toLowerCase();
 
   @override
-  Future<List<CryptoModel>> getCryptos({int page = 1, int perPage = 100}) async {
+  Future<List<CryptoModel>> getCryptos(
+      {int page = 1, int perPage = 100}) async {
     return _retryExecutor.execute(
-      () => grpcClient.getCryptos(
-        page: page,
-        perPage: perPage,
-        vsCurrency: _userCurrency,
-      ).then((response) => response.cryptos
-          .map((crypto) => _convertProtoToCryptoModel(crypto))
-          .toList()),
+      () => grpcClient
+          .getCryptos(
+            page: page,
+            perPage: perPage,
+            vsCurrency: _userCurrency,
+          )
+          .then((response) => response.cryptos
+              .map((crypto) => _convertProtoToCryptoModel(crypto))
+              .toList()),
       operationName: 'getCryptos',
     );
   }
@@ -48,7 +52,8 @@ class CryptoRemoteDataSourceImpl implements CryptoRemoteDataSource {
   @override
   Future<CryptoModel> getCryptoById(String id) async {
     return _retryExecutor.execute(
-      () => grpcClient.getCryptoById(id, vsCurrency: _userCurrency)
+      () => grpcClient
+          .getCryptoById(id, vsCurrency: _userCurrency)
           .then((response) => _convertProtoToCryptoModel(response.crypto)),
       operationName: 'getCryptoById',
     );
@@ -57,8 +62,7 @@ class CryptoRemoteDataSourceImpl implements CryptoRemoteDataSource {
   @override
   Future<List<CryptoModel>> searchCryptos(String query) async {
     return _retryExecutor.execute(
-      () => grpcClient.searchCryptos(query)
-          .then((response) => response.cryptos
+      () => grpcClient.searchCryptos(query).then((response) => response.cryptos
           .map((crypto) => _convertProtoToCryptoModel(crypto))
           .toList()),
       operationName: 'searchCryptos',
@@ -67,20 +71,22 @@ class CryptoRemoteDataSourceImpl implements CryptoRemoteDataSource {
   }
 
   @override
-  Future<List<PricePoint>> getCryptoPriceHistory(String id, {String range = '7d'}) async {
+  Future<List<PricePoint>> getCryptoPriceHistory(String id,
+      {String range = '7d'}) async {
     return _retryExecutor.execute(
-      () => grpcClient.getCryptoPriceHistory(id, range: range, vsCurrency: _userCurrency)
+      () => grpcClient
+          .getCryptoPriceHistory(id, range: range, vsCurrency: _userCurrency)
           .then((response) => response.priceHistory
-          .map((point) => PricePoint(
-                timestamp: point.timestamp.toDateTime(),
-                price: point.price,
-                volume: point.volume,
-                open: point.open,
-                high: point.high,
-                low: point.low,
-                close: point.close,
-              ))
-          .toList()),
+              .map((point) => PricePoint(
+                    timestamp: point.timestamp.toDateTime(),
+                    price: point.price,
+                    volume: point.volume,
+                    open: point.open,
+                    high: point.high,
+                    low: point.low,
+                    close: point.close,
+                  ))
+              .toList()),
       operationName: 'getCryptoPriceHistory',
       config: RetryConfig.network, // Price history may take time
     );
@@ -89,8 +95,8 @@ class CryptoRemoteDataSourceImpl implements CryptoRemoteDataSource {
   @override
   Future<List<CryptoModel>> getTrendingCryptos() async {
     return _retryExecutor.execute(
-      () => grpcClient.getTrendingCryptos(limit: 5)
-          .then((response) => response.cryptos
+      () => grpcClient.getTrendingCryptos(limit: 5).then((response) => response
+          .cryptos
           .map((crypto) => _convertProtoToCryptoModel(crypto))
           .toList()),
       operationName: 'getTrendingCryptos',
@@ -100,10 +106,11 @@ class CryptoRemoteDataSourceImpl implements CryptoRemoteDataSource {
   @override
   Future<List<CryptoModel>> getTopCryptos() async {
     return _retryExecutor.execute(
-      () => grpcClient.getTopCryptos(limit: 100, vsCurrency: _userCurrency)
+      () => grpcClient
+          .getTopCryptos(limit: 100, vsCurrency: _userCurrency)
           .then((response) => response.cryptos
-          .map((crypto) => _convertProtoToCryptoModel(crypto))
-          .toList()),
+              .map((crypto) => _convertProtoToCryptoModel(crypto))
+              .toList()),
       operationName: 'getTopCryptos',
     );
   }
@@ -134,7 +141,8 @@ class CryptoRemoteDataSourceImpl implements CryptoRemoteDataSource {
         error: e,
       );
       final exception = e is Exception ? e : Exception(e.toString());
-      throw Exception(CryptoErrorMessages.translate(exception, operation: 'get global market data'));
+      throw Exception(CryptoErrorMessages.translate(exception,
+          operation: 'get global market data'));
     }
   }
 
@@ -168,7 +176,9 @@ class CryptoRemoteDataSourceImpl implements CryptoRemoteDataSource {
       atl: proto.atl,
       atlChangePercentage: proto.atlChangePercentage,
       atlDate: proto.hasAtlDate() ? proto.atlDate.toDateTime() : null,
-      lastUpdated: proto.hasLastUpdated() ? proto.lastUpdated.toDateTime() : DateTime.now(),
+      lastUpdated: proto.hasLastUpdated()
+          ? proto.lastUpdated.toDateTime()
+          : DateTime.now(),
       priceHistory: proto.priceHistory
           .map((point) => PricePoint(
                 timestamp: point.timestamp.toDateTime(),

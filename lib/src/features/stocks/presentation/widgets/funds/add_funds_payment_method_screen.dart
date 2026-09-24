@@ -17,43 +17,45 @@ class AddFundsPaymentMethodScreen extends StatefulWidget {
   });
 
   @override
-  State<AddFundsPaymentMethodScreen> createState() => _AddFundsPaymentMethodScreenState();
+  State<AddFundsPaymentMethodScreen> createState() =>
+      _AddFundsPaymentMethodScreenState();
 }
 
-class _AddFundsPaymentMethodScreenState extends State<AddFundsPaymentMethodScreen> {
+class _AddFundsPaymentMethodScreenState
+    extends State<AddFundsPaymentMethodScreen> {
   late String _selectedMethod;
   final Map<String, String> _paymentDetails = {};
 
   List<Map<String, dynamic>> get _paymentMethods => [
-    {
-      'name': 'Bank Transfer',
-      'icon': Icons.account_balance,
-      'description': 'Transfer from your linked bank account',
-      'processingTime': '1-3 business days',
-      'fee': 'Free',
-    },
-    {
-      'name': 'Debit Card',
-      'icon': Icons.credit_card,
-      'description': 'Instant deposit with your debit card',
-      'processingTime': 'Instant',
-      'fee': '1.5% fee',
-    },
-    {
-      'name': 'Wire Transfer',
-      'icon': Icons.payment,
-      'description': 'Direct wire transfer to your account',
-      'processingTime': '1-2 business days',
-      'fee': '${CurrencySymbols.getSymbol(widget.currency)}15 fee',
-    },
-    {
-      'name': 'Apple Pay',
-      'icon': Icons.apple,
-      'description': 'Quick deposit using Apple Pay',
-      'processingTime': 'Instant',
-      'fee': '2% fee',
-    },
-  ];
+        {
+          'name': 'Bank Transfer',
+          'icon': Icons.account_balance,
+          'description': 'Transfer from your linked bank account',
+          'processingTime': '1-3 business days',
+          'fee': 'Free',
+        },
+        {
+          'name': 'Debit Card',
+          'icon': Icons.credit_card,
+          'description': 'Instant deposit with your debit card',
+          'processingTime': 'Instant',
+          'fee': '1.5% fee',
+        },
+        {
+          'name': 'Wire Transfer',
+          'icon': Icons.payment,
+          'description': 'Direct wire transfer to your account',
+          'processingTime': '1-2 business days',
+          'fee': '${CurrencySymbols.getSymbol(widget.currency)}15 fee',
+        },
+        {
+          'name': 'Apple Pay',
+          'icon': Icons.apple,
+          'description': 'Quick deposit using Apple Pay',
+          'processingTime': 'Instant',
+          'fee': '2% fee',
+        },
+      ];
 
   @override
   void initState() {
@@ -105,7 +107,8 @@ class _AddFundsPaymentMethodScreenState extends State<AddFundsPaymentMethodScree
                   colors: isSelected
                       ? [
                           const Color(0xFF6366F1).withValues(alpha: 0.3),
-                          const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
+                          const Color.fromARGB(255, 78, 3, 208)
+                              .withValues(alpha: 0.3),
                         ]
                       : [
                           const Color(0xFF2A2A3E).withValues(alpha: 0.8),
@@ -139,7 +142,9 @@ class _AddFundsPaymentMethodScreenState extends State<AddFundsPaymentMethodScree
                           ),
                           child: Icon(
                             method['icon'],
-                            color: isSelected ? const Color(0xFF6366F1) : Colors.grey[400],
+                            color: isSelected
+                                ? const Color(0xFF6366F1)
+                                : Colors.grey[400],
                             size: 24.sp,
                           ),
                         ),
@@ -167,7 +172,8 @@ class _AddFundsPaymentMethodScreenState extends State<AddFundsPaymentMethodScree
                                     decoration: BoxDecoration(
                                       color: method['fee'] == 'Free'
                                           ? Colors.green.withValues(alpha: 0.2)
-                                          : Colors.orange.withValues(alpha: 0.2),
+                                          : Colors.orange
+                                              .withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(8.r),
                                     ),
                                     child: Text(

@@ -130,7 +130,15 @@ class AutoRechargeEntity extends Equatable {
       case RechargeFrequency.daily:
         return 'Every day';
       case RechargeFrequency.weekly:
-        final days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        final days = [
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+          'Sunday'
+        ];
         return 'Every ${dayOfWeek != null && dayOfWeek! >= 1 && dayOfWeek! <= 7 ? days[dayOfWeek! - 1] : "week"}';
       case RechargeFrequency.monthly:
         return 'On day ${dayOfMonth ?? 1} of every month';

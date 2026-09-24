@@ -46,8 +46,8 @@ class _EducationRemindersScreenState extends State<EducationRemindersScreen>
         elevation: 0,
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: Icon(Icons.arrow_back_ios_new,
-              color: Colors.white, size: 20.sp),
+          icon:
+              Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20.sp),
         ),
         title: Text('Education Reminders',
             style: TextStyle(
@@ -152,12 +152,10 @@ class _EducationRemindersScreenState extends State<EducationRemindersScreen>
     final dt = DateTime.tryParse(r.reminderDate)?.toLocal();
     final isDone = r.status.toLowerCase() == 'completed' ||
         r.status.toLowerCase() == 'done';
-    final isPastDue =
-        dt != null && !isDone && dt.isBefore(DateTime.now());
+    final isPastDue = dt != null && !isDone && dt.isBefore(DateTime.now());
     return BillReminderItem(
       title: r.title,
-      description:
-          r.description?.isNotEmpty == true ? r.description : null,
+      description: r.description?.isNotEmpty == true ? r.description : null,
       amount: r.amount,
       reminderDate: dt ?? DateTime.now(),
       status: r.status,

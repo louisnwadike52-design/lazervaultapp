@@ -4,7 +4,6 @@ import '../domain/entities/analyst_ratings.dart';
 import '../domain/entities/stock_event.dart';
 part 'stock_state_widgets.dart';
 
-
 class StockDetailsLoaded extends StockState {
   final Stock stock;
   final List<StockPrice> priceHistory;
@@ -37,5 +36,6 @@ class StockDetailsLoaded extends StockState {
   }
 
   @override
-  List<Object?> get props => [stock, priceHistory, analysis, analystRatings, events];
-} 
+  List<Object?> get props =>
+      [stock, priceHistory, analysis, analystRatings, events];
+}

@@ -55,34 +55,34 @@ class Portfolio extends Equatable {
   int get stockCount => holdings.length;
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'totalValue': totalValue,
-    'totalCost': totalCost,
-    'totalReturn': totalReturn,
-    'totalReturnPercent': totalReturnPercent,
-    'dayChange': dayChange,
-    'dayChangePercent': dayChangePercent,
-    'holdings': holdings.map((h) => h.toJson()).toList(),
-    'lastUpdated': lastUpdated.toIso8601String(),
-    'availableCash': availableCash,
-    'totalInvested': totalInvested,
-  };
+        'id': id,
+        'totalValue': totalValue,
+        'totalCost': totalCost,
+        'totalReturn': totalReturn,
+        'totalReturnPercent': totalReturnPercent,
+        'dayChange': dayChange,
+        'dayChangePercent': dayChangePercent,
+        'holdings': holdings.map((h) => h.toJson()).toList(),
+        'lastUpdated': lastUpdated.toIso8601String(),
+        'availableCash': availableCash,
+        'totalInvested': totalInvested,
+      };
 
   factory Portfolio.fromJson(Map<String, dynamic> json) => Portfolio(
-    id: json['id'] as String,
-    totalValue: (json['totalValue'] as num).toDouble(),
-    totalCost: (json['totalCost'] as num).toDouble(),
-    totalReturn: (json['totalReturn'] as num).toDouble(),
-    totalReturnPercent: (json['totalReturnPercent'] as num).toDouble(),
-    dayChange: (json['dayChange'] as num).toDouble(),
-    dayChangePercent: (json['dayChangePercent'] as num).toDouble(),
-    holdings: (json['holdings'] as List)
-        .map((h) => StockHolding.fromJson(h as Map<String, dynamic>))
-        .toList(),
-    lastUpdated: DateTime.parse(json['lastUpdated'] as String),
-    availableCash: (json['availableCash'] as num).toDouble(),
-    totalInvested: (json['totalInvested'] as num).toDouble(),
-  );
+        id: json['id'] as String,
+        totalValue: (json['totalValue'] as num).toDouble(),
+        totalCost: (json['totalCost'] as num).toDouble(),
+        totalReturn: (json['totalReturn'] as num).toDouble(),
+        totalReturnPercent: (json['totalReturnPercent'] as num).toDouble(),
+        dayChange: (json['dayChange'] as num).toDouble(),
+        dayChangePercent: (json['dayChangePercent'] as num).toDouble(),
+        holdings: (json['holdings'] as List)
+            .map((h) => StockHolding.fromJson(h as Map<String, dynamic>))
+            .toList(),
+        lastUpdated: DateTime.parse(json['lastUpdated'] as String),
+        availableCash: (json['availableCash'] as num).toDouble(),
+        totalInvested: (json['totalInvested'] as num).toDouble(),
+      );
 
   @override
   List<Object?> get props => [
@@ -130,34 +130,34 @@ class StockHolding extends Equatable {
   });
 
   Map<String, dynamic> toJson() => {
-    'symbol': symbol,
-    'name': name,
-    'shares': shares,
-    'averageCost': averageCost,
-    'currentPrice': currentPrice,
-    'totalValue': totalValue,
-    'totalReturn': totalReturn,
-    'totalReturnPercent': totalReturnPercent,
-    'dayChange': dayChange,
-    'dayChangePercent': dayChangePercent,
-    'purchaseDate': purchaseDate.toIso8601String(),
-    'logoUrl': logoUrl,
-  };
+        'symbol': symbol,
+        'name': name,
+        'shares': shares,
+        'averageCost': averageCost,
+        'currentPrice': currentPrice,
+        'totalValue': totalValue,
+        'totalReturn': totalReturn,
+        'totalReturnPercent': totalReturnPercent,
+        'dayChange': dayChange,
+        'dayChangePercent': dayChangePercent,
+        'purchaseDate': purchaseDate.toIso8601String(),
+        'logoUrl': logoUrl,
+      };
 
   factory StockHolding.fromJson(Map<String, dynamic> json) => StockHolding(
-    symbol: json['symbol'] as String,
-    name: json['name'] as String,
-    shares: json['shares'] as int,
-    averageCost: (json['averageCost'] as num).toDouble(),
-    currentPrice: (json['currentPrice'] as num).toDouble(),
-    totalValue: (json['totalValue'] as num).toDouble(),
-    totalReturn: (json['totalReturn'] as num).toDouble(),
-    totalReturnPercent: (json['totalReturnPercent'] as num).toDouble(),
-    dayChange: (json['dayChange'] as num).toDouble(),
-    dayChangePercent: (json['dayChangePercent'] as num).toDouble(),
-    purchaseDate: DateTime.parse(json['purchaseDate'] as String),
-    logoUrl: json['logoUrl'] as String,
-  );
+        symbol: json['symbol'] as String,
+        name: json['name'] as String,
+        shares: json['shares'] as int,
+        averageCost: (json['averageCost'] as num).toDouble(),
+        currentPrice: (json['currentPrice'] as num).toDouble(),
+        totalValue: (json['totalValue'] as num).toDouble(),
+        totalReturn: (json['totalReturn'] as num).toDouble(),
+        totalReturnPercent: (json['totalReturnPercent'] as num).toDouble(),
+        dayChange: (json['dayChange'] as num).toDouble(),
+        dayChangePercent: (json['dayChangePercent'] as num).toDouble(),
+        purchaseDate: DateTime.parse(json['purchaseDate'] as String),
+        logoUrl: json['logoUrl'] as String,
+      );
 
   /// Alias for `shares` — older UIs call this field `quantity`.
   int get quantity => shares;
@@ -349,7 +349,8 @@ class Watchlist extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, name, symbols, createdAt, lastUpdated, isDefault];
+  List<Object?> get props =>
+      [id, name, symbols, createdAt, lastUpdated, isDefault];
 }
 
 class MarketIndex extends Equatable {
@@ -372,7 +373,8 @@ class MarketIndex extends Equatable {
   bool get isPositive => change >= 0;
 
   @override
-  List<Object?> get props => [symbol, name, value, change, changePercent, lastUpdated];
+  List<Object?> get props =>
+      [symbol, name, value, change, changePercent, lastUpdated];
 }
 
 class StockAlert extends Equatable {
@@ -443,7 +445,8 @@ class TradingSession extends Equatable {
     required this.orders,
   });
 
-  double get winRate => totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0;
+  double get winRate =>
+      totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0;
 
   @override
   List<Object?> get props => [
@@ -549,7 +552,8 @@ class SectorPerformance extends Equatable {
   bool get isPositive => change >= 0;
 
   @override
-  List<Object?> get props => [sector, change, changePercent, marketCap, topStocks];
+  List<Object?> get props =>
+      [sector, change, changePercent, marketCap, topStocks];
 }
 
 class OptionContract extends Equatable {

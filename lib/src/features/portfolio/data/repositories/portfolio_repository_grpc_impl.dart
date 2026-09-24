@@ -33,9 +33,8 @@ class PortfolioRepositoryGrpcImpl implements PortfolioRepository {
       final summary = _convertSummary(response.summary);
 
       // Convert proto assets to entities
-      final assets = response.assets
-          .map((pbAsset) => _convertAsset(pbAsset))
-          .toList();
+      final assets =
+          response.assets.map((pbAsset) => _convertAsset(pbAsset)).toList();
 
       return Portfolio(
         summary: summary,
@@ -64,9 +63,7 @@ class PortfolioRepositoryGrpcImpl implements PortfolioRepository {
         throw Exception(response.message);
       }
 
-      return response.assets
-          .map((pbAsset) => _convertAsset(pbAsset))
-          .toList();
+      return response.assets.map((pbAsset) => _convertAsset(pbAsset)).toList();
     } on GrpcError catch (e) {
       throw Exception('Failed to fetch assets by type: ${e.message}');
     } catch (e) {
@@ -100,8 +97,7 @@ class PortfolioRepositoryGrpcImpl implements PortfolioRepository {
   @override
   Future<List<PortfolioHistoryPoint>> getPortfolioHistory(String period) async {
     try {
-      final request = pb.GetPortfolioHistoryRequest()
-        ..period = period;
+      final request = pb.GetPortfolioHistoryRequest()..period = period;
       final options = await callOptionsHelper.withAuth();
 
       final response = await grpcClient.portfolioClient.getPortfolioHistory(

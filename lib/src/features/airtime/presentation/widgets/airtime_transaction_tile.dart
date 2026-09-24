@@ -73,7 +73,8 @@ class AirtimeTransactionTile extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              DateFormat('MMM dd, yyyy \u2022 hh:mm a').format(transaction.createdAt),
+              DateFormat('MMM dd, yyyy \u2022 hh:mm a')
+                  .format(transaction.createdAt),
               style: GoogleFonts.inter(
                 fontSize: 11.sp,
                 color: Colors.white.withValues(alpha: 0.5),
@@ -143,7 +144,8 @@ class AirtimeTransactionTile extends StatelessWidget {
         amount: transaction.amount,
         currencySymbol: transaction.currencySymbol,
         status: transaction.status.name,
-        onTap: onTap ?? () => AirtimeHistoryActionsSheet.show(context, transaction),
+        onTap: onTap ??
+            () => AirtimeHistoryActionsSheet.show(context, transaction),
         trailing: trailing,
       ),
     );

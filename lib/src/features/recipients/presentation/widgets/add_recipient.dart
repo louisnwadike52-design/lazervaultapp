@@ -45,7 +45,6 @@ import 'package:share_plus/share_plus.dart';
 import 'package:lazervault/src/features/referral/domain/usecases/get_my_referral_code_usecase.dart';
 part 'add_recipient_widgets.dart';
 
-
 /// Brand purple used across the add-recipient surface (matches SelectRecipients).
 const Color _kBrandPurple = Color(0xFF4E03D0);
 
@@ -83,7 +82,8 @@ class AddRecipient extends StatefulWidget {
   State<AddRecipient> createState() => _AddRecipientState();
 }
 
-class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver {
+class _AddRecipientState extends State<AddRecipient>
+    with WidgetsBindingObserver {
   AddRecipientMethod _selectedMethod = AddRecipientMethod.bankDetails;
 
   /// When the contact sheet sends the user to system settings (permanently
@@ -95,7 +95,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _accountController = TextEditingController();
   final TextEditingController _sortCodeController = TextEditingController();
-  final TextEditingController _bankController = TextEditingController(text: "Select Bank");
+  final TextEditingController _bankController =
+      TextEditingController(text: "Select Bank");
   final bool _isFavorite = false;
 
   // Username Form Controller
@@ -246,7 +247,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                         Get.back();
                         _handleVerifyAccount();
                       },
-                      child: Text('Retry', style: TextStyle(color: Colors.white)),
+                      child:
+                          Text('Retry', style: TextStyle(color: Colors.white)),
                     )
                   : null,
             );
@@ -292,130 +294,135 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
             return _buildEmbeddedBody(state);
           }
           return Scaffold(
-          backgroundColor: Colors.white,
-          body: Stack(
-            children: [
-              // Top Purple Section with Gradient
-              Container(
-                height: Get.height * 0.35,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color.fromARGB(255, 78, 3, 208),
-                      Color.fromARGB(255, 95, 20, 225),
-                    ],
+            backgroundColor: Colors.white,
+            body: Stack(
+              children: [
+                // Top Purple Section with Gradient
+                Container(
+                  height: Get.height * 0.35,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color.fromARGB(255, 78, 3, 208),
+                        Color.fromARGB(255, 95, 20, 225),
+                      ],
+                    ),
                   ),
-                ),
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-                child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-                      // Header with Back Button
-              Row(
-                children: [
-                          BackNavigator(),
-                          Expanded(
-                            child: Text(
-                              'Add New Recipient',
-                              textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.w600,
-                                letterSpacing: 0.5,
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                  child: SafeArea(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header with Back Button
+                        Row(
+                          children: [
+                            BackNavigator(),
+                            Expanded(
+                              child: Text(
+                                'Add New Recipient',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20.sp,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.5,
+                                ),
                               ),
                             ),
-                          ),
-                          SizedBox(width: 40.w),
-                        ],
-                      ),
-                      SizedBox(height: 24.h),
+                            SizedBox(width: 40.w),
+                          ],
+                        ),
+                        SizedBox(height: 24.h),
 
-                      // Description
-                      Text(
-                        'Choose how you\'d like to add a recipient',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w400,
+                        // Description
+                        Text(
+                          'Choose how you\'d like to add a recipient',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        SizedBox(height: 16.h),
+
+                        // Method Selection Cards
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildMethodCard(
+                                method: AddRecipientMethod.bankDetails,
+                                icon: Icons.account_balance_rounded,
+                                title: 'Bank Details',
+                                isSelected: _selectedMethod ==
+                                    AddRecipientMethod.bankDetails,
+                              ),
+                            ),
+                            SizedBox(width: 12.w),
+                            Expanded(
+                              child: _buildMethodCard(
+                                method: AddRecipientMethod.lazervaultUser,
+                                icon: Icons.person_rounded,
+                                title: 'Lazervault user',
+                                isSelected: _selectedMethod ==
+                                    AddRecipientMethod.lazervaultUser,
+                              ),
+                            ),
+                            SizedBox(width: 12.w),
+                            Expanded(
+                              child: _buildMethodCard(
+                                method: AddRecipientMethod.contacts,
+                                icon: Icons.contacts_rounded,
+                                title: 'Contacts',
+                                isSelected: _selectedMethod ==
+                                    AddRecipientMethod.contacts,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Main Content Section
+                Container(
+                  margin: EdgeInsets.only(top: Get.height * 0.30),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(32)),
+                  ),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: EdgeInsets.all(24.w),
+                          child: _swipeableMethodContent(),
                         ),
                       ),
-                      SizedBox(height: 16.h),
 
-                      // Method Selection Cards
-                      Row(
-                            children: [
-                          Expanded(
-                            child: _buildMethodCard(
-                              method: AddRecipientMethod.bankDetails,
-                              icon: Icons.account_balance_rounded,
-                              title: 'Bank Details',
-                              isSelected: _selectedMethod == AddRecipientMethod.bankDetails,
-                            ),
+                      // Bottom Action Button
+                      Container(
+                        padding: EdgeInsets.all(24.w),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border(
+                            top: BorderSide(color: Colors.grey[100]!, width: 1),
                           ),
-                          SizedBox(width: 12.w),
-                          Expanded(
-                            child: _buildMethodCard(
-                              method: AddRecipientMethod.lazervaultUser,
-                              icon: Icons.person_rounded,
-                              title: 'Lazervault user',
-                              isSelected: _selectedMethod == AddRecipientMethod.lazervaultUser,
-                            ),
-                          ),
-                          SizedBox(width: 12.w),
-                              Expanded(
-                            child: _buildMethodCard(
-                              method: AddRecipientMethod.contacts,
-                              icon: Icons.contacts_rounded,
-                              title: 'Contacts',
-                              isSelected: _selectedMethod == AddRecipientMethod.contacts,
-                            ),
-                          ),
-                        ],
+                        ),
+                        child: _buildActionButton(state),
                       ),
                     ],
                   ),
                 ),
-              ),
-
-              // Main Content Section
-              Container(
-                margin: EdgeInsets.only(top: Get.height * 0.30),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-                ),
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: EdgeInsets.all(24.w),
-                        child: _swipeableMethodContent(),
-                      ),
-                    ),
-                    
-                    // Bottom Action Button
-                    Container(
-                      padding: EdgeInsets.all(24.w),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border(
-                          top: BorderSide(color: Colors.grey[100]!, width: 1),
-                        ),
-                      ),
-                      child: _buildActionButton(state),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -467,13 +474,13 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
         padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 8.w),
         decoration: BoxDecoration(
           color: isSelected
-            ? Colors.white.withValues(alpha: 0.2)
-            : Colors.white.withValues(alpha: 0.1),
+              ? Colors.white.withValues(alpha: 0.2)
+              : Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected
-              ? Colors.white.withValues(alpha: 0.4)
-              : Colors.white.withValues(alpha: 0.2),
+                ? Colors.white.withValues(alpha: 0.4)
+                : Colors.white.withValues(alpha: 0.2),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -481,7 +488,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _methodGlyphTile(icon, selected: isSelected, onDark: true, size: 28),
+            _methodGlyphTile(icon,
+                selected: isSelected, onDark: true, size: 28),
             SizedBox(width: 8.w),
             Flexible(
               child: Text(
@@ -589,7 +597,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _methodGlyphTile(icon, selected: selected, onDark: selected, size: 30),
+                _methodGlyphTile(icon,
+                    selected: selected, onDark: selected, size: 30),
                 SizedBox(width: 8.w),
                 Flexible(
                   child: Text(
@@ -764,120 +773,125 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
         if (_bankFieldRevealed ||
             _selectedBankCode != null ||
             _bankController.text != "Select Bank") ...[
-        SizedBox(height: 10.h),
+          SizedBox(height: 10.h),
 
-        // Bank Selection SECOND — pre-filled by tapping a suggestion, or picked
-        // manually here as the fallback when nothing auto-suggests.
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Bank',
-              style: TextStyle(
-                color: Colors.black87,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            GestureDetector(
-              onTap: _showBankSelectionBottomSheet,
-              child: Container(
-                padding: EdgeInsets.all(12.w),
-                decoration: BoxDecoration(
-                  color: _bankController.text == "Select Bank"
-                      ? Colors.grey[50]
-                      : Colors.white,
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(
-                    color: _bankController.text == "Select Bank"
-                        ? Colors.grey[200]!
-                        : Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
-                    width: _bankController.text == "Select Bank" ? 1 : 2,
-                  ),
-                  boxShadow: _bankController.text != "Select Bank"
-                      ? [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 8,
-                            offset: Offset(0, 2),
-                          ),
-                        ]
-                      : null,
+          // Bank Selection SECOND — pre-filled by tapping a suggestion, or picked
+          // manually here as the fallback when nothing auto-suggests.
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Bank',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w500,
                 ),
-                child: Row(
-                  children: [
-                    // Bank Logo or themed illustration tile (matches the tabs).
-                    if (_bankController.text == "Select Bank")
-                      _methodGlyphTile(
-                        Icons.account_balance_rounded,
-                        selected: false,
-                        size: 40,
-                      )
-                    else
-                      BankLogo(
-                        bankName: _bankController.text,
-                        bankCode: _selectedBankCode,
-                        country: _currentCountry,
-                        size: 44,
-                        borderRadius: 10,
-                      ),
-                    SizedBox(width: 12.w),
-                    // Bank Name and Description
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _bankController.text,
-                            style: TextStyle(
-                              color: _bankController.text == "Select Bank"
-                                  ? Colors.grey[600]
-                                  : Colors.black87,
-                              fontSize: 15.sp,
-                              fontWeight: FontWeight.w600,
+              ),
+              SizedBox(height: 8.h),
+              GestureDetector(
+                onTap: _showBankSelectionBottomSheet,
+                child: Container(
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: _bankController.text == "Select Bank"
+                        ? Colors.grey[50]
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(
+                      color: _bankController.text == "Select Bank"
+                          ? Colors.grey[200]!
+                          : Color.fromARGB(255, 78, 3, 208)
+                              .withValues(alpha: 0.3),
+                      width: _bankController.text == "Select Bank" ? 1 : 2,
+                    ),
+                    boxShadow: _bankController.text != "Select Bank"
+                        ? [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 8,
+                              offset: Offset(0, 2),
                             ),
-                          ),
-                          if (_bankController.text != "Select Bank") ...[
-                            SizedBox(height: 2.h),
+                          ]
+                        : null,
+                  ),
+                  child: Row(
+                    children: [
+                      // Bank Logo or themed illustration tile (matches the tabs).
+                      if (_bankController.text == "Select Bank")
+                        _methodGlyphTile(
+                          Icons.account_balance_rounded,
+                          selected: false,
+                          size: 40,
+                        )
+                      else
+                        BankLogo(
+                          bankName: _bankController.text,
+                          bankCode: _selectedBankCode,
+                          country: _currentCountry,
+                          size: 44,
+                          borderRadius: 10,
+                        ),
+                      SizedBox(width: 12.w),
+                      // Bank Name and Description
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                             Text(
-                              _getBankDescription(_bankController.text),
+                              _bankController.text,
                               style: TextStyle(
-                                color: Colors.grey[500],
-                                fontSize: 12.sp,
-                                fontWeight: FontWeight.w400,
+                                color: _bankController.text == "Select Bank"
+                                    ? Colors.grey[600]
+                                    : Colors.black87,
+                                fontSize: 15.sp,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
+                            if (_bankController.text != "Select Bank") ...[
+                              SizedBox(height: 2.h),
+                              Text(
+                                _getBankDescription(_bankController.text),
+                                style: TextStyle(
+                                  color: Colors.grey[500],
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ],
                           ],
-                        ],
-                      ),
-                    ),
-                    // Change/Select indicator
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-                      decoration: BoxDecoration(
-                        color: _bankController.text == "Select Bank"
-                            ? Colors.grey[100]
-                            : Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Text(
-                        _bankController.text == "Select Bank" ? 'Select' : 'Change',
-                        style: TextStyle(
-                          color: _bankController.text == "Select Bank"
-                              ? Colors.grey[600]
-                              : Color.fromARGB(255, 78, 3, 208),
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ),
-                  ],
+                      // Change/Select indicator
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 10.w, vertical: 6.h),
+                        decoration: BoxDecoration(
+                          color: _bankController.text == "Select Bank"
+                              ? Colors.grey[100]
+                              : Color.fromARGB(255, 78, 3, 208)
+                                  .withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Text(
+                          _bankController.text == "Select Bank"
+                              ? 'Select'
+                              : 'Change',
+                          style: TextStyle(
+                            color: _bankController.text == "Select Bank"
+                                ? Colors.grey[600]
+                                : Color.fromARGB(255, 78, 3, 208),
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ], // end account-first bank-field fallback gate
         // Show verification result if successful
         if (_verificationResult != null) ...[
@@ -944,86 +958,86 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
 
         // Username search — opens bottom sheet
         GestureDetector(
-              onTap: _showUsernameSearchSheet,
-              child: Container(
-                padding: EdgeInsets.all(16.w),
-                decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(
-                    color: _selectedUser != null
-                        ? const Color.fromARGB(255, 78, 3, 208)
-                        : Colors.grey[200]!,
-                    width: _selectedUser != null ? 2 : 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    // Themed person illustration tile — mirrors the bank field's
-                    // leading tile so the User and Bank fields look symmetric.
-                    _methodGlyphTile(
-                      Icons.person_rounded,
-                      selected: _selectedUser != null,
-                      size: 40,
-                    ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: _selectedUser != null
-                          ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _selectedUser!.fullName,
-                                  style: TextStyle(
-                                    color: Colors.black87,
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                SizedBox(height: 2.h),
-                                Text(
-                                  '@${_selectedUser!.username}',
-                                  style: TextStyle(
-                                    color: const Color.fromARGB(255, 78, 3, 208),
-                                    fontSize: 14.sp,
-                                  ),
-                                ),
-                              ],
-                            )
-                          : Text(
-                              'Search by username, phone or email',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Colors.grey[500],
-                                fontSize: 13.sp,
-                              ),
-                            ),
-                    ),
-                    if (_selectedUser != null)
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedUser = null;
-                            _usernameController.clear();
-                          });
-                        },
-                        child: Icon(
-                          Icons.close,
-                          color: Colors.grey[600],
-                          size: 20.sp,
-                        ),
-                      )
-                    else
-                      Icon(
-                        Icons.chevron_right,
-                        color: Colors.grey[400],
-                        size: 24.sp,
-                      ),
-                  ],
-                ),
+          onTap: _showUsernameSearchSheet,
+          child: Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                color: _selectedUser != null
+                    ? const Color.fromARGB(255, 78, 3, 208)
+                    : Colors.grey[200]!,
+                width: _selectedUser != null ? 2 : 1,
               ),
             ),
+            child: Row(
+              children: [
+                // Themed person illustration tile — mirrors the bank field's
+                // leading tile so the User and Bank fields look symmetric.
+                _methodGlyphTile(
+                  Icons.person_rounded,
+                  selected: _selectedUser != null,
+                  size: 40,
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: _selectedUser != null
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _selectedUser!.fullName,
+                              style: TextStyle(
+                                color: Colors.black87,
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(height: 2.h),
+                            Text(
+                              '@${_selectedUser!.username}',
+                              style: TextStyle(
+                                color: const Color.fromARGB(255, 78, 3, 208),
+                                fontSize: 14.sp,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Text(
+                          'Search by username, phone or email',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 13.sp,
+                          ),
+                        ),
+                ),
+                if (_selectedUser != null)
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedUser = null;
+                        _usernameController.clear();
+                      });
+                    },
+                    child: Icon(
+                      Icons.close,
+                      color: Colors.grey[600],
+                      size: 20.sp,
+                    ),
+                  )
+                else
+                  Icon(
+                    Icons.chevron_right,
+                    color: Colors.grey[400],
+                    size: 24.sp,
+                  ),
+              ],
+            ),
+          ),
+        ),
         // (The "Find from contacts" entry now lives INSIDE the username search
         // bottom sheet — see UsernameSearchBottomSheet — so the inline form
         // stays minimal: tapping the field above opens that sheet.)
@@ -1066,11 +1080,14 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
   /// Fetch the recipient's personal account number by user ID
   Future<String?> _fetchRecipientAccountNumber(String userId) async {
     try {
-      final accountsClient = serviceLocator<accounts_grpc.AccountsServiceClient>();
-      final callOptions = await serviceLocator<GrpcCallOptionsHelper>().withAuth();
+      final accountsClient =
+          serviceLocator<accounts_grpc.AccountsServiceClient>();
+      final callOptions =
+          await serviceLocator<GrpcCallOptionsHelper>().withAuth();
       final request = accounts_pb.GetUserAccountsRequest()
         ..targetUserId = userId;
-      final response = await accountsClient.getUserAccounts(request, options: callOptions);
+      final response =
+          await accountsClient.getUserAccounts(request, options: callOptions);
       // Find the personal account (first account or account_type == 'personal')
       for (final account in response.accounts) {
         if (account.accountType == 'personal' || account.accountType == '') {
@@ -1102,7 +1119,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
     if (selectedUser == null) return;
 
     // Fetch the recipient's personal account number
-    final accountNumber = await _fetchRecipientAccountNumber(selectedUser.userId);
+    final accountNumber =
+        await _fetchRecipientAccountNumber(selectedUser.userId);
 
     if (!mounted) return;
 
@@ -1147,7 +1165,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
     if (!mounted) return;
     if (confirmed) {
       // Proceed directly to payment screen after confirmation
-      _proceedToPaymentWithUsernameRecipient(selectedUser, accountNumber, isSaved, isFavorite, alias);
+      _proceedToPaymentWithUsernameRecipient(
+          selectedUser, accountNumber, isSaved, isFavorite, alias);
     }
   }
 
@@ -1180,7 +1199,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
       isSaved: isSaved,
       alias: alias,
       countryCode: countryCode,
-      currency: CountryConfigs.getByCode(countryCode ?? 'NG')?.currency ?? 'NGN',
+      currency:
+          CountryConfigs.getByCode(countryCode ?? 'NG')?.currency ?? 'NGN',
       email: selectedUser.email.isNotEmpty ? selectedUser.email : null,
       type: 'internal', // Explicitly set type for Lazervault users
       internalUserId: selectedUser.userId,
@@ -1199,7 +1219,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
       arguments: {
         'recipient': recipient,
         'isTemporary': true,
-        'shouldSaveOnSuccess': isSaved || isFavorite, // Save if user chose to save or favorite
+        'shouldSaveOnSuccess':
+            isSaved || isFavorite, // Save if user chose to save or favorite
       },
     );
   }
@@ -1227,10 +1248,10 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
         SizedBox(height: 24.h),
 
         // Access Contacts Button
-              Container(
+        Container(
           width: double.infinity,
           padding: EdgeInsets.all(20.w),
-                decoration: BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
                 Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
@@ -1277,10 +1298,11 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
               SizedBox(height: 20.h),
               ElevatedButton.icon(
                 onPressed: _showContactSelection,
-                  style: ElevatedButton.styleFrom(
+                style: ElevatedButton.styleFrom(
                   backgroundColor: Color.fromARGB(255, 78, 3, 208),
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24.r),
                   ),
@@ -1439,7 +1461,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
       isFavorite: false,
       isSaved: false,
       countryCode: countryCode,
-      currency: CountryConfigs.getByCode(countryCode ?? 'NG')?.currency ?? 'NGN',
+      currency:
+          CountryConfigs.getByCode(countryCode ?? 'NG')?.currency ?? 'NGN',
       email: _selectedUser!.email.isNotEmpty ? _selectedUser!.email : null,
       type: 'internal', // Explicitly set type for Lazervault users
       internalUserId: _selectedUser!.userId,
@@ -1605,7 +1628,9 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                 searchDebounce = Timer(const Duration(milliseconds: 300), () {
                   final filtered = query.isEmpty
                       ? allContacts
-                      : allContacts.where((c) => c.matchesQuery(query)).toList();
+                      : allContacts
+                          .where((c) => c.matchesQuery(query))
+                          .toList();
                   if (bottomSheetContext.mounted) {
                     setSheetState(() {
                       searchQuery = query;
@@ -1711,7 +1736,10 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                   ),
                 ),
                 const Spacer(),
-                if (!isLoading && !permissionDenied && !permissionPermanentlyDenied && errorMessage == null)
+                if (!isLoading &&
+                    !permissionDenied &&
+                    !permissionPermanentlyDenied &&
+                    errorMessage == null)
                   Text(
                     searchQuery.isEmpty
                         ? '${allContacts.length} contacts'
@@ -1726,7 +1754,11 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
           ),
 
           // Search bar (only when contacts loaded)
-          if (!isLoading && !permissionDenied && !permissionPermanentlyDenied && errorMessage == null && allContacts.isNotEmpty)
+          if (!isLoading &&
+              !permissionDenied &&
+              !permissionPermanentlyDenied &&
+              errorMessage == null &&
+              allContacts.isNotEmpty)
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
               child: TextField(
@@ -1735,11 +1767,14 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                 style: TextStyle(fontSize: 14.sp, color: Colors.black87),
                 decoration: InputDecoration(
                   hintText: 'Search by name or phone number',
-                  hintStyle: TextStyle(fontSize: 14.sp, color: Colors.grey[400]),
-                  prefixIcon: Icon(Icons.search, color: Colors.grey[400], size: 20.sp),
+                  hintStyle:
+                      TextStyle(fontSize: 14.sp, color: Colors.grey[400]),
+                  prefixIcon:
+                      Icon(Icons.search, color: Colors.grey[400], size: 20.sp),
                   suffixIcon: searchController.text.isNotEmpty
                       ? IconButton(
-                          icon: Icon(Icons.clear, color: Colors.grey[400], size: 18.sp),
+                          icon: Icon(Icons.clear,
+                              color: Colors.grey[400], size: 18.sp),
                           onPressed: () {
                             searchController.clear();
                             onSearchChanged('');
@@ -1752,7 +1787,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                     borderRadius: BorderRadius.circular(12.r),
                     borderSide: BorderSide.none,
                   ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                 ),
               ),
             ),
@@ -1843,7 +1879,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color.fromARGB(255, 78, 3, 208),
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),
@@ -1902,7 +1939,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color.fromARGB(255, 78, 3, 208),
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),
@@ -1937,7 +1975,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color.fromARGB(255, 78, 3, 208),
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),
@@ -2146,12 +2185,16 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
       // Extract phone numbers from contact
       final phoneNumbers = contact.phoneNumbers.isNotEmpty
           ? contact.phoneNumbers
-          : contact.phoneNumber != null ? [contact.phoneNumber!] : <String>[];
+          : contact.phoneNumber != null
+              ? [contact.phoneNumber!]
+              : <String>[];
 
       // Extract emails
       final emails = contact.emails.isNotEmpty
           ? contact.emails
-          : contact.email != null ? [contact.email!] : <String>[];
+          : contact.email != null
+              ? [contact.email!]
+              : <String>[];
 
       if (phoneNumbers.isEmpty && emails.isEmpty) {
         // No contact info to lookup, show bank selection
@@ -2190,7 +2233,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
   }
 
   /// Show dialog when contact is found to be a Lazervault user
-  void _showLazerVaultUserFoundDialog(DeviceContact contact, LazerVaultUserMatchModel matchedUser) {
+  void _showLazerVaultUserFoundDialog(
+      DeviceContact contact, LazerVaultUserMatchModel matchedUser) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -2267,7 +2311,9 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                 decoration: BoxDecoration(
                   color: Colors.grey[50],
                   borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: Color.fromARGB(255, 78, 3, 208)
+                          .withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
@@ -2276,7 +2322,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                       width: 48.w,
                       height: 48.h,
                       decoration: BoxDecoration(
-                        color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                        color: Color.fromARGB(255, 78, 3, 208)
+                            .withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: matchedUser.profilePhotoUrl != null
@@ -2288,7 +2335,9 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                                 errorBuilder: (_, __, ___) => Center(
                                   child: Text(
                                     matchedUser.name.isNotEmpty
-                                        ? matchedUser.name.substring(0, 1).toUpperCase()
+                                        ? matchedUser.name
+                                            .substring(0, 1)
+                                            .toUpperCase()
                                         : '?',
                                     style: TextStyle(
                                       color: Color.fromARGB(255, 78, 3, 208),
@@ -2302,7 +2351,9 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                           : Center(
                               child: Text(
                                 matchedUser.name.isNotEmpty
-                                    ? matchedUser.name.substring(0, 1).toUpperCase()
+                                    ? matchedUser.name
+                                        .substring(0, 1)
+                                        .toUpperCase()
                                     : '?',
                                 style: TextStyle(
                                   color: Color.fromARGB(255, 78, 3, 208),
@@ -2410,7 +2461,9 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                 ],
               ),
 
-              SizedBox(height: MediaQuery.of(bottomSheetContext).padding.bottom + 16.h),
+              SizedBox(
+                  height:
+                      MediaQuery.of(bottomSheetContext).padding.bottom + 16.h),
             ],
           ),
         );
@@ -2419,7 +2472,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
   }
 
   /// Proceed to payment with Lazervault user
-  void _proceedWithLazerVaultUser(DeviceContact contact, LazerVaultUserMatchModel matchedUser) {
+  void _proceedWithLazerVaultUser(
+      DeviceContact contact, LazerVaultUserMatchModel matchedUser) {
     final authState = context.read<AuthenticationCubit>().state;
     final profileState = context.read<ProfileCubit>().state;
 
@@ -2443,7 +2497,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
     final recipient = RecipientModel(
       id: matchedUser.userId,
       name: matchedUser.name,
-      accountNumber: '@${matchedUser.username}', // Use username as account identifier
+      accountNumber:
+          '@${matchedUser.username}', // Use username as account identifier
       bankName: 'LazerVault',
       sortCode: '',
       isFavorite: false,
@@ -2487,8 +2542,9 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
       code = null;
     }
 
-    final firstName =
-        contact.name.trim().isNotEmpty ? contact.name.trim().split(' ').first : 'there';
+    final firstName = contact.name.trim().isNotEmpty
+        ? contact.name.trim().split(' ').first
+        : 'there';
     final message = (code != null && code.isNotEmpty)
         ? 'Hi $firstName, join me on Lazervault! Use my invite code $code when '
             'you sign up so we both get rewarded. Download: https://lazervault.app'
@@ -2579,7 +2635,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                     Navigator.pop(sheetContext);
                     _inviteContact(contact);
                   },
-                  icon: Icon(Icons.person_add_alt_1, size: 18.sp, color: Colors.white),
+                  icon: Icon(Icons.person_add_alt_1,
+                      size: 18.sp, color: Colors.white),
                   label: Text(
                     'Invite to Lazervault',
                     style: TextStyle(
@@ -2698,7 +2755,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                 height: MediaQuery.of(context).size.height * 0.55,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(32.r)),
                 ),
                 child: Padding(
                   padding: EdgeInsets.all(24.w),
@@ -3012,8 +3070,12 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                           Row(
                             children: [
                               Icon(
-                                isSaved ? Icons.bookmark : Icons.bookmark_outline,
-                                color: isSaved ? const Color(0xFF4E03D0) : Colors.grey[600],
+                                isSaved
+                                    ? Icons.bookmark
+                                    : Icons.bookmark_outline,
+                                color: isSaved
+                                    ? const Color(0xFF4E03D0)
+                                    : Colors.grey[600],
                                 size: 24.sp,
                               ),
                               SizedBox(width: 12.w),
@@ -3045,7 +3107,9 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                               children: [
                                 Icon(
                                   isFavorite ? Icons.star : Icons.star_border,
-                                  color: isFavorite ? const Color(0xFFF59E0B) : Colors.grey[600],
+                                  color: isFavorite
+                                      ? const Color(0xFFF59E0B)
+                                      : Colors.grey[600],
                                   size: 24.sp,
                                 ),
                                 SizedBox(width: 12.w),
@@ -3093,15 +3157,18 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                                 fillColor: Colors.white,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10.r),
-                                  borderSide: BorderSide(color: Colors.grey[300]!),
+                                  borderSide:
+                                      BorderSide(color: Colors.grey[300]!),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10.r),
-                                  borderSide: BorderSide(color: Colors.grey[300]!),
+                                  borderSide:
+                                      BorderSide(color: Colors.grey[300]!),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10.r),
-                                  borderSide: const BorderSide(color: Color(0xFF4E03D0)),
+                                  borderSide: const BorderSide(
+                                      color: Color(0xFF4E03D0)),
                                 ),
                                 contentPadding: EdgeInsets.symmetric(
                                   horizontal: 12.w,
@@ -3216,7 +3283,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
   }
 
   /// Proceed to payment with verified contact
-  void _proceedToPaymentWithContact(DeviceContact contact, bool isSaved, bool isFavorite, String? alias) {
+  void _proceedToPaymentWithContact(
+      DeviceContact contact, bool isSaved, bool isFavorite, String? alias) {
     if (_contactVerificationResult == null) return;
 
     // Create temporary recipient model (not saved to DB yet)
@@ -3604,7 +3672,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded, color: _kBrandPurple, size: 20.sp),
+            Icon(Icons.chevron_right_rounded,
+                color: _kBrandPurple, size: 20.sp),
           ],
         ),
       ),
@@ -3637,36 +3706,65 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
     final lowerName = bankName.toLowerCase();
 
     // Nigerian Banks
-    if (lowerName.contains('access')) return [Color(0xFFFF6600), Color(0xFFCC5200)];
-    if (lowerName.contains('gtbank') || lowerName.contains('guaranty trust')) return [Color(0xFFFF6600), Color(0xFFCC4400)];
-    if (lowerName.contains('first bank')) return [Color(0xFF003366), Color(0xFF002244)];
-    if (lowerName.contains('uba') || lowerName.contains('united bank for africa')) return [Color(0xFFCC0000), Color(0xFF990000)];
-    if (lowerName.contains('zenith')) return [Color(0xFFCC0000), Color(0xFF990000)];
-    if (lowerName.contains('kuda')) return [Color(0xFF6B47ED), Color(0xFF5533CC)];
-    if (lowerName.contains('opay')) return [Color(0xFF00C853), Color(0xFF009624)];
-    if (lowerName.contains('palmpay')) return [Color(0xFF6C63FF), Color(0xFF5046E5)];
-    if (lowerName.contains('fidelity')) return [Color(0xFF006B3F), Color(0xFF004D2D)];
-    if (lowerName.contains('fcmb') || lowerName.contains('first city monument')) return [Color(0xFF6B2D7B), Color(0xFF4A1F55)];
-    if (lowerName.contains('sterling')) return [Color(0xFFCC0000), Color(0xFF990000)];
-    if (lowerName.contains('stanbic')) return [Color(0xFF0033A1), Color(0xFF002277)];
-    if (lowerName.contains('ecobank')) return [Color(0xFF004C91), Color(0xFF003366)];
-    if (lowerName.contains('union bank')) return [Color(0xFF003087), Color(0xFF002266)];
-    if (lowerName.contains('wema') || lowerName.contains('alat')) return [Color(0xFF6B2D7B), Color(0xFF4A1F55)];
-    if (lowerName.contains('polaris')) return [Color(0xFF003399), Color(0xFF002266)];
-    if (lowerName.contains('keystone')) return [Color(0xFF0066CC), Color(0xFF004488)];
-    if (lowerName.contains('heritage')) return [Color(0xFF006633), Color(0xFF004422)];
-    if (lowerName.contains('moniepoint')) return [Color(0xFF0066FF), Color(0xFF0044CC)];
-    if (lowerName.contains('carbon')) return [Color(0xFF00C9A7), Color(0xFF00A386)];
+    if (lowerName.contains('access'))
+      return [Color(0xFFFF6600), Color(0xFFCC5200)];
+    if (lowerName.contains('gtbank') || lowerName.contains('guaranty trust'))
+      return [Color(0xFFFF6600), Color(0xFFCC4400)];
+    if (lowerName.contains('first bank'))
+      return [Color(0xFF003366), Color(0xFF002244)];
+    if (lowerName.contains('uba') ||
+        lowerName.contains('united bank for africa'))
+      return [Color(0xFFCC0000), Color(0xFF990000)];
+    if (lowerName.contains('zenith'))
+      return [Color(0xFFCC0000), Color(0xFF990000)];
+    if (lowerName.contains('kuda'))
+      return [Color(0xFF6B47ED), Color(0xFF5533CC)];
+    if (lowerName.contains('opay'))
+      return [Color(0xFF00C853), Color(0xFF009624)];
+    if (lowerName.contains('palmpay'))
+      return [Color(0xFF6C63FF), Color(0xFF5046E5)];
+    if (lowerName.contains('fidelity'))
+      return [Color(0xFF006B3F), Color(0xFF004D2D)];
+    if (lowerName.contains('fcmb') || lowerName.contains('first city monument'))
+      return [Color(0xFF6B2D7B), Color(0xFF4A1F55)];
+    if (lowerName.contains('sterling'))
+      return [Color(0xFFCC0000), Color(0xFF990000)];
+    if (lowerName.contains('stanbic'))
+      return [Color(0xFF0033A1), Color(0xFF002277)];
+    if (lowerName.contains('ecobank'))
+      return [Color(0xFF004C91), Color(0xFF003366)];
+    if (lowerName.contains('union bank'))
+      return [Color(0xFF003087), Color(0xFF002266)];
+    if (lowerName.contains('wema') || lowerName.contains('alat'))
+      return [Color(0xFF6B2D7B), Color(0xFF4A1F55)];
+    if (lowerName.contains('polaris'))
+      return [Color(0xFF003399), Color(0xFF002266)];
+    if (lowerName.contains('keystone'))
+      return [Color(0xFF0066CC), Color(0xFF004488)];
+    if (lowerName.contains('heritage'))
+      return [Color(0xFF006633), Color(0xFF004422)];
+    if (lowerName.contains('moniepoint'))
+      return [Color(0xFF0066FF), Color(0xFF0044CC)];
+    if (lowerName.contains('carbon'))
+      return [Color(0xFF00C9A7), Color(0xFF00A386)];
 
     // UK Banks
-    if (lowerName.contains('barclays')) return [Color(0xFF0071CE), Color(0xFF004A8F)];
-    if (lowerName.contains('hsbc')) return [Color(0xFFDB0011), Color(0xFFB8000E)];
-    if (lowerName.contains('lloyds')) return [Color(0xFF006A4E), Color(0xFF004D3A)];
-    if (lowerName.contains('natwest')) return [Color(0xFF5D2A8F), Color(0xFF4A1F75)];
-    if (lowerName.contains('santander')) return [Color(0xFFEC0000), Color(0xFFD10000)];
-    if (lowerName.contains('monzo')) return [Color(0xFFFF5A5F), Color(0xFFE64850)];
-    if (lowerName.contains('starling')) return [Color(0xFF6935D3), Color(0xFF5229A8)];
-    if (lowerName.contains('revolut')) return [Color(0xFF0073E6), Color(0xFF005BB5)];
+    if (lowerName.contains('barclays'))
+      return [Color(0xFF0071CE), Color(0xFF004A8F)];
+    if (lowerName.contains('hsbc'))
+      return [Color(0xFFDB0011), Color(0xFFB8000E)];
+    if (lowerName.contains('lloyds'))
+      return [Color(0xFF006A4E), Color(0xFF004D3A)];
+    if (lowerName.contains('natwest'))
+      return [Color(0xFF5D2A8F), Color(0xFF4A1F75)];
+    if (lowerName.contains('santander'))
+      return [Color(0xFFEC0000), Color(0xFFD10000)];
+    if (lowerName.contains('monzo'))
+      return [Color(0xFFFF5A5F), Color(0xFFE64850)];
+    if (lowerName.contains('starling'))
+      return [Color(0xFF6935D3), Color(0xFF5229A8)];
+    if (lowerName.contains('revolut'))
+      return [Color(0xFF0073E6), Color(0xFF005BB5)];
 
     // Default gradient
     return [Color(0xFF78039C), Color(0xFF5F14E1)];
@@ -3677,15 +3775,18 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
 
     // Nigerian Banks
     if (lowerName.contains('access')) return 'AB';
-    if (lowerName.contains('gtbank') || lowerName.contains('guaranty trust')) return 'GT';
+    if (lowerName.contains('gtbank') || lowerName.contains('guaranty trust'))
+      return 'GT';
     if (lowerName.contains('first bank')) return 'FB';
-    if (lowerName.contains('uba') || lowerName.contains('united bank for africa')) return 'UBA';
+    if (lowerName.contains('uba') ||
+        lowerName.contains('united bank for africa')) return 'UBA';
     if (lowerName.contains('zenith')) return 'ZB';
     if (lowerName.contains('kuda')) return 'KD';
     if (lowerName.contains('opay')) return 'OP';
     if (lowerName.contains('palmpay')) return 'PP';
     if (lowerName.contains('fidelity')) return 'FD';
-    if (lowerName.contains('fcmb') || lowerName.contains('first city monument')) return 'FC';
+    if (lowerName.contains('fcmb') || lowerName.contains('first city monument'))
+      return 'FC';
     if (lowerName.contains('sterling')) return 'SB';
     if (lowerName.contains('stanbic')) return 'SI';
     if (lowerName.contains('ecobank')) return 'EB';
@@ -3720,20 +3821,25 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
 
     // Nigerian Banks
     if (lowerName.contains('access')) return 'Personal & Business Banking';
-    if (lowerName.contains('gtbank') || lowerName.contains('guaranty trust')) return 'Digital Banking Leader';
+    if (lowerName.contains('gtbank') || lowerName.contains('guaranty trust'))
+      return 'Digital Banking Leader';
     if (lowerName.contains('first bank')) return 'Nigeria\'s First Bank';
-    if (lowerName.contains('uba') || lowerName.contains('united bank for africa')) return 'Africa\'s Global Bank';
+    if (lowerName.contains('uba') ||
+        lowerName.contains('united bank for africa'))
+      return 'Africa\'s Global Bank';
     if (lowerName.contains('zenith')) return 'In Your Best Interest';
     if (lowerName.contains('kuda')) return 'Bank of the Free';
     if (lowerName.contains('opay')) return 'Digital Payments';
     if (lowerName.contains('palmpay')) return 'Mobile Money Services';
     if (lowerName.contains('fidelity')) return 'Truly Dependable';
-    if (lowerName.contains('fcmb') || lowerName.contains('first city monument')) return 'My Bank and I';
+    if (lowerName.contains('fcmb') || lowerName.contains('first city monument'))
+      return 'My Bank and I';
     if (lowerName.contains('sterling')) return 'Your One-Customer Bank';
     if (lowerName.contains('stanbic')) return 'Moving Forward';
     if (lowerName.contains('ecobank')) return 'Pan-African Banking';
     if (lowerName.contains('union bank')) return 'Big. Strong. Reliable';
-    if (lowerName.contains('wema') || lowerName.contains('alat')) return 'Digital Banking';
+    if (lowerName.contains('wema') || lowerName.contains('alat'))
+      return 'Digital Banking';
     if (lowerName.contains('moniepoint')) return 'Financial Services';
     if (lowerName.contains('carbon')) return 'Digital Finance';
 
@@ -3792,7 +3898,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
     }
 
     // Validate 10 digits for Nigerian accounts
-    if (accountNumber.length != 10 || !RegExp(r'^\d+$').hasMatch(accountNumber)) {
+    if (accountNumber.length != 10 ||
+        !RegExp(r'^\d+$').hasMatch(accountNumber)) {
       Get.snackbar(
         'Invalid Account Number',
         'Account number must be exactly 10 digits',
@@ -3875,7 +3982,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                           color: Colors.orange.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12.r),
                         ),
-                        child: Icon(Icons.edit_note, color: Colors.orange, size: 24.sp),
+                        child: Icon(Icons.edit_note,
+                            color: Colors.orange, size: 24.sp),
                       ),
                       SizedBox(width: 12.w),
                       Expanded(
@@ -3910,23 +4018,37 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1)),
                     ),
                     child: Column(
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Bank', style: TextStyle(color: Colors.grey[400], fontSize: 13.sp)),
-                            Text(bankName, style: TextStyle(color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                            Text('Bank',
+                                style: TextStyle(
+                                    color: Colors.grey[400], fontSize: 13.sp)),
+                            Text(bankName,
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.w600)),
                           ],
                         ),
                         SizedBox(height: 8.h),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Account', style: TextStyle(color: Colors.grey[400], fontSize: 13.sp)),
-                            Text(accountNumber, style: TextStyle(color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600, letterSpacing: 1)),
+                            Text('Account',
+                                style: TextStyle(
+                                    color: Colors.grey[400], fontSize: 13.sp)),
+                            Text(accountNumber,
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 1)),
                           ],
                         ),
                       ],
@@ -3941,7 +4063,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                     style: TextStyle(color: Colors.white, fontSize: 16.sp),
                     decoration: InputDecoration(
                       hintText: 'Account holder full name',
-                      hintStyle: TextStyle(color: Colors.grey[600], fontSize: 14.sp),
+                      hintStyle:
+                          TextStyle(color: Colors.grey[600], fontSize: 14.sp),
                       filled: true,
                       fillColor: Colors.white.withValues(alpha: 0.08),
                       border: OutlineInputBorder(
@@ -3950,9 +4073,11 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.r),
-                        borderSide: BorderSide(color: Colors.deepPurple.withValues(alpha: 0.6)),
+                        borderSide: BorderSide(
+                            color: Colors.deepPurple.withValues(alpha: 0.6)),
                       ),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                      contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16.w, vertical: 14.h),
                     ),
                   ),
                   SizedBox(height: 20.h),
@@ -3963,9 +4088,11 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                       onPressed: () {
                         final name = nameController.text.trim();
                         if (name.isEmpty) {
-                          Get.snackbar('Name Required', 'Please enter the account holder name',
+                          Get.snackbar('Name Required',
+                              'Please enter the account holder name',
                               snackPosition: SnackPosition.BOTTOM,
-                              backgroundColor: Colors.orange.withValues(alpha: 0.8),
+                              backgroundColor:
+                                  Colors.orange.withValues(alpha: 0.8),
                               colorText: Colors.white);
                           return;
                         }
@@ -3991,7 +4118,10 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                       ),
                       child: Text(
                         'Continue',
-                        style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -4051,14 +4181,16 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
 
   /// Proceed to payment screen without saving recipient to database
   /// (Lemfi-style: only save after successful payment)
-  void _proceedToPayment(AccountVerificationResult result, bool isSaved, bool isFavorite, String? alias) {
+  void _proceedToPayment(AccountVerificationResult result, bool isSaved,
+      bool isFavorite, String? alias) {
     // Create temporary recipient model (not saved to DB yet)
     final temporaryRecipient = RecipientModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(), // Temporary ID
       name: result.accountName,
       accountNumber: result.accountNumber,
       bankName: result.bankName,
-      sortCode: result.bankCode, // Use bank code as sort code for Nigerian banks
+      sortCode:
+          result.bankCode, // Use bank code as sort code for Nigerian banks
       isFavorite: isFavorite,
       isSaved: isSaved,
       alias: alias,

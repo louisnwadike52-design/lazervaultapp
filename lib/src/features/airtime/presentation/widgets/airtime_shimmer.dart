@@ -387,7 +387,8 @@ class IntlCountryShimmer extends StatelessWidget {
 class AirtimeCardShimmer extends StatelessWidget {
   final int itemCount;
   final bool isHorizontal;
-  const AirtimeCardShimmer({super.key, this.itemCount = 3, this.isHorizontal = false});
+  const AirtimeCardShimmer(
+      {super.key, this.itemCount = 3, this.isHorizontal = false});
 
   @override
   Widget build(BuildContext context) {
@@ -405,7 +406,8 @@ class AirtimeCardShimmer extends StatelessWidget {
 
   Widget _buildCard() {
     return Container(
-      margin: EdgeInsets.only(right: isHorizontal ? 10.w : 0, bottom: isHorizontal ? 0 : 10.h),
+      margin: EdgeInsets.only(
+          right: isHorizontal ? 10.w : 0, bottom: isHorizontal ? 0 : 10.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),

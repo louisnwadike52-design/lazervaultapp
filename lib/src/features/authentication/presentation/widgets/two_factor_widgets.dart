@@ -61,9 +61,12 @@ class TwoFactorMethodPicker extends StatelessWidget {
                   padding: EdgeInsets.all(16.w),
                   margin: EdgeInsets.only(bottom: 1.h),
                   decoration: BoxDecoration(
-                    color: isSelected ? Colors.blue.shade50 : Colors.transparent,
+                    color:
+                        isSelected ? Colors.blue.shade50 : Colors.transparent,
                     border: Border.all(
-                      color: isSelected ? Colors.blue.shade700 : Colors.transparent,
+                      color: isSelected
+                          ? Colors.blue.shade700
+                          : Colors.transparent,
                       width: isSelected ? 2 : 0,
                     ),
                   ),
@@ -72,11 +75,16 @@ class TwoFactorMethodPicker extends StatelessWidget {
                       Container(
                         padding: EdgeInsets.all(12.w),
                         decoration: BoxDecoration(
-                          color: isSelected ? Colors.blue.shade700 : Colors.grey.shade300,
+                          color: isSelected
+                              ? Colors.blue.shade700
+                              : Colors.grey.shade300,
                           borderRadius: BorderRadius.circular(10.r),
                         ),
                         child: Icon(_iconFor(method.icon),
-                            color: isSelected ? Colors.white : Colors.grey.shade600, size: 20.sp),
+                            color: isSelected
+                                ? Colors.white
+                                : Colors.grey.shade600,
+                            size: 20.sp),
                       ),
                       SizedBox(width: 16.w),
                       Expanded(
@@ -87,16 +95,22 @@ class TwoFactorMethodPicker extends StatelessWidget {
                                 style: TextStyle(
                                     fontSize: 16.sp,
                                     fontWeight: FontWeight.w600,
-                                    color: isSelected ? Colors.blue.shade900 : Colors.grey.shade800)),
+                                    color: isSelected
+                                        ? Colors.blue.shade900
+                                        : Colors.grey.shade800)),
                             SizedBox(height: 4.h),
                             Text(method.description,
                                 style: TextStyle(
                                     fontSize: 13.sp,
-                                    color: isSelected ? Colors.blue.shade700 : Colors.grey.shade600)),
+                                    color: isSelected
+                                        ? Colors.blue.shade700
+                                        : Colors.grey.shade600)),
                           ],
                         ),
                       ),
-                      if (isSelected) Icon(Icons.check_circle, color: Colors.green, size: 24.sp),
+                      if (isSelected)
+                        Icon(Icons.check_circle,
+                            color: Colors.green, size: 24.sp),
                     ],
                   ),
                 ),
@@ -177,7 +191,8 @@ class TwoFactorVerifySheet extends StatefulWidget {
 }
 
 class _TwoFactorVerifySheetState extends State<TwoFactorVerifySheet> {
-  final List<TextEditingController> _c = List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> _c =
+      List.generate(6, (_) => TextEditingController());
   final List<FocusNode> _f = List.generate(6, (_) => FocusNode());
   bool _verifying = false;
 
@@ -243,20 +258,26 @@ class _TwoFactorVerifySheetState extends State<TwoFactorVerifySheet> {
           Container(
             width: 40,
             height: 4,
-            decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
+            decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2)),
           ),
           SizedBox(height: 20.h),
           Row(
             children: [
-              Icon(widget.icon, color: widget.iconColor ?? Colors.green.shade700),
+              Icon(widget.icon,
+                  color: widget.iconColor ?? Colors.green.shade700),
               SizedBox(width: 12.w),
-              Text(widget.title, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700)),
+              Text(widget.title,
+                  style:
+                      TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700)),
             ],
           ),
           SizedBox(height: 8.h),
           Align(
             alignment: Alignment.centerLeft,
-            child: Text(widget.subtitle, style: TextStyle(fontSize: 14.sp, color: Colors.grey.shade700)),
+            child: Text(widget.subtitle,
+                style: TextStyle(fontSize: 14.sp, color: Colors.grey.shade700)),
           ),
           SizedBox(height: 20.h),
           Row(
@@ -273,7 +294,8 @@ class _TwoFactorVerifySheetState extends State<TwoFactorVerifySheet> {
                   textAlign: TextAlign.center,
                   maxLength: 1,
                   autofocus: i == 0,
-                  style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w600),
+                  style:
+                      TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w600),
                   decoration: InputDecoration(
                     counterText: '',
                     contentPadding: EdgeInsets.zero,
@@ -285,7 +307,8 @@ class _TwoFactorVerifySheetState extends State<TwoFactorVerifySheet> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r),
-                      borderSide: BorderSide(color: Colors.blue.shade700, width: 2),
+                      borderSide:
+                          BorderSide(color: Colors.blue.shade700, width: 2),
                     ),
                   ),
                   onChanged: (v) => _onChanged(v, i),
@@ -303,16 +326,17 @@ class _TwoFactorVerifySheetState extends State<TwoFactorVerifySheet> {
                 backgroundColor:
                     widget.destructive ? Colors.red : const Color(0xFF4834D4),
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: (widget.destructive
-                        ? Colors.red
-                        : Colors.blue.shade700)
-                    .withValues(alpha: 0.5),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                disabledBackgroundColor:
+                    (widget.destructive ? Colors.red : Colors.blue.shade700)
+                        .withValues(alpha: 0.5),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
               ),
               child: _verifying
                   ? LazerVaultLoader.small()
                   : Text(widget.actionLabel,
-                      style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.w600)),
+                      style: GoogleFonts.inter(
+                          fontSize: 16.sp, fontWeight: FontWeight.w600)),
             ),
           ),
         ],
@@ -329,7 +353,8 @@ class _TwoFactorVerifySheetState extends State<TwoFactorVerifySheet> {
 class TotpSetupSheet extends StatefulWidget {
   final TwoFactorSetup setup;
   final Future<bool> Function(String code) onVerify;
-  const TotpSetupSheet({super.key, required this.setup, required this.onVerify});
+  const TotpSetupSheet(
+      {super.key, required this.setup, required this.onVerify});
 
   static Future<bool?> show(
     BuildContext context, {
@@ -352,7 +377,8 @@ class TotpSetupSheet extends StatefulWidget {
 }
 
 class _TotpSetupSheetState extends State<TotpSetupSheet> {
-  final List<TextEditingController> _c = List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> _c =
+      List.generate(6, (_) => TextEditingController());
   final List<FocusNode> _f = List.generate(6, (_) => FocusNode());
   bool _verifying = false;
   bool _showBackupCodes = false;
@@ -373,8 +399,10 @@ class _TotpSetupSheetState extends State<TotpSetupSheet> {
   void _copy(String text, String label) {
     Clipboard.setData(ClipboardData(text: text));
     Get.snackbar('Copied', '$label copied to clipboard',
-        duration: const Duration(seconds: 2), snackPosition: SnackPosition.TOP,
-        margin: EdgeInsets.all(15.w), borderRadius: 10.r);
+        duration: const Duration(seconds: 2),
+        snackPosition: SnackPosition.TOP,
+        margin: EdgeInsets.all(15.w),
+        borderRadius: 10.r);
   }
 
   void _onChanged(String v, int i) {
@@ -422,18 +450,22 @@ class _TotpSetupSheetState extends State<TotpSetupSheet> {
   Widget build(BuildContext context) {
     Uint8List? qrBytes;
     try {
-      if (widget.setup.qrCode.isNotEmpty) qrBytes = base64Decode(widget.setup.qrCode);
+      if (widget.setup.qrCode.isNotEmpty)
+        qrBytes = base64Decode(widget.setup.qrCode);
     } catch (_) {
       qrBytes = null;
     }
 
     return Padding(
       padding: EdgeInsets.only(
-        left: 24.w, right: 24.w, top: 12.h,
+        left: 24.w,
+        right: 24.w,
+        top: 12.h,
         bottom: MediaQuery.of(context).viewInsets.bottom + 24.h,
       ),
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.88),
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.88),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -441,8 +473,11 @@ class _TotpSetupSheetState extends State<TotpSetupSheet> {
             children: [
               Center(
                 child: Container(
-                  width: 40, height: 4,
-                  decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2)),
                 ),
               ),
               SizedBox(height: 18.h),
@@ -450,16 +485,20 @@ class _TotpSetupSheetState extends State<TotpSetupSheet> {
                 Icon(Icons.qr_code_2_rounded, color: Colors.blue.shade700),
                 SizedBox(width: 12.w),
                 Text('Set up Authenticator App',
-                    style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700)),
+                    style: TextStyle(
+                        fontSize: 18.sp, fontWeight: FontWeight.w700)),
               ]),
               SizedBox(height: 6.h),
-              Text('Scan this with Google Authenticator, Microsoft Authenticator, or Authy, then enter the 6-digit code it shows.',
-                  style: TextStyle(fontSize: 13.sp, color: Colors.grey.shade600)),
+              Text(
+                  'Scan this with Google Authenticator, Microsoft Authenticator, or Authy, then enter the 6-digit code it shows.',
+                  style:
+                      TextStyle(fontSize: 13.sp, color: Colors.grey.shade600)),
               SizedBox(height: 18.h),
               // QR
               Center(
                 child: Container(
-                  width: 190.w, height: 190.w,
+                  width: 190.w,
+                  height: 190.w,
                   padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -467,17 +506,26 @@ class _TotpSetupSheetState extends State<TotpSetupSheet> {
                     border: Border.all(color: Colors.grey.shade300),
                   ),
                   child: qrBytes != null
-                      ? Image.memory(qrBytes, fit: BoxFit.contain,
+                      ? Image.memory(qrBytes,
+                          fit: BoxFit.contain,
                           errorBuilder: (_, __, ___) => Center(
-                              child: Text('QR failed to load', style: TextStyle(color: Colors.red, fontSize: 12.sp))))
-                      : Center(child: Text('QR unavailable', style: TextStyle(color: Colors.grey, fontSize: 12.sp))),
+                              child: Text('QR failed to load',
+                                  style: TextStyle(
+                                      color: Colors.red, fontSize: 12.sp))))
+                      : Center(
+                          child: Text('QR unavailable',
+                              style: TextStyle(
+                                  color: Colors.grey, fontSize: 12.sp))),
                 ),
               ),
               SizedBox(height: 16.h),
               // Manual secret
               if (widget.setup.secret.isNotEmpty) ...[
                 Text('Or enter this key manually:',
-                    style: TextStyle(fontSize: 12.5.sp, fontWeight: FontWeight.w500, color: Colors.grey.shade700)),
+                    style: TextStyle(
+                        fontSize: 12.5.sp,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade700)),
                 SizedBox(height: 8.h),
                 Row(children: [
                   Expanded(
@@ -489,7 +537,11 @@ class _TotpSetupSheetState extends State<TotpSetupSheet> {
                         border: Border.all(color: Colors.grey.shade300),
                       ),
                       child: Text(_formatSecret(widget.setup.secret),
-                          style: TextStyle(fontSize: 14.sp, fontFamily: 'monospace', fontWeight: FontWeight.w600, letterSpacing: 1.5)),
+                          style: TextStyle(
+                              fontSize: 14.sp,
+                              fontFamily: 'monospace',
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1.5)),
                     ),
                   ),
                   SizedBox(width: 8.w),
@@ -497,8 +549,11 @@ class _TotpSetupSheetState extends State<TotpSetupSheet> {
                     onTap: () => _copy(widget.setup.secret, 'Key'),
                     child: Container(
                       padding: EdgeInsets.all(12.w),
-                      decoration: BoxDecoration(color: Colors.blue.shade700, borderRadius: BorderRadius.circular(8.r)),
-                      child: Icon(Icons.copy_rounded, color: Colors.white, size: 20.sp),
+                      decoration: BoxDecoration(
+                          color: Colors.blue.shade700,
+                          borderRadius: BorderRadius.circular(8.r)),
+                      child: Icon(Icons.copy_rounded,
+                          color: Colors.white, size: 20.sp),
                     ),
                   ),
                 ]),
@@ -507,15 +562,21 @@ class _TotpSetupSheetState extends State<TotpSetupSheet> {
               // Backup codes (collapsible)
               if (widget.setup.backupCodes.isNotEmpty) ...[
                 InkWell(
-                  onTap: () => setState(() => _showBackupCodes = !_showBackupCodes),
+                  onTap: () =>
+                      setState(() => _showBackupCodes = !_showBackupCodes),
                   child: Row(children: [
-                    Icon(Icons.key_rounded, color: Colors.orange.shade700, size: 18.sp),
+                    Icon(Icons.key_rounded,
+                        color: Colors.orange.shade700, size: 18.sp),
                     SizedBox(width: 8.w),
                     Text('Backup codes (${widget.setup.backupCodes.length})',
-                        style: TextStyle(fontSize: 13.5.sp, fontWeight: FontWeight.w600)),
+                        style: TextStyle(
+                            fontSize: 13.5.sp, fontWeight: FontWeight.w600)),
                     const Spacer(),
                     Text(_showBackupCodes ? 'Hide' : 'Show',
-                        style: TextStyle(fontSize: 13.sp, color: const Color(0xFF4834D4), fontWeight: FontWeight.w600)),
+                        style: TextStyle(
+                            fontSize: 13.sp,
+                            color: const Color(0xFF4834D4),
+                            fontWeight: FontWeight.w600)),
                   ]),
                 ),
                 if (_showBackupCodes) ...[
@@ -527,60 +588,106 @@ class _TotpSetupSheetState extends State<TotpSetupSheet> {
                       borderRadius: BorderRadius.circular(8.r),
                       border: Border.all(color: Colors.amber.shade200),
                     ),
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('Save these now — each works once if you lose your authenticator. You won\'t see them again.',
-                          style: TextStyle(fontSize: 11.5.sp, fontWeight: FontWeight.w600, color: Colors.amber.shade900)),
-                      SizedBox(height: 10.h),
-                      Wrap(spacing: 8.w, runSpacing: 8.h, children: widget.setup.backupCodes.map((code) {
-                        final f = code.length >= 8 ? '${code.substring(0, 4)}-${code.substring(4)}' : code;
-                        return InkWell(
-                          onTap: () => _copy(code, 'Backup code'),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(6.r), border: Border.all(color: Colors.grey.shade300)),
-                            child: Text(f, style: TextStyle(fontSize: 13.sp, fontFamily: 'monospace', fontWeight: FontWeight.w600)),
-                          ),
-                        );
-                      }).toList()),
-                    ]),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                              'Save these now — each works once if you lose your authenticator. You won\'t see them again.',
+                              style: TextStyle(
+                                  fontSize: 11.5.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.amber.shade900)),
+                          SizedBox(height: 10.h),
+                          Wrap(
+                              spacing: 8.w,
+                              runSpacing: 8.h,
+                              children: widget.setup.backupCodes.map((code) {
+                                final f = code.length >= 8
+                                    ? '${code.substring(0, 4)}-${code.substring(4)}'
+                                    : code;
+                                return InkWell(
+                                  onTap: () => _copy(code, 'Backup code'),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 10.w, vertical: 6.h),
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius:
+                                            BorderRadius.circular(6.r),
+                                        border: Border.all(
+                                            color: Colors.grey.shade300)),
+                                    child: Text(f,
+                                        style: TextStyle(
+                                            fontSize: 13.sp,
+                                            fontFamily: 'monospace',
+                                            fontWeight: FontWeight.w600)),
+                                  ),
+                                );
+                              }).toList()),
+                        ]),
                   ),
                 ],
                 SizedBox(height: 18.h),
               ],
               // Verify
               Text('Enter the 6-digit code from your app',
-                  style: TextStyle(fontSize: 13.5.sp, fontWeight: FontWeight.w600, color: Colors.grey.shade800)),
+                  style: TextStyle(
+                      fontSize: 13.5.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade800)),
               SizedBox(height: 12.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(6, (i) => SizedBox(
-                  width: 45.w, height: 55.h,
-                  child: TextField(
-                    controller: _c[i], focusNode: _f[i],
-                    keyboardType: TextInputType.number, textAlign: TextAlign.center, maxLength: 1,
-                    style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w600),
-                    decoration: InputDecoration(
-                      counterText: '', contentPadding: EdgeInsets.zero, filled: true, fillColor: Colors.grey.shade50,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide(color: Colors.grey.shade400)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide(color: Colors.blue.shade700, width: 2)),
-                    ),
-                    onChanged: (v) => _onChanged(v, i),
-                  ),
-                )),
+                children: List.generate(
+                    6,
+                    (i) => SizedBox(
+                          width: 45.w,
+                          height: 55.h,
+                          child: TextField(
+                            controller: _c[i],
+                            focusNode: _f[i],
+                            keyboardType: TextInputType.number,
+                            textAlign: TextAlign.center,
+                            maxLength: 1,
+                            style: TextStyle(
+                                fontSize: 24.sp, fontWeight: FontWeight.w600),
+                            decoration: InputDecoration(
+                              counterText: '',
+                              contentPadding: EdgeInsets.zero,
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  borderSide:
+                                      BorderSide(color: Colors.grey.shade400)),
+                              focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  borderSide: BorderSide(
+                                      color: Colors.blue.shade700, width: 2)),
+                            ),
+                            onChanged: (v) => _onChanged(v, i),
+                          ),
+                        )),
               ),
               SizedBox(height: 22.h),
               SizedBox(
-                width: double.infinity, height: 50.h,
+                width: double.infinity,
+                height: 50.h,
                 child: ElevatedButton(
                   onPressed: _verifying ? null : _submit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4834D4), foregroundColor: Colors.white,
-                    disabledBackgroundColor: const Color(0xFF4834D4).withValues(alpha: 0.5),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                    backgroundColor: const Color(0xFF4834D4),
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor:
+                        const Color(0xFF4834D4).withValues(alpha: 0.5),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r)),
                   ),
                   child: _verifying
                       ? LazerVaultLoader.small()
-                      : Text('Verify and Enable', style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.w600)),
+                      : Text('Verify and Enable',
+                          style: GoogleFonts.inter(
+                              fontSize: 16.sp, fontWeight: FontWeight.w600)),
                 ),
               ),
             ],

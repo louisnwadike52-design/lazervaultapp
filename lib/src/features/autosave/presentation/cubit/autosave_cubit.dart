@@ -289,8 +289,7 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
             // (Model, Model) => Model of 'combine'". Wrapping with
             // `List<E>.from` materialises a fresh list whose runtime
             // element type is exactly E.
-            final normalised =
-                List<AutoSaveRuleEntity>.from(rules);
+            final normalised = List<AutoSaveRuleEntity>.from(rules);
             _cachedRules = normalised;
             _lastFetch = DateTime.now();
             emit(AutoSaveDashboardLoaded(
@@ -419,8 +418,7 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
 
         statsResult.fold(
           (_) => _cachedStatistics = null,
-          (stats) =>
-              _cachedStatistics = stats as AutoSaveStatisticsEntity,
+          (stats) => _cachedStatistics = stats as AutoSaveStatisticsEntity,
         );
 
         _emitFilteredAndSorted(filter, searchQuery, sort);
@@ -604,9 +602,8 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
       amountValue: oldRule.amountValue,
       sourceAccountId: oldRule.sourceAccountId,
       destinationAccountId: oldRule.destinationAccountId,
-      status: action == 'resume'
-          ? AutoSaveStatus.active
-          : AutoSaveStatus.paused,
+      status:
+          action == 'resume' ? AutoSaveStatus.active : AutoSaveStatus.paused,
       frequency: oldRule.frequency,
       scheduleTime: oldRule.scheduleTime,
       scheduleDay: oldRule.scheduleDay,

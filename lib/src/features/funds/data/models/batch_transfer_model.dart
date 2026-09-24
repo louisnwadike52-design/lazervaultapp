@@ -33,10 +33,12 @@ class BatchTransferResultModel extends BatchTransferResult {
       failureReason:
           proto.failureReason.isNotEmpty ? proto.failureReason : null,
       reference: proto.reference.isNotEmpty ? proto.reference : null,
-      destinationBankCode:
-          proto.destinationBankCode.isNotEmpty ? proto.destinationBankCode : null,
-      destinationBankName:
-          proto.destinationBankName.isNotEmpty ? proto.destinationBankName : null,
+      destinationBankCode: proto.destinationBankCode.isNotEmpty
+          ? proto.destinationBankCode
+          : null,
+      destinationBankName: proto.destinationBankName.isNotEmpty
+          ? proto.destinationBankName
+          : null,
       transferType:
           proto.transferType.isNotEmpty ? proto.transferType : 'internal',
       beneficiaryName:
@@ -61,7 +63,8 @@ class BatchTransferHistoryModel extends BatchTransferHistoryEntity {
     super.scheduledAt,
   });
 
-  factory BatchTransferHistoryModel.fromProto(payments.BatchTransferSummary proto) {
+  factory BatchTransferHistoryModel.fromProto(
+      payments.BatchTransferSummary proto) {
     return BatchTransferHistoryModel(
       batchId: proto.batchId,
       totalRecipients: proto.totalRecipients,
@@ -89,7 +92,8 @@ class BatchTransferDetailModel extends BatchTransferDetailEntity {
     required super.sourceAccountName,
   });
 
-  factory BatchTransferDetailModel.fromProto(payments.GetBatchTransferDetailResponse proto) {
+  factory BatchTransferDetailModel.fromProto(
+      payments.GetBatchTransferDetailResponse proto) {
     final summary = proto.hasSummary()
         ? BatchTransferHistoryModel.fromProto(proto.summary)
         : BatchTransferHistoryModel(

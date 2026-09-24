@@ -50,7 +50,9 @@ class _InsurancePurchaseReceiptScreenState
         final ws = GetIt.I<BalanceWebSocketService>();
         _purchaseSub = ws.insurancePurchaseEvents.listen((e) {
           if (!mounted) return;
-          if (e.isPurchaseTerminal || e.status == 'completed' || e.status == 'active') {
+          if (e.isPurchaseTerminal ||
+              e.status == 'completed' ||
+              e.status == 'active') {
             _refreshStatus();
           }
         });
@@ -100,8 +102,8 @@ class _InsurancePurchaseReceiptScreenState
     if (ref.isEmpty || _refreshing) return;
     _refreshing = true;
     try {
-      final updated =
-          await GetIt.I<InsuranceRepository>().getInsurancePurchaseStatus(reference: ref);
+      final updated = await GetIt.I<InsuranceRepository>()
+          .getInsurancePurchaseStatus(reference: ref);
       if (mounted) setState(() => _pr = updated);
     } catch (_) {
       // Leave the "confirming" state; pull-to-refresh / next WS event retries.
@@ -183,116 +185,60 @@ class _InsurancePurchaseReceiptScreenState
             padding: EdgeInsets.symmetric(horizontal: 24.w),
             child: Column(
               children: [
-              SizedBox(height: 40.h),
+                SizedBox(height: 40.h),
 
-              // Status header (confirmed = green check, processing = amber clock)
-              Container(
-                width: 80.w,
-                height: 80.w,
-                decoration: BoxDecoration(
-                  color: headerColor.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
+                // Status header (confirmed = green check, processing = amber clock)
+                Container(
+                  width: 80.w,
+                  height: 80.w,
+                  decoration: BoxDecoration(
+                    color: headerColor.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: confirmed
+                      ? Icon(headerIcon, color: headerColor, size: 48.sp)
+                      : LazerVaultLoader.medium(),
                 ),
-                child: confirmed
-                    ? Icon(headerIcon, color: headerColor, size: 48.sp)
-                    : LazerVaultLoader.medium(),
-              ),
-              SizedBox(height: 24.h),
+                SizedBox(height: 24.h),
 
-              Text(
-                headerTitle,
-                style: GoogleFonts.inter(
-                  fontSize: 24.sp,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
+                Text(
+                  headerTitle,
+                  style: GoogleFonts.inter(
+                    fontSize: 24.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                headerSubtitle,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 14.sp,
-                  color: const Color(0xFF9CA3AF),
+                SizedBox(height: 8.h),
+                Text(
+                  headerSubtitle,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    color: const Color(0xFF9CA3AF),
+                  ),
                 ),
-              ),
-              SizedBox(height: 28.h),
+                SizedBox(height: 28.h),
 
-              // Hero premium amount — mirrors the send-funds receipt.
-              Text(
-                'Premium paid',
-                style: GoogleFonts.inter(
-                    fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
-              ),
-              SizedBox(height: 6.h),
-              Text(
-                '${_currencySymbol(quote.currency)}${formatter.format(quote.premium)}',
-                style: GoogleFonts.inter(
-                  fontSize: 34.sp,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                  height: 1.0,
+                // Hero premium amount — mirrors the send-funds receipt.
+                Text(
+                  'Premium paid',
+                  style: GoogleFonts.inter(
+                      fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
                 ),
-              ),
-              SizedBox(height: 32.h),
-
-              // Policy details card
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(20.w),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1F1F1F),
-                  borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(color: const Color(0xFF2D2D2D)),
+                SizedBox(height: 6.h),
+                Text(
+                  '${_currencySymbol(quote.currency)}${formatter.format(quote.premium)}',
+                  style: GoogleFonts.inter(
+                    fontSize: 34.sp,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    height: 1.0,
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Policy Details',
-                      style: GoogleFonts.inter(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF6366F1),
-                      ),
-                    ),
-                    SizedBox(height: 20.h),
+                SizedBox(height: 32.h),
 
-                    _buildReceiptRow('Policy Number', policyNumber),
-                    _buildReceiptRow('Status', status.replaceAll('_', ' ').toUpperCase()),
-                    Divider(color: const Color(0xFF2D2D2D), height: 24.h),
-                    _buildReceiptRow('Product', product.name),
-                    _buildReceiptRow('Provider', product.providerName),
-                    _buildReceiptRow('Category', product.category.displayName),
-                    Divider(color: const Color(0xFF2D2D2D), height: 24.h),
-                    _buildReceiptRow('Premium Amount',
-                        '${_currencySymbol(quote.currency)}${formatter.format(quote.premium)}',
-                        isAmount: true),
-                    if (coverageAmount != null && coverageAmount > 0)
-                      _buildReceiptRow('Sum Insured',
-                          '${_currencySymbol(quote.currency)}${formatter.format(coverageAmount)}'),
-                    if (quote.coverageItems.isNotEmpty)
-                      _buildReceiptRow('Coverage', quote.coverageItems.first),
-                    SizedBox(height: 16.h),
-                    if (policyStart != null)
-                      _buildReceiptRow('Start Date',
-                          DateFormat('MMM dd, yyyy').format(policyStart)),
-                    if (policyEnd != null)
-                      _buildReceiptRow('End Date',
-                          DateFormat('MMM dd, yyyy').format(policyEnd)),
-                    _buildReceiptRow('Purchase Date',
-                        DateFormat('MMM dd, yyyy • HH:mm').format(now)),
-                    _buildReceiptRow('Reference',
-                        purchaseResult is Map
-                            ? (purchaseResult as Map)['reference'] ?? 'N/A'
-                            : (purchaseResult.reference?.toString() ?? 'N/A')),
-                  ],
-                ),
-              ),
-              SizedBox(height: 24.h),
-
-              // Coverage highlights
-              if (quote.coverageItems.isNotEmpty) ...[
+                // Policy details card
                 Container(
                   width: double.infinity,
                   padding: EdgeInsets.all(20.w),
@@ -305,109 +251,168 @@ class _InsurancePurchaseReceiptScreenState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Coverage Highlights',
+                        'Policy Details',
                         style: GoogleFonts.inter(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: const Color(0xFF6366F1),
                         ),
                       ),
+                      SizedBox(height: 20.h),
+                      _buildReceiptRow('Policy Number', policyNumber),
+                      _buildReceiptRow(
+                          'Status', status.replaceAll('_', ' ').toUpperCase()),
+                      Divider(color: const Color(0xFF2D2D2D), height: 24.h),
+                      _buildReceiptRow('Product', product.name),
+                      _buildReceiptRow('Provider', product.providerName),
+                      _buildReceiptRow(
+                          'Category', product.category.displayName),
+                      Divider(color: const Color(0xFF2D2D2D), height: 24.h),
+                      _buildReceiptRow('Premium Amount',
+                          '${_currencySymbol(quote.currency)}${formatter.format(quote.premium)}',
+                          isAmount: true),
+                      if (coverageAmount != null && coverageAmount > 0)
+                        _buildReceiptRow('Sum Insured',
+                            '${_currencySymbol(quote.currency)}${formatter.format(coverageAmount)}'),
+                      if (quote.coverageItems.isNotEmpty)
+                        _buildReceiptRow('Coverage', quote.coverageItems.first),
                       SizedBox(height: 16.h),
-                      ...quote.coverageItems.take(4).map((item) => Padding(
-                        padding: EdgeInsets.only(bottom: 8.h),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Icon(
-                              Icons.check_circle,
-                              color: const Color(0xFF10B981),
-                              size: 16.sp,
-                            ),
-                            SizedBox(width: 12.w),
-                            Expanded(
-                              child: Text(
-                                item,
-                                style: GoogleFonts.inter(
-                                  fontSize: 13.sp,
-                                  color: Colors.white,
-                                  height: 1.4,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )),
+                      if (policyStart != null)
+                        _buildReceiptRow('Start Date',
+                            DateFormat('MMM dd, yyyy').format(policyStart)),
+                      if (policyEnd != null)
+                        _buildReceiptRow('End Date',
+                            DateFormat('MMM dd, yyyy').format(policyEnd)),
+                      _buildReceiptRow('Purchase Date',
+                          DateFormat('MMM dd, yyyy • HH:mm').format(now)),
+                      _buildReceiptRow(
+                          'Reference',
+                          purchaseResult is Map
+                              ? (purchaseResult as Map)['reference'] ?? 'N/A'
+                              : (purchaseResult.reference?.toString() ??
+                                  'N/A')),
                     ],
                   ),
                 ),
                 SizedBox(height: 24.h),
-              ],
 
-              // Action buttons — Share + View Certificate (themed in-app
-              // webview sheet), then a full-width Done.
-              Row(
-                children: [
-                  Expanded(
-                    child: _outlinedCta(
-                      icon: Icons.ios_share_rounded,
-                      label: 'Share',
-                      onTap: () => _shareReceipt(
-                        policyNumber: policyNumber,
-                        productName: product.name,
-                        provider: product.providerName,
-                        amount:
-                            '${_currencySymbol(quote.currency)}${formatter.format(quote.premium)}',
-                        reference: _referenceStr(),
-                        status: status,
-                      ),
+                // Coverage highlights
+                if (quote.coverageItems.isNotEmpty) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(20.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1F1F1F),
+                      borderRadius: BorderRadius.circular(16.r),
+                      border: Border.all(color: const Color(0xFF2D2D2D)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Coverage Highlights',
+                          style: GoogleFonts.inter(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(height: 16.h),
+                        ...quote.coverageItems.take(4).map((item) => Padding(
+                              padding: EdgeInsets.only(bottom: 8.h),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(
+                                    Icons.check_circle,
+                                    color: const Color(0xFF10B981),
+                                    size: 16.sp,
+                                  ),
+                                  SizedBox(width: 12.w),
+                                  Expanded(
+                                    child: Text(
+                                      item,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13.sp,
+                                        color: Colors.white,
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )),
+                      ],
                     ),
                   ),
-                  if (certificateUrl.isNotEmpty) ...[
-                    SizedBox(width: 12.w),
+                  SizedBox(height: 24.h),
+                ],
+
+                // Action buttons — Share + View Certificate (themed in-app
+                // webview sheet), then a full-width Done.
+                Row(
+                  children: [
                     Expanded(
                       child: _outlinedCta(
-                        icon: Icons.workspace_premium_rounded,
-                        label: 'Certificate',
-                        onTap: () => _viewCertificate(certificateUrl),
+                        icon: Icons.ios_share_rounded,
+                        label: 'Share',
+                        onTap: () => _shareReceipt(
+                          policyNumber: policyNumber,
+                          productName: product.name,
+                          provider: product.providerName,
+                          amount:
+                              '${_currencySymbol(quote.currency)}${formatter.format(quote.premium)}',
+                          reference: _referenceStr(),
+                          status: status,
+                        ),
                       ),
                     ),
+                    if (certificateUrl.isNotEmpty) ...[
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: _outlinedCta(
+                          icon: Icons.workspace_premium_rounded,
+                          label: 'Certificate',
+                          onTap: () => _viewCertificate(certificateUrl),
+                        ),
+                      ),
+                    ],
                   ],
-                ],
-              ),
-              SizedBox(height: 12.h),
-              SizedBox(
-                width: double.infinity,
-                height: 52.h,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).popUntil((route) => route.isFirst);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6366F1),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
+                ),
+                SizedBox(height: 12.h),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52.h,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).popUntil((route) => route.isFirst);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF6366F1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    'Done',
-                    style: GoogleFonts.inter(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                    child: Text(
+                      'Done',
+                      style: GoogleFonts.inter(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              SizedBox(height: 16.h),
-              Text(
-                'You can view your policy details in the Insurance section',
-                style: GoogleFonts.inter(
-                  fontSize: 12.sp,
-                  color: const Color(0xFF9CA3AF),
+                SizedBox(height: 16.h),
+                Text(
+                  'You can view your policy details in the Insurance section',
+                  style: GoogleFonts.inter(
+                    fontSize: 12.sp,
+                    color: const Color(0xFF9CA3AF),
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+              ],
             ),
           ),
         ),
@@ -473,7 +478,8 @@ class _InsurancePurchaseReceiptScreenState
     SharePlus.instance.share(ShareParams(
         // iOS: a non-zero popover anchor is required — CGRectZero throws
         // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),text: text));
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+        text: text));
   }
 
   Widget _buildReceiptRow(String label, String value, {bool isAmount = false}) {

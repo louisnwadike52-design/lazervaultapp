@@ -26,8 +26,8 @@ class AddRecipientSheet {
           // on token retrieval; the saved tab handles the loading state.
           () async {
             try {
-              final token = await serviceLocator<SecureStorageService>()
-                  .getAccessToken();
+              final token =
+                  await serviceLocator<SecureStorageService>().getAccessToken();
               if (token != null && token.isNotEmpty) {
                 await cubit.getRecipients(accessToken: token);
               }
@@ -38,8 +38,7 @@ class AddRecipientSheet {
           return cubit;
         },
         child: _AddRecipientSheetBody(
-            currency: currency,
-            existingAccountNumbers: existingAccountNumbers),
+            currency: currency, existingAccountNumbers: existingAccountNumbers),
       ),
     );
   }

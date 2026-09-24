@@ -23,10 +23,12 @@ class PortfolioRebalanceCarousel extends StatefulWidget {
   });
 
   @override
-  State<PortfolioRebalanceCarousel> createState() => _PortfolioRebalanceCarouselState();
+  State<PortfolioRebalanceCarousel> createState() =>
+      _PortfolioRebalanceCarouselState();
 }
 
-class _PortfolioRebalanceCarouselState extends State<PortfolioRebalanceCarousel> {
+class _PortfolioRebalanceCarouselState
+    extends State<PortfolioRebalanceCarousel> {
   late PageController _pageController;
   int _currentPage = 0;
   final int _totalPages = 3;
@@ -127,8 +129,10 @@ class _PortfolioRebalanceCarouselState extends State<PortfolioRebalanceCarousel>
       final targetValue = (targetPercentage / 100) * totalValue;
       final difference = targetValue - currentValue;
 
-      if (difference.abs() > 10) { // Only rebalance if difference > $10
-        final shares = (difference / (holding.totalValue / holding.shares)).round();
+      if (difference.abs() > 10) {
+        // Only rebalance if difference > $10
+        final shares =
+            (difference / (holding.totalValue / holding.shares)).round();
         if (shares != 0) {
           _proposedTrades.add(RebalanceTrade(
             symbol: holding.symbol,
@@ -146,9 +150,11 @@ class _PortfolioRebalanceCarouselState extends State<PortfolioRebalanceCarousel>
   bool _validateCurrentPage() {
     switch (_currentPage) {
       case 0: // Allocation
-        final totalAllocation = _targetAllocations.values.fold(0.0, (sum, val) => sum + val);
+        final totalAllocation =
+            _targetAllocations.values.fold(0.0, (sum, val) => sum + val);
         if ((totalAllocation - 100.0).abs() > 0.1) {
-          _showError('Total allocation must equal 100%. Current: ${totalAllocation.toStringAsFixed(1)}%');
+          _showError(
+              'Total allocation must equal 100%. Current: ${totalAllocation.toStringAsFixed(1)}%');
           return false;
         }
         return true;
@@ -204,9 +210,9 @@ class _PortfolioRebalanceCarouselState extends State<PortfolioRebalanceCarousel>
 
   void _proceedToProcessing() {
     Get.to(() => PortfolioRebalanceProcessingScreen(
-      trades: _proposedTrades,
-      strategy: _strategy,
-    ));
+          trades: _proposedTrades,
+          strategy: _strategy,
+        ));
   }
 
   @override
@@ -279,7 +285,10 @@ class _PortfolioRebalanceCarouselState extends State<PortfolioRebalanceCarousel>
                       borderRadius: BorderRadius.circular(4.r),
                       gradient: index <= _currentPage
                           ? const LinearGradient(
-                              colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                              colors: [
+                                Color(0xFF6366F1),
+                                Color.fromARGB(255, 78, 3, 208)
+                              ],
                             )
                           : null,
                       color: index > _currentPage ? Colors.grey[800] : null,
@@ -356,7 +365,9 @@ class _PortfolioRebalanceCarouselState extends State<PortfolioRebalanceCarousel>
               ),
             ),
             child: Text(
-              _currentPage == _totalPages - 1 ? 'Rebalance Portfolio' : 'Continue',
+              _currentPage == _totalPages - 1
+                  ? 'Rebalance Portfolio'
+                  : 'Continue',
               style: GoogleFonts.inter(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,

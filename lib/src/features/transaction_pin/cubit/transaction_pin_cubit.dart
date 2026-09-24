@@ -51,8 +51,8 @@ class TransactionPinCubit extends Cubit<TransactionPinState> {
     emit(state.copyWith(isLoading: true, errorMessage: null));
 
     try {
-      final hasPin =
-          await transactionPinService.checkUserHasPin(forceRefresh: forceRefresh);
+      final hasPin = await transactionPinService.checkUserHasPin(
+          forceRefresh: forceRefresh);
       emit(state.copyWith(
         hasPin: hasPin,
         isLoading: false,

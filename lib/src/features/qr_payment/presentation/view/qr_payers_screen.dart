@@ -93,10 +93,9 @@ class _QRPayersScreenState extends State<QRPayersScreen> {
                             ? _message(
                                 'No payments yet. Share the QR code — every payment lands here with its own receipt.')
                             : ListView.builder(
-                                physics:
-                                    const AlwaysScrollableScrollPhysics(),
-                                padding: EdgeInsets.fromLTRB(
-                                    16.w, 4.h, 16.w, 16.h),
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                padding:
+                                    EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 16.h),
                                 itemCount: _payments.length,
                                 itemBuilder: (_, i) =>
                                     _paymentTile(_payments[i]),
@@ -123,7 +122,8 @@ class _QRPayersScreenState extends State<QRPayersScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(widget.qrCode.description.isNotEmpty
+                Text(
+                    widget.qrCode.description.isNotEmpty
                         ? widget.qrCode.description
                         : widget.qrCode.qrCode,
                     maxLines: 1,

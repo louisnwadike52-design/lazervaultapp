@@ -82,7 +82,8 @@ class RecipientModel {
   ///   * a bank explicitly identified as LazerVault (the LazerVault tab / a
   ///     recipient returned by a LazerVault user lookup).
   bool get canSendAsInternal {
-    if (internalUserId != null && internalUserId!.trim().isNotEmpty) return true;
+    if (internalUserId != null && internalUserId!.trim().isNotEmpty)
+      return true;
     return bankName.trim().toLowerCase() == 'lazervault';
   }
 
@@ -173,9 +174,8 @@ class RecipientModel {
     }
 
     // Extract internal user ID (string UUID)
-    final internalUid = recipient.internalUserId.isNotEmpty
-        ? recipient.internalUserId
-        : null;
+    final internalUid =
+        recipient.internalUserId.isNotEmpty ? recipient.internalUserId : null;
 
     return RecipientModel(
       id: recipient.id.toString(),
@@ -185,9 +185,11 @@ class RecipientModel {
       isFavorite: recipient.isFavorite,
       isSaved: recipient.isSaved,
       sortCode: recipient.sortCode,
-      countryCode: recipient.countryCode.isNotEmpty ? recipient.countryCode : null,
+      countryCode:
+          recipient.countryCode.isNotEmpty ? recipient.countryCode : null,
       email: recipient.email.isNotEmpty ? recipient.email : null,
-      phoneNumber: recipient.phoneNumber.isNotEmpty ? recipient.phoneNumber : null,
+      phoneNumber:
+          recipient.phoneNumber.isNotEmpty ? recipient.phoneNumber : null,
       currency: recipient.currency.isNotEmpty ? recipient.currency : null,
       swiftCode: recipient.swiftCode.isNotEmpty ? recipient.swiftCode : null,
       iban: recipient.iban.isNotEmpty ? recipient.iban : null,
@@ -303,4 +305,4 @@ class RecipientModel {
       internalUserId: internalUserId ?? this.internalUserId,
     );
   }
-} 
+}

@@ -21,7 +21,8 @@ class UpcomingRemindersCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => serviceLocator<PlanMyDayCubit>()..loadReminders(enabledOnly: true),
+      create: (_) =>
+          serviceLocator<PlanMyDayCubit>()..loadReminders(enabledOnly: true),
       child: const _UpcomingRemindersView(),
     );
   }
@@ -42,7 +43,9 @@ class _UpcomingRemindersView extends StatelessWidget {
       builder: (context, state) {
         if (state is! ReminderListLoaded) return const SizedBox.shrink();
         final now = DateTime.now();
-        final upcoming = state.reminders.where((r) => r.isActive && _target(r).isAfter(now)).toList()
+        final upcoming = state.reminders
+            .where((r) => r.isActive && _target(r).isAfter(now))
+            .toList()
           ..sort((a, b) => _target(a).compareTo(_target(b)));
         if (upcoming.isEmpty) return const SizedBox.shrink();
         final show = upcoming.take(3).toList();
@@ -59,16 +62,23 @@ class _UpcomingRemindersView extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(Icons.notifications_active_outlined, size: 18.sp, color: _accent),
+                  Icon(Icons.notifications_active_outlined,
+                      size: 18.sp, color: _accent),
                   SizedBox(width: 8.w),
                   Text('Upcoming reminders',
                       style: GoogleFonts.inter(
-                          color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600)),
                   const Spacer(),
                   GestureDetector(
-                    onTap: () => Navigator.push(context, ReminderManagementScreen.route()),
+                    onTap: () => Navigator.push(
+                        context, ReminderManagementScreen.route()),
                     child: Text('See all',
-                        style: GoogleFonts.inter(color: _accent, fontSize: 12.sp, fontWeight: FontWeight.w600)),
+                        style: GoogleFonts.inter(
+                            color: _accent,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),
@@ -95,17 +105,21 @@ class _UpcomingRemindersView extends StatelessWidget {
             Container(
               width: 6.w,
               height: 6.w,
-              decoration: BoxDecoration(color: r.getColor(), shape: BoxShape.circle),
+              decoration:
+                  BoxDecoration(color: r.getColor(), shape: BoxShape.circle),
             ),
             SizedBox(width: 10.w),
             Expanded(
               child: Text(r.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
+                  style:
+                      GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
             ),
             SizedBox(width: 8.w),
-            Text(when, style: GoogleFonts.inter(color: Colors.grey[500], fontSize: 11.sp)),
+            Text(when,
+                style: GoogleFonts.inter(
+                    color: Colors.grey[500], fontSize: 11.sp)),
           ],
         ),
       ),

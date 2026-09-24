@@ -80,10 +80,9 @@ class PasswordResetVerificationResult {
   });
 }
 
- 
 /// Result of requesting a phone signup OTP.
 class PhoneSignupOtpResult {
-  final int expiresInSeconds;   // OTP validity window
+  final int expiresInSeconds; // OTP validity window
   final int resendAfterSeconds; // cooldown before another request is allowed
   const PhoneSignupOtpResult({
     required this.expiresInSeconds,
@@ -103,8 +102,8 @@ class StepUpVerifyFailure extends Failure {
 
 class StepUpRequiredFailure extends Failure {
   final String stepUpToken;
-  final String stepUpMethod;  // "email" | "sms"
-  final String destination;   // masked, for display
+  final String stepUpMethod; // "email" | "sms"
+  final String destination; // masked, for display
 
   /// Seconds the code is valid for, straight from the server. The OTP screen
   /// counts down from this instead of a constant of its own, so the admin can
@@ -162,16 +161,16 @@ class TwoFactorRequiredFailure extends Failure {
 /// A device the user has logged in from (security center / trusted devices).
 class TrustedDevice {
   final String deviceUuid;
-  final String platform;     // ios | android
+  final String platform; // ios | android
   final String model;
   final String osVersion;
   final String appVersion;
-  final String trustStatus;  // pending | trusted | revoked | compromised
+  final String trustStatus; // pending | trusted | revoked | compromised
   final String lastIp;
   final String lastLocation;
   final DateTime? firstSeenAt;
   final DateTime? lastLoginAt;
-  final bool isCurrent;      // true when this is the requesting device
+  final bool isCurrent; // true when this is the requesting device
 
   const TrustedDevice({
     required this.deviceUuid,
@@ -193,11 +192,11 @@ class TrustedDevice {
 /// Outcome of an in-app account-deletion request.
 class AccountDeletionOutcome {
   final bool success;
-  final String status;          // "pending_deletion" on success
-  final String scheduledAt;     // ISO 8601 — when the account is finalized
+  final String status; // "pending_deletion" on success
+  final String scheduledAt; // ISO 8601 — when the account is finalized
   final int gracePeriodDays;
   final String message;
-  final String errorCode;       // "FUNDS_PRESENT" when blocked by a balance/hold
+  final String errorCode; // "FUNDS_PRESENT" when blocked by a balance/hold
 
   const AccountDeletionOutcome({
     required this.success,

@@ -56,7 +56,8 @@ class GiftCardSalePdfService {
   static Future<pw.MemoryImage?> _loadLogo() async {
     if (_logo != null) return _logo;
     try {
-      final data = await rootBundle.load('assets/images/logos/lazervault-full-logo.png');
+      final data =
+          await rootBundle.load('assets/images/logos/lazervault-full-logo.png');
       _logo = pw.MemoryImage(data.buffer.asUint8List());
     } catch (_) {
       _logo = null;
@@ -129,7 +130,8 @@ class GiftCardSalePdfService {
               pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Text('Gift Card Sale Receipt', style: _style(size: 18, bold: true)),
+                  pw.Text('Gift Card Sale Receipt',
+                      style: _style(size: 18, bold: true)),
                   pw.SizedBox(height: 4),
                   pw.Text(_displayDateFormat.format(DateTime.now()),
                       style: _style(size: 9, color: PdfColors.grey700)),
@@ -153,31 +155,40 @@ class GiftCardSalePdfService {
                 pw.Text(payoutLabel.toUpperCase(),
                     style: _style(size: 8, color: PdfColors.grey600)),
                 pw.SizedBox(height: 6),
-                pw.Text('NGN ${_money(payout)}', style: _style(size: 24, bold: true)),
+                pw.Text('NGN ${_money(payout)}',
+                    style: _style(size: 24, bold: true)),
                 pw.SizedBox(height: 10),
                 pw.Container(
-                  padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: pw.BoxDecoration(
                     color: _statusColor(sale.status),
                     borderRadius: pw.BorderRadius.circular(4),
                   ),
                   child: pw.Text(_statusLabel(sale.status),
-                      style: _style(size: 8, bold: true, color: PdfColors.white)),
+                      style:
+                          _style(size: 8, bold: true, color: PdfColors.white)),
                 ),
               ],
             ),
           ),
           pw.SizedBox(height: 20),
-          pw.Text('SALE DETAILS', style: _style(size: 9, bold: true, color: PdfColors.grey700)),
+          pw.Text('SALE DETAILS',
+              style: _style(size: 9, bold: true, color: PdfColors.grey700)),
           pw.SizedBox(height: 8),
           ..._rows([
             ['Card', receiptLine(sale.cardType)],
             ['Face value', '${sale.currency} ${_money(sale.denomination)}'],
             if (sale.ratePercentage > 0)
-              ['Rate', 'NGN ${_money(sale.ratePercentage)} per ${sale.currency}'],
+              [
+                'Rate',
+                'NGN ${_money(sale.ratePercentage)} per ${sale.currency}'
+              ],
             ['Reference', sale.reference],
-            if (sale.providerSaleId.isNotEmpty) ['Provider ref', sale.providerSaleId],
-            if (sale.providerName.isNotEmpty) ['Processed by', sale.providerName],
+            if (sale.providerSaleId.isNotEmpty)
+              ['Provider ref', sale.providerSaleId],
+            if (sale.providerName.isNotEmpty)
+              ['Processed by', sale.providerName],
             if (sale.submittedAt.isNotEmpty) ['Submitted', sale.submittedAt],
             if (sale.reviewedAt.isNotEmpty) ['Reviewed', sale.reviewedAt],
             if (sale.paidAt.isNotEmpty) ['Paid', sale.paidAt],
@@ -193,7 +204,8 @@ class GiftCardSalePdfService {
               decoration: pw.BoxDecoration(
                 color: const PdfColor.fromInt(0xFFFEF2F2),
                 borderRadius: pw.BorderRadius.circular(6),
-                border: pw.Border.all(color: const PdfColor.fromInt(0xFFFECACA)),
+                border:
+                    pw.Border.all(color: const PdfColor.fromInt(0xFFFECACA)),
               ),
               child: pw.Text(receiptLine(sale.rejectionReason),
                   style: _style(size: 10)),
@@ -226,7 +238,8 @@ class GiftCardSalePdfService {
                 children: [
                   pw.SizedBox(
                     width: 130,
-                    child: pw.Text(p[0], style: _style(size: 10, color: PdfColors.grey700)),
+                    child: pw.Text(p[0],
+                        style: _style(size: 10, color: PdfColors.grey700)),
                   ),
                   pw.Expanded(
                     child: pw.Text(p[1], style: _style(size: 10, bold: true)),

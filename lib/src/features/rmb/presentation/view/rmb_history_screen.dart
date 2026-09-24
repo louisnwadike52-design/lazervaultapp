@@ -140,7 +140,8 @@ class _RmbHistoryScreenState extends State<RmbHistoryScreen> {
       // While a filter is active we may still be paging in more history — show a
       // spinner instead of a premature "no match".
       if (_filtering && (_loading || _items.length < _total)) {
-        return const Center(child: CircularProgressIndicator(color: RmbUi.accent));
+        return const Center(
+            child: CircularProgressIndicator(color: RmbUi.accent));
       }
       return Center(
         child: Text(
@@ -176,8 +177,7 @@ class _RmbHistoryScreenState extends State<RmbHistoryScreen> {
           style: TextStyle(color: Colors.white, fontSize: 13.sp),
           decoration: InputDecoration(
             hintText: 'Search by name, bank, account or reference',
-            hintStyle:
-                TextStyle(color: RmbUi.textSecondary, fontSize: 13.sp),
+            hintStyle: TextStyle(color: RmbUi.textSecondary, fontSize: 13.sp),
             prefixIcon:
                 Icon(Icons.search, color: RmbUi.textSecondary, size: 18.sp),
             suffixIcon: _query.isEmpty
@@ -242,8 +242,8 @@ class _RmbHistoryScreenState extends State<RmbHistoryScreen> {
                     ? RmbUi.accent.withValues(alpha: 0.18)
                     : RmbUi.card,
                 borderRadius: BorderRadius.circular(20.r),
-                border: Border.all(
-                    color: selected ? RmbUi.accent : RmbUi.border),
+                border:
+                    Border.all(color: selected ? RmbUi.accent : RmbUi.border),
               ),
               child: Text(label,
                   style: TextStyle(

@@ -9,15 +9,18 @@ abstract class AiScanRepository {
 
   // Image processing
   Future<String> processImage(String imagePath, ScanType scanType);
-  Future<Map<String, dynamic>> extractDataFromImage(String imagePath, ScanType scanType);
-  
+  Future<Map<String, dynamic>> extractDataFromImage(
+      String imagePath, ScanType scanType);
+
   // AI Chat operations
   Future<List<AiChatMessage>> getChatHistory(String sessionId);
   Future<AiChatMessage> sendMessage(String sessionId, String message);
-  Future<AiChatMessage> processAiResponse(String sessionId, String userMessage, Map<String, dynamic>? extractedData);
-  
+  Future<AiChatMessage> processAiResponse(String sessionId, String userMessage,
+      Map<String, dynamic>? extractedData);
+
   // Payment operations
-  Future<PaymentInstruction> generatePaymentInstruction(Map<String, dynamic> extractedData, ScanType scanType);
+  Future<PaymentInstruction> generatePaymentInstruction(
+      Map<String, dynamic> extractedData, ScanType scanType);
   Future<bool> processPayment(PaymentInstruction instruction);
   Future<bool> validatePaymentData(Map<String, dynamic> paymentData);
 
@@ -39,4 +42,4 @@ abstract class AiScanRepository {
   // Backend-driven "Previous scans" history.
   Future<void> recordScanHistory(AiScanHistoryEntry entry);
   Future<List<AiScanHistoryEntry>> listScanHistory();
-} 
+}

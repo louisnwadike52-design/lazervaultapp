@@ -27,11 +27,13 @@ class _AirtimeTransferScreenState extends State<AirtimeTransferScreen> {
   NetworkProvider? _selectedProvider;
   bool _phoneValidated = false;
   String? _phoneError;
+
   /// True while a detection RPC is in flight for the current phone. The
   /// transfer screen always shows the manual grid below, so there's no
   /// "Pick a network" fallback button — when detection returns null the
   /// user just taps a tile.
   bool _isDetectingNetwork = false;
+
   /// Monotonic id so a fast typist's late callback can't overwrite the
   /// network they're now seeing for a different prefix.
   int _detectionRequestId = 0;
@@ -221,7 +223,8 @@ class _AirtimeTransferScreenState extends State<AirtimeTransferScreen> {
                 color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20.sp),
+              child: Icon(Icons.arrow_back_ios_new,
+                  color: Colors.white, size: 20.sp),
             ),
           ),
           SizedBox(width: 16.w),
@@ -285,13 +288,17 @@ class _AirtimeTransferScreenState extends State<AirtimeTransferScreen> {
             onChanged: _validatePhone,
             decoration: InputDecoration(
               hintText: '08012345678',
-              hintStyle: TextStyle(color: const Color(0xFF6B7280), fontSize: 16.sp),
-              prefixIcon: Icon(Icons.phone, color: const Color(0xFF9CA3AF), size: 20.sp),
+              hintStyle:
+                  TextStyle(color: const Color(0xFF6B7280), fontSize: 16.sp),
+              prefixIcon: Icon(Icons.phone,
+                  color: const Color(0xFF9CA3AF), size: 20.sp),
               suffixIcon: _phoneValidated
-                  ? Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 20.sp)
+                  ? Icon(Icons.check_circle,
+                      color: const Color(0xFF10B981), size: 20.sp)
                   : null,
               border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
             ),
           ),
         ),
@@ -323,10 +330,13 @@ class _AirtimeTransferScreenState extends State<AirtimeTransferScreen> {
             style: TextStyle(color: Colors.white, fontSize: 16.sp),
             decoration: InputDecoration(
               hintText: 'Enter name',
-              hintStyle: TextStyle(color: const Color(0xFF6B7280), fontSize: 16.sp),
-              prefixIcon: Icon(Icons.person_outline, color: const Color(0xFF9CA3AF), size: 20.sp),
+              hintStyle:
+                  TextStyle(color: const Color(0xFF6B7280), fontSize: 16.sp),
+              prefixIcon: Icon(Icons.person_outline,
+                  color: const Color(0xFF9CA3AF), size: 20.sp),
               border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
             ),
           ),
         ),
@@ -446,7 +456,8 @@ class _AirtimeTransferScreenState extends State<AirtimeTransferScreen> {
                   : const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                color: isSelected ? provider.type.color : const Color(0xFF2D2D2D),
+                color:
+                    isSelected ? provider.type.color : const Color(0xFF2D2D2D),
                 width: isSelected ? 2 : 1,
               ),
             ),
@@ -477,12 +488,14 @@ class _AirtimeTransferScreenState extends State<AirtimeTransferScreen> {
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
+                      color:
+                          isSelected ? Colors.white : const Color(0xFF9CA3AF),
                     ),
                   ),
                 ),
                 if (isSelected)
-                  Icon(Icons.check_circle, color: provider.type.color, size: 18.sp),
+                  Icon(Icons.check_circle,
+                      color: provider.type.color, size: 18.sp),
               ],
             ),
           ),
@@ -512,12 +525,18 @@ class _AirtimeTransferScreenState extends State<AirtimeTransferScreen> {
           child: TextField(
             controller: _amountController,
             keyboardType: TextInputType.number,
-            style: TextStyle(color: Colors.white, fontSize: 24.sp, fontWeight: FontWeight.w700),
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 24.sp,
+                fontWeight: FontWeight.w700),
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             onChanged: (_) => setState(() {}),
             decoration: InputDecoration(
               hintText: '0',
-              hintStyle: TextStyle(color: const Color(0xFF6B7280), fontSize: 24.sp, fontWeight: FontWeight.w700),
+              hintStyle: TextStyle(
+                  color: const Color(0xFF6B7280),
+                  fontSize: 24.sp,
+                  fontWeight: FontWeight.w700),
               prefixIcon: Padding(
                 padding: EdgeInsets.only(left: 16.w, right: 8.w),
                 child: Text(
@@ -531,7 +550,8 @@ class _AirtimeTransferScreenState extends State<AirtimeTransferScreen> {
               ),
               prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
               border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 18.h),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 18.h),
             ),
           ),
         ),
@@ -581,12 +601,14 @@ class _AirtimeTransferScreenState extends State<AirtimeTransferScreen> {
         if (_amount > 0 && _amount < 50) ...[
           SizedBox(height: 4.h),
           Text('Minimum transfer is \u20A650',
-              style: TextStyle(color: const Color(0xFFEF4444), fontSize: 12.sp)),
+              style:
+                  TextStyle(color: const Color(0xFFEF4444), fontSize: 12.sp)),
         ],
         if (_amount > 50000) ...[
           SizedBox(height: 4.h),
           Text('Maximum transfer is \u20A650,000',
-              style: TextStyle(color: const Color(0xFFEF4444), fontSize: 12.sp)),
+              style:
+                  TextStyle(color: const Color(0xFFEF4444), fontSize: 12.sp)),
         ],
       ],
     );
@@ -617,10 +639,12 @@ class _AirtimeTransferScreenState extends State<AirtimeTransferScreen> {
             maxLength: 100,
             decoration: InputDecoration(
               hintText: 'e.g. For airtime top-up',
-              hintStyle: TextStyle(color: const Color(0xFF6B7280), fontSize: 14.sp),
+              hintStyle:
+                  TextStyle(color: const Color(0xFF6B7280), fontSize: 14.sp),
               counterStyle: TextStyle(color: const Color(0xFF6B7280)),
               border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
             ),
           ),
         ),
@@ -650,17 +674,20 @@ class _AirtimeTransferScreenState extends State<AirtimeTransferScreen> {
           SizedBox(height: 12.h),
           _feeRow('Airtime to deliver', '\u20A6${_amount.toStringAsFixed(0)}'),
           SizedBox(height: 8.h),
-          _feeRow('Commission', '\u20A6${_commission.toStringAsFixed(2)}', valueColor: const Color(0xFFFB923C)),
+          _feeRow('Commission', '\u20A6${_commission.toStringAsFixed(2)}',
+              valueColor: const Color(0xFFFB923C)),
           SizedBox(height: 8.h),
           Container(height: 1, color: Colors.white.withValues(alpha: 0.1)),
           SizedBox(height: 8.h),
-          _feeRow('Total charge', '\u20A6${_totalCharged.toStringAsFixed(2)}', isTotal: true),
+          _feeRow('Total charge', '\u20A6${_totalCharged.toStringAsFixed(2)}',
+              isTotal: true),
         ],
       ),
     );
   }
 
-  Widget _feeRow(String label, String value, {Color? valueColor, bool isTotal = false}) {
+  Widget _feeRow(String label, String value,
+      {Color? valueColor, bool isTotal = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -677,7 +704,8 @@ class _AirtimeTransferScreenState extends State<AirtimeTransferScreen> {
           style: TextStyle(
             fontSize: isTotal ? 15.sp : 13.sp,
             fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
-            color: valueColor ?? (isTotal ? Colors.white : Colors.white.withValues(alpha: 0.8)),
+            color: valueColor ??
+                (isTotal ? Colors.white : Colors.white.withValues(alpha: 0.8)),
           ),
         ),
       ],

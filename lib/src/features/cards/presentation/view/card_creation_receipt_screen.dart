@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
-import 'package:lazervault/src/features/cards/domain/entities/card_entity.dart' as card_entity;
+import 'package:lazervault/src/features/cards/domain/entities/card_entity.dart'
+    as card_entity;
 import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
 // Removed ServiceVoiceButton import per #212 — voice icon lives on
@@ -80,7 +81,8 @@ class CardCreationReceiptScreen extends StatelessWidget {
                             ],
                           ),
                           border: Border.all(
-                            color: const Color(0xFF2962FF).withValues(alpha: 0.5),
+                            color:
+                                const Color(0xFF2962FF).withValues(alpha: 0.5),
                             width: 2,
                           ),
                         ),
@@ -129,7 +131,8 @@ class CardCreationReceiptScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF2962FF).withValues(alpha: 0.3),
+                              color: const Color(0xFF2962FF)
+                                  .withValues(alpha: 0.3),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
                             ),
@@ -143,7 +146,8 @@ class CardCreationReceiptScreen extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 12.w, vertical: 6.h),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(12),
@@ -192,11 +196,13 @@ class CardCreationReceiptScreen extends StatelessWidget {
                             GestureDetector(
                               onTap: () {
                                 if (card.cardNumber != null) {
-                                  Clipboard.setData(ClipboardData(text: card.cardNumber!));
+                                  Clipboard.setData(
+                                      ClipboardData(text: card.cardNumber!));
                                   Get.snackbar(
                                     'Copied',
                                     'Card number copied to clipboard',
-                                    backgroundColor: const Color(0xFF2962FF).withValues(alpha: 0.9),
+                                    backgroundColor: const Color(0xFF2962FF)
+                                        .withValues(alpha: 0.9),
                                     colorText: Colors.white,
                                     snackPosition: SnackPosition.TOP,
                                     duration: const Duration(seconds: 2),
@@ -239,7 +245,8 @@ class CardCreationReceiptScreen extends StatelessWidget {
                                     Text(
                                       'CARD HOLDER',
                                       style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.7),
+                                        color:
+                                            Colors.white.withValues(alpha: 0.7),
                                         fontSize: 10,
                                         letterSpacing: 0.5,
                                       ),
@@ -262,7 +269,8 @@ class CardCreationReceiptScreen extends StatelessWidget {
                                     Text(
                                       'EXPIRY',
                                       style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.7),
+                                        color:
+                                            Colors.white.withValues(alpha: 0.7),
                                         fontSize: 10,
                                         letterSpacing: 0.5,
                                       ),
@@ -281,12 +289,14 @@ class CardCreationReceiptScreen extends StatelessWidget {
                                 // CVV
                                 if (card.cvv != null)
                                   Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'CVV',
                                         style: TextStyle(
-                                          color: Colors.white.withValues(alpha: 0.7),
+                                          color: Colors.white
+                                              .withValues(alpha: 0.7),
                                           fontSize: 10,
                                           letterSpacing: 0.5,
                                         ),
@@ -330,14 +340,16 @@ class CardCreationReceiptScreen extends StatelessWidget {
                               ),
                             ),
                             SizedBox(height: 16.h),
-                            if (card.nickname != null && card.nickname!.isNotEmpty)
+                            if (card.nickname != null &&
+                                card.nickname!.isNotEmpty)
                               _buildDetailRow('Nickname', card.nickname!),
                             if (card.isDisposable && card.spendingLimit != null)
                               _buildDetailRow(
                                 'Spending Limit',
                                 '£${NumberFormat('#,##0.00').format(card.spendingLimit)}',
                               ),
-                            if (card.isDisposable && card.remainingLimit != null)
+                            if (card.isDisposable &&
+                                card.remainingLimit != null)
                               _buildDetailRow(
                                 'Remaining',
                                 '£${NumberFormat('#,##0.00').format(card.remainingLimit)}',
@@ -345,9 +357,11 @@ class CardCreationReceiptScreen extends StatelessWidget {
                             if (card.isDisposable && card.expiresAt != null)
                               _buildDetailRow(
                                 'Expires',
-                                DateFormat('MMM dd, yyyy HH:mm').format(card.expiresAt!),
+                                DateFormat('MMM dd, yyyy HH:mm')
+                                    .format(card.expiresAt!),
                               ),
-                            _buildDetailRow('Status', _formatStatus(card.status.name)),
+                            _buildDetailRow(
+                                'Status', _formatStatus(card.status.name)),
                             _buildDetailRow('Card ID', card.uuid, isLast: true),
                           ],
                         ),
@@ -362,7 +376,8 @@ class CardCreationReceiptScreen extends StatelessWidget {
                           color: const Color(0xFF2962FF).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: const Color(0xFF2962FF).withValues(alpha: 0.3),
+                            color:
+                                const Color(0xFF2962FF).withValues(alpha: 0.3),
                           ),
                         ),
                         child: Row(
@@ -418,7 +433,8 @@ class CardCreationReceiptScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2962FF).withValues(alpha: 0.9),
+                    backgroundColor:
+                        const Color(0xFF2962FF).withValues(alpha: 0.9),
                     padding: EdgeInsets.symmetric(vertical: 16.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

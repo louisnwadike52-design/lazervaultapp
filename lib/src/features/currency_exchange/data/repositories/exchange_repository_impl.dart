@@ -36,7 +36,8 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
     if (!forceRefresh) {
       final cacheKey = '${fromCurrency}_${toCurrency}_${amount ?? 0}';
       final cached = _rateCache[cacheKey];
-      if (cached != null && DateTime.now().difference(cached.fetchedAt) < _rateCacheTTL) {
+      if (cached != null &&
+          DateTime.now().difference(cached.fetchedAt) < _rateCacheTTL) {
         return Right(cached.rate);
       }
     }
@@ -71,7 +72,8 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
 
       // Cache the result
       final cacheKey = '${fromCurrency}_${toCurrency}_${amount ?? 0}';
-      _rateCache[cacheKey] = _CachedRate(rate: exchangeRate, fetchedAt: DateTime.now());
+      _rateCache[cacheKey] =
+          _CachedRate(rate: exchangeRate, fetchedAt: DateTime.now());
 
       return Right(exchangeRate);
     } on GrpcError catch (e) {
@@ -111,6 +113,7 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
     // plumbed into ReceiverDetails.beneficiary_type on the wire, and
     // ultimately lands in Flutterwave meta.beneficiary_type.
     String? beneficiaryType,
+
     /// Recipient inputs that only SOME payout rails require, keyed by the
     /// field name the active rail publishes (dots included, e.g.
     /// "beneficiary.transitNumber"). Collected from
@@ -281,7 +284,8 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
   }
 
   @override
-  Future<Either<Failure, List<SupportedCurrencyInfo>>> getSupportedCurrencies() async {
+  Future<Either<Failure, List<SupportedCurrencyInfo>>>
+      getSupportedCurrencies() async {
     // Return cached currencies if fresh
     if (_currencyCache != null &&
         _currencyCacheTime != null &&
@@ -298,16 +302,18 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
         options: callOptions,
       );
 
-      final currencies = response.currencies.map((c) => SupportedCurrencyInfo(
-        code: c.code,
-        name: c.name,
-        symbol: c.symbol,
-        country: c.country,
-        supportsConversion: c.supportsConversion,
-        supportsInternational: c.supportsInternational,
-        minAmount: c.minAmount,
-        maxAmount: c.maxAmount,
-      )).toList();
+      final currencies = response.currencies
+          .map((c) => SupportedCurrencyInfo(
+                code: c.code,
+                name: c.name,
+                symbol: c.symbol,
+                country: c.country,
+                supportsConversion: c.supportsConversion,
+                supportsInternational: c.supportsInternational,
+                minAmount: c.minAmount,
+                maxAmount: c.maxAmount,
+              ))
+          .toList();
 
       _currencyCache = currencies;
       _currencyCacheTime = DateTime.now();
@@ -364,7 +370,8 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
   }
 
   // Helper methods
-  CurrencyTransaction _mapTransactionFromProto(ExchangeTransaction protoTransaction) {
+  CurrencyTransaction _mapTransactionFromProto(
+      ExchangeTransaction protoTransaction) {
     final totalCost = protoTransaction.amountFrom + protoTransaction.fees;
 
     return CurrencyTransaction(

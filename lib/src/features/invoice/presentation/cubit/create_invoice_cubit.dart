@@ -125,7 +125,8 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
 
   // Calculated amounts
   double get subtotal {
-    return _items.fold(0.0, (sum, item) => sum + (item.unitPrice * item.quantity));
+    return _items.fold(
+        0.0, (sum, item) => sum + (item.unitPrice * item.quantity));
   }
 
   double get total {
@@ -430,7 +431,8 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
     if (!required && !hasAnyData) return true;
 
     if (_recipientContact.trim().isEmpty) {
-      emit(const CreateInvoiceValidationError('Please enter recipient contact name'));
+      emit(const CreateInvoiceValidationError(
+          'Please enter recipient contact name'));
       return false;
     }
     if (_recipientEmail.trim().isEmpty) {
@@ -442,14 +444,16 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
     // "invalid email address", with no way for the user to proceed.
     final emailRegex = RegExp(r'^[\w\-.]+@([\w\-]+\.)+[\w\-]{2,}$');
     if (!emailRegex.hasMatch(_recipientEmail)) {
-      emit(const CreateInvoiceValidationError('Please enter a valid email address'));
+      emit(const CreateInvoiceValidationError(
+          'Please enter a valid email address'));
       return false;
     }
     if (_recipientPhone.trim().isNotEmpty) {
       // Country-agnostic: the recipient may be in any country, so we do NOT
       // enforce the invoice country's digit count. A missing country code is
       // fine — it's defaulted when the invoice is built.
-      final phoneError = PhoneValidator.validateInternational(_recipientPhone.trim());
+      final phoneError =
+          PhoneValidator.validateInternational(_recipientPhone.trim());
       if (phoneError != null) {
         emit(CreateInvoiceValidationError(phoneError));
         return false;
@@ -472,28 +476,31 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
     }
 
     // Skip validation if payer section wasn't shown and no data entered
-    final hasAnyData = _payerContact.trim().isNotEmpty ||
-        _payerEmail.trim().isNotEmpty;
+    final hasAnyData =
+        _payerContact.trim().isNotEmpty || _payerEmail.trim().isNotEmpty;
     if (!required && !hasAnyData) return true;
 
     if (_payerContact.trim().isEmpty) {
-      emit(const CreateInvoiceValidationError('Please enter payer contact name'));
+      emit(const CreateInvoiceValidationError(
+          'Please enter payer contact name'));
       return false;
     }
     // Email is optional, but validate format if provided
     if (_payerEmail.trim().isNotEmpty) {
       // TLD is {2,} not {2,4}: the old bound rejected every modern TLD longer
-    // than four characters — .online, .digital, .travel, .company — as an
-    // "invalid email address", with no way for the user to proceed.
-    final emailRegex = RegExp(r'^[\w\-.]+@([\w\-]+\.)+[\w\-]{2,}$');
+      // than four characters — .online, .digital, .travel, .company — as an
+      // "invalid email address", with no way for the user to proceed.
+      final emailRegex = RegExp(r'^[\w\-.]+@([\w\-]+\.)+[\w\-]{2,}$');
       if (!emailRegex.hasMatch(_payerEmail)) {
-        emit(const CreateInvoiceValidationError('Please enter a valid email address'));
+        emit(const CreateInvoiceValidationError(
+            'Please enter a valid email address'));
         return false;
       }
     }
     if (_payerPhone.trim().isNotEmpty) {
       // Country-agnostic (see recipient) — the payer can be anywhere.
-      final phoneError = PhoneValidator.validateInternational(_payerPhone.trim());
+      final phoneError =
+          PhoneValidator.validateInternational(_payerPhone.trim());
       if (phoneError != null) {
         emit(CreateInvoiceValidationError(phoneError));
         return false;
@@ -508,11 +515,13 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
       return false;
     }
     if (_discountAmount > subtotal + _taxAmount) {
-      emit(const CreateInvoiceValidationError('Discount cannot exceed subtotal plus tax'));
+      emit(const CreateInvoiceValidationError(
+          'Discount cannot exceed subtotal plus tax'));
       return false;
     }
     if (total <= 0) {
-      emit(const CreateInvoiceValidationError('Total amount must be greater than zero'));
+      emit(const CreateInvoiceValidationError(
+          'Total amount must be greater than zero'));
       return false;
     }
     // Split balance is validated HERE — leaving the Items step, which is the
@@ -531,9 +540,9 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
   bool validateScreen5() {
     // Final validation before submission
     return validateScreen1() &&
-           validateScreen2() &&
-           validateScreen3() &&
-           validateScreen4();
+        validateScreen2() &&
+        validateScreen3() &&
+        validateScreen4();
   }
 
   /// Build the final Invoice entity
@@ -612,7 +621,8 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
   }
 
   Invoice buildInvoice(String userId, {String currency = 'NGN'}) {
-    final effectiveCurrency = _invoiceCurrency.isNotEmpty ? _invoiceCurrency : currency;
+    final effectiveCurrency =
+        _invoiceCurrency.isNotEmpty ? _invoiceCurrency : currency;
     return Invoice(
       id: '', // Will be generated by backend
       fromUserId: userId,
@@ -639,7 +649,8 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
         // code — defaulting to the invoice country's dial code, then Nigeria.
         phone: _recipientPhone.isNotEmpty
             ? PhoneValidator.toE164(_recipientPhone,
-                defaultDialCode: PhoneValidator.defaultDialCodeFor(_invoiceCountry))
+                defaultDialCode:
+                    PhoneValidator.defaultDialCodeFor(_invoiceCountry))
             : null,
         addressLine1: _recipientAddress1.isNotEmpty ? _recipientAddress1 : null,
         addressLine2: _recipientAddress2.isNotEmpty ? _recipientAddress2 : null,
@@ -654,7 +665,8 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
         email: _payerEmail.isNotEmpty ? _payerEmail : null,
         phone: _payerPhone.isNotEmpty
             ? PhoneValidator.toE164(_payerPhone,
-                defaultDialCode: PhoneValidator.defaultDialCodeFor(_invoiceCountry))
+                defaultDialCode:
+                    PhoneValidator.defaultDialCodeFor(_invoiceCountry))
             : null,
         addressLine1: _payerAddress1.isNotEmpty ? _payerAddress1 : null,
         addressLine2: _payerAddress2.isNotEmpty ? _payerAddress2 : null,

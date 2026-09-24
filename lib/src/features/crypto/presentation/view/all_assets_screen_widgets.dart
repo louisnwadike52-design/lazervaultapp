@@ -61,7 +61,8 @@ class _ShimmerAssetItemState extends State<_ShimmerAssetItem>
                 width: 42.w,
                 height: 42.w,
                 decoration: BoxDecoration(
-                  color: Colors.grey[850]?.withValues(alpha: opacity) ?? Colors.grey.withValues(alpha: opacity),
+                  color: Colors.grey[850]?.withValues(alpha: opacity) ??
+                      Colors.grey.withValues(alpha: opacity),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
               ),
@@ -74,7 +75,8 @@ class _ShimmerAssetItemState extends State<_ShimmerAssetItem>
                       height: 14.h,
                       width: 100.w,
                       decoration: BoxDecoration(
-                        color: Colors.grey[800]?.withValues(alpha: opacity) ?? Colors.grey.withValues(alpha: opacity),
+                        color: Colors.grey[800]?.withValues(alpha: opacity) ??
+                            Colors.grey.withValues(alpha: opacity),
                         borderRadius: BorderRadius.circular(4.r),
                       ),
                     ),
@@ -83,7 +85,8 @@ class _ShimmerAssetItemState extends State<_ShimmerAssetItem>
                       height: 12.h,
                       width: 50.w,
                       decoration: BoxDecoration(
-                        color: Colors.grey[800]?.withValues(alpha: opacity) ?? Colors.grey.withValues(alpha: opacity),
+                        color: Colors.grey[800]?.withValues(alpha: opacity) ??
+                            Colors.grey.withValues(alpha: opacity),
                         borderRadius: BorderRadius.circular(4.r),
                       ),
                     ),
@@ -97,7 +100,8 @@ class _ShimmerAssetItemState extends State<_ShimmerAssetItem>
                     height: 14.h,
                     width: 70.w,
                     decoration: BoxDecoration(
-                      color: Colors.grey[800]?.withValues(alpha: opacity) ?? Colors.grey.withValues(alpha: opacity),
+                      color: Colors.grey[800]?.withValues(alpha: opacity) ??
+                          Colors.grey.withValues(alpha: opacity),
                       borderRadius: BorderRadius.circular(4.r),
                     ),
                   ),
@@ -106,7 +110,8 @@ class _ShimmerAssetItemState extends State<_ShimmerAssetItem>
                     height: 18.h,
                     width: 50.w,
                     decoration: BoxDecoration(
-                      color: Colors.grey[800]?.withValues(alpha: opacity) ?? Colors.grey.withValues(alpha: opacity),
+                      color: Colors.grey[800]?.withValues(alpha: opacity) ??
+                          Colors.grey.withValues(alpha: opacity),
                       borderRadius: BorderRadius.circular(4.r),
                     ),
                   ),

@@ -20,7 +20,6 @@ import '../widgets/account_preview_card.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'account_actions_bottom_sheet_widgets.dart';
 
-
 /// Account Actions Bottom Sheet - Clean, tabbed interface for card management
 class AccountActionsBottomSheet extends StatefulWidget {
   final Map<String, dynamic> accountArgs;
@@ -31,7 +30,8 @@ class AccountActionsBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<AccountActionsBottomSheet> createState() => _AccountActionsBottomSheetState();
+  State<AccountActionsBottomSheet> createState() =>
+      _AccountActionsBottomSheetState();
 }
 
 class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
@@ -91,8 +91,8 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
 
   void _fetchAccountDetails() {
     final accountId = widget.accountArgs['id']?.toString() ??
-                     widget.accountArgs['uuid']?.toString() ??
-                     widget.accountArgs['accountId']?.toString();
+        widget.accountArgs['uuid']?.toString() ??
+        widget.accountArgs['accountId']?.toString();
 
     if (accountId == null) {
       debugPrint('AccountActionsBottomSheet: No account ID found');
@@ -102,9 +102,9 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is AuthenticationSuccess) {
       context.read<AccountActionsCubit>().getAccountDetails(
-        accountId: accountId,
-        accessToken: authState.profile.session.accessToken,
-      );
+            accountId: accountId,
+            accessToken: authState.profile.session.accessToken,
+          );
     }
   }
 
@@ -311,7 +311,8 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
         return AccountControlsTab(
           accountArgs: widget.accountArgs,
           accountDetails: details,
-          isLoading: state is SecuritySettingsUpdating || state is AccountFreezing,
+          isLoading:
+              state is SecuritySettingsUpdating || state is AccountFreezing,
         );
       case AccountActionTab.limits:
         return SpendingLimitsTab(
@@ -471,5 +472,4 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
       barrierDismissible: true,
     );
   }
-
 }

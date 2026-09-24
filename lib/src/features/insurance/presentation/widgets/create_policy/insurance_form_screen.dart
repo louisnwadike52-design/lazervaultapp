@@ -27,7 +27,6 @@ import 'multi_select_array_field.dart';
 import 'monetary_form_field.dart';
 part 'insurance_form_screen_widgets.dart';
 
-
 /// Screen 2: Dynamic form fields from MyCover.ai product
 class InsuranceFormScreen extends StatefulWidget {
   const InsuranceFormScreen({super.key});
@@ -43,7 +42,8 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
   final Map<String, bool> _auxiliaryLoading = {};
   final Map<String, String?> _auxiliaryError = {};
   final Map<String, bool> _fileUploading = {};
-  final Map<String, CountryLocale> _phoneCountryCodes = {}; // per-field country code
+  final Map<String, CountryLocale> _phoneCountryCodes =
+      {}; // per-field country code
 
   /// Detects if a field requires file upload based on name patterns
   bool _isFileField(InsuranceProductFormField field) {
@@ -92,7 +92,8 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
   /// real cases: (a) the schema sent no `dependsOn`, (b) `dependsOn` names a
   /// field key that isn't populated (e.g. it says `vehicle_make` but the make
   /// field's value landed under `make`), and (c) legacy schemas.
-  String? _getDependentQuery(InsuranceProductFormField field, Map<String, String> formData) {
+  String? _getDependentQuery(
+      InsuranceProductFormField field, Map<String, String> formData) {
     if (field.dependsOn.isNotEmpty) {
       final v = formData[field.dependsOn];
       if (v != null && v.trim().isNotEmpty) return v;
@@ -112,7 +113,9 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
 
   @override
   void dispose() {
-    for (final c in _controllers.values) { c.dispose(); }
+    for (final c in _controllers.values) {
+      c.dispose();
+    }
     _debouncer.dispose();
     super.dispose();
   }
@@ -120,7 +123,8 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
   TextEditingController _getController(String name, String initialValue) {
     if (!_controllers.containsKey(name)) {
       _controllers[name] = TextEditingController(text: initialValue);
-    } else if (_controllers[name]!.text != initialValue && initialValue.isNotEmpty) {
+    } else if (_controllers[name]!.text != initialValue &&
+        initialValue.isNotEmpty) {
       // Sync controller text if form data was updated externally (e.g., auto-fill)
       // Only update if initialValue is non-empty to avoid clearing user input
       final controller = _controllers[name]!;
@@ -147,8 +151,9 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
           return _buildForm(cubit.selectedProduct!, cubit.formData, const {});
         }
 
-        return Center(child: Text('Please select a product first',
-          style: GoogleFonts.inter(color: const Color(0xFF9CA3AF))));
+        return Center(
+            child: Text('Please select a product first',
+                style: GoogleFonts.inter(color: const Color(0xFF9CA3AF))));
       },
     );
   }
@@ -172,7 +177,8 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
     });
   }
 
-  Widget _buildForm(InsuranceProduct product, Map<String, String> formData, Map<String, String> formErrors) {
+  Widget _buildForm(InsuranceProduct product, Map<String, String> formData,
+      Map<String, String> formErrors) {
     // Snapshot for cross-field validators (e.g. arrival_date must be
     // ≥ departure_date). Refreshed on every rebuild so validators
     // always read the latest values.
@@ -186,13 +192,21 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
           SizedBox(height: 8.h),
           _buildProductHeader(product),
           SizedBox(height: 24.h),
-          Text('Your Details', style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+          Text('Your Details',
+              style: GoogleFonts.inter(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white)),
           SizedBox(height: 4.h),
           Text('Fill in the required information for your insurance',
-            style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
+              style: GoogleFonts.inter(
+                  fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
           SizedBox(height: 20.h),
-          ..._visibleFields(product, formData).map((field) =>
-            _buildFormField(context, field, formData[field.name] ?? '', formErrors[field.name])),
+          ..._visibleFields(product, formData).map((field) => _buildFormField(
+              context,
+              field,
+              formData[field.name] ?? '',
+              formErrors[field.name])),
           SizedBox(height: 20.h),
         ],
       ),
@@ -205,20 +219,32 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF6366F1).withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+        border:
+            Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
       ),
       child: Row(children: [
         Container(
-          width: 40.w, height: 40.w,
+          width: 40.w,
+          height: 40.w,
           decoration: BoxDecoration(
-            color: const Color(0xFF6366F1).withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(8.r)),
-          child: Center(child: Icon(product.category.icon, size: 22.sp, color: const Color(0xFF6366F1))),
+              color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8.r)),
+          child: Center(
+              child: Icon(product.category.icon,
+                  size: 22.sp, color: const Color(0xFF6366F1))),
         ),
         SizedBox(width: 12.w),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(product.name, style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.white)),
-          Text(product.providerName, style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF9CA3AF))),
+        Expanded(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(product.name,
+              style: GoogleFonts.inter(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white)),
+          Text(product.providerName,
+              style: GoogleFonts.inter(
+                  fontSize: 12.sp, color: const Color(0xFF9CA3AF))),
         ])),
         GestureDetector(
           onTap: () => _showProductInfoSheet(context, product),
@@ -229,7 +255,8 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
               shape: BoxShape.circle,
               color: const Color(0xFF6366F1).withValues(alpha: 0.12),
             ),
-            child: Icon(Icons.info_outline, color: const Color(0xFF6366F1), size: 18.sp),
+            child: Icon(Icons.info_outline,
+                color: const Color(0xFF6366F1), size: 18.sp),
           ),
         ),
       ]),
@@ -254,10 +281,11 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
             children: [
               Container(
                 margin: EdgeInsets.only(top: 12.h),
-                width: 40.w, height: 4.h,
+                width: 40.w,
+                height: 4.h,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(2.r)),
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2.r)),
               ),
               Expanded(
                 child: ListView(
@@ -266,40 +294,61 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
                   children: [
                     Row(children: [
                       Container(
-                        width: 48.w, height: 48.w,
+                        width: 48.w,
+                        height: 48.w,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF6366F1).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12.r)),
-                        child: Icon(product.category.icon, size: 26.sp, color: const Color(0xFF6366F1)),
+                            color:
+                                const Color(0xFF6366F1).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12.r)),
+                        child: Icon(product.category.icon,
+                            size: 26.sp, color: const Color(0xFF6366F1)),
                       ),
                       SizedBox(width: 14.w),
-                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(product.name, style: GoogleFonts.inter(
-                          fontSize: 18.sp, fontWeight: FontWeight.w700, color: Colors.white)),
-                        SizedBox(height: 2.h),
-                        Text(product.providerName, style: GoogleFonts.inter(
-                          fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
-                      ])),
+                      Expanded(
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                            Text(product.name,
+                                style: GoogleFonts.inter(
+                                    fontSize: 18.sp,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white)),
+                            SizedBox(height: 2.h),
+                            Text(product.providerName,
+                                style: GoogleFonts.inter(
+                                    fontSize: 13.sp,
+                                    color: const Color(0xFF9CA3AF))),
+                          ])),
                     ]),
                     SizedBox(height: 16.h),
                     // Premium + category
                     Row(children: [
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 10.w, vertical: 6.h),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6.r)),
-                        child: Text(product.premiumRange, style: GoogleFonts.inter(
-                          fontSize: 13.sp, fontWeight: FontWeight.w600, color: const Color(0xFF10B981))),
+                            color:
+                                const Color(0xFF10B981).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6.r)),
+                        child: Text(product.premiumRange,
+                            style: GoogleFonts.inter(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF10B981))),
                       ),
                       SizedBox(width: 8.w),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 10.w, vertical: 6.h),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6.r)),
-                        child: Text(product.category.displayName, style: GoogleFonts.inter(
-                          fontSize: 13.sp, fontWeight: FontWeight.w600, color: const Color(0xFF6366F1))),
+                            color:
+                                const Color(0xFF6366F1).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6.r)),
+                        child: Text(product.category.displayName,
+                            style: GoogleFonts.inter(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF6366F1))),
                       ),
                     ]),
                     SizedBox(height: 20.h),
@@ -320,14 +369,22 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
                       _buildInfoSectionTitle('Benefits'),
                       SizedBox(height: 8.h),
                       ...product.benefits.map((b) => Padding(
-                        padding: EdgeInsets.only(bottom: 8.h),
-                        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Icon(Icons.check_circle, size: 16.sp, color: const Color(0xFF10B981)),
-                          SizedBox(width: 8.w),
-                          Expanded(child: Text(b, style: GoogleFonts.inter(
-                            fontSize: 13.sp, color: Colors.white, height: 1.4))),
-                        ]),
-                      )),
+                            padding: EdgeInsets.only(bottom: 8.h),
+                            child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(Icons.check_circle,
+                                      size: 16.sp,
+                                      color: const Color(0xFF10B981)),
+                                  SizedBox(width: 8.w),
+                                  Expanded(
+                                      child: Text(b,
+                                          style: GoogleFonts.inter(
+                                              fontSize: 13.sp,
+                                              color: Colors.white,
+                                              height: 1.4))),
+                                ]),
+                          )),
                     ],
                     // Full Benefits
                     if (product.fullBenefits.isNotEmpty) ...[
@@ -348,23 +405,28 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
   }
 
   Widget _buildInfoSectionTitle(String title) {
-    return Text(title, style: GoogleFonts.inter(
-      fontSize: 15.sp, fontWeight: FontWeight.w700, color: Colors.white));
+    return Text(title,
+        style: GoogleFonts.inter(
+            fontSize: 15.sp, fontWeight: FontWeight.w700, color: Colors.white));
   }
 
   Widget _buildInfoRichContent(String content) {
     if (content.contains('<') && content.contains('>')) {
       return HtmlWidget(
         content,
-        textStyle: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF), height: 1.5),
-        customStylesBuilder: (_) => {'color': 'rgba(156,163,175,1)', 'background-color': 'transparent'},
+        textStyle: GoogleFonts.inter(
+            fontSize: 14.sp, color: const Color(0xFF9CA3AF), height: 1.5),
+        customStylesBuilder: (_) =>
+            {'color': 'rgba(156,163,175,1)', 'background-color': 'transparent'},
       );
     }
-    return Text(content, style: GoogleFonts.inter(
-      fontSize: 14.sp, color: const Color(0xFF9CA3AF), height: 1.5));
+    return Text(content,
+        style: GoogleFonts.inter(
+            fontSize: 14.sp, color: const Color(0xFF9CA3AF), height: 1.5));
   }
 
-  Widget _buildFormField(BuildContext context, InsuranceProductFormField field, String value, String? error) {
+  Widget _buildFormField(BuildContext context, InsuranceProductFormField field,
+      String value, String? error) {
     final cubit = context.read<CreatePolicyCubit>();
 
     // Check for file upload fields
@@ -384,8 +446,11 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
     final utilityId = _getUtilityIdForField(field);
     if (utilityId != null && field.options.isEmpty) {
       final state = context.read<CreatePolicyCubit>().state;
-      final formData = state is InsuranceProductSelected ? state.formData : <String, String>{};
-      return _buildAuxiliarySelectField(cubit, field, value, error, utilityId, formData);
+      final formData = state is InsuranceProductSelected
+          ? state.formData
+          : <String, String>{};
+      return _buildAuxiliarySelectField(
+          cubit, field, value, error, utilityId, formData);
     }
 
     switch (field.type.toLowerCase()) {
@@ -419,10 +484,11 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
             ..add(FilteringTextInputFormatter.allow(RegExp(r'[1-9]')));
         }
         return _buildTextField(cubit, field, value, error,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: formatters);
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: formatters);
       case 'email':
-        return _buildTextField(cubit, field, value, error, keyboardType: TextInputType.emailAddress);
+        return _buildTextField(cubit, field, value, error,
+            keyboardType: TextInputType.emailAddress);
       case 'phone':
         return _buildPhoneField(cubit, field, value, error);
       case 'array':
@@ -459,7 +525,9 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
     // Nigeria: 10 digits, starts with 7/8/9 (MTN 803/806, Airtel 802, Glo 805, 9mobile 809…)
     'NG': _PhoneRule(localDigits: 10, validStartDigits: ['7', '8', '9']),
     // United States: 10 digits, area code starts with 2-9
-    'US': _PhoneRule(localDigits: 10, validStartDigits: ['2', '3', '4', '5', '6', '7', '8', '9']),
+    'US': _PhoneRule(
+        localDigits: 10,
+        validStartDigits: ['2', '3', '4', '5', '6', '7', '8', '9']),
     // United Kingdom: 10 digits, mobile starts with 7
     'GB': _PhoneRule(localDigits: 10, validStartDigits: ['7']),
     // Ghana: 9 digits, mobile starts with 2/5
@@ -608,17 +676,23 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
       final today = DateTime(now.year, now.month, now.day);
       if (name == 'date_of_birth') {
         if (!parsed.isBefore(now)) return 'Date of birth must be in the past';
-        final age = now.year - parsed.year - (now.isBefore(DateTime(parsed.year, parsed.month, parsed.day)) ? 1 : 0);
+        final age = now.year -
+            parsed.year -
+            (now.isBefore(DateTime(parsed.year, parsed.month, parsed.day))
+                ? 1
+                : 0);
         if (age < 18) return 'You must be at least 18';
         if (age > 120) return 'Please enter a valid date of birth';
       } else if (name == 'departure_date') {
         // Travel: trip start must be today or later.
-        if (parsed.isBefore(today)) return 'Departure date must be today or later';
+        if (parsed.isBefore(today))
+          return 'Departure date must be today or later';
         // Sanity-cap to avoid 100-year-in-future taps.
         if (parsed.isAfter(today.add(const Duration(days: 365 * 2)))) {
           return 'Departure date is too far in the future';
         }
-      } else if (name == 'device_purchase_date' || name == 'disbursement_date') {
+      } else if (name == 'device_purchase_date' ||
+          name == 'disbursement_date') {
         // Gadget: device_purchase_date must be in the past — can't
         // insure a device that hasn't shipped yet.
         // Life: disbursement_date is when a loan was disbursed —
@@ -652,7 +726,8 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
         }
       }
     }
-    if ((name == 'nin' || name == 'bvn') && !_elevenDigitId.hasMatch(value.trim())) {
+    if ((name == 'nin' || name == 'bvn') &&
+        !_elevenDigitId.hasMatch(value.trim())) {
       return 'Must be exactly 11 digits';
     }
     if (type == 'text' && field.required) {
@@ -824,47 +899,83 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
     );
   }
 
-  Widget _buildTextField(CreatePolicyCubit cubit, InsuranceProductFormField field, String value, String? error,
-      {TextInputType keyboardType = TextInputType.text, List<TextInputFormatter>? inputFormatters}) {
+  Widget _buildTextField(CreatePolicyCubit cubit,
+      InsuranceProductFormField field, String value, String? error,
+      {TextInputType keyboardType = TextInputType.text,
+      List<TextInputFormatter>? inputFormatters}) {
     final controller = _getController(field.name, value);
     final inlineError = error ?? _validateField(field, controller.text);
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          Text(field.label, style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600, color: Colors.white)),
-          if (field.required) Text(' *', style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFFEF4444))),
+          Text(field.label,
+              style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white)),
+          if (field.required)
+            Text(' *',
+                style: GoogleFonts.inter(
+                    fontSize: 13.sp, color: const Color(0xFFEF4444))),
         ]),
         if (field.description.isNotEmpty)
-          Padding(padding: EdgeInsets.only(top: 2.h),
-            child: field.description.contains('<') && field.description.contains('>')
-              ? HtmlWidget(field.description, textStyle: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFF9CA3AF)),
-                  customStylesBuilder: (_) => {'color': 'rgba(156,163,175,1)', 'background-color': 'transparent'})
-              : Text(field.description, style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFF9CA3AF)))),
+          Padding(
+              padding: EdgeInsets.only(top: 2.h),
+              child: field.description.contains('<') &&
+                      field.description.contains('>')
+                  ? HtmlWidget(field.description,
+                      textStyle: GoogleFonts.inter(
+                          fontSize: 11.sp, color: const Color(0xFF9CA3AF)),
+                      customStylesBuilder: (_) => {
+                            'color': 'rgba(156,163,175,1)',
+                            'background-color': 'transparent'
+                          })
+                  : Text(field.description,
+                      style: GoogleFonts.inter(
+                          fontSize: 11.sp, color: const Color(0xFF9CA3AF)))),
         SizedBox(height: 8.h),
         TextFormField(
-          controller: controller, keyboardType: keyboardType,
+          controller: controller,
+          keyboardType: keyboardType,
           inputFormatters: inputFormatters,
-          onChanged: (v) => _debouncer.run(() => cubit.updateFormField(field.name, v)),
+          onChanged: (v) =>
+              _debouncer.run(() => cubit.updateFormField(field.name, v)),
           style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
           decoration: InputDecoration(
-            hintText: field.placeholder.isNotEmpty ? field.placeholder : 'Enter ${field.label.toLowerCase()}',
-            hintStyle: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF).withValues(alpha: 0.5)),
-            filled: true, fillColor: const Color(0xFF1F1F1F),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.r), borderSide: const BorderSide(color: Color(0xFF2D2D2D))),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10.r), borderSide: const BorderSide(color: Color(0xFF2D2D2D))),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10.r), borderSide: const BorderSide(color: Color(0xFF6366F1))),
-            errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10.r), borderSide: const BorderSide(color: Color(0xFFEF4444))),
+            hintText: field.placeholder.isNotEmpty
+                ? field.placeholder
+                : 'Enter ${field.label.toLowerCase()}',
+            hintStyle: GoogleFonts.inter(
+                fontSize: 14.sp,
+                color: const Color(0xFF9CA3AF).withValues(alpha: 0.5)),
+            filled: true,
+            fillColor: const Color(0xFF1F1F1F),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.r),
+                borderSide: const BorderSide(color: Color(0xFF2D2D2D))),
+            enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.r),
+                borderSide: const BorderSide(color: Color(0xFF2D2D2D))),
+            focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.r),
+                borderSide: const BorderSide(color: Color(0xFF6366F1))),
+            errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.r),
+                borderSide: const BorderSide(color: Color(0xFFEF4444))),
             errorText: inlineError,
-            errorStyle: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFFEF4444)),
-            contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+            errorStyle: GoogleFonts.inter(
+                fontSize: 11.sp, color: const Color(0xFFEF4444)),
+            contentPadding:
+                EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
           ),
         ),
       ]),
     );
   }
 
-  Widget _buildPhoneField(CreatePolicyCubit cubit, InsuranceProductFormField field, String value, String? error) {
+  Widget _buildPhoneField(CreatePolicyCubit cubit,
+      InsuranceProductFormField field, String value, String? error) {
     // Initialize country code for this field if not yet set
     _phoneCountryCodes.putIfAbsent(field.name, () {
       // 1) Detect from the existing stored value (e.g. user edited form,
@@ -955,30 +1066,45 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
       padding: EdgeInsets.only(bottom: 16.h),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          Text(field.label, style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600, color: Colors.white)),
-          if (field.required) Text(' *', style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFFEF4444))),
+          Text(field.label,
+              style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white)),
+          if (field.required)
+            Text(' *',
+                style: GoogleFonts.inter(
+                    fontSize: 13.sp, color: const Color(0xFFEF4444))),
         ]),
         if (field.description.isNotEmpty)
-          Padding(padding: EdgeInsets.only(top: 2.h),
-            child: Text(field.description, style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFF9CA3AF)))),
+          Padding(
+              padding: EdgeInsets.only(top: 2.h),
+              child: Text(field.description,
+                  style: GoogleFonts.inter(
+                      fontSize: 11.sp, color: const Color(0xFF9CA3AF)))),
         SizedBox(height: 8.h),
         Container(
           decoration: BoxDecoration(
             color: const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(10.r),
             border: Border.all(
-              color: inlineError != null ? const Color(0xFFEF4444) : const Color(0xFF2D2D2D),
+              color: inlineError != null
+                  ? const Color(0xFFEF4444)
+                  : const Color(0xFF2D2D2D),
             ),
           ),
           child: Row(
             children: [
               // Country code button
               GestureDetector(
-                onTap: () => _showPhoneCountryPicker(field.name, cubit, field, controller),
+                onTap: () => _showPhoneCountryPicker(
+                    field.name, cubit, field, controller),
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
                   decoration: const BoxDecoration(
-                    border: Border(right: BorderSide(color: Color(0xFF2D2D2D), width: 1)),
+                    border: Border(
+                        right: BorderSide(color: Color(0xFF2D2D2D), width: 1)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -986,9 +1112,13 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
                       Text(country.flag, style: TextStyle(fontSize: 18.sp)),
                       SizedBox(width: 4.w),
                       Text(country.dialCode,
-                        style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                          style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600)),
                       SizedBox(width: 2.w),
-                      Icon(Icons.keyboard_arrow_down, color: const Color(0xFF6B7280), size: 16.sp),
+                      Icon(Icons.keyboard_arrow_down,
+                          color: const Color(0xFF6B7280), size: 16.sp),
                     ],
                   ),
                 ),
@@ -1017,18 +1147,24 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
                     // store the canonical form so submit-time validation
                     // operates on the same shape.
                     final local = v.replaceAll(RegExp(r'[^\d]'), '');
-                    final s = local.startsWith('0') ? local.substring(1) : local;
+                    final s =
+                        local.startsWith('0') ? local.substring(1) : local;
                     final full = s.isEmpty ? '' : '${country.dialCode}$s';
-                    _debouncer.run(() => cubit.updateFormField(field.name, full));
+                    _debouncer
+                        .run(() => cubit.updateFormField(field.name, full));
                   },
-                  style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
+                  style:
+                      GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
                   decoration: InputDecoration(
                     hintText: country.countryCode == 'NG'
                         ? '08012345678'
                         : 'Mobile number',
-                    hintStyle: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF).withValues(alpha: 0.5)),
+                    hintStyle: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        color: const Color(0xFF9CA3AF).withValues(alpha: 0.5)),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
                   ),
                 ),
               ),
@@ -1038,13 +1174,16 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
         if (inlineError != null)
           Padding(
             padding: EdgeInsets.only(top: 6.h, left: 4.w),
-            child: Text(inlineError, style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFFEF4444))),
+            child: Text(inlineError,
+                style: GoogleFonts.inter(
+                    fontSize: 11.sp, color: const Color(0xFFEF4444))),
           ),
       ]),
     );
   }
 
-  void _showPhoneCountryPicker(String fieldName, CreatePolicyCubit cubit, InsuranceProductFormField field, TextEditingController controller) {
+  void _showPhoneCountryPicker(String fieldName, CreatePolicyCubit cubit,
+      InsuranceProductFormField field, TextEditingController controller) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1053,39 +1192,67 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
         String searchQuery = '';
         return StatefulBuilder(
           builder: (context, setSheetState) {
-            final filtered = searchQuery.isEmpty ? CountryLocales.all : CountryLocales.search(searchQuery);
+            final filtered = searchQuery.isEmpty
+                ? CountryLocales.all
+                : CountryLocales.search(searchQuery);
             return DraggableScrollableSheet(
-              initialChildSize: 0.7, maxChildSize: 0.9, minChildSize: 0.4,
+              initialChildSize: 0.7,
+              maxChildSize: 0.9,
+              minChildSize: 0.4,
               builder: (context, scrollController) {
                 return Container(
                   decoration: BoxDecoration(
                     color: const Color(0xFF1F1F1F),
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(24.r)),
                   ),
                   child: Column(children: [
                     Container(
                       margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
-                      width: 40.w, height: 4.h,
-                      decoration: BoxDecoration(color: const Color(0xFF2D2D2D), borderRadius: BorderRadius.circular(2.r)),
+                      width: 40.w,
+                      height: 4.h,
+                      decoration: BoxDecoration(
+                          color: const Color(0xFF2D2D2D),
+                          borderRadius: BorderRadius.circular(2.r)),
                     ),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                        Text('Select Country Code', style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
-                        GestureDetector(onTap: () => Navigator.pop(context), child: Icon(Icons.close, color: const Color(0xFF9CA3AF), size: 24.sp)),
-                      ]),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 20.w, vertical: 12.h),
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Select Country Code',
+                                style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 18.sp,
+                                    fontWeight: FontWeight.w700)),
+                            GestureDetector(
+                                onTap: () => Navigator.pop(context),
+                                child: Icon(Icons.close,
+                                    color: const Color(0xFF9CA3AF),
+                                    size: 24.sp)),
+                          ]),
                     ),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                       child: TextField(
                         onChanged: (v) => setSheetState(() => searchQuery = v),
-                        style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                        style: GoogleFonts.inter(
+                            color: Colors.white, fontSize: 14.sp),
                         decoration: InputDecoration(
-                          hintText: 'Search country...', hintStyle: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 14.sp),
-                          prefixIcon: Icon(Icons.search, color: const Color(0xFF6B7280), size: 20.sp),
-                          filled: true, fillColor: const Color(0xFF0A0A0A),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide.none),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                          hintText: 'Search country...',
+                          hintStyle: GoogleFonts.inter(
+                              color: const Color(0xFF6B7280), fontSize: 14.sp),
+                          prefixIcon: Icon(Icons.search,
+                              color: const Color(0xFF6B7280), size: 20.sp),
+                          filled: true,
+                          fillColor: const Color(0xFF0A0A0A),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                              borderSide: BorderSide.none),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16.w, vertical: 12.h),
                         ),
                       ),
                     ),
@@ -1096,30 +1263,57 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
                         itemCount: filtered.length,
                         itemBuilder: (context, index) {
                           final c = filtered[index];
-                          final isSelected = c.countryCode == _phoneCountryCodes[fieldName]?.countryCode;
+                          final isSelected = c.countryCode ==
+                              _phoneCountryCodes[fieldName]?.countryCode;
                           return GestureDetector(
                             onTap: () {
                               setState(() => _phoneCountryCodes[fieldName] = c);
                               // Re-send full phone to cubit
-                              final local = controller.text.replaceAll(RegExp(r'[^\d]'), '');
-                              final s = local.startsWith('0') ? local.substring(1) : local;
-                              cubit.updateFormField(field.name, '${c.dialCode}$s');
+                              final local = controller.text
+                                  .replaceAll(RegExp(r'[^\d]'), '');
+                              final s = local.startsWith('0')
+                                  ? local.substring(1)
+                                  : local;
+                              cubit.updateFormField(
+                                  field.name, '${c.dialCode}$s');
                               Navigator.pop(context);
                             },
                             child: Container(
                               margin: EdgeInsets.only(bottom: 8.h),
-                              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 14.w, vertical: 14.h),
                               decoration: BoxDecoration(
-                                color: isSelected ? const Color(0xFF3B82F6).withValues(alpha: 0.1) : const Color(0xFF0A0A0A),
+                                color: isSelected
+                                    ? const Color(0xFF3B82F6)
+                                        .withValues(alpha: 0.1)
+                                    : const Color(0xFF0A0A0A),
                                 borderRadius: BorderRadius.circular(12.r),
-                                border: isSelected ? Border.all(color: const Color(0xFF3B82F6), width: 1.5) : null,
+                                border: isSelected
+                                    ? Border.all(
+                                        color: const Color(0xFF3B82F6),
+                                        width: 1.5)
+                                    : null,
                               ),
                               child: Row(children: [
                                 Text(c.flag, style: TextStyle(fontSize: 24.sp)),
                                 SizedBox(width: 12.w),
-                                Expanded(child: Text(c.countryName, style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w500))),
-                                Text(c.dialCode, style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 14.sp, fontWeight: FontWeight.w600)),
-                                if (isSelected) ...[SizedBox(width: 8.w), Icon(Icons.check_circle, color: const Color(0xFF3B82F6), size: 20.sp)],
+                                Expanded(
+                                    child: Text(c.countryName,
+                                        style: GoogleFonts.inter(
+                                            color: Colors.white,
+                                            fontSize: 15.sp,
+                                            fontWeight: FontWeight.w500))),
+                                Text(c.dialCode,
+                                    style: GoogleFonts.inter(
+                                        color: const Color(0xFF9CA3AF),
+                                        fontSize: 14.sp,
+                                        fontWeight: FontWeight.w600)),
+                                if (isSelected) ...[
+                                  SizedBox(width: 8.w),
+                                  Icon(Icons.check_circle,
+                                      color: const Color(0xFF3B82F6),
+                                      size: 20.sp)
+                                ],
                               ]),
                             ),
                           );
@@ -1136,13 +1330,21 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
     );
   }
 
-  Widget _buildDropdownField(CreatePolicyCubit cubit, InsuranceProductFormField field, String value, String? error) {
+  Widget _buildDropdownField(CreatePolicyCubit cubit,
+      InsuranceProductFormField field, String value, String? error) {
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          Text(field.label, style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600, color: Colors.white)),
-          if (field.required) Text(' *', style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFFEF4444))),
+          Text(field.label,
+              style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white)),
+          if (field.required)
+            Text(' *',
+                style: GoogleFonts.inter(
+                    fontSize: 13.sp, color: const Color(0xFFEF4444))),
         ]),
         SizedBox(height: 8.h),
         GestureDetector(
@@ -1151,31 +1353,44 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
             width: double.infinity,
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
             decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F), borderRadius: BorderRadius.circular(10.r),
-              border: Border.all(color: error != null ? const Color(0xFFEF4444) : const Color(0xFF2D2D2D)),
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.circular(10.r),
+              border: Border.all(
+                  color: error != null
+                      ? const Color(0xFFEF4444)
+                      : const Color(0xFF2D2D2D)),
             ),
             child: Row(children: [
               Expanded(
                 child: Text(
-                  value.isNotEmpty ? value : 'Select ${field.label.toLowerCase()}',
+                  value.isNotEmpty
+                      ? value
+                      : 'Select ${field.label.toLowerCase()}',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    color: value.isNotEmpty ? Colors.white : const Color(0xFF9CA3AF).withValues(alpha: 0.5),
+                    color: value.isNotEmpty
+                        ? Colors.white
+                        : const Color(0xFF9CA3AF).withValues(alpha: 0.5),
                   ),
                 ),
               ),
-              Icon(Icons.keyboard_arrow_down, color: const Color(0xFF9CA3AF), size: 20.sp),
+              Icon(Icons.keyboard_arrow_down,
+                  color: const Color(0xFF9CA3AF), size: 20.sp),
             ]),
           ),
         ),
         if (error != null)
-          Padding(padding: EdgeInsets.only(top: 6.h, left: 14.w),
-            child: Text(error, style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFFEF4444)))),
+          Padding(
+              padding: EdgeInsets.only(top: 6.h, left: 14.w),
+              child: Text(error,
+                  style: GoogleFonts.inter(
+                      fontSize: 11.sp, color: const Color(0xFFEF4444)))),
       ]),
     );
   }
 
-  void _showSelectBottomSheet(CreatePolicyCubit cubit, InsuranceProductFormField field, String currentValue) {
+  void _showSelectBottomSheet(CreatePolicyCubit cubit,
+      InsuranceProductFormField field, String currentValue) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1187,7 +1402,10 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
             final options = field.options;
             final filtered = searchQuery.isEmpty
                 ? options
-                : options.where((o) => o.toLowerCase().contains(searchQuery.toLowerCase())).toList();
+                : options
+                    .where((o) =>
+                        o.toLowerCase().contains(searchQuery.toLowerCase()))
+                    .toList();
             return DraggableScrollableSheet(
               initialChildSize: options.length > 6 ? 0.7 : 0.45,
               maxChildSize: 0.9,
@@ -1196,75 +1414,116 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
                 return Container(
                   decoration: BoxDecoration(
                     color: const Color(0xFF1F1F1F),
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(24.r)),
                   ),
                   child: Column(children: [
                     Container(
                       margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
-                      width: 40.w, height: 4.h,
-                      decoration: BoxDecoration(color: const Color(0xFF2D2D2D), borderRadius: BorderRadius.circular(2.r)),
+                      width: 40.w,
+                      height: 4.h,
+                      decoration: BoxDecoration(
+                          color: const Color(0xFF2D2D2D),
+                          borderRadius: BorderRadius.circular(2.r)),
                     ),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                        Text('Select ${field.label}',
-                          style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: Icon(Icons.close, color: const Color(0xFF9CA3AF), size: 24.sp),
-                        ),
-                      ]),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 20.w, vertical: 12.h),
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Select ${field.label}',
+                                style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 18.sp,
+                                    fontWeight: FontWeight.w700)),
+                            GestureDetector(
+                              onTap: () => Navigator.pop(context),
+                              child: Icon(Icons.close,
+                                  color: const Color(0xFF9CA3AF), size: 24.sp),
+                            ),
+                          ]),
                     ),
                     if (options.length > 5)
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 20.w, vertical: 8.h),
                         child: TextField(
-                          onChanged: (v) => setSheetState(() => searchQuery = v),
-                          style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                          onChanged: (v) =>
+                              setSheetState(() => searchQuery = v),
+                          style: GoogleFonts.inter(
+                              color: Colors.white, fontSize: 14.sp),
                           decoration: InputDecoration(
                             hintText: 'Search...',
-                            hintStyle: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 14.sp),
-                            prefixIcon: Icon(Icons.search, color: const Color(0xFF6B7280), size: 20.sp),
-                            filled: true, fillColor: const Color(0xFF0A0A0A),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide.none),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                            hintStyle: GoogleFonts.inter(
+                                color: const Color(0xFF6B7280),
+                                fontSize: 14.sp),
+                            prefixIcon: Icon(Icons.search,
+                                color: const Color(0xFF6B7280), size: 20.sp),
+                            filled: true,
+                            fillColor: const Color(0xFF0A0A0A),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                                borderSide: BorderSide.none),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16.w, vertical: 12.h),
                           ),
                         ),
                       ),
                     Expanded(
                       child: filtered.isEmpty
-                        ? Center(child: Text('No options found', style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 14.sp)))
-                        : ListView.builder(
-                            controller: scrollController,
-                            padding: EdgeInsets.symmetric(horizontal: 20.w),
-                            itemCount: filtered.length,
-                            itemBuilder: (context, index) {
-                              final option = filtered[index];
-                              final isSelected = option == currentValue;
-                              return GestureDetector(
-                                onTap: () {
-                                  cubit.updateFormField(field.name, option);
-                                  Navigator.pop(context);
-                                  setState(() {}); // Refresh the form
-                                },
-                                child: Container(
-                                  margin: EdgeInsets.only(bottom: 6.h),
-                                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
-                                  decoration: BoxDecoration(
-                                    color: isSelected ? const Color(0xFF6366F1).withValues(alpha: 0.1) : const Color(0xFF0A0A0A),
-                                    borderRadius: BorderRadius.circular(10.r),
-                                    border: isSelected ? Border.all(color: const Color(0xFF6366F1), width: 1.5) : null,
+                          ? Center(
+                              child: Text('No options found',
+                                  style: GoogleFonts.inter(
+                                      color: const Color(0xFF9CA3AF),
+                                      fontSize: 14.sp)))
+                          : ListView.builder(
+                              controller: scrollController,
+                              padding: EdgeInsets.symmetric(horizontal: 20.w),
+                              itemCount: filtered.length,
+                              itemBuilder: (context, index) {
+                                final option = filtered[index];
+                                final isSelected = option == currentValue;
+                                return GestureDetector(
+                                  onTap: () {
+                                    cubit.updateFormField(field.name, option);
+                                    Navigator.pop(context);
+                                    setState(() {}); // Refresh the form
+                                  },
+                                  child: Container(
+                                    margin: EdgeInsets.only(bottom: 6.h),
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 14.w, vertical: 14.h),
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? const Color(0xFF6366F1)
+                                              .withValues(alpha: 0.1)
+                                          : const Color(0xFF0A0A0A),
+                                      borderRadius: BorderRadius.circular(10.r),
+                                      border: isSelected
+                                          ? Border.all(
+                                              color: const Color(0xFF6366F1),
+                                              width: 1.5)
+                                          : null,
+                                    ),
+                                    child: Row(children: [
+                                      Expanded(
+                                          child: Text(option,
+                                              style: GoogleFonts.inter(
+                                                  color: Colors.white,
+                                                  fontSize: 15.sp,
+                                                  fontWeight: isSelected
+                                                      ? FontWeight.w600
+                                                      : FontWeight.w400))),
+                                      if (isSelected)
+                                        Icon(Icons.check_circle,
+                                            color: const Color(0xFF6366F1),
+                                            size: 20.sp),
+                                    ]),
                                   ),
-                                  child: Row(children: [
-                                    Expanded(child: Text(option,
-                                      style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp, fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400))),
-                                    if (isSelected)
-                                      Icon(Icons.check_circle, color: const Color(0xFF6366F1), size: 20.sp),
-                                  ]),
-                                ),
-                              );
-                            },
-                          ),
+                                );
+                              },
+                            ),
                     ),
                   ]),
                 );
@@ -1276,14 +1535,22 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
     );
   }
 
-  Widget _buildDateField(BuildContext context, CreatePolicyCubit cubit, InsuranceProductFormField field, String value, String? error) {
+  Widget _buildDateField(BuildContext context, CreatePolicyCubit cubit,
+      InsuranceProductFormField field, String value, String? error) {
     final controller = _getController(field.name, value);
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          Text(field.label, style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600, color: Colors.white)),
-          if (field.required) Text(' *', style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFFEF4444))),
+          Text(field.label,
+              style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white)),
+          if (field.required)
+            Text(' *',
+                style: GoogleFonts.inter(
+                    fontSize: 13.sp, color: const Color(0xFFEF4444))),
         ]),
         SizedBox(height: 8.h),
         GestureDetector(
@@ -1313,8 +1580,10 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
               firstDate = today;
               lastDate = today.add(const Duration(days: 365 * 2));
               initial = today.add(const Duration(days: 1));
-            } else if (fieldName == 'arrival_date' || fieldName == 'return_date') {
-              final dep = DateTime.tryParse(_lastFormData['departure_date'] ?? '');
+            } else if (fieldName == 'arrival_date' ||
+                fieldName == 'return_date') {
+              final dep =
+                  DateTime.tryParse(_lastFormData['departure_date'] ?? '');
               // Default arrival to departure + 7 days (typical short trip)
               // when departure is set, otherwise today + 8 days so the
               // picker lands on a sane future date instead of today.
@@ -1326,7 +1595,8 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
                 initial = today.add(const Duration(days: 8));
               }
               if (initial.isAfter(lastDate)) initial = lastDate;
-            } else if (fieldName == 'device_purchase_date' || fieldName == 'disbursement_date') {
+            } else if (fieldName == 'device_purchase_date' ||
+                fieldName == 'disbursement_date') {
               // Gadget: device must have been purchased on or before today.
               // Life: disbursement_date is when a loan was disbursed — past-only.
               firstDate = today.subtract(const Duration(days: 365 * 20));
@@ -1340,14 +1610,19 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
               initial = today;
             }
             final date = await showDatePicker(
-              context: context,
-              initialDate: initial.isBefore(firstDate) ? firstDate : initial,
-              firstDate: firstDate, lastDate: lastDate,
-              builder: (context, child) => Theme(
-                data: ThemeData.dark().copyWith(colorScheme: const ColorScheme.dark(primary: Color(0xFF6366F1), surface: Color(0xFF1F1F1F))),
-                child: child!));
+                context: context,
+                initialDate: initial.isBefore(firstDate) ? firstDate : initial,
+                firstDate: firstDate,
+                lastDate: lastDate,
+                builder: (context, child) => Theme(
+                    data: ThemeData.dark().copyWith(
+                        colorScheme: const ColorScheme.dark(
+                            primary: Color(0xFF6366F1),
+                            surface: Color(0xFF1F1F1F))),
+                    child: child!));
             if (date != null && mounted) {
-              final formatted = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+              final formatted =
+                  '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
               cubit.updateFormField(field.name, formatted);
               controller.text = formatted;
               // When departure changes, force re-validation of arrival.
@@ -1360,13 +1635,22 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
               style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'Select date',
-                hintStyle: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF).withValues(alpha: 0.5)),
-                filled: true, fillColor: const Color(0xFF1F1F1F),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.r), borderSide: const BorderSide(color: Color(0xFF2D2D2D))),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10.r), borderSide: const BorderSide(color: Color(0xFF2D2D2D))),
+                hintStyle: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    color: const Color(0xFF9CA3AF).withValues(alpha: 0.5)),
+                filled: true,
+                fillColor: const Color(0xFF1F1F1F),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.r),
+                    borderSide: const BorderSide(color: Color(0xFF2D2D2D))),
+                enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.r),
+                    borderSide: const BorderSide(color: Color(0xFF2D2D2D))),
                 errorText: error,
-                suffixIcon: Icon(Icons.calendar_today, color: const Color(0xFF9CA3AF), size: 18.sp),
-                contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                suffixIcon: Icon(Icons.calendar_today,
+                    color: const Color(0xFF9CA3AF), size: 18.sp),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
               ),
             ),
           ),
@@ -1375,20 +1659,36 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
     );
   }
 
-  Widget _buildBooleanField(CreatePolicyCubit cubit, InsuranceProductFormField field, String value) {
+  Widget _buildBooleanField(
+      CreatePolicyCubit cubit, InsuranceProductFormField field, String value) {
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
       child: Row(children: [
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(field.label, style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600, color: Colors.white)),
+        Expanded(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(field.label,
+              style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white)),
           if (field.description.isNotEmpty)
             field.description.contains('<') && field.description.contains('>')
-              ? HtmlWidget(field.description, textStyle: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFF9CA3AF)),
-                  customStylesBuilder: (_) => {'color': 'rgba(156,163,175,1)', 'background-color': 'transparent'})
-              : Text(field.description, style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFF9CA3AF))),
+                ? HtmlWidget(field.description,
+                    textStyle: GoogleFonts.inter(
+                        fontSize: 11.sp, color: const Color(0xFF9CA3AF)),
+                    customStylesBuilder: (_) => {
+                          'color': 'rgba(156,163,175,1)',
+                          'background-color': 'transparent'
+                        })
+                : Text(field.description,
+                    style: GoogleFonts.inter(
+                        fontSize: 11.sp, color: const Color(0xFF9CA3AF))),
         ])),
         Switch(
-          value: value.toLowerCase() == 'true' || value == '1' || value.toLowerCase() == 'yes',
+          value: value.toLowerCase() == 'true' ||
+              value == '1' ||
+              value.toLowerCase() == 'yes',
           onChanged: (v) => cubit.updateFormField(field.name, v.toString()),
           activeColor: const Color(0xFF6366F1),
           activeTrackColor: const Color(0xFF6366F1).withValues(alpha: 0.3),
@@ -1399,50 +1699,76 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
     );
   }
 
-  Widget _buildFileUploadField(CreatePolicyCubit cubit, InsuranceProductFormField field, String value, String? error) {
+  Widget _buildFileUploadField(CreatePolicyCubit cubit,
+      InsuranceProductFormField field, String value, String? error) {
     final isStaging = _fileUploading[field.name] ?? false;
     final staged = cubit.stagedFile(field.name);
-    final hasPending = staged != null || value == CreatePolicyCubit.pendingUploadMarker;
-    final hasRemoteUrl = value.isNotEmpty && value != CreatePolicyCubit.pendingUploadMarker;
+    final hasPending =
+        staged != null || value == CreatePolicyCubit.pendingUploadMarker;
+    final hasRemoteUrl =
+        value.isNotEmpty && value != CreatePolicyCubit.pendingUploadMarker;
 
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          Text(field.label, style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600, color: Colors.white)),
-          if (field.required) Text(' *', style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFFEF4444))),
+          Text(field.label,
+              style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white)),
+          if (field.required)
+            Text(' *',
+                style: GoogleFonts.inter(
+                    fontSize: 13.sp, color: const Color(0xFFEF4444))),
         ]),
         if (field.description.isNotEmpty)
-          Padding(padding: EdgeInsets.only(top: 2.h),
-            child: field.description.contains('<') && field.description.contains('>')
-              ? HtmlWidget(field.description, textStyle: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFF9CA3AF)),
-                  customStylesBuilder: (_) => {'color': 'rgba(156,163,175,1)', 'background-color': 'transparent'})
-              : Text(field.description, style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFF9CA3AF)))),
+          Padding(
+              padding: EdgeInsets.only(top: 2.h),
+              child: field.description.contains('<') &&
+                      field.description.contains('>')
+                  ? HtmlWidget(field.description,
+                      textStyle: GoogleFonts.inter(
+                          fontSize: 11.sp, color: const Color(0xFF9CA3AF)),
+                      customStylesBuilder: (_) => {
+                            'color': 'rgba(156,163,175,1)',
+                            'background-color': 'transparent'
+                          })
+                  : Text(field.description,
+                      style: GoogleFonts.inter(
+                          fontSize: 11.sp, color: const Color(0xFF9CA3AF)))),
         SizedBox(height: 8.h),
         if (staged != null)
           _buildStagedFilePreview(cubit, field, staged)
         else
           GestureDetector(
-            onTap: isStaging ? null : () => _showUploadSourceSheet(cubit, field),
+            onTap:
+                isStaging ? null : () => _showUploadSourceSheet(cubit, field),
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
               decoration: BoxDecoration(
                 color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(10.r),
-                border: Border.all(color: error != null
-                    ? const Color(0xFFEF4444)
-                    : hasPending || hasRemoteUrl
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFF2D2D2D)),
+                border: Border.all(
+                    color: error != null
+                        ? const Color(0xFFEF4444)
+                        : hasPending || hasRemoteUrl
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFF2D2D2D)),
               ),
               child: Row(children: [
                 Icon(
-                  hasPending || hasRemoteUrl ? Icons.check_circle : Icons.cloud_upload_outlined,
-                  color: hasPending || hasRemoteUrl ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
+                  hasPending || hasRemoteUrl
+                      ? Icons.check_circle
+                      : Icons.cloud_upload_outlined,
+                  color: hasPending || hasRemoteUrl
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF9CA3AF),
                   size: 20.sp,
                 ),
                 SizedBox(width: 10.w),
-                Expanded(child: Text(
+                Expanded(
+                    child: Text(
                   isStaging
                       ? 'Preparing…'
                       : hasRemoteUrl
@@ -1455,14 +1781,16 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
                         : const Color(0xFF9CA3AF).withValues(alpha: 0.5),
                   ),
                 )),
-                if (isStaging)
-                  LazerVaultLoader.tiny(),
+                if (isStaging) LazerVaultLoader.tiny(),
               ]),
             ),
           ),
         if (error != null)
-          Padding(padding: EdgeInsets.only(top: 6.h, left: 14.w),
-            child: Text(error, style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFFEF4444)))),
+          Padding(
+              padding: EdgeInsets.only(top: 6.h, left: 14.w),
+              child: Text(error,
+                  style: GoogleFonts.inter(
+                      fontSize: 11.sp, color: const Color(0xFFEF4444)))),
       ]),
     );
   }
@@ -1483,7 +1811,8 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5)),
+        border:
+            Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5)),
       ),
       child: Row(children: [
         GestureDetector(
@@ -1513,7 +1842,8 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
         ),
         SizedBox(width: 12.w),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(
               staged.filename,
               maxLines: 1,
@@ -1634,7 +1964,8 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
   // feedback than waiting for an upload to fail mid-way.
   static const int _maxUploadBytes = 10 * 1024 * 1024;
 
-  Future<void> _pickAndUploadFile(CreatePolicyCubit cubit, InsuranceProductFormField field) async {
+  Future<void> _pickAndUploadFile(
+      CreatePolicyCubit cubit, InsuranceProductFormField field) async {
     // FileType.custom + allowedExtensions covers ID-card photos
     // (jpg/jpeg/png), receipts (pdf), and existing document scans —
     // the same set we accept on MyCover's upload endpoint. The
@@ -1645,9 +1976,12 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
       allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
       withData: true,
     );
-    if (result == null || result.files.isEmpty || result.files.first.bytes == null) return;
+    if (result == null ||
+        result.files.isEmpty ||
+        result.files.first.bytes == null) return;
     final file = result.files.first;
-    await _uploadBytes(cubit, field, bytes: file.bytes!.toList(), filename: file.name);
+    await _uploadBytes(cubit, field,
+        bytes: file.bytes!.toList(), filename: file.name);
   }
 
   /// Bottom sheet that lets the user choose between Take Photo (camera)
@@ -1925,14 +2259,23 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
       });
     }
 
-    final labels = items != null ? {for (var i in items) i.value: i.label} : <String, String>{};
+    final labels = items != null
+        ? {for (var i in items) i.value: i.label}
+        : <String, String>{};
 
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          Text(field.label, style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600, color: Colors.white)),
-          if (field.required) Text(' *', style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFFEF4444))),
+          Text(field.label,
+              style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white)),
+          if (field.required)
+            Text(' *',
+                style: GoogleFonts.inter(
+                    fontSize: 13.sp, color: const Color(0xFFEF4444))),
         ]),
         SizedBox(height: 8.h),
         Container(
@@ -1940,7 +2283,10 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
           decoration: BoxDecoration(
             color: const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(10.r),
-            border: Border.all(color: error != null ? const Color(0xFFEF4444) : const Color(0xFF2D2D2D)),
+            border: Border.all(
+                color: error != null
+                    ? const Color(0xFFEF4444)
+                    : const Color(0xFF2D2D2D)),
           ),
           // Always a tap-target: opens the options bottom-sheet IMMEDIATELY,
           // which shows its own loading → items → empty/error states. This
@@ -1964,7 +2310,9 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
               child: Row(children: [
                 Expanded(
                   child: Text(
-                    value.isNotEmpty ? (labels[value] ?? value) : 'Select ${field.label.toLowerCase()}',
+                    value.isNotEmpty
+                        ? (labels[value] ?? value)
+                        : 'Select ${field.label.toLowerCase()}',
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
@@ -1978,14 +2326,18 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
                   LazerVaultLoader.tiny(),
                   SizedBox(width: 8.w),
                 ],
-                Icon(Icons.keyboard_arrow_down, color: const Color(0xFF9CA3AF), size: 20.sp),
+                Icon(Icons.keyboard_arrow_down,
+                    color: const Color(0xFF9CA3AF), size: 20.sp),
               ]),
             ),
           ),
         ),
         if (error != null)
-          Padding(padding: EdgeInsets.only(top: 6.h, left: 14.w),
-            child: Text(error, style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFFEF4444)))),
+          Padding(
+              padding: EdgeInsets.only(top: 6.h, left: 14.w),
+              child: Text(error,
+                  style: GoogleFonts.inter(
+                      fontSize: 11.sp, color: const Color(0xFFEF4444)))),
       ]),
     );
   }
@@ -2064,7 +2416,8 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
               ? all
               : all.where((i) {
                   final q = search.toLowerCase();
-                  return i.label.toLowerCase().contains(q) || i.value.toLowerCase().contains(q);
+                  return i.label.toLowerCase().contains(q) ||
+                      i.value.toLowerCase().contains(q);
                 }).toList();
 
           Widget body;
@@ -2075,7 +2428,8 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
                 LazerVaultLoader.tiny(),
                 SizedBox(height: 14.h),
                 Text('Loading ${field.label.toLowerCase()}…',
-                    style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
+                    style: GoogleFonts.inter(
+                        fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
               ]),
             );
           } else if (error != null) {
@@ -2084,10 +2438,13 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
                 onTap: runFetch,
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
                   SizedBox(height: 40.h),
-                  Icon(Icons.refresh, color: const Color(0xFFEF4444), size: 26.sp),
+                  Icon(Icons.refresh,
+                      color: const Color(0xFFEF4444), size: 26.sp),
                   SizedBox(height: 12.h),
-                  Text(error!, textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFFEF4444))),
+                  Text(error!,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                          fontSize: 14.sp, color: const Color(0xFFEF4444))),
                 ]),
               ),
             );
@@ -2095,10 +2452,14 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
             body = Center(
               child: Column(mainAxisSize: MainAxisSize.min, children: [
                 SizedBox(height: 40.h),
-                Icon(Icons.inbox_outlined, color: const Color(0xFF6B7280), size: 28.sp),
+                Icon(Icons.inbox_outlined,
+                    color: const Color(0xFF6B7280), size: 28.sp),
                 SizedBox(height: 12.h),
                 Text('No options available',
-                    style: GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.w600, color: Colors.white)),
+                    style: GoogleFonts.inter(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white)),
                 SizedBox(height: 6.h),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 32.w),
@@ -2107,16 +2468,24 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
                         ? 'None found for the selected option. Try a different choice above.'
                         : 'Nothing to choose from here yet.',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(fontSize: 12.5.sp, color: const Color(0xFF9CA3AF), height: 1.4),
+                    style: GoogleFonts.inter(
+                        fontSize: 12.5.sp,
+                        color: const Color(0xFF9CA3AF),
+                        height: 1.4),
                   ),
                 ),
                 SizedBox(height: 14.h),
                 GestureDetector(
                   onTap: runFetch,
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    Icon(Icons.refresh, color: const Color(0xFF6366F1), size: 16.sp),
+                    Icon(Icons.refresh,
+                        color: const Color(0xFF6366F1), size: 16.sp),
                     SizedBox(width: 6.w),
-                    Text('Retry', style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600, color: const Color(0xFF6366F1))),
+                    Text('Retry',
+                        style: GoogleFonts.inter(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF6366F1))),
                   ]),
                 ),
               ]),
@@ -2135,16 +2504,28 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
                   },
                   child: Container(
                     margin: EdgeInsets.only(bottom: 8.h),
-                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFF3B82F6).withValues(alpha: 0.1) : const Color(0xFF0A0A0A),
+                      color: isSelected
+                          ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
+                          : const Color(0xFF0A0A0A),
                       borderRadius: BorderRadius.circular(12.r),
-                      border: isSelected ? Border.all(color: const Color(0xFF3B82F6), width: 1.5) : null,
+                      border: isSelected
+                          ? Border.all(
+                              color: const Color(0xFF3B82F6), width: 1.5)
+                          : null,
                     ),
                     child: Row(children: [
-                      Expanded(child: Text(opt.label,
-                          style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w500))),
-                      if (isSelected) Icon(Icons.check_circle, color: const Color(0xFF3B82F6), size: 20.sp),
+                      Expanded(
+                          child: Text(opt.label,
+                              style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.w500))),
+                      if (isSelected)
+                        Icon(Icons.check_circle,
+                            color: const Color(0xFF3B82F6), size: 20.sp),
                     ]),
                   ),
                 );
@@ -2153,7 +2534,9 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
           }
 
           return DraggableScrollableSheet(
-            initialChildSize: 0.7, maxChildSize: 0.9, minChildSize: 0.4,
+            initialChildSize: 0.7,
+            maxChildSize: 0.9,
+            minChildSize: 0.4,
             expand: false,
             builder: (_, scrollCtl) => Container(
               decoration: BoxDecoration(
@@ -2163,38 +2546,58 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
               child: Column(children: [
                 Container(
                   margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
-                  width: 40.w, height: 4.h,
-                  decoration: BoxDecoration(color: const Color(0xFF2D2D2D), borderRadius: BorderRadius.circular(2.r)),
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                      color: const Color(0xFF2D2D2D),
+                      borderRadius: BorderRadius.circular(2.r)),
                 ),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                  child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Text('Select ${field.label}',
-                        style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
-                    GestureDetector(
-                      onTap: () => Navigator.pop(sheetCtx),
-                      child: Icon(Icons.close, color: const Color(0xFF9CA3AF), size: 24.sp),
-                    ),
-                  ]),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Select ${field.label}',
+                            style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.w700)),
+                        GestureDetector(
+                          onTap: () => Navigator.pop(sheetCtx),
+                          child: Icon(Icons.close,
+                              color: const Color(0xFF9CA3AF), size: 24.sp),
+                        ),
+                      ]),
                 ),
                 // Search only once there are enough items to warrant it.
                 if (!loading && error == null && all.length > 8)
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                     child: TextField(
                       onChanged: (v) => setSheetState(() => search = v),
-                      style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                      style: GoogleFonts.inter(
+                          color: Colors.white, fontSize: 14.sp),
                       decoration: InputDecoration(
                         hintText: 'Search...',
-                        hintStyle: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 14.sp),
-                        prefixIcon: Icon(Icons.search, color: const Color(0xFF6B7280), size: 20.sp),
-                        filled: true, fillColor: const Color(0xFF0A0A0A),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide.none),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                        hintStyle: GoogleFonts.inter(
+                            color: const Color(0xFF6B7280), fontSize: 14.sp),
+                        prefixIcon: Icon(Icons.search,
+                            color: const Color(0xFF6B7280), size: 20.sp),
+                        filled: true,
+                        fillColor: const Color(0xFF0A0A0A),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide: BorderSide.none),
+                        contentPadding: EdgeInsets.symmetric(
+                            horizontal: 16.w, vertical: 12.h),
                       ),
                     ),
                   ),
-                Expanded(child: PrimaryScrollController(controller: scrollCtl, child: body)),
+                Expanded(
+                    child: PrimaryScrollController(
+                        controller: scrollCtl, child: body)),
               ]),
             ),
           );
@@ -2203,11 +2606,13 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
     );
   }
 
-  Future<void> _loadAuxiliaryData(String cacheKey, String utilityId, String? query) async {
+  Future<void> _loadAuxiliaryData(
+      String cacheKey, String utilityId, String? query) async {
     // Idempotent: a single build can schedule several post-frame loads before
     // the first flips the loading flag, so ignore re-entrant calls for a key
     // that is already loading or already cached.
-    if ((_auxiliaryLoading[cacheKey] ?? false) || _auxiliaryCache[cacheKey] != null) {
+    if ((_auxiliaryLoading[cacheKey] ?? false) ||
+        _auxiliaryCache[cacheKey] != null) {
       return;
     }
     setState(() {
@@ -2216,7 +2621,8 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
     });
     try {
       final repo = GetIt.I<InsuranceRepository>();
-      final items = await repo.getInsuranceAuxiliaryData(utilityId: utilityId, query: query);
+      final items = await repo.getInsuranceAuxiliaryData(
+          utilityId: utilityId, query: query);
       if (mounted) {
         setState(() {
           _auxiliaryCache[cacheKey] = items;

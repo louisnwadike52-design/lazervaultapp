@@ -326,9 +326,7 @@ class _TaxCalendarScreenState extends State<TaxCalendarScreen> {
         color = const Color(0xFFFB923C);
       } else {
         label = '$days days left';
-        color = days <= 7
-            ? const Color(0xFFFB923C)
-            : const Color(0xFF3B82F6);
+        color = days <= 7 ? const Color(0xFFFB923C) : const Color(0xFF3B82F6);
       }
     }
 
@@ -368,8 +366,18 @@ class _TaxCalendarScreenState extends State<TaxCalendarScreen> {
 
   String _formatDate(DateTime date) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }

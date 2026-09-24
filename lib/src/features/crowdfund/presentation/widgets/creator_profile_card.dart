@@ -38,7 +38,8 @@ class CreatorProfileCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 32.r,
-                  backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                  backgroundColor:
+                      const Color(0xFF4E03D0).withValues(alpha: 0.2),
                   backgroundImage: creator.profilePicture != null
                       ? NetworkImage(creator.profilePicture!)
                       : null,

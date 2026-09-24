@@ -34,8 +34,7 @@ class CreateInsurancePolicyCarousel extends StatefulWidget {
 }
 
 class _CreateInsurancePolicyCarouselState
-    extends State<CreateInsurancePolicyCarousel>
-    with TransactionPinMixin {
+    extends State<CreateInsurancePolicyCarousel> with TransactionPinMixin {
   @override
   ITransactionPinService get transactionPinService =>
       GetIt.I<ITransactionPinService>();
@@ -221,11 +220,13 @@ class _CreateInsurancePolicyCarouselState
 
     // Validate quote is available and not expired
     if (cubit.quote == null) {
-      _showErrorSnackBar('Quote not available. Please go back and get a new quote.');
+      _showErrorSnackBar(
+          'Quote not available. Please go back and get a new quote.');
       return;
     }
     if (cubit.quote!.isExpired) {
-      _showErrorSnackBar('Your quote has expired. Please go back and get a new quote.');
+      _showErrorSnackBar(
+          'Your quote has expired. Please go back and get a new quote.');
       return;
     }
 
@@ -245,7 +246,8 @@ class _CreateInsurancePolicyCarouselState
       currency: quote.currency,
       currencySymbol: _currencySymbol(quote.currency),
       title: 'Confirm Insurance Purchase',
-      message: 'Confirm payment of ${_currencySymbol(quote.currency)}${quote.premium.toStringAsFixed(2)}',
+      message:
+          'Confirm payment of ${_currencySymbol(quote.currency)}${quote.premium.toStringAsFixed(2)}',
       showProcessingPhase: false,
       onPinValidated: (token) async {
         verificationToken = token;
@@ -261,11 +263,13 @@ class _CreateInsurancePolicyCarouselState
 
     // Re-check quote after PIN flow (user may have been away for a while)
     if (cubit.quote == null) {
-      _showErrorSnackBar('Quote is no longer available. Please go back and get a new quote.');
+      _showErrorSnackBar(
+          'Quote is no longer available. Please go back and get a new quote.');
       return;
     }
     if (cubit.quote!.isExpired) {
-      _showErrorSnackBar('Your quote expired while entering PIN. Please go back and get a new quote.');
+      _showErrorSnackBar(
+          'Your quote expired while entering PIN. Please go back and get a new quote.');
       return;
     }
 
@@ -273,14 +277,16 @@ class _CreateInsurancePolicyCarouselState
     if (!mounted) return;
     setState(() => _isProcessing = true);
 
-    Navigator.of(context).push(
+    Navigator.of(context)
+        .push(
       MaterialPageRoute(
         builder: (_) => BlocProvider.value(
           value: cubit,
           child: const InsuranceProcessingScreen(),
         ),
       ),
-    ).then((_) {
+    )
+        .then((_) {
       setState(() => _isProcessing = false);
     });
 
@@ -429,7 +435,10 @@ class _CreateInsurancePolicyCarouselState
                   gradient: LinearGradient(
                     colors: _currentPage == _totalPages - 1
                         ? [Colors.green, Colors.green.shade700]
-                        : [const Color(0xFF6366F1), const Color.fromARGB(255, 78, 3, 208)],
+                        : [
+                            const Color(0xFF6366F1),
+                            const Color.fromARGB(255, 78, 3, 208)
+                          ],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
@@ -516,7 +525,10 @@ class _CreateInsurancePolicyCarouselState
                     gradient: LinearGradient(
                       colors: isLastPage
                           ? [const Color(0xFF10B981), const Color(0xFF059669)]
-                          : [const Color(0xFF6366F1), const Color.fromARGB(255, 78, 3, 208)],
+                          : [
+                              const Color(0xFF6366F1),
+                              const Color.fromARGB(255, 78, 3, 208)
+                            ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -548,7 +560,8 @@ class _CreateInsurancePolicyCarouselState
                           ),
                           if (!isLastPage) ...[
                             SizedBox(width: 8.w),
-                            Icon(Icons.arrow_forward, color: Colors.white, size: 20.sp),
+                            Icon(Icons.arrow_forward,
+                                color: Colors.white, size: 20.sp),
                           ],
                           if (isLastPage) ...[
                             SizedBox(width: 8.w),

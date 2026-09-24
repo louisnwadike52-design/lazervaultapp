@@ -1,7 +1,6 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 part 'mono_config_widgets.dart';
 
-
 /// Mono Connect Configuration
 ///
 /// Configuration for Mono bank account linking and DirectPay integration.
@@ -97,7 +96,8 @@ class MonoConfig {
   static bool get isStaging => environment == 'staging';
 
   /// Whether we're in development environment
-  static bool get isDevelopment => environment == 'development' || environment.isEmpty;
+  static bool get isDevelopment =>
+      environment == 'development' || environment.isEmpty;
 
   /// Get Mono Connect base URL (same for sandbox and live)
   static String get connectUrl => 'https://connect.mono.co';
@@ -464,7 +464,8 @@ class MonoConfig {
     print('[MonoConfig] Enabled: ${summary['enabled']}');
     print('[MonoConfig] Public Key: ${summary['publicKeyPrefix']}');
     print('[MonoConfig] Has Secret Key: ${summary['hasSecretKey']}');
-    print('[MonoConfig] Requires Business Approval: ${summary['requiresBusinessApproval']}');
+    print(
+        '[MonoConfig] Requires Business Approval: ${summary['requiresBusinessApproval']}');
     print('[MonoConfig] Connect URL: ${summary['connectUrl']}');
     print('[MonoConfig] Supported Banks: ${summary['supportedBanks']}');
 
@@ -492,7 +493,8 @@ class MonoConfig {
     if (publicKey.isEmpty) {
       issues.add('MONO_PUBLIC_KEY not set in .env');
     } else if (!isValidPublicKey(publicKey)) {
-      issues.add('MONO_PUBLIC_KEY has invalid format (should start with test_pk_ or live_pk_)');
+      issues.add(
+          'MONO_PUBLIC_KEY has invalid format (should start with test_pk_ or live_pk_)');
     }
 
     // Add environment/key mismatch warning if any

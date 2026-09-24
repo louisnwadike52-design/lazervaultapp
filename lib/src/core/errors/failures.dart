@@ -90,4 +90,4 @@ class NetworkFailure extends Failure {
   factory NetworkFailure.fromException(dynamic exception) {
     return NetworkFailure(message: exception.toString());
   }
-} 
+}

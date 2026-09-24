@@ -61,7 +61,8 @@ class RecipientVerificationGrpcDataSource
                 ? userMessage
                 : 'Account not found. Please check the account number.',
           );
-        } else if (errorCode == 'RATE_LIMIT' || errorCode == 'RATE_LIMIT_EXCEEDED') {
+        } else if (errorCode == 'RATE_LIMIT' ||
+            errorCode == 'RATE_LIMIT_EXCEEDED') {
           throw RateLimitException(
             userMessage.isNotEmpty
                 ? userMessage

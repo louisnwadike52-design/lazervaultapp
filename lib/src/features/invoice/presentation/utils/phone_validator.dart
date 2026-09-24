@@ -166,7 +166,7 @@ class PhoneValidator {
       // legitimately starts with it, or "44" from a local string.
       final couldBeNational =
           rest.length >= rule.minLength - rule.trunkPrefix.length &&
-          rest.length <= rule.maxLength;
+              rest.length <= rule.maxLength;
       if (hadPlus || couldBeNational) {
         s = rule.trunkPrefix + rest;
       }
@@ -201,8 +201,7 @@ class PhoneValidator {
     final trimmed = phone.trim();
     if (trimmed.isEmpty) return null; // optional field
 
-    final international =
-        trimmed.startsWith('+') || trimmed.startsWith('00');
+    final international = trimmed.startsWith('+') || trimmed.startsWith('00');
     final digits = trimmed.replaceAll(RegExp(r'[^0-9]'), '');
     if (digits.isEmpty) return 'Enter a valid phone number';
 

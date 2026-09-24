@@ -58,71 +58,70 @@ class _DropdownButton extends StatelessWidget {
       label: '$label filter, currently $valueLabel',
       button: true,
       child: Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12.r),
-        child: Container(
-          padding:
-              EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
-            borderRadius: BorderRadius.circular(12.r),
-            boxShadow: [
-              BoxShadow(
-                color: isFiltered
-                    ? const Color.fromARGB(255, 78, 3, 208)
-                        .withValues(alpha: 0.18)
-                    : Colors.black.withValues(alpha: 0.25),
-                blurRadius: isFiltered ? 12 : 6,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                size: 16.sp,
-                color: valueAccent ?? Colors.grey[400],
-              ),
-              SizedBox(width: 8.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      label,
-                      style: GoogleFonts.inter(
-                        color: Colors.grey[500],
-                        fontSize: 9.sp,
-                        letterSpacing: 0.6,
-                      ),
-                    ),
-                    SizedBox(height: 1.h),
-                    Text(
-                      valueLabel,
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12.r),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.circular(12.r),
+              boxShadow: [
+                BoxShadow(
+                  color: isFiltered
+                      ? const Color.fromARGB(255, 78, 3, 208)
+                          .withValues(alpha: 0.18)
+                      : Colors.black.withValues(alpha: 0.25),
+                  blurRadius: isFiltered ? 12 : 6,
+                  offset: const Offset(0, 3),
                 ),
-              ),
-              Icon(
-                Icons.expand_more,
-                size: 18.sp,
-                color: Colors.grey[400],
-              ),
-            ],
+              ],
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  icon,
+                  size: 16.sp,
+                  color: valueAccent ?? Colors.grey[400],
+                ),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        label,
+                        style: GoogleFonts.inter(
+                          color: Colors.grey[500],
+                          fontSize: 9.sp,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                      SizedBox(height: 1.h),
+                      Text(
+                        valueLabel,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.expand_more,
+                  size: 18.sp,
+                  color: Colors.grey[400],
+                ),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -166,8 +165,7 @@ class _FilterPickerSheet<T> extends StatelessWidget {
               ),
             ),
             Padding(
-              padding:
-                  EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 8.h),
+              padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 8.h),
               child: Row(
                 children: [
                   Expanded(
@@ -209,12 +207,10 @@ class _FilterPickerSheet<T> extends StatelessWidget {
         // a cancel and the filter never updated.
         onTap: () => Navigator.of(context).pop(_PickResult.value(opt.value)),
         child: Container(
-          padding:
-              EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
           decoration: BoxDecoration(
-            color: selected
-                ? accent.withValues(alpha: 0.10)
-                : Colors.transparent,
+            color:
+                selected ? accent.withValues(alpha: 0.10) : Colors.transparent,
           ),
           child: Row(
             children: [
@@ -238,8 +234,7 @@ class _FilterPickerSheet<T> extends StatelessWidget {
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 13.sp,
-                    fontWeight:
-                        selected ? FontWeight.w700 : FontWeight.w500,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                   ),
                   // Future trigger types or longer outcome labels
                   // shouldn't overflow the row — clip with ellipsis
@@ -249,8 +244,7 @@ class _FilterPickerSheet<T> extends StatelessWidget {
                 ),
               ),
               if (selected)
-                Icon(Icons.check_circle,
-                    color: accent, size: 18.sp),
+                Icon(Icons.check_circle, color: accent, size: 18.sp),
             ],
           ),
         ),
@@ -315,8 +309,7 @@ class _TransactionTile extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        rule?.name ??
-                            'Rule ${tx.ruleId.substring(0, 6)}',
+                        rule?.name ?? 'Rule ${tx.ruleId.substring(0, 6)}',
                         style: GoogleFonts.inter(
                           color: Colors.white,
                           fontSize: 14.sp,
@@ -327,8 +320,7 @@ class _TransactionTile extends StatelessWidget {
                       ),
                       SizedBox(height: 2.h),
                       Text(
-                        DateFormat('MMM d, yyyy • HH:mm')
-                            .format(tx.createdAt),
+                        DateFormat('MMM d, yyyy • HH:mm').format(tx.createdAt),
                         style: GoogleFonts.inter(
                           color: Colors.grey[500],
                           fontSize: 11.sp,
@@ -350,14 +342,12 @@ class _TransactionTile extends StatelessWidget {
                     ),
                     SizedBox(height: 4.h),
                     Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 8.w, vertical: 3.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                       decoration: BoxDecoration(
                         color: tx.success
-                            ? const Color(0xFF10B981)
-                                .withValues(alpha: 0.15)
-                            : const Color(0xFFEF4444)
-                                .withValues(alpha: 0.15),
+                            ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                            : const Color(0xFFEF4444).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6.r),
                       ),
                       child: Text(
@@ -380,8 +370,7 @@ class _TransactionTile extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: 8.w, vertical: 3.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                   decoration: BoxDecoration(
                     color: triggerColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(5.r),
@@ -434,6 +423,7 @@ class _TransactionDetailsSheet extends StatelessWidget {
   final AutoSaveTransactionEntity tx;
   final AutoSaveRuleEntity? rule;
   final VoidCallback? onOpenRule;
+
   /// Opens the shared rich receipt (PDF/JPG/share) for this save.
   final VoidCallback? onOpenReceipt;
 
@@ -605,9 +595,8 @@ class _TransactionDetailsSheet extends StatelessWidget {
   }
 
   Widget _amountBanner() {
-    final colour = tx.success
-        ? const Color(0xFF10B981)
-        : const Color(0xFFEF4444);
+    final colour =
+        tx.success ? const Color(0xFF10B981) : const Color(0xFFEF4444);
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(

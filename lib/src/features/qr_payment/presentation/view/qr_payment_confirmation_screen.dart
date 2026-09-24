@@ -406,9 +406,8 @@ class _QRPaymentConfirmationScreenState
   /// knows what kind of QR they scanned. Dynamic = they set the amount;
   /// static/fixed = the payee set the price and it can't be edited.
   Widget _buildQrModeNotice() {
-    final accent = _payerEntersAmount
-        ? const Color(0xFF3B82F6)
-        : const Color(0xFF10B981);
+    final accent =
+        _payerEntersAmount ? const Color(0xFF3B82F6) : const Color(0xFF10B981);
     final icon = _payerEntersAmount ? Icons.edit_outlined : Icons.lock_outline;
     final text = _payerEntersAmount
         ? 'Dynamic QR — like an open check: no fixed price is set, you write in the amount you want to pay.'
@@ -643,7 +642,8 @@ class _QRPaymentConfirmationScreenState
                 a.accountType.toLowerCase().contains('personal') || a.isPrimary;
             if (isActive || isPersonal) matchingAccounts.add(a);
           }
-          if (matchingAccounts.isEmpty) matchingAccounts.addAll(currencyMatches);
+          if (matchingAccounts.isEmpty)
+            matchingAccounts.addAll(currencyMatches);
 
           // Preselect: the active account when it can cover the amount, else
           // the first shown account that can, else the active/first anyway

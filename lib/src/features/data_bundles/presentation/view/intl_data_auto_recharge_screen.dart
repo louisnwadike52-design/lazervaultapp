@@ -35,12 +35,10 @@ class _IntlDataAutoRechargeScreenState
   }
 
   /// Filter to only international auto-recharges (country_code != 'NG').
-  List<DataAutoRecharge> _filterIntl(List<DataAutoRecharge> all) =>
-      all
-          .where((ar) =>
-              ar.countryCode.isNotEmpty &&
-              ar.countryCode.toUpperCase() != 'NG')
-          .toList();
+  List<DataAutoRecharge> _filterIntl(List<DataAutoRecharge> all) => all
+      .where((ar) =>
+          ar.countryCode.isNotEmpty && ar.countryCode.toUpperCase() != 'NG')
+      .toList();
 
   @override
   Widget build(BuildContext context) {
@@ -51,8 +49,8 @@ class _IntlDataAutoRechargeScreenState
         elevation: 0,
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: Icon(Icons.arrow_back_ios_new,
-              color: Colors.white, size: 20.sp),
+          icon:
+              Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20.sp),
         ),
         title: Text('Intl Data Auto-Recharge',
             style: TextStyle(
@@ -164,8 +162,8 @@ class _IntlDataAutoRechargeScreenState
               ElevatedButton.icon(
                 onPressed: () {
                   final cubit = context.read<DataAutoRechargeCubit>();
-                  Get.toNamed(
-                      AppRoutes.intlDataAutoRechargeCreate)?.then((res) {
+                  Get.toNamed(AppRoutes.intlDataAutoRechargeCreate)
+                      ?.then((res) {
                     if (res == true && mounted) cubit.load();
                   });
                 },
@@ -184,9 +182,7 @@ class _IntlDataAutoRechargeScreenState
   Widget _buildItem(DataAutoRecharge ar) {
     final isActive = ar.status.toLowerCase() == 'active';
     return BillAutoRechargeItem(
-      title: ar.networkName.isEmpty
-          ? '${ar.countryCode} Data'
-          : ar.networkName,
+      title: ar.networkName.isEmpty ? '${ar.countryCode} Data' : ar.networkName,
       subtitle: '${ar.countryCode} ${ar.phoneNumber}',
       planName: ar.planName.isNotEmpty ? ar.planName : null,
       amount: ar.amount,
@@ -223,14 +219,12 @@ class _IntlDataAutoRechargeScreenState
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text('Delete Auto-Recharge',
             style: TextStyle(color: Colors.white, fontSize: 17.sp)),
-        content: Text(
-            'Are you sure you want to delete this auto-recharge?',
-            style: TextStyle(
-                color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
+        content: Text('Are you sure you want to delete this auto-recharge?',
+            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
         actions: [
           TextButton(
               onPressed: () => Navigator.of(ctx).pop(),

@@ -37,7 +37,6 @@ import 'package:lazervault/src/features/recipients/presentation/widgets/unified_
 import 'package:grpc/grpc.dart' show GrpcError;
 part 'send_crypto_screen_widgets.dart';
 
-
 // SendCryptoScreen (PR6) — single-screen send flow:
 //   1. Pick asset (from user's holdings).
 //   2. Pick network from the holding's `networks` list.
@@ -88,15 +87,17 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
   // crypto (send is quantity-first). Fiat entry needs a live price; when the
   // price is unknown the toggle is disabled and we stay in crypto.
   bool _amountInFiat = false;
-  double get _typedAmount => double.tryParse(_amountController.text.trim()) ?? 0.0;
+  double get _typedAmount =>
+      double.tryParse(_amountController.text.trim()) ?? 0.0;
   double get _priceOf => _selected?.currentPrice ?? 0.0;
   // Fiat value of a holding's full balance (locale currency). Prefers the
   // server-computed totalValue; falls back to quantity × current price.
   double _fiatBalanceOf(CryptoHolding h) =>
       h.totalValue > 0 ? h.totalValue : h.quantity * h.currentPrice;
   // The crypto quantity being sent, whichever unit was typed.
-  double get _cryptoAmount =>
-      _amountInFiat ? (_priceOf > 0 ? _typedAmount / _priceOf : 0.0) : _typedAmount;
+  double get _cryptoAmount => _amountInFiat
+      ? (_priceOf > 0 ? _typedAmount / _priceOf : 0.0)
+      : _typedAmount;
   // The fiat value of the send, whichever unit was typed.
   double get _fiatAmount =>
       _amountInFiat ? _typedAmount : _typedAmount * _priceOf;
@@ -109,7 +110,8 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       if (_amountInFiat) {
         _amountController.text = typed > 0 ? _trimNum(typed / price) : '';
       } else {
-        _amountController.text = typed > 0 ? (typed * price).toStringAsFixed(2) : '';
+        _amountController.text =
+            typed > 0 ? (typed * price).toStringAsFixed(2) : '';
       }
       _amountInFiat = !_amountInFiat;
     });
@@ -194,8 +196,17 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       // asset offers exactly one EVM network; otherwise prefer its default
       // network if that default is EVM — else leave the choice to the user.
       const evmNets = [
-        'erc20', 'bep20', 'polygon', 'arbitrum', 'optimism',
-        'celo', 'base', 'lisk', 'avax', 'espace', 'zksync',
+        'erc20',
+        'bep20',
+        'polygon',
+        'arbitrum',
+        'optimism',
+        'celo',
+        'base',
+        'lisk',
+        'avax',
+        'espace',
+        'zksync',
       ];
       final avail = evmNets.where(has).toList();
       if (avail.length == 1) return avail.first;
@@ -311,7 +322,15 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       // ledger scale (quidax.LedgerMinorUnitDecimals): fiat=2, 6-dp stables=6,
       // every other coin=8 — a flat 1e8 would under/over-scale usdt & fiat.
       final s = (_selected?.cryptoSymbol ?? 'usdt').toLowerCase();
-      final dp = const {'ngn': 2, 'ghs': 2, 'usd': 2, 'usdt': 6, 'usdc': 6, 'qdx': 6}[s] ?? 8;
+      final dp = const {
+            'ngn': 2,
+            'ghs': 2,
+            'usd': 2,
+            'usdt': 6,
+            'usdc': 6,
+            'qdx': 6
+          }[s] ??
+          8;
       return (major * math.pow(10, dp)).round();
     }
   }
@@ -371,7 +390,8 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                   onPressed: () => Navigator.of(ctx).pop(false),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    side: BorderSide(color: Colors.white.withValues(alpha: 0.22)),
+                    side:
+                        BorderSide(color: Colors.white.withValues(alpha: 0.22)),
                     padding: EdgeInsets.symmetric(vertical: 13.h),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r)),
@@ -475,7 +495,8 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       return;
     }
     if (amount > _selected!.quantity) {
-      _toast('Amount exceeds your ${_selected!.cryptoSymbol.toUpperCase()} balance');
+      _toast(
+          'Amount exceeds your ${_selected!.cryptoSymbol.toUpperCase()} balance');
       _releaseSend();
       return;
     }
@@ -666,7 +687,8 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       amount: amount,
       currency: _selected!.cryptoSymbol.toUpperCase(),
       title: 'Confirm Send',
-      message: 'Send ${amount.toStringAsFixed(6)} ${_selected!.cryptoSymbol.toUpperCase()}',
+      message:
+          'Send ${amount.toStringAsFixed(6)} ${_selected!.cryptoSymbol.toUpperCase()}',
       showProcessingPhase: false,
       onPinValidated: (verificationToken) async {
         if (!mounted) return;
@@ -994,8 +1016,9 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                   _buildAmountCard(),
                   if (!_isInternal) ...[
                     SizedBox(height: 12.h),
-                    _buildField(_destinationTagController,
-                        'Destination tag (optional)', maxLength: 64),
+                    _buildField(
+                        _destinationTagController, 'Destination tag (optional)',
+                        maxLength: 64),
                   ],
                   SizedBox(height: 12.h),
                   _buildField(_noteController, 'Transaction note (optional)'),
@@ -1130,7 +1153,8 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                 Get.back();
                 Get.to(() => BlocProvider.value(
                       value: cubit,
-                      child: const AllAssetsScreen(mode: AssetSelectionMode.buy),
+                      child:
+                          const AllAssetsScreen(mode: AssetSelectionMode.buy),
                     ));
               },
               style: ElevatedButton.styleFrom(
@@ -1156,8 +1180,8 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                 Get.back();
                 Get.to(() => BlocProvider.value(
                       value: cubit,
-                      child:
-                          const AllAssetsScreen(mode: AssetSelectionMode.receive),
+                      child: const AllAssetsScreen(
+                          mode: AssetSelectionMode.receive),
                     ));
               },
               style: OutlinedButton.styleFrom(
@@ -1283,7 +1307,8 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                 TextField(
                   autofocus: false,
                   onChanged: (v) => setInner(() => query = v),
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                  style:
+                      GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
                   decoration: InputDecoration(
                     hintText: 'Search by name or symbol',
                     hintStyle: GoogleFonts.inter(
@@ -1360,7 +1385,8 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
             colors: [Color(0xFF161616), Color(0xFF0C0C0C)],
           ),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: const Color(0xFF7C3AED).withValues(alpha: 0.28)),
+          border: Border.all(
+              color: const Color(0xFF7C3AED).withValues(alpha: 0.28)),
         ),
         child: Row(children: [
           _assetChip(h?.cryptoSymbol ?? '?'),
@@ -1424,7 +1450,9 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     // The "≈" line shows the OTHER unit's value.
     final approx = _amountInFiat
         ? (_cryptoAmount > 0 ? '≈ ${_trimNum(_cryptoAmount)} $sym' : '')
-        : (_fiatAmount > 0 ? '≈ $fiatSym${_fiatAmount.toStringAsFixed(2)}' : '');
+        : (_fiatAmount > 0
+            ? '≈ $fiatSym${_fiatAmount.toStringAsFixed(2)}'
+            : '');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1476,13 +1504,15 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                             : _trimNum((maxQty * 1e8).floorToDouble() / 1e8);
                       }),
                       child: Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 10.w, vertical: 5.h),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF3B82F6).withValues(alpha: 0.16),
+                          color:
+                              const Color(0xFF3B82F6).withValues(alpha: 0.16),
                           borderRadius: BorderRadius.circular(9.r),
                           border: Border.all(
-                              color: const Color(0xFF3B82F6).withValues(alpha: 0.3)),
+                              color: const Color(0xFF3B82F6)
+                                  .withValues(alpha: 0.3)),
                         ),
                         child: Text('Max',
                             style: GoogleFonts.inter(
@@ -1530,12 +1560,14 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                 GestureDetector(
                   onTap: canToggle ? _toggleAmountUnit : null,
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFF9F7AEA).withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(9.r),
                       border: Border.all(
-                          color: const Color(0xFF9F7AEA).withValues(alpha: 0.35)),
+                          color:
+                              const Color(0xFF9F7AEA).withValues(alpha: 0.35)),
                     ),
                     child: Row(mainAxisSize: MainAxisSize.min, children: [
                       Text(_amountInFiat ? fiatCode : sym,
@@ -1594,7 +1626,8 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
           Padding(
             padding: EdgeInsets.only(top: 8.h, left: 4.w),
             child: Row(children: [
-              Icon(Icons.error_outline, size: 13.sp, color: const Color(0xFFEF4444)),
+              Icon(Icons.error_outline,
+                  size: 13.sp, color: const Color(0xFFEF4444)),
               SizedBox(width: 4.w),
               Text('Exceeds your ${h.cryptoSymbol.toUpperCase()} balance',
                   style: GoogleFonts.inter(
@@ -1623,9 +1656,8 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
               color: selected ? null : const Color(0xFF161616),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                  color: selected
-                      ? Colors.transparent
-                      : const Color(0xFF2D2D2D)),
+                  color:
+                      selected ? Colors.transparent : const Color(0xFF2D2D2D)),
             ),
             child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               Icon(icon,
@@ -1636,7 +1668,8 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                   style: GoogleFonts.inter(
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w600,
-                      color: selected ? Colors.white : const Color(0xFF9CA3AF))),
+                      color:
+                          selected ? Colors.white : const Color(0xFF9CA3AF))),
             ]),
           ),
         ),
@@ -1748,7 +1781,8 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
           Icon(Icons.hub_outlined, size: 16.sp, color: const Color(0xFF9CA3AF)),
           SizedBox(width: 10.w),
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('Send on a specific network',
                   style: GoogleFonts.inter(
                       color: Colors.white,
@@ -1869,8 +1903,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     // and opens the shared picker sheet rather than a subtle dropdown.
     const accent = Color(0xFF7C3AED);
     final sym = _selected!.cryptoSymbol.toUpperCase();
-    final hasSelection =
-        _networks.any((n) => n.network == _selectedNetwork);
+    final hasSelection = _networks.any((n) => n.network == _selectedNetwork);
     final label =
         hasSelection ? _networkNameFor(_selectedNetwork!) : 'Choose network';
     final canChange = _networks.length > 1;

@@ -60,12 +60,14 @@ class _PolicyHolderInfoScreenState extends State<PolicyHolderInfoScreen>
 
     // Set initial validation status if fields are pre-filled
     if (cubit.policyHolderEmail.isNotEmpty) {
-      _emailStatus = FormFieldValidators.isValidEmailFormat(cubit.policyHolderEmail)
-          ? ValidationStatus.valid
-          : ValidationStatus.invalid;
+      _emailStatus =
+          FormFieldValidators.isValidEmailFormat(cubit.policyHolderEmail)
+              ? ValidationStatus.valid
+              : ValidationStatus.invalid;
     }
     if (localPhone.isNotEmpty) {
-      final stripped = localPhone.startsWith('0') ? localPhone.substring(1) : localPhone;
+      final stripped =
+          localPhone.startsWith('0') ? localPhone.substring(1) : localPhone;
       _phoneStatus = (stripped.length >= 7 && stripped.length <= 14)
           ? ValidationStatus.valid
           : ValidationStatus.invalid;
@@ -73,12 +75,16 @@ class _PolicyHolderInfoScreenState extends State<PolicyHolderInfoScreen>
 
     // Add listeners for real-time updates to cubit
     _nameController.addListener(() {
-      context.read<CreatePolicyCubit>().updatePolicyHolderName(_nameController.text);
+      context
+          .read<CreatePolicyCubit>()
+          .updatePolicyHolderName(_nameController.text);
     });
 
     _emailController.addListener(() {
       _validateEmailRealTime(_emailController.text);
-      context.read<CreatePolicyCubit>().updatePolicyHolderEmail(_emailController.text);
+      context
+          .read<CreatePolicyCubit>()
+          .updatePolicyHolderEmail(_emailController.text);
     });
 
     _phoneController.addListener(() {
@@ -429,44 +435,61 @@ class _PolicyHolderInfoScreenState extends State<PolicyHolderInfoScreen>
                 return Container(
                   decoration: BoxDecoration(
                     color: const Color(0xFF1F1F1F),
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(24.r)),
                   ),
                   child: Column(
                     children: [
                       Container(
                         margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
-                        width: 40.w, height: 4.h,
+                        width: 40.w,
+                        height: 4.h,
                         decoration: BoxDecoration(
                           color: const Color(0xFF2D2D2D),
                           borderRadius: BorderRadius.circular(2.r),
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 20.w, vertical: 12.h),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text('Select Country Code',
-                              style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+                                style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 18.sp,
+                                    fontWeight: FontWeight.w700)),
                             GestureDetector(
                               onTap: () => Navigator.pop(context),
-                              child: Icon(Icons.close, color: const Color(0xFF9CA3AF), size: 24.sp),
+                              child: Icon(Icons.close,
+                                  color: const Color(0xFF9CA3AF), size: 24.sp),
                             ),
                           ],
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 20.w, vertical: 8.h),
                         child: TextField(
-                          onChanged: (v) => setSheetState(() => searchQuery = v),
-                          style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                          onChanged: (v) =>
+                              setSheetState(() => searchQuery = v),
+                          style: GoogleFonts.inter(
+                              color: Colors.white, fontSize: 14.sp),
                           decoration: InputDecoration(
                             hintText: 'Search country...',
-                            hintStyle: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 14.sp),
-                            prefixIcon: Icon(Icons.search, color: const Color(0xFF6B7280), size: 20.sp),
-                            filled: true, fillColor: const Color(0xFF0A0A0A),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide.none),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                            hintStyle: GoogleFonts.inter(
+                                color: const Color(0xFF6B7280),
+                                fontSize: 14.sp),
+                            prefixIcon: Icon(Icons.search,
+                                color: const Color(0xFF6B7280), size: 20.sp),
+                            filled: true,
+                            fillColor: const Color(0xFF0A0A0A),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                                borderSide: BorderSide.none),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16.w, vertical: 12.h),
                           ),
                         ),
                       ),
@@ -477,31 +500,61 @@ class _PolicyHolderInfoScreenState extends State<PolicyHolderInfoScreen>
                           itemCount: filtered.length,
                           itemBuilder: (context, index) {
                             final country = filtered[index];
-                            final isSelected = country.countryCode == _selectedCountry.countryCode;
+                            final isSelected = country.countryCode ==
+                                _selectedCountry.countryCode;
                             return GestureDetector(
                               onTap: () {
                                 setState(() => _selectedCountry = country);
                                 // Re-trigger cubit update with new dial code
-                                final local = _phoneController.text.replaceAll(RegExp(r'[^\d]'), '');
-                                final stripped = local.startsWith('0') ? local.substring(1) : local;
-                                context.read<CreatePolicyCubit>().updatePolicyHolderPhone('${country.dialCode}$stripped');
+                                final local = _phoneController.text
+                                    .replaceAll(RegExp(r'[^\d]'), '');
+                                final stripped = local.startsWith('0')
+                                    ? local.substring(1)
+                                    : local;
+                                context
+                                    .read<CreatePolicyCubit>()
+                                    .updatePolicyHolderPhone(
+                                        '${country.dialCode}$stripped');
                                 Navigator.pop(context);
                               },
                               child: Container(
                                 margin: EdgeInsets.only(bottom: 8.h),
-                                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 14.w, vertical: 14.h),
                                 decoration: BoxDecoration(
-                                  color: isSelected ? const Color(0xFF3B82F6).withValues(alpha: 0.1) : const Color(0xFF0A0A0A),
+                                  color: isSelected
+                                      ? const Color(0xFF3B82F6)
+                                          .withValues(alpha: 0.1)
+                                      : const Color(0xFF0A0A0A),
                                   borderRadius: BorderRadius.circular(12.r),
-                                  border: isSelected ? Border.all(color: const Color(0xFF3B82F6), width: 1.5) : null,
+                                  border: isSelected
+                                      ? Border.all(
+                                          color: const Color(0xFF3B82F6),
+                                          width: 1.5)
+                                      : null,
                                 ),
                                 child: Row(
                                   children: [
-                                    Text(country.flag, style: TextStyle(fontSize: 24.sp)),
+                                    Text(country.flag,
+                                        style: TextStyle(fontSize: 24.sp)),
                                     SizedBox(width: 12.w),
-                                    Expanded(child: Text(country.countryName, style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w500))),
-                                    Text(country.dialCode, style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 14.sp, fontWeight: FontWeight.w600)),
-                                    if (isSelected) ...[SizedBox(width: 8.w), Icon(Icons.check_circle, color: const Color(0xFF3B82F6), size: 20.sp)],
+                                    Expanded(
+                                        child: Text(country.countryName,
+                                            style: GoogleFonts.inter(
+                                                color: Colors.white,
+                                                fontSize: 15.sp,
+                                                fontWeight: FontWeight.w500))),
+                                    Text(country.dialCode,
+                                        style: GoogleFonts.inter(
+                                            color: const Color(0xFF9CA3AF),
+                                            fontSize: 14.sp,
+                                            fontWeight: FontWeight.w600)),
+                                    if (isSelected) ...[
+                                      SizedBox(width: 8.w),
+                                      Icon(Icons.check_circle,
+                                          color: const Color(0xFF3B82F6),
+                                          size: 20.sp)
+                                    ],
                                   ],
                                 ),
                               ),
@@ -565,7 +618,8 @@ class _PolicyHolderInfoScreenState extends State<PolicyHolderInfoScreen>
               GestureDetector(
                 onTap: _showCountryCodePicker,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
                   decoration: const BoxDecoration(
                     border: Border(
                       right: BorderSide(color: Color(0xFF2D2D2D), width: 1),
@@ -574,7 +628,8 @@ class _PolicyHolderInfoScreenState extends State<PolicyHolderInfoScreen>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(_selectedCountry.flag, style: TextStyle(fontSize: 20.sp)),
+                      Text(_selectedCountry.flag,
+                          style: TextStyle(fontSize: 20.sp)),
                       SizedBox(width: 6.w),
                       Text(
                         _selectedCountry.dialCode,
@@ -585,7 +640,8 @@ class _PolicyHolderInfoScreenState extends State<PolicyHolderInfoScreen>
                         ),
                       ),
                       SizedBox(width: 4.w),
-                      Icon(Icons.keyboard_arrow_down, color: const Color(0xFF6B7280), size: 18.sp),
+                      Icon(Icons.keyboard_arrow_down,
+                          color: const Color(0xFF6B7280), size: 18.sp),
                     ],
                   ),
                 ),
@@ -612,7 +668,8 @@ class _PolicyHolderInfoScreenState extends State<PolicyHolderInfoScreen>
                       color: Colors.grey[500],
                     ),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
                     suffixIcon: Padding(
                       padding: EdgeInsets.only(right: 12.w),
                       child: ValidationStatusIcon(status: _phoneStatus),

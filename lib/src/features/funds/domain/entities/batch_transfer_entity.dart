@@ -31,7 +31,8 @@ class BatchTransferRecipient extends Equatable {
     this.destinationBankName,
   });
 
-  bool get isExternal => transferType == 'external' ||
+  bool get isExternal =>
+      transferType == 'external' ||
       (transferType == null &&
           destinationBankCode != null &&
           destinationBankCode!.isNotEmpty);
@@ -206,5 +207,6 @@ class BatchTransferDetailEntity extends Equatable {
   });
 
   @override
-  List<Object?> get props => [summary, items, sourceAccountNumber, sourceAccountName];
+  List<Object?> get props =>
+      [summary, items, sourceAccountNumber, sourceAccountName];
 }

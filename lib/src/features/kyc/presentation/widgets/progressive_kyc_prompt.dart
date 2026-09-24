@@ -465,7 +465,8 @@ class ProgressiveKYCPromptScreen extends StatelessWidget {
         fontSize: 18.sp,
         fontWeight: FontWeight.bold,
       ),
-      middleText: 'You\'ll have a daily limit of ₦50,000. You can complete verification later from Settings.',
+      middleText:
+          'You\'ll have a daily limit of ₦50,000. You can complete verification later from Settings.',
       middleTextStyle: TextStyle(
         fontSize: 14.sp,
         color: Colors.black54,

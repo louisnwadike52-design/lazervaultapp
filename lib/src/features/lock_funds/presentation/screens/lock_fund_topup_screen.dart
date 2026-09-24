@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 
 import '../../domain/entities/lock_fund_entity.dart';
 import '../cubit/lock_funds_cubit.dart';
@@ -32,7 +33,8 @@ class _LockFundTopUpScreenState extends State<LockFundTopUpScreen> {
     super.dispose();
   }
 
-  double get _amount => double.tryParse(_amountController.text.replaceAll(',', '')) ?? 0;
+  double get _amount =>
+      double.tryParse(_amountController.text.replaceAll(',', '')) ?? 0;
 
   @override
   Widget build(BuildContext context) {
@@ -136,21 +138,31 @@ class _LockFundTopUpScreenState extends State<LockFundTopUpScreen> {
                 SizedBox(height: 12.h),
                 TextField(
                   controller: _amountController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d,.]'))],
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 24.sp, fontWeight: FontWeight.w600),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[\d,.]'))
+                  ],
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 24.sp,
+                      fontWeight: FontWeight.w600),
                   decoration: InputDecoration(
-                    prefixText: '${currency_formatter.CurrencySymbols.getSymbol(widget.lockFund.currency)} ',
-                    prefixStyle: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 24.sp),
+                    prefixText:
+                        '${currency_formatter.CurrencySymbols.getSymbol(widget.lockFund.currency)} ',
+                    prefixStyle: GoogleFonts.inter(
+                        color: const Color(0xFF9CA3AF), fontSize: 24.sp),
                     hintText: '0.00',
-                    hintStyle: GoogleFonts.inter(color: const Color(0xFF4B5563), fontSize: 24.sp),
+                    hintStyle: GoogleFonts.inter(
+                        color: const Color(0xFF4B5563), fontSize: 24.sp),
                     filled: true,
                     fillColor: const Color(0xFF1F1F1F),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
                   ),
                   onChanged: (_) => setState(() {}),
                 ),
@@ -167,15 +179,19 @@ class _LockFundTopUpScreenState extends State<LockFundTopUpScreen> {
                         setState(() {});
                       },
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 16.w, vertical: 8.h),
                         decoration: BoxDecoration(
                           color: const Color(0xFF1F1F1F),
                           borderRadius: BorderRadius.circular(20.r),
                           border: Border.all(color: const Color(0xFF2D2D2D)),
                         ),
                         child: Text(
-                          currency_formatter.CurrencySymbols.formatAmountWithCurrency(amount.toDouble(), widget.lockFund.currency),
-                          style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+                          currency_formatter.CurrencySymbols
+                              .formatAmountWithCurrency(
+                                  amount.toDouble(), widget.lockFund.currency),
+                          style: GoogleFonts.inter(
+                              color: const Color(0xFF9CA3AF), fontSize: 13.sp),
                         ),
                       ),
                     );
@@ -199,10 +215,12 @@ class _LockFundTopUpScreenState extends State<LockFundTopUpScreen> {
                     keyboardType: TextInputType.number,
                     obscureText: true,
                     maxLength: 4,
-                    style: GoogleFonts.inter(color: Colors.white, fontSize: 20.sp, letterSpacing: 8),
+                    style: GoogleFonts.inter(
+                        color: Colors.white, fontSize: 20.sp, letterSpacing: 8),
                     decoration: InputDecoration(
                       hintText: '****',
-                      hintStyle: GoogleFonts.inter(color: const Color(0xFF4B5563), fontSize: 20.sp),
+                      hintStyle: GoogleFonts.inter(
+                          color: const Color(0xFF4B5563), fontSize: 20.sp),
                       filled: true,
                       fillColor: const Color(0xFF1F1F1F),
                       border: OutlineInputBorder(
@@ -210,7 +228,8 @@ class _LockFundTopUpScreenState extends State<LockFundTopUpScreen> {
                         borderSide: BorderSide.none,
                       ),
                       counterText: '',
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                      contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16.w, vertical: 16.h),
                     ),
                     onChanged: (_) => setState(() {}),
                   ),
@@ -225,12 +244,15 @@ class _LockFundTopUpScreenState extends State<LockFundTopUpScreen> {
                     decoration: BoxDecoration(
                       color: const Color(0xFF1F1F1F),
                       borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+                      border: Border.all(
+                          color:
+                              const Color(0xFF6366F1).withValues(alpha: 0.3)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildSummaryRow('Current Balance', widget.lockFund.formattedAmount),
+                        _buildSummaryRow(
+                            'Current Balance', widget.lockFund.formattedAmount),
                         SizedBox(height: 8.h),
                         _buildSummaryRow(
                           'Top-Up Amount',
@@ -240,7 +262,8 @@ class _LockFundTopUpScreenState extends State<LockFundTopUpScreen> {
                         Divider(color: const Color(0xFF2D2D2D), height: 16.h),
                         _buildSummaryRow(
                           'New Balance',
-                          currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+                          currency_formatter.CurrencySymbols
+                              .formatAmountWithCurrency(
                             widget.lockFund.amount + _amount,
                             widget.lockFund.currency,
                           ),
@@ -262,7 +285,8 @@ class _LockFundTopUpScreenState extends State<LockFundTopUpScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF6366F1),
                       disabledBackgroundColor: const Color(0xFF2D2D2D),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r)),
                     ),
                     child: _isSubmitting
                         ? LazerVaultLoader.small()
@@ -299,14 +323,15 @@ class _LockFundTopUpScreenState extends State<LockFundTopUpScreen> {
 
     setState(() => _isSubmitting = true);
     context.read<LockFundsCubit>().topUpLockFund(
-      lockFundId: widget.lockFund.id,
-      amount: _amount,
-      sourceAccountId: widget.lockFund.sourceAccountId ?? '',
-      transactionPin: _pinController.text,
-    );
+          lockFundId: widget.lockFund.id,
+          amount: _amount,
+          sourceAccountId: widget.lockFund.sourceAccountId ?? '',
+          transactionPin: _pinController.text,
+        );
   }
 
-  Widget _buildSummaryRow(String label, String value, {Color? valueColor, bool isBold = false}) {
+  Widget _buildSummaryRow(String label, String value,
+      {Color? valueColor, bool isBold = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

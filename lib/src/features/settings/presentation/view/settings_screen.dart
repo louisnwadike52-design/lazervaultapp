@@ -99,6 +99,7 @@ class _SettingsViewState extends State<_SettingsView> {
   /// matching sections and auto-expands them so the matched item is revealed.
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+
   /// Mirrors UpliftGuidePreference.isDismissed so the switch renders
   /// synchronously. Loaded on init and written through on change, so it
   /// cannot drift from what the Lazerfunds screen actually does.
@@ -1275,7 +1276,12 @@ class _SettingsViewState extends State<_SettingsView> {
             title: 'Auto-logout',
             subtitle: _autoLogoutSubtitle(),
             keywords: const [
-              'auto logout', 'timeout', 'idle', 'inactivity', 'session', 'lock'
+              'auto logout',
+              'timeout',
+              'idle',
+              'inactivity',
+              'session',
+              'lock'
             ],
             onTap: _showAutoLogoutPicker,
           ),
@@ -2079,7 +2085,8 @@ class _SettingsViewState extends State<_SettingsView> {
 
   String _autoLogoutSubtitle() {
     final chosen = InactivityPreference.seconds;
-    if (chosen != null) return 'Signs you out after ${_autoLogoutLabel(chosen)}';
+    if (chosen != null)
+      return 'Signs you out after ${_autoLogoutLabel(chosen)}';
     final platform = endpointRegistry.inactivityTimeoutSeconds;
     // 0 means the platform has auto-logout switched off entirely. Say so
     // plainly instead of implying a duration the app will not act on.

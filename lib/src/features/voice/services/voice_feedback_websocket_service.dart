@@ -85,7 +85,8 @@ class VoiceFeedbackWebSocketService {
       await readyFuture;
 
       _isConnected = true;
-      _reconnectAttempts = 0; // Reset reconnection counter on successful connection
+      _reconnectAttempts =
+          0; // Reset reconnection counter on successful connection
       debugPrint('[VoiceFeedback] Connected successfully');
 
       // Subscribe to action-specific events if actionId provided
@@ -223,10 +224,12 @@ class VoiceFeedbackWebSocketService {
 
   /// Listen to events for a specific action
   Stream<VoiceTransactionEvent> actionEventStream(String actionId) {
-    return _stateControllers.putIfAbsent(
-      actionId,
-      () => StreamController<VoiceTransactionEvent>.broadcast(),
-    ).stream;
+    return _stateControllers
+        .putIfAbsent(
+          actionId,
+          () => StreamController<VoiceTransactionEvent>.broadcast(),
+        )
+        .stream;
   }
 
   /// Add a callback for all events
@@ -319,7 +322,8 @@ class VoiceFeedbackWebSocketService {
       case 'error':
         return VoiceTransactionError(
           errorCode: data['data']?['error_code'] as String? ?? 'UNKNOWN',
-          errorMessage: data['data']?['error_message'] as String? ?? 'An error occurred',
+          errorMessage:
+              data['data']?['error_message'] as String? ?? 'An error occurred',
           severity: _parseSeverity(data['data']?['severity']),
           recoverable: data['data']?['recoverable'] as bool? ?? true,
         );
@@ -459,11 +463,13 @@ class VoiceFeedbackWebSocketService {
 
   void _scheduleReconnect() {
     if (_reconnectAttempts >= _maxReconnectAttempts) {
-      debugPrint('[VoiceFeedback] Max reconnect attempts ($_maxReconnectAttempts) reached. Giving up.');
+      debugPrint(
+          '[VoiceFeedback] Max reconnect attempts ($_maxReconnectAttempts) reached. Giving up.');
       // Notify callbacks about permanent failure
       for (final callback in _onErrorCallbacks) {
         try {
-          callback('Max reconnection attempts reached. Please check your connection.');
+          callback(
+              'Max reconnection attempts reached. Please check your connection.');
         } catch (e) {
           debugPrint('[VoiceFeedback] Error callback error: $e');
         }
@@ -475,12 +481,14 @@ class VoiceFeedbackWebSocketService {
 
     // Calculate exponential backoff delay: 2^n seconds, max 30 seconds
     final delay = _calculateReconnectDelay(_reconnectAttempts);
-    debugPrint('[VoiceFeedback] Scheduling reconnect attempt ${_reconnectAttempts + 1}/$_maxReconnectAttempts in ${delay.inSeconds}s');
+    debugPrint(
+        '[VoiceFeedback] Scheduling reconnect attempt ${_reconnectAttempts + 1}/$_maxReconnectAttempts in ${delay.inSeconds}s');
 
     _reconnectTimer = Timer(delay, () async {
       if (_isIntentionallyClosed) return;
 
-      debugPrint('[VoiceFeedback] Attempting to reconnect (attempt ${_reconnectAttempts + 1}/$_maxReconnectAttempts)...');
+      debugPrint(
+          '[VoiceFeedback] Attempting to reconnect (attempt ${_reconnectAttempts + 1}/$_maxReconnectAttempts)...');
       _reconnectAttempts++;
 
       final success = await reconnect();

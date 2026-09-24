@@ -93,9 +93,8 @@ class CrowdfundProgressIndicator extends StatelessWidget {
                 ? const Color(0xFF10B981) // Success green
                 : const Color(0xFF2D2D2D),
             border: Border.all(
-              color: reached
-                  ? const Color(0xFF10B981)
-                  : const Color(0xFF4E03D0),
+              color:
+                  reached ? const Color(0xFF10B981) : const Color(0xFF4E03D0),
               width: 1.5,
             ),
           ),

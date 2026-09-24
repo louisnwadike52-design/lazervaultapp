@@ -29,14 +29,17 @@ class TimeBlockList extends StatelessWidget {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: sortedBlocks.map((block) => _buildTimeBlock(context, block)).toList(),
+      children:
+          sortedBlocks.map((block) => _buildTimeBlock(context, block)).toList(),
     );
   }
 
   Widget _buildTimeBlock(BuildContext context, TimeBlock block) {
     // Find linked tasks and events
-    final linkedTasks = tasks.where((t) => block.taskIds.contains(t.id)).toList();
-    final linkedEvents = events.where((e) => block.eventIds.contains(e.id)).toList();
+    final linkedTasks =
+        tasks.where((t) => block.taskIds.contains(t.id)).toList();
+    final linkedEvents =
+        events.where((e) => block.eventIds.contains(e.id)).toList();
 
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
@@ -92,8 +95,10 @@ class TimeBlockList extends StatelessWidget {
               spacing: 8.w,
               runSpacing: 8.h,
               children: [
-                ...linkedTasks.map((task) => _buildLinkedChip(task.title, Icons.task_outlined)),
-                ...linkedEvents.map((event) => _buildLinkedChip(event.title, Icons.event)),
+                ...linkedTasks.map((task) =>
+                    _buildLinkedChip(task.title, Icons.task_outlined)),
+                ...linkedEvents
+                    .map((event) => _buildLinkedChip(event.title, Icons.event)),
               ],
             ),
           ],

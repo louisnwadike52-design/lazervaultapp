@@ -38,16 +38,14 @@ class AirtimeReminder extends Equatable {
 
   factory AirtimeReminder.fromProto(pb.AirtimeReminder proto) {
     String? tsToIso(bool has, dynamic ts) => has
-        ? DateTime.fromMillisecondsSinceEpoch(
-                ts.seconds.toInt() * 1000,
+        ? DateTime.fromMillisecondsSinceEpoch(ts.seconds.toInt() * 1000,
                 isUtc: true)
             .toIso8601String()
         : null;
     return AirtimeReminder(
       id: proto.id,
       userId: proto.userId,
-      beneficiaryId:
-          proto.beneficiaryId.isEmpty ? null : proto.beneficiaryId,
+      beneficiaryId: proto.beneficiaryId.isEmpty ? null : proto.beneficiaryId,
       title: proto.title,
       description: proto.description.isEmpty ? null : proto.description,
       reminderDate: tsToIso(proto.hasReminderDate(), proto.reminderDate) ?? '',
@@ -64,6 +62,5 @@ class AirtimeReminder extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [id, title, reminderDate, status, beneficiaryId];
+  List<Object?> get props => [id, title, reminderDate, status, beneficiaryId];
 }

@@ -101,9 +101,8 @@ class InvoicePdfService {
       return null;
     }
     try {
-      final resp = await http
-          .get(Uri.parse(u))
-          .timeout(const Duration(seconds: 8));
+      final resp =
+          await http.get(Uri.parse(u)).timeout(const Duration(seconds: 8));
       if (resp.statusCode == 200 && resp.bodyBytes.isNotEmpty) {
         return pw.MemoryImage(resp.bodyBytes);
       }
@@ -150,8 +149,7 @@ class InvoicePdfService {
     );
 
     final output = await getTemporaryDirectory();
-    final file =
-        File('${output.path}/invoice_${invoice.displayNumber}.pdf');
+    final file = File('${output.path}/invoice_${invoice.displayNumber}.pdf');
     await file.writeAsBytes(await pdf.save());
     return file;
   }
@@ -226,8 +224,7 @@ class InvoicePdfService {
     );
 
     final output = await getTemporaryDirectory();
-    final file =
-        File('${output.path}/receipt_${invoice.displayNumber}.pdf');
+    final file = File('${output.path}/receipt_${invoice.displayNumber}.pdf');
     await file.writeAsBytes(await pdf.save());
     return file;
   }
@@ -382,12 +379,16 @@ class InvoicePdfService {
     final info = <String>[];
 
     if (details != null) {
-      if (details.companyName?.isNotEmpty == true) info.add(details.companyName!);
-      if (details.contactName?.isNotEmpty == true) info.add(details.contactName!);
+      if (details.companyName?.isNotEmpty == true)
+        info.add(details.companyName!);
+      if (details.contactName?.isNotEmpty == true)
+        info.add(details.contactName!);
       if (details.email?.isNotEmpty == true) info.add(details.email!);
       if (details.phone?.isNotEmpty == true) info.add(details.phone!);
-      if (details.addressLine1?.isNotEmpty == true) info.add(details.addressLine1!);
-      if (details.city?.isNotEmpty == true && details.state?.isNotEmpty == true) {
+      if (details.addressLine1?.isNotEmpty == true)
+        info.add(details.addressLine1!);
+      if (details.city?.isNotEmpty == true &&
+          details.state?.isNotEmpty == true) {
         info.add('${details.city}, ${details.state}');
       } else if (details.city?.isNotEmpty == true) {
         info.add(details.city!);
@@ -422,8 +423,9 @@ class InvoicePdfService {
                   padding:
                       const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: pw.BoxDecoration(
-                    color:
-                        title == 'From' ? PdfColors.green100 : PdfColors.blue100,
+                    color: title == 'From'
+                        ? PdfColors.green100
+                        : PdfColors.blue100,
                     borderRadius: pw.BorderRadius.circular(4),
                   ),
                   child: pw.Text(
@@ -526,7 +528,8 @@ class InvoicePdfService {
               pw.Divider(color: PdfColors.grey300, height: 16),
               _buildPaymentDetailRow('Payment Method', 'Lazervault Wallet'),
               pw.Divider(color: PdfColors.grey300, height: 16),
-              _buildPaymentDetailRow('Currency', invoice.currency.toUpperCase()),
+              _buildPaymentDetailRow(
+                  'Currency', invoice.currency.toUpperCase()),
             ],
           ),
         ),
@@ -581,8 +584,7 @@ class InvoicePdfService {
           ),
           child: pw.Column(
             children: [
-              _buildPaymentDetailRow(
-                  'Invoice No.', invoice.displayNumber),
+              _buildPaymentDetailRow('Invoice No.', invoice.displayNumber),
               pw.Divider(color: PdfColors.grey300, height: 16),
               _buildPaymentDetailRow(
                   'Invoice Date', _formatDate(invoice.createdAt)),
@@ -809,11 +811,14 @@ class InvoicePdfService {
     final info = <String>[];
 
     if (details != null) {
-      if (details.companyName?.isNotEmpty == true) info.add(details.companyName!);
-      if (details.contactName?.isNotEmpty == true) info.add(details.contactName!);
+      if (details.companyName?.isNotEmpty == true)
+        info.add(details.companyName!);
+      if (details.contactName?.isNotEmpty == true)
+        info.add(details.contactName!);
       if (details.email?.isNotEmpty == true) info.add(details.email!);
       if (details.phone?.isNotEmpty == true) info.add(details.phone!);
-      if (details.addressLine1?.isNotEmpty == true) info.add(details.addressLine1!);
+      if (details.addressLine1?.isNotEmpty == true)
+        info.add(details.addressLine1!);
       if (details.city?.isNotEmpty == true) info.add(details.city!);
       if (details.state?.isNotEmpty == true) info.add(details.state!);
       if (details.postcode?.isNotEmpty == true) info.add(details.postcode!);
@@ -1186,7 +1191,8 @@ class InvoicePdfService {
     }
   }
 
-  static Future<void> shareInvoice(Invoice invoice, {Rect? sharePositionOrigin}) async {
+  static Future<void> shareInvoice(Invoice invoice,
+      {Rect? sharePositionOrigin}) async {
     try {
       final file = await generateInvoicePdf(invoice);
       await SharePlus.instance.share(ShareParams(
@@ -1213,7 +1219,8 @@ class InvoicePdfService {
     }
   }
 
-  static Future<void> shareReceipt(Invoice invoice, {Rect? sharePositionOrigin}) async {
+  static Future<void> shareReceipt(Invoice invoice,
+      {Rect? sharePositionOrigin}) async {
     try {
       final file = await generateInvoiceReceipt(invoice);
       await SharePlus.instance.share(ShareParams(

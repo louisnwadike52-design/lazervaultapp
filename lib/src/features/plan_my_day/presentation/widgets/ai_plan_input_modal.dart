@@ -80,8 +80,8 @@ class _AiPlanInputModalState extends State<AiPlanInputModal> {
     var t = s
         .replaceAllMapped(RegExp(r'\*\*(.+?)\*\*'), (m) => m[1]!)
         .replaceAllMapped(RegExp(r'__(.+?)__'), (m) => m[1]!)
-        .replaceAllMapped(RegExp(r'(?<!\*)\*(?!\s)(.+?)(?<!\s)\*(?!\*)'),
-            (m) => m[1]!)
+        .replaceAllMapped(
+            RegExp(r'(?<!\*)\*(?!\s)(.+?)(?<!\s)\*(?!\*)'), (m) => m[1]!)
         .replaceAll('`', '')
         .replaceAll(RegExp(r'^\s{0,3}#{1,6}\s*', multiLine: true), '')
         .replaceAll(RegExp(r'^\s*[-*]\s+', multiLine: true), '• ');
@@ -169,7 +169,8 @@ class _AiPlanInputModalState extends State<AiPlanInputModal> {
                     color: _accent.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10.r),
                   ),
-                  child: const Icon(Icons.auto_awesome, color: _accent, size: 22),
+                  child:
+                      const Icon(Icons.auto_awesome, color: _accent, size: 22),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
@@ -258,8 +259,8 @@ class _AiPlanInputModalState extends State<AiPlanInputModal> {
                       decoration: BoxDecoration(
                         color: const Color(0xFF2D2D2D),
                         borderRadius: BorderRadius.circular(16.r),
-                        border: Border.all(
-                            color: _accent.withValues(alpha: 0.3)),
+                        border:
+                            Border.all(color: _accent.withValues(alpha: 0.3)),
                       ),
                       child: Text(
                         e.length > 26 ? '${e.substring(0, 25)}…' : e,
@@ -330,14 +331,16 @@ class _AiPlanInputModalState extends State<AiPlanInputModal> {
             children: [
               Icon(
                 success ? Icons.check_circle : Icons.error_outline,
-                color: success ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                color:
+                    success ? const Color(0xFF10B981) : const Color(0xFFEF4444),
                 size: 20,
               ),
               SizedBox(width: 12.w),
               Expanded(
                 child: Text(
                   _resultMessage,
-                  style: TextStyle(color: Colors.white, fontSize: 14.sp, height: 1.4),
+                  style: TextStyle(
+                      color: Colors.white, fontSize: 14.sp, height: 1.4),
                 ),
               ),
             ],

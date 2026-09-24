@@ -20,8 +20,9 @@ class BatchRecipientItem {
     this.bankCode,
     this.bankName,
     this.beneficiaryName,
-  }) : amountController = TextEditingController(text: initialAmount ?? ''),
-       referenceController = TextEditingController(text: initialReference ?? '');
+  })  : amountController = TextEditingController(text: initialAmount ?? ''),
+        referenceController =
+            TextEditingController(text: initialReference ?? '');
 
   void dispose() {
     amountController.dispose();
@@ -45,5 +46,6 @@ class MultiSelectRecipientBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<MultiSelectRecipientBottomSheet> createState() => _MultiSelectRecipientBottomSheetState();
+  State<MultiSelectRecipientBottomSheet> createState() =>
+      _MultiSelectRecipientBottomSheetState();
 }

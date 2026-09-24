@@ -32,21 +32,37 @@ class StockDetailsScreen extends StatefulWidget {
   State<StockDetailsScreen> createState() => _StockDetailsScreenState();
 }
 
-class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProviderStateMixin {
+class _StockDetailsScreenState extends State<StockDetailsScreen>
+    with TickerProviderStateMixin {
   late final InvestAssetHubConfig _hub =
       InvestAssetHubConfig.forCollectionId(widget.investCollectionId);
 
   late TabController _tabController;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  
-  final List<String> _timeframes = ['1D', '1W', '1M', '3M', '6M', '1Y', '5Y', 'Max'];
+
+  final List<String> _timeframes = [
+    '1D',
+    '1W',
+    '1M',
+    '3M',
+    '6M',
+    '1Y',
+    '5Y',
+    'Max'
+  ];
   String _selectedTimeframe = '1M';
   bool _isInWatchlist = false;
   // Technical Indicators
   List<String> _selectedIndicators = [];
   final List<String> _availableIndicators = [
-    'SMA', 'EMA', 'MACD', 'RSI', 'Bollinger Bands', 'Volume', 'Stochastic'
+    'SMA',
+    'EMA',
+    'MACD',
+    'RSI',
+    'Bollinger Bands',
+    'Volume',
+    'Stochastic'
   ];
 
   @override
@@ -62,11 +78,11 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _animationController.forward();
   }
 
@@ -199,7 +215,8 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                   ),
                   Text(
                     widget.stock.name,
-                    style: InvestTradingUi.labelMuted().copyWith(fontSize: 13.sp),
+                    style:
+                        InvestTradingUi.labelMuted().copyWith(fontSize: 13.sp),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -209,7 +226,9 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
             IconButton(
               onPressed: _toggleWatchlist,
               icon: Icon(
-                _isInWatchlist ? Icons.star_rounded : Icons.star_outline_rounded,
+                _isInWatchlist
+                    ? Icons.star_rounded
+                    : Icons.star_outline_rounded,
                 color: _isInWatchlist ? accent : InvestTradingUi.textPrimary,
                 size: 26.sp,
               ),
@@ -254,7 +273,8 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
         ),
         labelColor: Colors.white,
         unselectedLabelColor: InvestTradingUi.textSecondary,
-        labelStyle: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
+        labelStyle:
+            GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
         unselectedLabelStyle: GoogleFonts.inter(fontSize: 14.sp),
         indicatorPadding: EdgeInsets.all(4.w),
         dividerColor: Colors.transparent,
@@ -301,60 +321,62 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
             ),
           ),
           SizedBox(height: 8.h),
-                        Row(
-                          children: [
-                            Icon(
-                widget.stock.isPositive ? Icons.arrow_upward : Icons.arrow_downward,
-                              color: widget.stock.isPositive ? Colors.green : Colors.red,
-                              size: 16.sp,
-                            ),
-                            SizedBox(width: 4.w),
-                            Text(
-                              '${widget.stock.isPositive ? '+' : ''}\$${widget.stock.change.toStringAsFixed(2)}',
-                              style: GoogleFonts.inter(
-                                color: widget.stock.isPositive ? Colors.green : Colors.red,
+          Row(
+            children: [
+              Icon(
+                widget.stock.isPositive
+                    ? Icons.arrow_upward
+                    : Icons.arrow_downward,
+                color: widget.stock.isPositive ? Colors.green : Colors.red,
+                size: 16.sp,
+              ),
+              SizedBox(width: 4.w),
+              Text(
+                '${widget.stock.isPositive ? '+' : ''}\$${widget.stock.change.toStringAsFixed(2)}',
+                style: GoogleFonts.inter(
+                  color: widget.stock.isPositive ? Colors.green : Colors.red,
                   fontSize: 16.sp,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               SizedBox(width: 8.w),
-                        Container(
+              Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                          decoration: BoxDecoration(
-                            color: widget.stock.isPositive 
-                                ? Colors.green.withValues(alpha: 0.2)
-                                : Colors.red.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(8.r),
-                          ),
-                          child: Text(
+                decoration: BoxDecoration(
+                  color: widget.stock.isPositive
+                      ? Colors.green.withValues(alpha: 0.2)
+                      : Colors.red.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Text(
                   '${widget.stock.changePercent >= 0 ? '+' : ''}${widget.stock.changePercent.toStringAsFixed(2)}%',
-                            style: GoogleFonts.inter(
-                              color: widget.stock.isPositive ? Colors.green : Colors.red,
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
+                  style: GoogleFonts.inter(
+                    color: widget.stock.isPositive ? Colors.green : Colors.red,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
               SizedBox(width: 8.w),
               Text(
                 '• Past 5 years',
                 style: GoogleFonts.inter(
                   color: Colors.grey[400],
                   fontSize: 12.sp,
-                          ),
-                        ),
-                      ],
-                    ),
+                ),
+              ),
+            ],
+          ),
           SizedBox(height: 12.h),
           Text(
             'Market closed. Opens again at Jun 2 at 2:30 PM',
             style: GoogleFonts.inter(
               color: Colors.grey[400],
               fontSize: 14.sp,
-                ),
-                    ),
-                  ],
-                ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -427,7 +449,8 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                     style: GoogleFonts.inter(
                       color: isSelected ? Colors.black : Colors.grey[400],
                       fontSize: 12.sp,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w500,
                     ),
                   ),
                 ),
@@ -441,8 +464,8 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
 
   Widget _buildIndicatorControls() {
     return Row(
-            children: [
-              Expanded(
+      children: [
+        Expanded(
           child: Text(
             'Data displayed is indicative only. Actual execution price may vary.',
             style: GoogleFonts.inter(
@@ -450,7 +473,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
               fontSize: 11.sp,
             ),
           ),
-              ),
+        ),
         IconButton(
           onPressed: () => _showIndicatorSelector(),
           icon: Icon(
@@ -458,7 +481,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
             color: Colors.white,
             size: 24.sp,
           ),
-              ),
+        ),
       ],
     );
   }
@@ -468,7 +491,8 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
       builder: (context, state) {
         return AnalystRatingsSection(
           stock: widget.stock,
-          onSeeAll: () => Get.toNamed('/analyst-details', arguments: widget.stock),
+          onSeeAll: () =>
+              Get.toNamed('/analyst-details', arguments: widget.stock),
         );
       },
     );
@@ -504,8 +528,9 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
               ),
               Spacer(),
               GestureDetector(
-                onTap: () => Get.toNamed('/stock-stats', arguments: widget.stock),
-            child: Text(
+                onTap: () =>
+                    Get.toNamed('/stock-stats', arguments: widget.stock),
+                child: Text(
                   'See all',
                   style: GoogleFonts.inter(
                     color: Colors.green,
@@ -517,11 +542,17 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
             ],
           ),
           SizedBox(height: 20.h),
-          _buildStatItem('Market cap', _formatMarketCap(widget.stock.marketCap)),
+          _buildStatItem(
+              'Market cap', _formatMarketCap(widget.stock.marketCap)),
           _buildStatItem('PE Ratio', widget.stock.peRatio.toStringAsFixed(2)),
-          _buildStatItem('EPS', CurrencySymbols.formatAmountWithCurrency(widget.stock.eps, widget.stock.currency)),
-          _buildStatItem('Dividend yield', '${widget.stock.dividendYield.toStringAsFixed(2)}%'),
-          _buildStatItem('Beta (5Y monthly)', widget.stock.beta.toStringAsFixed(2)),
+          _buildStatItem(
+              'EPS',
+              CurrencySymbols.formatAmountWithCurrency(
+                  widget.stock.eps, widget.stock.currency)),
+          _buildStatItem('Dividend yield',
+              '${widget.stock.dividendYield.toStringAsFixed(2)}%'),
+          _buildStatItem(
+              'Beta (5Y monthly)', widget.stock.beta.toStringAsFixed(2)),
         ],
       ),
     );
@@ -534,18 +565,18 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-              label,
-              style: GoogleFonts.inter(
-                color: Colors.grey[400],
+            label,
+            style: GoogleFonts.inter(
+              color: Colors.grey[400],
               fontSize: 14.sp,
-              ),
+            ),
           ),
           Text(
-              value,
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
+            value,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -584,12 +615,12 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
         children: [
           Text(
             'About ${widget.stock.name}',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 18.sp,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 18.sp,
               fontWeight: FontWeight.w700,
-                ),
-              ),
+            ),
+          ),
           SizedBox(height: 16.h),
           Text(
             widget.stock.description,
@@ -650,17 +681,17 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
             color: Colors.grey[400],
             fontSize: 12.sp,
           ),
-                            ),
+        ),
         SizedBox(height: 4.h),
         Text(
           value,
-                              style: GoogleFonts.inter(
+          style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 14.sp,
             fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -696,7 +727,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
             decoration: BoxDecoration(
               color: Colors.grey[700],
               borderRadius: BorderRadius.circular(16.r),
-                  ),
+            ),
             child: Icon(Icons.person, color: Colors.white, size: 16.sp),
           ),
           SizedBox(width: 12.w),
@@ -717,7 +748,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                   style: GoogleFonts.inter(
                     color: Colors.grey[400],
                     fontSize: 12.sp,
-                ),
+                  ),
                 ),
               ],
             ),
@@ -749,7 +780,8 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
     );
   }
 
-  Widget _buildSegmentItem(String segment, String percentage, String description) {
+  Widget _buildSegmentItem(
+      String segment, String percentage, String description) {
     return Padding(
       padding: EdgeInsets.only(bottom: 12.h),
       child: Row(
@@ -769,7 +801,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                 fontWeight: FontWeight.w600,
               ),
               textAlign: TextAlign.center,
-              ),
+            ),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -789,10 +821,10 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                   style: GoogleFonts.inter(
                     color: Colors.grey[400],
                     fontSize: 12.sp,
-              ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
           ),
         ],
       ),
@@ -846,17 +878,25 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
           SizedBox(height: 20.h),
           Row(
             children: [
-              Expanded(child: _buildFinancialMetric('Revenue', '\$394.33B', '+2.8%', true)),
+              Expanded(
+                  child: _buildFinancialMetric(
+                      'Revenue', '\$394.33B', '+2.8%', true)),
               SizedBox(width: 16.w),
-              Expanded(child: _buildFinancialMetric('Net Income', '\$99.80B', '+5.4%', true)),
+              Expanded(
+                  child: _buildFinancialMetric(
+                      'Net Income', '\$99.80B', '+5.4%', true)),
             ],
           ),
           SizedBox(height: 16.h),
           Row(
             children: [
-              Expanded(child: _buildFinancialMetric('Gross Margin', '44.1%', '+0.5%', true)),
+              Expanded(
+                  child: _buildFinancialMetric(
+                      'Gross Margin', '44.1%', '+0.5%', true)),
               SizedBox(width: 16.w),
-              Expanded(child: _buildFinancialMetric('Operating Margin', '29.9%', '+1.2%', true)),
+              Expanded(
+                  child: _buildFinancialMetric(
+                      'Operating Margin', '29.9%', '+1.2%', true)),
             ],
           ),
         ],
@@ -864,23 +904,24 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
     );
   }
 
-  Widget _buildFinancialMetric(String label, String value, String change, bool isPositive) {
+  Widget _buildFinancialMetric(
+      String label, String value, String change, bool isPositive) {
     return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              color: Colors.grey[400],
-              fontSize: 12.sp,
-            ),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            color: Colors.grey[400],
+            fontSize: 12.sp,
           ),
-          SizedBox(height: 4.h),
-          Text(
-            value,
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 16.sp,
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          value,
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 16.sp,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -890,17 +931,17 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
           style: GoogleFonts.inter(
             color: isPositive ? Colors.green : Colors.red,
             fontSize: 12.sp,
-              fontWeight: FontWeight.w600,
-            ),
+            fontWeight: FontWeight.w600,
           ),
-        ],
+        ),
+      ],
     );
   }
 
   Widget _buildIncomeStatement() {
     return Container(
       padding: EdgeInsets.all(20.w),
-              decoration: BoxDecoration(
+      decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
@@ -921,13 +962,18 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
               fontSize: 18.sp,
               fontWeight: FontWeight.w700,
             ),
-              ),
+          ),
           SizedBox(height: 20.h),
-          _buildFinancialRow('Total Revenue', '\$394.33B', '\$383.29B', '\$365.82B'),
-          _buildFinancialRow('Cost of Revenue', '\$220.28B', '\$212.98B', '\$201.47B'),
-          _buildFinancialRow('Gross Profit', '\$174.05B', '\$170.31B', '\$164.35B'),
-          _buildFinancialRow('Operating Expenses', '\$56.29B', '\$51.35B', '\$47.11B'),
-          _buildFinancialRow('Operating Income', '\$117.76B', '\$118.96B', '\$117.24B'),
+          _buildFinancialRow(
+              'Total Revenue', '\$394.33B', '\$383.29B', '\$365.82B'),
+          _buildFinancialRow(
+              'Cost of Revenue', '\$220.28B', '\$212.98B', '\$201.47B'),
+          _buildFinancialRow(
+              'Gross Profit', '\$174.05B', '\$170.31B', '\$164.35B'),
+          _buildFinancialRow(
+              'Operating Expenses', '\$56.29B', '\$51.35B', '\$47.11B'),
+          _buildFinancialRow(
+              'Operating Income', '\$117.76B', '\$118.96B', '\$117.24B'),
           _buildFinancialRow('Net Income', '\$99.80B', '\$94.68B', '\$99.80B'),
           SizedBox(height: 12.h),
           _buildFinancialHeader(),
@@ -983,32 +1029,33 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
     );
   }
 
-  Widget _buildFinancialRow(String label, String val2023, String val2022, String val2021) {
+  Widget _buildFinancialRow(
+      String label, String val2023, String val2022, String val2021) {
     return Padding(
       padding: EdgeInsets.only(bottom: 12.h),
-                child: Row(
-                  children: [
+      child: Row(
+        children: [
           Expanded(
             flex: 2,
             child: Text(
               label,
               style: GoogleFonts.inter(
-                      color: Colors.white,
+                color: Colors.white,
                 fontSize: 14.sp,
-                    ),
+              ),
             ),
           ),
           Expanded(
             child: Text(
               val2023,
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
+              style: GoogleFonts.inter(
+                color: Colors.white,
                 fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-              textAlign: TextAlign.center,
-                ),
+                fontWeight: FontWeight.w600,
               ),
+              textAlign: TextAlign.center,
+            ),
+          ),
           Expanded(
             child: Text(
               val2022,
@@ -1025,12 +1072,12 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
               style: GoogleFonts.inter(
                 color: Colors.grey[300],
                 fontSize: 12.sp,
-                ),
+              ),
               textAlign: TextAlign.center,
             ),
-                  ),
-                ],
-              ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1047,26 +1094,31 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
             offset: Offset(0, 2),
           ),
         ],
-                ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
+        children: [
+          Text(
             'Balance Sheet',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
+            style: GoogleFonts.inter(
+              color: Colors.white,
               fontSize: 18.sp,
               fontWeight: FontWeight.w700,
             ),
           ),
           SizedBox(height: 20.h),
-          _buildFinancialRow('Total Assets', '\$352.76B', '\$352.76B', '\$351.00B'),
-          _buildFinancialRow('Total Liabilities', '\$290.44B', '\$302.08B', '\$287.91B'),
-          _buildFinancialRow('Total Equity', '\$62.15B', '\$50.67B', '\$63.09B'),
-          _buildFinancialRow('Cash & Equivalents', '\$29.97B', '\$23.65B', '\$34.94B'),
-          _buildFinancialRow('Total Debt', '\$109.28B', '\$120.07B', '\$124.72B'),
-                  ],
-                ),
+          _buildFinancialRow(
+              'Total Assets', '\$352.76B', '\$352.76B', '\$351.00B'),
+          _buildFinancialRow(
+              'Total Liabilities', '\$290.44B', '\$302.08B', '\$287.91B'),
+          _buildFinancialRow(
+              'Total Equity', '\$62.15B', '\$50.67B', '\$63.09B'),
+          _buildFinancialRow(
+              'Cash & Equivalents', '\$29.97B', '\$23.65B', '\$34.94B'),
+          _buildFinancialRow(
+              'Total Debt', '\$109.28B', '\$120.07B', '\$124.72B'),
+        ],
+      ),
     );
   }
 
@@ -1096,10 +1148,14 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
             ),
           ),
           SizedBox(height: 20.h),
-          _buildFinancialRow('Operating Cash Flow', '\$110.54B', '\$122.15B', '\$104.04B'),
-          _buildFinancialRow('Investing Cash Flow', '\$-10.12B', '\$-22.35B', '\$-14.55B'),
-          _buildFinancialRow('Financing Cash Flow', '\$-106.11B', '\$-110.75B', '\$-93.35B'),
-          _buildFinancialRow('Free Cash Flow', '\$99.58B', '\$111.44B', '\$92.95B'),
+          _buildFinancialRow(
+              'Operating Cash Flow', '\$110.54B', '\$122.15B', '\$104.04B'),
+          _buildFinancialRow(
+              'Investing Cash Flow', '\$-10.12B', '\$-22.35B', '\$-14.55B'),
+          _buildFinancialRow(
+              'Financing Cash Flow', '\$-106.11B', '\$-110.75B', '\$-93.35B'),
+          _buildFinancialRow(
+              'Free Cash Flow', '\$99.58B', '\$111.44B', '\$92.95B'),
         ],
       ),
     );
@@ -1164,17 +1220,17 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-            label,
-            style: GoogleFonts.inter(
-              color: Colors.grey[400],
+          label,
+          style: GoogleFonts.inter(
+            color: Colors.grey[400],
             fontSize: 12.sp,
-            ),
           ),
+        ),
         SizedBox(height: 4.h),
         Text(
-            value,
-            style: GoogleFonts.inter(
-              color: Colors.white,
+          value,
+          style: GoogleFonts.inter(
+            color: Colors.white,
             fontSize: 16.sp,
             fontWeight: FontWeight.w700,
           ),
@@ -1286,7 +1342,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
         ),
       ],
     );
-    }
+  }
 
   Widget _buildRecentNews() {
     return Container(
@@ -1338,7 +1394,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
             'Strong demand for iPhone 15 Pro models drives higher than expected sales in launch quarter...',
             '4 hours ago',
             'Reuters',
-        ),
+          ),
           _buildNewsItem(
             'Apple Services Revenue Hits New High',
             'Services division reports \$22.3 billion in revenue, marking 16% year-over-year growth...',
@@ -1356,7 +1412,8 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
     );
   }
 
-  Widget _buildNewsItem(String headline, String summary, String time, String source) {
+  Widget _buildNewsItem(
+      String headline, String summary, String time, String source) {
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
       child: Column(
@@ -1377,7 +1434,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
               color: Colors.grey[300],
               fontSize: 12.sp,
               height: 1.4,
-        ),
+            ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -1390,8 +1447,8 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                   color: Colors.grey[400],
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w600,
-            ),
-          ),
+                ),
+              ),
               SizedBox(width: 8.w),
               Text(
                 '•',
@@ -1433,10 +1490,10 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
             offset: Offset(0, 2),
           ),
         ],
-          ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        children: [
           Text(
             'Latest Analyst Reports',
             style: GoogleFonts.inter(
@@ -1453,7 +1510,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
             'Maintains positive outlook on Services growth and iPhone cycle',
             '1 day ago',
             Colors.green,
-                  ),
+          ),
           _buildAnalystReportItem(
             'Goldman Sachs',
             'Buy',
@@ -1461,7 +1518,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
             'Raises price target citing strong Vision Pro potential',
             '3 days ago',
             Colors.green,
-                  ),
+          ),
           _buildAnalystReportItem(
             'JPMorgan',
             'Neutral',
@@ -1469,7 +1526,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
             'Cautious on near-term iPhone demand in China market',
             '5 days ago',
             Colors.grey,
-                  ),
+          ),
         ],
       ),
     );
@@ -1495,7 +1552,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
               borderRadius: BorderRadius.circular(20.r),
             ),
             child: Icon(Icons.analytics, color: Colors.white, size: 20.sp),
-              ),
+          ),
           SizedBox(width: 12.w),
           Expanded(
             child: Column(
@@ -1510,10 +1567,11 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
                       ),
-                  ),
+                    ),
                     Spacer(),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                       decoration: BoxDecoration(
                         color: ratingColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8.r),
@@ -1524,9 +1582,9 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                           color: ratingColor,
                           fontSize: 11.sp,
                           fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 SizedBox(height: 4.h),
@@ -1554,12 +1612,12 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                       style: GoogleFonts.inter(
                         color: Colors.grey[400],
                         fontSize: 11.sp,
-                  ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
-                ),
-            ],
-          ),
+            ),
           ),
         ],
       ),
@@ -1589,8 +1647,8 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
               color: Colors.white,
               fontSize: 18.sp,
               fontWeight: FontWeight.w700,
-              ),
             ),
+          ),
           SizedBox(height: 20.h),
           _buildAnnouncementItem(
             'Quarterly Earnings Call',
@@ -1615,7 +1673,8 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
     );
   }
 
-  Widget _buildAnnouncementItem(String title, String date, IconData icon, String description) {
+  Widget _buildAnnouncementItem(
+      String title, String date, IconData icon, String description) {
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
       child: Row(
@@ -1706,4 +1765,4 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
       ),
     );
   }
-} 
+}

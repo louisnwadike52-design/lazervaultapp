@@ -39,14 +39,17 @@ class TransferErrorInfo {
 }
 
 /// Parses a backend error message into a structured [TransferErrorInfo].
-TransferErrorInfo parseTransferError(String errorMessage, {VoidCallback? onRetry}) {
+TransferErrorInfo parseTransferError(String errorMessage,
+    {VoidCallback? onRetry}) {
   final lower = errorMessage.toLowerCase();
 
-  if (lower.contains('insufficient') || (lower.contains('balance') && !lower.contains('restrict'))) {
+  if (lower.contains('insufficient') ||
+      (lower.contains('balance') && !lower.contains('restrict'))) {
     return TransferErrorInfo(
       type: TransferErrorType.insufficientBalance,
       title: 'Insufficient Funds',
-      message: 'Your account does not have enough available balance for this transfer. '
+      message:
+          'Your account does not have enough available balance for this transfer. '
           'Please add funds or reduce the amount.',
       icon: Icons.account_balance_wallet_outlined,
       iconColor: const Color(0xFFEF4444),
@@ -54,7 +57,8 @@ TransferErrorInfo parseTransferError(String errorMessage, {VoidCallback? onRetry
     );
   }
 
-  if (lower.contains('daily') && (lower.contains('limit') || lower.contains('exceeded'))) {
+  if (lower.contains('daily') &&
+      (lower.contains('limit') || lower.contains('exceeded'))) {
     return TransferErrorInfo(
       type: TransferErrorType.dailyLimitExceeded,
       title: 'Daily Limit Reached',
@@ -67,7 +71,9 @@ TransferErrorInfo parseTransferError(String errorMessage, {VoidCallback? onRetry
     );
   }
 
-  if (lower.contains('rate limit') || lower.contains('too many') || lower.contains('try again later')) {
+  if (lower.contains('rate limit') ||
+      lower.contains('too many') ||
+      lower.contains('try again later')) {
     return TransferErrorInfo(
       type: TransferErrorType.rateLimitExceeded,
       title: 'Too Many Requests',
@@ -81,11 +87,15 @@ TransferErrorInfo parseTransferError(String errorMessage, {VoidCallback? onRetry
     );
   }
 
-  if (lower.contains('frozen') || lower.contains('suspended') || lower.contains('restricted') || lower.contains('locked')) {
+  if (lower.contains('frozen') ||
+      lower.contains('suspended') ||
+      lower.contains('restricted') ||
+      lower.contains('locked')) {
     return TransferErrorInfo(
       type: TransferErrorType.accountRestricted,
       title: 'Account Restricted',
-      message: 'Your account is currently restricted and cannot perform transfers. '
+      message:
+          'Your account is currently restricted and cannot perform transfers. '
           'Please contact support for assistance.',
       actionLabel: 'Contact Support',
       icon: Icons.lock_outline,
@@ -94,7 +104,9 @@ TransferErrorInfo parseTransferError(String errorMessage, {VoidCallback? onRetry
     );
   }
 
-  if (lower.contains('another transfer') || lower.contains('in progress') || lower.contains('resource busy')) {
+  if (lower.contains('another transfer') ||
+      lower.contains('in progress') ||
+      lower.contains('resource busy')) {
     return TransferErrorInfo(
       type: TransferErrorType.lockContention,
       title: 'Transfer In Progress',
@@ -108,11 +120,14 @@ TransferErrorInfo parseTransferError(String errorMessage, {VoidCallback? onRetry
     );
   }
 
-  if (lower.contains('network') || lower.contains('connection') || lower.contains('timeout')) {
+  if (lower.contains('network') ||
+      lower.contains('connection') ||
+      lower.contains('timeout')) {
     return TransferErrorInfo(
       type: TransferErrorType.networkError,
       title: 'Connection Error',
-      message: 'Unable to reach the server. Please check your internet connection and try again.',
+      message:
+          'Unable to reach the server. Please check your internet connection and try again.',
       actionLabel: 'Retry',
       onAction: onRetry,
       icon: Icons.wifi_off_rounded,
@@ -121,11 +136,14 @@ TransferErrorInfo parseTransferError(String errorMessage, {VoidCallback? onRetry
     );
   }
 
-  if (lower.contains('provider') || lower.contains('flutterwave') || lower.contains('authorization key')) {
+  if (lower.contains('provider') ||
+      lower.contains('flutterwave') ||
+      lower.contains('authorization key')) {
     return TransferErrorInfo(
       type: TransferErrorType.providerError,
       title: 'Payment Provider Error',
-      message: 'The payment provider is temporarily unable to process your request. '
+      message:
+          'The payment provider is temporarily unable to process your request. '
           'Your funds have not been debited. Please try again later.',
       actionLabel: 'Try Again Later',
       onAction: onRetry,
@@ -139,7 +157,8 @@ TransferErrorInfo parseTransferError(String errorMessage, {VoidCallback? onRetry
     return TransferErrorInfo(
       type: TransferErrorType.serviceUnavailable,
       title: 'Service Unavailable',
-      message: 'The service is temporarily unavailable. Please try again in a few moments.',
+      message:
+          'The service is temporarily unavailable. Please try again in a few moments.',
       actionLabel: 'Retry',
       onAction: onRetry,
       icon: Icons.cloud_off_outlined,
@@ -151,7 +170,9 @@ TransferErrorInfo parseTransferError(String errorMessage, {VoidCallback? onRetry
   return TransferErrorInfo(
     type: TransferErrorType.generic,
     title: 'Transfer Failed',
-    message: errorMessage.length > 200 ? '${errorMessage.substring(0, 200)}...' : errorMessage,
+    message: errorMessage.length > 200
+        ? '${errorMessage.substring(0, 200)}...'
+        : errorMessage,
     actionLabel: onRetry != null ? 'Try Again' : null,
     onAction: onRetry,
     icon: Icons.error_outline,

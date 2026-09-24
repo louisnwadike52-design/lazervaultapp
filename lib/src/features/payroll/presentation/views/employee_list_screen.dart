@@ -9,7 +9,6 @@ import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/widgets/infinite_scroll_mixin.dart';
 part 'employee_list_screen_widgets.dart';
 
-
 class EmployeeListScreen extends StatefulWidget {
   final String? initialSearch;
 
@@ -444,7 +443,8 @@ class _EmployeeListScreenState extends State<EmployeeListScreen>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.error_outline, size: 48.sp, color: InvoiceThemeColors.errorRed),
+          Icon(Icons.error_outline,
+              size: 48.sp, color: InvoiceThemeColors.errorRed),
           SizedBox(height: 16.h),
           Text(
             message,

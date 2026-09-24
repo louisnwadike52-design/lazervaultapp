@@ -15,7 +15,6 @@ class SendFundReceiptScreen extends StatefulWidget {
 }
 
 class _SendFundReceiptScreenState extends State<SendFundReceiptScreen> {
-
   @override
   void initState() {
     super.initState();
@@ -28,23 +27,23 @@ class _SendFundReceiptScreenState extends State<SendFundReceiptScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return   Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () {
-                if (Navigator.canPop(context)) {
-                  Get.offAllNamed(AppRoutes.dashboard);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("No route to go back.")),
-                  );
-                }
-              },
-            ),
-            title: Text(ScreenName.sendFundReceipt.displayName),
-            centerTitle: true,
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Get.offAllNamed(AppRoutes.dashboard);
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("No route to go back.")),
+              );
+            }
+          },
+        ),
+        title: Text(ScreenName.sendFundReceipt.displayName),
+        centerTitle: true,
+      ),
       body: SendFundReceipt(transaction: widget.transaction),
     );
   }

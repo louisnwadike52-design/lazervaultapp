@@ -38,8 +38,8 @@ class PinSuccessView extends StatelessWidget {
               color: _successGreen.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.check_rounded,
-                color: _successGreen, size: 44),
+            child:
+                const Icon(Icons.check_rounded, color: _successGreen, size: 44),
           ),
           SizedBox(height: 20.h),
           Text(

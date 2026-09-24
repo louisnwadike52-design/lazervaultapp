@@ -52,7 +52,8 @@ final class SavedBatchDetailLoaded extends SavedBatchDetailState {
     return SavedBatchDetailLoaded(
       batch: batch ?? this.batch,
       mutating: mutating ?? this.mutating,
-      executedBatch: clearExecuted ? null : (executedBatch ?? this.executedBatch),
+      executedBatch:
+          clearExecuted ? null : (executedBatch ?? this.executedBatch),
       mutationError:
           clearMutationError ? null : (mutationError ?? this.mutationError),
     );

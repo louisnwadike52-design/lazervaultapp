@@ -96,8 +96,8 @@ class HabitsScreen extends StatelessWidget {
       padding: EdgeInsets.only(bottom: 10.h),
       child: Container(
         padding: EdgeInsets.all(14.w),
-        decoration:
-            BoxDecoration(color: _card, borderRadius: BorderRadius.circular(14.r)),
+        decoration: BoxDecoration(
+            color: _card, borderRadius: BorderRadius.circular(14.r)),
         child: Row(
           children: [
             Column(
@@ -241,9 +241,8 @@ class HabitsScreen extends StatelessWidget {
                     cubit.saveHabit(
                       id: habit?.id,
                       title: title,
-                      description: descC.text.trim().isEmpty
-                          ? null
-                          : descC.text.trim(),
+                      description:
+                          descC.text.trim().isEmpty ? null : descC.text.trim(),
                     );
                     Navigator.pop(ctx);
                   },

@@ -52,8 +52,8 @@ class _BettingBeneficiariesScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel',
-                style: TextStyle(color: _textSecondary)),
+            child:
+                const Text('Cancel', style: TextStyle(color: _textSecondary)),
           ),
           TextButton(
             onPressed: () {
@@ -213,8 +213,7 @@ class _BettingBeneficiariesScreenState
             ),
             SizedBox(height: 16.h),
             TextButton(
-              onPressed: () =>
-                  context.read<BettingCubit>().loadBeneficiaries(),
+              onPressed: () => context.read<BettingCubit>().loadBeneficiaries(),
               child: const Text('Retry', style: TextStyle(color: _primary)),
             ),
           ],

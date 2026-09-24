@@ -83,7 +83,8 @@ Future<void> _initializeServiceLocator() async {
   try {
     // Override environment for host-based testing (not Android emulator)
     // Tests run on host machine, so use localhost instead of 10.0.2.2
-    print('ℹ️  Test environment detected - using localhost for gRPC connections');
+    print(
+        'ℹ️  Test environment detected - using localhost for gRPC connections');
 
     // Load environment variables first
     await dotenv.load(fileName: '.env');
@@ -92,12 +93,14 @@ Future<void> _initializeServiceLocator() async {
     if (dotenv.env['STOCKS_GRPC_HOST'] == '10.0.2.2') {
       dotenv.env['STOCKS_GRPC_HOST'] = 'localhost';
       dotenv.env['INVESTMENTS_GRPC_HOST'] = 'localhost';
-      print('ℹ️  Overrode STOCKS_GRPC_HOST and INVESTMENTS_GRPC_HOST to localhost');
+      print(
+          'ℹ️  Overrode STOCKS_GRPC_HOST and INVESTMENTS_GRPC_HOST to localhost');
     }
 
     // Log test JWT token status
     if (_testJwtToken.isNotEmpty) {
-      print('✅ TEST_JWT_TOKEN environment variable is set (length: ${_testJwtToken.length})');
+      print(
+          '✅ TEST_JWT_TOKEN environment variable is set (length: ${_testJwtToken.length})');
       print('   Prefix: ${_testJwtToken.substring(0, 20)}...');
     } else {
       print('⚠️  TEST_JWT_TOKEN environment variable is NOT set');
@@ -109,15 +112,19 @@ Future<void> _initializeServiceLocator() async {
     );
 
     // Wait for all singletons to be ready
-    await serviceLocator.allReady().timeout(
-      _serviceInitTimeout,
-    ).catchError((_) {
+    await serviceLocator
+        .allReady()
+        .timeout(
+          _serviceInitTimeout,
+        )
+        .catchError((_) {
       print('⚠️  Service locator initialization timed out');
     }, test: (e) => e is TimeoutException);
 
     _serviceLocatorInitialized = true;
     print('✅ Service locator initialized successfully');
-    print('ℹ️  GrpcCallOptionsHelper will use TEST_JWT_TOKEN for gRPC authentication');
+    print(
+        'ℹ️  GrpcCallOptionsHelper will use TEST_JWT_TOKEN for gRPC authentication');
   } catch (e) {
     print('⚠️  Service locator initialization failed: $e');
     rethrow;
@@ -156,7 +163,8 @@ Future<List<CryptoWalletModel>> _loadAndVerifyWallets(
     if (state is! CryptosLoaded) {
       if (state is CryptoError) {
         print('❌ CryptoError state: ${(state as CryptoError).message}');
-        throw Exception('Failed to load wallets. State: CryptoError, Message: ${(state as CryptoError).message}');
+        throw Exception(
+            'Failed to load wallets. State: CryptoError, Message: ${(state as CryptoError).message}');
       }
       throw Exception('Failed to load wallets. State: ${state.runtimeType}');
     }
@@ -208,7 +216,8 @@ Crypto _findTradableCrypto(CryptosLoaded state, String preferredId) {
   }
 
   print('✅ Selected crypto for purchase: ${crypto.name} (${crypto.symbol})');
-  print('   Current price: ${CurrencySymbols.currentSymbol}${crypto.currentPrice.toStringAsFixed(2)}');
+  print(
+      '   Current price: ${CurrencySymbols.currentSymbol}${crypto.currentPrice.toStringAsFixed(2)}');
 
   return crypto;
 }
@@ -344,7 +353,8 @@ void main() {
         await tester.enterText(amountField, _testPurchaseAmount.toString());
         await tester.pumpAndSettle();
 
-        print('✅ Entered amount: ${CurrencySymbols.currentSymbol}$_testPurchaseAmount');
+        print(
+            '✅ Entered amount: ${CurrencySymbols.currentSymbol}$_testPurchaseAmount');
 
         // Verify amount is reflected
         expect(
@@ -375,7 +385,8 @@ void main() {
         print('\n📍 STEP 6: Initiate Purchase (Tap Buy)');
 
         // Find the buy button
-        final buyButton = find.text('Buy ${selectedCrypto.symbol.toUpperCase()}');
+        final buyButton =
+            find.text('Buy ${selectedCrypto.symbol.toUpperCase()}');
         expect(buyButton, findsOneWidget);
 
         // Tap buy button
@@ -431,8 +442,10 @@ void main() {
           print('✅ Transaction completed successfully!');
           print('   Transaction ID: ${state.transaction.id}');
           print('   Crypto: ${state.transaction.cryptoSymbol}');
-          print('   Quantity: ${state.transaction.quantity.toStringAsFixed(6)}');
-          print('   Total: ${CurrencySymbols.currentSymbol}${state.transaction.totalAmount.toStringAsFixed(2)}');
+          print(
+              '   Quantity: ${state.transaction.quantity.toStringAsFixed(6)}');
+          print(
+              '   Total: ${CurrencySymbols.currentSymbol}${state.transaction.totalAmount.toStringAsFixed(2)}');
         } else if (state is CryptoError) {
           print('❌ Transaction failed: ${state.message}');
           throw Exception('Transaction failed: ${state.message}');

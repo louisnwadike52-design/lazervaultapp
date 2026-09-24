@@ -124,7 +124,8 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
   /// account number under a different ISP isn't treated as a duplicate.
   void _recomputeExistingBeneficiary() {
     final typed = _accountController.text.replaceAll(RegExp(r'[^\d]'), '');
-    final code = _provider != null ? _providerCodeFor(_provider!.serviceId) : null;
+    final code =
+        _provider != null ? _providerCodeFor(_provider!.serviceId) : null;
     InternetBeneficiary? found;
     if (typed.isNotEmpty) {
       for (final b in _beneficiaries) {
@@ -268,9 +269,7 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
   bool get _isVariablePackage => _package != null && _package!.amount <= 0;
 
   double get _enteredAmount =>
-      double.tryParse(
-          _amountController.text.replaceAll(',', '').trim()) ??
-      0;
+      double.tryParse(_amountController.text.replaceAll(',', '').trim()) ?? 0;
 
   /// The amount this purchase will charge: the package's fixed price, or the
   /// user-entered amount for a variable-price plan.
@@ -382,7 +381,8 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
               verificationToken: token,
               idempotencyKey: txnId,
             );
-            result = await completer.future.timeout(const Duration(seconds: 90));
+            result =
+                await completer.future.timeout(const Duration(seconds: 90));
           } finally {
             await sub.cancel();
           }
@@ -619,8 +619,7 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
   Widget _providerChips() {
     if (_providers.isEmpty && _providersError != null) {
       return Row(children: [
-        Icon(Icons.error_outline,
-            color: const Color(0xFFEF4444), size: 16.sp),
+        Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 16.sp),
         SizedBox(width: 8.w),
         Expanded(
           child: Text("Couldn't load providers",
@@ -635,7 +634,9 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
           ),
           child: Text('Retry',
               style: GoogleFonts.inter(
-                  color: _accent, fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                  color: _accent,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600)),
         ),
       ]);
     }
@@ -728,7 +729,8 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
       decoration: BoxDecoration(
         color: const Color(0xFF10B981).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
+        border:
+            Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
       ),
       child: Row(children: [
         Icon(Icons.verified, color: const Color(0xFF10B981), size: 16.sp),
@@ -763,9 +765,11 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
               _package?.name ??
                   (enabled ? 'Select a plan' : 'Select a provider first'),
               style: GoogleFonts.inter(
-                color: _package != null ? Colors.white : const Color(0xFF6B7280),
+                color:
+                    _package != null ? Colors.white : const Color(0xFF6B7280),
                 fontSize: 15.sp,
-                fontWeight: _package != null ? FontWeight.w600 : FontWeight.w400,
+                fontWeight:
+                    _package != null ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
           ),
@@ -805,8 +809,7 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
             color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w600),
         filled: true,
         fillColor: _card,
-        contentPadding:
-            EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
+        contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14.r),
           borderSide: const BorderSide(color: _border),
@@ -846,7 +849,8 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
     );
   }
 
-  Widget _row(String label, String value, {Color? valueColor, bool bold = false}) {
+  Widget _row(String label, String value,
+      {Color? valueColor, bool bold = false}) {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Text(label, style: GoogleFonts.inter(color: _muted, fontSize: 13.sp)),
       Flexible(
@@ -925,7 +929,8 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
         ),
         child: _submitting
-            ? SizedBox(width: 20.w, height: 20.w, child: LazerVaultLoader.small())
+            ? SizedBox(
+                width: 20.w, height: 20.w, child: LazerVaultLoader.small())
             : Text(
                 _package != null && _effectiveAmount > 0
                     ? 'Pay ₦${_effectiveAmount.toStringAsFixed(0)}'

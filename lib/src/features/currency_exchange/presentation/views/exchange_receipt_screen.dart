@@ -19,7 +19,6 @@ import '../../services/exchange_pdf_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'exchange_receipt_screen_widgets.dart';
 
-
 /// Exchange receipt — one widget for both flows (Convert + International
 /// Send Abroad). Visually modelled on the Send Funds
 /// `TransferReceiptScreen`: back arrow on the left, LazerVault logo on
@@ -120,9 +119,8 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
     try {
       // Anchor the iOS/iPad share sheet to this screen (harmless elsewhere).
       final box = context.findRenderObject() as RenderBox?;
-      final origin = box != null
-          ? box.localToGlobal(Offset.zero) & box.size
-          : null;
+      final origin =
+          box != null ? box.localToGlobal(Offset.zero) & box.size : null;
       await ExchangePdfService.shareReceipt(
         transaction: _tx!,
         sharePositionOrigin: origin,
@@ -392,8 +390,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
 
   Widget _buildDetailsCard(CurrencyTransaction tx) {
     final bool isConversion = tx.type.isConversionLike;
-    final String reference =
-        tx.referenceNumber ?? tx.transactionHash ?? tx.id;
+    final String reference = tx.referenceNumber ?? tx.transactionHash ?? tx.id;
 
     return Container(
       width: double.infinity,
@@ -415,8 +412,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
               ),
             ),
           ),
-          _row('Type',
-              isConversion ? 'Conversion' : 'International Transfer'),
+          _row('Type', isConversion ? 'Conversion' : 'International Transfer'),
           if (_senderName.isNotEmpty) _row('From', _senderName),
           _row('From wallet', '${tx.fromCurrency} wallet'),
           _row(
@@ -471,8 +467,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
                   version: QrVersions.auto,
                   size: 96.w,
                   backgroundColor: Colors.transparent,
-                  dataModuleStyle:
-                      const QrDataModuleStyle(color: Colors.white),
+                  dataModuleStyle: const QrDataModuleStyle(color: Colors.white),
                   eyeStyle: const QrEyeStyle(color: Colors.white),
                 ),
               ),

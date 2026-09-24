@@ -7,7 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cubit.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_state.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class EditAutoSaveRuleScreen extends StatefulWidget {
@@ -136,10 +137,14 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
           _selectedFrequency != originalRule.frequency ||
           _selectedTime != _originalTime ||
           _selectedDay != originalRule.scheduleDay ||
-          _targetAmountController.text != (originalRule.targetAmount?.toString() ?? '') ||
-          _minimumBalanceController.text != (originalRule.minimumBalance?.toString() ?? '') ||
-          _maximumPerSaveController.text != (originalRule.maximumPerSave?.toString() ?? '') ||
-          _roundUpToController.text != (originalRule.roundUpTo?.toString() ?? '');
+          _targetAmountController.text !=
+              (originalRule.targetAmount?.toString() ?? '') ||
+          _minimumBalanceController.text !=
+              (originalRule.minimumBalance?.toString() ?? '') ||
+          _maximumPerSaveController.text !=
+              (originalRule.maximumPerSave?.toString() ?? '') ||
+          _roundUpToController.text !=
+              (originalRule.roundUpTo?.toString() ?? '');
     });
   }
 
@@ -285,34 +290,80 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
                       originalRule.description,
                       _descriptionController.text,
                     ),
-                  if (_amountController.text != originalRule.amountValue.toString() ||
+                  if (_amountController.text !=
+                          originalRule.amountValue.toString() ||
                       _selectedAmountType != originalRule.amountType)
                     _buildChangeItem(
                       'Amount',
                       originalRule.amountType == AmountType.fixed
-                          ? currency_formatter.CurrencySymbols.formatAmountWithCurrency(originalRule.amountValue, originalRule.currency)
+                          ? currency_formatter.CurrencySymbols
+                              .formatAmountWithCurrency(
+                                  originalRule.amountValue,
+                                  originalRule.currency)
                           : '${originalRule.amountValue}%',
                       _selectedAmountType == AmountType.fixed
-                          ? currency_formatter.CurrencySymbols.formatAmountWithCurrency(double.tryParse(_amountController.text) ?? 0, originalRule.currency)
+                          ? currency_formatter.CurrencySymbols
+                              .formatAmountWithCurrency(
+                                  double.tryParse(_amountController.text) ?? 0,
+                                  originalRule.currency)
                           : '${_amountController.text}%',
                     ),
-                  if (_targetAmountController.text != (originalRule.targetAmount?.toString() ?? ''))
+                  if (_targetAmountController.text !=
+                      (originalRule.targetAmount?.toString() ?? ''))
                     _buildChangeItem(
                       'Target Amount',
-                      originalRule.targetAmount != null ? currency_formatter.CurrencySymbols.formatAmountWithCurrency(originalRule.targetAmount!, originalRule.currency) : 'Not Set',
-                      _targetAmountController.text.isEmpty ? 'Not Set' : currency_formatter.CurrencySymbols.formatAmountWithCurrency(double.tryParse(_targetAmountController.text) ?? 0, originalRule.currency),
+                      originalRule.targetAmount != null
+                          ? currency_formatter.CurrencySymbols
+                              .formatAmountWithCurrency(
+                                  originalRule.targetAmount!,
+                                  originalRule.currency)
+                          : 'Not Set',
+                      _targetAmountController.text.isEmpty
+                          ? 'Not Set'
+                          : currency_formatter.CurrencySymbols
+                              .formatAmountWithCurrency(
+                                  double.tryParse(
+                                          _targetAmountController.text) ??
+                                      0,
+                                  originalRule.currency),
                     ),
-                  if (_minimumBalanceController.text != (originalRule.minimumBalance?.toString() ?? ''))
+                  if (_minimumBalanceController.text !=
+                      (originalRule.minimumBalance?.toString() ?? ''))
                     _buildChangeItem(
                       'Minimum Balance',
-                      originalRule.minimumBalance != null ? currency_formatter.CurrencySymbols.formatAmountWithCurrency(originalRule.minimumBalance!, originalRule.currency) : 'Not Set',
-                      _minimumBalanceController.text.isEmpty ? 'Not Set' : currency_formatter.CurrencySymbols.formatAmountWithCurrency(double.tryParse(_minimumBalanceController.text) ?? 0, originalRule.currency),
+                      originalRule.minimumBalance != null
+                          ? currency_formatter.CurrencySymbols
+                              .formatAmountWithCurrency(
+                                  originalRule.minimumBalance!,
+                                  originalRule.currency)
+                          : 'Not Set',
+                      _minimumBalanceController.text.isEmpty
+                          ? 'Not Set'
+                          : currency_formatter.CurrencySymbols
+                              .formatAmountWithCurrency(
+                                  double.tryParse(
+                                          _minimumBalanceController.text) ??
+                                      0,
+                                  originalRule.currency),
                     ),
-                  if (_maximumPerSaveController.text != (originalRule.maximumPerSave?.toString() ?? ''))
+                  if (_maximumPerSaveController.text !=
+                      (originalRule.maximumPerSave?.toString() ?? ''))
                     _buildChangeItem(
                       'Maximum Per Save',
-                      originalRule.maximumPerSave != null ? currency_formatter.CurrencySymbols.formatAmountWithCurrency(originalRule.maximumPerSave!, originalRule.currency) : 'Not Set',
-                      _maximumPerSaveController.text.isEmpty ? 'Not Set' : currency_formatter.CurrencySymbols.formatAmountWithCurrency(double.tryParse(_maximumPerSaveController.text) ?? 0, originalRule.currency),
+                      originalRule.maximumPerSave != null
+                          ? currency_formatter.CurrencySymbols
+                              .formatAmountWithCurrency(
+                                  originalRule.maximumPerSave!,
+                                  originalRule.currency)
+                          : 'Not Set',
+                      _maximumPerSaveController.text.isEmpty
+                          ? 'Not Set'
+                          : currency_formatter.CurrencySymbols
+                              .formatAmountWithCurrency(
+                                  double.tryParse(
+                                          _maximumPerSaveController.text) ??
+                                      0,
+                                  originalRule.currency),
                     ),
                 ],
               ),
@@ -564,7 +615,8 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
     if ((originalRule.triggerType == TriggerType.scheduled ||
             originalRule.triggerType == TriggerType.scheduledExternal) &&
         _selectedTime != null) {
-      scheduleTime = '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}';
+      scheduleTime =
+          '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}';
     }
 
     // Round-up denomination — only round-up rules have one. Parse to
@@ -577,19 +629,25 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
 
     // Call update rule
     context.read<AutoSaveCubit>().updateRule(
-      ruleId: originalRule.id,
-      name: _nameController.text,
-      description: _descriptionController.text,
-      amountType: _selectedAmountType,
-      amountValue: double.parse(_amountController.text),
-      frequency: _selectedFrequency,
-      scheduleTime: scheduleTime,
-      scheduleDay: _selectedDay,
-      roundUpTo: roundUpTo,
-      targetAmount: _targetAmountController.text.isEmpty ? null : double.parse(_targetAmountController.text),
-      minimumBalance: _minimumBalanceController.text.isEmpty ? null : double.parse(_minimumBalanceController.text),
-      maximumPerSave: _maximumPerSaveController.text.isEmpty ? null : double.parse(_maximumPerSaveController.text),
-    );
+          ruleId: originalRule.id,
+          name: _nameController.text,
+          description: _descriptionController.text,
+          amountType: _selectedAmountType,
+          amountValue: double.parse(_amountController.text),
+          frequency: _selectedFrequency,
+          scheduleTime: scheduleTime,
+          scheduleDay: _selectedDay,
+          roundUpTo: roundUpTo,
+          targetAmount: _targetAmountController.text.isEmpty
+              ? null
+              : double.parse(_targetAmountController.text),
+          minimumBalance: _minimumBalanceController.text.isEmpty
+              ? null
+              : double.parse(_minimumBalanceController.text),
+          maximumPerSave: _maximumPerSaveController.text.isEmpty
+              ? null
+              : double.parse(_maximumPerSaveController.text),
+        );
   }
 
   @override
@@ -703,7 +761,8 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
                     controller: _nameController,
                     label: 'Rule Name',
                     hint: 'e.g., Save on Paycheck',
-                    validator: (value) => value?.isEmpty ?? true ? 'Please enter a name' : null,
+                    validator: (value) =>
+                        value?.isEmpty ?? true ? 'Please enter a name' : null,
                   ),
                   SizedBox(height: 16.h),
                   _buildTextField(
@@ -711,7 +770,9 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
                     label: 'Description',
                     hint: 'Describe your savings goal',
                     maxLines: 3,
-                    validator: (value) => value?.isEmpty ?? true ? 'Please enter a description' : null,
+                    validator: (value) => value?.isEmpty ?? true
+                        ? 'Please enter a description'
+                        : null,
                   ),
                   SizedBox(height: 24.h),
                   _buildSectionHeader('Amount Settings', Icons.attach_money),
@@ -724,14 +785,21 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
                   SizedBox(height: 16.h),
                   _buildTextField(
                     controller: _amountController,
-                    label: _selectedAmountType == AmountType.fixed ? 'Amount (\$)' : 'Percentage (%)',
-                    hint: _selectedAmountType == AmountType.fixed ? '50.00' : '10',
+                    label: _selectedAmountType == AmountType.fixed
+                        ? 'Amount (\$)'
+                        : 'Percentage (%)',
+                    hint: _selectedAmountType == AmountType.fixed
+                        ? '50.00'
+                        : '10',
                     keyboardType: TextInputType.number,
                     validator: (value) {
-                      if (value?.isEmpty ?? true) return 'Please enter an amount';
+                      if (value?.isEmpty ?? true)
+                        return 'Please enter an amount';
                       final amount = double.tryParse(value!);
-                      if (amount == null || amount <= 0) return 'Please enter a valid amount';
-                      if (_selectedAmountType == AmountType.percentage && amount > 100) {
+                      if (amount == null || amount <= 0)
+                        return 'Please enter a valid amount';
+                      if (_selectedAmountType == AmountType.percentage &&
+                          amount > 100) {
                         return 'Percentage cannot exceed 100';
                       }
                       return null;
@@ -757,8 +825,7 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
                   // so the edit flow has parity for this trigger type.
                   if (originalRule.triggerType == TriggerType.roundUp) ...[
                     SizedBox(height: 24.h),
-                    _buildSectionHeader(
-                        'Round-up Settings', Icons.unfold_more),
+                    _buildSectionHeader('Round-up Settings', Icons.unfold_more),
                     SizedBox(height: 12.h),
                     _buildTextField(
                       controller: _roundUpToController,
@@ -811,7 +878,10 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
                         decoration: BoxDecoration(
                           gradient: _hasChanges
                               ? const LinearGradient(
-                                  colors: [Color.fromARGB(255, 78, 3, 208), Color.fromARGB(255, 98, 33, 224)],
+                                  colors: [
+                                    Color.fromARGB(255, 78, 3, 208),
+                                    Color.fromARGB(255, 98, 33, 224)
+                                  ],
                                 )
                               : null,
                           color: _hasChanges ? null : const Color(0xFF2D2D2D),
@@ -819,7 +889,8 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
                           boxShadow: _hasChanges
                               ? [
                                   BoxShadow(
-                                    color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
+                                    color: const Color.fromARGB(255, 78, 3, 208)
+                                        .withValues(alpha: 0.3),
                                     blurRadius: 12,
                                     offset: const Offset(0, 4),
                                   ),
@@ -830,22 +901,29 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
                           color: Colors.transparent,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(16.r),
-                            onTap: (isLoading || !_hasChanges) ? null : _showPreview,
+                            onTap: (isLoading || !_hasChanges)
+                                ? null
+                                : _showPreview,
                             child: Center(
                               child: isLoading
                                   ? LazerVaultLoader.small()
                                   : Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Icon(
                                           Icons.check_circle,
-                                          color: _hasChanges ? Colors.white : Colors.grey[600],
+                                          color: _hasChanges
+                                              ? Colors.white
+                                              : Colors.grey[600],
                                         ),
                                         SizedBox(width: 8.w),
                                         Text(
                                           'Preview & Save Changes',
                                           style: GoogleFonts.inter(
-                                            color: _hasChanges ? Colors.white : Colors.grey[600],
+                                            color: _hasChanges
+                                                ? Colors.white
+                                                : Colors.grey[600],
                                             fontSize: 16.sp,
                                             fontWeight: FontWeight.w600,
                                           ),
@@ -945,9 +1023,11 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
-                borderSide: const BorderSide(color: Color.fromARGB(255, 78, 3, 208), width: 2),
+                borderSide: const BorderSide(
+                    color: Color.fromARGB(255, 78, 3, 208), width: 2),
               ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
             ),
           ),
         ),
@@ -973,7 +1053,7 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
         groupValue: _selectedAmountType,
         onChanged: (value) {
           setState(() => _selectedAmountType = value ?? _selectedAmountType);
-        _checkForChanges();
+          _checkForChanges();
           _checkForChanges();
         },
         child: Row(
@@ -1056,10 +1136,14 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
         decoration: BoxDecoration(
-          color: isSelected ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1) : const Color(0xFF1F1F1F),
+          color: isSelected
+              ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1)
+              : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : const Color(0xFF2D2D2D),
+            color: isSelected
+                ? const Color.fromARGB(255, 78, 3, 208)
+                : const Color(0xFF2D2D2D),
             width: 2,
           ),
           boxShadow: [
@@ -1074,7 +1158,9 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
           child: Text(
             label,
             style: GoogleFonts.inter(
-              color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : Colors.grey[400],
+              color: isSelected
+                  ? const Color.fromARGB(255, 78, 3, 208)
+                  : Colors.grey[400],
               fontSize: 13.sp,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             ),
@@ -1093,7 +1179,7 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
         );
         if (time != null) {
           setState(() => _selectedTime = time);
-      _checkForChanges();
+          _checkForChanges();
           _checkForChanges();
         }
       },

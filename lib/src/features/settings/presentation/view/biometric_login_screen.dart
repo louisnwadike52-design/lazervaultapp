@@ -43,12 +43,14 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
   final FlutterSecureStorage _raw = serviceLocator<FlutterSecureStorage>();
 
   bool _loading = true;
-  BiometricStatus _status = const BiometricStatus(BiometricAvailability.unavailable);
+  BiometricStatus _status =
+      const BiometricStatus(BiometricAvailability.unavailable);
   bool _fingerprintOn = false;
   bool _faceOn = false;
   bool _voiceOn = false;
   bool _googleOn = true;
   bool _appleOn = true;
+
   /// Fire the OS prompt as the lock screen appears, or wait for a tap —
   /// answered separately per method, since a device can offer both. Seeded
   /// to the on-tap default (false) so the toggle never flashes "automatic"
@@ -56,18 +58,22 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
   /// any explicit prior choice.
   bool _autoPromptFace = false;
   bool _autoPromptFingerprint = false;
+
   /// Shake twice on the lock screen to leave automatic mode. One switch for
   /// both methods: it is a property of automatic mode, not of a modality.
   bool _shakeEscape = true;
+
   /// Swipe up on the lock screen to offer the biometric.
   bool _swipeUp = true;
+
   /// Whether each tile's unlock-mode body is open. Starts open so turning a
   /// biometric on reveals the choice that comes with it rather than hiding it
   /// behind a chevron nobody looks for.
   bool _faceExpanded = true;
   bool _fingerprintExpanded = true;
 
-  bool get _fingerprintAvailable => _status.isAvailable && _status.hasFingerprint;
+  bool get _fingerprintAvailable =>
+      _status.isAvailable && _status.hasFingerprint;
   bool get _faceAvailable => _status.isAvailable && _status.hasFace;
   // Hardware present but nothing enrolled — offer to open OS enrollment.
   bool get _canEnroll => _status.canEnroll;
@@ -730,6 +736,7 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
 
   Widget _tile({
     required IconData icon,
+
     /// Prebuilt glyph for icons Material has no good version of (Face ID).
     /// Receives the resolved colour, since a painted child cannot inherit it.
     Widget Function(Color color)? iconBuilder,
@@ -765,82 +772,86 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
         mainAxisSize: MainAxisSize.min,
         children: [
           Row(
-        children: [
-          Container(
-            width: 44.w,
-            height: 44.w,
-            decoration: BoxDecoration(
-              color: ((enabled && value) || onSetup != null
+            children: [
+              Container(
+                width: 44.w,
+                height: 44.w,
+                decoration: BoxDecoration(
+                  color: ((enabled && value) || onSetup != null
+                          ? _primary
+                          : _textSecondary)
+                      .withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Builder(builder: (_) {
+                  final c = (enabled && value) || onSetup != null
                       ? _primary
-                      : _textSecondary)
-                  .withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Builder(builder: (_) {
-              final c = (enabled && value) || onSetup != null
-                  ? _primary
-                  : _textSecondary;
-              return iconBuilder?.call(c) ?? Icon(icon, color: c, size: 22.sp);
-            }),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: GoogleFonts.inter(
-                        color: active ? Colors.white : _textSecondary,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600)),
-                SizedBox(height: 4.h),
-                Text(subtitle,
-                    style: GoogleFonts.inter(
-                        color: _textSecondary, fontSize: 11.sp, height: 1.35)),
-              ],
-            ),
-          ),
-          SizedBox(width: 8.w),
-          if (onSetup != null)
-            TextButton(
-              onPressed: onSetup,
-              style: TextButton.styleFrom(
-                foregroundColor: _primary,
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      : _textSecondary;
+                  return iconBuilder?.call(c) ??
+                      Icon(icon, color: c, size: 22.sp);
+                }),
               ),
-              child: Text('Set up',
-                  style: GoogleFonts.inter(
-                      fontSize: 13.sp, fontWeight: FontWeight.w700)),
-            )
-          else
-            Switch(
-              value: value,
-              activeThumbColor: Colors.white,
-              activeTrackColor: _primary,
-              inactiveThumbColor: Colors.white,
-              inactiveTrackColor: _divider,
-              onChanged: enabled ? onChanged : null,
-            ),
-          // Chevron only when there is a body to open, so a plain tile does
-          // not grow an affordance that does nothing.
-          if (hasExpansion)
-            GestureDetector(
-              onTap: onToggleExpand,
-              behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: EdgeInsets.only(left: 4.w),
-                child: AnimatedRotation(
-                  turns: expanded ? 0.5 : 0.0,
-                  duration: const Duration(milliseconds: 200),
-                  child: Icon(Icons.keyboard_arrow_down_rounded,
-                      color: _primary, size: 22.sp),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: GoogleFonts.inter(
+                            color: active ? Colors.white : _textSecondary,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600)),
+                    SizedBox(height: 4.h),
+                    Text(subtitle,
+                        style: GoogleFonts.inter(
+                            color: _textSecondary,
+                            fontSize: 11.sp,
+                            height: 1.35)),
+                  ],
                 ),
               ),
-            ),
-        ],
-      ),
+              SizedBox(width: 8.w),
+              if (onSetup != null)
+                TextButton(
+                  onPressed: onSetup,
+                  style: TextButton.styleFrom(
+                    foregroundColor: _primary,
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text('Set up',
+                      style: GoogleFonts.inter(
+                          fontSize: 13.sp, fontWeight: FontWeight.w700)),
+                )
+              else
+                Switch(
+                  value: value,
+                  activeThumbColor: Colors.white,
+                  activeTrackColor: _primary,
+                  inactiveThumbColor: Colors.white,
+                  inactiveTrackColor: _divider,
+                  onChanged: enabled ? onChanged : null,
+                ),
+              // Chevron only when there is a body to open, so a plain tile does
+              // not grow an affordance that does nothing.
+              if (hasExpansion)
+                GestureDetector(
+                  onTap: onToggleExpand,
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 4.w),
+                    child: AnimatedRotation(
+                      turns: expanded ? 0.5 : 0.0,
+                      duration: const Duration(milliseconds: 200),
+                      child: Icon(Icons.keyboard_arrow_down_rounded,
+                          color: _primary, size: 22.sp),
+                    ),
+                  ),
+                ),
+            ],
+          ),
           // Same 200ms crossfade the settings accordions use. Collapsing to a
           // zero-height first child keeps the tile's padding from reserving
           // space for a body that is not there.

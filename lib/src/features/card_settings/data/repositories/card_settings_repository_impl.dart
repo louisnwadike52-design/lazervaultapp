@@ -25,7 +25,8 @@ class CardSettingsRepositoryImpl implements ICardSettingsRepository {
   }) async {
     try {
       // Use executeWithTokenRotation for automatic token refresh on auth errors
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final request = req_resp.GetAccountDetailsRequest(
           accountId: Int64.parseInt(accountId),
         );
@@ -47,7 +48,8 @@ class CardSettingsRepositoryImpl implements ICardSettingsRepository {
 
       return Right(accountDetails);
     } on GrpcError catch (e) {
-      print('gRPC Error during GetAccountDetails: ${e.codeName} - ${e.message}');
+      print(
+          'gRPC Error during GetAccountDetails: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
         message: e.message ?? 'Failed to fetch account details.',
         statusCode: e.code,
@@ -71,7 +73,8 @@ class CardSettingsRepositoryImpl implements ICardSettingsRepository {
   }) async {
     try {
       // Use executeWithTokenRotation for automatic token refresh on auth errors
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final securitySettings = AccountDetailsModel.toProtoSecuritySettings(
           enable3dSecure: enable3dSecure,
           enableContactless: enableContactless,
@@ -83,8 +86,10 @@ class CardSettingsRepositoryImpl implements ICardSettingsRepository {
           settings: securitySettings,
         );
 
-        print('Sending gRPC UpdateSecuritySettings Request for account: $accountId');
-        print('Security Settings: 3DS=$enable3dSecure, Contactless=$enableContactless, Online=$enableOnlinePayments');
+        print(
+            'Sending gRPC UpdateSecuritySettings Request for account: $accountId');
+        print(
+            'Security Settings: 3DS=$enable3dSecure, Contactless=$enableContactless, Online=$enableOnlinePayments');
 
         // Use helper to get call options with authorization header from secure storage
         final callOptions = await _callOptionsHelper.withAuth();
@@ -101,7 +106,8 @@ class CardSettingsRepositoryImpl implements ICardSettingsRepository {
 
       return Right(accountDetails);
     } on GrpcError catch (e) {
-      print('gRPC Error during UpdateSecuritySettings: ${e.codeName} - ${e.message}');
+      print(
+          'gRPC Error during UpdateSecuritySettings: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
         message: e.message ?? 'Failed to update security settings.',
         statusCode: e.code,
@@ -109,7 +115,8 @@ class CardSettingsRepositoryImpl implements ICardSettingsRepository {
     } catch (e) {
       print('Unexpected error during updateSecuritySettings: $e');
       return Left(ServerFailure(
-        message: 'An unexpected error occurred while updating security settings.',
+        message:
+            'An unexpected error occurred while updating security settings.',
         statusCode: 500,
       ));
     }
@@ -124,14 +131,16 @@ class CardSettingsRepositoryImpl implements ICardSettingsRepository {
   }) async {
     try {
       // Use executeWithTokenRotation for automatic token refresh on auth errors
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final request = req_resp.UpdateAccountStatusRequest(
           accountId: Int64.parseInt(accountId),
           status: status,
           reason: reason,
         );
 
-        print('Sending gRPC UpdateAccountStatus Request for account: $accountId');
+        print(
+            'Sending gRPC UpdateAccountStatus Request for account: $accountId');
         print('Status: $status, Reason: $reason');
 
         // Use helper to get call options with authorization header from secure storage
@@ -149,7 +158,8 @@ class CardSettingsRepositoryImpl implements ICardSettingsRepository {
 
       return Right(accountDetails);
     } on GrpcError catch (e) {
-      print('gRPC Error during UpdateAccountStatus: ${e.codeName} - ${e.message}');
+      print(
+          'gRPC Error during UpdateAccountStatus: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
         message: e.message ?? 'Failed to update account status.',
         statusCode: e.code,

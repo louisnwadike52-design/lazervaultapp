@@ -190,9 +190,10 @@ class Insurance extends Equatable {
   });
 
   bool get isActive => status == InsuranceStatus.active;
-  bool get isExpired => status == InsuranceStatus.expired || DateTime.now().isAfter(endDate);
+  bool get isExpired =>
+      status == InsuranceStatus.expired || DateTime.now().isAfter(endDate);
   bool get isPaymentDue => DateTime.now().isAfter(nextPaymentDate);
-  
+
   int get daysUntilExpiry => endDate.difference(DateTime.now()).inDays;
   int get daysUntilPayment => nextPaymentDate.difference(DateTime.now()).inDays;
 
@@ -268,4 +269,4 @@ class Insurance extends Equatable {
         updatedAt,
         userId,
       ];
-} 
+}

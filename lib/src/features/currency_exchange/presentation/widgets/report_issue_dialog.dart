@@ -80,8 +80,8 @@ class _ReportIssueDialogState extends State<ReportIssueDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final reference = widget.transaction.referenceNumber ??
-        widget.transaction.id;
+    final reference =
+        widget.transaction.referenceNumber ?? widget.transaction.id;
 
     return Dialog(
       backgroundColor: const Color(0xFF1F1F1F),
@@ -139,8 +139,8 @@ class _ReportIssueDialogState extends State<ReportIssueDialog> {
               if (_state == _SubmitState.error && _errorMessage != null) ...[
                 const SizedBox(height: 10),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   decoration: BoxDecoration(
                     color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),

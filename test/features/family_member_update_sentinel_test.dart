@@ -28,10 +28,8 @@ final _grpc = File(
   'lib/src/features/family_account/data/datasources/family_account_grpc_data_source.dart',
 ).readAsStringSync();
 
-String get _code => _grpc
-    .split('\n')
-    .where((l) => !l.trimLeft().startsWith('//'))
-    .join('\n');
+String get _code =>
+    _grpc.split('\n').where((l) => !l.trimLeft().startsWith('//')).join('\n');
 
 void main() {
   test('omitted numeric fields send the unchanged sentinel, not zero', () {
@@ -49,7 +47,8 @@ void main() {
       expect(
         req.contains('$field: req.$field ?? 0.0'),
         isFalse,
-        reason: '$field defaults to 0.0, which the server APPLIES — omitting it '
+        reason:
+            '$field defaults to 0.0, which the server APPLIES — omitting it '
             'silently zeroes that member\'s money',
       );
       expect(

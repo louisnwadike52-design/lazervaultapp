@@ -24,7 +24,6 @@ import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'invest_asset_hub_screen_widgets.dart';
 
-
 /// Per–asset-class hub: Revolut-style pill segments (All · Portfolio · Watchlist · Orders · News).
 class InvestAssetHubScreen extends StatefulWidget {
   const InvestAssetHubScreen({super.key});
@@ -126,7 +125,9 @@ class _InvestAssetHubScreenState extends State<InvestAssetHubScreen> {
       final want = _hub.curatedSymbols.map((s) => s.toUpperCase()).toSet();
       list = list.where((s) => want.contains(s.symbol.toUpperCase())).toList();
       if (list.isEmpty) {
-        return _hub.curatedSymbols.map((sym) => Stock.navigationStub(sym)).toList();
+        return _hub.curatedSymbols
+            .map((sym) => Stock.navigationStub(sym))
+            .toList();
       }
     }
     final q = _search.text.trim().toLowerCase();
@@ -182,10 +183,10 @@ class _InvestAssetHubScreenState extends State<InvestAssetHubScreen> {
               Expanded(
                 child: ServiceEntranceAnimation(
                   child: IndexedStack(
-                  index: _segmentIndex,
-                  alignment: Alignment.topCenter,
-                  children: _segments.map(_panelForSegment).toList(),
-                ),
+                    index: _segmentIndex,
+                    alignment: Alignment.topCenter,
+                    children: _segments.map(_panelForSegment).toList(),
+                  ),
                 ),
               ),
             ],
@@ -416,7 +417,8 @@ class _InvestAssetHubScreenState extends State<InvestAssetHubScreen> {
                           fontSize: 15.sp,
                         ),
                         decoration: InvestTradingUi.tradingInputDecoration(
-                          hintText: 'Search ${_hub.appBarScrolledTitle.toLowerCase()}',
+                          hintText:
+                              'Search ${_hub.appBarScrolledTitle.toLowerCase()}',
                           accentColor: accent,
                         ).copyWith(
                           prefixIcon: Icon(
@@ -498,7 +500,8 @@ class _InvestAssetHubScreenState extends State<InvestAssetHubScreen> {
                   onPressed: () => _openTrade(tradeType: 'sell'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: InvestTradingUi.sell,
-                    side: const BorderSide(color: InvestTradingUi.sell, width: 1.5),
+                    side: const BorderSide(
+                        color: InvestTradingUi.sell, width: 1.5),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14.r),

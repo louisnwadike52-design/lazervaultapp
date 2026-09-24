@@ -20,7 +20,18 @@ final List<NetworkProvider> _staticNigerianProviders = [
     shortName: 'MTN',
     logo: '',
     primaryColor: '#FFCC00',
-    prefixes: ['0803', '0806', '0810', '0813', '0814', '0816', '0903', '0906', '0913', '0916'],
+    prefixes: [
+      '0803',
+      '0806',
+      '0810',
+      '0813',
+      '0814',
+      '0816',
+      '0903',
+      '0906',
+      '0913',
+      '0916'
+    ],
     countryCode: 'NG',
     isActive: true,
     minAmount: 50,
@@ -35,7 +46,18 @@ final List<NetworkProvider> _staticNigerianProviders = [
     shortName: 'Airtel',
     logo: '',
     primaryColor: '#FF0000',
-    prefixes: ['0701', '0708', '0802', '0808', '0812', '0901', '0902', '0904', '0907', '0912'],
+    prefixes: [
+      '0701',
+      '0708',
+      '0802',
+      '0808',
+      '0812',
+      '0901',
+      '0902',
+      '0904',
+      '0907',
+      '0912'
+    ],
     countryCode: 'NG',
     isActive: true,
     minAmount: 50,
@@ -151,9 +173,10 @@ class NetworkProvidersCard extends StatelessWidget {
   }
 
   void _showAllProvidersSheet(BuildContext context, AirtimeState state) {
-    final providers = (state is AirtimeNetworkProvidersLoaded && state.providers.isNotEmpty)
-        ? state.providers
-        : _staticNigerianProviders;
+    final providers =
+        (state is AirtimeNetworkProvidersLoaded && state.providers.isNotEmpty)
+            ? state.providers
+            : _staticNigerianProviders;
 
     showModalBottomSheet(
       context: context,

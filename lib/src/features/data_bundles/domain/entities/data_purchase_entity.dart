@@ -129,15 +129,15 @@ class DataPurchaseEntity extends Equatable {
     }
   }
 
-  bool get isCompleted => statusCategory == DataPurchaseStatusCategory.completed;
+  bool get isCompleted =>
+      statusCategory == DataPurchaseStatusCategory.completed;
   bool get isFailed => statusCategory == DataPurchaseStatusCategory.failed;
   bool get isProcessing =>
       statusCategory == DataPurchaseStatusCategory.processing;
   bool get isPending =>
       statusCategory == DataPurchaseStatusCategory.pending ||
       statusCategory == DataPurchaseStatusCategory.processing;
-  bool get isRefunded =>
-      statusCategory == DataPurchaseStatusCategory.refunded;
+  bool get isRefunded => statusCategory == DataPurchaseStatusCategory.refunded;
 
   String get networkCode {
     if (dataPlan.isEmpty) return '';

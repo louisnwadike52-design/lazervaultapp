@@ -56,10 +56,13 @@ void main() {
     for (final raw in ['0', '-1', 'never', '', '999999']) {
       FlutterSecureStorage.setMockInitialValues(
           {'inactivity_timeout_seconds': raw});
-      final v = await SecureStorageService(const FlutterSecureStorage()).getInactivityTimeoutSeconds();
+      final v = await SecureStorageService(const FlutterSecureStorage())
+          .getInactivityTimeoutSeconds();
       if (v != null) {
-        expect(v, inInclusiveRange(SecureStorageService.minInactivityTimeout,
-            SecureStorageService.maxInactivityTimeout),
+        expect(
+            v,
+            inInclusiveRange(SecureStorageService.minInactivityTimeout,
+                SecureStorageService.maxInactivityTimeout),
             reason: 'stored "$raw" produced an out-of-range $v');
       }
       // null is acceptable — it means "follow the platform", which is a

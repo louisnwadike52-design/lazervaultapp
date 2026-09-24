@@ -271,8 +271,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
   Future<void> _uploadFromGallery() async {
     if (_isProcessing) return;
     try {
-      final picked =
-          await ImagePicker().pickImage(source: ImageSource.gallery);
+      final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
       if (picked == null) return;
       _isProcessing = true;
       final capture = await _scannerController.analyzeImage(picked.path);
@@ -316,7 +315,8 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
                     fontSize: 17,
                     fontWeight: FontWeight.w700)),
             const SizedBox(height: 6),
-            Text('Paste or type the payment reference shown under the QR code (it starts with QR-).',
+            Text(
+                'Paste or type the payment reference shown under the QR code (it starts with QR-).',
                 style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.6), fontSize: 13)),
             const SizedBox(height: 14),
@@ -357,9 +357,8 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
     if (code == null || code.isEmpty || !mounted) return;
     // References are stored uppercase ('QR-…') but people type freely —
     // normalise the prefix so 'qr-abc…' scans the same as 'QR-ABC…'.
-    final normalized = code.toLowerCase().startsWith('qr-')
-        ? 'QR-${code.substring(3)}'
-        : code;
+    final normalized =
+        code.toLowerCase().startsWith('qr-') ? 'QR-${code.substring(3)}' : code;
     if (normalized.startsWith('@')) {
       // A handle isn't a QR payload — steer to the flow that resolves people.
       _rejectInvalid(

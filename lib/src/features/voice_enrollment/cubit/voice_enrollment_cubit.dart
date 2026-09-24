@@ -69,14 +69,16 @@ class VoiceEnrollmentCubit extends Cubit<VoiceEnrollmentState> {
         if (validFiles.length == savedPaths.length && validFiles.isNotEmpty) {
           _currentStep = savedStep;
           _recordedSamples.addAll(validFiles);
-          print('Resumed voice enrollment from step $_currentStep with ${validFiles.length} samples');
+          print(
+              'Resumed voice enrollment from step $_currentStep with ${validFiles.length} samples');
           emit(VoiceEnrollmentInitial(
             currentStep: _currentStep,
             totalSteps: 3,
           ));
           return;
         } else if (validFiles.isNotEmpty) {
-          print('Incomplete enrollment progress (${validFiles.length}/${savedPaths.length} files found), starting fresh');
+          print(
+              'Incomplete enrollment progress (${validFiles.length}/${savedPaths.length} files found), starting fresh');
         }
       }
 
@@ -97,7 +99,8 @@ class VoiceEnrollmentCubit extends Cubit<VoiceEnrollmentState> {
         'voice_enrollment_samples',
         _recordedSamples.map((f) => f.path).toList(),
       );
-      print('Saved voice enrollment progress: step $_currentStep, ${_recordedSamples.length} samples');
+      print(
+          'Saved voice enrollment progress: step $_currentStep, ${_recordedSamples.length} samples');
     } catch (e) {
       print('Failed to save progress: $e');
     }
@@ -255,7 +258,8 @@ class VoiceEnrollmentCubit extends Cubit<VoiceEnrollmentState> {
       if (_recordedSamples.length < 3) {
         _enrollInFlight = false;
         emit(VoiceEnrollmentError(
-          message: 'Not all voice samples were recorded. Please record all 3 samples.',
+          message:
+              'Not all voice samples were recorded. Please record all 3 samples.',
           errorCode: 'INCOMPLETE_SAMPLES',
         ));
         return;
@@ -266,7 +270,8 @@ class VoiceEnrollmentCubit extends Cubit<VoiceEnrollmentState> {
         if (!await _recordedSamples[i].exists()) {
           _enrollInFlight = false;
           emit(VoiceEnrollmentError(
-            message: 'Voice sample ${i + 1} was lost. Please re-record your samples.',
+            message:
+                'Voice sample ${i + 1} was lost. Please re-record your samples.',
             errorCode: 'SAMPLE_MISSING',
           ));
           return;
@@ -303,7 +308,8 @@ class VoiceEnrollmentCubit extends Cubit<VoiceEnrollmentState> {
       final errorStr = e.toString();
 
       // Auto-delete existing enrollment and retry once
-      if ((errorStr.contains('ALREADY_EXISTS') || errorStr.contains('already has voice')) &&
+      if ((errorStr.contains('ALREADY_EXISTS') ||
+              errorStr.contains('already has voice')) &&
           !_isRetryAfterDelete) {
         try {
           emit(VoiceEnrollmentReplacing());
@@ -319,7 +325,8 @@ class VoiceEnrollmentCubit extends Cubit<VoiceEnrollmentState> {
           _isRetryAfterDelete = false;
           _enrollInFlight = false;
           emit(VoiceEnrollmentError(
-            message: 'Failed to replace existing voice profile. Please try again.',
+            message:
+                'Failed to replace existing voice profile. Please try again.',
             errorCode: 'DELETE_FAILED',
           ));
           return;
@@ -333,16 +340,22 @@ class VoiceEnrollmentCubit extends Cubit<VoiceEnrollmentState> {
       String? code;
       String message;
 
-      if (errorStr.contains('UNAVAILABLE') || errorStr.contains('temporarily unavailable')) {
+      if (errorStr.contains('UNAVAILABLE') ||
+          errorStr.contains('temporarily unavailable')) {
         code = 'SERVICE_UNAVAILABLE';
-        message = 'Voice processing service is temporarily unavailable. Please try again in a moment.';
-      } else if (errorStr.contains('Could not process') || errorStr.contains('quieter environment')) {
+        message =
+            'Voice processing service is temporarily unavailable. Please try again in a moment.';
+      } else if (errorStr.contains('Could not process') ||
+          errorStr.contains('quieter environment')) {
         code = 'POOR_AUDIO';
-        message = 'We couldn\'t process your voice samples. Try recording in a quieter place and speak clearly.';
-      } else if (errorStr.contains('ALREADY_EXISTS') || errorStr.contains('already has voice')) {
+        message =
+            'We couldn\'t process your voice samples. Try recording in a quieter place and speak clearly.';
+      } else if (errorStr.contains('ALREADY_EXISTS') ||
+          errorStr.contains('already has voice')) {
         // Only reached if retry after delete also got ALREADY_EXISTS
         code = 'ALREADY_ENROLLED';
-        message = 'Could not replace existing voice profile. Please try again later.';
+        message =
+            'Could not replace existing voice profile. Please try again later.';
       } else {
         message = 'Something went wrong during enrollment. Please try again.';
       }
@@ -413,7 +426,8 @@ class VoiceEnrollmentCubit extends Cubit<VoiceEnrollmentState> {
     await _ensureRecorderStopped();
 
     try {
-      emit(VoiceEnrollmentReplacing(message: 'Removing existing voice profile...'));
+      emit(VoiceEnrollmentReplacing(
+          message: 'Removing existing voice profile...'));
 
       final userId = await _repository.getCurrentUserId();
 
@@ -528,7 +542,8 @@ class VoiceEnrollmentCubit extends Cubit<VoiceEnrollmentState> {
     final current = state;
     if (current is! VoiceEnrollmentCarouselState) return;
     if (!current.isRecording || !_isRecording) {
-      print('Warning: stopCarouselRecording called but no recording active, ignoring');
+      print(
+          'Warning: stopCarouselRecording called but no recording active, ignoring');
       return;
     }
 

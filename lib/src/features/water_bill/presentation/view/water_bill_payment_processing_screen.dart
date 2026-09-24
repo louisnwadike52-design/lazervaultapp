@@ -15,10 +15,12 @@ class WaterBillPaymentProcessingScreen extends StatefulWidget {
   const WaterBillPaymentProcessingScreen({super.key});
 
   @override
-  State<WaterBillPaymentProcessingScreen> createState() => _WaterBillPaymentProcessingScreenState();
+  State<WaterBillPaymentProcessingScreen> createState() =>
+      _WaterBillPaymentProcessingScreenState();
 }
 
-class _WaterBillPaymentProcessingScreenState extends State<WaterBillPaymentProcessingScreen>
+class _WaterBillPaymentProcessingScreenState
+    extends State<WaterBillPaymentProcessingScreen>
     with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late AnimationController _rotationController;
@@ -91,7 +93,8 @@ class _WaterBillPaymentProcessingScreenState extends State<WaterBillPaymentProce
   Widget build(BuildContext context) {
     final args = Get.arguments as Map<String, dynamic>;
     final provider = args['provider'] as WaterProviderEntity;
-    final validationResult = args['validationResult'] as CustomerValidationResult;
+    final validationResult =
+        args['validationResult'] as CustomerValidationResult;
     final initialPayment = args['payment'] as WaterPaymentEntity;
 
     return PopScope(
@@ -224,10 +227,12 @@ class _WaterBillPaymentProcessingScreenState extends State<WaterBillPaymentProce
                                     height: 120.w,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: Colors.white.withValues(alpha: 0.2),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.2),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.08),
+                                          color: Colors.black
+                                              .withValues(alpha: 0.08),
                                           blurRadius: 6,
                                           offset: Offset(0, 2),
                                         ),
@@ -347,7 +352,8 @@ class _WaterBillPaymentProcessingScreenState extends State<WaterBillPaymentProce
                       SizedBox(height: 32.h),
 
                       // Payment details card
-                      _buildPaymentDetailsCard(provider, validationResult, payment.amount),
+                      _buildPaymentDetailsCard(
+                          provider, validationResult, payment.amount),
 
                       SizedBox(height: 24.h),
 
@@ -435,9 +441,11 @@ class _WaterBillPaymentProcessingScreenState extends State<WaterBillPaymentProce
         children: [
           _buildDetailRow('Provider', provider.providerName, Icons.water_drop),
           SizedBox(height: 16.h),
-          _buildDetailRow('Customer', validationResult.customerName, Icons.person),
+          _buildDetailRow(
+              'Customer', validationResult.customerName, Icons.person),
           SizedBox(height: 16.h),
-          _buildDetailRow('Customer Number', validationResult.customerNumber, Icons.numbers),
+          _buildDetailRow('Customer Number', validationResult.customerNumber,
+              Icons.numbers),
           SizedBox(height: 16.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -511,7 +519,8 @@ class _WaterBillPaymentProcessingScreenState extends State<WaterBillPaymentProce
         final step = entry.value;
         final stepProgress = (index + 1) / steps.length;
         final isCompleted = progress >= stepProgress;
-        final isActive = progress > (index / steps.length) && progress <= stepProgress;
+        final isActive =
+            progress > (index / steps.length) && progress <= stepProgress;
 
         return Padding(
           padding: EdgeInsets.symmetric(vertical: 8.h),
@@ -531,7 +540,9 @@ class _WaterBillPaymentProcessingScreenState extends State<WaterBillPaymentProce
                 child: Icon(
                   isCompleted ? Icons.check : Icons.circle,
                   size: 14.sp,
-                  color: isCompleted || isActive ? Colors.white : const Color(0xFF9CA3AF),
+                  color: isCompleted || isActive
+                      ? Colors.white
+                      : const Color(0xFF9CA3AF),
                 ),
               ),
               SizedBox(width: 16.w),
@@ -540,7 +551,9 @@ class _WaterBillPaymentProcessingScreenState extends State<WaterBillPaymentProce
                   step,
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    color: isCompleted || isActive ? Colors.white : const Color(0xFF9CA3AF),
+                    color: isCompleted || isActive
+                        ? Colors.white
+                        : const Color(0xFF9CA3AF),
                     fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
                   ),
                 ),

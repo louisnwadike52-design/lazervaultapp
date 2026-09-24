@@ -43,8 +43,8 @@ class _SenderIdsScreenState extends State<SenderIdsScreen> {
       backgroundColor: Colors.transparent,
       builder: (ctx) {
         return Padding(
-          padding: EdgeInsets.only(
-              bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          padding:
+              EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
           child: Container(
             decoration: BoxDecoration(
               color: BulkSmsTheme.bg,
@@ -89,7 +89,8 @@ class _SenderIdsScreenState extends State<SenderIdsScreen> {
                       if (id.isEmpty) {
                         LVSnackbar.showError(
                             title: 'Sender ID required',
-                            message: 'Enter the sender ID you want to register.');
+                            message:
+                                'Enter the sender ID you want to register.');
                         return;
                       }
                       Navigator.of(ctx).pop();
@@ -141,8 +142,7 @@ class _SenderIdsScreenState extends State<SenderIdsScreen> {
             TextStyle(color: BulkSmsTheme.textSecondary, fontSize: 13.sp),
         filled: true,
         fillColor: BulkSmsTheme.card,
-        contentPadding:
-            EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+        contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
           borderSide: BorderSide.none,
@@ -154,8 +154,7 @@ class _SenderIdsScreenState extends State<SenderIdsScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<BulkSmsCubit, BulkSmsState>(
-      listenWhen: (p, c) =>
-          p.senderIdRequestStatus != c.senderIdRequestStatus,
+      listenWhen: (p, c) => p.senderIdRequestStatus != c.senderIdRequestStatus,
       listener: (context, state) {
         if (state.senderIdRequestStatus == ActionStatus.success) {
           LVSnackbar.showSuccess(
@@ -189,8 +188,7 @@ class _SenderIdsScreenState extends State<SenderIdsScreen> {
               Expanded(
                 child: RefreshIndicator(
                   color: BulkSmsTheme.primary,
-                  onRefresh: () =>
-                      context.read<BulkSmsCubit>().loadSenderIds(),
+                  onRefresh: () => context.read<BulkSmsCubit>().loadSenderIds(),
                   child: BlocBuilder<BulkSmsCubit, BulkSmsState>(
                     builder: (context, state) => _body(state),
                   ),

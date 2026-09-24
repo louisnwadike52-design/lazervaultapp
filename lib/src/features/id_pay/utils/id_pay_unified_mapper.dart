@@ -27,7 +27,9 @@ UnifiedTransaction idPayTxnToUnified(
     id: txn.id.isNotEmpty ? txn.id : txn.reference,
     serviceType: TransactionServiceType.idPay,
     title: otherName.isNotEmpty
-        ? (viewerIsPayer ? 'PayID Payment to $otherName' : 'PayID Payment from $otherName')
+        ? (viewerIsPayer
+            ? 'PayID Payment to $otherName'
+            : 'PayID Payment from $otherName')
         : 'PayID Payment',
     amount: txn.amount,
     currency: txn.currency,
@@ -49,7 +51,8 @@ UnifiedTransaction idPayTxnToUnified(
       if (txn.recipientName.isNotEmpty) 'recipient_name': txn.recipientName,
       if (!viewerIsPayer && txn.fee > 0) ...{
         'platform_fee': '${txn.currency} ${txn.fee.toStringAsFixed(2)}',
-        'you_receive': '${txn.currency} ${txn.creatorReceives.toStringAsFixed(2)}',
+        'you_receive':
+            '${txn.currency} ${txn.creatorReceives.toStringAsFixed(2)}',
       },
       if (newBalance != null)
         'new_balance': '${txn.currency} ${newBalance.toStringAsFixed(2)}',

@@ -19,7 +19,6 @@ import '../widgets/bottom_indicators_painter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'stock_chart_details_screen_widgets.dart';
 
-
 class StockChartDetailsScreen extends StatefulWidget {
   final Stock stock;
 
@@ -29,7 +28,8 @@ class StockChartDetailsScreen extends StatefulWidget {
   });
 
   @override
-  State<StockChartDetailsScreen> createState() => _StockChartDetailsScreenState();
+  State<StockChartDetailsScreen> createState() =>
+      _StockChartDetailsScreenState();
 }
 
 class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
@@ -42,12 +42,12 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   double _baseScale = 1.0;
   int _visibleDataPoints = 50;
   int _startIndex = 0;
-  
+
   // Touch interaction
   bool _isDragging = false;
   bool _isScaling = false;
   double _lastPanX = 0.0;
-  
+
   // Drawing data
   final List<DrawingElement> _drawings = [];
   DrawingElement? _currentDrawing;
@@ -250,9 +250,9 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           if (state is StockLoading) {
             return const Center(child: LazerVaultLoader.small());
           }
-          
+
           final priceHistory = _generateMockPriceHistory();
-          
+
           return Stack(
             children: [
               // Full screen chart (90% height, 100% width)
@@ -263,13 +263,13 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                   child: _buildFullScreenChart(priceHistory),
                 ),
               ),
-              
+
               // Top overlay with minimal info
               _buildTopOverlay(),
-              
+
               // Bottom area with timeframe selector and controls
               _buildBottomControlsArea(),
-              
+
               // Drawing tool indicator (moved to not cover chart)
               if (_selectedDrawingTool != DrawingTool.none)
                 _buildDrawingToolIndicator(),
@@ -305,15 +305,16 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                 ),
               ),
             ),
-            
+
             SizedBox(width: 12.w),
-            
+
             // Stock symbol and name
             Expanded(
               child: GestureDetector(
                 onTap: _showStockInfoBottomSheet,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.7),
                     borderRadius: BorderRadius.circular(8.r),
@@ -352,9 +353,9 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                 ),
               ),
             ),
-            
+
             SizedBox(width: 12.w),
-            
+
             // Price info (moved to top bar)
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
@@ -362,19 +363,19 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                 color: Colors.black.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(8.r),
                 boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    CurrencySymbols.formatAmountWithCurrency(widget.stock.currentPrice, widget.stock.currency),
+                    CurrencySymbols.formatAmountWithCurrency(
+                        widget.stock.currentPrice, widget.stock.currency),
                     style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 14.sp,
@@ -384,7 +385,8 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                   Text(
                     '${widget.stock.isPositive ? '+' : ''}${widget.stock.changePercent.toStringAsFixed(2)}%',
                     style: GoogleFonts.inter(
-                      color: widget.stock.isPositive ? Colors.green : Colors.red,
+                      color:
+                          widget.stock.isPositive ? Colors.green : Colors.red,
                       fontSize: 10.sp,
                       fontWeight: FontWeight.w600,
                     ),
@@ -392,9 +394,9 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                 ],
               ),
             ),
-            
+
             SizedBox(width: 12.w),
-            
+
             // More options button
             GestureDetector(
               onTap: _showMoreOptions,
@@ -482,7 +484,8 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
         ),
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-          margin: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+          margin:
+              EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
           decoration: BoxDecoration(
             color: Colors.grey[900],
             borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
@@ -525,8 +528,8 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   }
 
   Widget _buildControlButton(
-    IconData icon, 
-    String label, 
+    IconData icon,
+    String label,
     VoidCallback onTap, {
     bool isSelected = false,
     bool hasNotification = false,
@@ -536,7 +539,9 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue.withValues(alpha: 0.2) : Colors.grey[800],
+          color: isSelected
+              ? Colors.blue.withValues(alpha: 0.2)
+              : Colors.grey[800],
           borderRadius: BorderRadius.circular(8.r),
           border: isSelected ? Border.all(color: Colors.blue, width: 1) : null,
         ),
@@ -546,8 +551,8 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
             Stack(
               children: [
                 Icon(
-                  icon, 
-                  color: isSelected ? Colors.blue : Colors.white, 
+                  icon,
+                  color: isSelected ? Colors.blue : Colors.white,
                   size: 18.sp,
                 ),
                 if (hasNotification)
@@ -622,7 +627,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                 ],
               ),
             ),
-            
+
             // Current selection indicator
             if (_selectedTimeframe.isNotEmpty)
               Container(
@@ -646,7 +651,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                   ],
                 ),
               ),
-            
+
             // Timeframe categories
             Expanded(
               child: SingleChildScrollView(
@@ -736,7 +741,8 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                 Spacer(),
                 if (timeframes.contains(_selectedTimeframe))
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12.r),
@@ -754,7 +760,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
               ],
             ),
           ),
-          
+
           // Timeframe options
           Padding(
             padding: EdgeInsets.all(16.w),
@@ -768,34 +774,37 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                     setState(() {
                       _selectedTimeframe = timeframe;
                     });
-                    
+
                     // Load new chart data
                     context.read<StockCubit>().loadStockChart(
-                      widget.stock.symbol,
-                      timeframe,
-                    );
-                    
+                          widget.stock.symbol,
+                          timeframe,
+                        );
+
                     Navigator.pop(context);
                   },
                   child: AnimatedContainer(
                     duration: Duration(milliseconds: 200),
-                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                     decoration: BoxDecoration(
-                      color: isSelected 
-                          ? color.withValues(alpha: 0.2) 
+                      color: isSelected
+                          ? color.withValues(alpha: 0.2)
                           : Colors.grey[700],
                       borderRadius: BorderRadius.circular(25.r),
                       border: Border.all(
                         color: isSelected ? color : Colors.grey[600]!,
                         width: isSelected ? 2 : 1,
                       ),
-                      boxShadow: isSelected ? [
-                        BoxShadow(
-                          color: color.withValues(alpha: 0.3),
-                          blurRadius: 8,
-                          offset: Offset(0, 2),
-                        ),
-                      ] : null,
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: color.withValues(alpha: 0.3),
+                                blurRadius: 8,
+                                offset: Offset(0, 2),
+                              ),
+                            ]
+                          : null,
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -813,7 +822,8 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                           style: GoogleFonts.inter(
                             color: isSelected ? color : Colors.white,
                             fontSize: 14.sp,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                            fontWeight:
+                                isSelected ? FontWeight.bold : FontWeight.w600,
                           ),
                         ),
                       ],
@@ -840,16 +850,19 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
 
     // Calculate space needed for bottom indicators
     final bottomIndicatorSpace = _calculateBottomIndicatorSpace();
-    
+
     // Calculate bottom margin including controls and bottom indicators
     final bottomControlsHeight = 80.h; // Height of bottom controls area
-    final totalBottomMargin = bottomControlsHeight + bottomIndicatorSpace + MediaQuery.of(context).padding.bottom;
+    final totalBottomMargin = bottomControlsHeight +
+        bottomIndicatorSpace +
+        MediaQuery.of(context).padding.bottom;
 
     return GestureDetector(
       onTapDown: (details) {
         // First check if we're tapping on an existing drawing
         if (_selectedDrawingTool == DrawingTool.none) {
-          final tappedDrawing = _findDrawingAtPoint(details.localPosition, priceHistory);
+          final tappedDrawing =
+              _findDrawingAtPoint(details.localPosition, priceHistory);
           if (tappedDrawing != null) {
             setState(() {
               _selectedDrawing = tappedDrawing;
@@ -858,7 +871,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
             return;
           }
         }
-        
+
         // Show crosshair if not drawing or dragging
         setState(() {
           _showCrosshair = true;
@@ -877,8 +890,10 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
       },
       onScaleStart: (details) {
         // Check if we're starting to drag a selected drawing
-        if (_selectedDrawing != null && _selectedDrawingTool == DrawingTool.none) {
-          final isNearDrawing = _isPointNearDrawing(details.focalPoint, _selectedDrawing!, priceHistory);
+        if (_selectedDrawing != null &&
+            _selectedDrawingTool == DrawingTool.none) {
+          final isNearDrawing = _isPointNearDrawing(
+              details.focalPoint, _selectedDrawing!, priceHistory);
           if (isNearDrawing) {
             setState(() {
               _isDraggingDrawing = true;
@@ -887,13 +902,13 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
             return;
           }
         }
-        
+
         // Check if we're starting to draw
         if (_selectedDrawingTool != DrawingTool.none) {
           _startDrawing(details.focalPoint, priceHistory);
           return;
         }
-        
+
         // Default pan/zoom behavior
         _baseScale = _currentScale;
         _lastPanX = details.focalPoint.dx;
@@ -904,11 +919,13 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
       },
       onScaleUpdate: (details) {
         // Handle dragging of selected drawing
-        if (_isDraggingDrawing && _selectedDrawing != null && _dragStartPoint != null) {
+        if (_isDraggingDrawing &&
+            _selectedDrawing != null &&
+            _dragStartPoint != null) {
           _updateDrawingPosition(details.focalPoint, priceHistory);
           return;
         }
-        
+
         // Handle drawing update
         if (_selectedDrawingTool != DrawingTool.none && _isDrawing) {
           _updateDrawing(details.focalPoint, priceHistory);
@@ -920,23 +937,25 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           if ((details.scale - 1.0).abs() > 0.01) {
             _isScaling = true;
             _isDragging = false;
-            
+
             final newScale = (_baseScale * details.scale).clamp(0.5, 5.0);
-            final newVisiblePoints = (50 / newScale).round().clamp(10, priceHistory.length);
+            final newVisiblePoints =
+                (50 / newScale).round().clamp(10, priceHistory.length);
             final centerIndex = _startIndex + (_visibleDataPoints / 2).round();
-            
+
             _currentScale = newScale;
             _visibleDataPoints = newVisiblePoints;
             _startIndex = (centerIndex - (_visibleDataPoints / 2).round())
                 .clamp(0, priceHistory.length - _visibleDataPoints);
           } else if (!_isScaling) {
             _isDragging = true;
-            
+
             final deltaX = details.focalPoint.dx - _lastPanX;
             final panSensitivity = _visibleDataPoints / 300;
             final indexChange = (-deltaX * panSensitivity).round();
-            
-            _startIndex = (_startIndex + indexChange).clamp(0, priceHistory.length - _visibleDataPoints);
+
+            _startIndex = (_startIndex + indexChange)
+                .clamp(0, priceHistory.length - _visibleDataPoints);
             _lastPanX = details.focalPoint.dx;
           }
         });
@@ -951,7 +970,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           HapticFeedback.lightImpact();
           return;
         }
-        
+
         // End drawing
         if (_selectedDrawingTool != DrawingTool.none && _isDrawing) {
           _endDrawing();
@@ -976,24 +995,27 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
               bottom: totalBottomMargin,
               child: _buildMainChartArea(_getVisibleData(priceHistory)),
             ),
-            
+
             // Bottom indicators area
             if (bottomIndicatorSpace > 0)
               Positioned(
-                bottom: bottomControlsHeight + MediaQuery.of(context).padding.bottom,
+                bottom: bottomControlsHeight +
+                    MediaQuery.of(context).padding.bottom,
                 left: 0,
                 right: 0,
                 height: bottomIndicatorSpace,
-                child: _buildBottomIndicatorsArea(_getVisibleData(priceHistory)),
+                child:
+                    _buildBottomIndicatorsArea(_getVisibleData(priceHistory)),
               ),
-            
+
             // Drawings overlay (covers entire chart area including indicators)
             _buildDrawingsOverlay(priceHistory),
-            
+
             // Crosshair (covers entire chart area)
             if (_showCrosshair && _crosshairPosition != null)
-              _buildCrosshair(_crosshairPosition!, _getVisibleData(priceHistory)),
-            
+              _buildCrosshair(
+                  _crosshairPosition!, _getVisibleData(priceHistory)),
+
             // Interaction indicators
             _buildInteractionIndicators(),
           ],
@@ -1005,7 +1027,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   // Calculate space needed for bottom indicators
   double _calculateBottomIndicatorSpace() {
     double totalSpace = 0;
-    
+
     for (final indicator in _selectedIndicators) {
       switch (indicator) {
         case 'RSI':
@@ -1027,7 +1049,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           break;
       }
     }
-    
+
     return totalSpace;
   }
 
@@ -1039,7 +1061,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
         Positioned.fill(
           child: _buildSelectedChart(priceHistory),
         ),
-        
+
         // Price overlay indicators (MA, EMA, Bollinger Bands, VWAP, SAR)
         _buildPriceOverlayIndicators(priceHistory),
       ],
@@ -1054,7 +1076,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
     final priceOverlayIndicators = _selectedIndicators.where((indicator) {
       return [
         'Moving Average',
-        'EMA', 
+        'EMA',
         'Bollinger Bands',
         'VWAP',
         'Parabolic SAR'
@@ -1064,12 +1086,14 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
     if (priceOverlayIndicators.isEmpty) return Container();
 
     try {
-      final prices = priceHistory.where((p) => p.high > 0 && p.low > 0).toList();
+      final prices =
+          priceHistory.where((p) => p.high > 0 && p.low > 0).toList();
       if (prices.isEmpty) return Container();
-      
-      final maxPrice = prices.map((e) => e.high).reduce((a, b) => a > b ? a : b);
+
+      final maxPrice =
+          prices.map((e) => e.high).reduce((a, b) => a > b ? a : b);
       final minPrice = prices.map((e) => e.low).reduce((a, b) => a < b ? a : b);
-      
+
       if (maxPrice <= 0 || minPrice <= 0 || maxPrice == minPrice) {
         return Container();
       }
@@ -1096,26 +1120,24 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
 
     // Filter for indicators that appear at the bottom
     final bottomIndicators = _selectedIndicators.where((indicator) {
-      return [
-        'RSI',
-        'MACD', 
-        'Stochastic',
-        'ATR',
-        'Volume'
-      ].contains(indicator) && !(indicator == 'Volume' && _selectedChartType == ChartType.volume);
+      return ['RSI', 'MACD', 'Stochastic', 'ATR', 'Volume']
+              .contains(indicator) &&
+          !(indicator == 'Volume' && _selectedChartType == ChartType.volume);
     }).toList();
 
     if (bottomIndicators.isEmpty) return Container();
 
     try {
-      final prices = priceHistory.where((p) => p.high > 0 && p.low > 0).toList();
+      final prices =
+          priceHistory.where((p) => p.high > 0 && p.low > 0).toList();
       if (prices.isEmpty) return Container();
 
       return Container(
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.3),
           border: Border(
-            top: BorderSide(color: Colors.grey.withValues(alpha: 0.3), width: 1),
+            top:
+                BorderSide(color: Colors.grey.withValues(alpha: 0.3), width: 1),
           ),
         ),
         child: CustomPaint(
@@ -1144,14 +1166,14 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   double _calculateOptimalCandleWidth(int dataLength) {
     final screenWidth = MediaQuery.of(context).size.width;
     final availableWidth = screenWidth - 40; // Account for margins
-    
+
     // Calculate optimal width based on data density and zoom level
     final baseWidth = availableWidth / dataLength;
     final scaledWidth = baseWidth * 0.7; // 70% of available space per candle
-    
+
     // Apply zoom scaling
     final zoomedWidth = scaledWidth * _currentScale;
-    
+
     // Clamp to reasonable limits
     return zoomedWidth.clamp(2.0, 20.0);
   }
@@ -1160,11 +1182,11 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
     final now = DateTime.now();
     final prices = <StockPrice>[];
     double basePrice = widget.stock.currentPrice;
-    
+
     // Get interval and data points based on timeframe
     int dataPoints;
     Duration interval;
-    
+
     switch (_selectedTimeframe) {
       case '1m':
         dataPoints = 60;
@@ -1209,38 +1231,45 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
 
     // Generate more realistic OHLC data with smaller price movements
     double currentPrice = basePrice;
-    
+
     for (int i = dataPoints; i >= 0; i--) {
       final date = now.subtract(interval * i);
-      
+
       // Create smaller, more realistic price movements
       final volatilityFactor = _getVolatilityForTimeframe(_selectedTimeframe);
       final trendFactor = math.sin(i * 0.02) * 0.001; // Smaller trend
-      
+
       // Smaller random walk
-      final randomChange = (math.Random().nextDouble() - 0.5) * volatilityFactor * 0.5;
+      final randomChange =
+          (math.Random().nextDouble() - 0.5) * volatilityFactor * 0.5;
       final meanReversion = (basePrice - currentPrice) * 0.0005;
-      
+
       currentPrice *= (1 + randomChange + trendFactor + meanReversion);
-      
+
       // Generate realistic OHLC with smaller intrabar movements
-      final open = i == dataPoints ? basePrice : prices.isEmpty ? currentPrice : prices.last.close;
-      
+      final open = i == dataPoints
+          ? basePrice
+          : prices.isEmpty
+              ? currentPrice
+              : prices.last.close;
+
       // Reduced intrabar volatility for more realistic candlesticks
       final intrabarVolatility = volatilityFactor * 0.3; // Reduced from 0.5
-      final highVariation = math.Random().nextDouble() * intrabarVolatility * 0.5;
-      final lowVariation = math.Random().nextDouble() * intrabarVolatility * 0.5;
-      
+      final highVariation =
+          math.Random().nextDouble() * intrabarVolatility * 0.5;
+      final lowVariation =
+          math.Random().nextDouble() * intrabarVolatility * 0.5;
+
       final high = [open, currentPrice].reduce(math.max) * (1 + highVariation);
       final low = [open, currentPrice].reduce(math.min) * (1 - lowVariation);
       final close = currentPrice;
-      
+
       // Ensure OHLC relationships
       final validHigh = math.max(math.max(open, close), high);
       final validLow = math.min(math.min(open, close), low);
-      
+
       final volume = _generateRealisticVolume(i, dataPoints);
-      
+
       prices.add(StockPrice(
         timestamp: date,
         open: open,
@@ -1250,7 +1279,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
         volume: volume,
       ));
     }
-    
+
     return prices;
   }
 
@@ -1282,21 +1311,25 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
 
   double _generateRealisticVolume(int index, int totalPoints) {
     final baseVolume = widget.stock.volume;
-    
+
     // Create volume patterns
     final timeOfDay = (index % 24) / 24.0; // Simulate time of day effect
-    final marketHours = (timeOfDay > 0.375 && timeOfDay < 0.875) ? 1.0 : 0.3; // Market hours multiplier
-    
+    final marketHours = (timeOfDay > 0.375 && timeOfDay < 0.875)
+        ? 1.0
+        : 0.3; // Market hours multiplier
+
     final randomFactor = 0.5 + (math.Random().nextDouble() * 1.5); // 0.5x to 2x
-    final cyclicalFactor = 1 + (math.sin(index * 0.2) * 0.3); // Cyclical pattern
-    
+    final cyclicalFactor =
+        1 + (math.sin(index * 0.2) * 0.3); // Cyclical pattern
+
     return baseVolume * marketHours * randomFactor * cyclicalFactor;
   }
 
   // Keep all existing methods but add these helper methods
   List<StockPrice> _getVisibleData(List<StockPrice> priceHistory) {
     if (priceHistory.isEmpty) return [];
-    final endIndex = (_startIndex + _visibleDataPoints).clamp(0, priceHistory.length);
+    final endIndex =
+        (_startIndex + _visibleDataPoints).clamp(0, priceHistory.length);
     return priceHistory.sublist(_startIndex, endIndex);
   }
 
@@ -1369,7 +1402,8 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
 
   // Drawing methods - replace existing stub methods
   void _startDrawing(Offset point, List<StockPrice> priceHistory) {
-    if (_selectedDrawingTool == DrawingTool.none || priceHistory.isEmpty) return;
+    if (_selectedDrawingTool == DrawingTool.none || priceHistory.isEmpty)
+      return;
 
     setState(() {
       _isDrawing = true;
@@ -1378,7 +1412,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
       final priceValue = _screenToPrice(point, priceHistory);
       final timeIndex = _screenToTimeIndex(point, priceHistory);
       final color = _getDrawingToolColor(_selectedDrawingTool);
-      
+
       // Create specific drawing element based on the selected tool
       switch (_selectedDrawingTool) {
         case DrawingTool.trendline:
@@ -1400,8 +1434,8 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           );
           break;
         case DrawingTool.verticalLine:
-          final timestamp = timeIndex < priceHistory.length 
-              ? priceHistory[timeIndex].timestamp 
+          final timestamp = timeIndex < priceHistory.length
+              ? priceHistory[timeIndex].timestamp
               : DateTime.now();
           _currentDrawing = VerticalLineElement(
             index: timeIndex,
@@ -1450,7 +1484,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           break;
       }
     });
-    
+
     // Provide haptic feedback
     HapticFeedback.selectionClick();
   }
@@ -1461,7 +1495,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
     setState(() {
       final priceValue = _screenToPrice(point, priceHistory);
       final timeIndex = _screenToTimeIndex(point, priceHistory);
-      
+
       // Update the drawing based on its type
       switch (_selectedDrawingTool) {
         case DrawingTool.trendline:
@@ -1507,8 +1541,8 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
         case DrawingTool.verticalLine:
           if (_currentDrawing is VerticalLineElement) {
             final current = _currentDrawing as VerticalLineElement;
-            final timestamp = timeIndex < priceHistory.length 
-                ? priceHistory[timeIndex].timestamp 
+            final timestamp = timeIndex < priceHistory.length
+                ? priceHistory[timeIndex].timestamp
                 : DateTime.now();
             _currentDrawing = VerticalLineElement(
               index: timeIndex,
@@ -1537,7 +1571,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
         _selectedDrawingTool = DrawingTool.none;
       }
     });
-    
+
     // Provide haptic feedback
     HapticFeedback.heavyImpact();
   }
@@ -1545,18 +1579,20 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   // Helper methods for coordinate conversion
   double _screenToPrice(Offset point, List<StockPrice> priceHistory) {
     try {
-      final prices = priceHistory.where((p) => p.high > 0 && p.low > 0).toList();
+      final prices =
+          priceHistory.where((p) => p.high > 0 && p.low > 0).toList();
       if (prices.isEmpty) return 0;
-      
-      final maxPrice = prices.map((e) => e.high).reduce((a, b) => a > b ? a : b);
+
+      final maxPrice =
+          prices.map((e) => e.high).reduce((a, b) => a > b ? a : b);
       final minPrice = prices.map((e) => e.low).reduce((a, b) => a < b ? a : b);
-      
+
       // Get the main chart area height (excluding bottom indicators)
-      final chartHeight = MediaQuery.of(context).size.height * 0.9 - 
-                         _calculateBottomIndicatorSpace() - 
-                         80.h - // Bottom controls
-                         MediaQuery.of(context).padding.bottom;
-      
+      final chartHeight = MediaQuery.of(context).size.height * 0.9 -
+          _calculateBottomIndicatorSpace() -
+          80.h - // Bottom controls
+          MediaQuery.of(context).padding.bottom;
+
       final normalizedY = point.dy / chartHeight;
       return maxPrice - (normalizedY * (maxPrice - minPrice));
     } catch (e) {
@@ -1641,7 +1677,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
               ),
             ),
           ),
-        
+
         if (_isScaling)
           Positioned(
             top: 50.h,
@@ -1669,7 +1705,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
               ),
             ),
           ),
-        
+
         // Add indicator for dragging drawings
         if (_isDraggingDrawing)
           Positioned(
@@ -1698,7 +1734,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
               ),
             ),
           ),
-        
+
         // Add selection indicator
         if (_selectedDrawing != null && !_isDraggingDrawing)
           Positioned(
@@ -1764,23 +1800,32 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   Widget _buildProfessionalCandlestickChart(List<StockPrice> priceHistory) {
     try {
       if (priceHistory.isEmpty) return _buildEmptyChart();
-      
+
       // Filter out invalid price data
-      final validPrices = priceHistory.where((p) => 
-        p.high > 0 && p.low > 0 && p.open > 0 && p.close > 0 &&
-        p.high >= p.low && p.high >= p.open && p.high >= p.close &&
-        p.low <= p.open && p.low <= p.close
-      ).toList();
-      
+      final validPrices = priceHistory
+          .where((p) =>
+              p.high > 0 &&
+              p.low > 0 &&
+              p.open > 0 &&
+              p.close > 0 &&
+              p.high >= p.low &&
+              p.high >= p.open &&
+              p.high >= p.close &&
+              p.low <= p.open &&
+              p.low <= p.close)
+          .toList();
+
       if (validPrices.isEmpty) return _buildEmptyChart();
-      
-      final maxPrice = validPrices.map((e) => e.high).reduce((a, b) => a > b ? a : b);
-      final minPrice = validPrices.map((e) => e.low).reduce((a, b) => a < b ? a : b);
-      
+
+      final maxPrice =
+          validPrices.map((e) => e.high).reduce((a, b) => a > b ? a : b);
+      final minPrice =
+          validPrices.map((e) => e.low).reduce((a, b) => a < b ? a : b);
+
       if (maxPrice <= 0 || minPrice <= 0 || maxPrice == minPrice) {
         return _buildEmptyChart();
       }
-      
+
       return SizedBox(
         width: double.infinity,
         height: double.infinity,
@@ -1842,16 +1887,18 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   Widget _buildLineChart(List<StockPrice> priceHistory) {
     try {
       if (priceHistory.isEmpty) return _buildEmptyChart();
-      
+
       final validPrices = priceHistory.where((p) => p.close > 0).toList();
       if (validPrices.isEmpty) return _buildEmptyChart();
-      
+
       final spots = validPrices.asMap().entries.map((entry) {
         return FlSpot(entry.key.toDouble(), entry.value.close);
       }).toList();
 
-      final maxPrice = validPrices.map((e) => e.high).reduce((a, b) => a > b ? a : b);
-      final minPrice = validPrices.map((e) => e.low).reduce((a, b) => a < b ? a : b);
+      final maxPrice =
+          validPrices.map((e) => e.high).reduce((a, b) => a > b ? a : b);
+      final minPrice =
+          validPrices.map((e) => e.low).reduce((a, b) => a < b ? a : b);
 
       if (maxPrice <= 0 || minPrice <= 0 || maxPrice == minPrice) {
         return _buildEmptyChart();
@@ -1881,7 +1928,9 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
             LineChartBarData(
               spots: spots,
               isCurved: false,
-              color: widget.stock.isPositive ? const Color(0xFF26C281) : const Color(0xFFEF5350),
+              color: widget.stock.isPositive
+                  ? const Color(0xFF26C281)
+                  : const Color(0xFFEF5350),
               barWidth: 2,
               isStrokeCapRound: true,
               dotData: FlDotData(show: false),
@@ -1898,13 +1947,15 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
 
   Widget _buildAreaChart(List<StockPrice> priceHistory) {
     if (priceHistory.isEmpty) return Container();
-    
+
     final spots = priceHistory.asMap().entries.map((entry) {
       return FlSpot(entry.key.toDouble(), entry.value.close);
     }).toList();
 
-    final maxPrice = priceHistory.map((e) => e.high).reduce((a, b) => a > b ? a : b);
-    final minPrice = priceHistory.map((e) => e.low).reduce((a, b) => a < b ? a : b);
+    final maxPrice =
+        priceHistory.map((e) => e.high).reduce((a, b) => a > b ? a : b);
+    final minPrice =
+        priceHistory.map((e) => e.low).reduce((a, b) => a < b ? a : b);
 
     return LineChart(
       LineChartData(
@@ -1920,7 +1971,9 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           LineChartBarData(
             spots: spots,
             isCurved: true,
-            color: widget.stock.isPositive ? const Color(0xFF26C281) : const Color(0xFFEF5350),
+            color: widget.stock.isPositive
+                ? const Color(0xFF26C281)
+                : const Color(0xFFEF5350),
             barWidth: 2,
             isStrokeCapRound: true,
             dotData: FlDotData(show: false),
@@ -1928,8 +1981,14 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
               show: true,
               gradient: LinearGradient(
                 colors: [
-                  (widget.stock.isPositive ? const Color(0xFF26C281) : const Color(0xFFEF5350)).withValues(alpha: 0.3),
-                  (widget.stock.isPositive ? const Color(0xFF26C281) : const Color(0xFFEF5350)).withValues(alpha: 0.0),
+                  (widget.stock.isPositive
+                          ? const Color(0xFF26C281)
+                          : const Color(0xFFEF5350))
+                      .withValues(alpha: 0.3),
+                  (widget.stock.isPositive
+                          ? const Color(0xFF26C281)
+                          : const Color(0xFFEF5350))
+                      .withValues(alpha: 0.0),
                 ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -1955,7 +2014,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
 
   Widget _buildFullVolumeChart(List<StockPrice> priceHistory) {
     if (priceHistory.isEmpty) return Container();
-    
+
     final volumeBars = priceHistory.asMap().entries.map((entry) {
       final isUp = entry.value.close >= entry.value.open;
       return BarChartGroupData(
@@ -1963,7 +2022,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
         barRods: [
           BarChartRodData(
             toY: entry.value.volume,
-            color: isUp 
+            color: isUp
                 ? const Color(0xFF26C281).withValues(alpha: 0.7)
                 : const Color(0xFFEF5350).withValues(alpha: 0.7),
             width: _calculateOptimalCandleWidth(priceHistory.length) * 0.8,
@@ -1975,7 +2034,9 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
     return BarChart(
       BarChartData(
         alignment: BarChartAlignment.spaceAround,
-        maxY: priceHistory.map((e) => e.volume).reduce((a, b) => a > b ? a : b) * 1.1,
+        maxY:
+            priceHistory.map((e) => e.volume).reduce((a, b) => a > b ? a : b) *
+                1.1,
         barGroups: volumeBars,
         titlesData: FlTitlesData(show: false),
         borderData: FlBorderData(show: false),
@@ -1987,17 +2048,19 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   Widget _buildCrosshair(Offset position, List<StockPrice> priceHistory) {
     try {
       if (priceHistory.isEmpty) return Container();
-      
-      final prices = priceHistory.where((p) => p.high > 0 && p.low > 0).toList();
+
+      final prices =
+          priceHistory.where((p) => p.high > 0 && p.low > 0).toList();
       if (prices.isEmpty) return Container();
-      
-      final maxPrice = prices.map((e) => e.high).reduce((a, b) => a > b ? a : b);
+
+      final maxPrice =
+          prices.map((e) => e.high).reduce((a, b) => a > b ? a : b);
       final minPrice = prices.map((e) => e.low).reduce((a, b) => a < b ? a : b);
-      
+
       if (maxPrice <= 0 || minPrice <= 0 || maxPrice == minPrice) {
         return Container();
       }
-      
+
       return CustomPaint(
         size: Size(double.infinity, double.infinity),
         painter: CrosshairPainter(
@@ -2053,7 +2116,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                 ],
               ),
             ),
-            
+
             // Options content
             Expanded(
               child: SingleChildScrollView(
@@ -2099,9 +2162,9 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                         ),
                       ],
                     ),
-                    
+
                     SizedBox(height: 20.h),
-                    
+
                     // Save & Export Section
                     _buildOptionsSection(
                       'Save & Export',
@@ -2134,9 +2197,9 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                         ),
                       ],
                     ),
-                    
+
                     SizedBox(height: 20.h),
-                    
+
                     // Alerts & Notifications Section
                     _buildOptionsSection(
                       'Alerts & Notifications',
@@ -2169,9 +2232,9 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                         ),
                       ],
                     ),
-                    
+
                     SizedBox(height: 20.h),
-                    
+
                     // Display Options Section
                     _buildOptionsSection(
                       'Display Options',
@@ -2204,9 +2267,9 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                         ),
                       ],
                     ),
-                    
+
                     SizedBox(height: 20.h),
-                    
+
                     // Data & Tools Section
                     _buildOptionsSection(
                       'Data & Tools',
@@ -2239,9 +2302,9 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                         ),
                       ],
                     ),
-                    
+
                     SizedBox(height: 20.h),
-                    
+
                     // Help & Info Section
                     _buildOptionsSection(
                       'Help & Information',
@@ -2329,7 +2392,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
               ],
             ),
           ),
-          
+
           // Section items
           Column(children: items),
         ],
@@ -2446,9 +2509,12 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
             Expanded(
               child: ListView(
                 children: [
-                  _buildThemeOption('Dark Theme', 'Current theme', true, Icons.dark_mode),
-                  _buildThemeOption('Light Theme', 'Switch to light mode', false, Icons.light_mode),
-                  _buildThemeOption('Auto Theme', 'Follow system settings', false, Icons.brightness_auto),
+                  _buildThemeOption(
+                      'Dark Theme', 'Current theme', true, Icons.dark_mode),
+                  _buildThemeOption('Light Theme', 'Switch to light mode',
+                      false, Icons.light_mode),
+                  _buildThemeOption('Auto Theme', 'Follow system settings',
+                      false, Icons.brightness_auto),
                 ],
               ),
             ),
@@ -2458,18 +2524,24 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
     );
   }
 
-  Widget _buildThemeOption(String title, String subtitle, bool isSelected, IconData icon) {
+  Widget _buildThemeOption(
+      String title, String subtitle, bool isSelected, IconData icon) {
     return ListTile(
       leading: Container(
         padding: EdgeInsets.all(8.w),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue.withValues(alpha: 0.2) : Colors.grey[700],
+          color: isSelected
+              ? Colors.blue.withValues(alpha: 0.2)
+              : Colors.grey[700],
           borderRadius: BorderRadius.circular(8.r),
         ),
-        child: Icon(icon, color: isSelected ? Colors.blue : Colors.white, size: 20.sp),
+        child: Icon(icon,
+            color: isSelected ? Colors.blue : Colors.white, size: 20.sp),
       ),
-      title: Text(title, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-      subtitle: Text(subtitle, style: TextStyle(color: Colors.grey[400], fontSize: 12.sp)),
+      title: Text(title,
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+      subtitle: Text(subtitle,
+          style: TextStyle(color: Colors.grey[400], fontSize: 12.sp)),
       trailing: isSelected ? Icon(Icons.check, color: Colors.blue) : null,
       onTap: () {
         HapticFeedback.lightImpact();
@@ -2536,8 +2608,10 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
 
   Widget _buildSpeedOption(String title, String subtitle, bool isSelected) {
     return ListTile(
-      title: Text(title, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-      subtitle: Text(subtitle, style: TextStyle(color: Colors.grey[400], fontSize: 12.sp)),
+      title: Text(title,
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+      subtitle: Text(subtitle,
+          style: TextStyle(color: Colors.grey[400], fontSize: 12.sp)),
       trailing: isSelected ? Icon(Icons.check, color: Colors.blue) : null,
       onTap: () {
         HapticFeedback.lightImpact();
@@ -2576,96 +2650,97 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-        backgroundColor: Colors.grey[900],
-        title: Row(
-          children: [
-            Icon(Icons.add_alert, color: Colors.orange, size: 24.sp),
-            SizedBox(width: 12.w),
-            Text(
-              'Price Alert',
-              style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Alert Price',
-                labelStyle: TextStyle(color: Colors.grey[400]),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey[600]!),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey[600]!),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.blue),
-                ),
+          backgroundColor: Colors.grey[900],
+          title: Row(
+            children: [
+              Icon(Icons.add_alert, color: Colors.orange, size: 24.sp),
+              SizedBox(width: 12.w),
+              Text(
+                'Price Alert',
+                style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp),
               ),
-              style: TextStyle(color: Colors.white),
-              keyboardType: TextInputType.number,
-              controller: priceController,
-            ),
-            SizedBox(height: 16.h),
-            DropdownButtonFormField<_StockAlertChoice>(
-              decoration: InputDecoration(
-                labelText: 'Alert Type',
-                labelStyle: TextStyle(color: Colors.grey[400]),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey[600]!),
-                ),
-              ),
-              dropdownColor: Colors.grey[800],
-              style: TextStyle(color: Colors.white),
-              initialValue: alertChoice,
-              items: _StockAlertChoice.values
-                  .map((c) => DropdownMenuItem<_StockAlertChoice>(
-                        value: c,
-                        child: Text(c.label),
-                      ))
-                  .toList(),
-              onChanged: (value) {
-                if (value == null) return;
-                setDialogState(() => alertChoice = value);
-              },
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: Colors.grey[400])),
+            ],
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-            onPressed: () {
-              final target = double.tryParse(priceController.text.trim());
-              // Refuse instead of sending 0: an alert at zero would never fire
-              // for an "above" condition and fire instantly for "below", and the
-              // user would have no way to tell which they got.
-              if (target == null || target <= 0) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Enter a target price above zero'),
-                    backgroundColor: Color(0xFFEF4444),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Alert Price',
+                  labelStyle: TextStyle(color: Colors.grey[400]),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey[600]!),
                   ),
-                );
-                return;
-              }
-              Navigator.pop(context);
-              HapticFeedback.lightImpact();
-              cubit.createAlert(
-                symbol: widget.stock.symbol,
-                type: alertChoice.type,
-                targetValue: target,
-                condition: alertChoice.condition,
-              );
-            },
-            child: Text('Create Alert', style: TextStyle(color: Colors.white)),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey[600]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.blue),
+                  ),
+                ),
+                style: TextStyle(color: Colors.white),
+                keyboardType: TextInputType.number,
+                controller: priceController,
+              ),
+              SizedBox(height: 16.h),
+              DropdownButtonFormField<_StockAlertChoice>(
+                decoration: InputDecoration(
+                  labelText: 'Alert Type',
+                  labelStyle: TextStyle(color: Colors.grey[400]),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey[600]!),
+                  ),
+                ),
+                dropdownColor: Colors.grey[800],
+                style: TextStyle(color: Colors.white),
+                initialValue: alertChoice,
+                items: _StockAlertChoice.values
+                    .map((c) => DropdownMenuItem<_StockAlertChoice>(
+                          value: c,
+                          child: Text(c.label),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  if (value == null) return;
+                  setDialogState(() => alertChoice = value);
+                },
+              ),
+            ],
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel', style: TextStyle(color: Colors.grey[400])),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+              onPressed: () {
+                final target = double.tryParse(priceController.text.trim());
+                // Refuse instead of sending 0: an alert at zero would never fire
+                // for an "above" condition and fire instantly for "below", and the
+                // user would have no way to tell which they got.
+                if (target == null || target <= 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Enter a target price above zero'),
+                      backgroundColor: Color(0xFFEF4444),
+                    ),
+                  );
+                  return;
+                }
+                Navigator.pop(context);
+                HapticFeedback.lightImpact();
+                cubit.createAlert(
+                  symbol: widget.stock.symbol,
+                  type: alertChoice.type,
+                  targetValue: target,
+                  condition: alertChoice.condition,
+                );
+              },
+              child:
+                  Text('Create Alert', style: TextStyle(color: Colors.white)),
+            ),
+          ],
         ),
       ),
     );
@@ -2914,7 +2989,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                 ],
               ),
             ),
-            
+
             // Stock info content
             Expanded(
               child: SingleChildScrollView(
@@ -2934,7 +3009,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                           ),
                           child: Center(
                             child: Text(
-                              widget.stock.symbol.length >= 2 
+                              widget.stock.symbol.length >= 2
                                   ? widget.stock.symbol.substring(0, 2)
                                   : widget.stock.symbol,
                               style: GoogleFonts.inter(
@@ -2977,9 +3052,9 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                         ),
                       ],
                     ),
-                    
+
                     SizedBox(height: 24.h),
-                    
+
                     // Price info
                     Container(
                       padding: EdgeInsets.all(16.w),
@@ -3001,7 +3076,9 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                           Row(
                             children: [
                               Text(
-                                CurrencySymbols.formatAmountWithCurrency(widget.stock.currentPrice, widget.stock.currency),
+                                CurrencySymbols.formatAmountWithCurrency(
+                                    widget.stock.currentPrice,
+                                    widget.stock.currency),
                                 style: GoogleFonts.inter(
                                   color: Colors.white,
                                   fontSize: 24.sp,
@@ -3010,15 +3087,21 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                               ),
                               SizedBox(width: 12.w),
                               Container(
-                                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8.w, vertical: 4.h),
                                 decoration: BoxDecoration(
-                                  color: (widget.stock.isPositive ? Colors.green : Colors.red).withValues(alpha: 0.2),
+                                  color: (widget.stock.isPositive
+                                          ? Colors.green
+                                          : Colors.red)
+                                      .withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(6.r),
                                 ),
                                 child: Text(
                                   '${widget.stock.isPositive ? '+' : ''}${widget.stock.changePercent.toStringAsFixed(2)}%',
                                   style: GoogleFonts.inter(
-                                    color: widget.stock.isPositive ? Colors.green : Colors.red,
+                                    color: widget.stock.isPositive
+                                        ? Colors.green
+                                        : Colors.red,
                                     fontSize: 12.sp,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -3029,9 +3112,9 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                         ],
                       ),
                     ),
-                    
+
                     SizedBox(height: 16.h),
-                    
+
                     // Key metrics
                     Text(
                       'Key Metrics',
@@ -3042,7 +3125,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                       ),
                     ),
                     SizedBox(height: 12.h),
-                    
+
                     Container(
                       padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
@@ -3051,14 +3134,28 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                       ),
                       child: Column(
                         children: [
-                          _buildMetricRow('Market Cap', '${CurrencySymbols.getSymbol(widget.stock.currency)}${(widget.stock.marketCap / 1e9).toStringAsFixed(1)}B'),
-                          _buildMetricRow('P/E Ratio', widget.stock.peRatio.toStringAsFixed(2)),
-                          _buildMetricRow('Beta', widget.stock.beta.toStringAsFixed(2)),
-                          _buildMetricRow('Volume', '${(widget.stock.volume / 1e6).toStringAsFixed(1)}M'),
-                          _buildMetricRow('52W High', CurrencySymbols.formatAmountWithCurrency(widget.stock.currentPrice * 1.25, widget.stock.currency)),
-                          _buildMetricRow('52W Low', CurrencySymbols.formatAmountWithCurrency(widget.stock.currentPrice * 0.75, widget.stock.currency)),
-                          _buildMetricRow('Avg Volume', '${(widget.stock.volume * 0.85 / 1e6).toStringAsFixed(1)}M'),
-                          _buildMetricRow('Market Value', '${CurrencySymbols.getSymbol(widget.stock.currency)}${(widget.stock.marketCap / 1e6).toStringAsFixed(0)}M'),
+                          _buildMetricRow('Market Cap',
+                              '${CurrencySymbols.getSymbol(widget.stock.currency)}${(widget.stock.marketCap / 1e9).toStringAsFixed(1)}B'),
+                          _buildMetricRow('P/E Ratio',
+                              widget.stock.peRatio.toStringAsFixed(2)),
+                          _buildMetricRow(
+                              'Beta', widget.stock.beta.toStringAsFixed(2)),
+                          _buildMetricRow('Volume',
+                              '${(widget.stock.volume / 1e6).toStringAsFixed(1)}M'),
+                          _buildMetricRow(
+                              '52W High',
+                              CurrencySymbols.formatAmountWithCurrency(
+                                  widget.stock.currentPrice * 1.25,
+                                  widget.stock.currency)),
+                          _buildMetricRow(
+                              '52W Low',
+                              CurrencySymbols.formatAmountWithCurrency(
+                                  widget.stock.currentPrice * 0.75,
+                                  widget.stock.currency)),
+                          _buildMetricRow('Avg Volume',
+                              '${(widget.stock.volume * 0.85 / 1e6).toStringAsFixed(1)}M'),
+                          _buildMetricRow('Market Value',
+                              '${CurrencySymbols.getSymbol(widget.stock.currency)}${(widget.stock.marketCap / 1e6).toStringAsFixed(0)}M'),
                         ],
                       ),
                     ),
@@ -3114,22 +3211,28 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
               padding: EdgeInsets.all(16.w),
               child: Text(
                 'Chart Type',
-                style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.bold),
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold),
               ),
             ),
             Expanded(
               child: ListView(
-                children: ChartType.values.map((type) => ListTile(
-                  title: Text(_getChartTypeName(type), style: TextStyle(color: Colors.white)),
-                  leading: Icon(Icons.timeline, color: Colors.white),
-                  selected: _selectedChartType == type,
-                  onTap: () {
-                    setState(() {
-                      _selectedChartType = type;
-                    });
-                    Navigator.pop(context);
-                  },
-                )).toList(),
+                children: ChartType.values
+                    .map((type) => ListTile(
+                          title: Text(_getChartTypeName(type),
+                              style: TextStyle(color: Colors.white)),
+                          leading: Icon(Icons.timeline, color: Colors.white),
+                          selected: _selectedChartType == type,
+                          onTap: () {
+                            setState(() {
+                              _selectedChartType = type;
+                            });
+                            Navigator.pop(context);
+                          },
+                        ))
+                    .toList(),
               ),
             ),
           ],
@@ -3181,11 +3284,13 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                           setModalState(() {});
                         },
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 12.w, vertical: 6.h),
                           decoration: BoxDecoration(
                             color: Colors.red.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(6.r),
-                            border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                            border: Border.all(
+                                color: Colors.red.withValues(alpha: 0.3)),
                           ),
                           child: Text(
                             'Clear All',
@@ -3205,14 +3310,15 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                   ],
                 ),
               ),
-              
+
               // Active indicators section
               if (_selectedIndicators.isNotEmpty)
                 Container(
                   padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
                     color: Colors.grey[800],
-                    border: Border(bottom: BorderSide(color: Colors.grey[700]!)),
+                    border:
+                        Border(bottom: BorderSide(color: Colors.grey[700]!)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -3229,14 +3335,15 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                       Wrap(
                         spacing: 8.w,
                         runSpacing: 8.h,
-                        children: _selectedIndicators.map((indicator) => 
-                          _buildActiveIndicatorChip(indicator, setModalState)
-                        ).toList(),
+                        children: _selectedIndicators
+                            .map((indicator) => _buildActiveIndicatorChip(
+                                indicator, setModalState))
+                            .toList(),
                       ),
                     ],
                   ),
                 ),
-              
+
               // Indicators categories
               Expanded(
                 child: SingleChildScrollView(
@@ -3293,7 +3400,8 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
     );
   }
 
-  Widget _buildActiveIndicatorChip(String indicator, StateSetter setModalState) {
+  Widget _buildActiveIndicatorChip(
+      String indicator, StateSetter setModalState) {
     return AnimatedContainer(
       duration: Duration(milliseconds: 200),
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
@@ -3396,7 +3504,8 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
             physics: NeverScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 1.4, // Decreased from 2.0 to 1.4 for more height
+              childAspectRatio:
+                  1.4, // Decreased from 2.0 to 1.4 for more height
               crossAxisSpacing: 8.w,
               mainAxisSpacing: 8.h,
             ),
@@ -3411,9 +3520,10 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
     );
   }
 
-  Widget _buildIndicatorTile(IndicatorInfo indicator, Color categoryColor, StateSetter setModalState) {
+  Widget _buildIndicatorTile(
+      IndicatorInfo indicator, Color categoryColor, StateSetter setModalState) {
     final isSelected = _selectedIndicators.contains(indicator.name);
-    
+
     return AnimatedContainer(
       duration: Duration(milliseconds: 200),
       curve: Curves.easeInOut,
@@ -3424,7 +3534,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           onTap: () {
             // Haptic feedback
             HapticFeedback.lightImpact();
-            
+
             setState(() {
               if (isSelected) {
                 _selectedIndicators.remove(indicator.name);
@@ -3436,16 +3546,15 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           },
           child: AnimatedContainer(
             duration: Duration(milliseconds: 200),
-            padding: EdgeInsets.all(14.w), // Increased padding from 12.w to 14.w
+            padding:
+                EdgeInsets.all(14.w), // Increased padding from 12.w to 14.w
             decoration: BoxDecoration(
-              color: isSelected 
-                ? categoryColor.withValues(alpha: 0.2)
-                : Colors.grey[700],
+              color: isSelected
+                  ? categoryColor.withValues(alpha: 0.2)
+                  : Colors.grey[700],
               borderRadius: BorderRadius.circular(8.r),
               border: Border.all(
-                color: isSelected 
-                  ? categoryColor 
-                  : Colors.grey[600]!,
+                color: isSelected ? categoryColor : Colors.grey[600]!,
                 width: isSelected ? 2 : 1,
               ),
             ),
@@ -3487,39 +3596,39 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                         width: 24.w,
                         height: 24.w,
                         decoration: BoxDecoration(
-                          gradient: isSelected 
-                            ? LinearGradient(
-                                colors: [
-                                  categoryColor,
-                                  categoryColor.withValues(alpha: 0.7),
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              )
-                            : LinearGradient(
-                                colors: [
-                                  Colors.grey[600]!,
-                                  Colors.grey[700]!,
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
+                          gradient: isSelected
+                              ? LinearGradient(
+                                  colors: [
+                                    categoryColor,
+                                    categoryColor.withValues(alpha: 0.7),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                )
+                              : LinearGradient(
+                                  colors: [
+                                    Colors.grey[600]!,
+                                    Colors.grey[700]!,
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
                           shape: BoxShape.circle,
-                          boxShadow: isSelected 
-                            ? [
-                                BoxShadow(
-                                  color: categoryColor.withValues(alpha: 0.4),
-                                  blurRadius: 8,
-                                  offset: Offset(0, 2),
-                                ),
-                              ]
-                            : [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.3),
-                                  blurRadius: 4,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: categoryColor.withValues(alpha: 0.4),
+                                    blurRadius: 8,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ]
+                              : [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    blurRadius: 4,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
                         ),
                         child: AnimatedSwitcher(
                           duration: Duration(milliseconds: 200),
@@ -3534,37 +3643,39 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                     ),
                   ],
                 ),
-                
+
                 SizedBox(height: 8.h), // Increased spacing from 6.h to 8.h
-                
+
                 // Description
                 Expanded(
                   child: Text(
                     indicator.description,
                     style: GoogleFonts.inter(
                       color: Colors.grey[400],
-                      fontSize: 10.sp, // Increased from 9.sp to 10.sp for better readability
+                      fontSize: 10
+                          .sp, // Increased from 9.sp to 10.sp for better readability
                       height: 1.4, // Increased line height for better spacing
                     ),
                     maxLines: 3, // Increased from 2 to 3 lines
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                
+
                 // Parameters at bottom
                 if (indicator.parameters.isNotEmpty) ...[
                   SizedBox(height: 6.h), // Increased spacing
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h), // Increased padding
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 8.w, vertical: 4.h), // Increased padding
                     decoration: BoxDecoration(
-                      color: isSelected 
-                        ? categoryColor.withValues(alpha: 0.2)
-                        : Colors.grey[600]!.withValues(alpha: 0.3),
+                      color: isSelected
+                          ? categoryColor.withValues(alpha: 0.2)
+                          : Colors.grey[600]!.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(4.r),
                       border: Border.all(
-                        color: isSelected 
-                          ? categoryColor.withValues(alpha: 0.4)
-                          : Colors.grey[500]!.withValues(alpha: 0.3),
+                        color: isSelected
+                            ? categoryColor.withValues(alpha: 0.4)
+                            : Colors.grey[500]!.withValues(alpha: 0.3),
                         width: 0.5,
                       ),
                     ),
@@ -3632,11 +3743,13 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                           setModalState(() {});
                         },
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 12.w, vertical: 6.h),
                           decoration: BoxDecoration(
                             color: Colors.red.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(6.r),
-                            border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                            border: Border.all(
+                                color: Colors.red.withValues(alpha: 0.3)),
                           ),
                           child: Text(
                             'Clear All',
@@ -3656,14 +3769,15 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                   ],
                 ),
               ),
-              
+
               // Current tool indicator
               if (_selectedDrawingTool != DrawingTool.none)
                 Container(
                   padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
                     color: Colors.orange.withValues(alpha: 0.1),
-                    border: Border(bottom: BorderSide(color: Colors.grey[700]!)),
+                    border:
+                        Border(bottom: BorderSide(color: Colors.grey[700]!)),
                   ),
                   child: Row(
                     children: [
@@ -3702,7 +3816,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                     ],
                   ),
                 ),
-              
+
               // Drawing tools categories
               Expanded(
                 child: SingleChildScrollView(
@@ -3714,10 +3828,16 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                         Icons.timeline,
                         Colors.blue,
                         [
-                          DrawingToolInfo(DrawingTool.trendline, 'Trend Line', 'Draw trend lines'),
-                          DrawingToolInfo(DrawingTool.horizontalLine, 'Horizontal Line', 'Draw horizontal support/resistance'),
-                          DrawingToolInfo(DrawingTool.verticalLine, 'Vertical Line', 'Draw vertical time lines'),
-                          DrawingToolInfo(DrawingTool.measure, 'Measure Tool', 'Measure distance and price'),
+                          DrawingToolInfo(DrawingTool.trendline, 'Trend Line',
+                              'Draw trend lines'),
+                          DrawingToolInfo(
+                              DrawingTool.horizontalLine,
+                              'Horizontal Line',
+                              'Draw horizontal support/resistance'),
+                          DrawingToolInfo(DrawingTool.verticalLine,
+                              'Vertical Line', 'Draw vertical time lines'),
+                          DrawingToolInfo(DrawingTool.measure, 'Measure Tool',
+                              'Measure distance and price'),
                         ],
                         setModalState,
                       ),
@@ -3727,8 +3847,10 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                         Icons.architecture,
                         Colors.purple,
                         [
-                          DrawingToolInfo(DrawingTool.fibonacciRetracement, 'Fibonacci', 'Fibonacci retracement levels'),
-                          DrawingToolInfo(DrawingTool.elliottWave, 'Elliott Wave', 'Elliott wave patterns'),
+                          DrawingToolInfo(DrawingTool.fibonacciRetracement,
+                              'Fibonacci', 'Fibonacci retracement levels'),
+                          DrawingToolInfo(DrawingTool.elliottWave,
+                              'Elliott Wave', 'Elliott wave patterns'),
                         ],
                         setModalState,
                       ),
@@ -3800,9 +3922,10 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
     );
   }
 
-  Widget _buildDrawingToolTile(DrawingToolInfo tool, Color categoryColor, StateSetter setModalState) {
+  Widget _buildDrawingToolTile(
+      DrawingToolInfo tool, Color categoryColor, StateSetter setModalState) {
     final isSelected = _selectedDrawingTool == tool.tool;
-    
+
     return AnimatedContainer(
       duration: Duration(milliseconds: 200),
       margin: EdgeInsets.symmetric(vertical: 4.h),
@@ -3821,14 +3944,12 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           child: Container(
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
-              color: isSelected 
-                ? categoryColor.withValues(alpha: 0.2)
-                : Colors.grey[700]!.withValues(alpha: 0.3),
+              color: isSelected
+                  ? categoryColor.withValues(alpha: 0.2)
+                  : Colors.grey[700]!.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(8.r),
               border: Border.all(
-                color: isSelected 
-                  ? categoryColor 
-                  : Colors.grey[600]!,
+                color: isSelected ? categoryColor : Colors.grey[600]!,
                 width: isSelected ? 2 : 1,
               ),
             ),
@@ -3837,9 +3958,9 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                 Container(
                   padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
-                    color: isSelected 
-                      ? categoryColor.withValues(alpha: 0.3)
-                      : Colors.grey[600]!.withValues(alpha: 0.3),
+                    color: isSelected
+                        ? categoryColor.withValues(alpha: 0.3)
+                        : Colors.grey[600]!.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(6.r),
                   ),
                   child: Icon(
@@ -3922,7 +4043,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                 ],
               ),
             ),
-            
+
             // Analysis content
             Expanded(
               child: SingleChildScrollView(
@@ -3932,29 +4053,29 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                   children: [
                     // Overall recommendation
                     _buildOverallRecommendation(),
-                    
+
                     SizedBox(height: 24.h),
-                    
+
                     // Technical indicators
                     _buildTechnicalIndicatorsSection(),
-                    
+
                     SizedBox(height: 24.h),
-                    
+
                     // Support and resistance
                     _buildSupportResistanceSection(),
-                    
+
                     SizedBox(height: 24.h),
-                    
+
                     // Volume analysis
                     _buildVolumeAnalysisSection(),
-                    
+
                     SizedBox(height: 24.h),
-                    
+
                     // Price action analysis
                     _buildPriceActionSection(),
-                    
+
                     SizedBox(height: 24.h),
-                    
+
                     // Risk assessment
                     _buildRiskAssessmentSection(),
                   ],
@@ -4032,7 +4153,8 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
     );
   }
 
-  Widget _buildRecommendationBadge(String timeframe, String action, Color color) {
+  Widget _buildRecommendationBadge(
+      String timeframe, String action, Color color) {
     return Expanded(
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 8.h),
@@ -4083,33 +4205,37 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
             ),
           ),
           SizedBox(height: 16.h),
-          
+
           // RSI
           _buildIndicatorRow('RSI (14)', '67.3', 'Neutral', Colors.orange),
           SizedBox(height: 12.h),
-          
+
           // MACD
           _buildIndicatorRow('MACD (12,26,9)', '0.45', 'Bullish', Colors.green),
           SizedBox(height: 12.h),
-          
+
           // Moving Averages
-          _buildIndicatorRow('MA (20)', '${widget.stock.currentPrice * 0.98}', 'Above', Colors.green),
+          _buildIndicatorRow('MA (20)', '${widget.stock.currentPrice * 0.98}',
+              'Above', Colors.green),
           SizedBox(height: 12.h),
-          
-          _buildIndicatorRow('MA (50)', '${widget.stock.currentPrice * 0.95}', 'Above', Colors.green),
+
+          _buildIndicatorRow('MA (50)', '${widget.stock.currentPrice * 0.95}',
+              'Above', Colors.green),
           SizedBox(height: 12.h),
-          
-          _buildIndicatorRow('MA (200)', '${widget.stock.currentPrice * 0.88}', 'Above', Colors.green),
+
+          _buildIndicatorRow('MA (200)', '${widget.stock.currentPrice * 0.88}',
+              'Above', Colors.green),
           SizedBox(height: 12.h),
-          
+
           // Bollinger Bands
-          _buildIndicatorRow('Bollinger Bands', 'Upper Band', 'Near Upper', Colors.orange),
+          _buildIndicatorRow(
+              'Bollinger Bands', 'Upper Band', 'Near Upper', Colors.orange),
           SizedBox(height: 12.h),
-          
+
           // Stochastic
           _buildIndicatorRow('Stochastic %K', '78.2', 'Overbought', Colors.red),
           SizedBox(height: 12.h),
-          
+
           // Williams %R
           _buildIndicatorRow('Williams %R', '-25.6', 'Bullish', Colors.green),
         ],
@@ -4117,7 +4243,8 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
     );
   }
 
-  Widget _buildIndicatorRow(String name, String value, String signal, Color signalColor) {
+  Widget _buildIndicatorRow(
+      String name, String value, String signal, Color signalColor) {
     return Row(
       children: [
         Expanded(
@@ -4182,7 +4309,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
             ),
           ),
           SizedBox(height: 16.h),
-          
+
           // Resistance levels
           Text(
             'Resistance Levels',
@@ -4194,11 +4321,12 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           ),
           SizedBox(height: 8.h),
           _buildPriceLevelRow('R3', widget.stock.currentPrice * 1.15, 'Strong'),
-          _buildPriceLevelRow('R2', widget.stock.currentPrice * 1.08, 'Moderate'),
+          _buildPriceLevelRow(
+              'R2', widget.stock.currentPrice * 1.08, 'Moderate'),
           _buildPriceLevelRow('R1', widget.stock.currentPrice * 1.03, 'Weak'),
-          
+
           SizedBox(height: 16.h),
-          
+
           // Current price
           Container(
             padding: EdgeInsets.all(8.w),
@@ -4219,7 +4347,8 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                 ),
                 Spacer(),
                 Text(
-                  CurrencySymbols.formatAmountWithCurrency(widget.stock.currentPrice, widget.stock.currency),
+                  CurrencySymbols.formatAmountWithCurrency(
+                      widget.stock.currentPrice, widget.stock.currency),
                   style: GoogleFonts.inter(
                     color: Colors.blue,
                     fontSize: 12.sp,
@@ -4229,9 +4358,9 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
               ],
             ),
           ),
-          
+
           SizedBox(height: 16.h),
-          
+
           // Support levels
           Text(
             'Support Levels',
@@ -4243,7 +4372,8 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           ),
           SizedBox(height: 8.h),
           _buildPriceLevelRow('S1', widget.stock.currentPrice * 0.97, 'Weak'),
-          _buildPriceLevelRow('S2', widget.stock.currentPrice * 0.92, 'Moderate'),
+          _buildPriceLevelRow(
+              'S2', widget.stock.currentPrice * 0.92, 'Moderate'),
           _buildPriceLevelRow('S3', widget.stock.currentPrice * 0.85, 'Strong'),
         ],
       ),
@@ -4268,7 +4398,8 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           ),
           Expanded(
             child: Text(
-              CurrencySymbols.formatAmountWithCurrency(price, widget.stock.currency),
+              CurrencySymbols.formatAmountWithCurrency(
+                  price, widget.stock.currency),
               style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 12.sp,
@@ -4278,8 +4409,11 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           Text(
             strength,
             style: GoogleFonts.inter(
-              color: strength == 'Strong' ? Colors.green : 
-                     strength == 'Moderate' ? Colors.orange : Colors.grey[400],
+              color: strength == 'Strong'
+                  ? Colors.green
+                  : strength == 'Moderate'
+                      ? Colors.orange
+                      : Colors.grey[400],
               fontSize: 10.sp,
               fontWeight: FontWeight.w600,
             ),
@@ -4308,7 +4442,6 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
             ),
           ),
           SizedBox(height: 16.h),
-          
           Row(
             children: [
               Expanded(
@@ -4328,17 +4461,14 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
               ),
             ],
           ),
-          
           SizedBox(height: 16.h),
-          
           _buildVolumeIndicator('Volume Trend', 'Increasing', Colors.green),
           SizedBox(height: 8.h),
           _buildVolumeIndicator('Volume vs Price', 'Confirming', Colors.green),
           SizedBox(height: 8.h),
-          _buildVolumeIndicator('Accumulation/Distribution', 'Accumulation', Colors.green),
-          
+          _buildVolumeIndicator(
+              'Accumulation/Distribution', 'Accumulation', Colors.green),
           SizedBox(height: 12.h),
-          
           Text(
             'Volume is above average, confirming the current price trend. Institutional buying activity detected.',
             style: GoogleFonts.inter(
@@ -4434,7 +4564,6 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
             ),
           ),
           SizedBox(height: 16.h),
-          
           _buildPriceActionItem('Trend Direction', 'Uptrend', Colors.green),
           SizedBox(height: 8.h),
           _buildPriceActionItem('Trend Strength', 'Strong', Colors.green),
@@ -4444,9 +4573,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           _buildPriceActionItem('Volatility', 'Moderate', Colors.orange),
           SizedBox(height: 8.h),
           _buildPriceActionItem('Pattern', 'Ascending Triangle', Colors.blue),
-          
           SizedBox(height: 12.h),
-          
           Container(
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
@@ -4532,21 +4659,22 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
             ),
           ),
           SizedBox(height: 16.h),
-          
           Row(
             children: [
               Expanded(
-                child: _buildRiskMetric('Risk Level', 'Moderate', Colors.orange),
+                child:
+                    _buildRiskMetric('Risk Level', 'Moderate', Colors.orange),
               ),
               SizedBox(width: 12.w),
               Expanded(
-                child: _buildRiskMetric('Volatility', '${(widget.stock.beta * 15).toStringAsFixed(1)}%', Colors.blue),
+                child: _buildRiskMetric(
+                    'Volatility',
+                    '${(widget.stock.beta * 15).toStringAsFixed(1)}%',
+                    Colors.blue),
               ),
             ],
           ),
-          
           SizedBox(height: 16.h),
-          
           Text(
             'Risk Factors',
             style: GoogleFonts.inter(
@@ -4556,14 +4684,11 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
             ),
           ),
           SizedBox(height: 8.h),
-          
           _buildRiskFactor('Market Volatility', 'Medium', Colors.orange),
           _buildRiskFactor('Sector Risk', 'Low', Colors.green),
           _buildRiskFactor('Liquidity Risk', 'Low', Colors.green),
           _buildRiskFactor('Technical Risk', 'Medium', Colors.orange),
-          
           SizedBox(height: 12.h),
-          
           Container(
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
@@ -4667,7 +4792,8 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
 
   // Add these new methods for drawing selection and dragging
 
-  DrawingElement? _findDrawingAtPoint(Offset point, List<StockPrice> priceHistory) {
+  DrawingElement? _findDrawingAtPoint(
+      Offset point, List<StockPrice> priceHistory) {
     // Check drawings in reverse order (last drawn first)
     for (int i = _drawings.length - 1; i >= 0; i--) {
       if (_isPointNearDrawing(point, _drawings[i], priceHistory)) {
@@ -4677,11 +4803,13 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
     return null;
   }
 
-  bool _isPointNearDrawing(Offset point, DrawingElement drawing, List<StockPrice> priceHistory) {
+  bool _isPointNearDrawing(
+      Offset point, DrawingElement drawing, List<StockPrice> priceHistory) {
     const double hitRadius = 20.0; // Hit detection radius in pixels
-    
+
     if (drawing is TrendlineElement) {
-      return _isPointNearLine(point, drawing.startPoint, drawing.endPoint, hitRadius);
+      return _isPointNearLine(
+          point, drawing.startPoint, drawing.endPoint, hitRadius);
     } else if (drawing is HorizontalLineElement) {
       final y = _priceToScreen(drawing.value, priceHistory);
       return (point.dy - y).abs() < hitRadius;
@@ -4689,9 +4817,10 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
       final x = _timeIndexToScreen(drawing.index, priceHistory);
       return (point.dx - x).abs() < hitRadius;
     } else if (drawing is MeasureElement) {
-      return _isPointNearLine(point, drawing.startPoint, drawing.endPoint, hitRadius);
+      return _isPointNearLine(
+          point, drawing.startPoint, drawing.endPoint, hitRadius);
     }
-    
+
     return false;
   }
 
@@ -4704,28 +4833,30 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
 
     final dot = A * C + B * D;
     final lenSq = C * C + D * D;
-    
+
     if (lenSq == 0) {
       // Start and end are the same point
       final distance = math.sqrt(A * A + B * B);
       return distance <= radius;
     }
-    
+
     var param = dot / lenSq;
     param = param.clamp(0.0, 1.0);
-    
+
     final xx = start.dx + param * C;
     final yy = start.dy + param * D;
-    
+
     final dx = point.dx - xx;
     final dy = point.dy - yy;
     final distance = math.sqrt(dx * dx + dy * dy);
-    
+
     return distance <= radius;
   }
 
   void _updateDrawingPosition(Offset newPoint, List<StockPrice> priceHistory) {
-    if (_selectedDrawing == null || _dragStartPoint == null || _selectedDrawingIndex == null) return;
+    if (_selectedDrawing == null ||
+        _dragStartPoint == null ||
+        _selectedDrawingIndex == null) return;
 
     final deltaX = newPoint.dx - _dragStartPoint!.dx;
     final deltaY = newPoint.dy - _dragStartPoint!.dy;
@@ -4733,14 +4864,16 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
     setState(() {
       if (_selectedDrawing is TrendlineElement) {
         final current = _selectedDrawing as TrendlineElement;
-        final newStartPoint = Offset(current.startPoint.dx + deltaX, current.startPoint.dy + deltaY);
-        final newEndPoint = Offset(current.endPoint.dx + deltaX, current.endPoint.dy + deltaY);
-        
+        final newStartPoint = Offset(
+            current.startPoint.dx + deltaX, current.startPoint.dy + deltaY);
+        final newEndPoint =
+            Offset(current.endPoint.dx + deltaX, current.endPoint.dy + deltaY);
+
         final newStartValue = _screenToPrice(newStartPoint, priceHistory);
         final newEndValue = _screenToPrice(newEndPoint, priceHistory);
         final newStartIndex = _screenToTimeIndex(newStartPoint, priceHistory);
         final newEndIndex = _screenToTimeIndex(newEndPoint, priceHistory);
-        
+
         _selectedDrawing = TrendlineElement(
           startPoint: newStartPoint,
           endPoint: newEndPoint,
@@ -4750,46 +4883,49 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           endIndex: newEndIndex,
           color: current.color,
         );
-        
+
         _drawings[_selectedDrawingIndex!] = _selectedDrawing!;
       } else if (_selectedDrawing is HorizontalLineElement) {
         final current = _selectedDrawing as HorizontalLineElement;
         final newYPosition = current.yPosition + deltaY;
         final newValue = _screenToPrice(Offset(0, newYPosition), priceHistory);
-        
+
         _selectedDrawing = HorizontalLineElement(
           value: newValue,
           yPosition: newYPosition,
           color: current.color,
         );
-        
+
         _drawings[_selectedDrawingIndex!] = _selectedDrawing!;
       } else if (_selectedDrawing is VerticalLineElement) {
         final current = _selectedDrawing as VerticalLineElement;
         final newXPosition = current.xPosition + deltaX;
-        final newIndex = _screenToTimeIndex(Offset(newXPosition, 0), priceHistory);
-        final newTimestamp = newIndex < priceHistory.length 
-            ? priceHistory[newIndex].timestamp 
+        final newIndex =
+            _screenToTimeIndex(Offset(newXPosition, 0), priceHistory);
+        final newTimestamp = newIndex < priceHistory.length
+            ? priceHistory[newIndex].timestamp
             : DateTime.now();
-        
+
         _selectedDrawing = VerticalLineElement(
           index: newIndex,
           xPosition: newXPosition,
           timestamp: newTimestamp,
           color: current.color,
         );
-        
+
         _drawings[_selectedDrawingIndex!] = _selectedDrawing!;
       } else if (_selectedDrawing is MeasureElement) {
         final current = _selectedDrawing as MeasureElement;
-        final newStartPoint = Offset(current.startPoint.dx + deltaX, current.startPoint.dy + deltaY);
-        final newEndPoint = Offset(current.endPoint.dx + deltaX, current.endPoint.dy + deltaY);
-        
+        final newStartPoint = Offset(
+            current.startPoint.dx + deltaX, current.startPoint.dy + deltaY);
+        final newEndPoint =
+            Offset(current.endPoint.dx + deltaX, current.endPoint.dy + deltaY);
+
         final newStartValue = _screenToPrice(newStartPoint, priceHistory);
         final newEndValue = _screenToPrice(newEndPoint, priceHistory);
         final newStartIndex = _screenToTimeIndex(newStartPoint, priceHistory);
         final newEndIndex = _screenToTimeIndex(newEndPoint, priceHistory);
-        
+
         _selectedDrawing = MeasureElement(
           startPoint: newStartPoint,
           endPoint: newEndPoint,
@@ -4799,10 +4935,10 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           endIndex: newEndIndex,
           color: current.color,
         );
-        
+
         _drawings[_selectedDrawingIndex!] = _selectedDrawing!;
       }
-      
+
       // Update drag start point for next frame
       _dragStartPoint = newPoint;
     });
@@ -4811,17 +4947,19 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   // Helper methods for coordinate conversion (reverse of existing methods)
   double _priceToScreen(double price, List<StockPrice> priceHistory) {
     try {
-      final prices = priceHistory.where((p) => p.high > 0 && p.low > 0).toList();
+      final prices =
+          priceHistory.where((p) => p.high > 0 && p.low > 0).toList();
       if (prices.isEmpty) return 0;
-      
-      final maxPrice = prices.map((e) => e.high).reduce((a, b) => a > b ? a : b);
+
+      final maxPrice =
+          prices.map((e) => e.high).reduce((a, b) => a > b ? a : b);
       final minPrice = prices.map((e) => e.low).reduce((a, b) => a < b ? a : b);
-      
-      final chartHeight = MediaQuery.of(context).size.height * 0.9 - 
-                         _calculateBottomIndicatorSpace() - 
-                         80.h - 
-                         MediaQuery.of(context).padding.bottom;
-      
+
+      final chartHeight = MediaQuery.of(context).size.height * 0.9 -
+          _calculateBottomIndicatorSpace() -
+          80.h -
+          MediaQuery.of(context).padding.bottom;
+
       final normalizedPrice = (maxPrice - price) / (maxPrice - minPrice);
       return normalizedPrice * chartHeight;
     } catch (e) {
@@ -4840,7 +4978,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
       return 0;
     }
   }
-} 
+}
 
 /// The three alert shapes the dialog offers, each carrying the domain pair it
 /// maps to.
@@ -4852,7 +4990,8 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
 enum _StockAlertChoice {
   abovePrice('Above Price', AlertType.price, AlertCondition.above),
   belowPrice('Below Price', AlertType.price, AlertCondition.below),
-  percentChange('Price Change %', AlertType.percentChange, AlertCondition.above);
+  percentChange(
+      'Price Change %', AlertType.percentChange, AlertCondition.above);
 
   const _StockAlertChoice(this.label, this.type, this.condition);
 

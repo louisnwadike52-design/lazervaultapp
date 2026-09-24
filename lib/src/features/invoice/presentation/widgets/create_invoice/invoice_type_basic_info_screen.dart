@@ -18,8 +18,8 @@ class InvoiceTypeBasicInfoScreen extends StatefulWidget {
       _InvoiceTypeBasicInfoScreenState();
 }
 
-class _InvoiceTypeBasicInfoScreenState
-    extends State<InvoiceTypeBasicInfoScreen> with TickerProviderStateMixin {
+class _InvoiceTypeBasicInfoScreenState extends State<InvoiceTypeBasicInfoScreen>
+    with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
   late TextEditingController _titleController;
@@ -493,7 +493,8 @@ class _InvoiceTypeBasicInfoScreenState
                     country.countryName,
                     style: GoogleFonts.inter(
                       fontSize: 15.sp,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight:
+                          isSelected ? FontWeight.w700 : FontWeight.w500,
                       color: Colors.white,
                     ),
                   ),
@@ -530,7 +531,8 @@ class _InvoiceTypeBasicInfoScreenState
   ) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: cubit.dueDate ?? DateTime.now().add(const Duration(days: 30)),
+      initialDate:
+          cubit.dueDate ?? DateTime.now().add(const Duration(days: 30)),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
       builder: (context, child) {
@@ -541,7 +543,9 @@ class _InvoiceTypeBasicInfoScreenState
               onPrimary: Colors.white,
               surface: Color(0xFF1A1A1A),
               onSurface: Colors.white,
-            ), dialogTheme: DialogThemeData(backgroundColor: const Color(0xFF1A1A1A)),
+            ),
+            dialogTheme:
+                DialogThemeData(backgroundColor: const Color(0xFF1A1A1A)),
           ),
           child: child!,
         );

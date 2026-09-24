@@ -16,4 +16,4 @@ class AnalystRatings {
     required this.sellRating,
     required this.analystCount,
   });
-} 
+}

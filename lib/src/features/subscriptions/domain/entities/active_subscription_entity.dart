@@ -46,7 +46,8 @@ class ActiveSubscriptionEntity extends Equatable {
 
   bool get isExpired => status.toLowerCase() == 'expired';
 
-  bool get isExpiringSoon => hasExpiry && daysRemaining <= 3 && daysRemaining >= 0;
+  bool get isExpiringSoon =>
+      hasExpiry && daysRemaining <= 3 && daysRemaining >= 0;
 
   bool get hasExpiry => expiresAt != null;
 

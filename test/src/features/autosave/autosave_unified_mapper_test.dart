@@ -46,7 +46,8 @@ void main() {
   test('a bank-funded save names the BANK, not a wallet account', () {
     // The wallet account id on a Direct Debit row is not the funding source,
     // so printing it would misdescribe where the money came from.
-    final u = autoSaveTxnToUnified(txn(), sourceDetail: 'GTBank · Direct Debit');
+    final u =
+        autoSaveTxnToUnified(txn(), sourceDetail: 'GTBank · Direct Debit');
     expect(u.metadata!['sender_account'], contains('GTBank'));
   });
 

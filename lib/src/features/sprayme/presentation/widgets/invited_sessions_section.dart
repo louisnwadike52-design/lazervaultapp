@@ -105,8 +105,8 @@ class InvitedSessionsSection extends StatelessWidget {
               color: _accent.withValues(alpha: 0.16),
               borderRadius: BorderRadius.circular(12.r),
             ),
-            child: Icon(Icons.celebration_outlined,
-                color: _accent, size: 21.sp),
+            child:
+                Icon(Icons.celebration_outlined, color: _accent, size: 21.sp),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -165,8 +165,7 @@ class InvitedSessionsSection extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: _accent,
                 foregroundColor: Colors.white,
-                padding:
-                    EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10.r),
                 ),

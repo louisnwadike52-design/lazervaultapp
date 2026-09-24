@@ -162,7 +162,9 @@ class _CableTVPaymentReceiptScreenState
     // Seed with the id the QuickBuy resolved for an already-saved card so we
     // never save the same smart card twice.
     String? beneficiaryId = existingBeneficiaryId;
-    if (saveBeneficiary && beneficiaryId == null && smartCardNumber.isNotEmpty) {
+    if (saveBeneficiary &&
+        beneficiaryId == null &&
+        smartCardNumber.isNotEmpty) {
       try {
         final saved = await ds.saveBeneficiary(
           smartCardNumber: smartCardNumber,
@@ -277,7 +279,6 @@ class _CableTVPaymentReceiptScreenState
     );
   }
 
-
   String _formatAmount(double amount) {
     final format = NumberFormat('#,##0.00', 'en_NG');
     return '\u20A6${format.format(amount)}';
@@ -295,8 +296,9 @@ class _CableTVPaymentReceiptScreenState
   String _formatStatus(String status) {
     return status
         .split('_')
-        .map((word) =>
-            word.isNotEmpty ? word[0].toUpperCase() + word.substring(1).toLowerCase() : '')
+        .map((word) => word.isNotEmpty
+            ? word[0].toUpperCase() + word.substring(1).toLowerCase()
+            : '')
         .join(' ');
   }
 
@@ -345,250 +347,253 @@ class _CableTVPaymentReceiptScreenState
         if (!didPop) Get.offAllNamed(AppRoutes.cableTVHome);
       },
       child: Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Get.offAllNamed(AppRoutes.cableTVHome),
-          icon: Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-            size: 22.sp,
+        backgroundColor: const Color(0xFF0A0A0A),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            onPressed: () => Get.offAllNamed(AppRoutes.cableTVHome),
+            icon: Icon(
+              Icons.arrow_back,
+              color: Colors.white,
+              size: 22.sp,
+            ),
           ),
-        ),
-        title: Text(
-          'Payment Receipt',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w700,
+          title: Text(
+            'Payment Receipt',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w700,
+            ),
           ),
+          centerTitle: true,
         ),
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () => _refreshPayment(payment),
-                color: const Color(0xFF4E03D0),
-                backgroundColor: const Color(0xFF1F1F1F),
-                child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Column(
-                  children: [
-                    SizedBox(height: 20.h),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () => _refreshPayment(payment),
+                  color: const Color(0xFF4E03D0),
+                  backgroundColor: const Color(0xFF1F1F1F),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Column(
+                      children: [
+                        SizedBox(height: 20.h),
 
-                    // Success icon
-                    Container(
-                      width: 80.w,
-                      height: 80.w,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                        border: Border.all(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.4),
-                          width: 2,
-                        ),
-                      ),
-                      child: Icon(
-                        payment.isCompleted
-                            ? Icons.check_circle
-                            : payment.isPending
-                                ? Icons.schedule
-                                : Icons.error_outline,
-                        color: payment.isCompleted
-                            ? const Color(0xFF10B981)
-                            : payment.isPending
-                                ? const Color(0xFFFB923C)
-                                : const Color(0xFFEF4444),
-                        size: 44.sp,
-                      ),
-                    ),
-                    SizedBox(height: 16.h),
-
-                    Text(
-                      payment.isCompleted
-                          ? 'Payment Successful!'
-                          : payment.isProcessing
-                              ? 'Payment Processing'
-                              : payment.isPending
-                                  ? 'Payment Pending'
-                                  : 'Payment Failed',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-
-                    Text(
-                      _formatAmount(payment.amount),
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF10B981),
-                        fontSize: 28.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 20.h),
-
-                    // Pending / processing payment banner
-                    if (payment.isPending) ...[
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.all(14.w),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFB923C).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12.r),
-                          border: Border.all(
-                            color: const Color(0xFFFB923C).withValues(alpha: 0.3),
-                            width: 1,
+                        // Success icon
+                        Container(
+                          width: 80.w,
+                          height: 80.w,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color:
+                                const Color(0xFF10B981).withValues(alpha: 0.15),
+                            border: Border.all(
+                              color: const Color(0xFF10B981)
+                                  .withValues(alpha: 0.4),
+                              width: 2,
+                            ),
+                          ),
+                          child: Icon(
+                            payment.isCompleted
+                                ? Icons.check_circle
+                                : payment.isPending
+                                    ? Icons.schedule
+                                    : Icons.error_outline,
+                            color: payment.isCompleted
+                                ? const Color(0xFF10B981)
+                                : payment.isPending
+                                    ? const Color(0xFFFB923C)
+                                    : const Color(0xFFEF4444),
+                            size: 44.sp,
                           ),
                         ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Icon(
-                              Icons.info_outline,
-                              size: 18.sp,
-                              color: const Color(0xFFFB923C),
-                            ),
-                            SizedBox(width: 10.w),
-                            Expanded(
-                              child: Text(
-                                payment.isProcessing
-                                    ? 'Your payment is being processed in the background. The subscription will be activated shortly. No action needed.'
-                                    : 'Your payment is being processed. The subscription will be activated shortly.',
-                                style: GoogleFonts.inter(
-                                  color: const Color(0xFFFB923C),
-                                  fontSize: 13.sp,
-                                  height: 1.4,
-                                ),
+                        SizedBox(height: 16.h),
+
+                        Text(
+                          payment.isCompleted
+                              ? 'Payment Successful!'
+                              : payment.isProcessing
+                                  ? 'Payment Processing'
+                                  : payment.isPending
+                                      ? 'Payment Pending'
+                                      : 'Payment Failed',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        SizedBox(height: 8.h),
+
+                        Text(
+                          _formatAmount(payment.amount),
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF10B981),
+                            fontSize: 28.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        SizedBox(height: 20.h),
+
+                        // Pending / processing payment banner
+                        if (payment.isPending) ...[
+                          Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.all(14.w),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFB923C)
+                                  .withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12.r),
+                              border: Border.all(
+                                color: const Color(0xFFFB923C)
+                                    .withValues(alpha: 0.3),
+                                width: 1,
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 16.h),
-                    ],
-
-                    // Receipt card
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.all(20.w),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1F1F1F),
-                        borderRadius: BorderRadius.circular(16.r),
-                        border: Border.all(
-                          color: const Color(0xFF2D2D2D),
-                          width: 1,
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Transaction Details',
-                            style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w600,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  Icons.info_outline,
+                                  size: 18.sp,
+                                  color: const Color(0xFFFB923C),
+                                ),
+                                SizedBox(width: 10.w),
+                                Expanded(
+                                  child: Text(
+                                    payment.isProcessing
+                                        ? 'Your payment is being processed in the background. The subscription will be activated shortly. No action needed.'
+                                        : 'Your payment is being processed. The subscription will be activated shortly.',
+                                    style: GoogleFonts.inter(
+                                      color: const Color(0xFFFB923C),
+                                      fontSize: 13.sp,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          SizedBox(height: 20.h),
-
-                          _buildReceiptRow(
-                            'Provider',
-                            payment.billType.isNotEmpty
-                                ? payment.billType
-                                : payment.providerId,
-                          ),
-                          _buildDivider(),
-                          _buildReceiptRow(
-                            'Smart Card Number',
-                            payment.customerNumber,
-                          ),
-                          _buildDivider(),
-                          _buildReceiptRow(
-                            'Customer Name',
-                            payment.customerName,
-                          ),
-                          _buildDivider(),
-                          _buildReceiptRow(
-                            'Amount',
-                            _formatAmount(payment.amount),
-                          ),
-                          _buildDivider(),
-                          _buildReceiptRow(
-                            'Reference',
-                            payment.reference,
-                            isCopyable: true,
-                          ),
-                          _buildDivider(),
-                          _buildReceiptRow(
-                            'Date',
-                            _formatDate(payment.createdAt),
-                          ),
-                          _buildDivider(),
-                          _buildReceiptRow(
-                            'Status',
-                            _formatStatus(payment.status),
-                            valueColor: _statusColor(payment.status),
-                          ),
-                          if (payment.newBalance > 0) ...[
-                            _buildDivider(),
-                            _buildReceiptRow(
-                              'New Balance',
-                              _formatAmount(payment.newBalance),
-                            ),
-                          ],
-                          if (payment.renewalDate.isNotEmpty) ...[
-                            _buildDivider(),
-                            _buildReceiptRow(
-                              'Renewal Date',
-                              payment.renewalDate,
-                            ),
-                          ],
+                          SizedBox(height: 16.h),
                         ],
-                      ),
+
+                        // Receipt card
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.all(20.w),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1F1F1F),
+                            borderRadius: BorderRadius.circular(16.r),
+                            border: Border.all(
+                              color: const Color(0xFF2D2D2D),
+                              width: 1,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Transaction Details',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(height: 20.h),
+                              _buildReceiptRow(
+                                'Provider',
+                                payment.billType.isNotEmpty
+                                    ? payment.billType
+                                    : payment.providerId,
+                              ),
+                              _buildDivider(),
+                              _buildReceiptRow(
+                                'Smart Card Number',
+                                payment.customerNumber,
+                              ),
+                              _buildDivider(),
+                              _buildReceiptRow(
+                                'Customer Name',
+                                payment.customerName,
+                              ),
+                              _buildDivider(),
+                              _buildReceiptRow(
+                                'Amount',
+                                _formatAmount(payment.amount),
+                              ),
+                              _buildDivider(),
+                              _buildReceiptRow(
+                                'Reference',
+                                payment.reference,
+                                isCopyable: true,
+                              ),
+                              _buildDivider(),
+                              _buildReceiptRow(
+                                'Date',
+                                _formatDate(payment.createdAt),
+                              ),
+                              _buildDivider(),
+                              _buildReceiptRow(
+                                'Status',
+                                _formatStatus(payment.status),
+                                valueColor: _statusColor(payment.status),
+                              ),
+                              if (payment.newBalance > 0) ...[
+                                _buildDivider(),
+                                _buildReceiptRow(
+                                  'New Balance',
+                                  _formatAmount(payment.newBalance),
+                                ),
+                              ],
+                              if (payment.renewalDate.isNotEmpty) ...[
+                                _buildDivider(),
+                                _buildReceiptRow(
+                                  'Renewal Date',
+                                  payment.renewalDate,
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 20.h),
+                        BillReceiptQrBlock(
+                          type: 'cable_tv',
+                          reference: payment.reference,
+                          amount: payment.amount,
+                          currency: 'NGN',
+                          status: payment.status,
+                          timestamp: DateTime.tryParse(payment.createdAt) ??
+                              DateTime.now(),
+                          showDivider: false,
+                          extraPayload: {
+                            if (payment.customerNumber.isNotEmpty)
+                              'smart_card': payment.customerNumber,
+                            if (payment.providerId.isNotEmpty)
+                              'provider_id': payment.providerId,
+                            if (payment.billType.isNotEmpty)
+                              'bill_type': payment.billType,
+                            if (payment.customerName.isNotEmpty)
+                              'customer': payment.customerName,
+                          },
+                        ),
+                        SizedBox(height: 32.h),
+                      ],
                     ),
-                    SizedBox(height: 20.h),
-                    BillReceiptQrBlock(
-                      type: 'cable_tv',
-                      reference: payment.reference,
-                      amount: payment.amount,
-                      currency: 'NGN',
-                      status: payment.status,
-                      timestamp: DateTime.tryParse(payment.createdAt) ??
-                          DateTime.now(),
-                      showDivider: false,
-                      extraPayload: {
-                        if (payment.customerNumber.isNotEmpty)
-                          'smart_card': payment.customerNumber,
-                        if (payment.providerId.isNotEmpty)
-                          'provider_id': payment.providerId,
-                        if (payment.billType.isNotEmpty)
-                          'bill_type': payment.billType,
-                        if (payment.customerName.isNotEmpty)
-                          'customer': payment.customerName,
-                      },
-                    ),
-                    SizedBox(height: 32.h),
-                  ],
+                  ),
                 ),
               ),
-              ),
-            ),
 
-            // Bottom actions
-            _buildActions(context, payment),
-          ],
+              // Bottom actions
+              _buildActions(context, payment),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -735,7 +740,9 @@ class _CableTVPaymentReceiptScreenState
               'the provider handling this payment, so please choose again from the '
               'current list.',
               style: GoogleFonts.inter(
-                  color: const Color(0xFFFB923C), fontSize: 12.5.sp, height: 1.35),
+                  color: const Color(0xFFFB923C),
+                  fontSize: 12.5.sp,
+                  height: 1.35),
             ),
             SizedBox(height: 10.h),
             ElevatedButton(
@@ -758,67 +765,68 @@ class _CableTVPaymentReceiptScreenState
             children: [
               // Share Receipt
               Expanded(
-            child: OutlinedButton.icon(
-              onPressed: _isSharing ? null : () => _shareReceipt(payment),
-              icon: _isSharing
-                  ? LazerVaultLoader(size: 18)
-                  : Icon(
-                      Icons.share,
-                      size: 18.sp,
+                child: OutlinedButton.icon(
+                  onPressed: _isSharing ? null : () => _shareReceipt(payment),
+                  icon: _isSharing
+                      ? LazerVaultLoader(size: 18)
+                      : Icon(
+                          Icons.share,
+                          size: 18.sp,
+                          color: Colors.white,
+                        ),
+                  label: Text(
+                    'Share Receipt',
+                    style: GoogleFonts.inter(
                       color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
                     ),
-              label: Text(
-                'Share Receipt',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(
+                      color: Color(0xFF2D2D2D),
+                      width: 1.5,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                  ),
                 ),
               ),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(
-                  color: Color(0xFF2D2D2D),
-                  width: 1.5,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                padding: EdgeInsets.symmetric(vertical: 14.h),
-              ),
-            ),
-          ),
-          SizedBox(width: 12.w),
+              SizedBox(width: 12.w),
 
-          // Download PDF
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: _isDownloading ? null : () => _downloadPdf(payment),
-              icon: _isDownloading
-                  ? LazerVaultLoader(size: 18)
-                  : Icon(
-                      Icons.download,
-                      size: 18.sp,
+              // Download PDF
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed:
+                      _isDownloading ? null : () => _downloadPdf(payment),
+                  icon: _isDownloading
+                      ? LazerVaultLoader(size: 18)
+                      : Icon(
+                          Icons.download,
+                          size: 18.sp,
+                          color: Colors.white,
+                        ),
+                  label: Text(
+                    'Download PDF',
+                    style: GoogleFonts.inter(
                       color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
                     ),
-              label: Text(
-                'Download PDF',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                    disabledBackgroundColor:
+                        const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                  ),
                 ),
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
-                disabledBackgroundColor:
-                    const Color(0xFF3B82F6).withValues(alpha: 0.4),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                padding: EdgeInsets.symmetric(vertical: 14.h),
-              ),
-            ),
-          ),
             ],
           ),
         ],
@@ -846,9 +854,11 @@ Status: ${_formatStatus(payment.status)}
 Powered by Lazervault''';
 
       SharePlus.instance.share(ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),text: text, subject: 'Cable TV Payment Receipt'));
+          // iOS: a non-zero popover anchor is required — CGRectZero throws
+          // PlatformException and the share silently fails on iPhone/iPad.
+          sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+          text: text,
+          subject: 'Cable TV Payment Receipt'));
     } finally {
       if (mounted) setState(() => _isSharing = false);
     }

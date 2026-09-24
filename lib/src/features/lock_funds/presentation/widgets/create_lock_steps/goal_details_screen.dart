@@ -18,7 +18,8 @@ class GoalDetailsScreen extends StatefulWidget {
 
 class _GoalDetailsScreenState extends State<GoalDetailsScreen> {
   final TextEditingController _goalNameController = TextEditingController();
-  final TextEditingController _goalDescriptionController = TextEditingController();
+  final TextEditingController _goalDescriptionController =
+      TextEditingController();
 
   @override
   void initState() {
@@ -80,7 +81,8 @@ class _GoalDetailsScreenState extends State<GoalDetailsScreen> {
                     gradient: LinearGradient(
                       colors: [
                         const Color(0xFF6366F1).withValues(alpha: 0.2),
-                        const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                        const Color.fromARGB(255, 78, 3, 208)
+                            .withValues(alpha: 0.1),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -199,7 +201,8 @@ class _GoalDetailsScreenState extends State<GoalDetailsScreen> {
                     ),
                   ),
                   onChanged: (value) {
-                    cubit.updateGoalDescription(value.isNotEmpty ? value : null);
+                    cubit
+                        .updateGoalDescription(value.isNotEmpty ? value : null);
                   },
                 ),
               ),
@@ -222,8 +225,10 @@ class _GoalDetailsScreenState extends State<GoalDetailsScreen> {
                   children: [
                     _buildGoalSuggestion('Vacation Trip', Icons.flight_rounded),
                     _buildGoalSuggestion('New Laptop', Icons.laptop_rounded),
-                    _buildGoalSuggestion('Emergency Fund', Icons.emergency_rounded),
-                    _buildGoalSuggestion('New Phone', Icons.phone_iphone_rounded),
+                    _buildGoalSuggestion(
+                        'Emergency Fund', Icons.emergency_rounded),
+                    _buildGoalSuggestion(
+                        'New Phone', Icons.phone_iphone_rounded),
                     _buildGoalSuggestion('Home Upgrade', Icons.home_rounded),
                     _buildGoalSuggestion('Education', Icons.school_rounded),
                   ],

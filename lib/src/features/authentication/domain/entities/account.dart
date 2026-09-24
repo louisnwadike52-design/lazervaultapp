@@ -16,4 +16,4 @@ class Account extends Equatable {
 
   @override
   List<Object?> get props => [id, accountNumber, balance, currency];
-} 
+}

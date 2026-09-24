@@ -363,7 +363,9 @@ class _GiftBannerItemState extends State<_GiftBannerItem>
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          data.isMoney ? 'lazersprayed money' : 'lazersprayed a ${data.giftName}',
+                          data.isMoney
+                              ? 'lazersprayed money'
+                              : 'lazersprayed a ${data.giftName}',
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.85),
                             fontSize: 10.sp,

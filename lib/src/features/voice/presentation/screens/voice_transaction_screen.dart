@@ -35,7 +35,8 @@ class VoiceTransactionScreen extends StatefulWidget {
 
 class _VoiceTransactionScreenState extends State<VoiceTransactionScreen>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
-  final VoiceBiometricsService _voiceService = GetIt.I<VoiceBiometricsService>();
+  final VoiceBiometricsService _voiceService =
+      GetIt.I<VoiceBiometricsService>();
   final AudioRecorder _recorder = AudioRecorder();
   final Connectivity _connectivity = Connectivity();
   final http.Client _httpClient = http.Client();
@@ -210,10 +211,7 @@ class _VoiceTransactionScreenState extends State<VoiceTransactionScreen>
 
   /// Start recording voice command
   Future<void> _startRecording() async {
-    if (_isRecording ||
-        _isVerifying ||
-        _isProcessing ||
-        !_hasPermission) {
+    if (_isRecording || _isVerifying || _isProcessing || !_hasPermission) {
       return;
     }
 
@@ -301,7 +299,8 @@ class _VoiceTransactionScreenState extends State<VoiceTransactionScreen>
           _isRecording = false;
           _recordingSeconds = 0;
         });
-        _showError('Recording too short. Please hold longer and speak clearly.');
+        _showError(
+            'Recording too short. Please hold longer and speak clearly.');
         _cleanupRecordingFile();
       }
       return;
@@ -535,8 +534,8 @@ class _VoiceTransactionScreenState extends State<VoiceTransactionScreen>
 
       // Send request with timeout
       final streamedResponse = await request.send().timeout(
-        const Duration(seconds: 30),
-      );
+            const Duration(seconds: 30),
+          );
 
       final response = await http.Response.fromStream(streamedResponse);
 
@@ -860,12 +859,12 @@ class _VoiceTransactionScreenState extends State<VoiceTransactionScreen>
                                   boxShadow: _isRecording
                                       ? [
                                           BoxShadow(
-                                            color: Colors.red.withValues(alpha: 
-                                              0.3 +
+                                            color: Colors.red.withValues(
+                                              alpha: 0.3 +
                                                   _pulseController.value * 0.3,
                                             ),
-                                            blurRadius:
-                                                20 + _pulseController.value * 20,
+                                            blurRadius: 20 +
+                                                _pulseController.value * 20,
                                             spreadRadius:
                                                 5 + _pulseController.value * 10,
                                           ),

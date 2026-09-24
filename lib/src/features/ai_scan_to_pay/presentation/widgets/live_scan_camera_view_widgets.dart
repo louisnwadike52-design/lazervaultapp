@@ -55,7 +55,8 @@ class CameraOverlayPainter extends CustomPainter {
         Offset(left + viewfinderWidth - cornerRadius - cornerLength, top),
         Offset(left + viewfinderWidth - cornerRadius, top),
         cornerPaint);
-    canvas.drawLine(Offset(left + viewfinderWidth, top + cornerRadius),
+    canvas.drawLine(
+        Offset(left + viewfinderWidth, top + cornerRadius),
         Offset(left + viewfinderWidth, top + cornerRadius + cornerLength),
         cornerPaint);
     // Bottom-left
@@ -63,7 +64,8 @@ class CameraOverlayPainter extends CustomPainter {
         Offset(left, top + viewfinderHeight - cornerRadius - cornerLength),
         Offset(left, top + viewfinderHeight - cornerRadius),
         cornerPaint);
-    canvas.drawLine(Offset(left + cornerRadius, top + viewfinderHeight),
+    canvas.drawLine(
+        Offset(left + cornerRadius, top + viewfinderHeight),
         Offset(left + cornerRadius + cornerLength, top + viewfinderHeight),
         cornerPaint);
     // Bottom-right

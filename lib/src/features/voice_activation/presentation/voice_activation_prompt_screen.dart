@@ -37,7 +37,8 @@ class _VoiceActivationPromptScreenState
   Future<void> _incrementSkipCount() async {
     final storage = GetIt.I<FlutterSecureStorage>();
     final currentSkips = await _skipCount;
-    await storage.write(key: 'voice_activation_skips', value: '${currentSkips + 1}');
+    await storage.write(
+        key: 'voice_activation_skips', value: '${currentSkips + 1}');
   }
 
   Future<void> _resetSkipCount() async {
@@ -192,7 +193,7 @@ class _VoiceActivationPromptScreenState
           SizedBox(height: 16.h),
 
           _buildFeatureCard(
-    Icons.touch_app_rounded,
+            Icons.touch_app_rounded,
             'Hands-free',
             'Bank while on the go',
           ),
@@ -247,7 +248,6 @@ class _VoiceActivationPromptScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(height: 32.h),
-
           Text(
             'What You Can Do',
             style: TextStyle(
@@ -256,9 +256,7 @@ class _VoiceActivationPromptScreenState
               color: Colors.black87,
             ),
           ),
-
           SizedBox(height: 16.h),
-
           Text(
             'Control your entire banking experience with voice commands',
             style: TextStyle(
@@ -266,9 +264,7 @@ class _VoiceActivationPromptScreenState
               color: Colors.grey[600],
             ),
           ),
-
           SizedBox(height: 24.h),
-
           Expanded(
             child: ListView.builder(
               itemCount: capabilities.length,
@@ -339,7 +335,6 @@ class _VoiceActivationPromptScreenState
       child: Column(
         children: [
           SizedBox(height: 32.h),
-
           Text(
             'How It Works',
             style: TextStyle(
@@ -349,36 +344,30 @@ class _VoiceActivationPromptScreenState
             ),
             textAlign: TextAlign.center,
           ),
-
           SizedBox(height: 48.h),
-
           _buildStep(
             step: 1,
             title: 'Record Your Voice',
-            description: 'We\'ll record 5 voice samples to create your unique voice profile',
+            description:
+                'We\'ll record 5 voice samples to create your unique voice profile',
             icon: Icons.mic_rounded,
           ),
-
           SizedBox(height: 32.h),
-
           _buildStep(
             step: 2,
             title: 'Voice is Your Password',
-            description: 'Your voice profile is used to verify your identity securely',
+            description:
+                'Your voice profile is used to verify your identity securely',
             icon: Icons.lock_rounded,
           ),
-
           SizedBox(height: 32.h),
-
           _buildStep(
             step: 3,
             title: 'Bank with Voice',
             description: 'Use voice commands for secure, hands-free banking',
             icon: Icons.check_circle_rounded,
           ),
-
           SizedBox(height: 48.h),
-
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(

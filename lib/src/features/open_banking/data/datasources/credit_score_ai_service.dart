@@ -23,11 +23,27 @@ class CreditScoreAIService {
       final accessToken = await _getAccessToken();
 
       final factors = <Map<String, dynamic>>[
-        {'name': 'Payment History', 'score': score.paymentHistoryScore, 'weight': 35},
-        {'name': 'Income Stability', 'score': score.incomeStabilityScore, 'weight': 25},
-        {'name': 'Spending Discipline', 'score': score.spendingDisciplineScore, 'weight': 20},
+        {
+          'name': 'Payment History',
+          'score': score.paymentHistoryScore,
+          'weight': 35
+        },
+        {
+          'name': 'Income Stability',
+          'score': score.incomeStabilityScore,
+          'weight': 25
+        },
+        {
+          'name': 'Spending Discipline',
+          'score': score.spendingDisciplineScore,
+          'weight': 20
+        },
         {'name': 'Account Age', 'score': score.accountAgeScore, 'weight': 10},
-        {'name': 'Balance Consistency', 'score': score.balanceConsistencyScore, 'weight': 10},
+        {
+          'name': 'Balance Consistency',
+          'score': score.balanceConsistencyScore,
+          'weight': 10
+        },
       ];
 
       final tips = score.tips.map((t) => t.title).toList();
@@ -55,7 +71,8 @@ class CreditScoreAIService {
       );
 
       if (response.statusCode == 200) {
-        return CreditScoreAIInsights.fromJson(response.data as Map<String, dynamic>);
+        return CreditScoreAIInsights.fromJson(
+            response.data as Map<String, dynamic>);
       }
 
       throw DioException(

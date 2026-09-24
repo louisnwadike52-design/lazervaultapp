@@ -1,6 +1,7 @@
 import 'package:fixnum/fixnum.dart';
 import 'package:lazervault/src/generated/contact_sync.pb.dart' as pb;
-import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart' as timestamp;
+import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart'
+    as timestamp;
 
 /// Model representing a contact synced to the backend
 class SyncedContactModel {
@@ -49,12 +50,10 @@ class SyncedContactModel {
       ),
       deviceContactId: proto.deviceContactId,
       isLazervaultUser: proto.isLazervaultUser,
-      lazervaultUserId: proto.lazervaultUserId.isNotEmpty
-          ? proto.lazervaultUserId
-          : null,
-      lazervaultUsername: proto.lazervaultUsername.isNotEmpty
-          ? proto.lazervaultUsername
-          : null,
+      lazervaultUserId:
+          proto.lazervaultUserId.isNotEmpty ? proto.lazervaultUserId : null,
+      lazervaultUsername:
+          proto.lazervaultUsername.isNotEmpty ? proto.lazervaultUsername : null,
     );
   }
 

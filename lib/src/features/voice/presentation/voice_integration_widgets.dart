@@ -464,9 +464,7 @@ class _UniversalMicButtonState extends State<UniversalMicButton> {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      icon: _isListening
-          ? LazerVaultLoader.small()
-          : Icon(Icons.mic),
+      icon: _isListening ? LazerVaultLoader.small() : Icon(Icons.mic),
       onPressed: _isListening ? null : _toggleListening,
       tooltip: 'Voice Assistant (Multi-Service)',
     );
@@ -553,9 +551,7 @@ class _ServiceMicButtonState extends State<ServiceMicButton> {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      icon: _isListening
-          ? LazerVaultLoader.small()
-          : Icon(Icons.mic),
+      icon: _isListening ? LazerVaultLoader.small() : Icon(Icons.mic),
       onPressed: _isListening ? null : _toggleListening,
       tooltip: 'Voice Assistant (${widget.service})',
     );

@@ -182,16 +182,20 @@ class CryptoWithdrawCubit extends Cubit<CryptoWithdrawState> {
   static String _normalize(String raw) {
     final r = raw.toLowerCase().trim();
     if (r == 'done' || r == 'completed' || r == 'accepted') return 'done';
-    if (r == 'rejected' || r == 'failed' || r == 'cancelled' || r == 'cancel') return 'rejected';
+    if (r == 'rejected' || r == 'failed' || r == 'cancelled' || r == 'cancel')
+      return 'rejected';
     return r;
   }
 
   static String _friendlyError(Object e) {
     if (isFrozenAccountError(e)) return frozenAccountMessage;
     final s = e.toString();
-    if (s.contains('insufficient_funds')) return 'Insufficient balance for this send.';
-    if (s.contains('min_order')) return 'Amount is below the minimum send for this currency.';
-    if (s.contains('invalid_address')) return 'This address is not valid for the selected network.';
+    if (s.contains('insufficient_funds'))
+      return 'Insufficient balance for this send.';
+    if (s.contains('min_order'))
+      return 'Amount is below the minimum send for this currency.';
+    if (s.contains('invalid_address'))
+      return 'This address is not valid for the selected network.';
     if (s.contains('pin_invalid')) return 'Incorrect transaction PIN.';
     if (s.contains('user_not_provisioned')) {
       return 'Your crypto wallet is still being set up. Try again in a minute.';

@@ -21,8 +21,7 @@ class FlutterwaveConfig {
   /// Format:
   /// - Test: FLWPUBK_TEST-xxxxxxxxxxxxxxxxxxxxx-X
   /// - Live: FLWPUBK-xxxxxxxxxxxxxxxxxxxxx-X
-  static String get publicKey =>
-      dotenv.env['FLUTTERWAVE_PUBLIC_KEY'] ?? '';
+  static String get publicKey => dotenv.env['FLUTTERWAVE_PUBLIC_KEY'] ?? '';
 
   /// Flutterwave encryption key for card encryption
   ///
@@ -40,8 +39,7 @@ class FlutterwaveConfig {
       endpointRegistry.httpBanking;
 
   /// Current environment
-  static String get environment =>
-      dotenv.env['ENVIRONMENT'] ?? 'development';
+  static String get environment => dotenv.env['ENVIRONMENT'] ?? 'development';
 
   /// Whether using test/sandbox mode
   ///
@@ -102,7 +100,7 @@ class FlutterwaveConfig {
     // Test key format: FLWSECK_TESTxxx
     // Live key format: FLWSECKxxx
     return key.startsWith('FLWSECK_TEST') ||
-           (key.startsWith('FLWSECK') && !key.contains('_TEST'));
+        (key.startsWith('FLWSECK') && !key.contains('_TEST'));
   }
 
   /// Get configuration summary (safe for logging)
@@ -127,7 +125,8 @@ class FlutterwaveConfig {
     print('[FlutterwaveConfig] Environment: ${summary['environment']}');
     print('[FlutterwaveConfig] Enabled: ${summary['enabled']}');
     print('[FlutterwaveConfig] Public Key: ${summary['publicKeyPrefix']}');
-    print('[FlutterwaveConfig] Has Encryption Key: ${summary['hasEncryptionKey']}');
+    print(
+        '[FlutterwaveConfig] Has Encryption Key: ${summary['hasEncryptionKey']}');
     print('[FlutterwaveConfig] Banking API: ${summary['bankingApiUrl']}');
   }
 

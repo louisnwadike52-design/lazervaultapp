@@ -192,8 +192,8 @@ class _IncomingTaggedInvoicesScreenState
               Text(
                 // Cross-currency sum labelled with the user's own currency,
                 // not a hardcoded 'USD'.
-                statistics.formattedPending(
-                    GetIt.I<LocaleManager>().currentCurrency),
+                statistics
+                    .formattedPending(GetIt.I<LocaleManager>().currentCurrency),
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 32.sp,
@@ -236,8 +236,8 @@ class _IncomingTaggedInvoicesScreenState
           _buildFilterChip(
               'Pending', InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING),
           SizedBox(width: 12.w),
-          _buildFilterChip('Overdue',
-              InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_OVERDUE),
+          _buildFilterChip(
+              'Overdue', InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_OVERDUE),
           SizedBox(width: 12.w),
           _buildFilterChip(
               'Paid', InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_COMPLETED),
@@ -262,9 +262,8 @@ class _IncomingTaggedInvoicesScreenState
           color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(22.r),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF3B82F6)
-                : const Color(0xFF374151),
+            color:
+                isSelected ? const Color(0xFF3B82F6) : const Color(0xFF374151),
             width: 1,
           ),
         ),
@@ -366,7 +365,11 @@ class _IncomingTaggedInvoicesScreenState
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Icon(
-                  invoice.isPaid ? Icons.check_circle : isOverdue ? Icons.warning_rounded : Icons.receipt_long,
+                  invoice.isPaid
+                      ? Icons.check_circle
+                      : isOverdue
+                          ? Icons.warning_rounded
+                          : Icons.receipt_long,
                   color: statusColor,
                   size: 22.sp,
                 ),
@@ -457,13 +460,21 @@ class _IncomingTaggedInvoicesScreenState
               Expanded(
                 child: Row(
                   children: [
-                    Icon(Icons.arrow_upward_rounded, color: const Color(0xFFEF4444), size: 14.sp),
+                    Icon(Icons.arrow_upward_rounded,
+                        color: const Color(0xFFEF4444), size: 14.sp),
                     SizedBox(width: 4.w),
-                    Text('From: ', style: GoogleFonts.inter(color: const Color(0xFF909090), fontSize: 12.sp, fontWeight: FontWeight.w500)),
+                    Text('From: ',
+                        style: GoogleFonts.inter(
+                            color: const Color(0xFF909090),
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w500)),
                     Flexible(
                       child: Text(
                         creatorName,
-                        style: GoogleFonts.inter(color: const Color(0xFFD0D0D0), fontSize: 12.sp, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inter(
+                            color: const Color(0xFFD0D0D0),
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w600),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -475,13 +486,21 @@ class _IncomingTaggedInvoicesScreenState
               Expanded(
                 child: Row(
                   children: [
-                    Icon(Icons.arrow_downward_rounded, color: const Color(0xFF10B981), size: 14.sp),
+                    Icon(Icons.arrow_downward_rounded,
+                        color: const Color(0xFF10B981), size: 14.sp),
                     SizedBox(width: 4.w),
-                    Text('To: ', style: GoogleFonts.inter(color: const Color(0xFF909090), fontSize: 12.sp, fontWeight: FontWeight.w500)),
+                    Text('To: ',
+                        style: GoogleFonts.inter(
+                            color: const Color(0xFF909090),
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w500)),
                     Flexible(
                       child: Text(
                         receiverName,
-                        style: GoogleFonts.inter(color: const Color(0xFFD0D0D0), fontSize: 12.sp, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inter(
+                            color: const Color(0xFFD0D0D0),
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w600),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -499,13 +518,17 @@ class _IncomingTaggedInvoicesScreenState
                 Icon(
                   Icons.schedule,
                   size: 13.sp,
-                  color: isOverdue ? const Color(0xFFEF4444) : const Color(0xFF909090),
+                  color: isOverdue
+                      ? const Color(0xFFEF4444)
+                      : const Color(0xFF909090),
                 ),
                 SizedBox(width: 4.w),
                 Text(
                   'Due ${_formatDate(invoice.invoice!.dueDate!)}',
                   style: GoogleFonts.inter(
-                    color: isOverdue ? const Color(0xFFEF4444) : const Color(0xFFB0B0B0),
+                    color: isOverdue
+                        ? const Color(0xFFEF4444)
+                        : const Color(0xFFB0B0B0),
                     fontSize: 11.sp,
                     fontWeight: FontWeight.w500,
                   ),
@@ -517,7 +540,9 @@ class _IncomingTaggedInvoicesScreenState
           // split invoice (the invoice may still be partially_paid for others),
           // and for quotes (not payable until the creator converts them; open
           // the details page to Accept/Decline instead).
-          if (isPending && !_myShareAlreadyPaid(invoice) && invoice.invoice?.isQuote != true) ...[
+          if (isPending &&
+              !_myShareAlreadyPaid(invoice) &&
+              invoice.invoice?.isQuote != true) ...[
             SizedBox(height: 14.h),
             SizedBox(
               width: double.infinity,

@@ -182,8 +182,7 @@ class _CardsListScreenState extends State<CardsListScreen> {
                   ),
                   const SizedBox(height: 32),
                   ElevatedButton.icon(
-                    onPressed: () =>
-                        Get.toNamed(AppRoutes.cardCreationForm),
+                    onPressed: () => Get.toNamed(AppRoutes.cardCreationForm),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF3B82F6),
                       foregroundColor: Colors.white,
@@ -255,7 +254,8 @@ class _CardsListScreenState extends State<CardsListScreen> {
           const SizedBox(width: 10),
           _buildStatBadge('Virtual', virtual, const Color(0xFFFB923C)),
           const SizedBox(width: 10),
-          _buildStatBadge('Disposable', disposable, const Color.fromARGB(255, 78, 3, 208)),
+          _buildStatBadge(
+              'Disposable', disposable, const Color.fromARGB(255, 78, 3, 208)),
         ],
       ),
     );

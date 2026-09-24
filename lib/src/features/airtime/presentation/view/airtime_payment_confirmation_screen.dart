@@ -46,6 +46,7 @@ class _AirtimePaymentConfirmationScreenState
   Map<String, dynamic>? _autoRechargePref;
   String? _networkCode;
   String? _networkName;
+
   /// Guard so the post-purchase save+autoRecharge RPCs only fire once
   /// per screen mount even if the rebuild + listener combo would
   /// otherwise re-trigger them.
@@ -209,10 +210,9 @@ class _AirtimePaymentConfirmationScreenState
     Get.snackbar(
       title,
       message,
-      backgroundColor: (isSuccess
-              ? const Color(0xFF10B981)
-              : const Color(0xFFFB923C))
-          .withValues(alpha: 0.92),
+      backgroundColor:
+          (isSuccess ? const Color(0xFF10B981) : const Color(0xFFFB923C))
+              .withValues(alpha: 0.92),
       colorText: Colors.white,
       snackPosition: SnackPosition.TOP,
       duration: const Duration(seconds: 4),
@@ -313,8 +313,8 @@ class _AirtimePaymentConfirmationScreenState
   /// Mirrors the recipient_input "close" gesture (`Get.until` until the
   /// airtime route is found).
   void _handleBack() {
-    Get.until((route) =>
-        route.settings.name == AppRoutes.airtime || route.isFirst);
+    Get.until(
+        (route) => route.settings.name == AppRoutes.airtime || route.isFirst);
   }
 
   String get _currencySymbol => transaction?.currencySymbol ?? '₦';
@@ -428,58 +428,58 @@ class _AirtimePaymentConfirmationScreenState
           color: const Color(0xFF4E03D0),
           backgroundColor: const Color(0xFF1F1F1F),
           child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _brandHeader(),
-              SizedBox(height: 4.h),
-              _buildStatusIcon(),
-              SizedBox(height: 12.h),
-              Text(
-                _resolveHeroTitle(),
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.w700,
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _brandHeader(),
+                SizedBox(height: 4.h),
+                _buildStatusIcon(),
+                SizedBox(height: 12.h),
+                Text(
+                  _resolveHeroTitle(),
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-              SizedBox(height: 4.h),
-              Text(
-                _getStatusMessage(),
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w400,
+                SizedBox(height: 4.h),
+                Text(
+                  _getStatusMessage(),
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
-              ),
-              SizedBox(height: 16.h),
-              if (transaction != null) _buildTransactionDetails(),
-              if (transaction != null && isSuccess) ...[
-                SizedBox(height: 20.h),
-                BillReceiptQrBlock(
-                  type: 'airtime',
-                  reference: transaction!.transactionReference,
-                  amount: transaction!.amount,
-                  currency: transaction!.currency,
-                  status: transaction!.status.name,
-                  timestamp: transaction!.createdAt,
-                  showDivider: false,
-                  extraPayload: {
-                    'phone': transaction!.recipientPhoneNumber,
-                    'network': transaction!.networkProvider.displayName,
-                    if (transaction!.recipientName != null &&
-                        transaction!.recipientName!.isNotEmpty)
-                      'recipient': transaction!.recipientName!,
-                  },
-                ),
+                SizedBox(height: 16.h),
+                if (transaction != null) _buildTransactionDetails(),
+                if (transaction != null && isSuccess) ...[
+                  SizedBox(height: 20.h),
+                  BillReceiptQrBlock(
+                    type: 'airtime',
+                    reference: transaction!.transactionReference,
+                    amount: transaction!.amount,
+                    currency: transaction!.currency,
+                    status: transaction!.status.name,
+                    timestamp: transaction!.createdAt,
+                    showDivider: false,
+                    extraPayload: {
+                      'phone': transaction!.recipientPhoneNumber,
+                      'network': transaction!.networkProvider.displayName,
+                      if (transaction!.recipientName != null &&
+                          transaction!.recipientName!.isNotEmpty)
+                        'recipient': transaction!.recipientName!,
+                    },
+                  ),
+                ],
+                SizedBox(height: 24.h),
               ],
-              SizedBox(height: 24.h),
-            ],
+            ),
           ),
-        ),
         ),
       ),
       // Pin the primary CTAs so they're always reachable without scrolling.
@@ -549,9 +549,7 @@ class _AirtimePaymentConfirmationScreenState
     final hasDiscount = t.discount != null && t.discount! > 0;
     final statusColor = isSuccess
         ? const Color(0xFF10B981)
-        : (t.isPending
-            ? const Color(0xFFFB923C)
-            : const Color(0xFFEF4444));
+        : (t.isPending ? const Color(0xFFFB923C) : const Color(0xFFEF4444));
 
     return Container(
       width: double.infinity,
@@ -576,8 +574,8 @@ class _AirtimePaymentConfirmationScreenState
               '$_currencySymbol${t.amount.toStringAsFixed(2)}'),
           if (hasFee) ...[
             SizedBox(height: 10.h),
-            _detailRow('Service Fee',
-                '$_currencySymbol${t.fee!.toStringAsFixed(2)}'),
+            _detailRow(
+                'Service Fee', '$_currencySymbol${t.fee!.toStringAsFixed(2)}'),
           ],
           if (hasDiscount) ...[
             SizedBox(height: 10.h),

@@ -183,7 +183,8 @@ class _EmailDraftsScreenState extends State<EmailDraftsScreen> {
                   foregroundColor: EmailPalette.error,
                   side: BorderSide(
                       color: EmailPalette.error.withValues(alpha: 0.5)),
-                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.r)),
                 ),
@@ -199,7 +200,8 @@ class _EmailDraftsScreenState extends State<EmailDraftsScreen> {
                   backgroundColor: EmailPalette.success,
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.r)),
                 ),
@@ -222,8 +224,7 @@ class _EmailDraftsScreenState extends State<EmailDraftsScreen> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-            bottom: MediaQuery.of(ctx).viewInsets.bottom),
+        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
         child: Container(
           padding: EdgeInsets.all(20.w),
           decoration: BoxDecoration(

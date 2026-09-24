@@ -23,10 +23,8 @@ final _cubit = File(
 
 /// Source with `//` comment lines stripped — the fixes are documented in
 /// comments that quote the very call being asserted absent.
-String _strip(String s) => s
-    .split('\n')
-    .where((l) => !l.trimLeft().startsWith('//'))
-    .join('\n');
+String _strip(String s) =>
+    s.split('\n').where((l) => !l.trimLeft().startsWith('//')).join('\n');
 
 String get _code => _strip(_screen);
 
@@ -75,7 +73,8 @@ void main() {
       final body = _method(_screen, 'Future<void> _activateAccount()');
       final sendIdx = body.indexOf('_sendStagedInvites()');
       final setupIdx = body.indexOf('_submitSetup()');
-      expect(sendIdx, isNot(-1), reason: 'staged invites must actually be sent');
+      expect(sendIdx, isNot(-1),
+          reason: 'staged invites must actually be sent');
       expect(setupIdx, isNot(-1));
       expect(sendIdx < setupIdx, isTrue,
           reason: 'members must exist before the account goes active, so '
@@ -101,7 +100,8 @@ void main() {
     });
 
     test('one failure does not abort the rest', () {
-      final body = _method(_screen, 'Future<List<String>> _sendStagedInvites()');
+      final body =
+          _method(_screen, 'Future<List<String>> _sendStagedInvites()');
       expect(body, contains('catch'));
       expect(body, contains('failed.add('));
     });

@@ -98,7 +98,8 @@ void main() {
     test('the barge-in it calls still publishes an interrupt', () {
       // _triggerBargeIn is what reaches the gateway; if it stops publishing,
       // the local flags clear but the agent keeps talking.
-      expect(bodyOf('void _triggerBargeIn() {'), contains('_publishInterrupt()'),
+      expect(
+          bodyOf('void _triggerBargeIn() {'), contains('_publishInterrupt()'),
           reason: 'clearing local state without telling the gateway leaves the '
               'agent speaking into a muted client');
     });

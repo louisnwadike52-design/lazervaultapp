@@ -181,9 +181,12 @@ class InvoiceCard extends StatelessWidget {
                     Text(
                       'Due ${_formatDate(invoice.dueDate!)}',
                       style: GoogleFonts.inter(
-                        color: invoice.isOverdue ? Colors.red : Colors.grey[400],
+                        color:
+                            invoice.isOverdue ? Colors.red : Colors.grey[400],
                         fontSize: 11.sp,
-                        fontWeight: invoice.isOverdue ? FontWeight.w600 : FontWeight.normal,
+                        fontWeight: invoice.isOverdue
+                            ? FontWeight.w600
+                            : FontWeight.normal,
                       ),
                     ),
                   ],
@@ -238,7 +241,7 @@ class InvoiceCard extends StatelessWidget {
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date).inDays;
-    
+
     if (difference == 0) {
       return 'Today';
     } else if (difference == 1) {
@@ -249,4 +252,4 @@ class InvoiceCard extends StatelessWidget {
       return DateFormat('MMM d').format(date);
     }
   }
-} 
+}

@@ -250,7 +250,8 @@ class IdentityRepositoryImpl implements IIdentityRepository {
 
       if (response.success) {
         if (response.hasFacialData()) {
-          final facialDataModel = FacialDataModel.fromProto(response.facialData);
+          final facialDataModel =
+              FacialDataModel.fromProto(response.facialData);
           return Right(facialDataModel);
         } else {
           return const Right(null);
@@ -304,9 +305,8 @@ class IdentityRepositoryImpl implements IIdentityRepository {
         return const Right(null);
       } else {
         return Left(ServerFailure(
-          message: response.msg.isNotEmpty
-              ? response.msg
-              : 'Failed to set passcode',
+          message:
+              response.msg.isNotEmpty ? response.msg : 'Failed to set passcode',
           statusCode: 400,
         ));
       }
@@ -433,7 +433,8 @@ class IdentityRepositoryImpl implements IIdentityRepository {
         ));
       }
     } on GrpcError catch (e) {
-      print('gRPC Error checking passcode existence: ${e.codeName} - ${e.message}');
+      print(
+          'gRPC Error checking passcode existence: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
         message: e.message ?? 'Failed to check passcode existence',
         statusCode: e.code,

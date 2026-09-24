@@ -17,8 +17,7 @@ class ContactDetailLoaded extends ContactState {
   final Contact contact;
   final List<ContactInteraction> interactions;
   final List<Task> tasks;
-  ContactDetailLoaded(this.contact, this.interactions,
-      {this.tasks = const []});
+  ContactDetailLoaded(this.contact, this.interactions, {this.tasks = const []});
 }
 
 class ContactError extends ContactState {

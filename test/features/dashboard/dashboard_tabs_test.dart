@@ -25,7 +25,8 @@ void main() {
           expect(
             word[0],
             equals(word[0].toLowerCase()),
-            reason: 'Non-leading word "$word" in "${tab.label}" is capitalised; '
+            reason:
+                'Non-leading word "$word" in "${tab.label}" is capitalised; '
                 'bottom-nav labels are sentence case.',
           );
         }

@@ -45,9 +45,10 @@ class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
     final shortFlow = args is Map && args['shortFlow'] is bool
         ? args['shortFlow'] as bool
         : FeatureFlags.sendFlowShortForSession;
-    final preselected = args is Map && args['preselectedRecipient'] is RecipientModel
-        ? args['preselectedRecipient'] as RecipientModel
-        : null;
+    final preselected =
+        args is Map && args['preselectedRecipient'] is RecipientModel
+            ? args['preselectedRecipient'] as RecipientModel
+            : null;
     final autoContinue = args is Map && args['autoContinue'] == true;
     final prefillAmount = args is Map && args['prefillAmount'] is int
         ? args['prefillAmount'] as int
@@ -64,30 +65,30 @@ class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
         statusBarBrightness: Brightness.dark, // iOS
       ),
       child: Scaffold(
-      // Transparent in the quick-send host so the caller (chat/QR) shows through
-      // and the amount sheet appears to open directly over it.
-      backgroundColor: transparentHost ? Colors.transparent : null,
-      // NOTE: the entrance animation lives INSIDE SelectRecipients, wrapping
-      // only the white content sheet (Scan-QR strip down) so the purple header
-      // + search bar stay static. Don't re-wrap the whole widget here.
-      body: SelectRecipients(
-        shortFlow: shortFlow,
-        preselectedRecipient: preselected,
-        autoContinue: autoContinue,
-        prefillAmountMinor: prefillAmount,
-        transparentHost: transparentHost,
-      ),
-      // Floating Action Button for adding recipients — long flow only.
-      floatingActionButton: shortFlow
-          ? null
-          : FloatingActionButton(
-              onPressed: () => Get.toNamed(AppRoutes.addRecipient),
-              backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-              foregroundColor: Colors.white,
-              elevation: 4,
-              child: Icon(Icons.add, size: 28.sp),
-            ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        // Transparent in the quick-send host so the caller (chat/QR) shows through
+        // and the amount sheet appears to open directly over it.
+        backgroundColor: transparentHost ? Colors.transparent : null,
+        // NOTE: the entrance animation lives INSIDE SelectRecipients, wrapping
+        // only the white content sheet (Scan-QR strip down) so the purple header
+        // + search bar stay static. Don't re-wrap the whole widget here.
+        body: SelectRecipients(
+          shortFlow: shortFlow,
+          preselectedRecipient: preselected,
+          autoContinue: autoContinue,
+          prefillAmountMinor: prefillAmount,
+          transparentHost: transparentHost,
+        ),
+        // Floating Action Button for adding recipients — long flow only.
+        floatingActionButton: shortFlow
+            ? null
+            : FloatingActionButton(
+                onPressed: () => Get.toNamed(AppRoutes.addRecipient),
+                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                foregroundColor: Colors.white,
+                elevation: 4,
+                child: Icon(Icons.add, size: 28.sp),
+              ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
     );
   }

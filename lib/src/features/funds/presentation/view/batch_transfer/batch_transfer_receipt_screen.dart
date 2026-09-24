@@ -90,8 +90,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
 
   bool get _isScheduled => receiptData['isScheduled'] as bool? ?? false;
 
-  String get _status =>
-      receiptData['status'] as String? ?? 'completed';
+  String get _status => receiptData['status'] as String? ?? 'completed';
 
   IconData _statusIcon(String status) {
     if (_isScheduled) return Icons.schedule_rounded;
@@ -111,8 +110,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
 
   String _statusTitle(String status) {
     if (_isScheduled) return 'Transfer Scheduled';
-    final successfulTransfers =
-        receiptData['successfulTransfers'] as int? ?? 0;
+    final successfulTransfers = receiptData['successfulTransfers'] as int? ?? 0;
     final recipientCount = receiptData['recipientCount'] as int? ?? 0;
 
     switch (status.toLowerCase()) {
@@ -216,12 +214,12 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
     }
   }
 
-
   void _startAnotherTransfer() {
     Get.offAllNamed(AppRoutes.batchTransfer);
   }
 
-  Future<void> _downloadIndividualReceipt(int index, Map<String, dynamic> transfer) async {
+  Future<void> _downloadIndividualReceipt(
+      int index, Map<String, dynamic> transfer) async {
     if (_individualDownloading[index] == true) return;
     setState(() => _individualDownloading[index] = true);
 
@@ -257,7 +255,8 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
     }
   }
 
-  Future<void> _shareIndividualReceipt(int index, Map<String, dynamic> transfer) async {
+  Future<void> _shareIndividualReceipt(
+      int index, Map<String, dynamic> transfer) async {
     if (_individualSharing[index] == true) return;
     setState(() => _individualSharing[index] = true);
 
@@ -284,8 +283,8 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
   void _showIndividualReceiptsSheet() {
     final transfers = receiptData['transfers'] as List<dynamic>? ?? [];
     final currency = receiptData['currency'] as String? ?? 'NGN';
-    final currencySymbol =
-        receiptData['currencySymbol'] as String? ?? batchCurrencySymbol(currency);
+    final currencySymbol = receiptData['currencySymbol'] as String? ??
+        batchCurrencySymbol(currency);
 
     if (transfers.isEmpty) return;
 
@@ -365,7 +364,8 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                               color: btCardElevated,
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(Icons.close, color: btTextSecondary, size: 18.sp),
+                            child: Icon(Icons.close,
+                                color: btTextSecondary, size: 18.sp),
                           ),
                         ),
                       ],
@@ -377,24 +377,27 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                   Flexible(
                     child: ListView.separated(
                       shrinkWrap: true,
-                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 16.w, vertical: 12.h),
                       itemCount: transfers.length,
                       separatorBuilder: (_, __) => SizedBox(height: 8.h),
                       itemBuilder: (context, index) {
-                        final transfer = transfers[index] as Map<String, dynamic>;
+                        final transfer =
+                            transfers[index] as Map<String, dynamic>;
                         final name = _resolveTransferName(transfer);
-                        final account = transfer['recipientAccount'] as String? ??
-                            transfer['account'] as String? ??
-                            '\u2022\u2022\u2022\u2022';
+                        final account =
+                            transfer['recipientAccount'] as String? ??
+                                transfer['account'] as String? ??
+                                '\u2022\u2022\u2022\u2022';
                         final amount =
                             (transfer['amount'] as num?)?.toDouble() ?? 0.0;
-                        final status = transfer['status'] as String? ?? 'Pending';
+                        final status =
+                            transfer['status'] as String? ?? 'Pending';
                         final isFailed = status.toLowerCase() == 'failed';
                         final statusColor = batchStatusColor(status);
                         final isDownloading =
                             _individualDownloading[index] == true;
-                        final isShareing =
-                            _individualSharing[index] == true;
+                        final isShareing = _individualSharing[index] == true;
 
                         return Container(
                           padding: EdgeInsets.all(14.w),
@@ -402,7 +405,8 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                             color: btBackground,
                             borderRadius: BorderRadius.circular(14.r),
                             border: isFailed
-                                ? Border.all(color: btRed.withValues(alpha: 0.2))
+                                ? Border.all(
+                                    color: btRed.withValues(alpha: 0.2))
                                 : null,
                           ),
                           child: Row(
@@ -477,7 +481,8 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                                 color: btGreen,
                                 isLoading: isDownloading,
                                 onTap: () async {
-                                  await _downloadIndividualReceipt(index, transfer);
+                                  await _downloadIndividualReceipt(
+                                      index, transfer);
                                   setSheetState(() {});
                                 },
                               ),
@@ -488,7 +493,8 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                                 color: btBlue,
                                 isLoading: isShareing,
                                 onTap: () async {
-                                  await _shareIndividualReceipt(index, transfer);
+                                  await _shareIndividualReceipt(
+                                      index, transfer);
                                   setSheetState(() {});
                                 },
                               ),
@@ -540,13 +546,15 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
     final name = transfer['name'] as String?;
 
     // Check beneficiaryName first (actual person name from request)
-    if (beneficiaryName != null && beneficiaryName.isNotEmpty &&
+    if (beneficiaryName != null &&
+        beneficiaryName.isNotEmpty &&
         beneficiaryName.toLowerCase() != 'unknown' &&
         beneficiaryName.toLowerCase() != 'external account') {
       return beneficiaryName;
     }
     // Then recipientName, but skip generic account type names
-    if (recipientName != null && recipientName.isNotEmpty &&
+    if (recipientName != null &&
+        recipientName.isNotEmpty &&
         recipientName.toLowerCase() != 'unknown' &&
         recipientName.toLowerCase() != 'business') {
       return recipientName;
@@ -609,8 +617,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
     );
   }
 
-  bool get _hasNewBalance =>
-      receiptData['newBalance'] != null && !_isScheduled;
+  bool get _hasNewBalance => receiptData['newBalance'] != null && !_isScheduled;
 
   Widget _buildHeader() {
     String headerTitle;
@@ -647,7 +654,8 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                 color: btCardElevated,
                 borderRadius: BorderRadius.circular(22.r),
               ),
-              child: Icon(Icons.arrow_back_ios_new, color: btTextPrimary, size: 18.sp),
+              child: Icon(Icons.arrow_back_ios_new,
+                  color: btTextPrimary, size: 18.sp),
             ),
           ),
           SizedBox(width: 16.w),
@@ -752,8 +760,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
   }
 
   Widget _buildAmountCard() {
-    final totalAmount =
-        (receiptData['totalAmount'] as num?)?.toDouble() ?? 0.0;
+    final totalAmount = (receiptData['totalAmount'] as num?)?.toDouble() ?? 0.0;
     final totalFee = (receiptData['totalFee'] as num?)?.toDouble() ?? 0.0;
     final currency = receiptData['currency'] as String? ?? 'NGN';
     final currencySymbol = receiptData['currencySymbol'] as String? ??
@@ -797,7 +804,9 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
               SizedBox(width: 12.w),
               _buildAmountChip(
                 Icons.bolt_outlined,
-                totalFee == 0 ? 'No fees' : '$currencySymbol${totalFee.toStringAsFixed(2)} fee',
+                totalFee == 0
+                    ? 'No fees'
+                    : '$currencySymbol${totalFee.toStringAsFixed(2)} fee',
                 btGreen,
               ),
             ],
@@ -901,13 +910,11 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
   Widget _buildBatchSummary() {
     final batchId = receiptData['batchId']?.toString() ??
         'BTX${DateTime.now().millisecondsSinceEpoch}';
-    final totalAmount =
-        (receiptData['totalAmount'] as num?)?.toDouble() ?? 0.0;
+    final totalAmount = (receiptData['totalAmount'] as num?)?.toDouble() ?? 0.0;
     final totalFee = (receiptData['totalFee'] as num?)?.toDouble() ?? 0.0;
     final currency = receiptData['currency'] as String? ?? 'NGN';
     final recipientCount = receiptData['recipientCount'] as int? ?? 0;
-    final timestamp =
-        receiptData['timestamp'] as DateTime? ?? DateTime.now();
+    final timestamp = receiptData['timestamp'] as DateTime? ?? DateTime.now();
     final status = _status;
     final successfulTransfers =
         receiptData['successfulTransfers'] as int? ?? recipientCount;
@@ -940,26 +947,22 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
             ],
           ),
           SizedBox(height: 16.h),
-
           _buildSummaryRow('Batch ID', batchId),
           _buildSummaryRow('Date & Time',
               DateFormat('MMM dd, yyyy \u2022 HH:mm').format(timestamp)),
-          _buildSummaryRow('Status',
-              _isScheduled ? 'Scheduled' : formatBatchStatus(status),
+          _buildSummaryRow(
+              'Status', _isScheduled ? 'Scheduled' : formatBatchStatus(status),
               valueColor: _isScheduled ? btOrange : batchStatusColor(status)),
           _buildSummaryRow('Recipients',
               '$recipientCount transfer${recipientCount == 1 ? '' : 's'}'),
-
           if (!_isScheduled &&
               (status.toLowerCase() == 'partial' ||
                   status.toLowerCase() == 'partially_failed' ||
                   failedTransfers > 0)) ...[
             _buildSummaryRow('Successful', '$successfulTransfers',
                 valueColor: btGreen),
-            _buildSummaryRow('Failed', '$failedTransfers',
-                valueColor: btRed),
+            _buildSummaryRow('Failed', '$failedTransfers', valueColor: btRed),
           ],
-
           _buildSummaryRow('Currency', currency),
           _buildSummaryRow('Transfer Amount',
               '$currencySymbol${totalAmount.toStringAsFixed(2)}'),
@@ -969,10 +972,8 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                   ? 'Free'
                   : '$currencySymbol${totalFee.toStringAsFixed(2)}',
               valueColor: totalFee == 0 ? btGreen : null),
-
           SizedBox(height: 4.h),
           Divider(color: btBorder, height: 20.h),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1030,8 +1031,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
   }
 
   Widget _buildTransferResults() {
-    final transfers =
-        receiptData['transfers'] as List<dynamic>? ?? [];
+    final transfers = receiptData['transfers'] as List<dynamic>? ?? [];
     final currency = receiptData['currency'] as String? ?? 'NGN';
     final currencySymbol = receiptData['currencySymbol'] as String? ??
         batchCurrencySymbol(currency);
@@ -1061,8 +1061,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
               ),
               const Spacer(),
               Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                 decoration: BoxDecoration(
                   color: btBlue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8.r),
@@ -1087,8 +1086,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
             final account = transfer['recipientAccount'] as String? ??
                 transfer['account'] as String? ??
                 '\u2022\u2022\u2022\u2022';
-            final amount =
-                (transfer['amount'] as num?)?.toDouble() ?? 0.0;
+            final amount = (transfer['amount'] as num?)?.toDouble() ?? 0.0;
             final status = transfer['status'] as String? ?? 'Pending';
             final failureReason = transfer['failureReason'] as String?;
             final isFailed = status.toLowerCase() == 'failed';
@@ -1124,9 +1122,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                               ? Icon(Icons.close_rounded,
                                   color: btRed, size: 18.sp)
                               : Text(
-                                  name.isNotEmpty
-                                      ? name[0].toUpperCase()
-                                      : '?',
+                                  name.isNotEmpty ? name[0].toUpperCase() : '?',
                                   style: GoogleFonts.inter(
                                     color: statusColor,
                                     fontSize: 16.sp,
@@ -1242,9 +1238,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
     final currencySymbol = receiptData['currencySymbol'] as String? ??
         batchCurrencySymbol(currency);
     // newBalance from BatchTransferEntity is already in major units (double from proto)
-    final balanceValue = newBalance is num
-        ? newBalance.toDouble()
-        : 0.0;
+    final balanceValue = newBalance is num ? newBalance.toDouble() : 0.0;
 
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -1434,8 +1428,8 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
   void _openDetailedReceipt() {
     final batchId = receiptData['batchId']?.toString();
     if (batchId == null || batchId.isEmpty) {
-      Get.snackbar('No batch id',
-          'Detailed receipt is unavailable for this batch yet.',
+      Get.snackbar(
+          'No batch id', 'Detailed receipt is unavailable for this batch yet.',
           backgroundColor: btOrange,
           colorText: btTextPrimary,
           snackPosition: SnackPosition.TOP);
@@ -1458,14 +1452,13 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
       isScrollControlled: true,
       builder: (ctx) {
         return Padding(
-          padding: EdgeInsets.only(
-              bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          padding:
+              EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
           child: Container(
             padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 24.h),
             decoration: BoxDecoration(
               color: btCard,
-              borderRadius:
-                  BorderRadius.vertical(top: Radius.circular(24.r)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1486,8 +1479,8 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                   controller: multiplierCtrl,
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
-                  style: GoogleFonts.inter(
-                      color: btTextPrimary, fontSize: 14.sp),
+                  style:
+                      GoogleFonts.inter(color: btTextPrimary, fontSize: 14.sp),
                   decoration: InputDecoration(
                     labelText: 'Multiplier (1.0 = same amounts)',
                     labelStyle: GoogleFonts.inter(color: btTextSecondary),
@@ -1517,8 +1510,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                     ),
                     child: Text('Continue to review',
                         style: GoogleFonts.inter(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w600)),
+                            fontSize: 14.sp, fontWeight: FontWeight.w600)),
                   ),
                 ),
               ],
@@ -1536,9 +1528,8 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
       if (raw is! Map) continue;
       final t = raw.cast<String, dynamic>();
       final amt = (t['amount'] as num?)?.toDouble() ?? 0.0;
-      final accountNumber = (t['recipientAccount'] as String?) ??
-          (t['account'] as String?) ??
-          '';
+      final accountNumber =
+          (t['recipientAccount'] as String?) ?? (t['account'] as String?) ?? '';
       if (accountNumber.isEmpty || amt <= 0) continue;
       final adjusted = amt * multiplier;
       final amtMinor = Int64((adjusted * 100).round());
@@ -1566,8 +1557,8 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
       if (name.isNotEmpty) recipientNames[accountNumber] = name;
     }
     if (recipients.isEmpty) {
-      Get.snackbar('Nothing to repeat',
-          'No reusable recipients found on this receipt.',
+      Get.snackbar(
+          'Nothing to repeat', 'No reusable recipients found on this receipt.',
           backgroundColor: btOrange,
           colorText: btTextPrimary,
           snackPosition: SnackPosition.TOP);
@@ -1626,5 +1617,4 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
       ),
     );
   }
-
 }

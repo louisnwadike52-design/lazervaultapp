@@ -152,13 +152,13 @@ class WaterBillCubit extends Cubit<WaterBillState> {
             errorMessage: payment.errorMessage ?? 'Payment failed',
           ));
         } else if (payment.isProcessing) {
-          emit(PaymentProcessing(payment: payment, progress: 0.6, currentStep: 'Processing...'));
+          emit(PaymentProcessing(
+              payment: payment, progress: 0.6, currentStep: 'Processing...'));
         } else {
           emit(PaymentVerified(payment: payment));
         }
       },
     );
-
   }
 
   Future<void> getPaymentHistory({int? limit, int? offset}) async {

@@ -70,9 +70,11 @@ class GiftCardValidation {
 
     // Check if amount matches fixed denominations (if specified)
     if (brand.fixedDenominations.isNotEmpty) {
-      final denominationValues = brand.fixedDenominations.map((d) => d.price).toList();
+      final denominationValues =
+          brand.fixedDenominations.map((d) => d.price).toList();
       if (!denominationValues.contains(amount)) {
-        final validAmounts = denominationValues.map((d) => d.toStringAsFixed(0)).join(', ');
+        final validAmounts =
+            denominationValues.map((d) => d.toStringAsFixed(0)).join(', ');
         return left(AmountValidationError(
           'Amount must be one of: $validAmounts',
           'amount',
@@ -339,15 +341,15 @@ class GiftCardValidation {
       brand: brand,
     );
     if (amountValidation.isLeft()) {
-      return left(amountValidation.getLeft().getOrElse(() =>
-          const AmountValidationError('Invalid amount', 'amount')));
+      return left(amountValidation.getLeft().getOrElse(
+          () => const AmountValidationError('Invalid amount', 'amount')));
     }
 
     // Validate currency
     final currencyValidation = validateCurrency(currency);
     if (currencyValidation.isLeft()) {
-      return left(currencyValidation.getLeft().getOrElse(() =>
-          const GeneralValidationError('Invalid currency', 'currency')));
+      return left(currencyValidation.getLeft().getOrElse(
+          () => const GeneralValidationError('Invalid currency', 'currency')));
     }
 
     // Balance validation is handled by the backend via accounts-service HoldFunds.
@@ -375,8 +377,8 @@ class GiftCardValidation {
     if (message != null && message.isNotEmpty) {
       final messageValidation = validateMessage(message);
       if (messageValidation.isLeft()) {
-        return left(messageValidation.getLeft().getOrElse(() =>
-            const GeneralValidationError('Invalid message', 'message')));
+        return left(messageValidation.getLeft().getOrElse(
+            () => const GeneralValidationError('Invalid message', 'message')));
       }
     }
 
@@ -413,7 +415,16 @@ class GiftCardValidation {
 
   /// Magic-byte signatures for the two formats Prestmit accepts.
   static const List<int> _jpegMagic = [0xFF, 0xD8, 0xFF];
-  static const List<int> _pngMagic = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+  static const List<int> _pngMagic = [
+    0x89,
+    0x50,
+    0x4E,
+    0x47,
+    0x0D,
+    0x0A,
+    0x1A,
+    0x0A
+  ];
 
   /// validateImageBytes inspects the file's magic bytes + size in one
   /// pass. Magic-byte sniff is the canonical "is this really a JPG/PNG"
@@ -430,7 +441,7 @@ class GiftCardValidation {
     if (bytes.length > maxImageBytes) {
       return left(GeneralValidationError(
         "Image is ${(bytes.length / 1024 / 1024).toStringAsFixed(1)} MB. "
-        "Prestmit accepts up to ${(maxImageBytes / 1024 / 1024).toStringAsFixed(0)} MB.",
+            "Prestmit accepts up to ${(maxImageBytes / 1024 / 1024).toStringAsFixed(0)} MB.",
         "image",
       ));
     }
@@ -446,13 +457,14 @@ class GiftCardValidation {
   /// validateImageFile is the File-aware variant for image_picker
   /// results. Reads the file's bytes and forwards to
   /// validateImageBytes — keeps the magic-byte sniff identical.
-  static Future<Either<ValidationError, void>> validateImageFile(File file) async {
+  static Future<Either<ValidationError, void>> validateImageFile(
+      File file) async {
     try {
       final stat = await file.stat();
       if (stat.size > maxImageBytes) {
         return left(GeneralValidationError(
           "Image is ${(stat.size / 1024 / 1024).toStringAsFixed(1)} MB. "
-          "Prestmit accepts up to ${(maxImageBytes / 1024 / 1024).toStringAsFixed(0)} MB.",
+              "Prestmit accepts up to ${(maxImageBytes / 1024 / 1024).toStringAsFixed(0)} MB.",
           "image",
         ));
       }

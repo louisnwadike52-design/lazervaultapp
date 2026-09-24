@@ -224,22 +224,22 @@ class _QRDisplayScreenState extends State<QRDisplayScreen>
       child: RepaintBoundary(
         key: _qrShareKey,
         child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: QrImageView(
-          data: _qrData ?? '',
-          version: QrVersions.auto,
-          size: 250,
-          gapless: true,
-          errorStateBuilder: (ctx, err) {
-            return const Center(
-              child: Text('Failed to generate QR code'),
-            );
-          },
-        ),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: QrImageView(
+            data: _qrData ?? '',
+            version: QrVersions.auto,
+            size: 250,
+            gapless: true,
+            errorStateBuilder: (ctx, err) {
+              return const Center(
+                child: Text('Failed to generate QR code'),
+              );
+            },
+          ),
         ),
       ),
     );

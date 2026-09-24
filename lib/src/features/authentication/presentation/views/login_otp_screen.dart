@@ -157,8 +157,7 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
   static const int _resendCooldownSeconds = 60;
 
   bool get _canResend =>
-      _resendDeadline == null ||
-      !DateTime.now().isBefore(_resendDeadline!);
+      _resendDeadline == null || !DateTime.now().isBefore(_resendDeadline!);
 
   void _restartTicker(int seconds) {
     _ticker?.cancel();
@@ -367,7 +366,8 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
         setState(() {
           _submitting = false;
           _remaining = 0;
-          _errorText = 'That code has expired — tap "Send me a new code" below.';
+          _errorText =
+              'That code has expired — tap "Send me a new code" below.';
         });
         return;
       case 'OTP_ATTEMPTS_EXCEEDED':

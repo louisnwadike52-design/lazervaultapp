@@ -144,7 +144,8 @@ enum LockStatus {
     }
   }
 
-  bool get isTerminal => this == LockStatus.unlocked || this == LockStatus.cancelled;
+  bool get isTerminal =>
+      this == LockStatus.unlocked || this == LockStatus.cancelled;
 }
 
 /// Backend-configurable PiggyVault product configuration
@@ -160,17 +161,20 @@ class PiggyVaultConfig {
   final int maxDurationDays;
   final double minAmount;
   final double maxAmount;
+
   /// When true, the wizard hides the amount input and locks every
   /// deposit to [fixedAmount]. Useful for promotional fixed-headline
   /// plans configured by ops via the admin dashboard.
   final bool isFixedAmount;
   final double fixedAmount;
+
   /// Raw JSON arrays from the admin dashboard. Empty arrays mean
   /// "no chips defined; client falls back to a generic preset".
   /// See [parsedDurationOptions] / [parsedQuickAmountOptions] for
   /// safe accessors.
   final String durationOptions;
   final String quickAmountOptions;
+
   /// Newline-separated bullets the admin sets for the
   /// "Before you confirm" panel. confirmationNotes is always shown;
   /// confirmationNotesRenewOn / confirmationNotesRenewOff are
@@ -249,7 +253,8 @@ class PiggyVaultConfig {
             if (v is num) return v.toInt();
             return int.tryParse('$v') ?? -1;
           })
-          .where((d) => d > 0 &&
+          .where((d) =>
+              d > 0 &&
               d >= minDurationDays &&
               (maxDurationDays == 0 || d <= maxDurationDays))
           .toList()
@@ -274,9 +279,7 @@ class PiggyVaultConfig {
             return double.tryParse('$v') ?? -1;
           })
           .where((a) =>
-              a > 0 &&
-              a >= minAmount &&
-              (maxAmount == 0 || a <= maxAmount))
+              a > 0 && a >= minAmount && (maxAmount == 0 || a <= maxAmount))
           .toList()
         ..sort();
     } catch (_) {
@@ -388,6 +391,5 @@ class InterestCalculation {
   /// screens. When isUpfrontInterest is true, this equals
   /// interestAmount; otherwise 0. Saves callers from
   /// re-implementing the conditional everywhere.
-  double get upfrontInterestAmount =>
-      isUpfrontInterest ? interestAmount : 0;
+  double get upfrontInterestAmount => isUpfrontInterest ? interestAmount : 0;
 }

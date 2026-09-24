@@ -199,7 +199,8 @@ class VoiceActionContext extends Equatable {
 
   Duration get elapsed => updatedAt.difference(startedAt);
 
-  bool get canRetry => retryCount < maxRetries && state == VoiceActionState.error;
+  bool get canRetry =>
+      retryCount < maxRetries && state == VoiceActionState.error;
 
   @override
   List<Object?> get props => [
@@ -484,8 +485,9 @@ class VoiceTransactionState extends Equatable {
       currentState: currentState ?? this.currentState,
       context: context ?? this.context,
       result: clearResult ? null : (result ?? this.result),
-      pendingConfirmation:
-          clearConfirmation ? null : (pendingConfirmation ?? this.pendingConfirmation),
+      pendingConfirmation: clearConfirmation
+          ? null
+          : (pendingConfirmation ?? this.pendingConfirmation),
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       isLoading: isLoading ?? this.isLoading,
       isConnected: isConnected ?? this.isConnected,
@@ -512,16 +514,18 @@ class VoiceTransactionState extends Equatable {
   bool get isVerifying => currentState == VoiceActionState.verifying;
   bool get isAwaitingPin => currentState == VoiceActionState.awaitingPin;
   bool get isExecuting => currentState == VoiceActionState.executing;
-  bool get isPendingConfirmation => currentState == VoiceActionState.pendingConfirmation;
+  bool get isPendingConfirmation =>
+      currentState == VoiceActionState.pendingConfirmation;
   bool get isSuccess => currentState == VoiceActionState.success;
   bool get isError => currentState == VoiceActionState.error;
   bool get isFatal => currentState == VoiceActionState.fatal;
   bool get isCancelled => currentState == VoiceActionState.cancelled;
   bool get isTimeout => currentState == VoiceActionState.timeout;
   bool get isRetrying => currentState == VoiceActionState.retrying;
-  bool get isTerminal => currentState == VoiceActionState.success ||
-                        currentState == VoiceActionState.fatal ||
-                        currentState == VoiceActionState.cancelled;
+  bool get isTerminal =>
+      currentState == VoiceActionState.success ||
+      currentState == VoiceActionState.fatal ||
+      currentState == VoiceActionState.cancelled;
   bool get isActive => !isIdle && !isTerminal && !isError;
   bool get canRetry => context?.canRetry ?? false;
   bool get hasAudio => audioLevel > 0.01;
@@ -558,7 +562,8 @@ class VoiceTransactionStarted extends VoiceTransactionEvent {
   });
 
   @override
-  List<Object?> get props => [actionId, userId, sessionId, language, locale, transactionType];
+  List<Object?> get props =>
+      [actionId, userId, sessionId, language, locale, transactionType];
 }
 
 class VoiceTransactionStateChanged extends VoiceTransactionEvent {

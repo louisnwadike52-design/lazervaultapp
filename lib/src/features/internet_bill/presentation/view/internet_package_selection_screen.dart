@@ -16,10 +16,12 @@ class InternetPackageSelectionScreen extends StatefulWidget {
   const InternetPackageSelectionScreen({super.key});
 
   @override
-  State<InternetPackageSelectionScreen> createState() => _InternetPackageSelectionScreenState();
+  State<InternetPackageSelectionScreen> createState() =>
+      _InternetPackageSelectionScreenState();
 }
 
-class _InternetPackageSelectionScreenState extends State<InternetPackageSelectionScreen> {
+class _InternetPackageSelectionScreenState
+    extends State<InternetPackageSelectionScreen> {
   final _currencyFormat = NumberFormat('#,##0', 'en_NG');
 
   @override
@@ -27,7 +29,9 @@ class _InternetPackageSelectionScreenState extends State<InternetPackageSelectio
     super.initState();
     final args = Get.arguments as Map<String, dynamic>;
     final provider = args['provider'] as InternetProviderEntity;
-    context.read<InternetBillCubit>().getPackages(providerId: provider.serviceId);
+    context
+        .read<InternetBillCubit>()
+        .getPackages(providerId: provider.serviceId);
   }
 
   @override
@@ -145,7 +149,8 @@ class _InternetPackageSelectionScreenState extends State<InternetPackageSelectio
                     }
 
                     if (state is InternetBillError) {
-                      return _buildErrorState(state.message, provider.serviceId);
+                      return _buildErrorState(
+                          state.message, provider.serviceId);
                     }
 
                     if (state is InternetPackagesLoaded) {
@@ -286,8 +291,9 @@ class _InternetPackageSelectionScreenState extends State<InternetPackageSelectio
           ),
           SizedBox(height: 24.h),
           ElevatedButton(
-            onPressed: () =>
-                context.read<InternetBillCubit>().getPackages(providerId: providerId),
+            onPressed: () => context
+                .read<InternetBillCubit>()
+                .getPackages(providerId: providerId),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF3B82F6),
               shape: RoundedRectangleBorder(

@@ -212,7 +212,8 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
                           .toList();
                       if (plans.isEmpty) {
                         return Center(
-                          child: Text('No ${_durationFilter.label.toLowerCase()} plans',
+                          child: Text(
+                              'No ${_durationFilter.label.toLowerCase()} plans',
                               style: GoogleFonts.inter(
                                   color: const Color(0xFF9CA3AF),
                                   fontSize: 14.sp)),
@@ -220,8 +221,7 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
                       }
                       return GridView.builder(
                         itemCount: plans.length,
-                        gridDelegate:
-                            SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           crossAxisSpacing: 12.w,
                           mainAxisSpacing: 12.h,
@@ -265,8 +265,8 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
           decoration: BoxDecoration(
             color: selected ? accent : const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(
-                color: selected ? accent : const Color(0xFF2D2D2D)),
+            border:
+                Border.all(color: selected ? accent : const Color(0xFF2D2D2D)),
           ),
           child: Text(d.label,
               style: GoogleFonts.inter(

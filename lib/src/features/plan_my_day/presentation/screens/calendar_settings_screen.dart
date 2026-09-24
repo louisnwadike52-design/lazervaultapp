@@ -369,7 +369,8 @@ class _CalendarSettingsScreenState extends State<CalendarSettingsScreen> {
 
       final GoogleSignInAccount user;
       try {
-        user = await GoogleSignIn.instance.authenticate(scopeHint: _calendarScopes);
+        user = await GoogleSignIn.instance
+            .authenticate(scopeHint: _calendarScopes);
       } on GoogleSignInException catch (e) {
         if (!mounted) return;
         setState(() => _syncing = false);
@@ -469,7 +470,8 @@ class _CalendarSettingsScreenState extends State<CalendarSettingsScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),
             ),
-            child: const Text('Disconnect', style: TextStyle(color: Colors.white)),
+            child:
+                const Text('Disconnect', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -506,7 +508,8 @@ class _CalendarSettingsScreenState extends State<CalendarSettingsScreen> {
     });
 
     try {
-      final result = await _calendarSyncService.syncGoogleCalendar(fullSync: true);
+      final result =
+          await _calendarSyncService.syncGoogleCalendar(fullSync: true);
 
       if (mounted) {
         setState(() {

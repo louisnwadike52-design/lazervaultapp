@@ -533,87 +533,87 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
       ),
       borderRadius: BorderRadius.circular(14.r),
       child: Container(
-      margin: EdgeInsets.only(bottom: 8.h),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(14.r),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44.w,
-            height: 44.w,
-            decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(22.r),
+        margin: EdgeInsets.only(bottom: 8.h),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(14.r),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(22.r),
+              ),
+              child: Icon(
+                Icons.arrow_downward,
+                color: const Color(0xFF10B981),
+                size: 20.sp,
+              ),
             ),
-            child: Icon(
-              Icons.arrow_downward,
-              color: const Color(0xFF10B981),
-              size: 20.sp,
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    transaction.payerName,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    '@${transaction.payerUsername}',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  transaction.payerName,
+                  // Creator-facing: show what they actually keep (net of the
+                  // platform fee); the gross + fee live in the receipt.
+                  '+${_currencySymbol(transaction.currency)}${transaction.creatorReceives.toStringAsFixed(2)}',
                   style: GoogleFonts.inter(
-                    color: Colors.white,
+                    color: const Color(0xFF10B981),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 SizedBox(height: 2.h),
+                if (transaction.fee > 0)
+                  Text(
+                    'fee ${_currencySymbol(transaction.currency)}${transaction.fee.toStringAsFixed(2)}',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
                 Text(
-                  '@${transaction.payerUsername}',
+                  _formatShortDate(transaction.createdAt),
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF),
-                    fontSize: 12.sp,
+                    color: const Color(0xFF6B7280),
+                    fontSize: 11.sp,
                     fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                // Creator-facing: show what they actually keep (net of the
-                // platform fee); the gross + fee live in the receipt.
-                '+${_currencySymbol(transaction.currency)}${transaction.creatorReceives.toStringAsFixed(2)}',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF10B981),
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(height: 2.h),
-              if (transaction.fee > 0)
-                Text(
-                  'fee ${_currencySymbol(transaction.currency)}${transaction.fee.toStringAsFixed(2)}',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF),
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              Text(
-                _formatShortDate(transaction.createdAt),
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF6B7280),
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }

@@ -119,7 +119,8 @@ class _DevicePermissionsScreenState extends State<DevicePermissionsScreen>
     context.read<IdentityCubit>().updatePermissions(permissions: list);
   }
 
-  void _showRevokeDialog(PermissionType type, {bool permanentlyDenied = false}) {
+  void _showRevokeDialog(PermissionType type,
+      {bool permanentlyDenied = false}) {
     final name = _entity(type).permissionName;
     showDialog(
       context: context,
@@ -130,7 +131,9 @@ class _DevicePermissionsScreenState extends State<DevicePermissionsScreen>
         title: Text(
           permanentlyDenied ? '$name needs system access' : 'Manage $name',
           style: GoogleFonts.inter(
-              color: _textPrimary, fontWeight: FontWeight.w700, fontSize: 16.sp),
+              color: _textPrimary,
+              fontWeight: FontWeight.w700,
+              fontSize: 16.sp),
         ),
         content: Text(
           permanentlyDenied
@@ -141,8 +144,8 @@ class _DevicePermissionsScreenState extends State<DevicePermissionsScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel',
-                style: GoogleFonts.inter(color: _textSecondary)),
+            child:
+                Text('Cancel', style: GoogleFonts.inter(color: _textSecondary)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -194,7 +197,9 @@ class _DevicePermissionsScreenState extends State<DevicePermissionsScreen>
         title: Text(
           'Device Permissions',
           style: GoogleFonts.inter(
-              color: _textPrimary, fontSize: 17.sp, fontWeight: FontWeight.w600),
+              color: _textPrimary,
+              fontSize: 17.sp,
+              fontWeight: FontWeight.w600),
         ),
       ),
       body: BlocListener<IdentityCubit, IdentityState>(
@@ -246,8 +251,8 @@ class _DevicePermissionsScreenState extends State<DevicePermissionsScreen>
             width: 44.w,
             height: 44.w,
             decoration: BoxDecoration(
-              color: (granted ? _primary : _textSecondary)
-                  .withValues(alpha: 0.12),
+              color:
+                  (granted ? _primary : _textSecondary).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(_icon(type),

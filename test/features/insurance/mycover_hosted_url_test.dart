@@ -45,7 +45,8 @@ void main() {
 
     test('fragment already with ? uses &', () {
       final got = MyCoverHostedUrl.compose(base: '$base?x=9', userId: 'u1');
-      expect(got, 'https://s.mycover.ai/#XIDgIDGGWV?x=9&client_reference=LV-u1');
+      expect(
+          got, 'https://s.mycover.ai/#XIDgIDGGWV?x=9&client_reference=LV-u1');
     });
   });
 }

@@ -56,9 +56,7 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
 
     final cubit = context.read<CrowdfundCubit>();
     final state = cubit.state;
-    if (state is! MyCrowdfundsLoaded ||
-        state.isLoadingMore ||
-        !state.hasMore) {
+    if (state is! MyCrowdfundsLoaded || state.isLoadingMore || !state.hasMore) {
       return;
     }
     cubit.loadMoreMyCrowdfunds();
@@ -71,13 +69,9 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
       case 2:
         return all.where((c) => c.status == CrowdfundStatus.paused).toList();
       case 3:
-        return all
-            .where((c) => c.status == CrowdfundStatus.completed)
-            .toList();
+        return all.where((c) => c.status == CrowdfundStatus.completed).toList();
       case 4:
-        return all
-            .where((c) => c.status == CrowdfundStatus.cancelled)
-            .toList();
+        return all.where((c) => c.status == CrowdfundStatus.cancelled).toList();
       default:
         return all;
     }
@@ -119,8 +113,7 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
             curr is CrowdfundError,
         builder: (context, state) {
           if (state is CrowdfundLoading) {
-            return const Center(
-                child: LazerVaultLoader.small());
+            return const Center(child: LazerVaultLoader.small());
           }
           if (state is MyCrowdfundsLoaded) {
             return TabBarView(
@@ -135,8 +128,8 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
                 // since "Active/Paused/..." filters are client-side
                 // and a server-fetched next page may not include any
                 // of them. The All tab covers every campaign.
-                final showFooter = tabIndex == 0 &&
-                    (state.isLoadingMore || state.hasMore);
+                final showFooter =
+                    tabIndex == 0 && (state.isLoadingMore || state.hasMore);
                 final itemCount = filtered.length + (showFooter ? 1 : 0);
                 return RefreshIndicator(
                   onRefresh: () async =>
@@ -218,9 +211,8 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
     final statusColor = _statusColor(campaign.status);
 
     return GestureDetector(
-      onTap: () =>
-          Get.toNamed(AppRoutes.crowdfundDetails,
-              arguments: {'crowdfundId': campaign.id, 'crowdfund': campaign}),
+      onTap: () => Get.toNamed(AppRoutes.crowdfundDetails,
+          arguments: {'crowdfundId': campaign.id, 'crowdfund': campaign}),
       child: Container(
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
@@ -243,8 +235,7 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
                       overflow: TextOverflow.ellipsis),
                 ),
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                   decoration: BoxDecoration(
                     color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10.r),

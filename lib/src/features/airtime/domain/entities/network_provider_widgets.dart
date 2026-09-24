@@ -7,36 +7,36 @@ enum NetworkProviderType {
   glo,
   etisalat,
   ninemobile,
-  
+
   // US providers
   verizon,
   att,
   tmobile,
   sprint,
-  
+
   // UK providers
   ee,
   vodafone,
   o2,
   three,
-  
+
   // Indian providers
   jio,
   airtelIndia,
   vi,
   bsnl,
-  
+
   // South African providers
   vodacomSa,
   mtnSa,
   cellC,
   telkomMobile,
-  
+
   // Kenyan providers
   safaricom,
   airtelKenya,
   telkomKenya,
-  
+
   // Ghanaian providers
   mtnGhana,
   vodafoneGhana,
@@ -81,7 +81,7 @@ class NetworkProvider extends Equatable {
   bool canHandleNumber(String phoneNumber) {
     final cleanNumber = phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
     if (cleanNumber.length < 3) return false;
-    
+
     // Check if any prefix matches the beginning of the phone number
     for (final prefix in prefixes) {
       if (cleanNumber.startsWith(prefix)) {

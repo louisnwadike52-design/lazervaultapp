@@ -1,4 +1,5 @@
 import 'package:lazervault/src/features/ai_scan_to_pay/domain/services/scan_text_normalizer.dart';
+
 /// What kind of payable identifier the on-device OCR spotted in a camera frame.
 enum ScanCandidateType { account, phone, amount, username, email }
 

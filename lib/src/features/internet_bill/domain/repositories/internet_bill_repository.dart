@@ -6,14 +6,16 @@ import '../entities/internet_account_validation_entity.dart';
 import '../entities/internet_payment_entity.dart';
 
 abstract class InternetBillRepository {
-  Future<Either<Failure, List<InternetProviderEntity>>> getProviders({bool activeOnly = true});
+  Future<Either<Failure, List<InternetProviderEntity>>> getProviders(
+      {bool activeOnly = true});
 
   Future<Either<Failure, InternetAccountValidationEntity>> validateAccount({
     required String providerId,
     required String accountNumber,
   });
 
-  Future<Either<Failure, List<InternetPackageEntity>>> getPackages({required String providerId});
+  Future<Either<Failure, List<InternetPackageEntity>>> getPackages(
+      {required String providerId});
 
   Future<Either<Failure, InternetPaymentEntity>> payBill({
     required String providerId,

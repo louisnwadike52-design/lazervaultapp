@@ -96,8 +96,8 @@ class _ProductivityInsightsScreenState
               ),
               PopupMenuItem(
                 value: 'quarter',
-                child: Text('This Quarter',
-                    style: TextStyle(color: Colors.white)),
+                child:
+                    Text('This Quarter', style: TextStyle(color: Colors.white)),
               ),
             ],
           ),
@@ -164,8 +164,7 @@ class _ProductivityInsightsScreenState
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.insights_outlined,
-                color: Colors.grey[600], size: 48),
+            Icon(Icons.insights_outlined, color: Colors.grey[600], size: 48),
             SizedBox(height: 16.h),
             Text(
               'Not enough activity yet',
@@ -294,7 +293,8 @@ class _ProductivityInsightsScreenState
                         value: _scoreFraction(),
                         strokeWidth: 8,
                         backgroundColor: Colors.white.withOpacity(0.2),
-                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor:
+                            const AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     ),
                     Text(

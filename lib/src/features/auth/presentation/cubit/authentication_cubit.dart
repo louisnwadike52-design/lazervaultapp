@@ -37,4 +37,4 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   void logout() {
     emit(Unauthenticated());
   }
-} 
+}

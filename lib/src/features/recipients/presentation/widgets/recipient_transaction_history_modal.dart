@@ -16,7 +16,6 @@ import 'package:lazervault/src/features/funds/domain/entities/recurring_transfer
 import 'package:lazervault/src/features/widgets/unified_transaction_receipt.dart';
 part 'recipient_transaction_history_modal_widgets.dart';
 
-
 class _TransactionItem extends StatelessWidget {
   final UnifiedTransaction transaction;
   final RecipientModel recipient;
@@ -32,7 +31,8 @@ class _TransactionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateStr = DateFormat('dd MMM yyyy, HH:mm').format(transaction.createdAt);
+    final dateStr =
+        DateFormat('dd MMM yyyy, HH:mm').format(transaction.createdAt);
     final amountMinor = (transaction.amount * 100).toInt();
     final isIncoming = transaction.flow == TransactionFlow.incoming;
 
@@ -92,9 +92,11 @@ class _TransactionItem extends StatelessWidget {
                       if (matchingRecurring != null) ...[
                         SizedBox(width: 6.w),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 6.w, vertical: 2.h),
                           decoration: BoxDecoration(
-                            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                            color: const Color.fromARGB(255, 78, 3, 208)
+                                .withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                           child: Row(
@@ -136,12 +138,12 @@ class _TransactionItem extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
-                    color: isIncoming
-                        ? const Color(0xFF10B981)
-                        : Colors.black87,
+                    color:
+                        isIncoming ? const Color(0xFF10B981) : Colors.black87,
                   ),
                 ),
-                if (transaction.status != UnifiedTransactionStatus.completed) ...[
+                if (transaction.status !=
+                    UnifiedTransactionStatus.completed) ...[
                   SizedBox(height: 2.h),
                   Text(
                     transaction.status.displayName,
@@ -162,7 +164,8 @@ class _TransactionItem extends StatelessWidget {
 
   void _showTransactionDialog(BuildContext context, int amountMinor) {
     final isIncoming = transaction.flow == TransactionFlow.incoming;
-    final dateStr = DateFormat('EEEE, dd MMM yyyy \'at\' HH:mm').format(transaction.createdAt);
+    final dateStr = DateFormat('EEEE, dd MMM yyyy \'at\' HH:mm')
+        .format(transaction.createdAt);
 
     showModalBottomSheet(
       context: context,
@@ -261,10 +264,12 @@ class _TransactionItem extends StatelessWidget {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.08),
+                  color: const Color.fromARGB(255, 78, 3, 208)
+                      .withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8.r),
                   border: Border.all(
-                    color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+                    color: const Color.fromARGB(255, 78, 3, 208)
+                        .withValues(alpha: 0.2),
                   ),
                 ),
                 child: Row(
@@ -395,7 +400,8 @@ class _TransactionItem extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.receipt_outlined, color: Colors.black87, size: 18.sp),
+                          Icon(Icons.receipt_outlined,
+                              color: Colors.black87, size: 18.sp),
                           SizedBox(width: 8.w),
                           Text(
                             'Receipt',

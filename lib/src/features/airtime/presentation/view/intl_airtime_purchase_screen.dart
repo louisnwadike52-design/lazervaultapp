@@ -82,9 +82,11 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
 
   /// Selected fixed denomination in **destination** currency (what the user taps).
   double _selectedDestFixed = 0;
+
   /// Corresponding sender-currency amount for the selected fixed denomination.
   double _selectedSenderFixed = 0;
   String? _phoneError;
+
   /// Inline guidance shown when operator auto-detection can't resolve the
   /// number (cleared on a successful detect or a new phone edit).
   String? _detectHint;
@@ -312,7 +314,8 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
     }
     final op = _selectedOperator;
     if (op == null) {
-      setState(() => _phoneError = 'Could not determine network. Pick one below.');
+      setState(
+          () => _phoneError = 'Could not determine network. Pick one below.');
       return false;
     }
 
@@ -330,8 +333,7 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
         setState(() => _amountError = 'Enter an amount');
         return false;
       }
-      final hasLocal =
-          op.localMinAmount > 0 || op.localMaxAmount > 0;
+      final hasLocal = op.localMinAmount > 0 || op.localMaxAmount > 0;
       final minDest = hasLocal
           ? op.localMinAmount
           : (op.fxRate > 0 ? op.minAmount / op.fxRate : op.minAmount);
@@ -388,7 +390,8 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
       listener: (context, state) {
         if (state is IntlAirtimeCountriesLoaded) {
           _hydrateFromCountriesLoaded(state.countries);
-        } else if (state is IntlAirtimeOperatorsLoaded && _isRepeat &&
+        } else if (state is IntlAirtimeOperatorsLoaded &&
+            _isRepeat &&
             _selectedOperator == null) {
           // Repeat path: auto-select the operator we previously used so the
           // grid pre-locks on it and the amount becomes the only editable
@@ -452,8 +455,7 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
                 elevation: 0,
                 leading: GestureDetector(
                   onTap: Get.back,
-                  child:
-                      const Icon(Icons.arrow_back_ios, color: Colors.white),
+                  child: const Icon(Icons.arrow_back_ios, color: Colors.white),
                 ),
                 title: Text(
                   'International Airtime',
@@ -468,73 +470,76 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
         body: _country == null
             ? _buildCountryResolutionPlaceholder()
             : SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 12.h),
-              _buildCountryHeader(),
-              SizedBox(height: 20.h),
-              _sectionLabel('Recipient Phone Number'),
-              SizedBox(height: 8.h),
-              _buildPhoneInput(),
-              if (_phoneError != null) ...[
-                SizedBox(height: 6.h),
-                Text(
-                  _phoneError!,
-                  style: TextStyle(color: const Color(0xFFEF4444), fontSize: 12.sp),
-                ),
-              ],
-              // Auto-detect couldn't resolve the network (common for GB and
-              // other heavily ported ranges). Guidance, not an error — the
-              // network grid below stays fully usable.
-              if (_phoneError == null && _detectHint != null) ...[
-                SizedBox(height: 6.h),
-                Row(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.info_outline,
-                        size: 14.sp, color: const Color(0xFFA78BFA)),
-                    SizedBox(width: 6.w),
-                    Expanded(
-                      child: Text(
-                        _detectHint!,
+                    SizedBox(height: 12.h),
+                    _buildCountryHeader(),
+                    SizedBox(height: 20.h),
+                    _sectionLabel('Recipient Phone Number'),
+                    SizedBox(height: 8.h),
+                    _buildPhoneInput(),
+                    if (_phoneError != null) ...[
+                      SizedBox(height: 6.h),
+                      Text(
+                        _phoneError!,
                         style: TextStyle(
-                            color: const Color(0xFFA78BFA), fontSize: 12.sp),
+                            color: const Color(0xFFEF4444), fontSize: 12.sp),
                       ),
-                    ),
+                    ],
+                    // Auto-detect couldn't resolve the network (common for GB and
+                    // other heavily ported ranges). Guidance, not an error — the
+                    // network grid below stays fully usable.
+                    if (_phoneError == null && _detectHint != null) ...[
+                      SizedBox(height: 6.h),
+                      Row(
+                        children: [
+                          Icon(Icons.info_outline,
+                              size: 14.sp, color: const Color(0xFFA78BFA)),
+                          SizedBox(width: 6.w),
+                          Expanded(
+                            child: Text(
+                              _detectHint!,
+                              style: TextStyle(
+                                  color: const Color(0xFFA78BFA),
+                                  fontSize: 12.sp),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    SizedBox(height: 20.h),
+                    _sectionLabel('Network'),
+                    SizedBox(height: 8.h),
+                    _buildOperatorPicker(),
+                    if (_selectedOperator != null) ...[
+                      SizedBox(height: 24.h),
+                      _sectionLabel(
+                          _isFixed ? 'Choose Denomination' : 'Amount'),
+                      SizedBox(height: 8.h),
+                      if (_isFixed) _buildFixedGrid() else _buildRangeInput(),
+                      if (_amountError != null) ...[
+                        SizedBox(height: 6.h),
+                        Text(
+                          _amountError!,
+                          style: TextStyle(
+                              color: const Color(0xFFEF4444), fontSize: 12.sp),
+                        ),
+                      ],
+                      if (!_isFixed) ...[
+                        SizedBox(height: 14.h),
+                        _buildQuickAmounts(),
+                      ],
+                      SizedBox(height: 20.h),
+                      _buildFxSummary(),
+                    ],
+                    SizedBox(height: 28.h),
+                    _buildContinueButton(),
+                    SizedBox(height: 40.h),
                   ],
                 ),
-              ],
-              SizedBox(height: 20.h),
-              _sectionLabel('Network'),
-              SizedBox(height: 8.h),
-              _buildOperatorPicker(),
-              if (_selectedOperator != null) ...[
-                SizedBox(height: 24.h),
-                _sectionLabel(_isFixed ? 'Choose Denomination' : 'Amount'),
-                SizedBox(height: 8.h),
-                if (_isFixed) _buildFixedGrid() else _buildRangeInput(),
-                if (_amountError != null) ...[
-                  SizedBox(height: 6.h),
-                  Text(
-                    _amountError!,
-                    style: TextStyle(
-                        color: const Color(0xFFEF4444), fontSize: 12.sp),
-                  ),
-                ],
-                if (!_isFixed) ...[
-                  SizedBox(height: 14.h),
-                  _buildQuickAmounts(),
-                ],
-                SizedBox(height: 20.h),
-                _buildFxSummary(),
-              ],
-              SizedBox(height: 28.h),
-              _buildContinueButton(),
-              SizedBox(height: 40.h),
-            ],
-          ),
-        ),
+              ),
       ),
     );
   }
@@ -564,17 +569,17 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
               Text(
                 'Pick a country to continue with your international top-up.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
               ),
               SizedBox(height: 20.h),
               ElevatedButton(
-                onPressed: () => Get.offNamed(
-                    AppRoutes.intlAirtimeCountrySelection),
+                onPressed: () =>
+                    Get.offNamed(AppRoutes.intlAirtimeCountrySelection),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4E03D0),
-                  padding: EdgeInsets.symmetric(
-                      horizontal: 28.w, vertical: 14.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 28.w, vertical: 14.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),
@@ -592,8 +597,8 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
               SizedBox(height: 16.h),
               Text(
                 'Loading country…',
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
               ),
             ],
           ],
@@ -685,8 +690,7 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
             decoration: const BoxDecoration(
-              border: Border(
-                  right: BorderSide(color: Color(0xFF2D2D2D))),
+              border: Border(right: BorderSide(color: Color(0xFF2D2D2D))),
             ),
             child: Text(
               _country!.dialCode.isNotEmpty ? _country!.dialCode : '+?',
@@ -723,8 +727,7 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
                     EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
                 suffixIcon: _phoneLocked
                     ? Icon(Icons.lock,
-                        size: 16.sp,
-                        color: Colors.white.withValues(alpha: 0.5))
+                        size: 16.sp, color: Colors.white.withValues(alpha: 0.5))
                     : null,
               ),
             ),
@@ -812,7 +815,8 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
                 ),
               ),
             ),
-            Icon(Icons.keyboard_arrow_down, color: const Color(0xFF9CA3AF), size: 20.sp),
+            Icon(Icons.keyboard_arrow_down,
+                color: const Color(0xFF9CA3AF), size: 20.sp),
             SizedBox(width: 4.w),
             if (_operatorAutoDetected)
               Container(
@@ -824,9 +828,9 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
                 child: Text(
                   'Auto',
                   style: TextStyle(
-                    color: const Color(0xFF10B981),
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.w600),
+                      color: const Color(0xFF10B981),
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.w600),
                 ),
               ),
           ],
@@ -901,8 +905,7 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
               'Min: ${op.destCurrencyCode} ${minDest.toStringAsFixed(0)}'
               '  –  '
               'Max: ${op.destCurrencyCode} ${maxDest.toStringAsFixed(0)}',
-              style: TextStyle(
-                  color: const Color(0xFF9CA3AF), fontSize: 11.sp),
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 11.sp),
             ),
           ),
       ],
@@ -962,9 +965,8 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
               color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(8.r),
               border: Border.all(
-                color: active
-                    ? const Color(0xFFA78BFA)
-                    : const Color(0xFF2D2D2D),
+                color:
+                    active ? const Color(0xFFA78BFA) : const Color(0xFF2D2D2D),
               ),
             ),
             child: Text(
@@ -1055,9 +1057,7 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
                   // Primary: target currency face value (what recipient gets).
                   '${op.destCurrencyCode} ${dest.toStringAsFixed(0)}',
                   style: TextStyle(
-                    color: selected
-                        ? const Color(0xFFA78BFA)
-                        : Colors.white,
+                    color: selected ? const Color(0xFFA78BFA) : Colors.white,
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w700,
                   ),
@@ -1136,8 +1136,7 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
             SizedBox(height: 4.h),
             Text(
               'Paying in $activeCur from your wallet for a $destCur ${_fmt(destAmt)} top-up',
-              style: TextStyle(
-                  color: const Color(0xFF6B7280), fontSize: 11.sp),
+              style: TextStyle(color: const Color(0xFF6B7280), fontSize: 11.sp),
             ),
           ],
         ],

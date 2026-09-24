@@ -111,9 +111,8 @@ class AutoSaveSwipeableCard extends StatelessWidget {
             onTap: selectionMode
                 ? () => onSelectionChanged?.call(!isSelected)
                 : onTap,
-            onLongPress: !selectionMode
-                ? () => onSelectionChanged?.call(true)
-                : null,
+            onLongPress:
+                !selectionMode ? () => onSelectionChanged?.call(true) : null,
             child: Padding(
               padding: EdgeInsets.all(16.w),
               child: Row(

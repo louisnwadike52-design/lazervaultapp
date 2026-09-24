@@ -86,7 +86,7 @@ class InvoicePaymentCard extends StatelessWidget {
           child: Center(
             child: Text(
               invoice.fromCompanyName?.substring(0, 1).toUpperCase() ??
-              invoice.fromUserName.substring(0, 1).toUpperCase(),
+                  invoice.fromUserName.substring(0, 1).toUpperCase(),
               style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 18.sp,
@@ -145,7 +145,8 @@ class InvoicePaymentCard extends StatelessWidget {
           textColor = InvoiceThemeColors.errorRed;
           statusText = 'Overdue';
         } else {
-          backgroundColor = InvoiceThemeColors.warningOrange.withValues(alpha: 0.2);
+          backgroundColor =
+              InvoiceThemeColors.warningOrange.withValues(alpha: 0.2);
           textColor = InvoiceThemeColors.warningOrange;
           statusText = 'Pending';
         }
@@ -156,7 +157,8 @@ class InvoicePaymentCard extends StatelessWidget {
         statusText = 'Processing';
         break;
       case PaymentStatus.completed:
-        backgroundColor = InvoiceThemeColors.successGreen.withValues(alpha: 0.2);
+        backgroundColor =
+            InvoiceThemeColors.successGreen.withValues(alpha: 0.2);
         textColor = InvoiceThemeColors.successGreen;
         statusText = 'Paid';
         break;
@@ -238,7 +240,9 @@ class InvoicePaymentCard extends StatelessWidget {
             Text(
               invoice.formattedDueDate,
               style: GoogleFonts.inter(
-                color: isOverdue ? InvoiceThemeColors.errorRed : InvoiceThemeColors.textWhite,
+                color: isOverdue
+                    ? InvoiceThemeColors.errorRed
+                    : InvoiceThemeColors.textWhite,
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -334,7 +338,8 @@ class InvoicePaymentCard extends StatelessWidget {
         ),
 
         // Action buttons
-        if (onPay != null && invoice.paymentStatus == PaymentStatus.pending) ...[
+        if (onPay != null &&
+            invoice.paymentStatus == PaymentStatus.pending) ...[
           Container(
             height: 38.h,
             decoration: BoxDecoration(
@@ -349,7 +354,8 @@ class InvoicePaymentCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(19.r),
               boxShadow: [
                 BoxShadow(
-                  color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3),
+                  color:
+                      InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),

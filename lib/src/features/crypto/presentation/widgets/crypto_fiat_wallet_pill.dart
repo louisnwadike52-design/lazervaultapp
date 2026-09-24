@@ -53,7 +53,8 @@ class CryptoFiatWalletPill extends StatelessWidget {
         String label = 'Lazervault Wallet';
         final t = personal.accountType.trim();
         if (t.isNotEmpty) {
-          label = '${t[0].toUpperCase()}${t.substring(1).toLowerCase()} account';
+          label =
+              '${t[0].toUpperCase()}${t.substring(1).toLowerCase()} account';
         }
         if (compact) {
           return Container(

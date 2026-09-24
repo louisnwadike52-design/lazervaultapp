@@ -94,7 +94,9 @@ class _MethodOption extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
-          color: selected ? accent.withValues(alpha: 0.10) : const Color(0xFF161616),
+          color: selected
+              ? accent.withValues(alpha: 0.10)
+              : const Color(0xFF161616),
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
             color: selected ? accent : const Color(0xFF2D2D2D),

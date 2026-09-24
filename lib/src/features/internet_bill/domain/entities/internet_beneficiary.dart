@@ -60,8 +60,7 @@ class InternetBeneficiary extends Equatable {
 
   factory InternetBeneficiary.fromProto(pb.InternetBeneficiary proto) {
     String? tsToIso(bool has, dynamic ts) => has
-        ? DateTime.fromMillisecondsSinceEpoch(
-                ts.seconds.toInt() * 1000,
+        ? DateTime.fromMillisecondsSinceEpoch(ts.seconds.toInt() * 1000,
                 isUtc: true)
             .toIso8601String()
         : null;
@@ -73,8 +72,7 @@ class InternetBeneficiary extends Equatable {
       providerName: proto.providerName,
       nickname: proto.nickname.isEmpty ? null : proto.nickname,
       lastAmount: proto.hasLastAmount() ? proto.lastAmount : null,
-      lastPackageId:
-          proto.lastPackageId.isEmpty ? null : proto.lastPackageId,
+      lastPackageId: proto.lastPackageId.isEmpty ? null : proto.lastPackageId,
       lastPlanName: proto.lastPlanName.isEmpty ? null : proto.lastPlanName,
       lastTopupAt: tsToIso(proto.hasLastTopupAt(), proto.lastTopupAt),
       topupCount: proto.hasTopupCount() ? proto.topupCount : 0,

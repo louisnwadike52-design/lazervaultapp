@@ -42,7 +42,8 @@ class AssetCatalogItem {
       currency: json['currency'] ?? 'USD',
       riskLevel: json['risk_level'] ?? json['riskLevel'] ?? 'medium',
       yieldType: json['yield_type'] ?? json['yieldType'] ?? '',
-      expectedYield: (json['expected_yield'] ?? json['expectedYield'] ?? 0).toDouble(),
+      expectedYield:
+          (json['expected_yield'] ?? json['expectedYield'] ?? 0).toDouble(),
       description: json['description'] ?? '',
       exchange: json['exchange'] ?? '',
       sector: json['sector'] ?? '',
@@ -186,8 +187,10 @@ class FXConversionResult {
       fromAmount: (json['from_amount'] ?? json['fromAmount'] ?? 0).toDouble(),
       toAmount: (json['to_amount'] ?? json['toAmount'] ?? 0).toDouble(),
       marketRate: (json['market_rate'] ?? json['marketRate'] ?? 0).toDouble(),
-      appliedRate: (json['applied_rate'] ?? json['appliedRate'] ?? 0).toDouble(),
-      spreadProfit: (json['spread_profit'] ?? json['spreadProfit'] ?? 0).toDouble(),
+      appliedRate:
+          (json['applied_rate'] ?? json['appliedRate'] ?? 0).toDouble(),
+      spreadProfit:
+          (json['spread_profit'] ?? json['spreadProfit'] ?? 0).toDouble(),
       direction: json['direction'] ?? '',
       success: json['success'] ?? false,
       message: json['message'] ?? '',
@@ -221,7 +224,8 @@ class CommissionTier {
   }
 
   double get ratePercent => rateBps / 100.0;
-  String get rateLabel => rateBps == 0 ? 'Free' : '${ratePercent.toStringAsFixed(2)}%';
+  String get rateLabel =>
+      rateBps == 0 ? 'Free' : '${ratePercent.toStringAsFixed(2)}%';
 }
 
 class IncomeEvent {
@@ -259,8 +263,10 @@ class IncomeEvent {
       assetSymbol: json['asset_symbol'] ?? json['assetSymbol'] ?? '',
       assetType: json['asset_type'] ?? json['assetType'] ?? '',
       incomeType: json['income_type'] ?? json['incomeType'] ?? '',
-      grossAmount: (json['gross_amount'] ?? json['grossAmount'] ?? 0).toDouble(),
-      taxWithheld: (json['tax_withheld'] ?? json['taxWithheld'] ?? 0).toDouble(),
+      grossAmount:
+          (json['gross_amount'] ?? json['grossAmount'] ?? 0).toDouble(),
+      taxWithheld:
+          (json['tax_withheld'] ?? json['taxWithheld'] ?? 0).toDouble(),
       netAmount: (json['net_amount'] ?? json['netAmount'] ?? 0).toDouble(),
       currency: json['currency'] ?? 'USD',
       provider: json['provider'] ?? '',
@@ -359,7 +365,8 @@ class MutualFund {
       fundType: json['fund_type'] ?? json['fundType'] ?? '',
       riskLevel: json['risk_level'] ?? json['riskLevel'] ?? '',
       returnRate: (json['return_rate'] ?? json['returnRate'] ?? 0).toDouble(),
-      minInvestment: (json['min_investment'] ?? json['minInvestment'] ?? 0).toDouble(),
+      minInvestment:
+          (json['min_investment'] ?? json['minInvestment'] ?? 0).toDouble(),
       currency: json['currency'] ?? 'NGN',
       nav: (json['nav'] ?? 0).toDouble(),
       status: json['status'] ?? '',

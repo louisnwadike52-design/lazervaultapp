@@ -77,15 +77,15 @@ class ExchangeCubit extends Cubit<ExchangeState> {
   /// RPC failure never blocks a legitimate transfer — the backend re-checks
   /// atomically under lock anyway.
   Future<String?> checkDailyLimit(double amount) async {
-    final result =
-        await _repository.getExchangeLimits(currency: _fromCurrency);
+    final result = await _repository.getExchangeLimits(currency: _fromCurrency);
     if (isClosed) return null;
     return result.fold(
       (_) => null,
       (limits) {
         _limits = limits;
         if (!limits.exceedsRemaining(amount)) return null;
-        final cur = limits.currency.isNotEmpty ? limits.currency : _fromCurrency;
+        final cur =
+            limits.currency.isNotEmpty ? limits.currency : _fromCurrency;
         return 'This exceeds your daily transfer limit for tier ${limits.kycTier}. '
             'Remaining today: ${limits.dailyRemaining.toStringAsFixed(2)} $cur '
             '(daily cap ${limits.dailyLimit.toStringAsFixed(2)} $cur). '
@@ -342,6 +342,7 @@ class ExchangeCubit extends Cubit<ExchangeState> {
     // "individual" or "business" — carried end-to-end to Flutterwave
     // meta.beneficiary_type. Null falls back to individual semantics.
     String? beneficiaryType,
+
     /// Recipient inputs that only SOME payout rails require, keyed by the
     /// field name the active rail publishes (dots included, e.g.
     /// "beneficiary.transitNumber"). Collected from
@@ -392,7 +393,7 @@ class ExchangeCubit extends Cubit<ExchangeState> {
       recipientRoutingNumber: recipientRoutingNumber,
       recipientAddress: recipientAddress,
       beneficiaryType: beneficiaryType,
-          providerFields: providerFields,
+      providerFields: providerFields,
     );
     if (isClosed) return;
 

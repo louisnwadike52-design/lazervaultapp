@@ -16,196 +16,200 @@ class _TaskDetailBottomSheet extends StatelessWidget {
         final subtasks = loaded?.subtasksFor(task.id) ?? const <Task>[];
         final contact = loaded?.contactFor(task);
         return Container(
-      padding: EdgeInsets.all(24.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  task.title,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: _getPriorityColor(task.priority).withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Text(
-                  task.priorityLabel,
-                  style: TextStyle(
-                    color: _getPriorityColor(task.priority),
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
+          padding: EdgeInsets.all(24.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
           ),
-          if (task.description != null) ...[
-            SizedBox(height: 12.h),
-            Text(
-              task.description!,
-              style: TextStyle(
-                color: Colors.grey[400],
-                fontSize: 14.sp,
-              ),
-            ),
-          ],
-          SizedBox(height: 12.h),
-          Row(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                task.isCompleted ? Icons.check_circle : Icons.circle_outlined,
-                color: task.isCompleted ? Colors.green : Colors.grey[600],
-                size: 20,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      task.title,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color: _getPriorityColor(task.priority).withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Text(
+                      task.priorityLabel,
+                      style: TextStyle(
+                        color: _getPriorityColor(task.priority),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(width: 8.w),
-              Text(
-                task.isCompleted ? 'Completed' : 'Pending',
-                style: TextStyle(
-                  color: task.isCompleted ? Colors.green : Colors.grey[400],
-                  fontSize: 14.sp,
-                ),
-              ),
-              if (task.dueDate != null) ...[
-                SizedBox(width: 16.w),
-                Icon(
-                  Icons.calendar_today_outlined,
-                  size: 16,
-                  color: Colors.grey[400],
-                ),
-                SizedBox(width: 4.w),
+              if (task.description != null) ...[
+                SizedBox(height: 12.h),
                 Text(
-                  DateFormat('MMM d').format(task.dueDate!),
+                  task.description!,
                   style: TextStyle(
                     color: Colors.grey[400],
                     fontSize: 14.sp,
                   ),
                 ),
               ],
-            ],
-          ),
-          if (contact != null) ...[
-            SizedBox(height: 14.h),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TaskContactChip(
-                contact: contact,
-                compact: false,
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => BlocProvider(
-                        create: (_) => serviceLocator<ContactCubit>(),
-                        child: ContactDetailScreen(contactId: contact.id),
+              SizedBox(height: 12.h),
+              Row(
+                children: [
+                  Icon(
+                    task.isCompleted
+                        ? Icons.check_circle
+                        : Icons.circle_outlined,
+                    color: task.isCompleted ? Colors.green : Colors.grey[600],
+                    size: 20,
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    task.isCompleted ? 'Completed' : 'Pending',
+                    style: TextStyle(
+                      color: task.isCompleted ? Colors.green : Colors.grey[400],
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                  if (task.dueDate != null) ...[
+                    SizedBox(width: 16.w),
+                    Icon(
+                      Icons.calendar_today_outlined,
+                      size: 16,
+                      color: Colors.grey[400],
+                    ),
+                    SizedBox(width: 4.w),
+                    Text(
+                      DateFormat('MMM d').format(task.dueDate!),
+                      style: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: 14.sp,
                       ),
                     ),
-                  );
-                },
+                  ],
+                ],
               ),
-            ),
-          ],
-          SizedBox(height: 18.h),
-          Row(
-            children: [
-              Text(
-                'Subtasks',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              if (subtasks.isNotEmpty) ...[
-                SizedBox(width: 8.w),
-                Text(
-                  '${subtasks.where((t) => t.isCompleted).length}/${subtasks.length}',
-                  style: GoogleFonts.inter(
-                      color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+              if (contact != null) ...[
+                SizedBox(height: 14.h),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TaskContactChip(
+                    contact: contact,
+                    compact: false,
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => BlocProvider(
+                            create: (_) => serviceLocator<ContactCubit>(),
+                            child: ContactDetailScreen(contactId: contact.id),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ],
-              const Spacer(),
-              GestureDetector(
-                onTap: () => _promptAddSubtask(context),
-                child: Row(
-                  children: [
-                    Icon(Icons.add_rounded,
-                        color: const Color(0xFF8B5CF6), size: 18.sp),
-                    SizedBox(width: 2.w),
-                    Text('Add',
-                        style: GoogleFonts.inter(
-                            color: const Color(0xFF8B5CF6),
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w600)),
+              SizedBox(height: 18.h),
+              Row(
+                children: [
+                  Text(
+                    'Subtasks',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (subtasks.isNotEmpty) ...[
+                    SizedBox(width: 8.w),
+                    Text(
+                      '${subtasks.where((t) => t.isCompleted).length}/${subtasks.length}',
+                      style: GoogleFonts.inter(
+                          color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                    ),
                   ],
-                ),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: () => _promptAddSubtask(context),
+                    child: Row(
+                      children: [
+                        Icon(Icons.add_rounded,
+                            color: const Color(0xFF8B5CF6), size: 18.sp),
+                        SizedBox(width: 2.w),
+                        Text('Add',
+                            style: GoogleFonts.inter(
+                                color: const Color(0xFF8B5CF6),
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8.h),
+              if (subtasks.isEmpty)
+                Text(
+                  'No subtasks yet.',
+                  style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF), fontSize: 12.5.sp),
+                )
+              else
+                ...subtasks.map((s) => _subtaskRow(s)),
+              SizedBox(height: 20.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: _detailAction(
+                      Icons.edit_outlined,
+                      'Edit',
+                      () {
+                        Navigator.pop(context);
+                        TaskEditSheet.show(context, task: task, cubit: cubit);
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: _detailAction(
+                      Icons.event_repeat_outlined,
+                      'Reschedule',
+                      () {
+                        Navigator.pop(context);
+                        showReschedulePicker(context, task: task, cubit: cubit);
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: _detailAction(
+                      Icons.more_horiz_rounded,
+                      'More',
+                      () {
+                        Navigator.pop(context);
+                        TaskOptionsSheet.show(context,
+                            task: task, cubit: cubit);
+                      },
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          SizedBox(height: 8.h),
-          if (subtasks.isEmpty)
-            Text(
-              'No subtasks yet.',
-              style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF), fontSize: 12.5.sp),
-            )
-          else
-            ...subtasks.map((s) => _subtaskRow(s)),
-          SizedBox(height: 20.h),
-          Row(
-            children: [
-              Expanded(
-                child: _detailAction(
-                  Icons.edit_outlined,
-                  'Edit',
-                  () {
-                    Navigator.pop(context);
-                    TaskEditSheet.show(context, task: task, cubit: cubit);
-                  },
-                ),
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: _detailAction(
-                  Icons.event_repeat_outlined,
-                  'Reschedule',
-                  () {
-                    Navigator.pop(context);
-                    showReschedulePicker(context, task: task, cubit: cubit);
-                  },
-                ),
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: _detailAction(
-                  Icons.more_horiz_rounded,
-                  'More',
-                  () {
-                    Navigator.pop(context);
-                    TaskOptionsSheet.show(context, task: task, cubit: cubit);
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
         );
       },
     );
@@ -231,7 +235,9 @@ class _TaskDetailBottomSheet extends StatelessWidget {
               height: 20.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: s.isCompleted ? const Color(0xFF10B981) : Colors.transparent,
+                color: s.isCompleted
+                    ? const Color(0xFF10B981)
+                    : Colors.transparent,
                 border: Border.all(
                   color: s.isCompleted
                       ? const Color(0xFF10B981)
@@ -251,8 +257,7 @@ class _TaskDetailBottomSheet extends StatelessWidget {
               style: GoogleFonts.inter(
                 color: s.isCompleted ? const Color(0xFF9CA3AF) : Colors.white,
                 fontSize: 13.5.sp,
-                decoration:
-                    s.isCompleted ? TextDecoration.lineThrough : null,
+                decoration: s.isCompleted ? TextDecoration.lineThrough : null,
               ),
             ),
           ),

@@ -102,7 +102,8 @@ class VoiceTransferContext extends Equatable {
   String get recipientInitials {
     final name = (recipientName ?? recipientUsername ?? '').trim();
     if (name.isEmpty) return '?';
-    final parts = name.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    final parts =
+        name.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
     if (parts.isEmpty) return '?';
     if (parts.length == 1) {
       return parts.first.characters.first.toUpperCase();

@@ -115,8 +115,8 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
   /// this fails, and auto-detection still works via the cubit.
   Future<void> _loadProviders() async {
     try {
-      final list =
-          await serviceLocator<AirtimeRepository>().getNetworkProviders(_country);
+      final list = await serviceLocator<AirtimeRepository>()
+          .getNetworkProviders(_country);
       if (!mounted) return;
       setState(() => _providers = list.where((p) => p.isActive).toList());
       _applyArgNetwork();
@@ -146,8 +146,8 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
   /// cubit) so it never interferes with the purchase stream.
   Future<void> _loadSavedContacts() async {
     try {
-      final list = await serviceLocator<AirtimeRepository>()
-          .getAirtimeBeneficiaries();
+      final list =
+          await serviceLocator<AirtimeRepository>().getAirtimeBeneficiaries();
       if (!mounted) return;
       setState(() => _beneficiaries = list);
       _recomputeExistingBeneficiary();
@@ -187,9 +187,8 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
     final args = Get.arguments;
     if (args is Map) {
       final amt = args['amount'] ?? args['prefillAmount'];
-      final amtVal = amt is num
-          ? amt.toDouble()
-          : double.tryParse(amt?.toString() ?? '');
+      final amtVal =
+          amt is num ? amt.toDouble() : double.tryParse(amt?.toString() ?? '');
       if (amtVal != null && amtVal > 0 && _amountController.text.isEmpty) {
         _amountController.text = amtVal == amtVal.roundToDouble()
             ? amtVal.toInt().toString()
@@ -208,8 +207,8 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
       }
     }
     try {
-      final raw =
-          await serviceLocator<FlutterSecureStorage>().read(key: 'stored_phone');
+      final raw = await serviceLocator<FlutterSecureStorage>()
+          .read(key: 'stored_phone');
       final local = _toLocalNg(raw ?? '');
       if (local.isNotEmpty && mounted && _phoneController.text.isEmpty) {
         _phoneController.text = local; // triggers _onPhoneChanged → detect
@@ -374,7 +373,8 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
               reloadlyOperatorId: network.reloadlyOperatorId,
               sourceAccountId: accountId,
             );
-            result = await completer.future.timeout(const Duration(seconds: 90));
+            result =
+                await completer.future.timeout(const Duration(seconds: 90));
           } finally {
             await sub.cancel();
           }
@@ -621,7 +621,8 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
           hintText: '0803 000 0000',
           hintStyle: GoogleFonts.inter(color: const Color(0xFF6B7280)),
           prefixIcon: _dialCodePrefix(),
-          prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+          prefixIconConstraints:
+              const BoxConstraints(minWidth: 0, minHeight: 0),
           suffixIcon: _phoneController.text.isEmpty
               ? null
               : IconButton(
@@ -856,7 +857,8 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
     );
   }
 
-  Widget _row(String label, String value, {Color? valueColor, bool bold = false}) {
+  Widget _row(String label, String value,
+      {Color? valueColor, bool bold = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -939,7 +941,8 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
         ),
         child: _submitting
-            ? SizedBox(width: 20.w, height: 20.w, child: LazerVaultLoader.small())
+            ? SizedBox(
+                width: 20.w, height: 20.w, child: LazerVaultLoader.small())
             : Text(
                 _amount != null && _amount! > 0
                     ? 'Buy ₦${_amount!.toStringAsFixed(0)} airtime'

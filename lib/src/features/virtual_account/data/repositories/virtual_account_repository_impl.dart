@@ -13,7 +13,8 @@ class VirtualAccountRepositoryImpl implements IVirtualAccountRepository {
   VirtualAccountRepositoryImpl({
     required AccountsGrpcClient grpcClient,
     required GrpcCallOptionsHelper callOptionsHelper,
-  }) : _grpcClient = grpcClient; // callOptionsHelper is used by grpcClient internally
+  }) : _grpcClient =
+            grpcClient; // callOptionsHelper is used by grpcClient internally
 
   @override
   Future<Either<Failure, VirtualAccountEntity>> createVirtualAccount({
@@ -48,7 +49,8 @@ class VirtualAccountRepositoryImpl implements IVirtualAccountRepository {
         isPrimary: isPrimary,
       );
 
-      print('Virtual account created successfully: ${response.account.accountNumber}');
+      print(
+          'Virtual account created successfully: ${response.account.accountNumber}');
 
       return Right(VirtualAccountEntity(
         accountId: response.account.id,
@@ -62,7 +64,8 @@ class VirtualAccountRepositoryImpl implements IVirtualAccountRepository {
         message: response.message,
       ));
     } on GrpcError catch (e) {
-      print('gRPC Error during virtual account creation: ${e.codeName} - ${e.message}');
+      print(
+          'gRPC Error during virtual account creation: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
         message: e.message ?? 'Failed to create virtual account.',
         statusCode: e.code,

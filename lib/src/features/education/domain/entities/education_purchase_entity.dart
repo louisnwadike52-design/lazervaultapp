@@ -46,5 +46,20 @@ class EducationPurchaseEntity extends Equatable {
       status == 'awaiting_webhook';
 
   @override
-  List<Object?> get props => [id, userId, accountId, billType, providerId, reference, amount, status, customerNumber, metadata, createdAt, newBalance, pins, message];
+  List<Object?> get props => [
+        id,
+        userId,
+        accountId,
+        billType,
+        providerId,
+        reference,
+        amount,
+        status,
+        customerNumber,
+        metadata,
+        createdAt,
+        newBalance,
+        pins,
+        message
+      ];
 }

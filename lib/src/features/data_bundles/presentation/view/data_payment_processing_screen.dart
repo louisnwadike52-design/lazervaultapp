@@ -10,7 +10,6 @@ import '../cubit/data_bundles_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'data_payment_processing_screen_widgets.dart';
 
-
 class DataPaymentProcessingScreen extends StatefulWidget {
   const DataPaymentProcessingScreen({super.key});
 
@@ -20,8 +19,7 @@ class DataPaymentProcessingScreen extends StatefulWidget {
 }
 
 class _DataPaymentProcessingScreenState
-    extends State<DataPaymentProcessingScreen>
-    with TickerProviderStateMixin {
+    extends State<DataPaymentProcessingScreen> with TickerProviderStateMixin {
   late AnimationController _stepController;
   bool _hasFailed = false;
   bool _hasNavigated = false;
@@ -189,8 +187,7 @@ class _DataPaymentProcessingScreenState
 
               if (state is DataBundlesPaymentSuccess) {
                 _hasNavigated = true;
-                final autoRenew =
-                    args['autoRenewEnabled'] as bool? ?? false;
+                final autoRenew = args['autoRenewEnabled'] as bool? ?? false;
                 Get.offNamed(
                   AppRoutes.dataBundlesPaymentReceipt,
                   arguments: {
@@ -273,14 +270,11 @@ class _DataPaymentProcessingScreenState
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: isFailed
-                              ? const Color(0xFFEF4444)
-                                  .withValues(alpha: 0.15)
+                              ? const Color(0xFFEF4444).withValues(alpha: 0.15)
                               : isCompleted
-                                  ? step.activeColor
-                                      .withValues(alpha: 0.15)
+                                  ? step.activeColor.withValues(alpha: 0.15)
                                   : isActive
-                                      ? step.activeColor
-                                          .withValues(alpha: 0.15)
+                                      ? step.activeColor.withValues(alpha: 0.15)
                                       : const Color(0xFF1F1F1F),
                           border: Border.all(
                             color: isFailed
@@ -335,8 +329,7 @@ class _DataPaymentProcessingScreenState
                         isFailed ? _failMessage : step.subtitle,
                         style: GoogleFonts.inter(
                           color: isFailed
-                              ? const Color(0xFFEF4444)
-                                  .withValues(alpha: 0.8)
+                              ? const Color(0xFFEF4444).withValues(alpha: 0.8)
                               : isCompleted || isActive
                                   ? const Color(0xFF9CA3AF)
                                   : const Color(0xFF4B5563),
@@ -347,8 +340,7 @@ class _DataPaymentProcessingScreenState
                     ],
                   ),
                 ),
-                if (isActive && !_hasFailed)
-                  LazerVaultLoader.small(),
+                if (isActive && !_hasFailed) LazerVaultLoader.small(),
                 if (isCompleted)
                   Icon(
                     Icons.check_circle,
@@ -499,8 +491,7 @@ class _DataPaymentProcessingScreenState
             SizedBox(width: 12.w),
             Expanded(
               child: ElevatedButton(
-                onPressed: () =>
-                    Get.offAllNamed(AppRoutes.dataBundlesHome),
+                onPressed: () => Get.offAllNamed(AppRoutes.dataBundlesHome),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF3B82F6),
                   foregroundColor: Colors.white,

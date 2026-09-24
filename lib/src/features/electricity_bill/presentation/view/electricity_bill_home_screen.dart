@@ -45,7 +45,9 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<ElectricityBillCubit>().getProviders(country: serviceLocator<LocaleManager>().currentCountry);
+    context
+        .read<ElectricityBillCubit>()
+        .getProviders(country: serviceLocator<LocaleManager>().currentCountry);
     context.read<BeneficiaryCubit>().getBeneficiaries();
     _loadRecentPayments();
 
@@ -69,7 +71,9 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
   }
 
   Future<void> _onRefresh() async {
-    context.read<ElectricityBillCubit>().getProviders(country: serviceLocator<LocaleManager>().currentCountry);
+    context
+        .read<ElectricityBillCubit>()
+        .getProviders(country: serviceLocator<LocaleManager>().currentCountry);
     context.read<BeneficiaryCubit>().getBeneficiaries();
     _loadRecentPayments();
   }
@@ -91,10 +95,6 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
           );
     }
   }
-
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -118,140 +118,142 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
               final pendingId = _pendingReminderBeneficiaryId;
               if (pendingId != null && state is BeneficiariesLoaded) {
                 _pendingReminderBeneficiaryId = null;
-                final match =
-                    state.beneficiaries.where((b) => b.id == pendingId).firstOrNull;
+                final match = state.beneficiaries
+                    .where((b) => b.id == pendingId)
+                    .firstOrNull;
                 if (match != null) {
                   setState(() => _quickBuyInitialMeter = match.meterNumber);
                 }
               }
             },
             child: BlocConsumer<ElectricityBillCubit, ElectricityBillState>(
-            listener: (context, state) {
-              if (state is ProvidersLoaded) {
-                setState(() {
-                  _providers = state.providers;
-                  if (_selectedProvider != null) {
-                    final match = _providers
-                        .where((p) =>
-                            p.providerCode == _selectedProvider!.providerCode)
-                        .firstOrNull;
-                    _selectedProvider =
-                        match ?? (_providers.isNotEmpty ? _providers.first : null);
-                  }
-                });
-              }
+              listener: (context, state) {
+                if (state is ProvidersLoaded) {
+                  setState(() {
+                    _providers = state.providers;
+                    if (_selectedProvider != null) {
+                      final match = _providers
+                          .where((p) =>
+                              p.providerCode == _selectedProvider!.providerCode)
+                          .firstOrNull;
+                      _selectedProvider = match ??
+                          (_providers.isNotEmpty ? _providers.first : null);
+                    }
+                  });
+                }
 
-              if (state is MeterValidating) {
-                setState(() => _isValidating = true);
-              } else if (_isValidating && state is! MeterValidating) {
-                setState(() => _isValidating = false);
-              }
+                if (state is MeterValidating) {
+                  setState(() => _isValidating = true);
+                } else if (_isValidating && state is! MeterValidating) {
+                  setState(() => _isValidating = false);
+                }
 
-              if (state is MeterValidated) {
-                Get.toNamed(
-                  AppRoutes.electricityBillConfirmation,
-                  arguments: {
-                    'provider': _selectedProvider,
-                    'validationResult': state.validationResult,
-                    'providerCode': state.providerCode,
-                    'meterNumber': state.meterNumber,
-                    'meterType': state.meterType,
-                    'phoneNumber': _beneficiaryPhoneNumber ?? '',
-                  },
-                );
-                _beneficiaryPhoneNumber = null;
-              }
+                if (state is MeterValidated) {
+                  Get.toNamed(
+                    AppRoutes.electricityBillConfirmation,
+                    arguments: {
+                      'provider': _selectedProvider,
+                      'validationResult': state.validationResult,
+                      'providerCode': state.providerCode,
+                      'meterNumber': state.meterNumber,
+                      'meterType': state.meterType,
+                      'phoneNumber': _beneficiaryPhoneNumber ?? '',
+                    },
+                  );
+                  _beneficiaryPhoneNumber = null;
+                }
 
-              if (state is MeterValidationFailed) {
-                Get.snackbar(
-                  'Validation Failed',
-                  state.message,
-                  backgroundColor: InvoiceThemeColors.errorRed,
-                  colorText: Colors.white,
-                  snackPosition: SnackPosition.TOP,
-                );
-              }
+                if (state is MeterValidationFailed) {
+                  Get.snackbar(
+                    'Validation Failed',
+                    state.message,
+                    backgroundColor: InvoiceThemeColors.errorRed,
+                    colorText: Colors.white,
+                    snackPosition: SnackPosition.TOP,
+                  );
+                }
 
-              if (state is SmartMeterValidating) {
-                setState(() => _isSmartValidating = true);
-              } else if (_isSmartValidating && state is! SmartMeterValidating) {
-                setState(() => _isSmartValidating = false);
-              }
+                if (state is SmartMeterValidating) {
+                  setState(() => _isSmartValidating = true);
+                } else if (_isSmartValidating &&
+                    state is! SmartMeterValidating) {
+                  setState(() => _isSmartValidating = false);
+                }
 
-              // Smart-meter validation (SmartMeterValidated / …Failed) is now
-              // owned by the inline ElectricityQuickBuy purchase widget, which
-              // resolves the disco + customer and drives the payment in-place.
-              // The old listener here used to pop a bottom sheet and route to
-              // the standalone confirmation screen — removed so it can't hijack
-              // the streamlined single-page flow.
+                // Smart-meter validation (SmartMeterValidated / …Failed) is now
+                // owned by the inline ElectricityQuickBuy purchase widget, which
+                // resolves the disco + customer and drives the payment in-place.
+                // The old listener here used to pop a bottom sheet and route to
+                // the standalone confirmation screen — removed so it can't hijack
+                // the streamlined single-page flow.
 
-              if (state is ElectricityBillError) {
-                Get.snackbar(
-                  'Error',
-                  state.message,
-                  backgroundColor: InvoiceThemeColors.errorRed,
-                  colorText: Colors.white,
-                  snackPosition: SnackPosition.TOP,
-                );
-              }
+                if (state is ElectricityBillError) {
+                  Get.snackbar(
+                    'Error',
+                    state.message,
+                    backgroundColor: InvoiceThemeColors.errorRed,
+                    colorText: Colors.white,
+                    snackPosition: SnackPosition.TOP,
+                  );
+                }
 
-              if (state is PaymentHistoryLoaded) {
-                setState(() {
-                  _recentPayments = state.payments.take(3).toList();
-                });
-              }
-            },
-            builder: (context, state) {
-              return Column(
-                children: [
-                  _buildCompactHeader(),
-                  Expanded(
-                    child: RefreshIndicator(
-                      onRefresh: _onRefresh,
-                      color: InvoiceThemeColors.primaryPurple,
-                      backgroundColor: const Color(0xFF1F1F1F),
-                      child: SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(height: 12.h),
-                            _buildWelcomeCard(),
-                            SizedBox(height: 20.h),
-                            _buildQuickActions(),
-                            SizedBox(height: 20.h),
-                            // Streamlined single-page purchase: meter →
-                            // auto-resolved disco+customer (smartValidateMeter,
-                            // no manual provider picker) → amount → inline
-                            // confirmation → TX-PIN sheet runs the payment →
-                            // receipt. Replaces provider-dropdown + meter-input
-                            // + confirm + processing screens.
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16.w),
-                              // Keyed on the resolved meter so the widget
-                              // re-mounts with the prefill applied once the
-                              // reminder's linked beneficiary loads (see
-                              // BlocListener<BeneficiaryCubit,...> above).
-                              child: ElectricityQuickBuy(
-                                key: ValueKey(
-                                    _quickBuyInitialMeter ?? 'default'),
-                                initialMeterNumber: _quickBuyInitialMeter,
-                              ),
-                            ),
-                            SizedBox(height: 20.h),
-                            if (_recentPayments.isNotEmpty) ...[
+                if (state is PaymentHistoryLoaded) {
+                  setState(() {
+                    _recentPayments = state.payments.take(3).toList();
+                  });
+                }
+              },
+              builder: (context, state) {
+                return Column(
+                  children: [
+                    _buildCompactHeader(),
+                    Expanded(
+                      child: RefreshIndicator(
+                        onRefresh: _onRefresh,
+                        color: InvoiceThemeColors.primaryPurple,
+                        backgroundColor: const Color(0xFF1F1F1F),
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: 12.h),
+                              _buildWelcomeCard(),
                               SizedBox(height: 20.h),
-                              _buildRecentPaymentsSection(),
+                              _buildQuickActions(),
+                              SizedBox(height: 20.h),
+                              // Streamlined single-page purchase: meter →
+                              // auto-resolved disco+customer (smartValidateMeter,
+                              // no manual provider picker) → amount → inline
+                              // confirmation → TX-PIN sheet runs the payment →
+                              // receipt. Replaces provider-dropdown + meter-input
+                              // + confirm + processing screens.
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                                // Keyed on the resolved meter so the widget
+                                // re-mounts with the prefill applied once the
+                                // reminder's linked beneficiary loads (see
+                                // BlocListener<BeneficiaryCubit,...> above).
+                                child: ElectricityQuickBuy(
+                                  key: ValueKey(
+                                      _quickBuyInitialMeter ?? 'default'),
+                                  initialMeterNumber: _quickBuyInitialMeter,
+                                ),
+                              ),
+                              SizedBox(height: 20.h),
+                              if (_recentPayments.isNotEmpty) ...[
+                                SizedBox(height: 20.h),
+                                _buildRecentPaymentsSection(),
+                              ],
+                              SizedBox(height: 32.h),
                             ],
-                            SizedBox(height: 32.h),
-                          ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              );
-            },
+                  ],
+                );
+              },
             ),
           ),
         ),
@@ -398,8 +400,7 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
               title: 'Auto-Recharge',
               icon: Icons.autorenew,
               color: const Color(0xFF10B981),
-              onTap: () =>
-                  Get.toNamed(AppRoutes.electricityBillAutoRecharge),
+              onTap: () => Get.toNamed(AppRoutes.electricityBillAutoRecharge),
             ),
           ),
           SizedBox(width: 10.w),
@@ -408,8 +409,7 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
               title: 'Reminders',
               icon: Icons.notifications_outlined,
               color: const Color(0xFFF59E0B),
-              onTap: () =>
-                  Get.toNamed(AppRoutes.electricityBillReminders),
+              onTap: () => Get.toNamed(AppRoutes.electricityBillReminders),
             ),
           ),
         ],
@@ -466,16 +466,6 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
     );
   }
 
-
-
-
-
-
-
-
-
-
-
   Widget _buildRecentPaymentsSection() {
     // Split display: header row with purple View-All, then each recent
     // payment gets its own standalone card — same visual treatment the
@@ -497,8 +487,7 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
                 ),
               ),
               GestureDetector(
-                onTap: () =>
-                    Get.toNamed(AppRoutes.electricityBillHistory),
+                onTap: () => Get.toNamed(AppRoutes.electricityBillHistory),
                 child: Text(
                   'View All',
                   style: GoogleFonts.inter(
@@ -581,7 +570,6 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
       return '${date.day}/${date.month}/${date.year}';
     }
   }
-
 }
 
 /// Bottom sheet showing smart validation results for confirmation

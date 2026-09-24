@@ -1,6 +1,7 @@
 import 'package:fixnum/fixnum.dart';
 import 'package:lazervault/src/generated/contact_sync.pb.dart' as pb;
-import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart' as timestamp_pb;
+import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart'
+    as timestamp_pb;
 
 /// Model representing contact sync preferences
 class SyncPreferencesModel {

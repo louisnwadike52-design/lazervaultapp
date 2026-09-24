@@ -145,7 +145,8 @@ class DocumentsTab extends StatelessWidget {
                           Text(
                             '${doc.format.name.toUpperCase()} • ${doc.transactionCount ?? 0} txns',
                             style: TextStyle(
-                                color: const Color(0xFF9CA3AF), fontSize: 11.sp),
+                                color: const Color(0xFF9CA3AF),
+                                fontSize: 11.sp),
                           ),
                         ],
                       ),
@@ -294,8 +295,8 @@ class DocumentsTab extends StatelessWidget {
       return;
     }
     context.read<AccountActionsCubit>().downloadAccountConfirmation(
-      accountId: accountId,
-    );
+          accountId: accountId,
+        );
   }
 
   void _onRequestProofOfFunds(BuildContext context) {
@@ -355,8 +356,8 @@ class DocumentsTab extends StatelessWidget {
             onPressed: () {
               Get.back();
               context.read<AccountActionsCubit>().requestProofOfFunds(
-                accountId: accountId,
-              );
+                    accountId: accountId,
+                  );
             },
             child: Text(
               'Request',

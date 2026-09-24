@@ -34,7 +34,8 @@ class _NicknameDialogState extends State<_NicknameDialog> {
       backgroundColor: const Color(0xFF1F1F1F),
       title: Text(
         'Name this ISP account',
-        style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w700),
+        style:
+            GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w700),
       ),
       content: TextField(
         controller: _controller,

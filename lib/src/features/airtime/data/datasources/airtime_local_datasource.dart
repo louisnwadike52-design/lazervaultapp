@@ -9,7 +9,8 @@ abstract class AirtimeLocalDataSource {
   Future<CountryModel?> getCountryByCode(String countryCode);
   Future<List<NetworkProviderModel>> getNetworkProviders(String countryCode);
   Future<NetworkProviderModel?> getNetworkProviderById(String providerId);
-  Future<NetworkProviderModel?> detectNetworkFromPhoneNumber(String phoneNumber, String countryCode);
+  Future<NetworkProviderModel?> detectNetworkFromPhoneNumber(
+      String phoneNumber, String countryCode);
   Future<List<AirtimeTransactionModel>> getTransactionHistory(String userId);
   Future<AirtimeTransactionModel?> getTransactionById(String transactionId);
 }
@@ -25,7 +26,16 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       'dialCode': '+234',
       'currency': 'NGN',
       'currencySymbol': '₦',
-      'popularPrefixes': ['0803', '0806', '0813', '0816', '0903', '0906', '0813', '0816'],
+      'popularPrefixes': [
+        '0803',
+        '0806',
+        '0813',
+        '0816',
+        '0903',
+        '0906',
+        '0813',
+        '0816'
+      ],
       'isActive': true,
     },
     {
@@ -36,7 +46,16 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       'dialCode': '+1',
       'currency': 'USD',
       'currencySymbol': '\$',
-      'popularPrefixes': ['555', '202', '212', '310', '415', '713', '917', '646'],
+      'popularPrefixes': [
+        '555',
+        '202',
+        '212',
+        '310',
+        '415',
+        '713',
+        '917',
+        '646'
+      ],
       'isActive': true,
     },
     {
@@ -69,7 +88,16 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       'dialCode': '+27',
       'currency': 'ZAR',
       'currencySymbol': 'R',
-      'popularPrefixes': ['072', '073', '074', '076', '078', '079', '081', '082'],
+      'popularPrefixes': [
+        '072',
+        '073',
+        '074',
+        '076',
+        '078',
+        '079',
+        '081',
+        '082'
+      ],
       'isActive': true,
     },
     {
@@ -80,7 +108,16 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       'dialCode': '+254',
       'currency': 'KES',
       'currencySymbol': 'KSh',
-      'popularPrefixes': ['0700', '0701', '0702', '0703', '0704', '0705', '0706', '0707'],
+      'popularPrefixes': [
+        '0700',
+        '0701',
+        '0702',
+        '0703',
+        '0704',
+        '0705',
+        '0706',
+        '0707'
+      ],
       'isActive': true,
     },
     {
@@ -91,7 +128,16 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       'dialCode': '+233',
       'currency': 'GHS',
       'currencySymbol': 'GH₵',
-      'popularPrefixes': ['024', '025', '026', '027', '028', '020', '023', '050'],
+      'popularPrefixes': [
+        '024',
+        '025',
+        '026',
+        '027',
+        '028',
+        '020',
+        '023',
+        '050'
+      ],
       'isActive': true,
     },
     // Additional African countries
@@ -103,7 +149,17 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       'dialCode': '+256',
       'currency': 'UGX',
       'currencySymbol': 'USh',
-      'popularPrefixes': ['070', '071', '072', '073', '074', '075', '076', '077', '078'],
+      'popularPrefixes': [
+        '070',
+        '071',
+        '072',
+        '073',
+        '074',
+        '075',
+        '076',
+        '077',
+        '078'
+      ],
       'isActive': true,
     },
     {
@@ -114,7 +170,18 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       'dialCode': '+255',
       'currency': 'TZS',
       'currencySymbol': 'TSh',
-      'popularPrefixes': ['062', '065', '067', '068', '069', '071', '073', '074', '075', '076'],
+      'popularPrefixes': [
+        '062',
+        '065',
+        '067',
+        '068',
+        '069',
+        '071',
+        '073',
+        '074',
+        '075',
+        '076'
+      ],
       'isActive': true,
     },
     {
@@ -248,7 +315,17 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       'dialCode': '+966',
       'currency': 'SAR',
       'currencySymbol': '﷼',
-      'popularPrefixes': ['05', '050', '053', '054', '055', '056', '057', '058', '059'],
+      'popularPrefixes': [
+        '05',
+        '050',
+        '053',
+        '054',
+        '055',
+        '056',
+        '057',
+        '058',
+        '059'
+      ],
       'isActive': true,
     },
     {
@@ -326,7 +403,17 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       'dialCode': '+55',
       'currency': 'BRL',
       'currencySymbol': 'R\$',
-      'popularPrefixes': ['011', '021', '031', '041', '051', '061', '071', '081', '091'],
+      'popularPrefixes': [
+        '011',
+        '021',
+        '031',
+        '041',
+        '051',
+        '061',
+        '071',
+        '081',
+        '091'
+      ],
       'isActive': true,
     },
     {
@@ -514,7 +601,19 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       'dialCode': '+358',
       'currency': 'EUR',
       'currencySymbol': '€',
-      'popularPrefixes': ['040', '041', '042', '043', '044', '045', '046', '047', '048', '049', '050'],
+      'popularPrefixes': [
+        '040',
+        '041',
+        '042',
+        '043',
+        '044',
+        '045',
+        '046',
+        '047',
+        '048',
+        '049',
+        '050'
+      ],
       'isActive': true,
     },
     {
@@ -857,7 +956,8 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
 
   @override
   Future<List<CountryModel>> getCountries() async {
-    await Future.delayed(const Duration(milliseconds: 500)); // Simulate network delay
+    await Future.delayed(
+        const Duration(milliseconds: 500)); // Simulate network delay
     return _countriesData.map((data) => CountryModel.fromJson(data)).toList();
   }
 
@@ -868,13 +968,14 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       (country) => country['code'] == countryCode,
       orElse: () => <String, dynamic>{},
     );
-    
+
     if (countryData.isEmpty) return null;
     return CountryModel.fromJson(countryData);
   }
 
   @override
-  Future<List<NetworkProviderModel>> getNetworkProviders(String countryCode) async {
+  Future<List<NetworkProviderModel>> getNetworkProviders(
+      String countryCode) async {
     final providers = _networkProvidersData
         .where((provider) => provider['countryCode'] == countryCode)
         .map((data) => NetworkProviderModel.fromJson(data))
@@ -883,19 +984,21 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
   }
 
   @override
-  Future<NetworkProviderModel?> getNetworkProviderById(String providerId) async {
+  Future<NetworkProviderModel?> getNetworkProviderById(
+      String providerId) async {
     await Future.delayed(const Duration(milliseconds: 200));
     final providerData = _networkProvidersData.firstWhere(
       (provider) => provider['id'] == providerId,
       orElse: () => <String, dynamic>{},
     );
-    
+
     if (providerData.isEmpty) return null;
     return NetworkProviderModel.fromJson(providerData);
   }
 
   @override
-  Future<NetworkProviderModel?> detectNetworkFromPhoneNumber(String phoneNumber, String countryCode) async {
+  Future<NetworkProviderModel?> detectNetworkFromPhoneNumber(
+      String phoneNumber, String countryCode) async {
     // Clean phone number
     String cleanNumber = phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
 
@@ -910,7 +1013,7 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
 
     // Get providers for the country
     final providers = await getNetworkProviders(countryCode);
-    
+
     // Find matching provider based on prefixes
     for (final provider in providers) {
       for (final prefix in provider.prefixes) {
@@ -919,17 +1022,19 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
         }
       }
     }
-    
+
     return null;
   }
 
   @override
-  Future<List<AirtimeTransactionModel>> getTransactionHistory(String userId) async {
+  Future<List<AirtimeTransactionModel>> getTransactionHistory(
+      String userId) async {
     return [];
   }
 
   @override
-  Future<AirtimeTransactionModel?> getTransactionById(String transactionId) async {
+  Future<AirtimeTransactionModel?> getTransactionById(
+      String transactionId) async {
     return null;
   }
-} 
+}

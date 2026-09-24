@@ -79,9 +79,8 @@ class TaskBoardCard extends StatelessWidget {
                   color: Colors.white,
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
-                  decoration: task.isCompleted
-                      ? TextDecoration.lineThrough
-                      : null,
+                  decoration:
+                      task.isCompleted ? TextDecoration.lineThrough : null,
                 ),
               ),
               if ((task.description ?? '').isNotEmpty) ...[
@@ -104,7 +103,9 @@ class TaskBoardCard extends StatelessWidget {
                         Icon(
                           Icons.event_rounded,
                           size: 13.sp,
-                          color: _overdue ? const Color(0xFFEF4444) : _textSecondary,
+                          color: _overdue
+                              ? const Color(0xFFEF4444)
+                              : _textSecondary,
                         ),
                         SizedBox(width: 3.w),
                         Text(

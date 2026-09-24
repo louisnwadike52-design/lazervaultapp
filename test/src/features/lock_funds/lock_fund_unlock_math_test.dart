@@ -52,7 +52,8 @@ void main() {
 
     test('earlyWithdrawalAmount agrees with proceedsOnUnlock', () {
       // The legacy getter had its own formula that added forfeited interest.
-      expect(lock().earlyWithdrawalAmount, lock().proceedsOnUnlock(early: true));
+      expect(
+          lock().earlyWithdrawalAmount, lock().proceedsOnUnlock(early: true));
     });
   });
 
@@ -78,7 +79,7 @@ void main() {
 
   test('penalty matches the backend formula', () {
     // accounts_lockfunds_cancel.go: amount * penalty_rate / 100
-    expect(lock(amount: 250000, penaltyPercent: 4).earlyWithdrawalPenalty,
-        10000);
+    expect(
+        lock(amount: 250000, penaltyPercent: 4).earlyWithdrawalPenalty, 10000);
   });
 }

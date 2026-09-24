@@ -202,14 +202,12 @@ class CustomerRepositoryGrpcImpl implements CustomerRepository {
           request.search = search;
         }
         if (segment != null && segment > 0) {
-          request.segment =
-              payroll_pb.CustomerSegment.valueOf(segment) ??
-                  payroll_pb.CustomerSegment.CUSTOMER_SEGMENT_NONE;
+          request.segment = payroll_pb.CustomerSegment.valueOf(segment) ??
+              payroll_pb.CustomerSegment.CUSTOMER_SEGMENT_NONE;
         }
         if (status != null && status > 0) {
-          request.status =
-              payroll_pb.CustomerStatus.valueOf(status) ??
-                  payroll_pb.CustomerStatus.CUSTOMER_STATUS_ACTIVE;
+          request.status = payroll_pb.CustomerStatus.valueOf(status) ??
+              payroll_pb.CustomerStatus.CUSTOMER_STATUS_ACTIVE;
         }
         if (tag != null && tag.isNotEmpty) {
           request.tag = tag;
@@ -222,9 +220,7 @@ class CustomerRepositoryGrpcImpl implements CustomerRepository {
         );
 
         return CustomersPageResult(
-          items: response.customers
-              .map((c) => _customerFromProto(c))
-              .toList(),
+          items: response.customers.map((c) => _customerFromProto(c)).toList(),
           totalItems: response.pagination.totalItems,
           currentPage: response.pagination.currentPage,
           totalPages: response.pagination.totalPages,
@@ -337,9 +333,7 @@ class CustomerRepositoryGrpcImpl implements CustomerRepository {
           options: options,
         );
 
-        return response.notes
-            .map((n) => _noteFromProto(n))
-            .toList();
+        return response.notes.map((n) => _noteFromProto(n)).toList();
       },
     );
   }

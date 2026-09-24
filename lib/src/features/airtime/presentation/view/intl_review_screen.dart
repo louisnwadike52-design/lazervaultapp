@@ -19,7 +19,6 @@ import '../widgets/airtime_shimmer.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'intl_review_screen_widgets.dart';
 
-
 class IntlReviewScreen extends StatefulWidget {
   const IntlReviewScreen({super.key});
 
@@ -58,8 +57,8 @@ class _IntlReviewScreenState extends State<IntlReviewScreen>
     _amount = (args['amount'] as num?)?.toDouble() ?? 0;
     // Active locale currency from the dashboard (e.g. NGN for en-NG). This is
     // what the wallet is debited in and what the account selector filters on.
-    _senderCurrency = (args['senderCurrency'] as String?) ??
-        _localeManager.currentCurrency;
+    _senderCurrency =
+        (args['senderCurrency'] as String?) ?? _localeManager.currentCurrency;
     _destAmount = (args['destAmount'] as num?)?.toDouble() ?? 0;
     _fxRate = (args['fxRate'] as num?)?.toDouble() ?? 0;
     _useLocalAmount = args['useLocalAmount'] as bool? ?? false;
@@ -72,7 +71,9 @@ class _IntlReviewScreenState extends State<IntlReviewScreen>
       _autoSelectAccount(state);
     } else {
       final userId = context.read<AuthenticationCubit>().userId ?? '';
-      context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(userId: userId);
+      context
+          .read<AccountCardsSummaryCubit>()
+          .fetchAccountSummaries(userId: userId);
     }
   }
 
@@ -309,8 +310,7 @@ class _IntlReviewScreenState extends State<IntlReviewScreen>
           // for the actual debit). Never the operator's sender currency.
           _summaryRow(
             label: 'You Pay',
-            value:
-                '$displayedSenderCurrency ${_amount.toStringAsFixed(2)}',
+            value: '$displayedSenderCurrency ${_amount.toStringAsFixed(2)}',
             valueColor: Colors.white,
             valueSize: 18.sp,
             valueBold: true,
@@ -337,8 +337,7 @@ class _IntlReviewScreenState extends State<IntlReviewScreen>
             value: displayedSenderCurrency,
             trailing: Text(
               '🏦  Your $displayedSenderCurrency wallet',
-              style: TextStyle(
-                  color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
             ),
           ),
           SizedBox(height: 10.h),
@@ -347,8 +346,7 @@ class _IntlReviewScreenState extends State<IntlReviewScreen>
             value: _country.countryName,
             trailing: Text(
               '${_country.flagEmoji}  ${_country.currencyCode}',
-              style: TextStyle(
-                  color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
             ),
           ),
           SizedBox(height: 10.h),
@@ -358,26 +356,25 @@ class _IntlReviewScreenState extends State<IntlReviewScreen>
             value: _phoneNumber,
             trailing: Text(
               '${_country.flagEmoji}  ${_country.countryName}',
-              style: TextStyle(
-                  color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
             ),
           ),
-            SizedBox(height: 10.h),
-            // Operator
-            _summaryRow(
-              label: 'Network',
-              value: _operator.operatorName,
-              trailing: _operator.logoUrl.isNotEmpty
-                  ? Image.network(
-                      _operator.logoUrl,
-                      width: 28.w,
-                      height: 28.w,
-                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                    )
-                  : null,
-            ),
-          ],
-        ),
+          SizedBox(height: 10.h),
+          // Operator
+          _summaryRow(
+            label: 'Network',
+            value: _operator.operatorName,
+            trailing: _operator.logoUrl.isNotEmpty
+                ? Image.network(
+                    _operator.logoUrl,
+                    width: 28.w,
+                    height: 28.w,
+                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                  )
+                : null,
+          ),
+        ],
+      ),
     );
   }
 
@@ -393,8 +390,8 @@ class _IntlReviewScreenState extends State<IntlReviewScreen>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style: TextStyle(
-                  color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
+              style:
+                  TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
           Row(
             children: [
               Text(
@@ -402,8 +399,7 @@ class _IntlReviewScreenState extends State<IntlReviewScreen>
                 style: TextStyle(
                   color: valueColor,
                   fontSize: valueSize ?? 14.sp,
-                  fontWeight:
-                      valueBold ? FontWeight.w700 : FontWeight.w500,
+                  fontWeight: valueBold ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),
               if (trailing != null) ...[
@@ -445,8 +441,7 @@ class _IntlReviewScreenState extends State<IntlReviewScreen>
           return GestureDetector(
             onTap: _showAccountSheet,
             child: Container(
-              padding:
-                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               decoration: BoxDecoration(
                 color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(12.r),
@@ -528,7 +523,8 @@ class _IntlReviewScreenState extends State<IntlReviewScreen>
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4E03D0).withValues(alpha: disabled ? 0 : 0.35),
+            color:
+                const Color(0xFF4E03D0).withValues(alpha: disabled ? 0 : 0.35),
             blurRadius: 18,
             offset: const Offset(0, 6),
           ),

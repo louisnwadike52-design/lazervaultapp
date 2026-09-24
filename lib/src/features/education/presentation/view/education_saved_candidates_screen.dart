@@ -30,6 +30,7 @@ class _EducationSavedCandidatesScreenState
   List<EducationBeneficiary>? _beneficiaries;
   bool _loading = true;
   String? _error;
+
   /// Guards against double-taps on "Buy PIN" while the provider
   /// catalogue is being resolved.
   bool _resolvingRebuy = false;
@@ -73,7 +74,8 @@ class _EducationSavedCandidatesScreenState
             ),
           ],
         ),
-        body: BlocListener<EducationBeneficiaryCubit, EducationBeneficiaryState>(
+        body:
+            BlocListener<EducationBeneficiaryCubit, EducationBeneficiaryState>(
           listener: (context, state) {
             if (!mounted) return;
             if (state is EducationBeneficiariesLoading) {
@@ -101,8 +103,7 @@ class _EducationSavedCandidatesScreenState
   }
 
   Widget _buildBody() {
-    if (_error != null &&
-        (_beneficiaries == null || _beneficiaries!.isEmpty)) {
+    if (_error != null && (_beneficiaries == null || _beneficiaries!.isEmpty)) {
       // Raw thrown strings (SocketException / 'Failed host lookup') were
       // being printed straight to the user. AppErrorView maps them via
       // friendlyError() into plain connectivity copy.
@@ -154,8 +155,7 @@ class _EducationSavedCandidatesScreenState
             Text(
               'After buying an exam PIN, tap "Save Candidate" on the result screen to add them here for one-tap repurchases.',
               textAlign: TextAlign.center,
-              style:
-                  TextStyle(fontSize: 14.sp, color: const Color(0xFF9CA3AF)),
+              style: TextStyle(fontSize: 14.sp, color: const Color(0xFF9CA3AF)),
             ),
           ],
         ),
@@ -166,9 +166,8 @@ class _EducationSavedCandidatesScreenState
   Widget _buildItem(EducationBeneficiary b) {
     final accent = _providerColor(b.providerCode);
     return BillBeneficiaryItem(
-      displayName: (b.nickname?.isNotEmpty == true)
-          ? b.nickname!
-          : b.candidateNumber,
+      displayName:
+          (b.nickname?.isNotEmpty == true) ? b.nickname! : b.candidateNumber,
       identifier: '${b.examType.toUpperCase()} \u00B7 ${b.candidateNumber}',
       providerName: b.providerName,
       providerColor: accent,
@@ -213,8 +212,7 @@ class _EducationSavedCandidatesScreenState
             ),
             const Divider(color: Color(0xFF2D2D2D), height: 1),
             ListTile(
-              leading:
-                  const Icon(Icons.history, color: Color(0xFF9CA3AF)),
+              leading: const Icon(Icons.history, color: Color(0xFF9CA3AF)),
               title: Text('View Purchases',
                   style: TextStyle(color: Colors.white, fontSize: 15.sp)),
               onTap: () {
@@ -266,8 +264,8 @@ class _EducationSavedCandidatesScreenState
             ),
             const Divider(color: Color(0xFF2D2D2D), height: 1),
             ListTile(
-              leading: const Icon(Icons.delete_outline,
-                  color: Color(0xFFEF4444)),
+              leading:
+                  const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
               title: Text('Delete Candidate',
                   style: TextStyle(
                       color: const Color(0xFFEF4444), fontSize: 15.sp)),
@@ -429,8 +427,8 @@ class _EducationSavedCandidatesScreenState
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             child: Text('Close',
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
           ),
         ],
       ),
@@ -446,8 +444,8 @@ class _EducationSavedCandidatesScreenState
           SizedBox(
             width: 110.w,
             child: Text(label,
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
           ),
           Expanded(
             child: Text(value,
@@ -484,8 +482,7 @@ class _EducationSavedCandidatesScreenState
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                  '${b.providerName} \u00B7 ${b.candidateNumber}',
+              Text('${b.providerName} \u00B7 ${b.candidateNumber}',
                   style: TextStyle(
                       fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
               SizedBox(height: 16.h),
@@ -501,16 +498,13 @@ class _EducationSavedCandidatesScreenState
                   fillColor: const Color(0xFF0A0A0A),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.r),
-                      borderSide:
-                          const BorderSide(color: Color(0xFF2D2D2D))),
+                      borderSide: const BorderSide(color: Color(0xFF2D2D2D))),
                   enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.r),
-                      borderSide:
-                          const BorderSide(color: Color(0xFF2D2D2D))),
+                      borderSide: const BorderSide(color: Color(0xFF2D2D2D))),
                   focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.r),
-                      borderSide:
-                          const BorderSide(color: _primary)),
+                      borderSide: const BorderSide(color: _primary)),
                   contentPadding:
                       EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
                 ),
@@ -529,9 +523,7 @@ class _EducationSavedCandidatesScreenState
                   : () async {
                       setLocal(() => loading = true);
                       try {
-                        await context
-                            .read<EducationBeneficiaryCubit>()
-                            .update(
+                        await context.read<EducationBeneficiaryCubit>().update(
                               beneficiaryId: b.id,
                               nickname: controller.text.trim().isEmpty
                                   ? null
@@ -575,8 +567,8 @@ class _EducationSavedCandidatesScreenState
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             child: Text('Cancel',
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
           ),
           TextButton(
             onPressed: () {

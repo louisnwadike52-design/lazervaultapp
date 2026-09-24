@@ -20,11 +20,12 @@ class AirtimeTransferReviewScreen extends StatefulWidget {
   const AirtimeTransferReviewScreen({super.key});
 
   @override
-  State<AirtimeTransferReviewScreen> createState() => _AirtimeTransferReviewScreenState();
+  State<AirtimeTransferReviewScreen> createState() =>
+      _AirtimeTransferReviewScreenState();
 }
 
-class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScreen>
-    with TransactionPinMixin {
+class _AirtimeTransferReviewScreenState
+    extends State<AirtimeTransferReviewScreen> with TransactionPinMixin {
   @override
   ITransactionPinService get transactionPinService =>
       GetIt.I<ITransactionPinService>();
@@ -70,7 +71,9 @@ class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScree
       _autoSelectAccount(accountState);
     } else {
       final userId = context.read<AuthenticationCubit>().userId ?? '';
-      context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(userId: userId);
+      context
+          .read<AccountCardsSummaryCubit>()
+          .fetchAccountSummaries(userId: userId);
     }
   }
 
@@ -98,7 +101,8 @@ class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScree
     if (_isProcessing) return;
     if (_selectedAccountId == null) {
       Get.snackbar('Error', 'Please select an account to pay from',
-          backgroundColor: const Color(0xFFEF4444), colorText: Colors.white,
+          backgroundColor: const Color(0xFFEF4444),
+          colorText: Colors.white,
           snackPosition: SnackPosition.TOP);
       return;
     }
@@ -109,19 +113,23 @@ class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScree
       final selectedAccount = accountState.accountSummaries
           .where((a) => a.id.toString() == _selectedAccountId)
           .firstOrNull;
-      if (selectedAccount != null && selectedAccount.availableBalance < totalCharged) {
+      if (selectedAccount != null &&
+          selectedAccount.availableBalance < totalCharged) {
         Get.snackbar(
           'Insufficient Balance',
           'You need \u20A6${totalCharged.toStringAsFixed(2)} but have \u20A6${selectedAccount.availableBalance.toStringAsFixed(2)}',
-          backgroundColor: const Color(0xFFEF4444), colorText: Colors.white,
-          snackPosition: SnackPosition.TOP, duration: const Duration(seconds: 4),
+          backgroundColor: const Color(0xFFEF4444),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 4),
         );
         return;
       }
     }
 
     setState(() => _isProcessing = true);
-    final transactionId = 'atx_${DateTime.now().millisecondsSinceEpoch}_${recipientPhone.replaceAll(RegExp(r'[^\d]'), '')}';
+    final transactionId =
+        'atx_${DateTime.now().millisecondsSinceEpoch}_${recipientPhone.replaceAll(RegExp(r'[^\d]'), '')}';
 
     String? verificationToken;
 
@@ -132,7 +140,8 @@ class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScree
       amount: totalCharged,
       currency: country?.currency ?? 'NGN',
       title: 'Confirm Airtime Transfer',
-      message: 'Transfer \u20A6${amount.toStringAsFixed(0)} airtime to $recipientPhone\nCommission: \u20A6${commission.toStringAsFixed(2)}',
+      message:
+          'Transfer \u20A6${amount.toStringAsFixed(0)} airtime to $recipientPhone\nCommission: \u20A6${commission.toStringAsFixed(2)}',
       onPinValidated: (token) async {
         verificationToken = token;
       },
@@ -164,11 +173,13 @@ class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScree
         subscription?.cancel();
         if (mounted) {
           Get.snackbar('Transfer Failed', state.message,
-              backgroundColor: const Color(0xFFEF4444), colorText: Colors.white,
+              backgroundColor: const Color(0xFFEF4444),
+              colorText: Colors.white,
               snackPosition: SnackPosition.TOP);
           setState(() => _isProcessing = false);
         }
-        if (!completer.isCompleted) completer.completeError(Exception(state.message));
+        if (!completer.isCompleted)
+          completer.completeError(Exception(state.message));
       }
     });
 
@@ -193,8 +204,10 @@ class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScree
         onTimeout: () {
           subscription?.cancel();
           if (mounted) {
-            Get.snackbar('Timeout', 'Request timed out. Check your transaction history.',
-                backgroundColor: const Color(0xFFFB923C), colorText: Colors.white,
+            Get.snackbar(
+                'Timeout', 'Request timed out. Check your transaction history.',
+                backgroundColor: const Color(0xFFFB923C),
+                colorText: Colors.white,
                 snackPosition: SnackPosition.TOP);
             setState(() => _isProcessing = false);
           }
@@ -212,7 +225,8 @@ class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScree
           children: [
             _buildHeader(),
             Expanded(
-              child: BlocListener<AccountCardsSummaryCubit, AccountCardsSummaryState>(
+              child: BlocListener<AccountCardsSummaryCubit,
+                  AccountCardsSummaryState>(
                 listener: (context, state) {
                   if (state is AccountCardsSummaryLoaded) {
                     _autoSelectAccount(state);
@@ -264,7 +278,8 @@ class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScree
                 color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20.sp),
+              child: Icon(Icons.arrow_back_ios_new,
+                  color: Colors.white, size: 20.sp),
             ),
           ),
           SizedBox(width: 16.w),
@@ -307,7 +322,10 @@ class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScree
                   child: Center(
                     child: Text(
                       provider!.name.substring(0, 1),
-                      style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w700, color: Colors.white),
+                      style: TextStyle(
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white),
                     ),
                   ),
                 ),
@@ -318,11 +336,16 @@ class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScree
                   children: [
                     Text(
                       'Airtime Transfer',
-                      style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white),
+                      style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white),
                     ),
                     Text(
                       '${provider?.name ?? ''} \u2022 $recipientPhone',
-                      style: TextStyle(fontSize: 13.sp, color: Colors.white.withValues(alpha: 0.85)),
+                      style: TextStyle(
+                          fontSize: 13.sp,
+                          color: Colors.white.withValues(alpha: 0.85)),
                     ),
                   ],
                 ),
@@ -332,11 +355,15 @@ class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScree
           SizedBox(height: 16.h),
           Text(
             '\u20A6${amount.toStringAsFixed(0)}',
-            style: TextStyle(fontSize: 36.sp, fontWeight: FontWeight.w700, color: Colors.white),
+            style: TextStyle(
+                fontSize: 36.sp,
+                fontWeight: FontWeight.w700,
+                color: Colors.white),
           ),
           Text(
             'Airtime to deliver',
-            style: TextStyle(fontSize: 13.sp, color: Colors.white.withValues(alpha: 0.8)),
+            style: TextStyle(
+                fontSize: 13.sp, color: Colors.white.withValues(alpha: 0.8)),
           ),
         ],
       ),
@@ -354,7 +381,10 @@ class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScree
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Transfer Details',
-              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white)),
+              style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white)),
           SizedBox(height: 14.h),
           _detailRow('Recipient', recipientPhone),
           if (recipientName.isNotEmpty) ...[
@@ -383,7 +413,10 @@ class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScree
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Payment Breakdown',
-              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white)),
+              style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white)),
           SizedBox(height: 14.h),
           _detailRow('Airtime Amount', '\u20A6${amount.toStringAsFixed(0)}'),
           _divider(),
@@ -392,7 +425,8 @@ class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScree
           SizedBox(height: 10.h),
           Container(height: 1, color: Colors.white.withValues(alpha: 0.15)),
           SizedBox(height: 10.h),
-          _detailRow('Total Charge', '\u20A6${totalCharged.toStringAsFixed(2)}', isTotal: true),
+          _detailRow('Total Charge', '\u20A6${totalCharged.toStringAsFixed(2)}',
+              isTotal: true),
         ],
       ),
     );
@@ -404,11 +438,13 @@ class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScree
       decoration: BoxDecoration(
         color: const Color(0xFF10B981).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+        border:
+            Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          Icon(Icons.shield_outlined, color: const Color(0xFF10B981), size: 20.sp),
+          Icon(Icons.shield_outlined,
+              color: const Color(0xFF10B981), size: 20.sp),
           SizedBox(width: 10.w),
           Expanded(
             child: Text(
@@ -431,7 +467,8 @@ class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScree
           disabledBackgroundColor: const Color(0xFF2D2D2D),
           foregroundColor: Colors.white,
           padding: EdgeInsets.symmetric(vertical: 16.h),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
           elevation: 0,
         ),
         child: _isProcessing
@@ -444,7 +481,8 @@ class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScree
     );
   }
 
-  Widget _detailRow(String label, String value, {Color? valueColor, bool isTotal = false}) {
+  Widget _detailRow(String label, String value,
+      {Color? valueColor, bool isTotal = false}) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 4.h),
       child: Row(
@@ -461,7 +499,10 @@ class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScree
                 style: TextStyle(
                   fontSize: isTotal ? 15.sp : 13.sp,
                   fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
-                  color: valueColor ?? (isTotal ? Colors.white : Colors.white.withValues(alpha: 0.8)),
+                  color: valueColor ??
+                      (isTotal
+                          ? Colors.white
+                          : Colors.white.withValues(alpha: 0.8)),
                 ),
                 textAlign: TextAlign.right),
           ),

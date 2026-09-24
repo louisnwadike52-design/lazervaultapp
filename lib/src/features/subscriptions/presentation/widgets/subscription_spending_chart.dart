@@ -26,7 +26,8 @@ class SubscriptionSpendingChart extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.show_chart, color: const Color(0xFF9CA3AF), size: 40.sp),
+              Icon(Icons.show_chart,
+                  color: const Color(0xFF9CA3AF), size: 40.sp),
               SizedBox(height: 8.h),
               Text(
                 'No spending data yet',
@@ -100,7 +101,9 @@ class SubscriptionSpendingChart extends StatelessWidget {
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      interval: (trend.length / 5).ceilToDouble().clamp(1, double.infinity),
+                      interval: (trend.length / 5)
+                          .ceilToDouble()
+                          .clamp(1, double.infinity),
                       getTitlesWidget: (value, meta) {
                         final index = value.toInt();
                         if (index < 0 || index >= trend.length) {

@@ -31,7 +31,8 @@ class AccountDetailsModel extends AccountDetailsEntity {
       currency: protoDetails.currency,
       balance: protoDetails.balance.toDouble(),
       status: protoDetails.status.isNotEmpty ? protoDetails.status : 'active',
-      cardHolderName: protoDetails.hasCardHolderName() ? protoDetails.cardHolderName : null,
+      cardHolderName:
+          protoDetails.hasCardHolderName() ? protoDetails.cardHolderName : null,
       cardType: protoDetails.hasCardType() ? protoDetails.cardType : null,
       expiryDate: protoDetails.hasExpiryDate() ? protoDetails.expiryDate : null,
       dailyLimit: protoDetails.dailyLimit.toDouble(),

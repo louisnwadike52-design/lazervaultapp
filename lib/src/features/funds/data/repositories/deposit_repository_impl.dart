@@ -29,7 +29,8 @@ class DepositRepositoryImpl implements IDepositRepository {
     String? paymentMethod,
   }) async {
     try {
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final amountMinorUnits = Int64((amount * 100).round());
 
         final request = req_resp.InitiateDepositRequest(
@@ -46,7 +47,8 @@ class DepositRepositoryImpl implements IDepositRepository {
         }
 
         final callOptions = await _callOptionsHelper.withAuth();
-        return await _depositServiceClient.initiateDeposit(request, options: callOptions);
+        return await _depositServiceClient.initiateDeposit(request,
+            options: callOptions);
       });
 
       final deposit = DepositModel.fromProto(response);
@@ -73,19 +75,20 @@ class DepositRepositoryImpl implements IDepositRepository {
     required String currency,
   }) async {
     try {
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final request = req_resp.GetDepositMethodsRequest(
           countryCode: countryCode,
           currency: currency,
         );
 
         final callOptions = await _callOptionsHelper.withAuth();
-        return await _depositServiceClient.getDepositMethods(request, options: callOptions);
+        return await _depositServiceClient.getDepositMethods(request,
+            options: callOptions);
       });
 
-      final methods = response.methods
-          .map((m) => DepositMethodModel.fromProto(m))
-          .toList();
+      final methods =
+          response.methods.map((m) => DepositMethodModel.fromProto(m)).toList();
       return Right(methods);
     } on GrpcError catch (e) {
       return Left(_mapGrpcError(e, 'Fetching deposit methods'));

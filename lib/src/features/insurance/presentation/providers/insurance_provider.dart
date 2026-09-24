@@ -43,4 +43,4 @@ class InsuranceMultiProvider extends StatelessWidget {
       child: child,
     );
   }
-} 
+}

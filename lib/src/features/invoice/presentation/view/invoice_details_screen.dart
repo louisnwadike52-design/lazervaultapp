@@ -46,16 +46,26 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
   String get _currencySymbol {
     final code = _currentInvoice?.currency ?? 'NGN';
     switch (code.toUpperCase()) {
-      case 'NGN': return '₦';
-      case 'GBP': return '£';
-      case 'EUR': return '€';
-      case 'ZAR': return 'R';
-      case 'CAD': return 'C\$';
-      case 'AUD': return 'A\$';
-      case 'INR': return '₹';
-      case 'JPY': return '¥';
-      case 'USD': return '\$';
-      default: return '₦';
+      case 'NGN':
+        return '₦';
+      case 'GBP':
+        return '£';
+      case 'EUR':
+        return '€';
+      case 'ZAR':
+        return 'R';
+      case 'CAD':
+        return 'C\$';
+      case 'AUD':
+        return 'A\$';
+      case 'INR':
+        return '₹';
+      case 'JPY':
+        return '¥';
+      case 'USD':
+        return '\$';
+      default:
+        return '₦';
     }
   }
 
@@ -232,7 +242,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
     final status = invoice.status;
     Color backgroundColor;
     Color textColor;
-    
+
     switch (status) {
       case InvoiceStatus.draft:
         backgroundColor = Colors.grey.withValues(alpha: 0.2);
@@ -479,8 +489,9 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
   }
 
   Widget _buildAmountBreakdown(Invoice invoice) {
-    final subtotal = invoice.items.fold<double>(0, (sum, item) => sum + item.totalPrice);
-    
+    final subtotal =
+        invoice.items.fold<double>(0, (sum, item) => sum + item.totalPrice);
+
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -528,10 +539,10 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
           Text(
             '$_currencySymbol${amount.abs().toStringAsFixed(2)}',
             style: GoogleFonts.inter(
-              color: isTotal 
-                  ? Colors.white 
-                  : amount < 0 
-                      ? Colors.red 
+              color: isTotal
+                  ? Colors.white
+                  : amount < 0
+                      ? Colors.red
                       : Colors.grey[300],
               fontSize: isTotal ? 16.sp : 14.sp,
               fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
@@ -556,7 +567,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
   Widget _buildActions(Invoice invoice) {
     // Determine if current user is the sender
     final currentUserId = _authProfile?.userId;
-    final isSender = currentUserId != null && invoice.fromUserId == currentUserId;
+    final isSender =
+        currentUserId != null && invoice.fromUserId == currentUserId;
 
     return Column(
       children: [
@@ -624,7 +636,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.check_circle, color: InvoiceThemeColors.successGreen, size: 24.sp),
+                Icon(Icons.check_circle,
+                    color: InvoiceThemeColors.successGreen, size: 24.sp),
                 SizedBox(width: 12.w),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -641,7 +654,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                       Text(
                         'Paid on ${_formatFullDate(invoice.paidAt!)}',
                         style: GoogleFonts.inter(
-                          color: InvoiceThemeColors.successGreen.withValues(alpha: 0.7),
+                          color: InvoiceThemeColors.successGreen
+                              .withValues(alpha: 0.7),
                           fontSize: 12.sp,
                         ),
                       ),
@@ -665,7 +679,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.pie_chart, color: const Color(0xFFF59E0B), size: 24.sp),
+                Icon(Icons.pie_chart,
+                    color: const Color(0xFFF59E0B), size: 24.sp),
                 SizedBox(width: 12.w),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -720,12 +735,14 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             decoration: BoxDecoration(
               color: InvoiceThemeColors.errorRed.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: InvoiceThemeColors.errorRed.withValues(alpha: 0.3)),
+              border: Border.all(
+                  color: InvoiceThemeColors.errorRed.withValues(alpha: 0.3)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.cancel, color: InvoiceThemeColors.errorRed, size: 24.sp),
+                Icon(Icons.cancel,
+                    color: InvoiceThemeColors.errorRed, size: 24.sp),
                 SizedBox(width: 12.w),
                 Text(
                   'Invoice Cancelled',
@@ -744,19 +761,26 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
         // Pay button for a receiver who can still pay — pending OR partially_paid
         // (a split invoice the others have started paying) while THIS user's
         // share is unpaid.
-        if (!isSender && widget.isFromReceivedTab && !invoice.isQuote && _receiverCanPay(invoice, currentUserId)) ...[
+        if (!isSender &&
+            widget.isFromReceivedTab &&
+            !invoice.isQuote &&
+            _receiverCanPay(invoice, currentUserId)) ...[
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [InvoiceThemeColors.primaryPurple, InvoiceThemeColors.gradientPurple],
+                colors: [
+                  InvoiceThemeColors.primaryPurple,
+                  InvoiceThemeColors.gradientPurple
+                ],
               ),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: ElevatedButton.icon(
               onPressed: () => _payInvoice(invoice),
               icon: Icon(Icons.payment, size: 20.sp),
-              label: Text('Pay $_currencySymbol${_receiverPayAmount(invoice, currentUserId).toStringAsFixed(2)}'),
+              label: Text(
+                  'Pay $_currencySymbol${_receiverPayAmount(invoice, currentUserId).toStringAsFixed(2)}'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
                 shadowColor: Colors.transparent,
@@ -794,7 +818,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                 borderRadius: BorderRadius.circular(12.r),
               ),
             ),
-            icon: Icon(Icons.description_outlined, size: 18.sp, color: const Color(0xFF60A5FA)),
+            icon: Icon(Icons.description_outlined,
+                size: 18.sp, color: const Color(0xFF60A5FA)),
             label: Text(
               'Invoice',
               style: GoogleFonts.inter(
@@ -815,7 +840,9 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.white,
               side: BorderSide(
-                color: isPaidOrPartiallyPaid ? const Color(0xFF34D399) : const Color(0xFF6B7280),
+                color: isPaidOrPartiallyPaid
+                    ? const Color(0xFF34D399)
+                    : const Color(0xFF6B7280),
                 width: 1.5,
               ),
               padding: EdgeInsets.symmetric(vertical: 14.h),
@@ -826,14 +853,18 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             icon: Icon(
               Icons.receipt_long_outlined,
               size: 18.sp,
-              color: isPaidOrPartiallyPaid ? const Color(0xFF34D399) : const Color(0xFF6B7280),
+              color: isPaidOrPartiallyPaid
+                  ? const Color(0xFF34D399)
+                  : const Color(0xFF6B7280),
             ),
             label: Text(
               'Receipt',
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
-                color: isPaidOrPartiallyPaid ? Colors.white : const Color(0xFF6B7280),
+                color: isPaidOrPartiallyPaid
+                    ? Colors.white
+                    : const Color(0xFF6B7280),
               ),
             ),
           ),
@@ -891,7 +922,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.pie_chart, color: const Color(0xFFF59E0B), size: 18.sp),
+              Icon(Icons.pie_chart,
+                  color: const Color(0xFFF59E0B), size: 18.sp),
               SizedBox(width: 8.w),
               Text(
                 'Payment Progress',
@@ -910,11 +942,17 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             children: [
               Text(
                 '$_currencySymbol${invoice.paidAmount.toStringAsFixed(2)} of $_currencySymbol${invoice.totalAmount.toStringAsFixed(2)}',
-                style: GoogleFonts.inter(color: const Color(0xFFF59E0B), fontSize: 13.sp, fontWeight: FontWeight.w600),
+                style: GoogleFonts.inter(
+                    color: const Color(0xFFF59E0B),
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600),
               ),
               Text(
                 '${(progress * 100).toStringAsFixed(0)}%',
-                style: GoogleFonts.inter(color: const Color(0xFFF59E0B), fontSize: 13.sp, fontWeight: FontWeight.w600),
+                style: GoogleFonts.inter(
+                    color: const Color(0xFFF59E0B),
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -924,7 +962,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             child: LinearProgressIndicator(
               value: progress,
               backgroundColor: const Color(0xFFF59E0B).withValues(alpha: 0.15),
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
               minHeight: 8.h,
             ),
           ),
@@ -938,44 +977,60 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
           if (paidUsers.isNotEmpty) ...[
             Text(
               'Paid',
-              style: GoogleFonts.inter(color: const Color(0xFF10B981), fontSize: 13.sp, fontWeight: FontWeight.w600),
+              style: GoogleFonts.inter(
+                  color: const Color(0xFF10B981),
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600),
             ),
             SizedBox(height: 8.h),
             ...paidUsers.map((user) => Padding(
-              padding: EdgeInsets.only(bottom: 6.h),
-              child: Row(
-                children: [
-                  Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 14.sp),
-                  SizedBox(width: 8.w),
-                  Text(user.displayName, style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
-                  if (user.paidAt != null) ...[
-                    const Spacer(),
-                    Text(_formatSheetDate(user.paidAt!), style: GoogleFonts.inter(color: Colors.grey[500], fontSize: 11.sp)),
-                  ],
-                ],
-              ),
-            )),
+                  padding: EdgeInsets.only(bottom: 6.h),
+                  child: Row(
+                    children: [
+                      Icon(Icons.check_circle,
+                          color: const Color(0xFF10B981), size: 14.sp),
+                      SizedBox(width: 8.w),
+                      Text(user.displayName,
+                          style: GoogleFonts.inter(
+                              color: Colors.white, fontSize: 13.sp)),
+                      if (user.paidAt != null) ...[
+                        const Spacer(),
+                        Text(_formatSheetDate(user.paidAt!),
+                            style: GoogleFonts.inter(
+                                color: Colors.grey[500], fontSize: 11.sp)),
+                      ],
+                    ],
+                  ),
+                )),
             SizedBox(height: 12.h),
           ],
           // Unpaid users
           if (unpaidUsers.isNotEmpty) ...[
             Text(
               'Unpaid',
-              style: GoogleFonts.inter(color: const Color(0xFFFB923C), fontSize: 13.sp, fontWeight: FontWeight.w600),
+              style: GoogleFonts.inter(
+                  color: const Color(0xFFFB923C),
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600),
             ),
             SizedBox(height: 8.h),
             ...unpaidUsers.map((user) => Padding(
-              padding: EdgeInsets.only(bottom: 6.h),
-              child: Row(
-                children: [
-                  Icon(Icons.pending, color: const Color(0xFFFB923C), size: 14.sp),
-                  SizedBox(width: 8.w),
-                  Text(user.displayName, style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
-                  const Spacer(),
-                  Text(user.status == 'viewed' ? 'Viewed' : 'Pending', style: GoogleFonts.inter(color: Colors.grey[500], fontSize: 11.sp)),
-                ],
-              ),
-            )),
+                  padding: EdgeInsets.only(bottom: 6.h),
+                  child: Row(
+                    children: [
+                      Icon(Icons.pending,
+                          color: const Color(0xFFFB923C), size: 14.sp),
+                      SizedBox(width: 8.w),
+                      Text(user.displayName,
+                          style: GoogleFonts.inter(
+                              color: Colors.white, fontSize: 13.sp)),
+                      const Spacer(),
+                      Text(user.status == 'viewed' ? 'Viewed' : 'Pending',
+                          style: GoogleFonts.inter(
+                              color: Colors.grey[500], fontSize: 11.sp)),
+                    ],
+                  ),
+                )),
           ],
         ],
       ),
@@ -1048,7 +1103,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () => _shareQRCode(context, qrKey, 'Payment QR Code', invoice),
+                  onPressed: () =>
+                      _shareQRCode(context, qrKey, 'Payment QR Code', invoice),
                   icon: Icon(
                     Icons.share,
                     color: const Color(0xFF3B82F6),
@@ -1074,7 +1130,9 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
               SizedBox(width: 12.w),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () => context.read<InvoiceCubit>().loadInvoiceDetails(widget.invoiceId),
+                  onPressed: () => context
+                      .read<InvoiceCubit>()
+                      .loadInvoiceDetails(widget.invoiceId),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF3B82F6),
                     foregroundColor: Colors.white,
@@ -1099,7 +1157,9 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => context.read<InvoiceCubit>().loadInvoiceDetails(widget.invoiceId),
+            onTap: () => context
+                .read<InvoiceCubit>()
+                .loadInvoiceDetails(widget.invoiceId),
             child: Container(
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
@@ -1148,7 +1208,9 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
           ),
           SizedBox(height: 24.h),
           ElevatedButton(
-            onPressed: () => context.read<InvoiceCubit>().loadInvoiceDetails(widget.invoiceId),
+            onPressed: () => context
+                .read<InvoiceCubit>()
+                .loadInvoiceDetails(widget.invoiceId),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF3B82F6),
               foregroundColor: Colors.white,
@@ -1176,7 +1238,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.people, color: InvoiceThemeColors.primaryPurple, size: 18.sp),
+              Icon(Icons.people,
+                  color: InvoiceThemeColors.primaryPurple, size: 18.sp),
               SizedBox(width: 8.w),
               Text(
                 'Tagged Users (${users.length})',
@@ -1197,7 +1260,10 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                   ),
                   child: Text(
                     '${paidUsers.length} paid',
-                    style: GoogleFonts.inter(color: const Color(0xFF10B981), fontSize: 11.sp, fontWeight: FontWeight.w600),
+                    style: GoogleFonts.inter(
+                        color: const Color(0xFF10B981),
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w600),
                   ),
                 ),
               if (paidUsers.isNotEmpty && unpaidUsers.isNotEmpty)
@@ -1211,7 +1277,10 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                   ),
                   child: Text(
                     '${unpaidUsers.length} pending',
-                    style: GoogleFonts.inter(color: const Color(0xFFFB923C), fontSize: 11.sp, fontWeight: FontWeight.w600),
+                    style: GoogleFonts.inter(
+                        color: const Color(0xFFFB923C),
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w600),
                   ),
                 ),
             ],
@@ -1227,7 +1296,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                 width: double.infinity,
                 padding: EdgeInsets.symmetric(vertical: 8.h),
                 decoration: BoxDecoration(
-                  color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
+                  color:
+                      InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Center(
@@ -1256,7 +1326,11 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
         : isViewed
             ? const Color(0xFFFB923C)
             : const Color(0xFF9CA3AF);
-    final statusLabel = isPaid ? 'Paid' : isViewed ? 'Viewed' : 'Pending';
+    final statusLabel = isPaid
+        ? 'Paid'
+        : isViewed
+            ? 'Viewed'
+            : 'Pending';
     final displayName = user.displayName.isNotEmpty
         ? user.displayName
         : user.username.isNotEmpty
@@ -1276,8 +1350,11 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
           // Avatar
           CircleAvatar(
             radius: 18.r,
-            backgroundColor: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
-            backgroundImage: user.profilePicture != null ? NetworkImage(user.profilePicture!) : null,
+            backgroundColor:
+                InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
+            backgroundImage: user.profilePicture != null
+                ? NetworkImage(user.profilePicture!)
+                : null,
             child: user.profilePicture == null
                 ? Text(
                     initial,
@@ -1304,7 +1381,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (user.username.isNotEmpty && user.username != displayName) ...[
+                if (user.username.isNotEmpty &&
+                    user.username != displayName) ...[
                   SizedBox(height: 2.h),
                   Text(
                     '@${user.username}',
@@ -1329,7 +1407,11 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  isPaid ? Icons.check_circle : isViewed ? Icons.visibility : Icons.schedule,
+                  isPaid
+                      ? Icons.check_circle
+                      : isViewed
+                          ? Icons.visibility
+                          : Icons.schedule,
                   color: statusColor,
                   size: 12.sp,
                 ),
@@ -1357,7 +1439,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) => Container(
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.65),
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.65),
         decoration: BoxDecoration(
           color: const Color(0xFFF8F9FA),
           borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
@@ -1378,16 +1461,21 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
               padding: EdgeInsets.all(20.w),
               child: Row(
                 children: [
-                  Icon(Icons.people, color: InvoiceThemeColors.primaryPurple, size: 20.sp),
+                  Icon(Icons.people,
+                      color: InvoiceThemeColors.primaryPurple, size: 20.sp),
                   SizedBox(width: 10.w),
                   Text(
                     'Tagged Users (${users.length})',
-                    style: GoogleFonts.inter(color: const Color(0xFF111827), fontSize: 16.sp, fontWeight: FontWeight.w600),
+                    style: GoogleFonts.inter(
+                        color: const Color(0xFF111827),
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600),
                   ),
                   const Spacer(),
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: Icon(Icons.close, color: const Color(0xFF6B7280), size: 20.sp),
+                    child: Icon(Icons.close,
+                        color: const Color(0xFF6B7280), size: 20.sp),
                   ),
                 ],
               ),
@@ -1416,7 +1504,11 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
         : user.status == 'viewed'
             ? const Color(0xFFFB923C)
             : const Color(0xFF6B7280);
-    final statusLabel = user.status == 'paid' ? 'Paid' : user.status == 'viewed' ? 'Viewed' : 'Pending';
+    final statusLabel = user.status == 'paid'
+        ? 'Paid'
+        : user.status == 'viewed'
+            ? 'Viewed'
+            : 'Pending';
     final typeColor = user.isPlatformUser
         ? InvoiceThemeColors.primaryPurple
         : user.tagType == 'email'
@@ -1446,15 +1538,24 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                 CircleAvatar(
                   radius: 20.r,
                   backgroundColor: typeColor.withValues(alpha: 0.1),
-                  backgroundImage: user.profilePicture != null ? NetworkImage(user.profilePicture!) : null,
+                  backgroundImage: user.profilePicture != null
+                      ? NetworkImage(user.profilePicture!)
+                      : null,
                   child: user.profilePicture == null
                       ? user.isPlatformUser
                           ? Text(
-                              user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : '?',
-                              style: GoogleFonts.inter(color: typeColor, fontSize: 16.sp, fontWeight: FontWeight.w700),
+                              user.displayName.isNotEmpty
+                                  ? user.displayName[0].toUpperCase()
+                                  : '?',
+                              style: GoogleFonts.inter(
+                                  color: typeColor,
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w700),
                             )
                           : Icon(
-                              user.tagType == 'email' ? Icons.email_outlined : Icons.sms_outlined,
+                              user.tagType == 'email'
+                                  ? Icons.email_outlined
+                                  : Icons.sms_outlined,
                               color: typeColor,
                               size: 18.sp,
                             )
@@ -1470,13 +1571,18 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                           Flexible(
                             child: Text(
                               user.displayName,
-                              style: GoogleFonts.inter(color: const Color(0xFF111827), fontSize: 14.sp, fontWeight: FontWeight.w600),
+                              style: GoogleFonts.inter(
+                                  color: const Color(0xFF111827),
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w600),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           if (user.isPlatformUser) ...[
                             SizedBox(width: 4.w),
-                            Icon(Icons.open_in_new, color: InvoiceThemeColors.primaryPurple, size: 12.sp),
+                            Icon(Icons.open_in_new,
+                                color: InvoiceThemeColors.primaryPurple,
+                                size: 12.sp),
                           ],
                         ],
                       ),
@@ -1484,26 +1590,39 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                       Row(
                         children: [
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 6.w, vertical: 2.h),
                             decoration: BoxDecoration(
                               color: typeColor.withValues(alpha: 0.08),
                               borderRadius: BorderRadius.circular(4.r),
                             ),
                             child: Text(
                               user.tagMethodLabel,
-                              style: GoogleFonts.inter(color: typeColor, fontSize: 10.sp, fontWeight: FontWeight.w600),
+                              style: GoogleFonts.inter(
+                                  color: typeColor,
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w600),
                             ),
                           ),
                           if (user.username.isNotEmpty) ...[
                             SizedBox(width: 6.w),
                             Flexible(
-                              child: Text('@${user.username}', style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 12.sp), overflow: TextOverflow.ellipsis),
+                              child: Text('@${user.username}',
+                                  style: GoogleFonts.inter(
+                                      color: const Color(0xFF6B7280),
+                                      fontSize: 12.sp),
+                                  overflow: TextOverflow.ellipsis),
                             ),
                           ],
-                          if (user.tagValue != null && user.tagValue!.isNotEmpty) ...[
+                          if (user.tagValue != null &&
+                              user.tagValue!.isNotEmpty) ...[
                             SizedBox(width: 6.w),
                             Flexible(
-                              child: Text(user.tagValue!, style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 12.sp), overflow: TextOverflow.ellipsis),
+                              child: Text(user.tagValue!,
+                                  style: GoogleFonts.inter(
+                                      color: const Color(0xFF6B7280),
+                                      fontSize: 12.sp),
+                                  overflow: TextOverflow.ellipsis),
                             ),
                           ],
                         ],
@@ -1512,12 +1631,17 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                   ),
                 ),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
-                  child: Text(statusLabel, style: GoogleFonts.inter(color: statusColor, fontSize: 11.sp, fontWeight: FontWeight.w600)),
+                  child: Text(statusLabel,
+                      style: GoogleFonts.inter(
+                          color: statusColor,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w600)),
                 ),
               ],
             ),
@@ -1526,19 +1650,28 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
               Row(
                 children: [
                   SizedBox(width: 52.w),
-                  Icon(Icons.schedule, color: const Color(0xFF9CA3AF), size: 12.sp),
+                  Icon(Icons.schedule,
+                      color: const Color(0xFF9CA3AF), size: 12.sp),
                   SizedBox(width: 4.w),
-                  Text('Tagged ${_formatSheetDate(user.taggedAt!)}', style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
+                  Text('Tagged ${_formatSheetDate(user.taggedAt!)}',
+                      style: GoogleFonts.inter(
+                          color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
                   if (user.paidAt != null) ...[
                     SizedBox(width: 12.w),
-                    Icon(Icons.check_circle_outline, color: const Color(0xFF10B981), size: 12.sp),
+                    Icon(Icons.check_circle_outline,
+                        color: const Color(0xFF10B981), size: 12.sp),
                     SizedBox(width: 4.w),
-                    Text('Paid ${_formatSheetDate(user.paidAt!)}', style: GoogleFonts.inter(color: const Color(0xFF10B981), fontSize: 11.sp)),
+                    Text('Paid ${_formatSheetDate(user.paidAt!)}',
+                        style: GoogleFonts.inter(
+                            color: const Color(0xFF10B981), fontSize: 11.sp)),
                   ] else if (user.viewedAt != null) ...[
                     SizedBox(width: 12.w),
-                    Icon(Icons.visibility_outlined, color: const Color(0xFFFB923C), size: 12.sp),
+                    Icon(Icons.visibility_outlined,
+                        color: const Color(0xFFFB923C), size: 12.sp),
                     SizedBox(width: 4.w),
-                    Text('Viewed ${_formatSheetDate(user.viewedAt!)}', style: GoogleFonts.inter(color: const Color(0xFFFB923C), fontSize: 11.sp)),
+                    Text('Viewed ${_formatSheetDate(user.viewedAt!)}',
+                        style: GoogleFonts.inter(
+                            color: const Color(0xFFFB923C), fontSize: 11.sp)),
                   ],
                 ],
               ),
@@ -1554,7 +1687,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
       context: context,
       builder: (context) => Dialog(
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         child: Padding(
           padding: EdgeInsets.all(24.w),
           child: Column(
@@ -1562,48 +1696,69 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             children: [
               CircleAvatar(
                 radius: 40.r,
-                backgroundColor: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
-                backgroundImage: user.profilePicture != null ? NetworkImage(user.profilePicture!) : null,
+                backgroundColor:
+                    InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
+                backgroundImage: user.profilePicture != null
+                    ? NetworkImage(user.profilePicture!)
+                    : null,
                 child: user.profilePicture == null
                     ? Text(
-                        user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : '?',
-                        style: GoogleFonts.inter(color: InvoiceThemeColors.primaryPurple, fontSize: 32.sp, fontWeight: FontWeight.w700),
+                        user.displayName.isNotEmpty
+                            ? user.displayName[0].toUpperCase()
+                            : '?',
+                        style: GoogleFonts.inter(
+                            color: InvoiceThemeColors.primaryPurple,
+                            fontSize: 32.sp,
+                            fontWeight: FontWeight.w700),
                       )
                     : null,
               ),
               SizedBox(height: 16.h),
               Text(
                 user.displayName,
-                style: GoogleFonts.inter(color: const Color(0xFF111827), fontSize: 20.sp, fontWeight: FontWeight.w700),
+                style: GoogleFonts.inter(
+                    color: const Color(0xFF111827),
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.w700),
                 textAlign: TextAlign.center,
               ),
               if (user.username.isNotEmpty) ...[
                 SizedBox(height: 4.h),
                 Text(
                   '@${user.username}',
-                  style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 14.sp, fontWeight: FontWeight.w500),
+                  style: GoogleFonts.inter(
+                      color: const Color(0xFF6B7280),
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w500),
                 ),
               ],
               SizedBox(height: 16.h),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.08),
+                  color:
+                      InvoiceThemeColors.primaryPurple.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.verified, color: InvoiceThemeColors.primaryPurple, size: 14.sp),
+                    Icon(Icons.verified,
+                        color: InvoiceThemeColors.primaryPurple, size: 14.sp),
                     SizedBox(width: 4.w),
-                    Text('Lazervault User', style: GoogleFonts.inter(color: InvoiceThemeColors.primaryPurple, fontSize: 12.sp, fontWeight: FontWeight.w600)),
+                    Text('Lazervault User',
+                        style: GoogleFonts.inter(
+                            color: InvoiceThemeColors.primaryPurple,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w600)),
                   ],
                 ),
               ),
               if (user.status == 'paid' && user.paidAt != null) ...[
                 SizedBox(height: 12.h),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                   decoration: BoxDecoration(
                     color: const Color(0xFF10B981).withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(20.r),
@@ -1611,16 +1766,22 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 14.sp),
+                      Icon(Icons.check_circle,
+                          color: const Color(0xFF10B981), size: 14.sp),
                       SizedBox(width: 4.w),
-                      Text('Paid ${_formatSheetDate(user.paidAt!)}', style: GoogleFonts.inter(color: const Color(0xFF10B981), fontSize: 12.sp, fontWeight: FontWeight.w600)),
+                      Text('Paid ${_formatSheetDate(user.paidAt!)}',
+                          style: GoogleFonts.inter(
+                              color: const Color(0xFF10B981),
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w600)),
                     ],
                   ),
                 ),
               ] else ...[
                 SizedBox(height: 12.h),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFB923C).withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(20.r),
@@ -1628,9 +1789,14 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.pending, color: const Color(0xFFFB923C), size: 14.sp),
+                      Icon(Icons.pending,
+                          color: const Color(0xFFFB923C), size: 14.sp),
                       SizedBox(width: 4.w),
-                      Text(user.status == 'viewed' ? 'Viewed' : 'Pending', style: GoogleFonts.inter(color: const Color(0xFFFB923C), fontSize: 12.sp, fontWeight: FontWeight.w600)),
+                      Text(user.status == 'viewed' ? 'Viewed' : 'Pending',
+                          style: GoogleFonts.inter(
+                              color: const Color(0xFFFB923C),
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w600)),
                     ],
                   ),
                 ),
@@ -1644,9 +1810,12 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                     backgroundColor: InvoiceThemeColors.primaryPurple,
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 12.h),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r)),
                   ),
-                  child: Text('Close', style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                  child: Text('Close',
+                      style: GoogleFonts.inter(
+                          fontSize: 14.sp, fontWeight: FontWeight.w600)),
                 ),
               ),
             ],
@@ -1667,8 +1836,18 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
 
   /// "01 Sep 2026" — padded, unambiguous, matches the payment screens.
   static const _monthNames = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
 
   String _formatFullDate(DateTime date) {
@@ -1747,7 +1926,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: InvoiceThemeColors.secondaryBackground,
-        title: Text('Cancel Invoice', style: GoogleFonts.inter(color: Colors.white)),
+        title: Text('Cancel Invoice',
+            style: GoogleFonts.inter(color: Colors.white)),
         content: Text(
           'Are you sure you want to cancel this invoice? This action cannot be undone.',
           style: GoogleFonts.inter(color: Colors.grey[300]),
@@ -1767,7 +1947,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
               GetIt.I<InvoiceRefreshNotifier>().notifyRefresh();
               if (mounted) Get.back();
             },
-            child: Text('Cancel Invoice', style: GoogleFonts.inter(color: InvoiceThemeColors.errorRed)),
+            child: Text('Cancel Invoice',
+                style: GoogleFonts.inter(color: InvoiceThemeColors.errorRed)),
           ),
         ],
       ),
@@ -1778,7 +1959,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
     // Determine if current user is the sender (invoice creator)
     final currentUserProfile = _authProfile;
     final currentUserId = currentUserProfile?.userId;
-    final isSender = currentUserId != null && invoice.fromUserId == currentUserId;
+    final isSender =
+        currentUserId != null && invoice.fromUserId == currentUserId;
 
     return Column(
       children: [
@@ -1798,7 +1980,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                   Container(
                     padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
-                      color: InvoiceThemeColors.successGreen.withValues(alpha: 0.1),
+                      color: InvoiceThemeColors.successGreen
+                          .withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Icon(
@@ -1835,7 +2018,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
               _buildParticipantInfo(
                 invoice.recipientDetails,
                 isSender && currentUserProfile != null
-                    ? '${currentUserProfile.user.firstName} ${currentUserProfile.user.lastName}'.trim()
+                    ? '${currentUserProfile.user.firstName} ${currentUserProfile.user.lastName}'
+                        .trim()
                     : null,
                 isSender && currentUserProfile != null
                     ? currentUserProfile.user.email
@@ -1898,7 +2082,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
               _buildParticipantInfo(
                 invoice.payerDetails,
                 !isSender && currentUserProfile != null
-                    ? '${currentUserProfile.user.firstName} ${currentUserProfile.user.lastName}'.trim()
+                    ? '${currentUserProfile.user.firstName} ${currentUserProfile.user.lastName}'
+                        .trim()
                     : invoice.toName,
                 !isSender && currentUserProfile != null
                     ? currentUserProfile.user.email
@@ -1933,7 +2118,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
     );
   }
 
-  Widget _buildParticipantInfo(AddressDetails? details, String? fallbackName, String? fallbackEmail) {
+  Widget _buildParticipantInfo(
+      AddressDetails? details, String? fallbackName, String? fallbackEmail) {
     if (details == null && fallbackName == null && fallbackEmail == null) {
       return Text(
         'No information provided',
@@ -1948,27 +2134,28 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (details?.companyName?.isNotEmpty == true) 
+        if (details?.companyName?.isNotEmpty == true)
           _buildDetailRow('Company', details!.companyName!),
-        if (details?.contactName?.isNotEmpty == true) 
+        if (details?.contactName?.isNotEmpty == true)
           _buildDetailRow('Contact', details!.contactName!),
-        if (details?.email?.isNotEmpty == true) 
+        if (details?.email?.isNotEmpty == true)
           _buildDetailRow('Email', details!.email!)
-        else if (fallbackEmail?.isNotEmpty == true) 
+        else if (fallbackEmail?.isNotEmpty == true)
           _buildDetailRow('Email', fallbackEmail!),
-        if (details?.phone?.isNotEmpty == true) 
+        if (details?.phone?.isNotEmpty == true)
           _buildDetailRow('Phone', details!.phone!),
-        if (details?.addressLine1?.isNotEmpty == true) 
+        if (details?.addressLine1?.isNotEmpty == true)
           _buildDetailRow('Address', details!.addressLine1!),
-        if (details?.city?.isNotEmpty == true) 
+        if (details?.city?.isNotEmpty == true)
           _buildDetailRow('City', details!.city!),
-        if (details?.state?.isNotEmpty == true) 
+        if (details?.state?.isNotEmpty == true)
           _buildDetailRow('State/Province', details!.state!),
-        if (details?.postcode?.isNotEmpty == true) 
+        if (details?.postcode?.isNotEmpty == true)
           _buildDetailRow('Postcode/ZIP', details!.postcode!),
-        if (details?.country?.isNotEmpty == true) 
+        if (details?.country?.isNotEmpty == true)
           _buildDetailRow('Country', details!.country!),
-        if (fallbackName?.isNotEmpty == true && details?.companyName?.isEmpty != false) 
+        if (fallbackName?.isNotEmpty == true &&
+            details?.companyName?.isEmpty != false)
           _buildDetailRow('Name', fallbackName!),
       ],
     );
@@ -2029,7 +2216,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
     );
   }
 
-  Future<void> _shareQRCode(BuildContext context, GlobalKey qrKey, String title, Invoice invoice) async {
+  Future<void> _shareQRCode(BuildContext context, GlobalKey qrKey, String title,
+      Invoice invoice) async {
     try {
       // Show loading
       if (!context.mounted) return;
@@ -2043,7 +2231,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             ],
           ),
           backgroundColor: const Color(0xFF3B82F6),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 2),
         ),
@@ -2057,8 +2246,9 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
       }
       final RenderRepaintBoundary boundary = boundaryObj;
       ui.Image image = await boundary.toImage(pixelRatio: 3.0);
-      ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      
+      ByteData? byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
+
       if (byteData == null) {
         throw Exception('Failed to generate QR code image');
       }
@@ -2069,7 +2259,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
       final Directory tempDir = await getTemporaryDirectory();
       final String fileName = 'qr_code_${invoice.displayNumber}.png';
       final File file = File('${tempDir.path}/$fileName');
-      
+
       // Write image to file
       await file.writeAsBytes(pngBytes);
 
@@ -2080,10 +2270,12 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
       // Share the QR code image
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
-        text: '$title - ${invoice.title}\nAmount: $_currencySymbol${invoice.totalAmount.toStringAsFixed(2)}',
+        text:
+            '$title - ${invoice.title}\nAmount: $_currencySymbol${invoice.totalAmount.toStringAsFixed(2)}',
         subject: '$title - ${invoice.title}',
         // Required by iOS/iPadOS to anchor the share sheet popover.
-        sharePositionOrigin: context.mounted ? shareOriginFromContext(context) : null,
+        sharePositionOrigin:
+            context.mounted ? shareOriginFromContext(context) : null,
       ));
 
       // Clean up temp file after a delay
@@ -2092,18 +2284,19 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
           file.delete();
         }
       });
-
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to share QR code: ${e.toString().replaceFirst('Exception: ', '')}'),
+          content: Text(
+              'Failed to share QR code: ${e.toString().replaceFirst('Exception: ', '')}'),
           backgroundColor: InvoiceThemeColors.errorRed,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
         ),
       );
     }
   }
-} 
+}

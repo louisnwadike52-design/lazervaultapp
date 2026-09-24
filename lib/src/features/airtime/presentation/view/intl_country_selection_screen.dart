@@ -40,9 +40,11 @@ class _IntlCountrySelectionScreenState
 
   List<IntlAirtimeCountry> _filter(List<IntlAirtimeCountry> all) {
     if (_searchQuery.isEmpty) return all;
-    return all.where((c) =>
-        c.countryName.toLowerCase().contains(_searchQuery) ||
-        c.countryCode.toLowerCase().contains(_searchQuery)).toList();
+    return all
+        .where((c) =>
+            c.countryName.toLowerCase().contains(_searchQuery) ||
+            c.countryCode.toLowerCase().contains(_searchQuery))
+        .toList();
   }
 
   @override
@@ -128,9 +130,10 @@ class _IntlCountrySelectionScreenState
       ..sort((a, b) =>
           _popularCodes.indexOf(a.countryCode) -
           _popularCodes.indexOf(b.countryCode));
-    final others =
-        filtered.where((c) => !_popularCodes.contains(c.countryCode)).toList()
-          ..sort((a, b) => a.countryName.compareTo(b.countryName));
+    final others = filtered
+        .where((c) => !_popularCodes.contains(c.countryCode))
+        .toList()
+      ..sort((a, b) => a.countryName.compareTo(b.countryName));
 
     return ListView(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -206,8 +209,7 @@ class _IntlCountrySelectionScreenState
               ),
               if (country.operatorCount > 0)
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                   decoration: BoxDecoration(
                     color: const Color(0xFFA78BFA).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
@@ -235,7 +237,8 @@ class _IntlCountrySelectionScreenState
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 48),
+              const Icon(Icons.error_outline,
+                  color: Color(0xFFEF4444), size: 48),
               SizedBox(height: 16.h),
               Text(message,
                   textAlign: TextAlign.center,

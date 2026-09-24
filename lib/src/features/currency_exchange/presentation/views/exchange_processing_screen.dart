@@ -284,9 +284,8 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
                                   ? Colors.white
                                   : const Color(0xFF6B7280),
                           fontSize: 15.sp,
-                          fontWeight: isActive
-                              ? FontWeight.w700
-                              : FontWeight.w600,
+                          fontWeight:
+                              isActive ? FontWeight.w700 : FontWeight.w600,
                         ),
                       ),
                       SizedBox(height: 2.h),
@@ -305,8 +304,7 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
                     ],
                   ),
                 ),
-                if (isActive && !_hasFailed)
-                  LazerVaultLoader.small(),
+                if (isActive && !_hasFailed) LazerVaultLoader.small(),
                 if (isCompleted)
                   Icon(Icons.check_circle,
                       color: step.activeColor, size: 20.sp),
@@ -397,8 +395,7 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
       padding: EdgeInsets.symmetric(horizontal: 8.w),
       child: Row(
         children: [
-          Icon(Icons.lock_outline,
-              color: const Color(0xFF9CA3AF), size: 14.sp),
+          Icon(Icons.lock_outline, color: const Color(0xFF9CA3AF), size: 14.sp),
           SizedBox(width: 6.w),
           Expanded(
             child: Text(

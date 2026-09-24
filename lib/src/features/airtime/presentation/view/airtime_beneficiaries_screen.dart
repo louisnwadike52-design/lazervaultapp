@@ -24,10 +24,12 @@ class AirtimeBeneficiariesScreen extends StatefulWidget {
   const AirtimeBeneficiariesScreen({super.key});
 
   @override
-  State<AirtimeBeneficiariesScreen> createState() => _AirtimeBeneficiariesScreenState();
+  State<AirtimeBeneficiariesScreen> createState() =>
+      _AirtimeBeneficiariesScreenState();
 }
 
-class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen> {
+class _AirtimeBeneficiariesScreenState
+    extends State<AirtimeBeneficiariesScreen> {
   List<AirtimeBeneficiary>? _beneficiaries;
   List<AirtimeAutoRecharge> _autoRecharges = const [];
   bool _beneficiariesLoading = true;
@@ -53,17 +55,22 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
         elevation: 0,
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20.sp),
+          icon:
+              Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20.sp),
         ),
         title: Text(
           'Saved Contacts',
-          style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600, color: Colors.white),
+          style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.white),
         ),
         actions: [
           IconButton(
             tooltip: 'Auto-Recharges',
             onPressed: () => Get.toNamed(AppRoutes.airtimeAutoRecharge),
-            icon: Icon(Icons.autorenew, color: const Color(0xFF4E03D0), size: 22.sp),
+            icon: Icon(Icons.autorenew,
+                color: const Color(0xFF4E03D0), size: 22.sp),
           ),
         ],
       ),
@@ -99,7 +106,8 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
                   action: SnackBarAction(
                     label: 'Retry',
                     textColor: Colors.white,
-                    onPressed: () => context.read<AirtimeCubit>().loadAutoRecharges(),
+                    onPressed: () =>
+                        context.read<AirtimeCubit>().loadAutoRecharges(),
                   ),
                   duration: const Duration(seconds: 6),
                 ),
@@ -121,7 +129,8 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
   }
 
   Widget _buildBody() {
-    if (_beneficiariesError != null && (_beneficiaries == null || _beneficiaries!.isEmpty)) {
+    if (_beneficiariesError != null &&
+        (_beneficiaries == null || _beneficiaries!.isEmpty)) {
       return _buildErrorState(_beneficiariesError!);
     }
     if (_beneficiariesLoading && _beneficiaries == null) {
@@ -143,7 +152,8 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
         padding: EdgeInsets.all(16.w),
         physics: const AlwaysScrollableScrollPhysics(),
         itemCount: beneficiaries.length,
-        itemBuilder: (context, index) => _buildBeneficiaryItem(beneficiaries[index]),
+        itemBuilder: (context, index) =>
+            _buildBeneficiaryItem(beneficiaries[index]),
         separatorBuilder: (_, __) => SizedBox(height: 10.h),
       ),
     );
@@ -154,7 +164,8 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 48.sp, color: const Color(0xFFEF4444)),
+          Icon(Icons.error_outline,
+              size: 48.sp, color: const Color(0xFFEF4444)),
           SizedBox(height: 16.h),
           Text(
             message,
@@ -178,11 +189,15 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.person_add_outlined, size: 64.sp, color: const Color(0xFF4B5563)),
+            Icon(Icons.person_add_outlined,
+                size: 64.sp, color: const Color(0xFF4B5563)),
             SizedBox(height: 16.h),
             Text(
               'No saved contacts yet',
-              style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600, color: Colors.white),
+              style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white),
             ),
             SizedBox(height: 8.h),
             Text(
@@ -247,7 +262,8 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
               SizedBox(width: 4.w),
               Text(
                 'Auto',
-                style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w600, color: color),
+                style: TextStyle(
+                    fontSize: 11.sp, fontWeight: FontWeight.w600, color: color),
               ),
             ],
           ),
@@ -258,7 +274,8 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
 
   void _showAutoRechargeDialog(AirtimeBeneficiary b, AirtimeAutoRecharge ar) {
     final currencySymbol = ar.currency == 'NGN' ? '\u20A6' : ar.currency;
-    final frequencyLabel = ar.frequency[0].toUpperCase() + ar.frequency.substring(1);
+    final frequencyLabel =
+        ar.frequency[0].toUpperCase() + ar.frequency.substring(1);
     String scheduleLine;
     if (ar.frequency.toLowerCase() == 'weekly') {
       const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -284,12 +301,14 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Row(
           children: [
             Icon(Icons.autorenew, color: const Color(0xFF10B981), size: 22.sp),
             SizedBox(width: 8.w),
-            Text('Auto-Recharge', style: TextStyle(color: Colors.white, fontSize: 17.sp)),
+            Text('Auto-Recharge',
+                style: TextStyle(color: Colors.white, fontSize: 17.sp)),
           ],
         ),
         content: Column(
@@ -298,7 +317,8 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
           children: [
             _dialogRow('Contact', b.nickname ?? b.phoneNumber),
             _dialogRow('Phone', b.phoneNumber),
-            _dialogRow('Amount', '$currencySymbol${ar.amount.toStringAsFixed(0)}'),
+            _dialogRow(
+                'Amount', '$currencySymbol${ar.amount.toStringAsFixed(0)}'),
             _dialogRow('Schedule', scheduleLine),
             if (nextRunLabel != null) _dialogRow('Next run', nextRunLabel),
             _dialogRow('Status', ar.status),
@@ -308,11 +328,13 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
               decoration: BoxDecoration(
                 color: const Color(0xFF4E03D0).withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10.r),
-                border: Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.2)),
+                border: Border.all(
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.2)),
               ),
               child: Text(
                 'Manage pauses, edits, retries and history on the Auto-Recharge screen.',
-                style: TextStyle(fontSize: 12.sp, color: const Color(0xFF9CA3AF)),
+                style:
+                    TextStyle(fontSize: 12.sp, color: const Color(0xFF9CA3AF)),
               ),
             ),
           ],
@@ -320,7 +342,9 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('Close', style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
+            child: Text('Close',
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
           ),
           TextButton(
             onPressed: () {
@@ -357,7 +381,10 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
           Expanded(
             child: Text(
               value,
-              style: TextStyle(fontSize: 13.sp, color: Colors.white, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                  fontSize: 13.sp,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500),
             ),
           ),
         ],
@@ -370,7 +397,8 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
       builder: (ctx) => Container(
         padding: EdgeInsets.symmetric(vertical: 20.h),
         child: Column(
@@ -435,7 +463,9 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
             Divider(color: const Color(0xFF2D2D2D), height: 1),
             _buildOption(
               icon: Icons.autorenew,
-              label: hasAutoRecharge ? 'Manage Auto-Recharge' : 'Set Auto-Recharge',
+              label: hasAutoRecharge
+                  ? 'Manage Auto-Recharge'
+                  : 'Set Auto-Recharge',
               labelColor: const Color(0xFF4E03D0),
               onTap: () async {
                 Navigator.of(ctx).pop();
@@ -566,15 +596,12 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
     BillDetailsSheet.show(
       context,
       title: b.nickname?.isNotEmpty == true ? b.nickname! : b.phoneNumber,
-      subtitle:
-          (b.nickname?.isNotEmpty == true) ? b.phoneNumber : null,
+      subtitle: (b.nickname?.isNotEmpty == true) ? b.phoneNumber : null,
       headerIcon: Icons.phone_android,
       headerColor: accent,
       rows: [
         BillDetailRow(
-            icon: Icons.phone_outlined,
-            label: 'Phone',
-            value: b.phoneNumber),
+            icon: Icons.phone_outlined, label: 'Phone', value: b.phoneNumber),
         BillDetailRow(
             icon: Icons.signal_cellular_4_bar,
             label: 'Network',
@@ -623,9 +650,9 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
     );
   }
 
-
   void _showEditNicknameDialog(AirtimeBeneficiary beneficiary) {
-    final nicknameController = TextEditingController(text: beneficiary.nickname ?? '');
+    final nicknameController =
+        TextEditingController(text: beneficiary.nickname ?? '');
     bool isLoading = false;
 
     showDialog(
@@ -633,15 +660,18 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
           backgroundColor: const Color(0xFF1F1F1F),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-          title: Text('Edit Nickname', style: TextStyle(color: Colors.white, fontSize: 17.sp)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+          title: Text('Edit Nickname',
+              style: TextStyle(color: Colors.white, fontSize: 17.sp)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 beneficiary.phoneNumber,
-                style: TextStyle(fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
+                style:
+                    TextStyle(fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
               ),
               SizedBox(height: 16.h),
               TextField(
@@ -650,7 +680,8 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
                 style: TextStyle(color: Colors.white, fontSize: 15.sp),
                 decoration: InputDecoration(
                   hintText: 'Enter nickname',
-                  hintStyle: TextStyle(color: const Color(0xFF4B5563), fontSize: 15.sp),
+                  hintStyle: TextStyle(
+                      color: const Color(0xFF4B5563), fontSize: 15.sp),
                   filled: true,
                   fillColor: const Color(0xFF0A0A0A),
                   border: OutlineInputBorder(
@@ -665,7 +696,8 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
                     borderRadius: BorderRadius.circular(10.r),
                     borderSide: const BorderSide(color: Color(0xFF4E03D0)),
                   ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
                 ),
               ),
             ],
@@ -673,7 +705,9 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: Text('Cancel', style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
+              child: Text('Cancel',
+                  style: TextStyle(
+                      color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
             ),
             TextButton(
               onPressed: isLoading
@@ -682,11 +716,11 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
                       setDialogState(() => isLoading = true);
                       try {
                         await context.read<AirtimeCubit>().updateBeneficiary(
-                          beneficiaryId: beneficiary.id,
-                          nickname: nicknameController.text.trim().isEmpty
-                              ? null
-                              : nicknameController.text.trim(),
-                        );
+                              beneficiaryId: beneficiary.id,
+                              nickname: nicknameController.text.trim().isEmpty
+                                  ? null
+                                  : nicknameController.text.trim(),
+                            );
                         if (ctx.mounted) Navigator.of(ctx).pop();
                       } catch (e) {
                         setDialogState(() => isLoading = false);
@@ -726,7 +760,8 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text(
           hasAutoRecharge ? 'Delete Contact & Auto-Recharge' : 'Delete Contact',
           style: TextStyle(color: Colors.white, fontSize: 17.sp),
@@ -775,7 +810,8 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             child: Text('Cancel',
-                style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
           ),
           TextButton(
             onPressed: () {

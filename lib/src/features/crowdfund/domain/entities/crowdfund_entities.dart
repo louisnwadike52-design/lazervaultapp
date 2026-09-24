@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 part 'crowdfund_entities_widgets.dart';
 
-
 /// One page of a ListCrowdfunds call, carrying the SERVER's pagination
 /// block alongside the rows.
 ///
@@ -104,7 +103,8 @@ class Crowdfund extends Equatable {
   int get daysRemaining => hasDeadline
       ? deadline!.difference(DateTime.now()).inDays.clamp(0, 999999)
       : 0;
-  double get amountRemaining => (targetAmount - currentAmount).clamp(0.0, double.infinity);
+  double get amountRemaining =>
+      (targetAmount - currentAmount).clamp(0.0, double.infinity);
   bool get isTargetReached => currentAmount >= targetAmount;
   double get averageDonation =>
       donorCount > 0 ? currentAmount / donorCount : 0.0;
@@ -134,7 +134,8 @@ class Crowdfund extends Equatable {
     return Crowdfund(
       id: json['id'] as String,
       creatorUserId: json['creatorUserId'] as int,
-      creator: CrowdfundCreator.fromJson(json['creator'] as Map<String, dynamic>),
+      creator:
+          CrowdfundCreator.fromJson(json['creator'] as Map<String, dynamic>),
       title: json['title'] as String,
       description: json['description'] as String,
       story: json['story'] as String? ?? '',
@@ -153,8 +154,10 @@ class Crowdfund extends Equatable {
       imageUrl: json['imageUrl'] as String?,
       donorCount: json['donorCount'] as int,
       progressPercentage: (json['progressPercentage'] as num).toDouble(),
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
-      updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
+      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+          DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? '') ??
+          DateTime.now(),
       cancelReason: json['cancelReason'] as String?,
       cancelInitiatedBy: json['cancelInitiatedBy'] as String?,
       cancelInitiatorUserId: json['cancelInitiatorUserId'] as String?,
@@ -221,7 +224,8 @@ class Crowdfund extends Equatable {
       recentDonations: recentDonations ?? this.recentDonations,
       cancelReason: cancelReason ?? this.cancelReason,
       cancelInitiatedBy: cancelInitiatedBy ?? this.cancelInitiatedBy,
-      cancelInitiatorUserId: cancelInitiatorUserId ?? this.cancelInitiatorUserId,
+      cancelInitiatorUserId:
+          cancelInitiatorUserId ?? this.cancelInitiatorUserId,
       cancelledAt: cancelledAt ?? this.cancelledAt,
       refundsPending: refundsPending ?? this.refundsPending,
       refundsCompleted: refundsCompleted ?? this.refundsCompleted,

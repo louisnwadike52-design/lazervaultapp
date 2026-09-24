@@ -165,17 +165,15 @@ class _LoadedBodyState extends State<_LoadedBody> {
           SizedBox(height: 12.h),
           _section(
             title: 'Custom instructions for this assistant',
-            help:
-                'Tell the agent how you prefer to be helped here. '
+            help: 'Tell the agent how you prefer to be helped here. '
                 'Examples: "Always show me the spread before quoting", '
                 '"Use short sentences", "I prefer charts over tables".',
             child: TextField(
               controller: _hintController,
               maxLines: 4,
               maxLength: 400,
-              onChanged: (v) => context
-                  .read<PerServiceVoiceSettingsCubit>()
-                  .setPromptHint(v),
+              onChanged: (v) =>
+                  context.read<PerServiceVoiceSettingsCubit>().setPromptHint(v),
               style: GoogleFonts.inter(
                   color: SettingsTheme.textPrimary, fontSize: 13.sp),
               decoration: InputDecoration(
@@ -241,9 +239,8 @@ class _LoadedBodyState extends State<_LoadedBody> {
                 child: ElevatedButton(
                   onPressed: widget.state.saving || !widget.state.dirty
                       ? null
-                      : () => context
-                          .read<PerServiceVoiceSettingsCubit>()
-                          .save(),
+                      : () =>
+                          context.read<PerServiceVoiceSettingsCubit>().save(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: SettingsTheme.brand,
                     disabledBackgroundColor:

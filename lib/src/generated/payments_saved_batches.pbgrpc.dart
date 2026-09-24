@@ -54,16 +54,17 @@ class SavedBatchesClient extends $grpc.Client {
           '/payments.PaymentsService/RemoveSavedBatchItem',
           ($sb.RemoveSavedBatchItemRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) => $sb.SavedBatch.fromBuffer(value));
-  static final _$updateSavedBatchItemAmount = $grpc.ClientMethod<
-          $sb.UpdateSavedBatchItemAmountRequest, $sb.SavedBatch>(
-      '/payments.PaymentsService/UpdateSavedBatchItemAmount',
-      ($sb.UpdateSavedBatchItemAmountRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $sb.SavedBatch.fromBuffer(value));
-  static final _$applyCollectiveAmount = $grpc.ClientMethod<
-          $sb.ApplyCollectiveAmountRequest, $sb.SavedBatch>(
-      '/payments.PaymentsService/ApplyCollectiveAmount',
-      ($sb.ApplyCollectiveAmountRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $sb.SavedBatch.fromBuffer(value));
+  static final _$updateSavedBatchItemAmount =
+      $grpc.ClientMethod<$sb.UpdateSavedBatchItemAmountRequest, $sb.SavedBatch>(
+          '/payments.PaymentsService/UpdateSavedBatchItemAmount',
+          ($sb.UpdateSavedBatchItemAmountRequest value) =>
+              value.writeToBuffer(),
+          ($core.List<$core.int> value) => $sb.SavedBatch.fromBuffer(value));
+  static final _$applyCollectiveAmount =
+      $grpc.ClientMethod<$sb.ApplyCollectiveAmountRequest, $sb.SavedBatch>(
+          '/payments.PaymentsService/ApplyCollectiveAmount',
+          ($sb.ApplyCollectiveAmountRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) => $sb.SavedBatch.fromBuffer(value));
   static final _$executeFromSavedBatch = $grpc.ClientMethod<
           $sb.ExecuteFromSavedBatchRequest, $payments.BatchTransferResponse>(
       '/payments.PaymentsService/ExecuteFromSavedBatch',
@@ -74,14 +75,13 @@ class SavedBatchesClient extends $grpc.Client {
       $grpc.ClientMethod<$sb.GetBatchReceiptRequest, $sb.BatchReceipt>(
           '/payments.PaymentsService/GetBatchReceipt',
           ($sb.GetBatchReceiptRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) => $sb.BatchReceipt.fromBuffer(value));
+  static final _$getBatchItemReceipt =
+      $grpc.ClientMethod<$sb.GetBatchItemReceiptRequest, $sb.BatchItemReceipt>(
+          '/payments.PaymentsService/GetBatchItemReceipt',
+          ($sb.GetBatchItemReceiptRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $sb.BatchReceipt.fromBuffer(value));
-  static final _$getBatchItemReceipt = $grpc.ClientMethod<
-          $sb.GetBatchItemReceiptRequest, $sb.BatchItemReceipt>(
-      '/payments.PaymentsService/GetBatchItemReceipt',
-      ($sb.GetBatchItemReceiptRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $sb.BatchItemReceipt.fromBuffer(value));
+              $sb.BatchItemReceipt.fromBuffer(value));
 
   SavedBatchesClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -89,63 +89,62 @@ class SavedBatchesClient extends $grpc.Client {
       : super(channel, options: options, interceptors: interceptors);
 
   $grpc.ResponseFuture<$sb.SavedBatch> saveBatchDraft(
-      $sb.SaveBatchDraftRequest request,
-      {$grpc.CallOptions? options}) =>
+          $sb.SaveBatchDraftRequest request,
+          {$grpc.CallOptions? options}) =>
       $createUnaryCall(_$saveBatchDraft, request, options: options);
 
   $grpc.ResponseFuture<$sb.ListSavedBatchesResponse> listSavedBatches(
-      $sb.ListSavedBatchesRequest request,
-      {$grpc.CallOptions? options}) =>
+          $sb.ListSavedBatchesRequest request,
+          {$grpc.CallOptions? options}) =>
       $createUnaryCall(_$listSavedBatches, request, options: options);
 
   $grpc.ResponseFuture<$sb.SavedBatch> getSavedBatch(
-      $sb.GetSavedBatchRequest request,
-      {$grpc.CallOptions? options}) =>
+          $sb.GetSavedBatchRequest request,
+          {$grpc.CallOptions? options}) =>
       $createUnaryCall(_$getSavedBatch, request, options: options);
 
   $grpc.ResponseFuture<$sb.SavedBatch> updateSavedBatch(
-      $sb.UpdateSavedBatchRequest request,
-      {$grpc.CallOptions? options}) =>
+          $sb.UpdateSavedBatchRequest request,
+          {$grpc.CallOptions? options}) =>
       $createUnaryCall(_$updateSavedBatch, request, options: options);
 
   $grpc.ResponseFuture<$sb.DeleteSavedBatchResponse> deleteSavedBatch(
-      $sb.DeleteSavedBatchRequest request,
-      {$grpc.CallOptions? options}) =>
+          $sb.DeleteSavedBatchRequest request,
+          {$grpc.CallOptions? options}) =>
       $createUnaryCall(_$deleteSavedBatch, request, options: options);
 
   $grpc.ResponseFuture<$sb.SavedBatch> addSavedBatchItem(
-      $sb.AddSavedBatchItemRequest request,
-      {$grpc.CallOptions? options}) =>
+          $sb.AddSavedBatchItemRequest request,
+          {$grpc.CallOptions? options}) =>
       $createUnaryCall(_$addSavedBatchItem, request, options: options);
 
   $grpc.ResponseFuture<$sb.SavedBatch> removeSavedBatchItem(
-      $sb.RemoveSavedBatchItemRequest request,
-      {$grpc.CallOptions? options}) =>
+          $sb.RemoveSavedBatchItemRequest request,
+          {$grpc.CallOptions? options}) =>
       $createUnaryCall(_$removeSavedBatchItem, request, options: options);
 
   $grpc.ResponseFuture<$sb.SavedBatch> updateSavedBatchItemAmount(
-      $sb.UpdateSavedBatchItemAmountRequest request,
-      {$grpc.CallOptions? options}) =>
+          $sb.UpdateSavedBatchItemAmountRequest request,
+          {$grpc.CallOptions? options}) =>
       $createUnaryCall(_$updateSavedBatchItemAmount, request, options: options);
 
   $grpc.ResponseFuture<$sb.SavedBatch> applyCollectiveAmount(
-      $sb.ApplyCollectiveAmountRequest request,
-      {$grpc.CallOptions? options}) =>
+          $sb.ApplyCollectiveAmountRequest request,
+          {$grpc.CallOptions? options}) =>
       $createUnaryCall(_$applyCollectiveAmount, request, options: options);
 
   $grpc.ResponseFuture<$payments.BatchTransferResponse> executeFromSavedBatch(
-      $sb.ExecuteFromSavedBatchRequest request,
-      {$grpc.CallOptions? options}) =>
+          $sb.ExecuteFromSavedBatchRequest request,
+          {$grpc.CallOptions? options}) =>
       $createUnaryCall(_$executeFromSavedBatch, request, options: options);
 
   $grpc.ResponseFuture<$sb.BatchReceipt> getBatchReceipt(
-      $sb.GetBatchReceiptRequest request,
-      {$grpc.CallOptions? options}) =>
+          $sb.GetBatchReceiptRequest request,
+          {$grpc.CallOptions? options}) =>
       $createUnaryCall(_$getBatchReceipt, request, options: options);
 
   $grpc.ResponseFuture<$sb.BatchItemReceipt> getBatchItemReceipt(
-      $sb.GetBatchItemReceiptRequest request,
-      {$grpc.CallOptions? options}) =>
+          $sb.GetBatchItemReceiptRequest request,
+          {$grpc.CallOptions? options}) =>
       $createUnaryCall(_$getBatchItemReceipt, request, options: options);
 }
-

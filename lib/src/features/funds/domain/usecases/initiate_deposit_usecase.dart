@@ -63,6 +63,12 @@ class DepositParams extends Equatable {
   });
 
   @override
-  List<Object?> get props =>
-      [targetAccountId, amount, currency, sourceBankName, countryCode, accessToken];
+  List<Object?> get props => [
+        targetAccountId,
+        amount,
+        currency,
+        sourceBankName,
+        countryCode,
+        accessToken
+      ];
 }

@@ -72,7 +72,8 @@ class StockCubit extends Cubit<StockState> {
         )) {
           if (isClosed) return;
           if (result.hasData) {
-            emit(StockLoaded(result.data!, sector: sector, isStale: result.isStale));
+            emit(StockLoaded(result.data!,
+                sector: sector, isStale: result.isStale));
           } else if (result.hasError) {
             emit(StockError(getUserFriendlyErrorMessage(result.error)));
           }
@@ -103,13 +104,15 @@ class StockCubit extends Cubit<StockState> {
     }
   }
 
-  Future<void> loadStockDetails(String symbol, {String timeframe = '1M'}) async {
+  Future<void> loadStockDetails(String symbol,
+      {String timeframe = '1M'}) async {
     try {
       if (isClosed) return;
       emit(StockDetailsLoading());
-      
+
       final stockResult = await repository.getStockDetails(symbol);
-      final priceHistoryResult = await repository.getStockPriceHistory(symbol, timeframe);
+      final priceHistoryResult =
+          await repository.getStockPriceHistory(symbol, timeframe);
       final analysisResult = await repository.getStockAnalysis(symbol);
 
       stockResult.fold(
@@ -161,7 +164,7 @@ class StockCubit extends Cubit<StockState> {
 
       if (isClosed) return;
       emit(StockSearchLoading());
-      
+
       final result = await repository.searchStocks(query);
 
       result.fold(
@@ -184,7 +187,7 @@ class StockCubit extends Cubit<StockState> {
     try {
       if (isClosed) return;
       emit(StockLoading());
-      
+
       final result = await repository.getTopMovers();
 
       result.fold(
@@ -322,7 +325,8 @@ class StockCubit extends Cubit<StockState> {
       }
       final qty = quantityExact ?? quantity.toDouble();
       if (qty <= 0 || qty > 100000) {
-        emit(const OrderFailed(message: 'Quantity must be between 0 and 100,000'));
+        emit(const OrderFailed(
+            message: 'Quantity must be between 0 and 100,000'));
         return;
       }
       if (price != null && (price <= 0 || price > 1000000)) {
@@ -368,7 +372,7 @@ class StockCubit extends Cubit<StockState> {
     try {
       if (isClosed) return;
       emit(OrdersLoading());
-      
+
       final result = await repository.getOrders(status: status, symbol: symbol);
 
       result.fold(
@@ -391,7 +395,7 @@ class StockCubit extends Cubit<StockState> {
     try {
       if (isClosed) return;
       emit(OrderCancelling());
-      
+
       final result = await repository.cancelOrder(orderId);
 
       result.fold(
@@ -415,7 +419,7 @@ class StockCubit extends Cubit<StockState> {
     try {
       if (isClosed) return;
       emit(WatchlistsLoading());
-      
+
       final result = await getWatchlistsUseCase();
 
       result.fold(
@@ -438,7 +442,7 @@ class StockCubit extends Cubit<StockState> {
     try {
       if (isClosed) return;
       emit(WatchlistCreating());
-      
+
       final result = await repository.createWatchlist(name, symbols);
 
       result.fold(
@@ -457,12 +461,14 @@ class StockCubit extends Cubit<StockState> {
     }
   }
 
-  Future<void> updateWatchlist(String watchlistId, String name, List<String> symbols) async {
+  Future<void> updateWatchlist(
+      String watchlistId, String name, List<String> symbols) async {
     try {
       if (isClosed) return;
       emit(WatchlistUpdating());
-      
-      final result = await repository.updateWatchlist(watchlistId, name, symbols);
+
+      final result =
+          await repository.updateWatchlist(watchlistId, name, symbols);
 
       result.fold(
         (failure) {
@@ -484,7 +490,7 @@ class StockCubit extends Cubit<StockState> {
     try {
       if (isClosed) return;
       emit(WatchlistDeleting());
-      
+
       final result = await repository.deleteWatchlist(watchlistId);
 
       result.fold(
@@ -524,8 +530,7 @@ class StockCubit extends Cubit<StockState> {
     }
   }
 
-  Future<void> removeFromWatchlist(String symbol,
-      [String? watchlistId]) async {
+  Future<void> removeFromWatchlist(String symbol, [String? watchlistId]) async {
     try {
       final wid = watchlistId ?? '';
       final result = await repository.removeFromWatchlist(wid, symbol);
@@ -586,12 +591,14 @@ class StockCubit extends Cubit<StockState> {
   }
 
   // Market Data Methods
-  Future<void> loadMarketNews({NewsCategory? category, List<String>? symbols}) async {
+  Future<void> loadMarketNews(
+      {NewsCategory? category, List<String>? symbols}) async {
     try {
       if (isClosed) return;
       emit(MarketNewsLoading());
-      
-      final result = await repository.getMarketNews(category: category, symbols: symbols);
+
+      final result =
+          await repository.getMarketNews(category: category, symbols: symbols);
 
       result.fold(
         (failure) {
@@ -613,7 +620,7 @@ class StockCubit extends Cubit<StockState> {
     try {
       if (isClosed) return;
       emit(MarketIndicesLoading());
-      
+
       final result = await repository.getMarketIndices();
 
       result.fold(
@@ -628,7 +635,8 @@ class StockCubit extends Cubit<StockState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(MarketIndicesError('Failed to load market indices: ${e.toString()}'));
+      emit(
+          MarketIndicesError('Failed to load market indices: ${e.toString()}'));
     }
   }
 
@@ -636,7 +644,7 @@ class StockCubit extends Cubit<StockState> {
     try {
       if (isClosed) return;
       emit(SectorPerformanceLoading());
-      
+
       final result = await repository.getSectorPerformance();
 
       result.fold(
@@ -651,7 +659,8 @@ class StockCubit extends Cubit<StockState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(SectorPerformanceError('Failed to load sector performance: ${e.toString()}'));
+      emit(SectorPerformanceError(
+          'Failed to load sector performance: ${e.toString()}'));
     }
   }
 
@@ -660,7 +669,7 @@ class StockCubit extends Cubit<StockState> {
     try {
       if (isClosed) return;
       emit(AlertsLoading());
-      
+
       final result = await repository.getAlerts();
 
       result.fold(
@@ -688,7 +697,7 @@ class StockCubit extends Cubit<StockState> {
     try {
       if (isClosed) return;
       emit(AlertCreating());
-      
+
       final result = await repository.createAlert(
         symbol: symbol,
         type: type,
@@ -712,7 +721,8 @@ class StockCubit extends Cubit<StockState> {
     }
   }
 
-  Future<void> updateAlert(String alertId, {
+  Future<void> updateAlert(
+    String alertId, {
     AlertType? type,
     double? targetValue,
     AlertCondition? condition,
@@ -721,7 +731,7 @@ class StockCubit extends Cubit<StockState> {
     try {
       if (isClosed) return;
       emit(AlertUpdating());
-      
+
       final result = await repository.updateAlert(
         alertId,
         type: type,
@@ -750,7 +760,7 @@ class StockCubit extends Cubit<StockState> {
     try {
       if (isClosed) return;
       emit(AlertDeleting());
-      
+
       final result = await repository.deleteAlert(alertId);
 
       result.fold(
@@ -774,7 +784,7 @@ class StockCubit extends Cubit<StockState> {
     try {
       if (isClosed) return;
       emit(TradingSessionLoading());
-      
+
       final result = await repository.getCurrentTradingSession();
 
       result.fold(
@@ -789,7 +799,8 @@ class StockCubit extends Cubit<StockState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(TradingSessionError('Failed to load trading session: ${e.toString()}'));
+      emit(TradingSessionError(
+          'Failed to load trading session: ${e.toString()}'));
     }
   }
 
@@ -797,7 +808,7 @@ class StockCubit extends Cubit<StockState> {
     try {
       if (isClosed) return;
       emit(TradingSessionStarting());
-      
+
       final result = await repository.startTradingSession(startingBalance);
 
       result.fold(
@@ -812,7 +823,8 @@ class StockCubit extends Cubit<StockState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(TradingSessionError('Failed to start trading session: ${e.toString()}'));
+      emit(TradingSessionError(
+          'Failed to start trading session: ${e.toString()}'));
     }
   }
 
@@ -820,7 +832,7 @@ class StockCubit extends Cubit<StockState> {
     try {
       if (isClosed) return;
       emit(TradingSessionEnding());
-      
+
       final result = await repository.endTradingSession(sessionId);
 
       result.fold(
@@ -835,7 +847,8 @@ class StockCubit extends Cubit<StockState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(TradingSessionError('Failed to end trading session: ${e.toString()}'));
+      emit(TradingSessionError(
+          'Failed to end trading session: ${e.toString()}'));
     }
   }
 
@@ -844,7 +857,7 @@ class StockCubit extends Cubit<StockState> {
     try {
       if (isClosed) return;
       emit(AnalysisLoading());
-      
+
       final result = await repository.getStockAnalysis(symbol);
 
       result.fold(
@@ -864,12 +877,14 @@ class StockCubit extends Cubit<StockState> {
   }
 
   // Options Methods
-  Future<void> loadOptions(String underlyingSymbol, {DateTime? expirationDate}) async {
+  Future<void> loadOptions(String underlyingSymbol,
+      {DateTime? expirationDate}) async {
     try {
       if (isClosed) return;
       emit(OptionsLoading());
-      
-      final result = await repository.getOptions(underlyingSymbol, expirationDate: expirationDate);
+
+      final result = await repository.getOptions(underlyingSymbol,
+          expirationDate: expirationDate);
 
       result.fold(
         (failure) {
@@ -892,14 +907,21 @@ class StockCubit extends Cubit<StockState> {
     try {
       if (isClosed) return;
       emit(StockLoading());
-      
+
       // Load all dashboard data concurrently
       final futures = await Future.wait([
-        getStocksUseCase(limit: 10).then((result) => result.fold((l) => <Stock>[], (r) => r)),
-        getPortfolioUseCase().then((result) => result.fold((l) => null, (r) => r)),
-        repository.getMarketIndices().then((result) => result.fold((l) => <String, double>{}, (r) => r)),
-        repository.getMarketNews(category: NewsCategory.market).then((result) => result.fold((l) => <MarketNews>[], (r) => r)),
-        repository.getSectorPerformance().then((result) => result.fold((l) => <SectorPerformance>[], (r) => r)),
+        getStocksUseCase(limit: 10)
+            .then((result) => result.fold((l) => <Stock>[], (r) => r)),
+        getPortfolioUseCase()
+            .then((result) => result.fold((l) => null, (r) => r)),
+        repository
+            .getMarketIndices()
+            .then((result) => result.fold((l) => <String, double>{}, (r) => r)),
+        repository
+            .getMarketNews(category: NewsCategory.market)
+            .then((result) => result.fold((l) => <MarketNews>[], (r) => r)),
+        repository.getSectorPerformance().then(
+            (result) => result.fold((l) => <SectorPerformance>[], (r) => r)),
       ]);
 
       final stocks = futures[0] as List<Stock>;
@@ -982,4 +1004,4 @@ class StockCubit extends Cubit<StockState> {
       emit(StockError('Failed to load chart data: $e'));
     }
   }
-} 
+}

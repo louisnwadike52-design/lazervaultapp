@@ -14,7 +14,8 @@ class EducationPurchaseScreen extends StatefulWidget {
   const EducationPurchaseScreen({super.key});
 
   @override
-  State<EducationPurchaseScreen> createState() => _EducationPurchaseScreenState();
+  State<EducationPurchaseScreen> createState() =>
+      _EducationPurchaseScreenState();
 }
 
 class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
@@ -99,7 +100,9 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
           if (billersCode != null && billersCode.isNotEmpty) {
             _billersCodeController.text = billersCode;
           }
-          if (quantity != null && quantity >= _minQuantity && quantity <= _maxQuantity) {
+          if (quantity != null &&
+              quantity >= _minQuantity &&
+              quantity <= _maxQuantity) {
             setState(() {
               _quantity = quantity;
             });
@@ -396,8 +399,7 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
           child: Row(
             children: [
               Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
                 decoration: const BoxDecoration(
                   border: Border(
                     right: BorderSide(color: Color(0xFF2D2D2D), width: 1),
@@ -439,8 +441,8 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
                       color: const Color(0xFF9CA3AF).withValues(alpha: 0.6),
                     ),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(
-                        horizontal: 14.w, vertical: 14.h),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -519,7 +521,8 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
               borderRadius: BorderRadius.circular(12.r),
               borderSide: const BorderSide(color: Color(0xFFEF4444)),
             ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+            contentPadding:
+                EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
           ),
           validator: (value) {
             if (!_isJamb) return null;
@@ -561,7 +564,8 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
       ),
       child: Column(
         children: [
-          _buildBreakdownRow('Unit Price', '\u20A6${_formatAmount(_provider.amount)}'),
+          _buildBreakdownRow(
+              'Unit Price', '\u20A6${_formatAmount(_provider.amount)}'),
           SizedBox(height: 10.h),
           _buildBreakdownRow('Quantity', '$_quantity'),
           SizedBox(height: 10.h),
@@ -580,7 +584,8 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
     );
   }
 
-  Widget _buildBreakdownRow(String label, String value, {bool isTotal = false}) {
+  Widget _buildBreakdownRow(String label, String value,
+      {bool isTotal = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

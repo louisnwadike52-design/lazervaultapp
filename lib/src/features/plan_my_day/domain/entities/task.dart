@@ -50,14 +50,16 @@ class Task {
       dueDate: parsePlanTimestamp(json['due_date']),
       priority: json['priority'] as int? ?? 2,
       status: json['status'] as String? ?? 'pending',
-      categoryIds: (json['category_ids'] as List<dynamic>?)?.cast<String>() ?? [],
+      categoryIds:
+          (json['category_ids'] as List<dynamic>?)?.cast<String>() ?? [],
       parentTaskId: json['parent_task_id'] as String?,
       recurringRule: json['recurring_rule'] as String?,
       estimatedDuration: json['estimated_duration'] as String?,
       completionPercentage: json['completion_percentage'] as int? ?? 0,
       completedAt: parsePlanTimestamp(json['completed_at']),
       boardOrder: json['board_order'] as int? ?? 0,
-      reminderIds: (json['reminder_ids'] as List<dynamic>?)?.cast<String>() ?? [],
+      reminderIds:
+          (json['reminder_ids'] as List<dynamic>?)?.cast<String>() ?? [],
       contactId: (json['contact_id'] as String?)?.isEmpty ?? true
           ? null
           : json['contact_id'] as String?,

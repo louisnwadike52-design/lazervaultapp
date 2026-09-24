@@ -36,8 +36,7 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
   /// the chooser is hidden and the flow behaves exactly as before.
   String _mode = 'full';
 
-  bool get _canChooseMode =>
-      !_isEarly && widget.lockFund.accruedInterest > 0;
+  bool get _canChooseMode => !_isEarly && widget.lockFund.accruedInterest > 0;
 
   bool get _isInterestOnly => _canChooseMode && _mode == 'interest_only';
 
@@ -47,8 +46,8 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
 
   /// Interest that will actually be PAID — zero on an early break, which is
   /// not the same as the interest that has accrued.
-  double get _interestPaid => widget.lockFund
-      .interestPayableOnUnlock(early: _isEarly);
+  double get _interestPaid =>
+      widget.lockFund.interestPayableOnUnlock(early: _isEarly);
 
   /// True when there IS accrued interest but breaking early forfeits it — the
   /// case the breakdown has to state plainly rather than quietly drop.
@@ -74,8 +73,7 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
   /// amount, penalty, force-unlock flag and copy stay consistent regardless of
   /// what the caller passed; an explicit isEarlyWithdrawal request still forces
   /// it (e.g. a dedicated Break-Lock entry point).
-  bool get _isEarly =>
-      widget.isEarlyWithdrawal || (!_isFlex && !_isMatured);
+  bool get _isEarly => widget.isEarlyWithdrawal || (!_isFlex && !_isMatured);
 
   double get _penaltyAmount {
     if (_isEarly) {
@@ -301,9 +299,7 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
 
   Widget _buildSummaryCard() {
     final lock = widget.lockFund;
-    final color = _isEarly
-        ? const Color(0xFFFB923C)
-        : const Color(0xFF10B981);
+    final color = _isEarly ? const Color(0xFFFB923C) : const Color(0xFF10B981);
 
     return Container(
       width: double.infinity,
@@ -381,7 +377,8 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
             ),
           ),
           SizedBox(height: 16.h),
-          _buildBreakdownRow('Principal Amount', lock.formattedAmount, Colors.white),
+          _buildBreakdownRow(
+              'Principal Amount', lock.formattedAmount, Colors.white),
           // The interest PAID, not the interest accrued. Breaking early
           // forfeits it, and quoting the accrued figure here promised money
           // the unlock does not pay.
@@ -586,8 +583,7 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
           _modeOption(
             value: 'full',
             title: 'Everything — savings + ROI',
-            subtitle:
-                'Your ${widget.lockFund.formattedAmount} plus '
+            subtitle: 'Your ${widget.lockFund.formattedAmount} plus '
                 '${widget.lockFund.formattedInterest} ROI. This closes the plan.',
           ),
           SizedBox(height: 10.h),

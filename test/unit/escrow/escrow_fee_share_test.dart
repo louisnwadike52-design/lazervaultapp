@@ -56,8 +56,8 @@ void main() {
       final d = deal(feePayer: 'seller', buyerTotal: 1000, sellerNet: 950);
       expect(EscrowRoles.dealViewerFeeShare(d, true), 0);
       expect(EscrowRoles.dealViewerFeeShare(d, false), 50);
-      expect(EscrowRoles.dealFeeRowLabel(d, true),
-          'Escrow fee (you paid none)');
+      expect(
+          EscrowRoles.dealFeeRowLabel(d, true), 'Escrow fee (you paid none)');
     });
 
     test('buyer absorbs: seller bore nothing', () {
@@ -67,8 +67,8 @@ void main() {
     });
 
     test('no fee: nobody is shown a share', () {
-      final d = deal(
-          feePayer: 'none', fee: 0, buyerTotal: 1000, sellerNet: 1000);
+      final d =
+          deal(feePayer: 'none', fee: 0, buyerTotal: 1000, sellerNet: 1000);
       expect(EscrowRoles.dealViewerFeeShare(d, true), 0);
       expect(EscrowRoles.dealViewerFeeShare(d, false), 0);
     });

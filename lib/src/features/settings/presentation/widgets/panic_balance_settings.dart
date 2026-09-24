@@ -48,138 +48,142 @@ class PanicBalanceSettings extends StatelessWidget {
         return Padding(
           padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 16.h),
           child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Show a fake balance to disguise your real money in unsafe "
-              "situations. It's display-only. Your real balance, transfers and "
-              "limits are never affected, so a transfer still goes through normally.",
-              style: GoogleFonts.inter(fontSize: 12.sp, color: muted, height: 1.4),
-            ),
-            SizedBox(height: 12.h),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text('Enable Panic Balance',
-                  style: GoogleFonts.inter(
-                      fontSize: 14.sp, fontWeight: FontWeight.w600)),
-              value: _panic.enabled,
-              onChanged: (v) => _panic.setEnabled(v),
-            ),
-            if (_panic.enabled) ...[
-              _infoBox(
-                muted,
-                Icons.info_outline,
-                'Use the triggers below to show or hide the decoy. It stays on '
-                'until you toggle it off, even after closing and reopening the '
-                'app.',
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Show a fake balance to disguise your real money in unsafe "
+                "situations. It's display-only. Your real balance, transfers and "
+                "limits are never affected, so a transfer still goes through normally.",
+                style: GoogleFonts.inter(
+                    fontSize: 12.sp, color: muted, height: 1.4),
               ),
-              SizedBox(height: 16.h),
-              Text('Triggers',
-                  style: GoogleFonts.inter(
-                      fontSize: 13.sp, fontWeight: FontWeight.w700)),
-              SizedBox(height: 2.h),
-              Text('Choose how the decoy is shown or hidden. Enable either or both.',
-                  style: GoogleFonts.inter(fontSize: 11.sp, color: muted)),
-              _toggleTile(
-                icon: Icons.vibration,
-                title: 'Shake twice to toggle',
-                subtitle: 'Shake your phone twice to flip the decoy',
-                value: _panic.shakeTriggerEnabled,
-                onChanged: _panic.setShakeTrigger,
-              ),
-              _toggleTile(
-                icon: Icons.touch_app_outlined,
-                title: 'Long-press balance',
-                subtitle: 'Long-press the balance on your dashboard',
-                value: _panic.longPressTriggerEnabled,
-                onChanged: _panic.setLongPressTrigger,
-              ),
-              if (!_panic.shakeTriggerEnabled && !_panic.longPressTriggerEnabled)
-                Padding(
-                  padding: EdgeInsets.only(top: 4.h),
-                  child: Row(
-                    children: [
-                      Icon(Icons.warning_amber_rounded,
-                          size: 15.sp, color: _warn),
-                      SizedBox(width: 6.w),
-                      Expanded(
-                        child: Text(
-                          'No trigger enabled. You won\'t be able to show the '
-                          'decoy until you turn one on.',
-                          style: GoogleFonts.inter(fontSize: 11.sp, color: _warn),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               SizedBox(height: 12.h),
-              Text('Sound',
-                  style: GoogleFonts.inter(
-                      fontSize: 13.sp, fontWeight: FontWeight.w700)),
-              _toggleTile(
-                icon: Icons.volume_up_outlined,
-                title: 'Money-counting sound',
-                subtitle: 'Play a counting sound when your balance goes up',
-                value: _panic.soundEnabled,
-                onChanged: _panic.setSoundEnabled,
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text('Enable Panic Balance',
+                    style: GoogleFonts.inter(
+                        fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                value: _panic.enabled,
+                onChanged: (v) => _panic.setEnabled(v),
               ),
-              if (_panic.soundEnabled) _soundPicker(muted),
-              _toggleTile(
-                icon: Icons.vibration,
-                title: 'Vibrate on animation',
-                subtitle:
-                    'Buzz while the balance animates and when you switch to the decoy',
-                value: _panic.vibrationEnabled,
-                onChanged: _panic.setVibrationEnabled,
-              ),
-              if (_panic.isVisible)
-                Padding(
-                  padding: EdgeInsets.only(top: 10.h),
-                  child: Row(
-                    children: [
-                      Icon(Icons.visibility_off_outlined,
-                          size: 16.sp, color: _warn),
-                      SizedBox(width: 6.w),
-                      Text('Decoy is currently showing',
-                          style: GoogleFonts.inter(
-                              fontSize: 12.sp,
-                              color: _warn,
-                              fontWeight: FontWeight.w600)),
-                    ],
-                  ),
+              if (_panic.enabled) ...[
+                _infoBox(
+                  muted,
+                  Icons.info_outline,
+                  'Use the triggers below to show or hide the decoy. It stays on '
+                  'until you toggle it off, even after closing and reopening the '
+                  'app.',
                 ),
-              SizedBox(height: 16.h),
-              Text('Decoy amounts',
-                  style: GoogleFonts.inter(
-                      fontSize: 13.sp, fontWeight: FontWeight.w700)),
-              SizedBox(height: 2.h),
-              Text('Pick which one shows when the decoy is triggered.',
-                  style: GoogleFonts.inter(fontSize: 11.sp, color: muted)),
-              SizedBox(height: 10.h),
-              if (presets.isEmpty)
-                _emptyState(context, muted)
-              else ...[
-                ...presets.map((p) => _presetRow(context, p, sym)),
-                SizedBox(height: 6.h),
-                OutlinedButton.icon(
-                  onPressed: () => _showPresetDialog(context),
-                  icon: Icon(Icons.add, size: 18.sp, color: _primary),
-                  label: Text('Add decoy amount',
-                      style: GoogleFonts.inter(
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w600,
-                          color: _primary)),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: _primary),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.r)),
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-                  ),
+                SizedBox(height: 16.h),
+                Text('Triggers',
+                    style: GoogleFonts.inter(
+                        fontSize: 13.sp, fontWeight: FontWeight.w700)),
+                SizedBox(height: 2.h),
+                Text(
+                    'Choose how the decoy is shown or hidden. Enable either or both.',
+                    style: GoogleFonts.inter(fontSize: 11.sp, color: muted)),
+                _toggleTile(
+                  icon: Icons.vibration,
+                  title: 'Shake twice to toggle',
+                  subtitle: 'Shake your phone twice to flip the decoy',
+                  value: _panic.shakeTriggerEnabled,
+                  onChanged: _panic.setShakeTrigger,
                 ),
+                _toggleTile(
+                  icon: Icons.touch_app_outlined,
+                  title: 'Long-press balance',
+                  subtitle: 'Long-press the balance on your dashboard',
+                  value: _panic.longPressTriggerEnabled,
+                  onChanged: _panic.setLongPressTrigger,
+                ),
+                if (!_panic.shakeTriggerEnabled &&
+                    !_panic.longPressTriggerEnabled)
+                  Padding(
+                    padding: EdgeInsets.only(top: 4.h),
+                    child: Row(
+                      children: [
+                        Icon(Icons.warning_amber_rounded,
+                            size: 15.sp, color: _warn),
+                        SizedBox(width: 6.w),
+                        Expanded(
+                          child: Text(
+                            'No trigger enabled. You won\'t be able to show the '
+                            'decoy until you turn one on.',
+                            style: GoogleFonts.inter(
+                                fontSize: 11.sp, color: _warn),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                SizedBox(height: 12.h),
+                Text('Sound',
+                    style: GoogleFonts.inter(
+                        fontSize: 13.sp, fontWeight: FontWeight.w700)),
+                _toggleTile(
+                  icon: Icons.volume_up_outlined,
+                  title: 'Money-counting sound',
+                  subtitle: 'Play a counting sound when your balance goes up',
+                  value: _panic.soundEnabled,
+                  onChanged: _panic.setSoundEnabled,
+                ),
+                if (_panic.soundEnabled) _soundPicker(muted),
+                _toggleTile(
+                  icon: Icons.vibration,
+                  title: 'Vibrate on animation',
+                  subtitle:
+                      'Buzz while the balance animates and when you switch to the decoy',
+                  value: _panic.vibrationEnabled,
+                  onChanged: _panic.setVibrationEnabled,
+                ),
+                if (_panic.isVisible)
+                  Padding(
+                    padding: EdgeInsets.only(top: 10.h),
+                    child: Row(
+                      children: [
+                        Icon(Icons.visibility_off_outlined,
+                            size: 16.sp, color: _warn),
+                        SizedBox(width: 6.w),
+                        Text('Decoy is currently showing',
+                            style: GoogleFonts.inter(
+                                fontSize: 12.sp,
+                                color: _warn,
+                                fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  ),
+                SizedBox(height: 16.h),
+                Text('Decoy amounts',
+                    style: GoogleFonts.inter(
+                        fontSize: 13.sp, fontWeight: FontWeight.w700)),
+                SizedBox(height: 2.h),
+                Text('Pick which one shows when the decoy is triggered.',
+                    style: GoogleFonts.inter(fontSize: 11.sp, color: muted)),
+                SizedBox(height: 10.h),
+                if (presets.isEmpty)
+                  _emptyState(context, muted)
+                else ...[
+                  ...presets.map((p) => _presetRow(context, p, sym)),
+                  SizedBox(height: 6.h),
+                  OutlinedButton.icon(
+                    onPressed: () => _showPresetDialog(context),
+                    icon: Icon(Icons.add, size: 18.sp, color: _primary),
+                    label: Text('Add decoy amount',
+                        style: GoogleFonts.inter(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w600,
+                            color: _primary)),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: _primary),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.r)),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 20.w, vertical: 10.h),
+                    ),
+                  ),
+                ],
               ],
             ],
-          ],
           ),
         );
       },
@@ -197,8 +201,8 @@ class PanicBalanceSettings extends StatelessWidget {
       contentPadding: EdgeInsets.zero,
       secondary: Icon(icon, color: _primary, size: 22.sp),
       title: Text(title,
-          style: GoogleFonts.inter(
-              fontSize: 14.sp, fontWeight: FontWeight.w600)),
+          style:
+              GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600)),
       subtitle: Text(subtitle,
           style: GoogleFonts.inter(fontSize: 11.sp, color: Colors.grey[600])),
       value: value,
@@ -256,8 +260,8 @@ class PanicBalanceSettings extends StatelessWidget {
           SizedBox(width: 8.w),
           Expanded(
             child: Text(text,
-                style:
-                    GoogleFonts.inter(fontSize: 11.sp, color: muted, height: 1.4)),
+                style: GoogleFonts.inter(
+                    fontSize: 11.sp, color: muted, height: 1.4)),
           ),
         ],
       ),
@@ -341,8 +345,7 @@ class PanicBalanceSettings extends StatelessWidget {
                 fontSize: 14.sp,
                 fontWeight: active ? FontWeight.w700 : FontWeight.w500)),
         subtitle: Text('$sym${_formatAmount(p.amount)}',
-            style: GoogleFonts.inter(
-                fontSize: 12.sp, color: Colors.grey[600])),
+            style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.grey[600])),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -457,7 +460,8 @@ class PanicBalanceSettings extends StatelessWidget {
                     e.label.toLowerCase() == label.toLowerCase() &&
                     e.label != existing?.label);
                 if (clash) {
-                  setLocal(() => error = 'A decoy with this label already exists.');
+                  setLocal(
+                      () => error = 'A decoy with this label already exists.');
                   return;
                 }
                 _panic.upsertPreset(

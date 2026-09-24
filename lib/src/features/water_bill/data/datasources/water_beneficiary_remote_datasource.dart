@@ -138,8 +138,7 @@ class WaterBeneficiaryRemoteDataSourceImpl
   @override
   Future<void> deleteBeneficiary(String beneficiaryId) async {
     try {
-      final request = pb.DeleteWaterBeneficiaryRequest()
-        ..id = beneficiaryId;
+      final request = pb.DeleteWaterBeneficiaryRequest()..id = beneficiaryId;
       final options = await grpcClient.callOptions;
       await grpcClient.utilityPaymentsClient
           .deleteWaterBeneficiary(request, options: options);
@@ -154,8 +153,7 @@ class WaterBeneficiaryRemoteDataSourceImpl
     String? nickname,
   }) async {
     try {
-      final request = pb.UpdateWaterBeneficiaryRequest()
-        ..id = beneficiaryId;
+      final request = pb.UpdateWaterBeneficiaryRequest()..id = beneficiaryId;
       if (nickname != null) request.nickname = nickname;
       final options = await grpcClient.callOptions;
       final response = await grpcClient.utilityPaymentsClient
@@ -297,15 +295,12 @@ class WaterBeneficiaryRemoteDataSourceImpl
     bool includePast = false,
   }) async {
     try {
-      final request = pb.GetWaterRemindersRequest()
-        ..includePast = includePast;
+      final request = pb.GetWaterRemindersRequest()..includePast = includePast;
       if (status != null && status.isNotEmpty) request.status = status;
       final options = await grpcClient.callOptions;
       final response = await grpcClient.utilityPaymentsClient
           .getWaterReminders(request, options: options);
-      return response.reminders
-          .map((r) => WaterReminder.fromProto(r))
-          .toList();
+      return response.reminders.map((r) => WaterReminder.fromProto(r)).toList();
     } on GrpcError catch (e) {
       throw Exception('Failed to fetch water reminders: ${e.message}');
     }
@@ -354,8 +349,7 @@ class WaterBeneficiaryRemoteDataSourceImpl
     String? recurrenceType,
   }) async {
     try {
-      final request = pb.UpdateWaterReminderRequest()
-        ..reminderId = reminderId;
+      final request = pb.UpdateWaterReminderRequest()..reminderId = reminderId;
       if (title != null) request.title = title;
       if (description != null) request.description = description;
       if (reminderDate != null) {
@@ -377,8 +371,7 @@ class WaterBeneficiaryRemoteDataSourceImpl
   @override
   Future<void> deleteReminder(String reminderId) async {
     try {
-      final request = pb.DeleteWaterReminderRequest()
-        ..reminderId = reminderId;
+      final request = pb.DeleteWaterReminderRequest()..reminderId = reminderId;
       final options = await grpcClient.callOptions;
       await grpcClient.utilityPaymentsClient
           .deleteWaterReminder(request, options: options);
@@ -396,8 +389,7 @@ class WaterBeneficiaryRemoteDataSourceImpl
       await grpcClient.utilityPaymentsClient
           .markWaterReminderComplete(request, options: options);
     } on GrpcError catch (e) {
-      throw Exception(
-          'Failed to mark water reminder complete: ${e.message}');
+      throw Exception('Failed to mark water reminder complete: ${e.message}');
     }
   }
 

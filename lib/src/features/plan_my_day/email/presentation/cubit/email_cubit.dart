@@ -150,7 +150,9 @@ class EmailCubit extends Cubit<EmailState> {
 
   Future<void> loadMore() async {
     final current = state;
-    if (current is! EmailInboxLoaded || current.loadingMore || !current.hasMore) {
+    if (current is! EmailInboxLoaded ||
+        current.loadingMore ||
+        !current.hasMore) {
       return;
     }
     emit(current.copyWith(loadingMore: true));
@@ -209,7 +211,8 @@ class EmailCubit extends Cubit<EmailState> {
 
       final GoogleSignInAccount user;
       try {
-        user = await GoogleSignIn.instance.authenticate(scopeHint: _gmailScopes);
+        user =
+            await GoogleSignIn.instance.authenticate(scopeHint: _gmailScopes);
       } on GoogleSignInException catch (e) {
         if (isClosed) return;
         // Includes the unverified-app case: Google blocks consent for any account that
@@ -276,7 +279,8 @@ class EmailCubit extends Cubit<EmailState> {
     }
   }
 
-  Future<void> draftReply({String tone = 'professional', String instructions = ''}) async {
+  Future<void> draftReply(
+      {String tone = 'professional', String instructions = ''}) async {
     final current = state;
     if (current is! EmailThreadLoaded) return;
     emit(current.copyWith(drafting: true));
@@ -359,7 +363,8 @@ class EmailCubit extends Cubit<EmailState> {
     emit(EmailBuildingDay());
     try {
       final r = _rangeToApi(range);
-      final result = await _repository.buildDay(range: r.apiRange, hours: r.hours);
+      final result =
+          await _repository.buildDay(range: r.apiRange, hours: r.hours);
       if (!isClosed) emit(EmailDayBuilt(result));
     } catch (e) {
       if (!isClosed) emit(EmailError(_msg(e, 'Failed to build your day')));
@@ -373,7 +378,8 @@ class EmailCubit extends Cubit<EmailState> {
     emit(EmailSettingsLoading());
     try {
       final status = await _repository.getStatus();
-      final rules = status.connected ? await _repository.getRules() : <EmailRule>[];
+      final rules =
+          status.connected ? await _repository.getRules() : <EmailRule>[];
       if (!isClosed) emit(EmailSettingsLoaded(status: status, rules: rules));
     } catch (e) {
       if (!isClosed) emit(EmailError(_msg(e, 'Failed to load settings')));

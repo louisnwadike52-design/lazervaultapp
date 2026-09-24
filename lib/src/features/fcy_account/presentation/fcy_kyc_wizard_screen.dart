@@ -190,7 +190,8 @@ class _FcyKycWizardScreenState extends State<FcyKycWizardScreen> {
               children: [
                 Text(
                   s.title,
-                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
+                  style:
+                      TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
                 ),
                 Text(
                   'Step ${cubit.step + 1} of ${steps.length}',
@@ -449,8 +450,8 @@ class _FcyKycWizardScreenState extends State<FcyKycWizardScreen> {
                 child: OutlinedButton(
                   onPressed: submitting ? null : cubit.back,
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(
-                        color: Colors.white.withValues(alpha: 0.18)),
+                    side:
+                        BorderSide(color: Colors.white.withValues(alpha: 0.18)),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14.r)),
                   ),
@@ -613,11 +614,12 @@ class _AccountStateView extends StatelessWidget {
                   .withValues(alpha: 0.15),
             ),
             child: Icon(
-              _isActive ? Icons.account_balance_rounded : Icons.hourglass_top_rounded,
+              _isActive
+                  ? Icons.account_balance_rounded
+                  : Icons.hourglass_top_rounded,
               size: 33.sp,
-              color: _isActive
-                  ? const Color(0xFF10B981)
-                  : const Color(0xFFF59E0B),
+              color:
+                  _isActive ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
             ),
           ),
         ),
@@ -678,8 +680,7 @@ class _AccountStateView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14.r)),
             ),
             child: Text('Done',
-                style:
-                    TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600)),
+                style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600)),
           ),
         ),
       ],

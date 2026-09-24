@@ -22,7 +22,8 @@ abstract class BettingRepository {
     String? nickname,
   });
 
-  Future<List<BettingFundingRecord>> getHistory({int limit = 20, int offset = 0});
+  Future<List<BettingFundingRecord>> getHistory(
+      {int limit = 20, int offset = 0});
 
   Future<BettingBeneficiary> saveBeneficiary({
     required String platform,

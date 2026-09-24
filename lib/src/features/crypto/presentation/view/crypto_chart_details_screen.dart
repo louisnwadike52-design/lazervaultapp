@@ -24,7 +24,6 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/settings/presentation/widgets/webview_bottom_sheet.dart';
 part 'crypto_chart_details_screen_widgets.dart';
 
-
 // Available indicators surfaced in the bottom-sheet picker. Order matters —
 // it's the visual order on the bottom-sheet list, kept consistent across
 // stocks + crypto so a user familiar with one screen finds the same layout
@@ -66,7 +65,8 @@ class CryptoChartDetailsScreen extends StatefulWidget {
   });
 
   @override
-  State<CryptoChartDetailsScreen> createState() => _CryptoChartDetailsScreenState();
+  State<CryptoChartDetailsScreen> createState() =>
+      _CryptoChartDetailsScreenState();
 }
 
 class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
@@ -80,12 +80,12 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   double _baseScale = 1.0;
   int _visibleDataPoints = 50;
   int _startIndex = 0;
-  
+
   // Touch interaction
   bool _isDragging = false;
   bool _isScaling = false;
   double _lastPanX = 0.0;
-  
+
   // Drawing data
   final List<DrawingElement> _drawings = [];
   DrawingElement? _currentDrawing;
@@ -114,7 +114,17 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   List<CryptoPrice>? _liveOverlayHistory;
   List<CryptoPrice>? _baselinePriceHistory;
 
-  final List<String> _timeframes = ['1m', '5m', '15m', '30m', '1H', '4H', '1D', '1W', '1M'];
+  final List<String> _timeframes = [
+    '1m',
+    '5m',
+    '15m',
+    '30m',
+    '1H',
+    '4H',
+    '1D',
+    '1W',
+    '1M'
+  ];
 
   @override
   void initState() {
@@ -159,9 +169,9 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
 
   void _loadChartData() {
     context.read<CryptoCubit>().loadCryptoDetails(
-      widget.crypto.id,
-      timeframe: _timeframeToRange(_selectedTimeframe),
-    );
+          widget.crypto.id,
+          timeframe: _timeframeToRange(_selectedTimeframe),
+        );
   }
 
   /// Switch timeframe end-to-end: refetch history at the new range, reset the
@@ -244,7 +254,8 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     // If the new tick belongs to a fresh candle (timestamp moved past
     // the existing last candle's window), append; else overlay HLCV
     // onto the rightmost candle.
-    if (tick.openTime.isAfter(last.timestamp.add(const Duration(seconds: 30)))) {
+    if (tick.openTime
+        .isAfter(last.timestamp.add(const Duration(seconds: 30)))) {
       updated.add(CryptoPrice(
         timestamp: tick.openTime,
         open: tick.open,
@@ -270,16 +281,26 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
 
   String _timeframeToRange(String timeframe) {
     switch (timeframe) {
-      case '1m': return '1';
-      case '5m': return '1';
-      case '15m': return '1';
-      case '30m': return '1';
-      case '1H': return '1';
-      case '4H': return '7';
-      case '1D': return '30';
-      case '1W': return '90';
-      case '1M': return '365';
-      default: return '30';
+      case '1m':
+        return '1';
+      case '5m':
+        return '1';
+      case '15m':
+        return '1';
+      case '30m':
+        return '1';
+      case '1H':
+        return '1';
+      case '4H':
+        return '7';
+      case '1D':
+        return '30';
+      case '1W':
+        return '90';
+      case '1M':
+        return '365';
+      default:
+        return '30';
     }
   }
 
@@ -307,8 +328,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
           // The chart canvas itself swaps for a loading or error
           // widget below; that's the only piece that branches on
           // state.
-          final isLoading =
-              state is CryptoLoading || state is CryptoInitial;
+          final isLoading = state is CryptoLoading || state is CryptoInitial;
           final cryptoErr = state is CryptoError ? state.message : null;
           // Use real price history from gRPC backend
           final priceHistory = _convertPriceHistoryFromState(state);
@@ -372,15 +392,16 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
                 ),
               ),
             ),
-            
+
             SizedBox(width: 12.w),
-            
+
             // Crypto symbol and name
             Expanded(
               child: GestureDetector(
                 onTap: _showCryptoInfoBottomSheet,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.7),
                     borderRadius: BorderRadius.circular(8.r),
@@ -440,9 +461,9 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
                 ),
               ),
             ),
-            
+
             SizedBox(width: 12.w),
-            
+
             // Price info
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
@@ -450,13 +471,12 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
                 color: Colors.black.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(8.r),
                 boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -472,7 +492,9 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
                   Text(
                     '${widget.crypto.priceChangePercentage24h >= 0 ? '+' : ''}${widget.crypto.priceChangePercentage24h.toStringAsFixed(2)}%',
                     style: GoogleFonts.inter(
-                      color: widget.crypto.priceChangePercentage24h >= 0 ? Colors.green : Colors.red,
+                      color: widget.crypto.priceChangePercentage24h >= 0
+                          ? Colors.green
+                          : Colors.red,
                       fontSize: 10.sp,
                       fontWeight: FontWeight.w600,
                     ),
@@ -480,9 +502,9 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
                 ],
               ),
             ),
-            
+
             SizedBox(width: 12.w),
-            
+
             // More options button
             GestureDetector(
               onTap: _showMoreOptions,
@@ -595,7 +617,8 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
         ),
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-          margin: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+          margin:
+              EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
           decoration: BoxDecoration(
             color: Colors.grey[900],
             borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
@@ -638,8 +661,8 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   }
 
   Widget _buildControlButton(
-    IconData icon, 
-    String label, 
+    IconData icon,
+    String label,
     VoidCallback onTap, {
     bool isSelected = false,
     bool hasNotification = false,
@@ -649,7 +672,9 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue.withValues(alpha: 0.2) : Colors.grey[800],
+          color: isSelected
+              ? Colors.blue.withValues(alpha: 0.2)
+              : Colors.grey[800],
           borderRadius: BorderRadius.circular(8.r),
           border: isSelected ? Border.all(color: Colors.blue, width: 1) : null,
         ),
@@ -659,8 +684,8 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
             Stack(
               children: [
                 Icon(
-                  icon, 
-                  color: isSelected ? Colors.blue : Colors.white, 
+                  icon,
+                  color: isSelected ? Colors.blue : Colors.white,
                   size: 18.sp,
                 ),
                 if (hasNotification)
@@ -711,14 +736,16 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   List<CryptoPrice> _convertPriceHistoryFromState(CryptoState state) {
     List<CryptoPrice> baseline;
     if (state is CryptoDetailsLoaded && state.priceHistory.isNotEmpty) {
-      baseline = state.priceHistory.map((point) => CryptoPrice(
-        timestamp: point.timestamp,
-        open: point.open ?? point.price,
-        high: point.high ?? point.price,
-        low: point.low ?? point.price,
-        close: point.close ?? point.price,
-        volume: point.volume ?? 0.0,
-      )).toList();
+      baseline = state.priceHistory
+          .map((point) => CryptoPrice(
+                timestamp: point.timestamp,
+                open: point.open ?? point.price,
+                high: point.high ?? point.price,
+                low: point.low ?? point.price,
+                close: point.close ?? point.price,
+                volume: point.volume ?? 0.0,
+              ))
+          .toList();
     } else {
       // No real data (still loading, errored, or the asset genuinely has no
       // OHLCV). Return empty so the canvas renders an honest "no data" state —
@@ -742,7 +769,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
 
   // Add all the remaining methods from the stock chart details screen
   // but adapted for crypto (placeholder implementations for now)
-  
+
   Widget _buildFullScreenChart(List<CryptoPrice> priceHistory) {
     if (priceHistory.isEmpty) {
       return Center(
@@ -755,16 +782,19 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
 
     // Calculate space needed for bottom indicators
     final bottomIndicatorSpace = _calculateBottomIndicatorSpace();
-    
+
     // Calculate bottom margin including controls and bottom indicators
     final bottomControlsHeight = 80.h; // Height of bottom controls area
-    final totalBottomMargin = bottomControlsHeight + bottomIndicatorSpace + MediaQuery.of(context).padding.bottom;
+    final totalBottomMargin = bottomControlsHeight +
+        bottomIndicatorSpace +
+        MediaQuery.of(context).padding.bottom;
 
     return GestureDetector(
       onTapDown: (details) {
         // First check if we're tapping on an existing drawing
         if (_selectedDrawingTool == DrawingTool.none) {
-          final tappedDrawing = _findDrawingAtPoint(details.localPosition, priceHistory);
+          final tappedDrawing =
+              _findDrawingAtPoint(details.localPosition, priceHistory);
           if (tappedDrawing != null) {
             setState(() {
               _selectedDrawing = tappedDrawing;
@@ -772,7 +802,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
             return;
           }
         }
-        
+
         // Show crosshair if not drawing or dragging
         setState(() {
           _showCrosshair = true;
@@ -791,8 +821,10 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
       },
       onScaleStart: (details) {
         // Check if we're starting to drag a selected drawing
-        if (_selectedDrawing != null && _selectedDrawingTool == DrawingTool.none) {
-          final isNearDrawing = _isPointNearDrawing(details.focalPoint, _selectedDrawing!, priceHistory);
+        if (_selectedDrawing != null &&
+            _selectedDrawingTool == DrawingTool.none) {
+          final isNearDrawing = _isPointNearDrawing(
+              details.focalPoint, _selectedDrawing!, priceHistory);
           if (isNearDrawing) {
             setState(() {
               _isDraggingDrawing = true;
@@ -801,13 +833,13 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
             return;
           }
         }
-        
+
         // Check if we're starting to draw
         if (_selectedDrawingTool != DrawingTool.none) {
           _startDrawing(details.focalPoint, priceHistory);
           return;
         }
-        
+
         // Default pan/zoom behavior
         _baseScale = _currentScale;
         _lastPanX = details.focalPoint.dx;
@@ -818,11 +850,13 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
       },
       onScaleUpdate: (details) {
         // Handle dragging of selected drawing
-        if (_isDraggingDrawing && _selectedDrawing != null && _dragStartPoint != null) {
+        if (_isDraggingDrawing &&
+            _selectedDrawing != null &&
+            _dragStartPoint != null) {
           _updateDrawingPosition(details.focalPoint, priceHistory);
           return;
         }
-        
+
         // Handle drawing update
         if (_selectedDrawingTool != DrawingTool.none && _isDrawing) {
           _updateDrawing(details.focalPoint, priceHistory);
@@ -836,8 +870,8 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
             _isDragging = false;
 
             final newScale = (_baseScale * details.scale).clamp(0.5, 5.0);
-            final newVisiblePoints =
-                _safeVisiblePoints((50 / newScale).round(), priceHistory.length);
+            final newVisiblePoints = _safeVisiblePoints(
+                (50 / newScale).round(), priceHistory.length);
             final centerIndex = _startIndex + (_visibleDataPoints / 2).round();
 
             _currentScale = newScale;
@@ -873,7 +907,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
           HapticFeedback.lightImpact();
           return;
         }
-        
+
         // End drawing
         if (_selectedDrawingTool != DrawingTool.none && _isDrawing) {
           _endDrawing();
@@ -898,7 +932,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
               bottom: totalBottomMargin,
               child: _buildMainChartArea(_getVisibleData(priceHistory)),
             ),
-            
+
             // Bottom indicators area.
             //
             // Pass the FULL priceHistory (not _getVisibleData) — the painter
@@ -912,20 +946,22 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
             // never mounting in the widget tree even after Apply. Bug #135.
             if (bottomIndicatorSpace > 0)
               Positioned(
-                bottom: bottomControlsHeight + MediaQuery.of(context).padding.bottom,
+                bottom: bottomControlsHeight +
+                    MediaQuery.of(context).padding.bottom,
                 left: 0,
                 right: 0,
                 height: bottomIndicatorSpace,
                 child: _buildBottomIndicatorsArea(priceHistory),
               ),
-            
+
             // Drawings overlay
             _buildDrawingsOverlay(priceHistory),
-            
+
             // Crosshair
             if (_showCrosshair && _crosshairPosition != null)
-              _buildCrosshair(_crosshairPosition!, _getVisibleData(priceHistory)),
-            
+              _buildCrosshair(
+                  _crosshairPosition!, _getVisibleData(priceHistory)),
+
             // Interaction indicators
             _buildInteractionIndicators(),
           ],
@@ -937,7 +973,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   // Calculate space needed for bottom indicators
   double _calculateBottomIndicatorSpace() {
     double totalSpace = 0;
-    
+
     for (final indicator in _selectedIndicators) {
       switch (indicator) {
         case 'RSI':
@@ -962,7 +998,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
           break;
       }
     }
-    
+
     return totalSpace;
   }
 
@@ -974,7 +1010,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
         Positioned.fill(
           child: _buildSelectedChart(priceHistory),
         ),
-        
+
         // Price overlay indicators
         _buildPriceOverlayIndicators(priceHistory),
       ],
@@ -1007,30 +1043,41 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     try {
       if (priceHistory.isEmpty) return _buildEmptyChart();
 
-      final validPrices = priceHistory.where((p) =>
-        p.high > 0 && p.low > 0 && p.open > 0 && p.close > 0 &&
-        p.high >= p.low && p.high >= p.open && p.high >= p.close &&
-        p.low <= p.open && p.low <= p.close
-      ).toList();
+      final validPrices = priceHistory
+          .where((p) =>
+              p.high > 0 &&
+              p.low > 0 &&
+              p.open > 0 &&
+              p.close > 0 &&
+              p.high >= p.low &&
+              p.high >= p.open &&
+              p.high >= p.close &&
+              p.low <= p.open &&
+              p.low <= p.close)
+          .toList();
 
       if (validPrices.isEmpty) return _buildEmptyChart();
 
-      final maxPrice = validPrices.map((e) => e.high).reduce((a, b) => a > b ? a : b);
-      final minPrice = validPrices.map((e) => e.low).reduce((a, b) => a < b ? a : b);
+      final maxPrice =
+          validPrices.map((e) => e.high).reduce((a, b) => a > b ? a : b);
+      final minPrice =
+          validPrices.map((e) => e.low).reduce((a, b) => a < b ? a : b);
 
       if (maxPrice <= 0 || minPrice <= 0 || maxPrice == minPrice) {
         return _buildEmptyChart();
       }
 
       // Convert CryptoPrice to StockPrice for the painter
-      final stockPrices = validPrices.map((crypto) => StockPrice(
-        timestamp: crypto.timestamp,
-        open: crypto.open,
-        high: crypto.high,
-        low: crypto.low,
-        close: crypto.close,
-        volume: crypto.volume,
-      )).toList();
+      final stockPrices = validPrices
+          .map((crypto) => StockPrice(
+                timestamp: crypto.timestamp,
+                open: crypto.open,
+                high: crypto.high,
+                low: crypto.low,
+                close: crypto.close,
+                volume: crypto.volume,
+              ))
+          .toList();
 
       return SizedBox(
         width: double.infinity,
@@ -1229,16 +1276,18 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   Widget _buildLineChart(List<CryptoPrice> priceHistory) {
     try {
       if (priceHistory.isEmpty) return _buildEmptyChart();
-      
+
       final validPrices = priceHistory.where((p) => p.close > 0).toList();
       if (validPrices.isEmpty) return _buildEmptyChart();
-      
+
       final spots = validPrices.asMap().entries.map((entry) {
         return FlSpot(entry.key.toDouble(), entry.value.close);
       }).toList();
 
-      final maxPrice = validPrices.map((e) => e.high).reduce((a, b) => a > b ? a : b);
-      final minPrice = validPrices.map((e) => e.low).reduce((a, b) => a < b ? a : b);
+      final maxPrice =
+          validPrices.map((e) => e.high).reduce((a, b) => a > b ? a : b);
+      final minPrice =
+          validPrices.map((e) => e.low).reduce((a, b) => a < b ? a : b);
 
       if (maxPrice <= 0 || minPrice <= 0 || maxPrice == minPrice) {
         return _buildEmptyChart();
@@ -1285,13 +1334,15 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
 
   Widget _buildAreaChart(List<CryptoPrice> priceHistory) {
     if (priceHistory.isEmpty) return Container();
-    
+
     final spots = priceHistory.asMap().entries.map((entry) {
       return FlSpot(entry.key.toDouble(), entry.value.close);
     }).toList();
 
-    final maxPrice = priceHistory.map((e) => e.high).reduce((a, b) => a > b ? a : b);
-    final minPrice = priceHistory.map((e) => e.low).reduce((a, b) => a < b ? a : b);
+    final maxPrice =
+        priceHistory.map((e) => e.high).reduce((a, b) => a > b ? a : b);
+    final minPrice =
+        priceHistory.map((e) => e.low).reduce((a, b) => a < b ? a : b);
 
     return LineChart(
       LineChartData(
@@ -1372,7 +1423,11 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     if (source.isEmpty) return source;
     final out = <CryptoPrice>[];
     double prevHAOpen = (source.first.open + source.first.close) / 2.0;
-    double prevHAClose = (source.first.open + source.first.high + source.first.low + source.first.close) / 4.0;
+    double prevHAClose = (source.first.open +
+            source.first.high +
+            source.first.low +
+            source.first.close) /
+        4.0;
     for (var i = 0; i < source.length; i++) {
       final src = source[i];
       final haClose = (src.open + src.high + src.low + src.close) / 4.0;
@@ -1395,7 +1450,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
 
   Widget _buildFullVolumeChart(List<CryptoPrice> priceHistory) {
     if (priceHistory.isEmpty) return Container();
-    
+
     final volumeBars = priceHistory.asMap().entries.map((entry) {
       final isUp = entry.value.close >= entry.value.open;
       return BarChartGroupData(
@@ -1403,7 +1458,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
         barRods: [
           BarChartRodData(
             toY: entry.value.volume,
-            color: isUp 
+            color: isUp
                 ? _getCryptoColor().withValues(alpha: 0.7)
                 : const Color(0xFFEF5350).withValues(alpha: 0.7),
             width: _calculateOptimalCandleWidth(priceHistory.length) * 0.8,
@@ -1415,7 +1470,9 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     return BarChart(
       BarChartData(
         alignment: BarChartAlignment.spaceAround,
-        maxY: priceHistory.map((e) => e.volume).reduce((a, b) => a > b ? a : b) * 1.1,
+        maxY:
+            priceHistory.map((e) => e.volume).reduce((a, b) => a > b ? a : b) *
+                1.1,
         barGroups: volumeBars,
         titlesData: FlTitlesData(show: false),
         borderData: FlBorderData(show: false),
@@ -1427,11 +1484,11 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   double _calculateOptimalCandleWidth(int dataLength) {
     final screenWidth = MediaQuery.of(context).size.width;
     final availableWidth = screenWidth - 40; // Account for margins
-    
+
     final baseWidth = availableWidth / dataLength;
     final scaledWidth = baseWidth * 0.7;
     final zoomedWidth = scaledWidth * _currentScale;
-    
+
     return zoomedWidth.clamp(2.0, 20.0);
   }
 
@@ -1519,8 +1576,10 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   // find.byWidgetPredicate when an indicator painter mounts inside a
   // Positioned.fill → IgnorePointer wrapper — the predicate walker
   // can miss it on some test-binding versions).
-  static const _kPriceOverlayPainterKey = ValueKey('crypto_chart_price_overlay_painter');
-  static const _kBottomIndicatorsPainterKey = ValueKey('crypto_chart_bottom_indicators_painter');
+  static const _kPriceOverlayPainterKey =
+      ValueKey('crypto_chart_price_overlay_painter');
+  static const _kBottomIndicatorsPainterKey =
+      ValueKey('crypto_chart_bottom_indicators_painter');
 
   Widget _buildPriceOverlayIndicators(List<CryptoPrice> priceHistory) {
     // Wires the shared PriceOverlayIndicatorsPainter (MA / EMA / Bollinger /
@@ -1542,7 +1601,8 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     if (overlays.isEmpty) return const SizedBox.shrink();
     if (priceHistory.isEmpty) return const SizedBox.shrink();
     final visible = _getVisibleData(priceHistory);
-    final band = visible.isEmpty ? _chartMinMax(priceHistory) : _chartMinMax(visible);
+    final band =
+        visible.isEmpty ? _chartMinMax(priceHistory) : _chartMinMax(visible);
     if (band.maxPrice <= band.minPrice) return const SizedBox.shrink();
     return Positioned.fill(
       child: IgnorePointer(
@@ -1592,16 +1652,16 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
         drawings: _drawings,
         currentDrawing: _currentDrawing,
         selectedDrawing: _selectedDrawing,
-        priceHistory: _getVisibleData(priceHistory).map((crypto) => 
-          StockPrice(
-            timestamp: crypto.timestamp,
-            open: crypto.open,
-            high: crypto.high,
-            low: crypto.low,
-            close: crypto.close,
-            volume: crypto.volume,
-          )
-        ).toList(),
+        priceHistory: _getVisibleData(priceHistory)
+            .map((crypto) => StockPrice(
+                  timestamp: crypto.timestamp,
+                  open: crypto.open,
+                  high: crypto.high,
+                  low: crypto.low,
+                  close: crypto.close,
+                  volume: crypto.volume,
+                ))
+            .toList(),
       ),
     );
   }
@@ -1660,7 +1720,6 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
               ),
             ),
           ),
-        
         if (_isScaling)
           Positioned(
             top: 50.h,
@@ -1733,7 +1792,8 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     final candleSpacing = n > 0 ? availableWidth / n : availableWidth;
 
     final priceFromY = chartPriceRange > 0
-        ? chartMaxPrice - ((point.dy - chartTop) / chartHeight) * chartPriceRange
+        ? chartMaxPrice -
+            ((point.dy - chartTop) / chartHeight) * chartPriceRange
         : 0.0;
     final rawIndex = ((point.dx - chartLeft) / candleSpacing).round();
     final clampedIndex = rawIndex.clamp(0, n > 0 ? n - 1 : 0);
@@ -1850,8 +1910,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   /// the delta from `_dragStartPoint`. Touches the same DrawingElement
   /// subclasses copyWith, so each subclass's own immutability semantics
   /// are preserved.
-  void _updateDrawingPosition(
-      Offset newPoint, List<CryptoPrice> priceHistory) {
+  void _updateDrawingPosition(Offset newPoint, List<CryptoPrice> priceHistory) {
     final selected = _selectedDrawing;
     final dragStart = _dragStartPoint;
     if (selected == null || dragStart == null) return;
@@ -1865,8 +1924,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     DrawingElement? updated;
     if (selected is TrendlineElement) {
       updated = TrendlineElement(
-        startPoint:
-            selected.startPoint.translate(dx, dy),
+        startPoint: selected.startPoint.translate(dx, dy),
         endPoint: selected.endPoint.translate(dx, dy),
         startValue: newCoord.price,
         endValue: newCoord.price,
@@ -1898,8 +1956,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
         index: newCoord.barIndex,
         xPosition: newPoint.dx,
         timestamp: visible.isNotEmpty
-            ? visible[newCoord.barIndex.clamp(0, visible.length - 1)]
-                .timestamp
+            ? visible[newCoord.barIndex.clamp(0, visible.length - 1)].timestamp
             : selected.timestamp,
         color: selected.color,
         strokeWidth: selected.strokeWidth,
@@ -1939,13 +1996,11 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
       return (point.dx - drawing.xPosition).abs() <= slop;
     }
     if (drawing is TrendlineElement) {
-      return _distanceToSegment(
-              point, drawing.startPoint, drawing.endPoint) <=
+      return _distanceToSegment(point, drawing.startPoint, drawing.endPoint) <=
           slop;
     }
     if (drawing is MeasureElement) {
-      return _distanceToSegment(
-              point, drawing.startPoint, drawing.endPoint) <=
+      return _distanceToSegment(point, drawing.startPoint, drawing.endPoint) <=
           slop;
     }
     return false;
@@ -2006,38 +2061,43 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
                 ],
               ),
             ),
-              Expanded(
+            Expanded(
               child: GridView.builder(
-                  padding: EdgeInsets.all(16.w),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                padding: EdgeInsets.all(16.w),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   childAspectRatio: 2.5,
-              crossAxisSpacing: 8.w,
-              mainAxisSpacing: 8.h,
-            ),
+                  crossAxisSpacing: 8.w,
+                  mainAxisSpacing: 8.h,
+                ),
                 itemCount: _timeframes.length,
-            itemBuilder: (context, index) {
+                itemBuilder: (context, index) {
                   final timeframe = _timeframes[index];
                   final isSelected = _selectedTimeframe == timeframe;
                   return GestureDetector(
-          onTap: () {
+                    onTap: () {
                       _changeTimeframe(timeframe);
                       Navigator.pop(context);
                     },
                     child: Container(
-            decoration: BoxDecoration(
-                        color: isSelected ? _getCryptoColor().withValues(alpha: 0.2) : Colors.grey[800],
-              borderRadius: BorderRadius.circular(8.r),
-              border: Border.all(
-                          color: isSelected ? _getCryptoColor() : Colors.grey[600]!,
-                width: isSelected ? 2 : 1,
-              ),
-            ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? _getCryptoColor().withValues(alpha: 0.2)
+                            : Colors.grey[800],
+                        borderRadius: BorderRadius.circular(8.r),
+                        border: Border.all(
+                          color: isSelected
+                              ? _getCryptoColor()
+                              : Colors.grey[600]!,
+                          width: isSelected ? 2 : 1,
+                        ),
+                      ),
                       child: Center(
-                      child: Text(
+                        child: Text(
                           timeframe,
-                        style: GoogleFonts.inter(
-                            color: isSelected ? _getCryptoColor() : Colors.white,
+                          style: GoogleFonts.inter(
+                            color:
+                                isSelected ? _getCryptoColor() : Colors.white,
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w600,
                           ),
@@ -2068,35 +2128,41 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
       isScrollControlled: true,
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.55,
-          decoration: BoxDecoration(
-            color: Colors.grey[900],
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-          ),
-          child: Column(
-            children: [
-              Container(
-                padding: EdgeInsets.all(16.w),
-                          child: Text(
+        decoration: BoxDecoration(
+          color: Colors.grey[900],
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.all(16.w),
+              child: Text(
                 'Chart Type',
-                style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.bold),
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold),
               ),
             ),
-              Expanded(
+            Expanded(
               child: ListView(
-                children: ChartType.values.map((type) => ListTile(
-                  title: Text(_getChartTypeName(type), style: TextStyle(color: Colors.white)),
-                  leading: Icon(Icons.timeline, color: Colors.white),
-                  selected: _selectedChartType == type,
-          onTap: () {
-            setState(() {
-                      _selectedChartType = type;
-                    });
-                    Navigator.pop(context);
-                  },
-                )).toList(),
-                        ),
-                      ),
-                    ],
+                children: ChartType.values
+                    .map((type) => ListTile(
+                          title: Text(_getChartTypeName(type),
+                              style: TextStyle(color: Colors.white)),
+                          leading: Icon(Icons.timeline, color: Colors.white),
+                          selected: _selectedChartType == type,
+                          onTap: () {
+                            setState(() {
+                              _selectedChartType = type;
+                            });
+                            Navigator.pop(context);
+                          },
+                        ))
+                    .toList(),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -2141,115 +2207,125 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
             Expanded(
               child: SingleChildScrollView(
                 padding: EdgeInsets.all(16.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
                           width: 60.w,
                           height: 60.w,
-                decoration: BoxDecoration(
+                          decoration: BoxDecoration(
                             color: _getCryptoColor(),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
                           child: Center(
-          child: Text(
-                              widget.crypto.symbol.length >= 2 
+                            child: Text(
+                              widget.crypto.symbol.length >= 2
                                   ? widget.crypto.symbol.substring(0, 2)
                                   : widget.crypto.symbol,
-            style: GoogleFonts.inter(
-              color: Colors.white,
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
                                 fontSize: 20.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
                         SizedBox(width: 16.w),
                         Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
                                 widget.crypto.symbol.toUpperCase(),
-            style: GoogleFonts.inter(
-              color: Colors.white,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
                                   fontSize: 20.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-                                widget.crypto.name,
-            style: GoogleFonts.inter(
-                                  color: Colors.grey[300],
-              fontSize: 14.sp,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                Text(
+                              Text(
+                                widget.crypto.name,
+                                style: GoogleFonts.inter(
+                                  color: Colors.grey[300],
+                                  fontSize: 14.sp,
+                                ),
+                              ),
+                              Text(
                                 'Rank #${widget.crypto.marketCapRank}',
-              style: GoogleFonts.inter(
-                color: Colors.grey[400],
-                fontSize: 12.sp,
-            ),
-          ),
-        ],
-                ),
-              ),
-            ],
-          ),
+                                style: GoogleFonts.inter(
+                                  color: Colors.grey[400],
+                                  fontSize: 12.sp,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                     SizedBox(height: 24.h),
-        Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.grey[800],
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
+                    Container(
+                      padding: EdgeInsets.all(16.w),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[800],
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
                             'Current Price',
-            style: GoogleFonts.inter(
-              color: Colors.grey[400],
-              fontSize: 12.sp,
-            ),
-          ),
-          SizedBox(height: 8.h),
-                Row(
-                  children: [
-                    Text(
+                            style: GoogleFonts.inter(
+                              color: Colors.grey[400],
+                              fontSize: 12.sp,
+                            ),
+                          ),
+                          SizedBox(height: 8.h),
+                          Row(
+                            children: [
+                              Text(
                                 '${CurrencySymbols.currentSymbol}${widget.crypto.currentPrice.toStringAsFixed(widget.crypto.currentPrice < 1 ? 6 : 2)}',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
                                   fontSize: 24.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      ),
-                      SizedBox(width: 12.w),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                                  color: (widget.crypto.priceChangePercentage24h >= 0 ? Colors.green : Colors.red).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(6.r),
-                ),
-                child: Text(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(width: 12.w),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8.w, vertical: 4.h),
+                                decoration: BoxDecoration(
+                                  color:
+                                      (widget.crypto.priceChangePercentage24h >=
+                                                  0
+                                              ? Colors.green
+                                              : Colors.red)
+                                          .withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(6.r),
+                                ),
+                                child: Text(
                                   '${widget.crypto.priceChangePercentage24h >= 0 ? '+' : ''}${widget.crypto.priceChangePercentage24h.toStringAsFixed(2)}%',
-                  style: GoogleFonts.inter(
-                                    color: widget.crypto.priceChangePercentage24h >= 0 ? Colors.green : Colors.red,
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
+                                  style: GoogleFonts.inter(
+                                    color: widget.crypto
+                                                .priceChangePercentage24h >=
+                                            0
+                                        ? Colors.green
+                                        : Colors.red,
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-                        ],
-              ),
-            ),
-          ],
-        ),
-      ),
             ),
           ],
         ),
@@ -2290,12 +2366,18 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     // it back to DrawingTool.none. "Clear all" is a destructive action;
     // confirms via the SnackBar.
     final tools = const <DrawingToolInfo>[
-      DrawingToolInfo(DrawingTool.trendline, 'Trendline', 'Two-point line for trend analysis'),
-      DrawingToolInfo(DrawingTool.horizontalLine, 'Horizontal Line', 'Price-level support/resistance'),
-      DrawingToolInfo(DrawingTool.verticalLine, 'Vertical Line', 'Mark a specific time'),
-      DrawingToolInfo(DrawingTool.measure, 'Measure', 'Price + time delta between two points'),
-      DrawingToolInfo(DrawingTool.fibonacciRetracement, 'Fibonacci', 'Retracement levels (23.6 / 38.2 / 50 / 61.8 / 78.6)'),
-      DrawingToolInfo(DrawingTool.elliottWave, 'Elliott Wave', 'Multi-point wave pattern'),
+      DrawingToolInfo(DrawingTool.trendline, 'Trendline',
+          'Two-point line for trend analysis'),
+      DrawingToolInfo(DrawingTool.horizontalLine, 'Horizontal Line',
+          'Price-level support/resistance'),
+      DrawingToolInfo(
+          DrawingTool.verticalLine, 'Vertical Line', 'Mark a specific time'),
+      DrawingToolInfo(DrawingTool.measure, 'Measure',
+          'Price + time delta between two points'),
+      DrawingToolInfo(DrawingTool.fibonacciRetracement, 'Fibonacci',
+          'Retracement levels (23.6 / 38.2 / 50 / 61.8 / 78.6)'),
+      DrawingToolInfo(
+          DrawingTool.elliottWave, 'Elliott Wave', 'Multi-point wave pattern'),
     ];
     showModalBottomSheet<void>(
       context: context,
@@ -2366,8 +2448,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
                       color: Colors.red[300], size: 22.sp),
                   title: Text('Clear all drawings (${_drawings.length})',
                       style: GoogleFonts.inter(
-                          color: Colors.red[300],
-                          fontWeight: FontWeight.w600)),
+                          color: Colors.red[300], fontWeight: FontWeight.w600)),
                   onTap: () {
                     Navigator.of(sheetCtx).pop();
                     if (!mounted) return;
@@ -2414,7 +2495,8 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     mean /= (visible.length - 1);
     double variance = 0;
     for (var i = 1; i < visible.length; i++) {
-      final r = (visible[i].close - visible[i - 1].close) / visible[i - 1].close;
+      final r =
+          (visible[i].close - visible[i - 1].close) / visible[i - 1].close;
       variance += (r - mean) * (r - mean);
     }
     variance /= (visible.length - 1);
@@ -2449,13 +2531,18 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
                       fontSize: 20.sp,
                       fontWeight: FontWeight.w700)),
               SizedBox(height: 16.h),
-              _analysisRow('Change',
+              _analysisRow(
+                  'Change',
                   '${pctChange >= 0 ? '+' : ''}${pctChange.toStringAsFixed(2)}%',
                   pctChange >= 0 ? Colors.green : Colors.red),
               _analysisRow(
-                  'High', '${CurrencySymbols.currentSymbol}${hi.toStringAsFixed(hi < 1 ? 6 : 2)}', Colors.white),
+                  'High',
+                  '${CurrencySymbols.currentSymbol}${hi.toStringAsFixed(hi < 1 ? 6 : 2)}',
+                  Colors.white),
               _analysisRow(
-                  'Low', '${CurrencySymbols.currentSymbol}${lo.toStringAsFixed(lo < 1 ? 6 : 2)}', Colors.white),
+                  'Low',
+                  '${CurrencySymbols.currentSymbol}${lo.toStringAsFixed(lo < 1 ? 6 : 2)}',
+                  Colors.white),
               _analysisRow('Volume', vol.toStringAsFixed(0), Colors.white),
               _analysisRow('Volatility (stddev of returns)',
                   '${volPct.toStringAsFixed(2)}%', Colors.amber),
@@ -2509,8 +2596,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
           children: [
             ListTile(
               leading: Icon(Icons.layers_clear, color: Colors.grey[300]),
-              title: Text(
-                  'Clear indicators (${_selectedIndicators.length})',
+              title: Text('Clear indicators (${_selectedIndicators.length})',
                   style: GoogleFonts.inter(color: Colors.white)),
               onTap: () {
                 Navigator.of(sheetCtx).pop();
@@ -2520,8 +2606,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
             ),
             ListTile(
               leading: Icon(Icons.brush_outlined, color: Colors.grey[300]),
-              title: Text(
-                  'Clear drawings (${_drawings.length})',
+              title: Text('Clear drawings (${_drawings.length})',
                   style: GoogleFonts.inter(color: Colors.white)),
               onTap: () {
                 Navigator.of(sheetCtx).pop();
@@ -2610,4 +2695,4 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
         return Icons.waves;
     }
   }
-} 
+}

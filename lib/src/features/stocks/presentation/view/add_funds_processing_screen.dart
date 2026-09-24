@@ -20,7 +20,8 @@ class AddFundsProcessingScreen extends StatefulWidget {
   });
 
   @override
-  State<AddFundsProcessingScreen> createState() => _AddFundsProcessingScreenState();
+  State<AddFundsProcessingScreen> createState() =>
+      _AddFundsProcessingScreenState();
 }
 
 class _AddFundsProcessingScreenState extends State<AddFundsProcessingScreen>
@@ -101,9 +102,9 @@ class _AddFundsProcessingScreenState extends State<AddFundsProcessingScreen>
 
       // Navigate to confirmation
       Get.off(() => AddFundsConfirmationScreen(
-        amount: widget.amount,
-        paymentMethod: widget.paymentMethod,
-      ));
+            amount: widget.amount,
+            paymentMethod: widget.paymentMethod,
+          ));
     } catch (e) {
       // Error handling
       if (!mounted) return;
@@ -346,8 +347,7 @@ class _AddFundsProcessingScreenState extends State<AddFundsProcessingScreen>
                 ),
               ),
               // Loading indicator for active step
-              if (isActive && !isCompleted)
-                LazerVaultLoader.tiny(),
+              if (isActive && !isCompleted) LazerVaultLoader.tiny(),
             ],
           ),
         );

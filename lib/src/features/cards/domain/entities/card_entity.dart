@@ -156,7 +156,9 @@ class Card extends Equatable {
   bool get isCancelled => status == CardStatus.cancelled;
 
   /// Check if card is expired
-  bool get isExpired => status == CardStatus.expired || (expiresAt != null && expiresAt!.isBefore(DateTime.now()));
+  bool get isExpired =>
+      status == CardStatus.expired ||
+      (expiresAt != null && expiresAt!.isBefore(DateTime.now()));
 
   /// Get masked card number (shows only last 4 digits)
   String get maskedCardNumber => '•••• •••• •••• $last4';

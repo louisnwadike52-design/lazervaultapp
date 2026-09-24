@@ -60,8 +60,15 @@ class BettingBeneficiary extends Equatable {
   });
 
   @override
-  List<Object?> get props =>
-      [id, platform, accountUserid, accountName, nickname, isDefault, createdAt];
+  List<Object?> get props => [
+        id,
+        platform,
+        accountUserid,
+        accountName,
+        nickname,
+        isDefault,
+        createdAt
+      ];
 }
 
 /// A funding transaction (backed by the shared BillPayment message).

@@ -84,7 +84,8 @@ class SprayMeCubit extends Cubit<SprayMeState> {
   Future<void> loadMySessions({String filter = 'all', int page = 1}) async {
     emit(SprayMeLoading());
     try {
-      final sessions = await _repository.getMySessions(filter: filter, page: page);
+      final sessions =
+          await _repository.getMySessions(filter: filter, page: page);
       emit(MySessionsLoaded(sessions: sessions, totalCount: sessions.length));
     } catch (e) {
       emit(SprayMeError(e.toString().replaceAll('Exception: ', '')));
@@ -273,8 +274,10 @@ class SprayMeCubit extends Cubit<SprayMeState> {
   Future<void> loadSessionTransactions(String sessionId, {int page = 1}) async {
     emit(SprayMeLoading());
     try {
-      final transactions = await _repository.getSessionTransactions(sessionId, page: page);
-      emit(TransactionsLoaded(transactions: transactions, totalCount: transactions.length));
+      final transactions =
+          await _repository.getSessionTransactions(sessionId, page: page);
+      emit(TransactionsLoaded(
+          transactions: transactions, totalCount: transactions.length));
     } catch (e) {
       emit(SprayMeError(e.toString().replaceAll('Exception: ', '')));
     }
@@ -283,8 +286,10 @@ class SprayMeCubit extends Cubit<SprayMeState> {
   Future<void> loadMyTransactions({String type = 'all', int page = 1}) async {
     emit(SprayMeLoading());
     try {
-      final transactions = await _repository.getMyTransactions(type: type, page: page);
-      emit(TransactionsLoaded(transactions: transactions, totalCount: transactions.length));
+      final transactions =
+          await _repository.getMyTransactions(type: type, page: page);
+      emit(TransactionsLoaded(
+          transactions: transactions, totalCount: transactions.length));
     } catch (e) {
       emit(SprayMeError(e.toString().replaceAll('Exception: ', '')));
     }
@@ -312,7 +317,8 @@ class SprayMeCubit extends Cubit<SprayMeState> {
     }
   }
 
-  Future<void> addComment({required String sessionId, required String text}) async {
+  Future<void> addComment(
+      {required String sessionId, required String text}) async {
     if (text.trim().isEmpty) return;
     try {
       await _repository.addComment(sessionId: sessionId, text: text.trim());

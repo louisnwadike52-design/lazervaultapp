@@ -15,16 +15,22 @@ import '../../../recipients/data/services/bank_scan_upload_service.dart';
 abstract class AiScanRemoteDataSource {
   Future<ScanSessionModel> createScanSession(ScanType scanType, String userId);
   Future<ScanSessionModel> updateScanSession(ScanSessionModel session);
-  Future<List<ScanSessionModel>> getScanHistory(String userId, {int page = 1, int pageSize = 20});
+  Future<List<ScanSessionModel>> getScanHistory(String userId,
+      {int page = 1, int pageSize = 20});
   Future<void> deleteScanSession(String sessionId);
-  Future<Map<String, dynamic>> extractDataFromImage(String imagePath, ScanType scanType, String sessionId);
+  Future<Map<String, dynamic>> extractDataFromImage(
+      String imagePath, ScanType scanType, String sessionId);
   Future<List<AiChatMessageModel>> getChatHistory(String sessionId);
-  Future<AiChatMessageModel> processAiResponse(String sessionId, String userMessage, Map<String, dynamic>? extractedData);
-  Future<PaymentInstructionModel> generatePaymentInstruction(Map<String, dynamic> extractedData, ScanType scanType, String sessionId);
-  Future<bool> processPayment(PaymentInstructionModel instruction, String userId, String sessionId);
+  Future<AiChatMessageModel> processAiResponse(String sessionId,
+      String userMessage, Map<String, dynamic>? extractedData);
+  Future<PaymentInstructionModel> generatePaymentInstruction(
+      Map<String, dynamic> extractedData, ScanType scanType, String sessionId);
+  Future<bool> processPayment(
+      PaymentInstructionModel instruction, String userId, String sessionId);
 
   // Bank details scan methods
-  Future<BankDetailsModel> scanBankDetails(String imagePath, String userId, String sessionId, String accessToken);
+  Future<BankDetailsModel> scanBankDetails(
+      String imagePath, String userId, String sessionId, String accessToken);
 
   /// Richer scan analysis — POSTs to the SAME /scan/bank-details OCR endpoint
   /// but returns the full multi-target [ScanAnalysisModel] (extraction_type +
@@ -106,19 +112,22 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
   }
 
   @override
-  Future<ScanSessionModel> createScanSession(ScanType scanType, String userId) async {
+  Future<ScanSessionModel> createScanSession(
+      ScanType scanType, String userId) async {
     try {
       final request = pb.StartScanSessionRequest()
         ..userId = userId
         ..scanType = _mapScanTypeToProto(scanType);
 
       final callOptions = await grpcClient.callOptions;
-      final response = await grpcClient.aiScanClient.startScanSession(request, options: callOptions);
+      final response = await grpcClient.aiScanClient
+          .startScanSession(request, options: callOptions);
 
       return ScanSessionModel(
         id: response.sessionId,
         scanType: _mapProtoToScanType(response.scanType),
-        createdAt: DateTime.fromMillisecondsSinceEpoch(response.createdAt.toInt() * 1000),
+        createdAt: DateTime.fromMillisecondsSinceEpoch(
+            response.createdAt.toInt() * 1000),
         status: _mapProtoToScanStatus(response.status),
       );
     } on GrpcError catch (e) {
@@ -163,7 +172,8 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
   }
 
   @override
-  Future<Map<String, dynamic>> extractDataFromImage(String imagePath, ScanType scanType, String sessionId) async {
+  Future<Map<String, dynamic>> extractDataFromImage(
+      String imagePath, ScanType scanType, String sessionId) async {
     try {
       // Read image file
       final imageFile = File(imagePath);
@@ -175,7 +185,8 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
         ..scanType = _mapScanTypeToProto(scanType);
 
       final callOptions = await grpcClient.callOptions;
-      final response = await grpcClient.aiScanClient.processImage(request, options: callOptions);
+      final response = await grpcClient.aiScanClient
+          .processImage(request, options: callOptions);
 
       if (!response.success) {
         throw Exception(response.errorMessage);
@@ -195,7 +206,8 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
   }
 
   @override
-  Future<AiChatMessageModel> processAiResponse(String sessionId, String userMessage, Map<String, dynamic>? extractedData) async {
+  Future<AiChatMessageModel> processAiResponse(String sessionId,
+      String userMessage, Map<String, dynamic>? extractedData) async {
     try {
       final request = pb.SendChatMessageRequest()
         ..sessionId = sessionId
@@ -206,13 +218,15 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
       }
 
       final callOptions = await grpcClient.callOptions;
-      final response = await grpcClient.aiScanClient.sendChatMessage(request, options: callOptions);
+      final response = await grpcClient.aiScanClient
+          .sendChatMessage(request, options: callOptions);
 
       return AiChatMessageModel(
         id: response.messageId,
         content: response.aiResponse,
         isUser: false,
-        timestamp: DateTime.fromMillisecondsSinceEpoch(response.timestamp.toInt() * 1000),
+        timestamp: DateTime.fromMillisecondsSinceEpoch(
+            response.timestamp.toInt() * 1000),
       );
     } on GrpcError catch (e) {
       throw Exception('Failed to send chat message: ${e.message}');
@@ -220,7 +234,10 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
   }
 
   @override
-  Future<PaymentInstructionModel> generatePaymentInstruction(Map<String, dynamic> extractedData, ScanType scanType, String sessionId) async {
+  Future<PaymentInstructionModel> generatePaymentInstruction(
+      Map<String, dynamic> extractedData,
+      ScanType scanType,
+      String sessionId) async {
     try {
       final request = pb.GeneratePaymentInstructionRequest()
         ..sessionId = sessionId
@@ -228,7 +245,8 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
         ..scanType = _mapScanTypeToProto(scanType);
 
       final callOptions = await grpcClient.callOptions;
-      final response = await grpcClient.aiScanClient.generatePaymentInstruction(request, options: callOptions);
+      final response = await grpcClient.aiScanClient
+          .generatePaymentInstruction(request, options: callOptions);
 
       if (!response.success) {
         throw Exception(response.errorMessage);
@@ -250,7 +268,8 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
   }
 
   @override
-  Future<bool> processPayment(PaymentInstructionModel instruction, String userId, String sessionId) async {
+  Future<bool> processPayment(PaymentInstructionModel instruction,
+      String userId, String sessionId) async {
     try {
       final pbInstruction = pb.PaymentInstruction()
         ..instructionId = instruction.id
@@ -259,9 +278,8 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
         ..currency = instruction.currency
         ..reference = instruction.reference ?? ''
         ..description = instruction.description ?? ''
-        ..metadata.addAll(
-          (instruction.additionalData ?? {}).map((key, value) => MapEntry(key, value.toString()))
-        );
+        ..metadata.addAll((instruction.additionalData ?? {})
+            .map((key, value) => MapEntry(key, value.toString())));
 
       final request = pb.ScanProcessPaymentRequest()
         ..userId = userId
@@ -269,7 +287,8 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
         ..instruction = pbInstruction;
 
       final callOptions = await grpcClient.callOptions;
-      final response = await grpcClient.aiScanClient.processPayment(request, options: callOptions);
+      final response = await grpcClient.aiScanClient
+          .processPayment(request, options: callOptions);
 
       return response.success;
     } on GrpcError catch (e) {
@@ -278,7 +297,8 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
   }
 
   @override
-  Future<List<ScanSessionModel>> getScanHistory(String userId, {int page = 1, int pageSize = 20}) async {
+  Future<List<ScanSessionModel>> getScanHistory(String userId,
+      {int page = 1, int pageSize = 20}) async {
     try {
       final request = pb.GetScanHistoryRequest()
         ..userId = userId
@@ -286,15 +306,19 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
         ..pageSize = pageSize;
 
       final callOptions = await grpcClient.callOptions;
-      final response = await grpcClient.aiScanClient.getScanHistory(request, options: callOptions);
+      final response = await grpcClient.aiScanClient
+          .getScanHistory(request, options: callOptions);
 
       return response.sessions.map((session) {
         return ScanSessionModel(
           id: session.sessionId,
           scanType: _mapProtoToScanType(session.scanType),
-          createdAt: DateTime.fromMillisecondsSinceEpoch(session.createdAt.toInt() * 1000),
+          createdAt: DateTime.fromMillisecondsSinceEpoch(
+              session.createdAt.toInt() * 1000),
           status: _mapProtoToScanStatus(session.status),
-          extractedData: session.hasExtractedData() ? jsonEncode(_convertExtractedDataToMap(session.extractedData)) : null,
+          extractedData: session.hasExtractedData()
+              ? jsonEncode(_convertExtractedDataToMap(session.extractedData))
+              : null,
         );
       }).toList();
     } on GrpcError catch (e) {
@@ -383,10 +407,11 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
         if (responseData['success'] == true) {
           // Fields live under `data` (top-level `confidence`), not the legacy
           // `extracted_data`/`confidence_score`. Read both for back-compat.
-          final extractedData = (responseData['data'] as Map?)
-                  ?.cast<String, dynamic>() ??
-              (responseData['extracted_data'] as Map?)?.cast<String, dynamic>() ??
-              <String, dynamic>{};
+          final extractedData =
+              (responseData['data'] as Map?)?.cast<String, dynamic>() ??
+                  (responseData['extracted_data'] as Map?)
+                      ?.cast<String, dynamic>() ??
+                  <String, dynamic>{};
 
           // Check confidence score (top-level `confidence`, legacy fallback).
           final confidenceScore =
@@ -416,8 +441,8 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
             throw OCRException(
               errorType: OCRErrorType.processingTimeout,
               message: 'OCR processing failed',
-              userMessage: errorMessage ??
-                  'Could not process image. Please try again.',
+              userMessage:
+                  errorMessage ?? 'Could not process image. Please try again.',
             );
           } else {
             throw OCRException(
@@ -525,8 +550,7 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
         payload['image_base64'] = base64Encode(imageBytes);
       }
 
-      final scanBase =
-          chatGatewayBaseUrl.replaceAll(RegExp(r'/chat/?$'), '');
+      final scanBase = chatGatewayBaseUrl.replaceAll(RegExp(r'/chat/?$'), '');
       // Manual "tap to capture" fallback hits the lean per-service route
       // (/scan/extract) — same OCR on chat-transfers-service, minus the busy
       // gateway orchestration. Auto-detect keeps the full /scan/bank-details.
@@ -536,9 +560,9 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
       final response = await httpClient
           .post(uri, headers: headers, body: jsonEncode(payload))
           .timeout(
-        const Duration(seconds: 30),
-        onTimeout: () => throw OCRException.processingTimeout(),
-      );
+            const Duration(seconds: 30),
+            onTimeout: () => throw OCRException.processingTimeout(),
+          );
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body) as Map<String, dynamic>;
@@ -583,8 +607,7 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
       } else if (response.statusCode == 403) {
         throw AuthenticationException.unauthorized();
       } else if (response.statusCode == 429) {
-        final retryAfter =
-            int.tryParse(response.headers['retry-after'] ?? '');
+        final retryAfter = int.tryParse(response.headers['retry-after'] ?? '');
         throw RateLimitException.tooManyRequests(retryAfter: retryAfter);
       } else if (response.statusCode >= 500) {
         throw NetworkException.serverError(statusCode: response.statusCode);
@@ -718,7 +741,8 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
         // Check for specific error types
         if (errorMessage?.toLowerCase().contains('invalid account') ?? false) {
           throw PaymentException.invalidAccount();
-        } else if (errorMessage?.toLowerCase().contains('invalid pin') ?? false) {
+        } else if (errorMessage?.toLowerCase().contains('invalid pin') ??
+            false) {
           throw PaymentException.invalidPin();
         } else {
           throw PaymentException.transactionFailed(reason: errorMessage);
@@ -748,7 +772,8 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
         final errorData = jsonDecode(response.body);
         final errorMessage = errorData['message'] as String?;
 
-        if (errorMessage?.toLowerCase().contains('bank not supported') ?? false) {
+        if (errorMessage?.toLowerCase().contains('bank not supported') ??
+            false) {
           throw BankValidationException.bankNotSupported(
             bankName: bankDetails.bankName,
           );
@@ -857,10 +882,13 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
     if (data.reference.isNotEmpty) map['reference'] = data.reference;
     if (data.dueDate.isNotEmpty) map['due_date'] = data.dueDate;
     if (data.description.isNotEmpty) map['description'] = data.description;
-    if (data.accountNumber.isNotEmpty) map['account_number'] = data.accountNumber;
-    if (data.routingNumber.isNotEmpty) map['routing_number'] = data.routingNumber;
+    if (data.accountNumber.isNotEmpty)
+      map['account_number'] = data.accountNumber;
+    if (data.routingNumber.isNotEmpty)
+      map['routing_number'] = data.routingNumber;
     if (data.bankName.isNotEmpty) map['bank_name'] = data.bankName;
-    if (data.confidenceScore > 0) map['confidence_score'] = data.confidenceScore;
+    if (data.confidenceScore > 0)
+      map['confidence_score'] = data.confidenceScore;
 
     // Add additional fields
     data.additionalFields.forEach((key, value) {
@@ -873,16 +901,24 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
   pb.ExtractedData _convertMapToExtractedData(Map<String, dynamic> map) {
     final data = pb.ExtractedData();
 
-    if (map.containsKey('recipient')) data.recipient = map['recipient'].toString();
-    if (map.containsKey('amount')) data.amount = (map['amount'] as num).toDouble();
+    if (map.containsKey('recipient'))
+      data.recipient = map['recipient'].toString();
+    if (map.containsKey('amount'))
+      data.amount = (map['amount'] as num).toDouble();
     if (map.containsKey('currency')) data.currency = map['currency'].toString();
-    if (map.containsKey('reference')) data.reference = map['reference'].toString();
+    if (map.containsKey('reference'))
+      data.reference = map['reference'].toString();
     if (map.containsKey('due_date')) data.dueDate = map['due_date'].toString();
-    if (map.containsKey('description')) data.description = map['description'].toString();
-    if (map.containsKey('account_number')) data.accountNumber = map['account_number'].toString();
-    if (map.containsKey('routing_number')) data.routingNumber = map['routing_number'].toString();
-    if (map.containsKey('bank_name')) data.bankName = map['bank_name'].toString();
-    if (map.containsKey('confidence_score')) data.confidenceScore = (map['confidence_score'] as num).toDouble();
+    if (map.containsKey('description'))
+      data.description = map['description'].toString();
+    if (map.containsKey('account_number'))
+      data.accountNumber = map['account_number'].toString();
+    if (map.containsKey('routing_number'))
+      data.routingNumber = map['routing_number'].toString();
+    if (map.containsKey('bank_name'))
+      data.bankName = map['bank_name'].toString();
+    if (map.containsKey('confidence_score'))
+      data.confidenceScore = (map['confidence_score'] as num).toDouble();
 
     return data;
   }
@@ -939,8 +975,9 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
         '&access_token=${Uri.encodeComponent(accessToken)}&limit=$limit',
       );
       final headers = await _getHeaders(overrideAccessToken: accessToken);
-      final response =
-          await httpClient.get(uri, headers: headers).timeout(const Duration(seconds: 15));
+      final response = await httpClient
+          .get(uri, headers: headers)
+          .timeout(const Duration(seconds: 15));
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
         final scans = (body['scans'] as List?) ?? const [];

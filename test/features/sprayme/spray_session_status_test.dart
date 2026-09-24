@@ -22,20 +22,27 @@ void main() {
     });
 
     test('is case- and whitespace-insensitive', () {
-      expect(SpraySession.normalizeStatus('  Session_Status_Active '), 'active');
+      expect(
+          SpraySession.normalizeStatus('  Session_Status_Active '), 'active');
       expect(SpraySession.normalizeStatus('ENDED'), 'ended');
     });
 
     test('null, empty and UNSPECIFIED fall back to active', () {
       // A session we cannot classify is far more likely to be live than ended,
       // and treating a live session as ended hides the way back into it.
-      for (final raw in <String?>[null, '', '   ', 'SESSION_STATUS_UNSPECIFIED']) {
+      for (final raw in <String?>[
+        null,
+        '',
+        '   ',
+        'SESSION_STATUS_UNSPECIFIED'
+      ]) {
         expect(SpraySession.normalizeStatus(raw), 'active');
       }
     });
 
     test('an unknown status is preserved rather than discarded', () {
-      expect(SpraySession.normalizeStatus('SESSION_STATUS_ARCHIVED'), 'archived');
+      expect(
+          SpraySession.normalizeStatus('SESSION_STATUS_ARCHIVED'), 'archived');
     });
   });
 
@@ -78,7 +85,8 @@ void main() {
         'title': 't',
         'occasion_type': 'party',
       });
-      expect(s.isActive, isTrue, reason: 'drives the Join button and the re-entry banner');
+      expect(s.isActive, isTrue,
+          reason: 'drives the Join button and the re-entry banner');
       expect(s.isEnded, isFalse);
     });
 

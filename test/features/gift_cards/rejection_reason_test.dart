@@ -21,7 +21,8 @@ import 'package:lazervault/src/features/gift_cards/domain/entities/gift_card_ent
 void main() {
   group('GiftCardSale.rejectionReason', () {
     test('default is empty string', () {
-      const sale = GiftCardSale(id: 'x', cardType: 'amazon', denomination: 50, status: 'pending');
+      const sale = GiftCardSale(
+          id: 'x', cardType: 'amazon', denomination: 50, status: 'pending');
       expect(sale.rejectionReason, isEmpty);
       expect(sale.isRejected, isFalse);
     });
@@ -91,31 +92,38 @@ void main() {
       );
     }
 
-    testWidgets('renders block with reason text when populated', (tester) async {
+    testWidgets('renders block with reason text when populated',
+        (tester) async {
       await tester.pumpWidget(_harness('Card already redeemed'));
-      expect(find.byKey(const ValueKey('sell_rejection_reason_block')), findsOneWidget);
+      expect(find.byKey(const ValueKey('sell_rejection_reason_block')),
+          findsOneWidget);
       expect(find.text('Reason for rejection'), findsOneWidget);
       expect(find.text('Card already redeemed'), findsOneWidget);
     });
 
     testWidgets('hides block when reason is null', (tester) async {
       await tester.pumpWidget(_harness(null));
-      expect(find.byKey(const ValueKey('sell_rejection_reason_block')), findsNothing);
+      expect(find.byKey(const ValueKey('sell_rejection_reason_block')),
+          findsNothing);
       expect(find.text('Reason for rejection'), findsNothing);
     });
 
     testWidgets('hides block when reason is empty', (tester) async {
       await tester.pumpWidget(_harness(''));
-      expect(find.byKey(const ValueKey('sell_rejection_reason_block')), findsNothing);
+      expect(find.byKey(const ValueKey('sell_rejection_reason_block')),
+          findsNothing);
     });
 
     testWidgets('hides block when reason is whitespace only', (tester) async {
       await tester.pumpWidget(_harness('   '));
-      expect(find.byKey(const ValueKey('sell_rejection_reason_block')), findsNothing);
+      expect(find.byKey(const ValueKey('sell_rejection_reason_block')),
+          findsNothing);
     });
 
-    testWidgets('renders verbatim — no truncation, escaping, or rewriting', (tester) async {
-      const reason = 'Image not readable — please re-upload a clearer photo of the card front and pin.';
+    testWidgets('renders verbatim — no truncation, escaping, or rewriting',
+        (tester) async {
+      const reason =
+          'Image not readable — please re-upload a clearer photo of the card front and pin.';
       await tester.pumpWidget(_harness(reason));
       expect(find.text(reason), findsOneWidget);
     });
@@ -132,18 +140,29 @@ void main() {
         );
 
     test('settling collapses to pending (never "paid" prematurely)', () {
-      expect(make(status: 'paid', displayStatus: 'settling').userDisplayStatus, 'pending');
+      expect(make(status: 'paid', displayStatus: 'settling').userDisplayStatus,
+          'pending');
     });
     test('pending_settlement collapses to pending', () {
-      expect(make(displayStatus: 'pending_settlement').userDisplayStatus, 'pending');
+      expect(make(displayStatus: 'pending_settlement').userDisplayStatus,
+          'pending');
     });
-    test('approved / reviewing / pending_review / manual_review all collapse to pending', () {
-      for (final s in ['approved', 'reviewing', 'pending_review', 'manual_review']) {
-        expect(make(displayStatus: s).userDisplayStatus, 'pending', reason: 'displayStatus=$s');
+    test(
+        'approved / reviewing / pending_review / manual_review all collapse to pending',
+        () {
+      for (final s in [
+        'approved',
+        'reviewing',
+        'pending_review',
+        'manual_review'
+      ]) {
+        expect(make(displayStatus: s).userDisplayStatus, 'pending',
+            reason: 'displayStatus=$s');
       }
     });
     test('paid stays paid', () {
-      expect(make(status: 'paid', displayStatus: 'paid').userDisplayStatus, 'paid');
+      expect(make(status: 'paid', displayStatus: 'paid').userDisplayStatus,
+          'paid');
     });
     test('settled collapses to paid (terminal-with-money)', () {
       expect(make(displayStatus: 'settled').userDisplayStatus, 'paid');
@@ -156,7 +175,8 @@ void main() {
     });
     test('falls back to status when displayStatus is empty', () {
       expect(make(status: 'paid', displayStatus: '').userDisplayStatus, 'paid');
-      expect(make(status: 'rejected', displayStatus: '').userDisplayStatus, 'rejected');
+      expect(make(status: 'rejected', displayStatus: '').userDisplayStatus,
+          'rejected');
     });
   });
 
@@ -183,12 +203,12 @@ void main() {
         rejectionReason: 'leftover from prior state',
       );
 
-      bool gate(GiftCardSale s) =>
-          s.isRejected && s.rejectionReason.isNotEmpty;
+      bool gate(GiftCardSale s) => s.isRejected && s.rejectionReason.isNotEmpty;
 
       expect(gate(rejectedWithReason), isTrue);
       expect(gate(rejectedNoReason), isFalse, reason: 'no reason → no block');
-      expect(gate(paidWithReason), isFalse, reason: 'paid sale never shows the block');
+      expect(gate(paidWithReason), isFalse,
+          reason: 'paid sale never shows the block');
     });
   });
 }

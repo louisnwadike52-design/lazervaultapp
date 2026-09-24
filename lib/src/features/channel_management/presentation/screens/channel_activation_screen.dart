@@ -36,7 +36,8 @@ class _ChannelActivationScreenState extends State<ChannelActivationScreen> {
   String get _profilePhone {
     try {
       final auth = serviceLocator<AuthenticationCubit>().state;
-      if (auth is AuthenticationSuccess) return auth.profile.user.phoneNumber ?? '';
+      if (auth is AuthenticationSuccess)
+        return auth.profile.user.phoneNumber ?? '';
     } catch (_) {
       // Empty seed just means the user types it themselves.
     }
@@ -48,6 +49,7 @@ class _ChannelActivationScreenState extends State<ChannelActivationScreen> {
     super.initState();
     _phoneController.text = _profilePhone;
   }
+
   final _otpController = TextEditingController();
   bool _otpSent = false;
   String _maskedPhone = '';
@@ -152,8 +154,8 @@ class _ChannelActivationScreenState extends State<ChannelActivationScreen> {
                     _otpSent
                         ? 'We sent a 6-digit code to $_maskedPhone'
                         : 'We\'ll send a verification code to activate $_channelDisplayName banking.',
-                    style: const TextStyle(
-                        color: Color(0xFF9CA3AF), fontSize: 14),
+                    style:
+                        const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
                   ),
                   const SizedBox(height: 32),
                   if (!_otpSent) ...[
@@ -170,16 +172,17 @@ class _ChannelActivationScreenState extends State<ChannelActivationScreen> {
                         helperText: _numberIsFixed
                             ? 'Taken from your profile. To change it, update your profile number.'
                             : 'Defaults to your profile number — change it if your WhatsApp uses another.',
-                        helperStyle: const TextStyle(color: Color(0xFF6B7280), fontSize: 12),
+                        helperStyle: const TextStyle(
+                            color: Color(0xFF6B7280), fontSize: 12),
                         helperMaxLines: 2,
                         suffixIcon: _numberIsFixed
-                            ? const Icon(Icons.lock_outline, color: Color(0xFF6B7280), size: 18)
+                            ? const Icon(Icons.lock_outline,
+                                color: Color(0xFF6B7280), size: 18)
                             : null,
                         hintText: '+234 800 000 0000',
-                        hintStyle:
-                            const TextStyle(color: Color(0xFF9CA3AF)),
-                        prefixIcon: const Icon(Icons.phone,
-                            color: Color(0xFF9CA3AF)),
+                        hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
+                        prefixIcon:
+                            const Icon(Icons.phone, color: Color(0xFF9CA3AF)),
                         filled: true,
                         fillColor: const Color(0xFF1F1F1F),
                         border: OutlineInputBorder(
@@ -200,9 +203,7 @@ class _ChannelActivationScreenState extends State<ChannelActivationScreen> {
                       maxLength: 6,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          letterSpacing: 8),
+                          color: Colors.white, fontSize: 24, letterSpacing: 8),
                       decoration: InputDecoration(
                         hintText: '000000',
                         hintStyle: const TextStyle(
@@ -278,8 +279,7 @@ class _ChannelActivationScreenState extends State<ChannelActivationScreen> {
       final phone = _phoneController.text.trim();
       if (phone.isEmpty) {
         Get.snackbar('Error', 'Please enter your phone number',
-            backgroundColor: const Color(0xFFEF4444),
-            colorText: Colors.white);
+            backgroundColor: const Color(0xFFEF4444), colorText: Colors.white);
         return;
       }
       context.read<ChannelManagementCubit>().registerChannel(
@@ -290,8 +290,7 @@ class _ChannelActivationScreenState extends State<ChannelActivationScreen> {
       final otp = _otpController.text.trim();
       if (otp.length != 6) {
         Get.snackbar('Error', 'Please enter the 6-digit code',
-            backgroundColor: const Color(0xFFEF4444),
-            colorText: Colors.white);
+            backgroundColor: const Color(0xFFEF4444), colorText: Colors.white);
         return;
       }
       context.read<ChannelManagementCubit>().verifyOTP(

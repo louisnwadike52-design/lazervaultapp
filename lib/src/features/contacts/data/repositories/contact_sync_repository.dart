@@ -104,8 +104,7 @@ class ContactSyncRepository {
     bool deleteAll = false,
   }) async {
     try {
-      final request = pb.DeleteSyncedContactsRequest()
-        ..deleteAll = deleteAll;
+      final request = pb.DeleteSyncedContactsRequest()..deleteAll = deleteAll;
 
       if (contactIds != null && contactIds.isNotEmpty) {
         request.contactIds.addAll(contactIds);
@@ -327,5 +326,6 @@ class ContactSyncException implements Exception {
   const ContactSyncException(this.message, {this.code});
 
   @override
-  String toString() => 'ContactSyncException: $message${code != null ? ' (code: $code)' : ''}';
+  String toString() =>
+      'ContactSyncException: $message${code != null ? ' (code: $code)' : ''}';
 }

@@ -276,57 +276,57 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
               Expanded(
                 child: ServiceEntranceAnimation(
                   child: SlideTransition(
-                  position: _slideAnimation,
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: BlocConsumer<LockFundsCubit, LockFundsState>(
-                      listener: (context, state) {
-                        if (state is LockFundsError) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                state.message,
-                                style: GoogleFonts.inter(color: Colors.white),
+                    position: _slideAnimation,
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: BlocConsumer<LockFundsCubit, LockFundsState>(
+                        listener: (context, state) {
+                          if (state is LockFundsError) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  state.message,
+                                  style: GoogleFonts.inter(color: Colors.white),
+                                ),
+                                backgroundColor: Colors.red[700],
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
                               ),
-                              backgroundColor: Colors.red[700],
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.r),
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                      builder: (context, state) {
-                        if (state is LockFundsLoaded) {
-                          _lastLoaded = state;
-                          return _buildLocksView(state);
-                        }
+                            );
+                          }
+                        },
+                        builder: (context, state) {
+                          if (state is LockFundsLoaded) {
+                            _lastLoaded = state;
+                            return _buildLocksView(state);
+                          }
 
-                        // Background refresh: a reload after we already have data
-                        // keeps the current list on screen (only changed widgets
-                        // re-render). The full-screen loader is ONLY for the very
-                        // first load, when there is nothing to show yet.
-                        if (state is LockFundsLoading) {
-                          return _lastLoaded != null
-                              ? _buildLocksView(_lastLoaded!)
-                              : _buildLoadingState();
-                        }
+                          // Background refresh: a reload after we already have data
+                          // keeps the current list on screen (only changed widgets
+                          // re-render). The full-screen loader is ONLY for the very
+                          // first load, when there is nothing to show yet.
+                          if (state is LockFundsLoading) {
+                            return _lastLoaded != null
+                                ? _buildLocksView(_lastLoaded!)
+                                : _buildLoadingState();
+                          }
 
-                        if (state is LockFundsError) {
-                          // Keep stale data visible on a refresh failure — the
-                          // listener already surfaces the error snackbar. Only
-                          // show the full error screen if we never loaded.
-                          return _lastLoaded != null
-                              ? _buildLocksView(_lastLoaded!)
-                              : _buildErrorState(state.message);
-                        }
+                          if (state is LockFundsError) {
+                            // Keep stale data visible on a refresh failure — the
+                            // listener already surfaces the error snackbar. Only
+                            // show the full error screen if we never loaded.
+                            return _lastLoaded != null
+                                ? _buildLocksView(_lastLoaded!)
+                                : _buildErrorState(state.message);
+                          }
 
-                        return _buildEmptyState();
-                      },
+                          return _buildEmptyState();
+                        },
+                      ),
                     ),
                   ),
-                ),
                 ),
               ),
             ],
@@ -485,22 +485,27 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
               ),
               child: Row(
                 children: [
-                  Text(t.label, style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 12.sp,
-                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                  )),
+                  Text(t.label,
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 12.sp,
+                        fontWeight:
+                            selected ? FontWeight.w700 : FontWeight.w500,
+                      )),
                   if (t.count > 0) ...[
                     SizedBox(width: 6.w),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(8.r),
                       ),
-                      child: Text('${t.count}', style: GoogleFonts.inter(
-                        color: Colors.white, fontSize: 10.sp,
-                        fontWeight: FontWeight.w700)),
+                      child: Text('${t.count}',
+                          style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w700)),
                     ),
                   ],
                 ],
@@ -516,7 +521,9 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
   /// yet" — rendered when the unfiltered list isn't empty but the
   /// current tab has zero rows.
   Widget _buildFilterEmptyState() {
-    final label = _filterStatus == null ? 'locks' : '${_filterStatus!.name.toLowerCase()} locks';
+    final label = _filterStatus == null
+        ? 'locks'
+        : '${_filterStatus!.name.toLowerCase()} locks';
     return Container(
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.04),
@@ -531,14 +538,16 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
     );
   }
 
-  Widget _buildStatisticsCards(Map<String, dynamic> statistics, {List<LockFund>? locks}) {
+  Widget _buildStatisticsCards(Map<String, dynamic> statistics,
+      {List<LockFund>? locks}) {
     return StreamBuilder<String>(
       stream: CurrencySymbols.currencySymbolStream,
       initialData: CurrencySymbols.currentSymbol,
       builder: (context, snapshot) {
         final currencySymbol = snapshot.data ?? CurrencySymbols.currentSymbol;
         final totalLocked = (statistics['totalLockedAmount'] ?? 0) as double;
-        final totalInterest = (statistics['totalAccruedInterest'] ?? 0) as double;
+        final totalInterest =
+            (statistics['totalAccruedInterest'] ?? 0) as double;
         // Prefer the live list: the backend's activeLocksCount counts EVERY
         // returned lock (incl. just-withdrawn ones), so it stayed "1" after a
         // withdrawal while Total Locked correctly read ₦0. Count only locks that
@@ -771,7 +780,8 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
           height: 32.w,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: active ? _kLightPurple : _kLightPurple.withValues(alpha: 0.10),
+            color:
+                active ? _kLightPurple : _kLightPurple.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(8.r),
             border: Border.all(
               color: _kLightPurple.withValues(alpha: active ? 1 : 0.3),
@@ -842,7 +852,10 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                   height: 40.w,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [progressColor, progressColor.withValues(alpha: 0.7)],
+                      colors: [
+                        progressColor,
+                        progressColor.withValues(alpha: 0.7)
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(20.r),
                   ),
@@ -954,7 +967,10 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                         height: 6.h,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [progressColor, progressColor.withValues(alpha: 0.7)],
+                            colors: [
+                              progressColor,
+                              progressColor.withValues(alpha: 0.7)
+                            ],
                           ),
                           borderRadius: BorderRadius.circular(3.r),
                         ),
@@ -1130,7 +1146,8 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                 gradient: LinearGradient(
                   colors: [
                     const Color(0xFF6366F1).withValues(alpha: 0.25),
-                    const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.25),
+                    const Color.fromARGB(255, 78, 3, 208)
+                        .withValues(alpha: 0.25),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(36.r),
@@ -1196,7 +1213,8 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                     gradient: LinearGradient(
                       colors: [
                         const Color(0xFF6366F1).withValues(alpha: 0.3),
-                        const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
+                        const Color.fromARGB(255, 78, 3, 208)
+                            .withValues(alpha: 0.3),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(40.r),

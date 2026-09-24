@@ -1,7 +1,8 @@
 import '../../domain/entities/auto_recharge_entity.dart';
 import '../../domain/entities/bill_payment_entity.dart';
 import 'package:lazervault/src/generated/electricity_bill.pb.dart' as pb;
-import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart' as $timestamp;
+import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart'
+    as $timestamp;
 
 class AutoRechargeModel extends AutoRechargeEntity {
   const AutoRechargeModel({
@@ -46,7 +47,8 @@ class AutoRechargeModel extends AutoRechargeEntity {
       dayOfMonth: proto.hasDayOfMonth() ? proto.dayOfMonth : null,
       status: AutoRechargeStatusExtension.fromString(proto.status),
       nextRunDate: proto.nextRunDate.toDateTime(),
-      lastRunDate: proto.hasLastRunDate() ? proto.lastRunDate.toDateTime() : null,
+      lastRunDate:
+          proto.hasLastRunDate() ? proto.lastRunDate.toDateTime() : null,
       failureCount: proto.failureCount,
       maxRetries: proto.maxRetries,
       createdAt: proto.createdAt.toDateTime(),

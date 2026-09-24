@@ -183,8 +183,7 @@ class InternetBeneficiaryRemoteDataSourceImpl
           .map((ar) => InternetAutoRecharge.fromProto(ar))
           .toList();
     } on GrpcError catch (e) {
-      throw Exception(
-          'Failed to fetch internet auto-recharges: ${e.message}');
+      throw Exception('Failed to fetch internet auto-recharges: ${e.message}');
     }
   }
 
@@ -221,8 +220,7 @@ class InternetBeneficiaryRemoteDataSourceImpl
           .createInternetAutoRecharge(request, options: options);
       return InternetAutoRecharge.fromProto(response.autoRecharge);
     } on GrpcError catch (e) {
-      throw Exception(
-          'Failed to create internet auto-recharge: ${e.message}');
+      throw Exception('Failed to create internet auto-recharge: ${e.message}');
     }
   }
 
@@ -257,8 +255,7 @@ class InternetBeneficiaryRemoteDataSourceImpl
           .updateInternetAutoRecharge(request, options: options);
       return InternetAutoRecharge.fromProto(response.autoRecharge);
     } on GrpcError catch (e) {
-      throw Exception(
-          'Failed to update internet auto-recharge: ${e.message}');
+      throw Exception('Failed to update internet auto-recharge: ${e.message}');
     }
   }
 
@@ -271,8 +268,7 @@ class InternetBeneficiaryRemoteDataSourceImpl
       await grpcClient.utilityPaymentsClient
           .pauseInternetAutoRecharge(request, options: options);
     } on GrpcError catch (e) {
-      throw Exception(
-          'Failed to pause internet auto-recharge: ${e.message}');
+      throw Exception('Failed to pause internet auto-recharge: ${e.message}');
     }
   }
 
@@ -285,8 +281,7 @@ class InternetBeneficiaryRemoteDataSourceImpl
       await grpcClient.utilityPaymentsClient
           .resumeInternetAutoRecharge(request, options: options);
     } on GrpcError catch (e) {
-      throw Exception(
-          'Failed to resume internet auto-recharge: ${e.message}');
+      throw Exception('Failed to resume internet auto-recharge: ${e.message}');
     }
   }
 
@@ -299,8 +294,7 @@ class InternetBeneficiaryRemoteDataSourceImpl
       await grpcClient.utilityPaymentsClient
           .deleteInternetAutoRecharge(request, options: options);
     } on GrpcError catch (e) {
-      throw Exception(
-          'Failed to delete internet auto-recharge: ${e.message}');
+      throw Exception('Failed to delete internet auto-recharge: ${e.message}');
     }
   }
 

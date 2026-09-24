@@ -114,8 +114,8 @@ class _DepositHistoryScreenState extends State<DepositHistoryScreen> {
         // and £ rows invites reading one currency's figures as another's, and
         // the running totals above it are single-currency anyway.
         final active = _activeCurrency();
-        _items.addAll(resp.deposits.where((d) =>
-            active.isEmpty || d.currency.toUpperCase() == active));
+        _items.addAll(resp.deposits.where(
+            (d) => active.isEmpty || d.currency.toUpperCase() == active));
         // Keep paging while the SERVER still has rows: a page can be entirely
         // filtered out, and stopping on an empty page would hide older
         // matching deposits behind it.
@@ -148,8 +148,11 @@ class _DepositHistoryScreenState extends State<DepositHistoryScreen> {
       s == 'successful' || s == 'completed' || s == 'success';
   bool _isFailed(String s) => s == 'failed' || s == 'cancelled';
 
-  Color _statusColor(String s) =>
-      _isDone(s) ? _success : _isFailed(s) ? _error : _accent;
+  Color _statusColor(String s) => _isDone(s)
+      ? _success
+      : _isFailed(s)
+          ? _error
+          : _accent;
   String _statusLabel(String s, [String failureCode = '']) {
     if (_isDone(s)) return 'Completed';
     if (_isFailed(s)) {
@@ -166,8 +169,9 @@ class _DepositHistoryScreenState extends State<DepositHistoryScreen> {
       code == 'DIRECTPAY_CANCELLED';
 
   String _money(int kobo, String currency) {
-    final v = (kobo / 100).toStringAsFixed(2).replaceAllMapped(
-        RegExp(r'(\d)(?=(\d{3})+\.)'), (m) => '${m[1]},');
+    final v = (kobo / 100)
+        .toStringAsFixed(2)
+        .replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+\.)'), (m) => '${m[1]},');
     final sym = currency.toUpperCase() == 'NGN' ? '₦' : '$currency ';
     return '$sym$v';
   }
@@ -194,7 +198,20 @@ class _DepositHistoryScreenState extends State<DepositHistoryScreen> {
   String _dateLabel(banking_pb.Deposit d) {
     if (!d.hasCreatedAt()) return '';
     final t = d.createdAt.toDateTime().toLocal();
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
     final h = t.hour % 12 == 0 ? 12 : t.hour % 12;
     final ap = t.hour >= 12 ? 'PM' : 'AM';
     return '${t.day} ${months[t.month - 1]} ${t.year} · $h:${t.minute.toString().padLeft(2, '0')} $ap';
@@ -206,9 +223,8 @@ class _DepositHistoryScreenState extends State<DepositHistoryScreen> {
           fee: d.fee.toInt() / 100,
           discount: d.feeDiscount.toInt() / 100,
           bankName: _sourceLabel(d),
-          accountNumber: d.sourceAccountNumber.isNotEmpty
-              ? d.sourceAccountNumber
-              : '—',
+          accountNumber:
+              d.sourceAccountNumber.isNotEmpty ? d.sourceAccountNumber : '—',
           reference: d.reference,
           status: d.status,
           failureCode: d.failureCode,
@@ -351,12 +367,10 @@ class _DepositHistoryScreenState extends State<DepositHistoryScreen> {
                     style: GoogleFonts.inter(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w700,
-                        color:
-                            _isDone(d.status) ? _success : Colors.white)),
+                        color: _isDone(d.status) ? _success : Colors.white)),
                 SizedBox(height: 5.h),
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.14),
                     borderRadius: BorderRadius.circular(20.r),
@@ -389,11 +403,9 @@ class _DepositHistoryScreenState extends State<DepositHistoryScreen> {
               decoration: BoxDecoration(
                 color: _card,
                 shape: BoxShape.circle,
-                border:
-                    Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
               ),
-              child:
-                  Icon(Icons.south_west_rounded, color: _label, size: 32.sp),
+              child: Icon(Icons.south_west_rounded, color: _label, size: 32.sp),
             ),
             SizedBox(height: 16.h),
             Text('No deposits yet',
@@ -413,8 +425,7 @@ class _DepositHistoryScreenState extends State<DepositHistoryScreen> {
               onPressed: () => Get.back(),
               style: TextButton.styleFrom(
                 backgroundColor: const Color(0xFF4E03D0),
-                padding:
-                    EdgeInsets.symmetric(horizontal: 22.w, vertical: 10.h),
+                padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 10.h),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r)),
               ),
@@ -448,8 +459,7 @@ class _DepositHistoryScreenState extends State<DepositHistoryScreen> {
               onPressed: () => _load(reset: true),
               style: TextButton.styleFrom(
                 backgroundColor: _card,
-                padding:
-                    EdgeInsets.symmetric(horizontal: 26.w, vertical: 10.h),
+                padding: EdgeInsets.symmetric(horizontal: 26.w, vertical: 10.h),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                     side: BorderSide(

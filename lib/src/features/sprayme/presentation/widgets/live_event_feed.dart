@@ -163,8 +163,9 @@ class _LiveEventItemState extends State<_LiveEventItem>
     return CircleAvatar(
       radius: 12.r,
       backgroundColor: _avatarColor(event.type),
-      backgroundImage:
-          avatarUrl != null && avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
+      backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
+          ? NetworkImage(avatarUrl)
+          : null,
       child: avatarUrl == null || avatarUrl.isEmpty
           ? Icon(_avatarIcon(event.type), size: 12.sp, color: Colors.white)
           : null,
@@ -219,8 +220,7 @@ class _LiveEventItemState extends State<_LiveEventItem>
         );
 
       case 'money_sprayed':
-        final amount =
-            ((event.data['total_amount'] as num?) ?? 0) / 100;
+        final amount = ((event.data['total_amount'] as num?) ?? 0) / 100;
         return (
           'lazersprayed ${widget.currency} ${amount.toStringAsFixed(0)}',
           '\u{1F4B5}',
@@ -228,7 +228,11 @@ class _LiveEventItemState extends State<_LiveEventItem>
         );
 
       case 'like_sent':
-        return ('liked this session', '\u{2764}\u{FE0F}', const Color(0xFFFF6B6B));
+        return (
+          'liked this session',
+          '\u{2764}\u{FE0F}',
+          const Color(0xFFFF6B6B)
+        );
 
       case 'participant_joined':
         final name = event.data['user_name'] as String? ?? 'Someone';

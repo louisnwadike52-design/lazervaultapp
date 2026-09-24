@@ -63,15 +63,11 @@ class _AirtimeRemindersScreenState extends State<AirtimeRemindersScreen>
 
   bool _isDue(AirtimeReminder r) {
     final d = _parseDate(r.reminderDate);
-    return d != null &&
-        d.isBefore(DateTime.now()) &&
-        r.status == 'pending';
+    return d != null && d.isBefore(DateTime.now()) && r.status == 'pending';
   }
 
   bool _isActive(AirtimeReminder r) =>
-      r.status == 'pending' ||
-      r.status == 'notified' ||
-      r.status == 'paused';
+      r.status == 'pending' || r.status == 'notified' || r.status == 'paused';
 
   bool _isCompleted(AirtimeReminder r) =>
       r.status == 'completed' || r.status == 'cancelled';
@@ -194,8 +190,7 @@ class _AirtimeRemindersScreenState extends State<AirtimeRemindersScreen>
                     Get.snackbar(
                       'Error',
                       state.message,
-                      backgroundColor:
-                          Colors.red.withValues(alpha: 0.9),
+                      backgroundColor: Colors.red.withValues(alpha: 0.9),
                       colorText: Colors.white,
                     );
                   } else if (state is AirtimeReminderDeleted) {
@@ -240,9 +235,8 @@ class _AirtimeRemindersScreenState extends State<AirtimeRemindersScreen>
                   }
                   if (list.isEmpty) return _buildEmpty();
                   {
-                    final active = list
-                        .where((r) => _isActive(r) && !_isDue(r))
-                        .toList();
+                    final active =
+                        list.where((r) => _isActive(r) && !_isDue(r)).toList();
                     final due = list.where((r) => _isDue(r)).toList();
                     final completed = list.where(_isCompleted).toList();
 
@@ -266,8 +260,7 @@ class _AirtimeRemindersScreenState extends State<AirtimeRemindersScreen>
                             SizedBox(height: 24.h),
                           ],
                           if (active.isNotEmpty) ...[
-                            _sectionHeader(
-                                'Upcoming', const Color(0xFF10B981)),
+                            _sectionHeader('Upcoming', const Color(0xFF10B981)),
                             SizedBox(height: 12.h),
                             ...active.map((r) => Padding(
                                   padding: EdgeInsets.only(bottom: 12.h),

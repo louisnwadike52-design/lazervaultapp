@@ -75,7 +75,8 @@ class OpenBankingGrpcDataSource {
     String? verificationToken,
     String? transactionId,
   }) async {
-    print('[OpenBankingGrpc] linkBankAccount called - userId: $userId, code: ${code.substring(0, 10)}...');
+    print(
+        '[OpenBankingGrpc] linkBankAccount called - userId: $userId, code: ${code.substring(0, 10)}...');
     try {
       final request = banking_pb.LinkBankAccountRequest(
         userId: userId,
@@ -86,7 +87,8 @@ class OpenBankingGrpcDataSource {
       );
       print('[OpenBankingGrpc] Request created, calling gRPC...');
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         print('[OpenBankingGrpc] Got call options, making gRPC call...');
         return await _client.linkBankAccount(
@@ -96,10 +98,12 @@ class OpenBankingGrpcDataSource {
           ),
         );
       });
-      print('[OpenBankingGrpc] gRPC response received - success: ${response.success}');
+      print(
+          '[OpenBankingGrpc] gRPC response received - success: ${response.success}');
 
       if (!response.success) {
-        print('[OpenBankingGrpc] Response not successful - code: ${response.errorCode}, message: ${response.errorMessage}');
+        print(
+            '[OpenBankingGrpc] Response not successful - code: ${response.errorCode}, message: ${response.errorMessage}');
         throw GenericBankingException(
           code: response.errorCode,
           message: response.errorMessage,
@@ -109,7 +113,8 @@ class OpenBankingGrpcDataSource {
       print('[OpenBankingGrpc] Mapping linked account response...');
       return _mapLinkedAccount(response.account);
     } on GrpcError catch (e) {
-      print('[OpenBankingGrpc] GrpcError: code=${e.code}, message=${e.message}, details=${e.details}');
+      print(
+          '[OpenBankingGrpc] GrpcError: code=${e.code}, message=${e.message}, details=${e.details}');
       throw _mapGrpcError(e, 'linkBankAccount');
     } catch (e, stackTrace) {
       print('[OpenBankingGrpc] Unexpected error: $e');
@@ -150,7 +155,8 @@ class OpenBankingGrpcDataSource {
         userId: userId,
       );
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.unlinkBankAccount(
           request,
@@ -182,7 +188,8 @@ class OpenBankingGrpcDataSource {
         userId: userId,
       );
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.setDefaultLinkedAccount(
           request,
@@ -216,7 +223,8 @@ class OpenBankingGrpcDataSource {
         userId: userId,
         quoteOnly: true,
       );
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.refreshLinkedAccountBalance(
           request,
@@ -245,7 +253,8 @@ class OpenBankingGrpcDataSource {
         transactionId: transactionId ?? '',
       );
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.refreshLinkedAccountBalance(
           request,
@@ -334,7 +343,8 @@ class OpenBankingGrpcDataSource {
     required int amountInKobo,
     String? narration,
     String? idempotencyKey,
-    bool useRecurringAccess = false, // false = DirectPay (one-time), true = Mandate
+    bool useRecurringAccess =
+        false, // false = DirectPay (one-time), true = Mandate
     String? currency, // destination wallet currency
     String? countryCode, // derived country — routes NGN to Mono
     String? verificationToken, // tx-PIN token (fee-gated redeposit)
@@ -357,7 +367,8 @@ class OpenBankingGrpcDataSource {
         );
 
         try {
-          final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+          final response =
+              await _callOptionsHelper.executeWithTokenRotation(() async {
             final callOptions = await _callOptionsHelper.withAuth();
             return await _client.initiateDeposit(
               request,
@@ -378,8 +389,10 @@ class OpenBankingGrpcDataSource {
           if (response.requiresAuthorization) {
             return deposit.copyWith(
               requiresAuthorization: true,
-              paymentUrl: response.paymentUrl.isNotEmpty ? response.paymentUrl : null,
-              paymentId: response.paymentId.isNotEmpty ? response.paymentId : null,
+              paymentUrl:
+                  response.paymentUrl.isNotEmpty ? response.paymentUrl : null,
+              paymentId:
+                  response.paymentId.isNotEmpty ? response.paymentId : null,
             );
           }
 
@@ -579,14 +592,16 @@ class OpenBankingGrpcDataSource {
       accountName: proto.accountName,
       accountType: proto.accountType,
       currency: proto.currency,
-      lastKnownBalance: proto.lastKnownBalance.toInt() / 100, // Convert from kobo
+      lastKnownBalance:
+          proto.lastKnownBalance.toInt() / 100, // Convert from kobo
       balanceUpdatedAt: proto.hasBalanceUpdatedAt()
           ? proto.balanceUpdatedAt.toDateTime()
           : null,
       status: LinkedAccountStatus.fromString(proto.status),
       isDefault: proto.isDefault,
       isVerified: proto.isVerified,
-      linkedAt: proto.hasLinkedAt() ? proto.linkedAt.toDateTime() : DateTime.now(),
+      linkedAt:
+          proto.hasLinkedAt() ? proto.linkedAt.toDateTime() : DateTime.now(),
     );
   }
 
@@ -606,9 +621,12 @@ class OpenBankingGrpcDataSource {
       reference: proto.reference,
       narration: proto.narration.isNotEmpty ? proto.narration : null,
       failureCode: proto.failureCode.isNotEmpty ? proto.failureCode : null,
-      failureReason: proto.failureReason.isNotEmpty ? proto.failureReason : null,
-      createdAt: proto.hasCreatedAt() ? proto.createdAt.toDateTime() : DateTime.now(),
-      completedAt: proto.hasCompletedAt() ? proto.completedAt.toDateTime() : null,
+      failureReason:
+          proto.failureReason.isNotEmpty ? proto.failureReason : null,
+      createdAt:
+          proto.hasCreatedAt() ? proto.createdAt.toDateTime() : DateTime.now(),
+      completedAt:
+          proto.hasCompletedAt() ? proto.completedAt.toDateTime() : null,
     );
   }
 
@@ -621,7 +639,8 @@ class OpenBankingGrpcDataSource {
       case 'INSUFFICIENT_FUNDS':
         return InsufficientFundsException(message: message);
       case 'LIMIT_EXCEEDED':
-        return LimitExceededException(message: message, limitType: 'transaction');
+        return LimitExceededException(
+            message: message, limitType: 'transaction');
       case 'ACCOUNT_NOT_FOUND':
         return AccountNotFoundException(message: message);
       case 'NEEDS_MANDATE':
@@ -640,7 +659,9 @@ class OpenBankingGrpcDataSource {
       default:
         return GenericBankingException(
           code: code,
-          message: message.isNotEmpty ? message : 'Deposit failed. Please try again.',
+          message: message.isNotEmpty
+              ? message
+              : 'Deposit failed. Please try again.',
         );
     }
   }
@@ -782,7 +803,8 @@ class OpenBankingGrpcDataSource {
         linkedAccountId: linkedAccountId,
       );
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.refreshCreditScore(
           request,
@@ -813,7 +835,8 @@ class OpenBankingGrpcDataSource {
     String? linkedAccountId,
   }) async {
     try {
-      final request = banking_pb.GetMultiSourceCreditScoresRequest(userId: userId);
+      final request =
+          banking_pb.GetMultiSourceCreditScoresRequest(userId: userId);
       final callOptions = await _callOptionsHelper.withAuth();
       final extra = <String, String>{};
       if (linkedAccountId != null && linkedAccountId.isNotEmpty) {
@@ -887,7 +910,8 @@ class OpenBankingGrpcDataSource {
       transactionsAnalyzed: cs.transactionsAnalyzed,
       monthsOfData: cs.monthsOfData,
       calculatedAt: cs.calculatedAt.toDateTime(),
-      nextRefreshAt: cs.hasNextRefreshAt() ? cs.nextRefreshAt.toDateTime() : null,
+      nextRefreshAt:
+          cs.hasNextRefreshAt() ? cs.nextRefreshAt.toDateTime() : null,
       tips: cs.tips
           .map((t) => CreditScoreTipEntity(
                 title: t.title,
@@ -976,8 +1000,12 @@ class OpenBankingGrpcDataSource {
   ///
   /// Optional [userEmail], [userName], [userPhone] are forwarded as gRPC
   /// metadata so the backend can auto-create a Mono customer if needed.
-  Future<({MandateEntity mandate, bool needsAuthorization, String? authorizationUrl})>
-      createMandate({
+  Future<
+      ({
+        MandateEntity mandate,
+        bool needsAuthorization,
+        String? authorizationUrl
+      })> createMandate({
     required String userId,
     required String linkedAccountId,
     String mandateType = 'gsm',
@@ -1010,7 +1038,8 @@ class OpenBankingGrpcDataSource {
         extraMeta['x-user-phone'] = userPhone;
       }
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.createMandate(
           request,
@@ -1033,8 +1062,9 @@ class OpenBankingGrpcDataSource {
       return (
         mandate: _mapMandate(response.mandate),
         needsAuthorization: response.needsAuthorization,
-        authorizationUrl:
-            response.authorizationUrl.isNotEmpty ? response.authorizationUrl : null,
+        authorizationUrl: response.authorizationUrl.isNotEmpty
+            ? response.authorizationUrl
+            : null,
       );
     } on GrpcError catch (e) {
       throw _mapGrpcError(e, 'createMandate');
@@ -1115,7 +1145,8 @@ class OpenBankingGrpcDataSource {
         reason: reason ?? '',
       );
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.pauseMandate(
           request,
@@ -1149,7 +1180,8 @@ class OpenBankingGrpcDataSource {
         userId: userId,
       );
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.reinstateMandate(
           request,
@@ -1185,7 +1217,8 @@ class OpenBankingGrpcDataSource {
         reason: reason ?? '',
       );
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.cancelMandate(
           request,
@@ -1227,15 +1260,21 @@ class OpenBankingGrpcDataSource {
       remainingLimit: proto.remainingLimit.toInt(),
       canDebit: proto.canDebit,
       isExpired: proto.isExpired,
-      startDate: proto.hasStartDate() ? proto.startDate.toDateTime() : DateTime.now(),
+      startDate:
+          proto.hasStartDate() ? proto.startDate.toDateTime() : DateTime.now(),
       endDate: proto.hasEndDate() ? proto.endDate.toDateTime() : DateTime.now(),
-      createdAt: proto.hasCreatedAt() ? proto.createdAt.toDateTime() : DateTime.now(),
-      authorizedAt: proto.hasAuthorizedAt() ? proto.authorizedAt.toDateTime() : null,
-      authAttemptedAt:
-          proto.hasAuthAttemptedAt() ? proto.authAttemptedAt.toDateTime() : null,
+      createdAt:
+          proto.hasCreatedAt() ? proto.createdAt.toDateTime() : DateTime.now(),
+      authorizedAt:
+          proto.hasAuthorizedAt() ? proto.authorizedAt.toDateTime() : null,
+      authAttemptedAt: proto.hasAuthAttemptedAt()
+          ? proto.authAttemptedAt.toDateTime()
+          : null,
       readyAt: proto.hasReadyAt() ? proto.readyAt.toDateTime() : null,
-      lastDebitAt: proto.hasLastDebitAt() ? proto.lastDebitAt.toDateTime() : null,
-      cancelledAt: proto.hasCancelledAt() ? proto.cancelledAt.toDateTime() : null,
+      lastDebitAt:
+          proto.hasLastDebitAt() ? proto.lastDebitAt.toDateTime() : null,
+      cancelledAt:
+          proto.hasCancelledAt() ? proto.cancelledAt.toDateTime() : null,
       reference: proto.reference,
       description: proto.description.isNotEmpty ? proto.description : null,
       switchProcessing: proto.switchProcessing,
@@ -1306,33 +1345,39 @@ class OpenBankingGrpcDataSource {
         ),
       );
 
-      final transactions = response.transactions.map((t) => ExternalBankTransaction(
-            id: t.id,
-            userId: t.userId,
-            linkedBankAccountId: t.linkedBankAccountId,
-            externalTransactionId: t.externalTransactionId,
-            externalAccountId: t.externalAccountId,
-            amount: t.amount.toInt(),
-            currency: t.currency,
-            transactionType: t.transactionType,
-            category: t.category.isNotEmpty ? t.category : null,
-            description: t.description,
-            bankName: t.bankName,
-            accountName: t.accountName,
-            accountNumberMasked: t.accountNumberMasked,
-            transactionDate: t.hasTransactionDate() ? t.transactionDate.toDateTime() : null,
-            valueDate: t.hasValueDate() ? t.valueDate.toDateTime() : null,
-            clearedAt: t.hasClearedAt() ? t.clearedAt.toDateTime() : null,
-            createdAt: t.hasCreatedAt() ? t.createdAt.toDateTime() : null,
-            syncStatus: t.syncStatus,
-            lastSyncAt: t.hasLastSyncAt() ? t.lastSyncAt.toDateTime() : null,
-          )).toList();
+      final transactions = response.transactions
+          .map((t) => ExternalBankTransaction(
+                id: t.id,
+                userId: t.userId,
+                linkedBankAccountId: t.linkedBankAccountId,
+                externalTransactionId: t.externalTransactionId,
+                externalAccountId: t.externalAccountId,
+                amount: t.amount.toInt(),
+                currency: t.currency,
+                transactionType: t.transactionType,
+                category: t.category.isNotEmpty ? t.category : null,
+                description: t.description,
+                bankName: t.bankName,
+                accountName: t.accountName,
+                accountNumberMasked: t.accountNumberMasked,
+                transactionDate: t.hasTransactionDate()
+                    ? t.transactionDate.toDateTime()
+                    : null,
+                valueDate: t.hasValueDate() ? t.valueDate.toDateTime() : null,
+                clearedAt: t.hasClearedAt() ? t.clearedAt.toDateTime() : null,
+                createdAt: t.hasCreatedAt() ? t.createdAt.toDateTime() : null,
+                syncStatus: t.syncStatus,
+                lastSyncAt:
+                    t.hasLastSyncAt() ? t.lastSyncAt.toDateTime() : null,
+              ))
+          .toList();
 
       return AccountWithTransactionsResult(
         account: _mapLinkedAccount(response.account),
         transactions: transactions,
         totalTransactions: response.totalTransactions.toInt(),
-        lastSyncAt: response.hasLastSyncAt() ? response.lastSyncAt.toDateTime() : null,
+        lastSyncAt:
+            response.hasLastSyncAt() ? response.lastSyncAt.toDateTime() : null,
       );
     } on GrpcError catch (e) {
       throw _mapGrpcError(e, 'getAccountWithTransactions');
@@ -1350,7 +1395,8 @@ class OpenBankingGrpcDataSource {
       );
       final callOptions = await _callOptionsHelper.withAuth();
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         return await _client.refreshAccountTransactions(
           request,
           options: callOptions.mergedWith(

@@ -96,7 +96,9 @@ class AirtimeTransaction extends Equatable {
 
   bool get isCompleted => status == AirtimeTransactionStatus.completed;
   bool get isFailed => status == AirtimeTransactionStatus.failed;
-  bool get isPending => status == AirtimeTransactionStatus.pending || status == AirtimeTransactionStatus.processing;
+  bool get isPending =>
+      status == AirtimeTransactionStatus.pending ||
+      status == AirtimeTransactionStatus.processing;
 
   String get currencySymbol {
     switch (currency.toUpperCase()) {
@@ -118,7 +120,7 @@ class AirtimeTransaction extends Equatable {
         return '$currency ';
     }
   }
-  
+
   String get formattedRecipientNumber {
     final cleanNumber = recipientPhoneNumber.replaceAll(RegExp(r'[^\d]'), '');
     if (cleanNumber.length == 11 && cleanNumber.startsWith('0')) {
@@ -130,7 +132,8 @@ class AirtimeTransaction extends Equatable {
   String get displayRecipientNumber {
     if (recipientPhoneNumber.length >= 4) {
       final firstPart = recipientPhoneNumber.substring(0, 4);
-      final lastPart = recipientPhoneNumber.substring(recipientPhoneNumber.length - 3);
+      final lastPart =
+          recipientPhoneNumber.substring(recipientPhoneNumber.length - 3);
       final middlePart = '*' * (recipientPhoneNumber.length - 7);
       return '$firstPart$middlePart$lastPart';
     }
@@ -271,9 +274,9 @@ extension AirtimeTransactionDisplay on AirtimeTransaction {
       if (op != null && op.isNotEmpty) return '$op Airtime';
       // Fall back to the country code if even the operator is missing
       // \u2014 at least the user knows where the top-up went.
-      final cc =
-          (m?['country_code'] ?? m?['countryCode'])?.toString();
-      if (cc != null && cc.isNotEmpty) return 'International Airtime \u00B7 $cc';
+      final cc = (m?['country_code'] ?? m?['countryCode'])?.toString();
+      if (cc != null && cc.isNotEmpty)
+        return 'International Airtime \u00B7 $cc';
       return 'International Airtime';
     }
     return '${networkProvider.displayName} Airtime';

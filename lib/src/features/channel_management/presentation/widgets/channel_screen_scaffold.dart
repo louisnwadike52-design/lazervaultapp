@@ -228,7 +228,8 @@ class ChannelToggleTile extends StatelessWidget {
               children: [
                 Text(title,
                     style: GoogleFonts.inter(
-                        color: off ? ChannelScreenTheme.textMuted : Colors.white,
+                        color:
+                            off ? ChannelScreenTheme.textMuted : Colors.white,
                         fontSize: 13.5,
                         fontWeight: FontWeight.w600)),
                 if (subtitle != null || (off && disabledReason != null)) ...[

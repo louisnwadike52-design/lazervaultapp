@@ -398,8 +398,7 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
         icon: Icons.phone_iphone_rounded,
         color: _accent,
         title: 'Have your Nigerian number ready',
-        body:
-            'Your profile phone isn\'t a Nigerian number. During the secure '
+        body: 'Your profile phone isn\'t a Nigerian number. During the secure '
             'check you\'ll enter the Nigerian phone number linked to your BVN.',
       ));
     }
@@ -471,7 +470,8 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
                 onPressed: onAction,
                 style: TextButton.styleFrom(
                   foregroundColor: color,
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 child: Text(
@@ -659,8 +659,8 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
               ),
               Text(
                 description,
-                style: GoogleFonts.inter(
-                    color: _textSecondary, fontSize: 12.sp),
+                style:
+                    GoogleFonts.inter(color: _textSecondary, fontSize: 12.sp),
               ),
             ],
           ),
@@ -693,7 +693,8 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
                   decoration: BoxDecoration(
                       color: purple.withValues(alpha: 0.18),
                       shape: BoxShape.circle),
-                  child: const Icon(Icons.badge_outlined, color: purple, size: 22),
+                  child:
+                      const Icon(Icons.badge_outlined, color: purple, size: 22),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1036,8 +1037,7 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
     _dismissStatusSheetIfAny();
     _showKycStatusSheet(
       state: 'still_processing',
-      message:
-          'Verification is taking longer than usual. We\'ll send you a '
+      message: 'Verification is taking longer than usual. We\'ll send you a '
           'notification the moment it completes — you can safely leave '
           'this screen.',
     );
@@ -1167,58 +1167,58 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
       required String state,
       required bool showRetry}) {
     return Padding(
-        padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 30.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Icon(icon, color: color, size: 44.sp),
-            SizedBox(height: 14.h),
-            Text(title,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                    fontSize: 17.sp,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white)),
-            SizedBox(height: 8.h),
-            Text(body,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                    fontSize: 13.5.sp,
-                    height: 1.45,
-                    color: Colors.white.withValues(alpha: 0.7))),
-            SizedBox(height: 20.h),
-            if (showRetry)
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(ctx).pop();
-                  _startVerification();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _accent,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 14.h),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r)),
-                ),
-                child: const Text('Try again'),
-              )
-            else
-              ElevatedButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: color.withValues(alpha: 0.9),
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 14.h),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r)),
-                ),
-                child: Text(state == 'verified' ? 'Done' : 'Okay'),
+      padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 30.h),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Icon(icon, color: color, size: 44.sp),
+          SizedBox(height: 14.h),
+          Text(title,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                  fontSize: 17.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white)),
+          SizedBox(height: 8.h),
+          Text(body,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                  fontSize: 13.5.sp,
+                  height: 1.45,
+                  color: Colors.white.withValues(alpha: 0.7))),
+          SizedBox(height: 20.h),
+          if (showRetry)
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                _startVerification();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _accent,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
               ),
-          ],
-        ),
+              child: const Text('Try again'),
+            )
+          else
+            ElevatedButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color.withValues(alpha: 0.9),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
+              ),
+              child: Text(state == 'verified' ? 'Done' : 'Okay'),
+            ),
+        ],
+      ),
     );
   }
 
@@ -1301,9 +1301,8 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
 
     await _deleteFlag('kyc_onboarding_pending');
 
-    final returnTo = (Get.arguments is Map)
-        ? (Get.arguments as Map)['returnTo']
-        : null;
+    final returnTo =
+        (Get.arguments is Map) ? (Get.arguments as Map)['returnTo'] : null;
     final pending = serviceLocator<PendingDeposit>();
 
     // Resume a deposit only when we were sent here from a deposit AND there is
@@ -1334,8 +1333,7 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
       // natural parent) and push a single fresh deposit screen to resume.
       Get.offNamedUntil(
         AppRoutes.depositFunds,
-        (route) =>
-            route.settings.name == AppRoutes.dashboard || route.isFirst,
+        (route) => route.settings.name == AppRoutes.dashboard || route.isFirst,
         arguments: {
           ...card,
           'selectedCard': card,
@@ -1367,9 +1365,8 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
   /// just sees the form again and can retry (where the gate will re-fire if
   /// they're still unverified). Never strands them on KYC.
   void _onBack() {
-    final returnTo = (Get.arguments is Map)
-        ? (Get.arguments as Map)['returnTo']
-        : null;
+    final returnTo =
+        (Get.arguments is Map) ? (Get.arguments as Map)['returnTo'] : null;
     if (returnTo == 'deposit') {
       serviceLocator<PendingDeposit>().clear();
     }
@@ -1461,7 +1458,8 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
     Get.dialog(
       Dialog(
         backgroundColor: _card,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         insetPadding: EdgeInsets.symmetric(horizontal: 32.w),
         child: Padding(
           padding: EdgeInsets.fromLTRB(20.w, 24.h, 20.w, 16.h),
@@ -1560,7 +1558,8 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
     Get.dialog(
       Dialog(
         backgroundColor: _card,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         insetPadding: EdgeInsets.symmetric(horizontal: 32.w),
         child: Padding(
           padding: EdgeInsets.fromLTRB(20.w, 24.h, 20.w, 16.h),

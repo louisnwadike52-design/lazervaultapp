@@ -20,8 +20,7 @@ class _InsuranceGuideScreenState extends State<InsuranceGuideScreen> {
   static const _policyTerms = [
     {
       'title': 'Premium',
-      'description':
-          'The amount you pay regularly to maintain your coverage',
+      'description': 'The amount you pay regularly to maintain your coverage',
     },
     {
       'title': 'Deductible',
@@ -475,7 +474,8 @@ class _InsuranceGuideScreenState extends State<InsuranceGuideScreen> {
                     borderRadius: BorderRadius.circular(14.r),
                     border: Border.all(
                       color: isExpanded
-                          ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.5)
+                          ? const Color.fromARGB(255, 78, 3, 208)
+                              .withValues(alpha: 0.5)
                           : const Color(0xFF2D2D2D),
                     ),
                   ),

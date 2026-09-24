@@ -374,7 +374,8 @@ class _P2PChatBottomSheetState extends State<P2PChatBottomSheet>
               if (isReconnecting)
                 LazerVaultLoader(size: 12)
               else
-                Icon(Icons.cloud_off, size: 14.w, color: const Color(0xFFEF4444)),
+                Icon(Icons.cloud_off,
+                    size: 14.w, color: const Color(0xFFEF4444)),
               SizedBox(width: 6.w),
               Text(
                 isReconnecting

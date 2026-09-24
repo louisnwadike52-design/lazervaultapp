@@ -45,4 +45,4 @@ class ManageAlertsUseCase {
   Future<Either<Failure, void>> deleteAlert(String alertId) async {
     return await repository.deleteAlert(alertId);
   }
-} 
+}

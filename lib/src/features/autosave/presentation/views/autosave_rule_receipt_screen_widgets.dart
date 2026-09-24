@@ -69,8 +69,8 @@ extension _AutoSaveReceiptWidgets on _AutoSaveRuleReceiptScreenState {
                   ),
                 ],
               ),
-              child: Icon(Icons.savings_rounded,
-                  color: Colors.white, size: 24.sp),
+              child:
+                  Icon(Icons.savings_rounded, color: Colors.white, size: 24.sp),
             ),
           ),
         ),
@@ -103,11 +103,9 @@ extension _AutoSaveReceiptWidgets on _AutoSaveRuleReceiptScreenState {
                     fontWeight: FontWeight.w500,
                     color: _muted)),
             SizedBox(width: 8.w),
-            Text('·',
-                style: GoogleFonts.inter(fontSize: 14.sp, color: _muted)),
+            Text('·', style: GoogleFonts.inter(fontSize: 14.sp, color: _muted)),
             SizedBox(width: 8.w),
-            Text(
-                DateFormat('dd MMM yyyy, h:mm a').format(rule.createdAt),
+            Text(DateFormat('dd MMM yyyy, h:mm a').format(rule.createdAt),
                 style: GoogleFonts.inter(fontSize: 12.sp, color: _muted)),
           ],
         ),
@@ -162,7 +160,8 @@ extension _AutoSaveReceiptWidgets on _AutoSaveRuleReceiptScreenState {
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: _borderColor),
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: rows),
+      child:
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: rows),
     );
   }
 
@@ -265,9 +264,8 @@ extension _AutoSaveReceiptWidgets on _AutoSaveRuleReceiptScreenState {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                  color: primary
-                      ? _accent.withValues(alpha: 0.45)
-                      : _borderColor),
+                  color:
+                      primary ? _accent.withValues(alpha: 0.45) : _borderColor),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,

@@ -163,8 +163,8 @@ class _AirtimeFilterSheetState extends State<_AirtimeFilterSheet> {
                   TextButton(
                     onPressed: _clearAll,
                     style: TextButton.styleFrom(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 8.w, vertical: 4.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
@@ -276,8 +276,7 @@ class _AirtimeFilterSheetState extends State<_AirtimeFilterSheet> {
               ),
         filled: true,
         fillColor: const Color(0xFF2D2D2D),
-        contentPadding:
-            EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+        contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
           borderSide: BorderSide.none,
@@ -356,9 +355,8 @@ class _AirtimeFilterSheetState extends State<_AirtimeFilterSheet> {
               : const Color(0xFF2D2D2D),
           borderRadius: BorderRadius.circular(999.r),
           border: Border.all(
-            color: selected
-                ? widget.accent
-                : Colors.white.withValues(alpha: 0.08),
+            color:
+                selected ? widget.accent : Colors.white.withValues(alpha: 0.08),
           ),
         ),
         child: Row(
@@ -397,8 +395,7 @@ class _AirtimeFilterSheetState extends State<_AirtimeFilterSheet> {
         SizedBox(width: 10.w),
         Expanded(
           child: _dateButton(
-            label:
-                _to == null ? 'To' : DateFormat('MMM dd, yyyy').format(_to!),
+            label: _to == null ? 'To' : DateFormat('MMM dd, yyyy').format(_to!),
             onTap: () => _pickDate(isFrom: false),
             onClear: _to == null ? null : () => setState(() => _to = null),
           ),
@@ -484,8 +481,7 @@ class _AirtimeFilterSheetState extends State<_AirtimeFilterSheet> {
         ),
         filled: true,
         fillColor: const Color(0xFF2D2D2D),
-        contentPadding:
-            EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+        contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
           borderSide: BorderSide.none,

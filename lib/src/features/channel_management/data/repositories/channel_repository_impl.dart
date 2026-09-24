@@ -2,7 +2,8 @@ import 'package:dartz/dartz.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/error/failure.dart';
-import 'package:lazervault/src/core/errors/failures.dart' show friendlyGrpcError;
+import 'package:lazervault/src/core/errors/failures.dart'
+    show friendlyGrpcError;
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/features/channel_management/data/models/channel_registration_model.dart';
@@ -13,7 +14,8 @@ import 'package:lazervault/src/features/channel_management/domain/entities/chann
 import 'package:lazervault/src/features/channel_management/domain/repositories/i_channel_repository.dart';
 import 'package:lazervault/src/generated/transaction_pin.pbgrpc.dart';
 import 'package:lazervault/src/generated/transaction_pin.pb.dart' as pin_pb;
-import 'package:lazervault/src/generated/transaction_pin.pbenum.dart' as pin_enum;
+import 'package:lazervault/src/generated/transaction_pin.pbenum.dart'
+    as pin_enum;
 
 class ChannelRepositoryImpl implements IChannelRepository {
   final TransactionPinServiceClient _pinClient;
@@ -31,8 +33,7 @@ class ChannelRepositoryImpl implements IChannelRepository {
   Future<String> _getUserId() async {
     final userId = await _secureStorage.getUserId();
     if (userId == null || userId.isEmpty) {
-      throw ServerFailure(
-          message: 'User not authenticated', statusCode: 401);
+      throw ServerFailure(message: 'User not authenticated', statusCode: 401);
     }
     return userId;
   }
@@ -57,8 +58,8 @@ class ChannelRepositoryImpl implements IChannelRepository {
           message: friendlyGrpcError(e, 'Failed to get channel registrations'),
           statusCode: e.code));
     } catch (e) {
-      return Left(
-          ServerFailure(message: 'An unexpected error occurred', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred', statusCode: 500));
     }
   }
 
@@ -92,8 +93,8 @@ class ChannelRepositoryImpl implements IChannelRepository {
           message: friendlyGrpcError(e, 'Failed to register channel'),
           statusCode: e.code));
     } catch (e) {
-      return Left(
-          ServerFailure(message: 'An unexpected error occurred', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred', statusCode: 500));
     }
   }
 
@@ -113,8 +114,7 @@ class ChannelRepositoryImpl implements IChannelRepository {
       final response =
           await _pinClient.verifyChannelOTP(request, options: callOptions);
       if (response.success && response.hasRegistration()) {
-        return Right(
-            ChannelRegistrationModel.fromProto(response.registration));
+        return Right(ChannelRegistrationModel.fromProto(response.registration));
       }
       return Left(ServerFailure(
           message: response.message.isNotEmpty
@@ -125,10 +125,11 @@ class ChannelRepositoryImpl implements IChannelRepository {
       return Left(e);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: friendlyGrpcError(e, 'Failed to verify OTP'), statusCode: e.code));
+          message: friendlyGrpcError(e, 'Failed to verify OTP'),
+          statusCode: e.code));
     } catch (e) {
-      return Left(
-          ServerFailure(message: 'An unexpected error occurred', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred', statusCode: 500));
     }
   }
 
@@ -160,13 +161,14 @@ class ChannelRepositoryImpl implements IChannelRepository {
           message: friendlyGrpcError(e, 'Failed to deactivate channel'),
           statusCode: e.code));
     } catch (e) {
-      return Left(
-          ServerFailure(message: 'An unexpected error occurred', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred', statusCode: 500));
     }
   }
 
   @override
-  Future<Either<Failure, List<entity.ChannelPinStatus>>> getChannelPins() async {
+  Future<Either<Failure, List<entity.ChannelPinStatus>>>
+      getChannelPins() async {
     try {
       final callOptions = await _callOptionsHelper.withAuth();
       final userId = await _getUserId();
@@ -184,8 +186,8 @@ class ChannelRepositoryImpl implements IChannelRepository {
           message: friendlyGrpcError(e, 'Failed to get channel PINs'),
           statusCode: e.code));
     } catch (e) {
-      return Left(
-          ServerFailure(message: 'An unexpected error occurred', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred', statusCode: 500));
     }
   }
 
@@ -221,8 +223,8 @@ class ChannelRepositoryImpl implements IChannelRepository {
         deviceName: deviceName,
         channelType: _channelTypeToProto(channelType),
       );
-      final response = await _pinClient.createTransactionPin(request,
-          options: callOptions);
+      final response =
+          await _pinClient.createTransactionPin(request, options: callOptions);
       if (response.success) {
         return const Right(true);
       }
@@ -238,8 +240,8 @@ class ChannelRepositoryImpl implements IChannelRepository {
           message: friendlyGrpcError(e, 'Failed to create channel PIN'),
           statusCode: e.code));
     } catch (e) {
-      return Left(
-          ServerFailure(message: 'An unexpected error occurred', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred', statusCode: 500));
     }
   }
 
@@ -260,8 +262,8 @@ class ChannelRepositoryImpl implements IChannelRepository {
         confirmNewPin: confirmNewPin,
         channelType: _channelTypeToProto(channelType),
       );
-      final response = await _pinClient.changeTransactionPin(request,
-          options: callOptions);
+      final response =
+          await _pinClient.changeTransactionPin(request, options: callOptions);
       if (response.success) {
         return const Right(true);
       }
@@ -281,8 +283,8 @@ class ChannelRepositoryImpl implements IChannelRepository {
           : friendlyGrpcError(e, 'Failed to change channel PIN');
       return Left(ServerFailure(message: message, statusCode: e.code));
     } catch (e) {
-      return Left(
-          ServerFailure(message: 'An unexpected error occurred', statusCode: 500));
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred', statusCode: 500));
     }
   }
 

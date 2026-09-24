@@ -67,7 +67,8 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
   }
 
   @override
-  Future<Invoice> createInvoice(Invoice invoice, {String? serviceFeeRef}) async {
+  Future<Invoice> createInvoice(Invoice invoice,
+      {String? serviceFeeRef}) async {
     if (!serviceLocator<AccountManager>().hasActiveAccount) {
       throw Exception('Select a business account first');
     }
@@ -93,14 +94,17 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
 
         final request = pb.CreateInvoiceRequest()
           ..accountId = serviceLocator<AccountManager>().activeAccountId ?? ''
-          ..recipientEmail = invoice.toEmail ?? invoice.payerDetails?.email ?? ''
-          ..recipientName = invoice.toName ?? invoice.payerDetails?.contactName ?? ''
+          ..recipientEmail =
+              invoice.toEmail ?? invoice.payerDetails?.email ?? ''
+          ..recipientName =
+              invoice.toName ?? invoice.payerDetails?.contactName ?? ''
           ..description = invoice.description
           ..amount = invoice.amount
           // Date-only, matching the backend's primary layout (it also accepts
           // RFC3339 now, but full ISO used to fail its parse and silently
           // replace every user-chosen due date with +30d).
-          ..dueDate = _dateOnly(invoice.dueDate ?? DateTime.now().add(const Duration(days: 30)))
+          ..dueDate = _dateOnly(
+              invoice.dueDate ?? DateTime.now().add(const Duration(days: 30)))
           ..tax = invoice.taxAmount ?? 0.0
           ..discount = invoice.discountAmount ?? 0.0
           ..notes = invoice.notes ?? ''
@@ -314,7 +318,9 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
   }
 
   @override
-  Future<Invoice> markInvoiceAsPaid(String invoiceId, PaymentMethod paymentMethod, String? paymentReference, {String? pin, String? verificationToken}) async {
+  Future<Invoice> markInvoiceAsPaid(
+      String invoiceId, PaymentMethod paymentMethod, String? paymentReference,
+      {String? pin, String? verificationToken}) async {
     return retryWithBackoff(
       operation: () async {
         final request = pb.PayInvoiceRequest()
@@ -343,12 +349,19 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
   }
 
   @override
-  Future<Invoice> unlockInvoice(String invoiceId, {String? accountId, String? pin, String? verificationToken, String? transactionId, String? idempotencyKey}) async {
+  Future<Invoice> unlockInvoice(String invoiceId,
+      {String? accountId,
+      String? pin,
+      String? verificationToken,
+      String? transactionId,
+      String? idempotencyKey}) async {
     return retryWithBackoff(
       operation: () async {
         final request = pb.UnlockInvoiceRequest()
           ..invoiceId = invoiceId
-          ..accountId = accountId ?? serviceLocator<AccountManager>().activeAccountId ?? '';
+          ..accountId = accountId ??
+              serviceLocator<AccountManager>().activeAccountId ??
+              '';
 
         if (pin != null && pin.isNotEmpty) {
           request.pin = pin;
@@ -379,7 +392,9 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
     return retryWithBackoff(
       operation: () async {
         final request = pb.GetInvoiceServiceFeeRequest()
-          ..accountId = accountId ?? serviceLocator<AccountManager>().activeAccountId ?? '';
+          ..accountId = accountId ??
+              serviceLocator<AccountManager>().activeAccountId ??
+              '';
 
         final options = await grpcClient.callOptions;
         final response = await grpcClient.invoiceClient.getInvoiceServiceFee(
@@ -427,8 +442,8 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
     final lowerQuery = query.toLowerCase();
     return allInvoices.where((inv) {
       return inv.title.toLowerCase().contains(lowerQuery) ||
-             inv.description.toLowerCase().contains(lowerQuery) ||
-             inv.toEmail?.toLowerCase().contains(lowerQuery) == true;
+          inv.description.toLowerCase().contains(lowerQuery) ||
+          inv.toEmail?.toLowerCase().contains(lowerQuery) == true;
     }).toList();
   }
 
@@ -438,8 +453,8 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
     final now = DateTime.now();
     return allInvoices.where((inv) {
       return inv.status != InvoiceStatus.paid &&
-             inv.dueDate != null &&
-             inv.dueDate!.isBefore(now);
+          inv.dueDate != null &&
+          inv.dueDate!.isBefore(now);
     }).toList();
   }
 
@@ -471,22 +486,35 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
         } catch (_) {
           // Fallback to client-side calculation if backend RPC not available
           final invoices = await getInvoicesByUserId(userId);
-          final paidInvoices = invoices.where((inv) => inv.status == InvoiceStatus.paid).toList();
-          final unpaidInvoices = invoices.where((inv) => inv.status != InvoiceStatus.paid).toList();
-          final totalAmount = invoices.fold<double>(0, (sum, inv) => sum + inv.amount);
-          final totalPaid = paidInvoices.fold<double>(0, (sum, inv) => sum + inv.amount);
-          final totalUnpaid = unpaidInvoices.fold<double>(0, (sum, inv) => sum + inv.amount);
+          final paidInvoices = invoices
+              .where((inv) => inv.status == InvoiceStatus.paid)
+              .toList();
+          final unpaidInvoices = invoices
+              .where((inv) => inv.status != InvoiceStatus.paid)
+              .toList();
+          final totalAmount =
+              invoices.fold<double>(0, (sum, inv) => sum + inv.amount);
+          final totalPaid =
+              paidInvoices.fold<double>(0, (sum, inv) => sum + inv.amount);
+          final totalUnpaid =
+              unpaidInvoices.fold<double>(0, (sum, inv) => sum + inv.amount);
 
           return {
             'total_invoices': invoices.length,
             'paid_invoices': paidInvoices.length,
-            'pending_invoices': invoices.where((inv) => inv.status == InvoiceStatus.pending).length,
-            'overdue_invoices': invoices.where((inv) => inv.isOverdue && inv.status != InvoiceStatus.paid).length,
+            'pending_invoices': invoices
+                .where((inv) => inv.status == InvoiceStatus.pending)
+                .length,
+            'overdue_invoices': invoices
+                .where(
+                    (inv) => inv.isOverdue && inv.status != InvoiceStatus.paid)
+                .length,
             'unpaid_invoices': unpaidInvoices.length,
             'total_amount': totalAmount,
             'total_paid': totalPaid,
             'total_unpaid': totalUnpaid,
-            'collection_rate': totalAmount > 0 ? (totalPaid / totalAmount) * 100 : 0.0,
+            'collection_rate':
+                totalAmount > 0 ? (totalPaid / totalAmount) * 100 : 0.0,
           };
         }
       },
@@ -495,7 +523,8 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
 
   @override
   Future<String> generateInvoicePDF(String invoiceId) async {
-    throw UnimplementedError('PDF generation handled client-side or separate service');
+    throw UnimplementedError(
+        'PDF generation handled client-side or separate service');
   }
 
   @override
@@ -504,7 +533,8 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
   }
 
   @override
-  Future<void> recordPayment(String invoiceId, double amount, PaymentMethod method, String reference) async {
+  Future<void> recordPayment(String invoiceId, double amount,
+      PaymentMethod method, String reference) async {
     throw UnimplementedError('Payment recording handled by payment service');
   }
 
@@ -548,7 +578,8 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
   Future<Invoice> convertQuoteToInvoice(String invoiceId) async {
     return retryWithBackoff(
       operation: () async {
-        final request = pb.ConvertQuoteToInvoiceRequest()..invoiceId = invoiceId;
+        final request = pb.ConvertQuoteToInvoiceRequest()
+          ..invoiceId = invoiceId;
         final options = await grpcClient.callOptions;
         final response = await grpcClient.invoiceClient.convertQuoteToInvoice(
           request,
@@ -560,11 +591,14 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
   }
 
   @override
-  Future<TagUsersResponse> tagUsersToInvoice(String invoiceId, List<String> userIds, List<String> emails, List<String> phoneNumbers) async {
+  Future<TagUsersResponse> tagUsersToInvoice(
+      String invoiceId,
+      List<String> userIds,
+      List<String> emails,
+      List<String> phoneNumbers) async {
     return retryWithBackoff(
       operation: () async {
-        final request = pb.TagUsersToInvoiceRequest()
-          ..invoiceId = invoiceId;
+        final request = pb.TagUsersToInvoiceRequest()..invoiceId = invoiceId;
         request.userIds.addAll(userIds);
         request.emails.addAll(emails);
         request.phones.addAll(phoneNumbers);
@@ -618,7 +652,8 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
           options: options,
         );
 
-        final invoices = response.invoices.map((inv) => _fromProto(inv)).toList();
+        final invoices =
+            response.invoices.map((inv) => _fromProto(inv)).toList();
         final pagination = response.pagination;
 
         return PaginatedInvoiceResult(
@@ -634,7 +669,8 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
     );
   }
 
-  Future<String> uploadInvoiceImage(Uint8List data, String fileName, String contentType) async {
+  Future<String> uploadInvoiceImage(
+      Uint8List data, String fileName, String contentType) async {
     return retryWithBackoff(
       operation: () async {
         final request = pb.UploadInvoiceImageRequest()
@@ -678,14 +714,17 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
       }).toList();
     } else {
       // Create a default invoice item from the invoice amount
-      items = [InvoiceItem(
-        id: 'item_default',
-        name: 'Invoice Item',
-        description: proto.description.isNotEmpty ? proto.description : 'Invoice item',
-        quantity: 1,
-        unitPrice: proto.amount,
-        totalPrice: proto.amount,
-      )];
+      items = [
+        InvoiceItem(
+          id: 'item_default',
+          name: 'Invoice Item',
+          description:
+              proto.description.isNotEmpty ? proto.description : 'Invoice item',
+          quantity: 1,
+          unitPrice: proto.amount,
+          totalPrice: proto.amount,
+        )
+      ];
     }
 
     // Parse status from string
@@ -706,7 +745,8 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
     }
 
     // Calculate total amount from proto fields
-    final totalAmount = proto.totalAmount > 0 ? proto.totalAmount : proto.amount;
+    final totalAmount =
+        proto.totalAmount > 0 ? proto.totalAmount : proto.amount;
 
     return Invoice(
       id: proto.id,
@@ -724,17 +764,28 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
       // Preserve the chosen document type (invoice/request/quote) on reload.
       type: _invoiceTypeFromString(proto.invoiceType),
       quoteStatus: proto.quoteStatus,
-      quoteAcceptedAt: proto.quoteAcceptedAt.isNotEmpty ? DateTime.tryParse(proto.quoteAcceptedAt) : null,
-      quoteDeclinedAt: proto.quoteDeclinedAt.isNotEmpty ? DateTime.tryParse(proto.quoteDeclinedAt) : null,
-      convertedAt: proto.convertedAt.isNotEmpty ? DateTime.tryParse(proto.convertedAt) : null,
-      createdAt: (proto.createdAt.isNotEmpty ? DateTime.tryParse(proto.createdAt) : null) ?? DateTime.now(),
-      dueDate: proto.dueDate.isNotEmpty ? DateTime.tryParse(proto.dueDate) : null,
+      quoteAcceptedAt: proto.quoteAcceptedAt.isNotEmpty
+          ? DateTime.tryParse(proto.quoteAcceptedAt)
+          : null,
+      quoteDeclinedAt: proto.quoteDeclinedAt.isNotEmpty
+          ? DateTime.tryParse(proto.quoteDeclinedAt)
+          : null,
+      convertedAt: proto.convertedAt.isNotEmpty
+          ? DateTime.tryParse(proto.convertedAt)
+          : null,
+      createdAt: (proto.createdAt.isNotEmpty
+              ? DateTime.tryParse(proto.createdAt)
+              : null) ??
+          DateTime.now(),
+      dueDate:
+          proto.dueDate.isNotEmpty ? DateTime.tryParse(proto.dueDate) : null,
       paidAt: proto.paidAt.isNotEmpty ? DateTime.tryParse(proto.paidAt) : null,
       fromUserId: proto.userId,
       toUserId: proto.accountId.isNotEmpty ? proto.accountId : null,
       toEmail: proto.recipientEmail.isNotEmpty ? proto.recipientEmail : null,
       toName: proto.recipientName.isNotEmpty ? proto.recipientName : null,
-      paymentReference: proto.paymentReference.isNotEmpty ? proto.paymentReference : null,
+      paymentReference:
+          proto.paymentReference.isNotEmpty ? proto.paymentReference : null,
       items: items,
       notes: proto.notes.isNotEmpty ? proto.notes : null,
       taxAmount: proto.tax > 0 ? proto.tax : null,
@@ -746,10 +797,12 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
       // received invoice still shows who sent it.
       recipientDetails: proto.hasSender()
           ? _partyToAddress(proto.sender)
-          : ((proto.creatorFirstName.isNotEmpty || proto.creatorLastName.isNotEmpty)
+          : ((proto.creatorFirstName.isNotEmpty ||
+                  proto.creatorLastName.isNotEmpty)
               ? AddressDetails(
                   contactName:
-                      '${proto.creatorFirstName} ${proto.creatorLastName}'.trim(),
+                      '${proto.creatorFirstName} ${proto.creatorLastName}'
+                          .trim(),
                 )
               : null),
       // payerDetails = the RECEIVER/customer ("Bill To"). Prefer the structured
@@ -758,7 +811,9 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
           ? _partyToAddress(proto.receiver)
           : ((proto.recipientName.isNotEmpty || proto.recipientEmail.isNotEmpty)
               ? AddressDetails(
-                  contactName: proto.recipientName.isNotEmpty ? proto.recipientName : null,
+                  contactName: proto.recipientName.isNotEmpty
+                      ? proto.recipientName
+                      : null,
                   email: proto.recipientEmail.isNotEmpty
                       ? proto.recipientEmail
                       : (proto.payerEmail.isNotEmpty ? proto.payerEmail : null),
@@ -773,21 +828,31 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
           ? proto.sender.logoUrl
           : (proto.recipientLogoUrl.isNotEmpty ? proto.recipientLogoUrl : null),
       isUnlocked: proto.isUnlocked,
-      unlockPaymentRef: proto.unlockPaymentRef.isNotEmpty ? proto.unlockPaymentRef : null,
+      unlockPaymentRef:
+          proto.unlockPaymentRef.isNotEmpty ? proto.unlockPaymentRef : null,
       taggedUsers: proto.taggedUsers.isNotEmpty
-          ? proto.taggedUsers.map((tu) => TaggedUserInfo(
-              userId: tu.userId,
-              username: tu.username,
-              firstName: tu.firstName,
-              lastName: tu.lastName,
-              profilePicture: tu.profilePicture.isNotEmpty ? tu.profilePicture : null,
-              status: tu.status.isNotEmpty ? tu.status : 'pending',
-              taggedAt: tu.taggedAt.isNotEmpty ? DateTime.tryParse(tu.taggedAt) : null,
-              viewedAt: tu.viewedAt.isNotEmpty ? DateTime.tryParse(tu.viewedAt) : null,
-              paidAt: tu.paidAt.isNotEmpty ? DateTime.tryParse(tu.paidAt) : null,
-              shareAmount: tu.shareAmount,
-              amountPaid: tu.amountPaid,
-            )).toList()
+          ? proto.taggedUsers
+              .map((tu) => TaggedUserInfo(
+                    userId: tu.userId,
+                    username: tu.username,
+                    firstName: tu.firstName,
+                    lastName: tu.lastName,
+                    profilePicture:
+                        tu.profilePicture.isNotEmpty ? tu.profilePicture : null,
+                    status: tu.status.isNotEmpty ? tu.status : 'pending',
+                    taggedAt: tu.taggedAt.isNotEmpty
+                        ? DateTime.tryParse(tu.taggedAt)
+                        : null,
+                    viewedAt: tu.viewedAt.isNotEmpty
+                        ? DateTime.tryParse(tu.viewedAt)
+                        : null,
+                    paidAt: tu.paidAt.isNotEmpty
+                        ? DateTime.tryParse(tu.paidAt)
+                        : null,
+                    shareAmount: tu.shareAmount,
+                    amountPaid: tu.amountPaid,
+                  ))
+              .toList()
           : null,
     );
   }
@@ -806,8 +871,14 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
     final phone = d?.phone ?? '';
     final logo = logoUrl ?? '';
     final hasAny = [
-      businessName, contactName, email, phone, logo,
-      d?.addressLine1 ?? '', d?.city ?? '', d?.country ?? '',
+      businessName,
+      contactName,
+      email,
+      phone,
+      logo,
+      d?.addressLine1 ?? '',
+      d?.city ?? '',
+      d?.country ?? '',
     ].any((v) => v.trim().isNotEmpty);
     if (!hasAny) return null;
     return pb.InvoiceParty()
@@ -860,7 +931,8 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
     if (taggedUsers.isEmpty) return backendStatus;
     // Only derive from pending invoices - if backend says paid, trust it
     if (backendStatus != InvoiceStatus.pending) return backendStatus;
-    final paidCount = taggedUsers.where((u) => u.status.toLowerCase() == 'paid').length;
+    final paidCount =
+        taggedUsers.where((u) => u.status.toLowerCase() == 'paid').length;
     if (paidCount > 0 && paidCount < taggedUsers.length) {
       return InvoiceStatus.partiallyPaid;
     }

@@ -6,8 +6,10 @@ import '../../domain/entities/bulk_sms_entities.dart';
 class BulkSmsMappers {
   const BulkSmsMappers._();
 
-  static DateTime? _ts(bool has, dynamic ts) =>
-      has ? DateTime.fromMillisecondsSinceEpoch(ts.seconds.toInt() * 1000, isUtc: true) : null;
+  static DateTime? _ts(bool has, dynamic ts) => has
+      ? DateTime.fromMillisecondsSinceEpoch(ts.seconds.toInt() * 1000,
+          isUtc: true)
+      : null;
 
   static SmsBalanceEntity balance(pb.SmsBalance p) => SmsBalanceEntity(
         creditsRemaining: p.creditsRemaining,

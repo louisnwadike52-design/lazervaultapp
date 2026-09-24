@@ -16,7 +16,7 @@ class CryptoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPositive = crypto.priceChangePercentage24h >= 0;
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -25,13 +25,12 @@ class CryptoCard extends StatelessWidget {
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -50,7 +49,7 @@ class CryptoCard extends StatelessWidget {
               ),
             ),
             SizedBox(width: 12.w),
-            
+
             // Crypto Info
             Expanded(
               child: Column(
@@ -100,7 +99,7 @@ class CryptoCard extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // Price Info
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -189,4 +188,4 @@ class CryptoCard extends StatelessWidget {
         return Icons.currency_exchange;
     }
   }
-} 
+}

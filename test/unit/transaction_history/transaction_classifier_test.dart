@@ -413,10 +413,11 @@ void main() {
           TransactionServiceType.fee);
     });
 
-    test('a genuine insurance row on the same service still says insurance', () {
+    test('a genuine insurance row on the same service still says insurance',
+        () {
       expect(
-        generateTransactionTitle('insurance_settle', 'debit',
-            'Insurance premium', 'INS-123', svc),
+        generateTransactionTitle(
+            'insurance_settle', 'debit', 'Insurance premium', 'INS-123', svc),
         'Insurance Payment',
       );
     });

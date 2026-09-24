@@ -59,8 +59,7 @@ class SubscriptionRepositoryImpl implements ISubscriptionRepository {
   }
 
   @override
-  Future<Either<Failure, SubscriptionSpendingEntity>>
-      getSubscriptionSpending({
+  Future<Either<Failure, SubscriptionSpendingEntity>> getSubscriptionSpending({
     int months = 6,
   }) async {
     try {

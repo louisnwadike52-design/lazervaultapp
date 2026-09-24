@@ -87,7 +87,8 @@ class ExternalBankTransaction {
       id: id ?? this.id,
       userId: userId ?? this.userId,
       linkedBankAccountId: linkedBankAccountId ?? this.linkedBankAccountId,
-      externalTransactionId: externalTransactionId ?? this.externalTransactionId,
+      externalTransactionId:
+          externalTransactionId ?? this.externalTransactionId,
       externalAccountId: externalAccountId ?? this.externalAccountId,
       amount: amount ?? this.amount,
       currency: currency ?? this.currency,

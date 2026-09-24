@@ -1,6 +1,7 @@
 import 'package:lazervault/src/features/identity/domain/entities/device_permission.dart';
 import 'package:lazervault/src/generated/user.pb.dart' as pb;
-import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart' as timestamppb;
+import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart'
+    as timestamppb;
 
 class DevicePermissionModel extends DevicePermission {
   const DevicePermissionModel({

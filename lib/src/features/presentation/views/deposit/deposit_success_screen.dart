@@ -10,7 +10,6 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 part 'deposit_success_screen_widgets.dart';
 
-
 class DepositSuccessScreen extends StatefulWidget {
   const DepositSuccessScreen({super.key});
 
@@ -25,7 +24,7 @@ class _DepositSuccessScreenState extends State<DepositSuccessScreen>
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
   late Animation<double> _checkAnimation;
-  
+
   Map<String, dynamic> _currency = {};
   Map<String, dynamic> _paymentMethod = {};
   double _amount = 0.0;
@@ -53,8 +52,8 @@ class _DepositSuccessScreenState extends State<DepositSuccessScreen>
       final userId = authCubit.currentProfile?.user.id;
       if (userId != null) {
         context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
-          userId: userId,
-        );
+              userId: userId,
+            );
       }
     } catch (e) {
       print('[DepositSuccessScreen] Could not refresh balances: $e');
@@ -66,24 +65,25 @@ class _DepositSuccessScreenState extends State<DepositSuccessScreen>
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    
+
     _checkAnimationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
     );
-    
+
     _checkAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _checkAnimationController, curve: Curves.easeInOut),
+      CurvedAnimation(
+          parent: _checkAnimationController, curve: Curves.easeInOut),
     );
-    
+
     _animationController.forward();
     Future.delayed(const Duration(milliseconds: 500), () {
       _checkAnimationController.forward();
@@ -277,8 +277,9 @@ class _DepositSuccessScreenState extends State<DepositSuccessScreen>
 
   Widget _buildTransactionDetails() {
     final now = DateTime.now();
-    final transactionId = 'TXN${now.millisecondsSinceEpoch.toString().substring(8)}';
-    
+    final transactionId =
+        'TXN${now.millisecondsSinceEpoch.toString().substring(8)}';
+
     return Container(
       height: 320.h, // Increased height to make it more prominent
       padding: EdgeInsets.all(20.w),
@@ -310,14 +311,19 @@ class _DepositSuccessScreenState extends State<DepositSuccessScreen>
               child: Column(
                 children: [
                   _buildDetailRow('Transaction ID', transactionId),
-                  _buildDetailRow('Payment Method', _paymentMethod['name'] ?? 'Bank Transfer'),
-                  _buildDetailRow('Processing Time', _paymentMethod['processingTime'] ?? 'Instant'),
-                  _buildDetailRow('Date & Time', '${now.day}/${now.month}/${now.year} at ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}'),
+                  _buildDetailRow('Payment Method',
+                      _paymentMethod['name'] ?? 'Bank Transfer'),
+                  _buildDetailRow('Processing Time',
+                      _paymentMethod['processingTime'] ?? 'Instant'),
+                  _buildDetailRow('Date & Time',
+                      '${now.day}/${now.month}/${now.year} at ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}'),
                   _buildDetailRow('Status', 'Completed', isHighlighted: true),
                   _buildDetailRow('Currency', _currency['name'] ?? 'US Dollar'),
-                  _buildDetailRow('Exchange Rate', '1.00 ${_currency['code'] ?? 'USD'}'),
+                  _buildDetailRow(
+                      'Exchange Rate', '1.00 ${_currency['code'] ?? 'USD'}'),
                   _buildDetailRow('Fee', _paymentMethod['fee'] ?? 'Free'),
-                  _buildDetailRow('Reference', 'REF${now.millisecondsSinceEpoch.toString().substring(6)}'),
+                  _buildDetailRow('Reference',
+                      'REF${now.millisecondsSinceEpoch.toString().substring(6)}'),
                   _buildDetailRow('Network', 'SWIFT'),
                 ],
               ),
@@ -328,7 +334,8 @@ class _DepositSuccessScreenState extends State<DepositSuccessScreen>
     );
   }
 
-  Widget _buildDetailRow(String label, String value, {bool isHighlighted = false}) {
+  Widget _buildDetailRow(String label, String value,
+      {bool isHighlighted = false}) {
     return Padding(
       padding: EdgeInsets.only(bottom: 12.h),
       child: Row(
@@ -370,7 +377,8 @@ class _DepositSuccessScreenState extends State<DepositSuccessScreen>
       children: [
         Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [Colors.blue[700]!, Colors.blue[500]!]),
+            gradient:
+                LinearGradient(colors: [Colors.blue[700]!, Colors.blue[500]!]),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
@@ -464,7 +472,7 @@ class _DepositSuccessScreenState extends State<DepositSuccessScreen>
       'CNY': 'https://flagcdn.com/w320/cn.png',
       'INR': 'https://flagcdn.com/w320/in.png',
     };
-    
+
     return Container(
       width: size,
       height: size * 0.7,
@@ -495,4 +503,4 @@ class _DepositSuccessScreenState extends State<DepositSuccessScreen>
       ),
     );
   }
-} 
+}

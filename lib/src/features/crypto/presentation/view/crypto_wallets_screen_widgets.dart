@@ -176,19 +176,22 @@ class CryptoWalletDetailScreen extends StatelessWidget {
                   if (wallet.address.isNotEmpty)
                     GestureDetector(
                       onTap: () async {
-                        await Clipboard.setData(ClipboardData(text: wallet.address));
+                        await Clipboard.setData(
+                            ClipboardData(text: wallet.address));
                         Get.snackbar(
                           'Copied',
                           'Deposit address copied to clipboard',
                           snackPosition: SnackPosition.BOTTOM,
-                          backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.9),
+                          backgroundColor:
+                              const Color(0xFF4E03D0).withValues(alpha: 0.9),
                           colorText: Colors.white,
                           duration: const Duration(seconds: 2),
                         );
                       },
                       child: Container(
                         padding: EdgeInsets.all(8.w),
-                        child: Icon(Icons.copy, color: const Color(0xFF4E03D0), size: 18.sp),
+                        child: Icon(Icons.copy,
+                            color: const Color(0xFF4E03D0), size: 18.sp),
                       ),
                     ),
                 ],
@@ -197,7 +200,9 @@ class CryptoWalletDetailScreen extends StatelessWidget {
                 SizedBox(height: 16.h),
                 Row(
                   children: [
-                    Icon(Icons.link, color: Colors.white.withValues(alpha: 0.5), size: 16.sp),
+                    Icon(Icons.link,
+                        color: Colors.white.withValues(alpha: 0.5),
+                        size: 16.sp),
                     SizedBox(width: 8.w),
                     Text(
                       'Network: ${wallet.chain}',

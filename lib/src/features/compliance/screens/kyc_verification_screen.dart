@@ -116,12 +116,14 @@ class _KYCVerificationScreenState extends State<KYCVerificationScreen> {
         const SizedBox(height: 16),
         ListTile(
           title: const Text('Date of Birth'),
-          subtitle: Text(_dateOfBirth?.toString().split(' ')[0] ?? 'Select date'),
+          subtitle:
+              Text(_dateOfBirth?.toString().split(' ')[0] ?? 'Select date'),
           trailing: const Icon(Icons.calendar_today),
           onTap: () async {
             final date = await showDatePicker(
               context: context,
-              initialDate: DateTime.now().subtract(const Duration(days: 6570)), // 18 years ago
+              initialDate: DateTime.now()
+                  .subtract(const Duration(days: 6570)), // 18 years ago
               firstDate: DateTime(1900),
               lastDate: DateTime.now(),
             );
@@ -194,7 +196,8 @@ class _KYCVerificationScreenState extends State<KYCVerificationScreen> {
           title: 'Front of Document',
           image: _frontDocument,
           onTap: () async {
-            final image = await _imagePicker.pickImage(source: ImageSource.camera);
+            final image =
+                await _imagePicker.pickImage(source: ImageSource.camera);
             if (image != null) {
               setState(() {
                 _frontDocument = image;
@@ -208,7 +211,8 @@ class _KYCVerificationScreenState extends State<KYCVerificationScreen> {
             title: 'Back of Document',
             image: _backDocument,
             onTap: () async {
-              final image = await _imagePicker.pickImage(source: ImageSource.camera);
+              final image =
+                  await _imagePicker.pickImage(source: ImageSource.camera);
               if (image != null) {
                 setState(() {
                   _backDocument = image;
@@ -498,7 +502,8 @@ class _KYCVerificationScreenState extends State<KYCVerificationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('KYC Verification - ${widget.targetLevel.toString().split('.').last}'),
+        title: Text(
+            'KYC Verification - ${widget.targetLevel.toString().split('.').last}'),
       ),
       body: Form(
         key: _formKey,

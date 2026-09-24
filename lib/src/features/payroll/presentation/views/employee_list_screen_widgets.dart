@@ -78,9 +78,13 @@ class _EmployeeDetailsSheet extends StatelessWidget {
                   _buildDetailRow(
                       'Employment Type', employee.employmentTypeDisplay),
                   _buildDetailRow('Pay Rate', employee.formattedPayRate),
-                  _buildDetailRow('Pay Frequency', employee.payFrequencyDisplay),
-                  _buildDetailRow('Payout',
-                      employee.isInternalPayout ? 'Lazervault wallet' : 'Bank transfer'),
+                  _buildDetailRow(
+                      'Pay Frequency', employee.payFrequencyDisplay),
+                  _buildDetailRow(
+                      'Payout',
+                      employee.isInternalPayout
+                          ? 'Lazervault wallet'
+                          : 'Bank transfer'),
                   if (!employee.isInternalPayout) ...[
                     _buildDetailRow('Bank', employee.bankName),
                     _buildDetailRow('Account No.', employee.bankAccountNumber),

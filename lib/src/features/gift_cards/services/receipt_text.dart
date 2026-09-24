@@ -1,4 +1,5 @@
-import '../presentation/view/widgets/rich_card_text.dart' show decodeHtmlEntities;
+import '../presentation/view/widgets/rich_card_text.dart'
+    show decodeHtmlEntities;
 
 /// Preparing provider prose for a receipt.
 ///

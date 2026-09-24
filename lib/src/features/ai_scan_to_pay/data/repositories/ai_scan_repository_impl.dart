@@ -68,7 +68,8 @@ class AiScanRepositoryImpl implements AiScanRepository {
   }
 
   @override
-  Future<Map<String, dynamic>> extractDataFromImage(String imagePath, ScanType scanType) async {
+  Future<Map<String, dynamic>> extractDataFromImage(
+      String imagePath, ScanType scanType) async {
     if (_currentSessionId == null) {
       throw Exception('No active scan session');
     }
@@ -92,12 +93,15 @@ class AiScanRepositoryImpl implements AiScanRepository {
   }
 
   @override
-  Future<AiChatMessage> processAiResponse(String sessionId, String userMessage, Map<String, dynamic>? extractedData) async {
-    return await remoteDataSource.processAiResponse(sessionId, userMessage, extractedData);
+  Future<AiChatMessage> processAiResponse(String sessionId, String userMessage,
+      Map<String, dynamic>? extractedData) async {
+    return await remoteDataSource.processAiResponse(
+        sessionId, userMessage, extractedData);
   }
 
   @override
-  Future<PaymentInstruction> generatePaymentInstruction(Map<String, dynamic> extractedData, ScanType scanType) async {
+  Future<PaymentInstruction> generatePaymentInstruction(
+      Map<String, dynamic> extractedData, ScanType scanType) async {
     if (_currentSessionId == null) {
       throw Exception('No active scan session');
     }
@@ -118,7 +122,8 @@ class AiScanRepositoryImpl implements AiScanRepository {
 
     final userId = await _getUserId();
     final model = PaymentInstructionModel.fromEntity(instruction);
-    return await remoteDataSource.processPayment(model, userId, _currentSessionId!);
+    return await remoteDataSource.processPayment(
+        model, userId, _currentSessionId!);
   }
 
   @override
@@ -128,11 +133,13 @@ class AiScanRepositoryImpl implements AiScanRepository {
       return false;
     }
 
-    if (paymentData['recipient'] == null || paymentData['recipient'].toString().isEmpty) {
+    if (paymentData['recipient'] == null ||
+        paymentData['recipient'].toString().isEmpty) {
       return false;
     }
 
-    if (paymentData['currency'] == null || paymentData['currency'].toString().isEmpty) {
+    if (paymentData['currency'] == null ||
+        paymentData['currency'].toString().isEmpty) {
       return false;
     }
 
@@ -140,7 +147,8 @@ class AiScanRepositoryImpl implements AiScanRepository {
   }
 
   @override
-  Future<BankDetails> scanBankDetails(String imagePath, String sessionId) async {
+  Future<BankDetails> scanBankDetails(
+      String imagePath, String sessionId) async {
     final userId = await _getUserId();
     final accessToken = await secureStorage.getAccessToken();
 

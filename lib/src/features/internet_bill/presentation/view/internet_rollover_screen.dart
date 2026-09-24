@@ -20,8 +20,7 @@ class InternetRolloverScreen extends StatefulWidget {
   const InternetRolloverScreen({super.key});
 
   @override
-  State<InternetRolloverScreen> createState() =>
-      _InternetRolloverScreenState();
+  State<InternetRolloverScreen> createState() => _InternetRolloverScreenState();
 }
 
 class _InternetRolloverScreenState extends State<InternetRolloverScreen> {
@@ -41,8 +40,8 @@ class _InternetRolloverScreenState extends State<InternetRolloverScreen> {
         elevation: 0,
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: Icon(Icons.arrow_back_ios_new,
-              color: Colors.white, size: 20.sp),
+          icon:
+              Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20.sp),
         ),
         title: Text('Internet Rollover',
             style: TextStyle(
@@ -70,8 +69,7 @@ class _InternetRolloverScreenState extends State<InternetRolloverScreen> {
           // the Loading state for a row we already have.
         },
       ),
-      body:
-          BlocConsumer<InternetAutoRechargeCubit, InternetAutoRechargeState>(
+      body: BlocConsumer<InternetAutoRechargeCubit, InternetAutoRechargeState>(
         listener: (context, state) {
           if (state is InternetAutoRechargeError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -106,8 +104,7 @@ class _InternetRolloverScreenState extends State<InternetRolloverScreen> {
           return RefreshIndicator(
             color: const Color(0xFF10B981),
             backgroundColor: const Color(0xFF1F1F1F),
-            onRefresh: () =>
-                context.read<InternetAutoRechargeCubit>().load(),
+            onRefresh: () => context.read<InternetAutoRechargeCubit>().load(),
             child: ListView.builder(
               padding: EdgeInsets.all(16.w),
               physics: const AlwaysScrollableScrollPhysics(),
@@ -139,8 +136,7 @@ class _InternetRolloverScreenState extends State<InternetRolloverScreen> {
                   'Schedule a recurring internet purchase for a saved ISP contact. Tap "New Rollover" below to pick a contact and package.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                      fontSize: 14.sp,
-                      color: const Color(0xFF9CA3AF))),
+                      fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
               SizedBox(height: 24.h),
               Builder(
                 builder: (ctx) => ElevatedButton.icon(
@@ -180,8 +176,8 @@ class _InternetRolloverScreenState extends State<InternetRolloverScreen> {
       executionHour: ar.executionHour,
       executionMinute: ar.executionMinute,
       failureCount: ar.failureCount,
-      leadingIcon: Icon(Icons.wifi,
-          color: const Color(0xFF4E03D0), size: 20.sp),
+      leadingIcon:
+          Icon(Icons.wifi, color: const Color(0xFF4E03D0), size: 20.sp),
       onTap: () => _showDetailsDialog(context, ar),
       onPause: isActive ? () => cubit.pause(ar.id) : null,
       onResume: !isActive ? () => cubit.resume(ar.id) : null,
@@ -274,8 +270,7 @@ class _InternetRolloverScreenState extends State<InternetRolloverScreen> {
               ),
             ),
             Container(
-              padding:
-                  EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
               decoration: BoxDecoration(
                 color: statusColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10.r),
@@ -311,8 +306,7 @@ class _InternetRolloverScreenState extends State<InternetRolloverScreen> {
                 _detailRow('Next run', next.toString().split('.').first),
               if (last != null)
                 _detailRow('Last run', last.toString().split('.').first),
-              _detailRow('Failures',
-                  '${ar.failureCount} / ${ar.maxRetries}'),
+              _detailRow('Failures', '${ar.failureCount} / ${ar.maxRetries}'),
             ],
           ),
         ),
@@ -385,8 +379,7 @@ class _InternetRolloverScreenState extends State<InternetRolloverScreen> {
           ),
           SizedBox(height: 16.h),
           ElevatedButton(
-            onPressed: () =>
-                context.read<InternetAutoRechargeCubit>().load(),
+            onPressed: () => context.read<InternetAutoRechargeCubit>().load(),
             style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4E03D0)),
             child: const Text('Retry'),
@@ -402,20 +395,18 @@ class _InternetRolloverScreenState extends State<InternetRolloverScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text('Delete Rollover',
             style: TextStyle(color: Colors.white, fontSize: 17.sp)),
         content: Text('Are you sure you want to delete this rollover?',
-            style: TextStyle(
-                color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
+            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
         actions: [
           TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
               child: Text('Cancel',
                   style: TextStyle(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 14.sp))),
+                      color: const Color(0xFF9CA3AF), fontSize: 14.sp))),
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();

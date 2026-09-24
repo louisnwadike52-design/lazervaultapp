@@ -21,8 +21,7 @@ class TransferHistoryItem extends StatelessWidget {
   /// history sheet, the dashboard history and the receipt agree.
   TransferBankDisplay? get _bankDisplay => TransferBankDisplay.resolve(
         transaction.metadata,
-        isTransfer:
-            transaction.serviceType == TransactionServiceType.transfer,
+        isTransfer: transaction.serviceType == TransactionServiceType.transfer,
       );
 
   Widget _buildLeadingAvatar({required bool isIncoming}) {
@@ -74,7 +73,8 @@ class TransferHistoryItem extends StatelessWidget {
   /// "Mononym" → "M", empty/whitespace → "".
   static String _initialsFrom(String name) {
     if (name.isEmpty) return '';
-    final parts = name.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    final parts =
+        name.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
     if (parts.isEmpty) return '';
     if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
     return (parts.first.substring(0, 1) + parts.last.substring(0, 1))
@@ -169,7 +169,8 @@ class TransferHistoryItem extends StatelessWidget {
                           vertical: 2.h,
                         ),
                         decoration: BoxDecoration(
-                          color: transaction.status.color.withValues(alpha: 0.15),
+                          color:
+                              transaction.status.color.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                         child: Text(
@@ -193,9 +194,7 @@ class TransferHistoryItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
-                color: isIncoming
-                    ? const Color(0xFF10B981)
-                    : Colors.black87,
+                color: isIncoming ? const Color(0xFF10B981) : Colors.black87,
               ),
             ),
 
@@ -331,16 +330,15 @@ class TransferHistoryItem extends StatelessWidget {
                       onTap: () {
                         Navigator.pop(ctx); // close action sheet
                         Get.back(); // close the history sheet
-                        final amountMinor =
-                            (transaction.amount * 100).toInt();
+                        final amountMinor = (transaction.amount * 100).toInt();
                         // Carry the payee's Lazervault user id (stamped into
                         // the transaction metadata by accounts-service) so a
                         // save dedups by internal_user_id — the stable identity
                         // — instead of relying on account-number resolution.
-                        final counterpartyUid = (transaction
-                                    .metadata?['counterparty_user_id'] ??
-                                transaction.metadata?['recipient_user_id'])
-                            ?.toString();
+                        final counterpartyUid =
+                            (transaction.metadata?['counterparty_user_id'] ??
+                                    transaction.metadata?['recipient_user_id'])
+                                ?.toString();
                         final recipient = RecipientModel(
                           id: '',
                           name: transaction.counterpartyName!,

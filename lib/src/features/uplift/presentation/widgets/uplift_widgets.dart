@@ -225,9 +225,7 @@ class UpAppBarIconButton extends StatelessWidget {
         child: Icon(icon, color: color, size: 17.sp),
       ),
     );
-    return tooltip == null
-        ? button
-        : Tooltip(message: tooltip!, child: button);
+    return tooltip == null ? button : Tooltip(message: tooltip!, child: button);
   }
 }
 

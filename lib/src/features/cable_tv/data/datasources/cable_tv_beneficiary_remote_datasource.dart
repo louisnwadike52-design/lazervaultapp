@@ -145,8 +145,7 @@ class CableTVBeneficiaryRemoteDataSourceImpl
   @override
   Future<void> deleteBeneficiary(String beneficiaryId) async {
     try {
-      final request = pb.DeleteCableTVBeneficiaryRequest()
-        ..id = beneficiaryId;
+      final request = pb.DeleteCableTVBeneficiaryRequest()..id = beneficiaryId;
       final options = await grpcClient.callOptions;
       await grpcClient.utilityPaymentsClient
           .deleteCableTVBeneficiary(request, options: options);
@@ -161,8 +160,7 @@ class CableTVBeneficiaryRemoteDataSourceImpl
     String? nickname,
   }) async {
     try {
-      final request = pb.UpdateCableTVBeneficiaryRequest()
-        ..id = beneficiaryId;
+      final request = pb.UpdateCableTVBeneficiaryRequest()..id = beneficiaryId;
       if (nickname != null) request.nickname = nickname;
       final options = await grpcClient.callOptions;
       final response = await grpcClient.utilityPaymentsClient

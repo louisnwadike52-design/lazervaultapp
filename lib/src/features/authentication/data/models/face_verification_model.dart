@@ -20,7 +20,8 @@ class FaceVerificationModel extends FaceVerificationEntity {
       confidence: response.confidence,
       threshold: response.threshold,
       distance: response.distance,
-      matchedFaceId: response.matchedFaceId.isNotEmpty ? response.matchedFaceId : null,
+      matchedFaceId:
+          response.matchedFaceId.isNotEmpty ? response.matchedFaceId : null,
       message: response.message,
       error: response.error.isNotEmpty ? response.error : null,
     );

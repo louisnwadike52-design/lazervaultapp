@@ -41,7 +41,8 @@ class AccountFrozen extends AccountActionsState {
   final AccountDetailsEntity accountDetails;
   final String message;
 
-  const AccountFrozen(this.accountDetails, {this.message = 'Card frozen successfully'});
+  const AccountFrozen(this.accountDetails,
+      {this.message = 'Card frozen successfully'});
 
   @override
   List<Object?> get props => [accountDetails, message];
@@ -52,7 +53,8 @@ class AccountUnfrozen extends AccountActionsState {
   final AccountDetailsEntity accountDetails;
   final String message;
 
-  const AccountUnfrozen(this.accountDetails, {this.message = 'Card unfrozen successfully'});
+  const AccountUnfrozen(this.accountDetails,
+      {this.message = 'Card unfrozen successfully'});
 
   @override
   List<Object?> get props => [accountDetails, message];
@@ -73,7 +75,8 @@ class SecuritySettingsUpdated extends AccountActionsState {
   final AccountDetailsEntity accountDetails;
   final String message;
 
-  const SecuritySettingsUpdated(this.accountDetails, {
+  const SecuritySettingsUpdated(
+    this.accountDetails, {
     this.message = 'Security settings updated',
   });
 
@@ -96,7 +99,8 @@ class SpendingLimitsUpdated extends AccountActionsState {
   final AccountDetailsEntity accountDetails;
   final String message;
 
-  const SpendingLimitsUpdated(this.accountDetails, {
+  const SpendingLimitsUpdated(
+    this.accountDetails, {
     this.message = 'Spending limits updated',
   });
 

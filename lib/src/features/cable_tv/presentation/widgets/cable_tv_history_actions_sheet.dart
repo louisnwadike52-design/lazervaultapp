@@ -57,8 +57,7 @@ class CableTVHistoryActionsSheet {
         for (final b in list) {
           if (b.smartCardNumber == smartCardNumber &&
               (providerCode.isEmpty ||
-                  b.providerCode.toLowerCase() ==
-                      providerCode.toLowerCase())) {
+                  b.providerCode.toLowerCase() == providerCode.toLowerCase())) {
             existingId = b.id;
             existingNickname = b.nickname;
             existingBeneficiary = b;
@@ -77,8 +76,7 @@ class CableTVHistoryActionsSheet {
     return BillHistoryActionsSheet.show(
       context,
       title: smartCardNumber.isEmpty ? 'Cable TV payment' : smartCardNumber,
-      subtitle:
-          '₦${p.amount.toStringAsFixed(2)} · ${_statusLabel(p)}',
+      subtitle: '₦${p.amount.toStringAsFixed(2)} · ${_statusLabel(p)}',
       actions: [
         BillHistoryAction(
           icon: Icons.receipt_long,
@@ -248,8 +246,7 @@ class CableTVHistoryActionsSheet {
                 ? Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle,
-                          color: _success, size: 16.sp),
+                      Icon(Icons.check_circle, color: _success, size: 16.sp),
                       SizedBox(width: 4.w),
                       Text(
                         'Saved',
@@ -273,8 +270,10 @@ class CableTVHistoryActionsSheet {
               await SaveCableTVBeneficiarySheet.show(
                 ctx,
                 smartCardNumber: smartCardNumber,
-                providerCode: providerCode.isNotEmpty ? providerCode : 'UNKNOWN',
-                providerName: providerName.isNotEmpty ? providerName : 'Unknown',
+                providerCode:
+                    providerCode.isNotEmpty ? providerCode : 'UNKNOWN',
+                providerName:
+                    providerName.isNotEmpty ? providerName : 'Unknown',
                 customerName: p.customerName,
                 existingBeneficiaryId: existingId,
                 existingNickname: existingNickname,
@@ -288,7 +287,6 @@ class CableTVHistoryActionsSheet {
   /// Save-gate for Reminder + Auto-Renew — both require a persisted
   /// beneficiary. Returns true when the contact is already saved or
   /// is saved inline; false when the user dismisses the sheet.
-
 
   /// Minimal `CableTVProviderEntity` assembled from history-row data.
   /// The smart-card-input screen only reads `serviceId` (for API calls)

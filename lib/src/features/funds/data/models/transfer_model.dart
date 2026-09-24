@@ -6,7 +6,6 @@ import 'package:lazervault/src/features/funds/domain/entities/transfer_entity.da
 
 // Correct class name to match usage (Model extends Entity)
 class InitiateTransferResponseModel extends TransferEntity {
-
   // Constructor now calls super
   const InitiateTransferResponseModel({
     required super.transferId,
@@ -38,4 +37,4 @@ class InitiateTransferResponseModel extends TransferEntity {
   }
 
   // props getter is inherited from TransferEntity
-} 
+}

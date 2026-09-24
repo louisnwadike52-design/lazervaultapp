@@ -5,7 +5,8 @@ import 'package:lazervault/src/features/transaction_history/utils/transaction_ex
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class ExportBottomSheet extends StatefulWidget {
-  final Future<void> Function(DateTime startDate, DateTime endDate, ExportFormat format) onExport;
+  final Future<void> Function(
+      DateTime startDate, DateTime endDate, ExportFormat format) onExport;
 
   const ExportBottomSheet({super.key, required this.onExport});
 
@@ -14,7 +15,8 @@ class ExportBottomSheet extends StatefulWidget {
 
   static Future<void> show(
     BuildContext context, {
-    required Future<void> Function(DateTime startDate, DateTime endDate, ExportFormat format)
+    required Future<void> Function(
+            DateTime startDate, DateTime endDate, ExportFormat format)
         onExport,
   }) {
     return showModalBottomSheet(
@@ -73,14 +75,16 @@ class _ExportBottomSheetState extends State<ExportBottomSheet> {
     setState(() => _isExporting = true);
     try {
       // Set endDate to end of day
-      final endOfDay = DateTime(_endDate.year, _endDate.month, _endDate.day, 23, 59, 59);
+      final endOfDay =
+          DateTime(_endDate.year, _endDate.month, _endDate.day, 23, 59, 59);
       await widget.onExport(_startDate, endOfDay, _selectedFormat);
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Export failed: $e', style: TextStyle(fontSize: 13.sp)),
+            content:
+                Text('Export failed: $e', style: TextStyle(fontSize: 13.sp)),
             backgroundColor: const Color(0xFFEF4444),
             behavior: SnackBarBehavior.floating,
           ),
@@ -98,7 +102,8 @@ class _ExportBottomSheetState extends State<ExportBottomSheet> {
         color: const Color(0xFF141414),
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
-      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, MediaQuery.of(context).viewInsets.bottom + 20.h),
+      padding: EdgeInsets.fromLTRB(
+          20.w, 12.h, 20.w, MediaQuery.of(context).viewInsets.bottom + 20.h),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,9 +142,13 @@ class _ExportBottomSheetState extends State<ExportBottomSheet> {
           // Date range
           Row(
             children: [
-              Expanded(child: _buildDateButton('From', _startDate, () => _pickDate(isStart: true))),
+              Expanded(
+                  child: _buildDateButton(
+                      'From', _startDate, () => _pickDate(isStart: true))),
               SizedBox(width: 12.w),
-              Expanded(child: _buildDateButton('To', _endDate, () => _pickDate(isStart: false))),
+              Expanded(
+                  child: _buildDateButton(
+                      'To', _endDate, () => _pickDate(isStart: false))),
             ],
           ),
           SizedBox(height: 12.h),
@@ -175,9 +184,11 @@ class _ExportBottomSheetState extends State<ExportBottomSheet> {
           SizedBox(height: 12.h),
           Row(
             children: [
-              _buildFormatOption(ExportFormat.csv, 'CSV', Icons.table_chart_outlined),
+              _buildFormatOption(
+                  ExportFormat.csv, 'CSV', Icons.table_chart_outlined),
               SizedBox(width: 12.w),
-              _buildFormatOption(ExportFormat.pdf, 'PDF', Icons.picture_as_pdf_outlined),
+              _buildFormatOption(
+                  ExportFormat.pdf, 'PDF', Icons.picture_as_pdf_outlined),
             ],
           ),
           SizedBox(height: 24.h),
@@ -190,7 +201,8 @@ class _ExportBottomSheetState extends State<ExportBottomSheet> {
               onPressed: _isExporting ? null : _export,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF581CD9),
-                disabledBackgroundColor: const Color(0xFF581CD9).withValues(alpha: 0.5),
+                disabledBackgroundColor:
+                    const Color(0xFF581CD9).withValues(alpha: 0.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14.r),
                 ),
@@ -299,7 +311,11 @@ class _ExportBottomSheetState extends State<ExportBottomSheet> {
           ),
           child: Column(
             children: [
-              Icon(icon, color: isSelected ? const Color(0xFF581CD9) : const Color(0xFF8E8E93), size: 24.sp),
+              Icon(icon,
+                  color: isSelected
+                      ? const Color(0xFF581CD9)
+                      : const Color(0xFF8E8E93),
+                  size: 24.sp),
               SizedBox(height: 6.h),
               Text(
                 label,

@@ -33,8 +33,10 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
     super.initState();
     _firstNameController = TextEditingController(text: widget.user.firstName);
     _lastNameController = TextEditingController(text: widget.user.lastName);
-    _usernameController = TextEditingController(text: widget.user.username ?? '');
-    _phoneController = TextEditingController(text: widget.user.phoneNumber ?? '');
+    _usernameController =
+        TextEditingController(text: widget.user.username ?? '');
+    _phoneController =
+        TextEditingController(text: widget.user.phoneNumber ?? '');
   }
 
   @override
@@ -136,7 +138,8 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                   context: context,
                   backgroundColor: const Color(0xFF1A1A1A),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20.r)),
                   ),
                   builder: (ctx) => SafeArea(
                     child: Column(
@@ -296,7 +299,8 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r),
-                      borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
+                      borderSide:
+                          const BorderSide(color: Color(0xFF4E03D0), width: 2),
                     ),
                   ),
                   validator: (value) {
@@ -327,7 +331,8 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r),
-                      borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
+                      borderSide:
+                          const BorderSide(color: Color(0xFF4E03D0), width: 2),
                     ),
                   ),
                   validator: (value) {
@@ -364,7 +369,8 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r),
-                      borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
+                      borderSide:
+                          const BorderSide(color: Color(0xFF4E03D0), width: 2),
                     ),
                   ),
                   validator: (value) {
@@ -395,7 +401,9 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+                        onPressed: _isLoading
+                            ? null
+                            : () => Navigator.of(context).pop(),
                         style: OutlinedButton.styleFrom(
                           padding: EdgeInsets.symmetric(vertical: 16.h),
                           shape: RoundedRectangleBorder(

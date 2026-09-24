@@ -155,8 +155,7 @@ class KYCRepositoryImpl implements KYCRepository {
         success: data['success'] as bool? ?? false,
         assignedTier: data['assigned_tier'] as KYCTier? ?? KYCTier.tier1,
         message: (data['message'] as String?) ?? 'KYC upgrade skipped',
-        nextSteps:
-            (data['next_steps'] as List<dynamic>? ?? []).cast<String>(),
+        nextSteps: (data['next_steps'] as List<dynamic>? ?? []).cast<String>(),
       ));
     } on APIException catch (e) {
       return Left(APIFailure(message: e.message, statusCode: e.statusCode));

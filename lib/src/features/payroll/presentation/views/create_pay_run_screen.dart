@@ -126,7 +126,8 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
       } else {
         _selectedEmployeeIds.add(id);
       }
-      _selectAll = _payableCount > 0 && _selectedEmployeeIds.length == _payableCount;
+      _selectAll =
+          _payableCount > 0 && _selectedEmployeeIds.length == _payableCount;
     });
   }
 
@@ -258,8 +259,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
         }
       },
       builder: (context, state) {
-        final isLoading =
-            state is PayrollLoading && _employeesLoaded;
+        final isLoading = state is PayrollLoading && _employeesLoaded;
 
         return Scaffold(
           backgroundColor: InvoiceThemeColors.primaryBackground,
@@ -316,7 +316,8 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                                 child: Text(
                                   'Configure the pay period, select employees, and set scheduling options.',
                                   style: GoogleFonts.inter(
-                                    color: InvoiceThemeColors.primaryPurpleLight,
+                                    color:
+                                        InvoiceThemeColors.primaryPurpleLight,
                                     fontSize: 13.sp,
                                     fontWeight: FontWeight.w400,
                                     height: 1.4,
@@ -435,8 +436,9 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                       onPressed: isLoading ? null : _createPayRun,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: InvoiceThemeColors.primaryPurple,
-                        disabledBackgroundColor:
-                            InvoiceThemeColors.primaryPurple.withValues(alpha: 0.5),
+                        disabledBackgroundColor: InvoiceThemeColors
+                            .primaryPurple
+                            .withValues(alpha: 0.5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14.r),
                         ),
@@ -499,7 +501,9 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
             Text(
               value != null ? _formatDate(value) : placeholder,
               style: GoogleFonts.inter(
-                color: value != null ? Colors.white : InvoiceThemeColors.textGray500,
+                color: value != null
+                    ? Colors.white
+                    : InvoiceThemeColors.textGray500,
                 fontSize: 15.sp,
                 fontWeight: FontWeight.w500,
               ),
@@ -569,7 +573,8 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
               color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                  color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.4)),
+                  color:
+                      InvoiceThemeColors.primaryPurple.withValues(alpha: 0.4)),
             ),
             child: Row(
               children: [
@@ -647,84 +652,84 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                   child: Opacity(
                     opacity: issue != null ? 0.6 : 1.0,
                     child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 12.w,
-                      vertical: 10.h,
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 22.w,
-                          height: 22.w,
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? InvoiceThemeColors.primaryPurple
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(4.r),
-                            border: Border.all(
-                              color: issue != null
-                                  ? InvoiceThemeColors.warningOrange
-                                  : isSelected
-                                      ? InvoiceThemeColors.primaryPurpleLight
-                                      : InvoiceThemeColors.textGray500,
-                              width: 1.5,
-                            ),
-                          ),
-                          child: issue != null
-                              ? Icon(Icons.priority_high,
-                                  color: InvoiceThemeColors.warningOrange,
-                                  size: 15.sp)
-                              : isSelected
-                                  ? Icon(
-                                      Icons.check,
-                                      color: Colors.white,
-                                      size: 16.sp,
-                                    )
-                                  : null,
-                        ),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                emp.fullName,
-                                style: GoogleFonts.inter(
-                                  color: Colors.white,
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 10.h,
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 22.w,
+                            height: 22.w,
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? InvoiceThemeColors.primaryPurple
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(4.r),
+                              border: Border.all(
+                                color: issue != null
+                                    ? InvoiceThemeColors.warningOrange
+                                    : isSelected
+                                        ? InvoiceThemeColors.primaryPurpleLight
+                                        : InvoiceThemeColors.textGray500,
+                                width: 1.5,
                               ),
-                              if (issue != null)
-                                Text(
-                                  '$issue — set up payout to pay',
-                                  style: GoogleFonts.inter(
+                            ),
+                            child: issue != null
+                                ? Icon(Icons.priority_high,
                                     color: InvoiceThemeColors.warningOrange,
-                                    fontSize: 11.5.sp,
+                                    size: 15.sp)
+                                : isSelected
+                                    ? Icon(
+                                        Icons.check,
+                                        color: Colors.white,
+                                        size: 16.sp,
+                                      )
+                                    : null,
+                          ),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  emp.fullName,
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 14.sp,
                                     fontWeight: FontWeight.w500,
                                   ),
-                                )
-                              else if (emp.department.isNotEmpty)
-                                Text(
-                                  emp.department,
-                                  style: GoogleFonts.inter(
-                                    color: InvoiceThemeColors.textGray400,
-                                    fontSize: 12.sp,
-                                  ),
                                 ),
-                            ],
+                                if (issue != null)
+                                  Text(
+                                    '$issue — set up payout to pay',
+                                    style: GoogleFonts.inter(
+                                      color: InvoiceThemeColors.warningOrange,
+                                      fontSize: 11.5.sp,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  )
+                                else if (emp.department.isNotEmpty)
+                                  Text(
+                                    emp.department,
+                                    style: GoogleFonts.inter(
+                                      color: InvoiceThemeColors.textGray400,
+                                      fontSize: 12.sp,
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
-                        ),
-                        Text(
-                          emp.formattedPayRate,
-                          style: GoogleFonts.inter(
-                            color: InvoiceThemeColors.textGray400,
-                            fontSize: 12.sp,
+                          Text(
+                            emp.formattedPayRate,
+                            style: GoogleFonts.inter(
+                              color: InvoiceThemeColors.textGray400,
+                              fontSize: 12.sp,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
                   ),
                 );
               },
@@ -783,8 +788,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                 final isSelected = _recurrenceFrequency == value;
                 return Expanded(
                   child: GestureDetector(
-                    onTap: () =>
-                        setState(() => _recurrenceFrequency = value),
+                    onTap: () => setState(() => _recurrenceFrequency = value),
                     child: Container(
                       margin: EdgeInsets.only(right: index < 2 ? 8.w : 0),
                       padding: EdgeInsets.symmetric(vertical: 10.h),
@@ -808,9 +812,8 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                                 ? InvoiceThemeColors.primaryPurpleLight
                                 : InvoiceThemeColors.textGray400,
                             fontSize: 13.sp,
-                            fontWeight: isSelected
-                                ? FontWeight.w600
-                                : FontWeight.w400,
+                            fontWeight:
+                                isSelected ? FontWeight.w600 : FontWeight.w400,
                           ),
                         ),
                       ),

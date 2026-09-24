@@ -258,8 +258,7 @@ class BillPaymentEntity extends Equatable {
   /// carry a non-empty `refund_source`, since the user has been made
   /// whole even though the status column hasn't moved.
   bool get hasRefundActivity =>
-      status.isRefundFlow ||
-      (refundSource != null && refundSource!.isNotEmpty);
+      status.isRefundFlow || (refundSource != null && refundSource!.isNotEmpty);
 
   /// Short user-facing label for the refund badge.
   String get refundDisplayLabel {

@@ -104,7 +104,8 @@ class _AddFundsAmountScreenState extends State<AddFundsAmountScreen> {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      CurrencySymbols.formatAmountWithCurrency(widget.availableCash, widget.currency),
+                      CurrencySymbols.formatAmountWithCurrency(
+                          widget.availableCash, widget.currency),
                       style: GoogleFonts.inter(
                         fontSize: 24.sp,
                         fontWeight: FontWeight.w700,
@@ -154,13 +155,16 @@ class _AddFundsAmountScreenState extends State<AddFundsAmountScreen> {
               fillColor: Colors.white.withValues(alpha: 0.05),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                borderSide:
+                    BorderSide(color: Colors.white.withValues(alpha: 0.1)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
-                borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+                borderSide:
+                    const BorderSide(color: Color(0xFF6366F1), width: 2),
               ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
             ),
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
@@ -194,12 +198,14 @@ class _AddFundsAmountScreenState extends State<AddFundsAmountScreen> {
                   _updateAmount(amount);
                 },
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
                         const Color(0xFF6366F1).withValues(alpha: 0.2),
-                        const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+                        const Color.fromARGB(255, 78, 3, 208)
+                            .withValues(alpha: 0.2),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(12.r),
@@ -287,7 +293,8 @@ class _AddFundsAmountScreenState extends State<AddFundsAmountScreen> {
                     ),
                   ),
                   Text(
-                    CurrencySymbols.formatAmountWithCurrency(widget.availableCash + _amount, widget.currency),
+                    CurrencySymbols.formatAmountWithCurrency(
+                        widget.availableCash + _amount, widget.currency),
                     style: GoogleFonts.inter(
                       fontSize: 24.sp,
                       fontWeight: FontWeight.w700,

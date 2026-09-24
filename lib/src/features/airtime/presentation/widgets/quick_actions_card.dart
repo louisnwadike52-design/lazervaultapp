@@ -12,7 +12,8 @@ class QuickActionsCard extends StatelessWidget {
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
@@ -32,9 +33,9 @@ class QuickActionsCard extends StatelessWidget {
               letterSpacing: 0.5,
             ),
           ),
-          
+
           SizedBox(height: 16.h),
-          
+
           // Invoice purple for both CTAs — matches the invoice theme the
           // International & Sell tabs use so the whole airtime landing
           // reads as one palette. Slightly lighter secondary shade on the
@@ -52,12 +53,11 @@ class QuickActionsCard extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  onTap: () => Get.toNamed(AppRoutes.airtime, preventDuplicates: false),
+                  onTap: () =>
+                      Get.toNamed(AppRoutes.airtime, preventDuplicates: false),
                 ),
               ),
-
               SizedBox(width: 12.w),
-
               Expanded(
                 child: _buildActionButton(
                   icon: Icons.send,
@@ -68,7 +68,8 @@ class QuickActionsCard extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  onTap: () => Get.toNamed(AppRoutes.airtime, preventDuplicates: false),
+                  onTap: () =>
+                      Get.toNamed(AppRoutes.airtime, preventDuplicates: false),
                 ),
               ),
             ],
@@ -116,9 +117,7 @@ class QuickActionsCard extends StatelessWidget {
                 size: 20.sp,
               ),
             ),
-            
             SizedBox(height: 12.h),
-            
             Text(
               title,
               style: TextStyle(
@@ -127,9 +126,7 @@ class QuickActionsCard extends StatelessWidget {
                 color: Colors.white,
               ),
             ),
-            
             SizedBox(height: 4.h),
-            
             Text(
               subtitle,
               style: TextStyle(
@@ -143,4 +140,4 @@ class QuickActionsCard extends StatelessWidget {
       ),
     );
   }
-} 
+}

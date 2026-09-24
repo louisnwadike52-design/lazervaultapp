@@ -171,7 +171,8 @@ class CrowdfundDetailShimmer extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Hero image — matches the SliverAppBar's 180.h expanded slot.
-            Container(width: double.infinity, height: 180.h, color: Colors.white),
+            Container(
+                width: double.infinity, height: 180.h, color: Colors.white),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
               child: Column(

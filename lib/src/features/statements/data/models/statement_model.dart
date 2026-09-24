@@ -15,13 +15,16 @@ class StatementModel extends StatementEntity {
   factory StatementModel.fromJson(Map<String, dynamic> json) {
     return StatementModel(
       accountId: json['accountId'] ?? '',
-      startDate: DateTime.parse(json['startDate'] ?? DateTime.now().toIso8601String()),
-      endDate: DateTime.parse(json['endDate'] ?? DateTime.now().toIso8601String()),
+      startDate:
+          DateTime.parse(json['startDate'] ?? DateTime.now().toIso8601String()),
+      endDate:
+          DateTime.parse(json['endDate'] ?? DateTime.now().toIso8601String()),
       format: _parseFormat(json['format']),
       filePath: json['filePath'],
       success: json['success'] ?? false,
       message: json['message'] ?? '',
-      sha256: (json['sha256'] as String?)?.isEmpty ?? true ? null : json['sha256'],
+      sha256:
+          (json['sha256'] as String?)?.isEmpty ?? true ? null : json['sha256'],
     );
   }
 

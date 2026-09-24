@@ -24,8 +24,7 @@ class FileCreditLifeClaimScreen extends StatefulWidget {
       _FileCreditLifeClaimScreenState();
 }
 
-class _FileCreditLifeClaimScreenState
-    extends State<FileCreditLifeClaimScreen> {
+class _FileCreditLifeClaimScreenState extends State<FileCreditLifeClaimScreen> {
   final _formKey = GlobalKey<FormState>();
   final _descriptionController = TextEditingController();
   final _amountController = TextEditingController();
@@ -116,41 +115,35 @@ class _FileCreditLifeClaimScreenState
               ],
               // Claim type
               const Text('Claim Type',
-                  style: TextStyle(
-                      color: Color(0xFF9CA3AF), fontSize: 13)),
+                  style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13)),
               const SizedBox(height: 8),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(12),
-                  border:
-                      Border.all(color: const Color(0xFF2D2D2D)),
+                  border: Border.all(color: const Color(0xFF2D2D2D)),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: _selectedClaimType,
                     isExpanded: true,
                     dropdownColor: const Color(0xFF1F1F1F),
-                    style: const TextStyle(
-                        color: Colors.white, fontSize: 14),
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
                     items: _claimTypes
                         .map((t) => DropdownMenuItem(
                               value: t['value'],
                               child: Text(t['label']!),
                             ))
                         .toList(),
-                    onChanged: (v) =>
-                        setState(() => _selectedClaimType = v!),
+                    onChanged: (v) => setState(() => _selectedClaimType = v!),
                   ),
                 ),
               ),
               const SizedBox(height: 16),
               // Amount
               const Text('Claim Amount (\u20A6)',
-                  style: TextStyle(
-                      color: Color(0xFF9CA3AF), fontSize: 13)),
+                  style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13)),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _amountController,
@@ -171,31 +164,25 @@ class _FileCreditLifeClaimScreenState
               const SizedBox(height: 16),
               // Description
               const Text('Description',
-                  style: TextStyle(
-                      color: Color(0xFF9CA3AF), fontSize: 13)),
+                  style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13)),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _descriptionController,
                 maxLines: 4,
                 style: const TextStyle(color: Colors.white),
-                decoration:
-                    _inputDecoration('Describe the claim...'),
-                validator: (v) => (v == null || v.isEmpty)
-                    ? 'Description is required'
-                    : null,
+                decoration: _inputDecoration('Describe the claim...'),
+                validator: (v) =>
+                    (v == null || v.isEmpty) ? 'Description is required' : null,
               ),
               const SizedBox(height: 24),
               // Documents
               const Text('Supporting Documents',
-                  style: TextStyle(
-                      color: Color(0xFF9CA3AF), fontSize: 13)),
+                  style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13)),
               const SizedBox(height: 4),
               const Text('Max 10MB per file. PDF, DOC, PNG, JPG supported.',
-                  style: TextStyle(
-                      color: Color(0xFF6B7280), fontSize: 11)),
+                  style: TextStyle(color: Color(0xFF6B7280), fontSize: 11)),
               const SizedBox(height: 8),
-              ..._documentNames.asMap().entries.map((entry) =>
-                  Padding(
+              ..._documentNames.asMap().entries.map((entry) => Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Card(
                       color: const Color(0xFF1F1F1F),
@@ -215,8 +202,7 @@ class _FileCreditLifeClaimScreenState
                         trailing: IconButton(
                           icon: const Icon(Icons.close,
                               color: Color(0xFFEF4444), size: 18),
-                          onPressed: () =>
-                              _removeDocument(entry.key),
+                          onPressed: () => _removeDocument(entry.key),
                         ),
                       ),
                     ),
@@ -225,40 +211,30 @@ class _FileCreditLifeClaimScreenState
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed:
-                          _isUploading ? null : _pickDocument,
-                      icon:
-                          const Icon(Icons.upload_file, size: 18),
+                      onPressed: _isUploading ? null : _pickDocument,
+                      icon: const Icon(Icons.upload_file, size: 18),
                       label: const Text('Upload File'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFF3B82F6),
-                        side: const BorderSide(
-                            color: Color(0xFF3B82F6)),
+                        side: const BorderSide(color: Color(0xFF3B82F6)),
                         shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(12)),
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 12),
+                            borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed:
-                          _isUploading ? null : _takePhoto,
-                      icon:
-                          const Icon(Icons.camera_alt, size: 18),
+                      onPressed: _isUploading ? null : _takePhoto,
+                      icon: const Icon(Icons.camera_alt, size: 18),
                       label: const Text('Take Photo'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFF3B82F6),
-                        side: const BorderSide(
-                            color: Color(0xFF3B82F6)),
+                        side: const BorderSide(color: Color(0xFF3B82F6)),
                         shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(12)),
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 12),
+                            borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
                   ),
@@ -274,8 +250,7 @@ class _FileCreditLifeClaimScreenState
                       SizedBox(width: 8),
                       Text('Uploading...',
                           style: TextStyle(
-                              color: Color(0xFF9CA3AF),
-                              fontSize: 13)),
+                              color: Color(0xFF9CA3AF), fontSize: 13)),
                     ],
                   ),
                 ),
@@ -291,16 +266,12 @@ class _FileCreditLifeClaimScreenState
                       onPressed:
                           isLoading || _isUploading ? null : _submitClaim,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color(0xFF3B82F6),
+                        backgroundColor: const Color(0xFF3B82F6),
                         disabledBackgroundColor:
-                            const Color(0xFF3B82F6)
-                                .withValues(alpha: 0.5),
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 16),
+                            const Color(0xFF3B82F6).withValues(alpha: 0.5),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(12)),
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                       child: isLoading
                           ? LazerVaultLoader.small()
@@ -346,14 +317,7 @@ class _FileCreditLifeClaimScreenState
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: [
-          'pdf',
-          'doc',
-          'docx',
-          'png',
-          'jpg',
-          'jpeg'
-        ],
+        allowedExtensions: ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg'],
         withData: true,
       );
       if (result != null && result.files.single.bytes != null) {
@@ -371,8 +335,7 @@ class _FileCreditLifeClaimScreenState
     } catch (e) {
       if (mounted) {
         Get.snackbar('Error', 'Failed to pick file: $e',
-            backgroundColor: const Color(0xFFEF4444),
-            colorText: Colors.white);
+            backgroundColor: const Color(0xFFEF4444), colorText: Colors.white);
       }
     }
   }
@@ -403,8 +366,7 @@ class _FileCreditLifeClaimScreenState
     } catch (e) {
       if (mounted) {
         Get.snackbar('Error', 'Failed to take photo: $e',
-            backgroundColor: const Color(0xFFEF4444),
-            colorText: Colors.white);
+            backgroundColor: const Color(0xFFEF4444), colorText: Colors.white);
       }
     }
   }
@@ -428,8 +390,7 @@ class _FileCreditLifeClaimScreenState
     } catch (e) {
       if (mounted) {
         Get.snackbar(
-            'Upload Failed',
-            'Could not upload document. Please try again.',
+            'Upload Failed', 'Could not upload document. Please try again.',
             backgroundColor: const Color(0xFFEF4444),
             colorText: Colors.white,
             snackPosition: SnackPosition.TOP);
@@ -454,9 +415,8 @@ class _FileCreditLifeClaimScreenState
           claimType: _selectedClaimType,
           description: _descriptionController.text.trim(),
           amount: double.parse(_amountController.text),
-          documents: _uploadedDocumentIds.isNotEmpty
-              ? _uploadedDocumentIds
-              : null,
+          documents:
+              _uploadedDocumentIds.isNotEmpty ? _uploadedDocumentIds : null,
         );
   }
 }

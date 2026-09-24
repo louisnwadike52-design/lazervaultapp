@@ -31,7 +31,8 @@ class VoiceSetupManager {
     if (skipCount >= 3) return VoiceSetupStatus.mandatory;
 
     // Check if dismissed within 24 hours
-    final lastDismissed = await _storage.read(key: 'voice_setup_last_dismissed');
+    final lastDismissed =
+        await _storage.read(key: 'voice_setup_last_dismissed');
     if (lastDismissed != null) {
       final dismissedDate = DateTime.tryParse(lastDismissed);
       if (dismissedDate != null &&

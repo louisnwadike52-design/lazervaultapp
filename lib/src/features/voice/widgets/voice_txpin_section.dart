@@ -72,9 +72,7 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
       // saved choice was something else. Its own docstring already promised
       // "Settings on mount"; this makes that true.
       unawaited(controller.load());
-      _talkModeSub = controller
-          .modeStream
-          .listen((mode) {
+      _talkModeSub = controller.modeStream.listen((mode) {
         if (!mounted) return;
         final current = _settings;
         if (current == null || current.effectiveInteractionMode == mode) return;

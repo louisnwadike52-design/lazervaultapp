@@ -35,8 +35,7 @@ class VoiceLanguage {
       flag: json['flag'] as String? ?? '',
       supportsVoiceCustomization:
           json['supportsVoiceCustomization'] as bool? ?? false,
-      supportsVoiceCloning:
-          json['supportsVoiceCloning'] as bool? ?? false,
+      supportsVoiceCloning: json['supportsVoiceCloning'] as bool? ?? false,
       cloningProvider: json['cloningProvider'] as String?,
       availableVoices: (json['availableVoices'] as List<dynamic>?)
               ?.map((v) => VoiceOption.fromJson(v as Map<String, dynamic>))
@@ -65,9 +64,7 @@ class VoiceLanguage {
     if (defaultVoice.isEmpty) {
       return availableVoices.isNotEmpty ? availableVoices.first : null;
     }
-    return availableVoices
-            .where((v) => v.id == defaultVoice)
-            .firstOrNull ??
+    return availableVoices.where((v) => v.id == defaultVoice).firstOrNull ??
         (availableVoices.isNotEmpty ? availableVoices.first : null);
   }
 }
@@ -144,12 +141,24 @@ class VoiceLanguageDefaults {
         provider: 'openai',
         defaultVoice: 'alloy',
         availableVoices: [
-          VoiceOption(id: 'alloy', name: 'Alloy', gender: 'neutral', accent: 'American'),
-          VoiceOption(id: 'echo', name: 'Echo', gender: 'male', accent: 'American'),
-          VoiceOption(id: 'fable', name: 'Fable', gender: 'male', accent: 'British'),
-          VoiceOption(id: 'onyx', name: 'Onyx', gender: 'male', accent: 'American'),
-          VoiceOption(id: 'nova', name: 'Nova', gender: 'female', accent: 'American'),
-          VoiceOption(id: 'shimmer', name: 'Shimmer', gender: 'female', accent: 'American'),
+          VoiceOption(
+              id: 'alloy',
+              name: 'Alloy',
+              gender: 'neutral',
+              accent: 'American'),
+          VoiceOption(
+              id: 'echo', name: 'Echo', gender: 'male', accent: 'American'),
+          VoiceOption(
+              id: 'fable', name: 'Fable', gender: 'male', accent: 'British'),
+          VoiceOption(
+              id: 'onyx', name: 'Onyx', gender: 'male', accent: 'American'),
+          VoiceOption(
+              id: 'nova', name: 'Nova', gender: 'female', accent: 'American'),
+          VoiceOption(
+              id: 'shimmer',
+              name: 'Shimmer',
+              gender: 'female',
+              accent: 'American'),
         ],
       ),
       VoiceLanguage(
@@ -161,11 +170,31 @@ class VoiceLanguageDefaults {
         provider: 'yarngpt',
         defaultVoice: 'yoruba_female1',
         availableVoices: [
-          VoiceOption(id: 'yoruba_female1', name: 'Yoruba Female 1', gender: 'female', accent: 'Yoruba'),
-          VoiceOption(id: 'yoruba_female2', name: 'Yoruba Female 2', gender: 'female', accent: 'Yoruba'),
-          VoiceOption(id: 'yoruba_male1', name: 'Yoruba Male 1', gender: 'male', accent: 'Yoruba'),
-          VoiceOption(id: 'yoruba_male2', name: 'Yoruba Male 2', gender: 'male', accent: 'Yoruba'),
-          VoiceOption(id: 'yoruba_male3', name: 'Yoruba Male 3', gender: 'male', accent: 'Yoruba'),
+          VoiceOption(
+              id: 'yoruba_female1',
+              name: 'Yoruba Female 1',
+              gender: 'female',
+              accent: 'Yoruba'),
+          VoiceOption(
+              id: 'yoruba_female2',
+              name: 'Yoruba Female 2',
+              gender: 'female',
+              accent: 'Yoruba'),
+          VoiceOption(
+              id: 'yoruba_male1',
+              name: 'Yoruba Male 1',
+              gender: 'male',
+              accent: 'Yoruba'),
+          VoiceOption(
+              id: 'yoruba_male2',
+              name: 'Yoruba Male 2',
+              gender: 'male',
+              accent: 'Yoruba'),
+          VoiceOption(
+              id: 'yoruba_male3',
+              name: 'Yoruba Male 3',
+              gender: 'male',
+              accent: 'Yoruba'),
         ],
       ),
       VoiceLanguage(
@@ -179,9 +208,21 @@ class VoiceLanguageDefaults {
         provider: 'yarngpt',
         defaultVoice: 'igbo_female1',
         availableVoices: [
-          VoiceOption(id: 'igbo_female1', name: 'Igbo Female 1', gender: 'female', accent: 'Igbo'),
-          VoiceOption(id: 'igbo_female2', name: 'Igbo Female 2', gender: 'female', accent: 'Igbo'),
-          VoiceOption(id: 'igbo_male2', name: 'Igbo Male', gender: 'male', accent: 'Igbo'),
+          VoiceOption(
+              id: 'igbo_female1',
+              name: 'Igbo Female 1',
+              gender: 'female',
+              accent: 'Igbo'),
+          VoiceOption(
+              id: 'igbo_female2',
+              name: 'Igbo Female 2',
+              gender: 'female',
+              accent: 'Igbo'),
+          VoiceOption(
+              id: 'igbo_male2',
+              name: 'Igbo Male',
+              gender: 'male',
+              accent: 'Igbo'),
         ],
       ),
       VoiceLanguage(
@@ -195,10 +236,26 @@ class VoiceLanguageDefaults {
         provider: 'yarngpt',
         defaultVoice: 'hausa_female1',
         availableVoices: [
-          VoiceOption(id: 'hausa_female1', name: 'Hausa Female 1', gender: 'female', accent: 'Hausa'),
-          VoiceOption(id: 'hausa_female2', name: 'Hausa Female 2', gender: 'female', accent: 'Hausa'),
-          VoiceOption(id: 'hausa_male1', name: 'Hausa Male 1', gender: 'male', accent: 'Hausa'),
-          VoiceOption(id: 'hausa_male2', name: 'Hausa Male 2', gender: 'male', accent: 'Hausa'),
+          VoiceOption(
+              id: 'hausa_female1',
+              name: 'Hausa Female 1',
+              gender: 'female',
+              accent: 'Hausa'),
+          VoiceOption(
+              id: 'hausa_female2',
+              name: 'Hausa Female 2',
+              gender: 'female',
+              accent: 'Hausa'),
+          VoiceOption(
+              id: 'hausa_male1',
+              name: 'Hausa Male 1',
+              gender: 'male',
+              accent: 'Hausa'),
+          VoiceOption(
+              id: 'hausa_male2',
+              name: 'Hausa Male 2',
+              gender: 'male',
+              accent: 'Hausa'),
         ],
       ),
       VoiceLanguage(
@@ -210,19 +267,41 @@ class VoiceLanguageDefaults {
         provider: 'yarngpt',
         defaultVoice: 'idera',
         availableVoices: [
-          VoiceOption(id: 'idera', name: 'Idera', gender: 'female', accent: 'Nigerian'),
-          VoiceOption(id: 'emma', name: 'Emma', gender: 'female', accent: 'Nigerian'),
-          VoiceOption(id: 'onye', name: 'Onye', gender: 'female', accent: 'Nigerian'),
-          VoiceOption(id: 'jude', name: 'Jude', gender: 'male', accent: 'Nigerian'),
-          VoiceOption(id: 'osagie', name: 'Osagie', gender: 'male', accent: 'Nigerian'),
-          VoiceOption(id: 'tayo', name: 'Tayo', gender: 'male', accent: 'Nigerian'),
-          VoiceOption(id: 'zainab', name: 'Zainab', gender: 'female', accent: 'Nigerian'),
-          VoiceOption(id: 'joke', name: 'Joke', gender: 'female', accent: 'Nigerian'),
-          VoiceOption(id: 'regina', name: 'Regina', gender: 'female', accent: 'Nigerian'),
-          VoiceOption(id: 'remi', name: 'Remi', gender: 'male', accent: 'Nigerian'),
-          VoiceOption(id: 'umar', name: 'Umar', gender: 'male', accent: 'Nigerian'),
-          VoiceOption(id: 'chinenye', name: 'Chinenye', gender: 'female', accent: 'Nigerian'),
-          VoiceOption(id: 'saheed', name: 'Saheed', gender: 'male', accent: 'Nigerian'),
+          VoiceOption(
+              id: 'idera', name: 'Idera', gender: 'female', accent: 'Nigerian'),
+          VoiceOption(
+              id: 'emma', name: 'Emma', gender: 'female', accent: 'Nigerian'),
+          VoiceOption(
+              id: 'onye', name: 'Onye', gender: 'female', accent: 'Nigerian'),
+          VoiceOption(
+              id: 'jude', name: 'Jude', gender: 'male', accent: 'Nigerian'),
+          VoiceOption(
+              id: 'osagie', name: 'Osagie', gender: 'male', accent: 'Nigerian'),
+          VoiceOption(
+              id: 'tayo', name: 'Tayo', gender: 'male', accent: 'Nigerian'),
+          VoiceOption(
+              id: 'zainab',
+              name: 'Zainab',
+              gender: 'female',
+              accent: 'Nigerian'),
+          VoiceOption(
+              id: 'joke', name: 'Joke', gender: 'female', accent: 'Nigerian'),
+          VoiceOption(
+              id: 'regina',
+              name: 'Regina',
+              gender: 'female',
+              accent: 'Nigerian'),
+          VoiceOption(
+              id: 'remi', name: 'Remi', gender: 'male', accent: 'Nigerian'),
+          VoiceOption(
+              id: 'umar', name: 'Umar', gender: 'male', accent: 'Nigerian'),
+          VoiceOption(
+              id: 'chinenye',
+              name: 'Chinenye',
+              gender: 'female',
+              accent: 'Nigerian'),
+          VoiceOption(
+              id: 'saheed', name: 'Saheed', gender: 'male', accent: 'Nigerian'),
         ],
       ),
     ],
@@ -238,12 +317,24 @@ class VoiceLanguageDefaults {
         provider: 'openai',
         defaultVoice: 'alloy',
         availableVoices: [
-          VoiceOption(id: 'alloy', name: 'Alloy', gender: 'neutral', accent: 'American'),
-          VoiceOption(id: 'echo', name: 'Echo', gender: 'male', accent: 'American'),
-          VoiceOption(id: 'fable', name: 'Fable', gender: 'male', accent: 'British'),
-          VoiceOption(id: 'onyx', name: 'Onyx', gender: 'male', accent: 'American'),
-          VoiceOption(id: 'nova', name: 'Nova', gender: 'female', accent: 'American'),
-          VoiceOption(id: 'shimmer', name: 'Shimmer', gender: 'female', accent: 'American'),
+          VoiceOption(
+              id: 'alloy',
+              name: 'Alloy',
+              gender: 'neutral',
+              accent: 'American'),
+          VoiceOption(
+              id: 'echo', name: 'Echo', gender: 'male', accent: 'American'),
+          VoiceOption(
+              id: 'fable', name: 'Fable', gender: 'male', accent: 'British'),
+          VoiceOption(
+              id: 'onyx', name: 'Onyx', gender: 'male', accent: 'American'),
+          VoiceOption(
+              id: 'nova', name: 'Nova', gender: 'female', accent: 'American'),
+          VoiceOption(
+              id: 'shimmer',
+              name: 'Shimmer',
+              gender: 'female',
+              accent: 'American'),
         ],
       ),
       VoiceLanguage(
@@ -257,12 +348,24 @@ class VoiceLanguageDefaults {
         provider: 'openai',
         defaultVoice: 'nova',
         availableVoices: [
-          VoiceOption(id: 'alloy', name: 'Alloy', gender: 'neutral', accent: 'American'),
-          VoiceOption(id: 'echo', name: 'Echo', gender: 'male', accent: 'American'),
-          VoiceOption(id: 'fable', name: 'Fable', gender: 'male', accent: 'British'),
-          VoiceOption(id: 'onyx', name: 'Onyx', gender: 'male', accent: 'American'),
-          VoiceOption(id: 'nova', name: 'Nova', gender: 'female', accent: 'American'),
-          VoiceOption(id: 'shimmer', name: 'Shimmer', gender: 'female', accent: 'American'),
+          VoiceOption(
+              id: 'alloy',
+              name: 'Alloy',
+              gender: 'neutral',
+              accent: 'American'),
+          VoiceOption(
+              id: 'echo', name: 'Echo', gender: 'male', accent: 'American'),
+          VoiceOption(
+              id: 'fable', name: 'Fable', gender: 'male', accent: 'British'),
+          VoiceOption(
+              id: 'onyx', name: 'Onyx', gender: 'male', accent: 'American'),
+          VoiceOption(
+              id: 'nova', name: 'Nova', gender: 'female', accent: 'American'),
+          VoiceOption(
+              id: 'shimmer',
+              name: 'Shimmer',
+              gender: 'female',
+              accent: 'American'),
         ],
       ),
     ],
@@ -278,12 +381,24 @@ class VoiceLanguageDefaults {
         provider: 'openai',
         defaultVoice: 'alloy',
         availableVoices: [
-          VoiceOption(id: 'alloy', name: 'Alloy', gender: 'neutral', accent: 'American'),
-          VoiceOption(id: 'echo', name: 'Echo', gender: 'male', accent: 'American'),
-          VoiceOption(id: 'fable', name: 'Fable', gender: 'male', accent: 'British'),
-          VoiceOption(id: 'onyx', name: 'Onyx', gender: 'male', accent: 'American'),
-          VoiceOption(id: 'nova', name: 'Nova', gender: 'female', accent: 'American'),
-          VoiceOption(id: 'shimmer', name: 'Shimmer', gender: 'female', accent: 'American'),
+          VoiceOption(
+              id: 'alloy',
+              name: 'Alloy',
+              gender: 'neutral',
+              accent: 'American'),
+          VoiceOption(
+              id: 'echo', name: 'Echo', gender: 'male', accent: 'American'),
+          VoiceOption(
+              id: 'fable', name: 'Fable', gender: 'male', accent: 'British'),
+          VoiceOption(
+              id: 'onyx', name: 'Onyx', gender: 'male', accent: 'American'),
+          VoiceOption(
+              id: 'nova', name: 'Nova', gender: 'female', accent: 'American'),
+          VoiceOption(
+              id: 'shimmer',
+              name: 'Shimmer',
+              gender: 'female',
+              accent: 'American'),
         ],
       ),
     ],
@@ -299,12 +414,24 @@ class VoiceLanguageDefaults {
         provider: 'openai',
         defaultVoice: 'alloy',
         availableVoices: [
-          VoiceOption(id: 'alloy', name: 'Alloy', gender: 'neutral', accent: 'American'),
-          VoiceOption(id: 'echo', name: 'Echo', gender: 'male', accent: 'American'),
-          VoiceOption(id: 'fable', name: 'Fable', gender: 'male', accent: 'British'),
-          VoiceOption(id: 'onyx', name: 'Onyx', gender: 'male', accent: 'American'),
-          VoiceOption(id: 'nova', name: 'Nova', gender: 'female', accent: 'American'),
-          VoiceOption(id: 'shimmer', name: 'Shimmer', gender: 'female', accent: 'American'),
+          VoiceOption(
+              id: 'alloy',
+              name: 'Alloy',
+              gender: 'neutral',
+              accent: 'American'),
+          VoiceOption(
+              id: 'echo', name: 'Echo', gender: 'male', accent: 'American'),
+          VoiceOption(
+              id: 'fable', name: 'Fable', gender: 'male', accent: 'British'),
+          VoiceOption(
+              id: 'onyx', name: 'Onyx', gender: 'male', accent: 'American'),
+          VoiceOption(
+              id: 'nova', name: 'Nova', gender: 'female', accent: 'American'),
+          VoiceOption(
+              id: 'shimmer',
+              name: 'Shimmer',
+              gender: 'female',
+              accent: 'American'),
         ],
       ),
     ],
@@ -320,12 +447,24 @@ class VoiceLanguageDefaults {
         provider: 'openai',
         defaultVoice: 'alloy',
         availableVoices: [
-          VoiceOption(id: 'alloy', name: 'Alloy', gender: 'neutral', accent: 'American'),
-          VoiceOption(id: 'echo', name: 'Echo', gender: 'male', accent: 'American'),
-          VoiceOption(id: 'fable', name: 'Fable', gender: 'male', accent: 'British'),
-          VoiceOption(id: 'onyx', name: 'Onyx', gender: 'male', accent: 'American'),
-          VoiceOption(id: 'nova', name: 'Nova', gender: 'female', accent: 'American'),
-          VoiceOption(id: 'shimmer', name: 'Shimmer', gender: 'female', accent: 'American'),
+          VoiceOption(
+              id: 'alloy',
+              name: 'Alloy',
+              gender: 'neutral',
+              accent: 'American'),
+          VoiceOption(
+              id: 'echo', name: 'Echo', gender: 'male', accent: 'American'),
+          VoiceOption(
+              id: 'fable', name: 'Fable', gender: 'male', accent: 'British'),
+          VoiceOption(
+              id: 'onyx', name: 'Onyx', gender: 'male', accent: 'American'),
+          VoiceOption(
+              id: 'nova', name: 'Nova', gender: 'female', accent: 'American'),
+          VoiceOption(
+              id: 'shimmer',
+              name: 'Shimmer',
+              gender: 'female',
+              accent: 'American'),
         ],
       ),
     ],
@@ -341,12 +480,24 @@ class VoiceLanguageDefaults {
         provider: 'openai',
         defaultVoice: 'alloy',
         availableVoices: [
-          VoiceOption(id: 'alloy', name: 'Alloy', gender: 'neutral', accent: 'American'),
-          VoiceOption(id: 'echo', name: 'Echo', gender: 'male', accent: 'American'),
-          VoiceOption(id: 'fable', name: 'Fable', gender: 'male', accent: 'British'),
-          VoiceOption(id: 'onyx', name: 'Onyx', gender: 'male', accent: 'American'),
-          VoiceOption(id: 'nova', name: 'Nova', gender: 'female', accent: 'American'),
-          VoiceOption(id: 'shimmer', name: 'Shimmer', gender: 'female', accent: 'American'),
+          VoiceOption(
+              id: 'alloy',
+              name: 'Alloy',
+              gender: 'neutral',
+              accent: 'American'),
+          VoiceOption(
+              id: 'echo', name: 'Echo', gender: 'male', accent: 'American'),
+          VoiceOption(
+              id: 'fable', name: 'Fable', gender: 'male', accent: 'British'),
+          VoiceOption(
+              id: 'onyx', name: 'Onyx', gender: 'male', accent: 'American'),
+          VoiceOption(
+              id: 'nova', name: 'Nova', gender: 'female', accent: 'American'),
+          VoiceOption(
+              id: 'shimmer',
+              name: 'Shimmer',
+              gender: 'female',
+              accent: 'American'),
         ],
       ),
     ],

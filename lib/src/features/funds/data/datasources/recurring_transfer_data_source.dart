@@ -91,7 +91,8 @@ class RecurringTransferDataSourceImpl implements IRecurringTransferDataSource {
       verificationToken: verificationToken,
     );
 
-    final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+    final response =
+        await _callOptionsHelper.executeWithTokenRotation(() async {
       final options = await _callOptionsHelper.withAuth();
       return _client.createRecurringTransfer(request, options: options);
     });
@@ -111,14 +112,14 @@ class RecurringTransferDataSourceImpl implements IRecurringTransferDataSource {
       status: status ?? '',
     );
 
-    final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+    final response =
+        await _callOptionsHelper.executeWithTokenRotation(() async {
       final options = await _callOptionsHelper.withAuth();
       return _client.getRecurringTransfers(request, options: options);
     });
 
-    final entities = response.recurringTransfers
-        .map((rt) => _detailToEntity(rt))
-        .toList();
+    final entities =
+        response.recurringTransfers.map((rt) => _detailToEntity(rt)).toList();
 
     return (entities, response.total);
   }
@@ -127,7 +128,8 @@ class RecurringTransferDataSourceImpl implements IRecurringTransferDataSource {
   Future<RecurringTransferEntity> getById({required String id}) async {
     final request = pb.GetRecurringTransferRequest(id: id);
 
-    final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+    final response =
+        await _callOptionsHelper.executeWithTokenRotation(() async {
       final options = await _callOptionsHelper.withAuth();
       return _client.getRecurringTransfer(request, options: options);
     });
@@ -153,7 +155,8 @@ class RecurringTransferDataSourceImpl implements IRecurringTransferDataSource {
       description: description ?? '',
     );
 
-    final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+    final response =
+        await _callOptionsHelper.executeWithTokenRotation(() async {
       final options = await _callOptionsHelper.withAuth();
       return _client.updateRecurringTransfer(request, options: options);
     });
@@ -183,14 +186,14 @@ class RecurringTransferDataSourceImpl implements IRecurringTransferDataSource {
       offset: offset,
     );
 
-    final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+    final response =
+        await _callOptionsHelper.executeWithTokenRotation(() async {
       final options = await _callOptionsHelper.withAuth();
       return _client.getRecurringTransferExecutions(request, options: options);
     });
 
-    final entities = response.executions
-        .map((exec) => _executionToEntity(exec))
-        .toList();
+    final entities =
+        response.executions.map((exec) => _executionToEntity(exec)).toList();
 
     return (entities, response.total);
   }
@@ -203,9 +206,11 @@ class RecurringTransferDataSourceImpl implements IRecurringTransferDataSource {
       recipientAccount: recipientAccount,
     );
 
-    final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+    final response =
+        await _callOptionsHelper.executeWithTokenRotation(() async {
       final options = await _callOptionsHelper.withAuth();
-      return _client.getRecurringTransfersByRecipient(request, options: options);
+      return _client.getRecurringTransfersByRecipient(request,
+          options: options);
     });
 
     return response.recurringTransfers
@@ -215,7 +220,8 @@ class RecurringTransferDataSourceImpl implements IRecurringTransferDataSource {
 
   // === Mapping helpers ===
 
-  static RecurringTransferEntity _detailToEntity(pb.RecurringTransferDetail rt) {
+  static RecurringTransferEntity _detailToEntity(
+      pb.RecurringTransferDetail rt) {
     return RecurringTransferEntity(
       id: rt.id,
       userId: rt.userId,
@@ -234,19 +240,23 @@ class RecurringTransferDataSourceImpl implements IRecurringTransferDataSource {
       status: _protoToStatus(rt.status),
       startDate: DateTime.tryParse(rt.startDate) ?? DateTime.now(),
       endDate: rt.endDate.isNotEmpty ? DateTime.tryParse(rt.endDate) : null,
-      nextRunAt: rt.nextRunAt.isNotEmpty ? DateTime.tryParse(rt.nextRunAt) : null,
+      nextRunAt:
+          rt.nextRunAt.isNotEmpty ? DateTime.tryParse(rt.nextRunAt) : null,
       totalExecutions: rt.totalExecutions,
       successfulExecutions: rt.successfulExecutions,
       failedExecutions: rt.failedExecutions,
       consecutiveFailures: rt.consecutiveFailures,
-      lastExecutedAt: rt.lastExecutedAt.isNotEmpty ? DateTime.tryParse(rt.lastExecutedAt) : null,
+      lastExecutedAt: rt.lastExecutedAt.isNotEmpty
+          ? DateTime.tryParse(rt.lastExecutedAt)
+          : null,
       lastFailureReason: rt.lastFailureReason,
       createdAt: DateTime.tryParse(rt.createdAt)?.toLocal() ?? DateTime.now(),
       updatedAt: DateTime.tryParse(rt.updatedAt) ?? DateTime.now(),
     );
   }
 
-  static RecurringTransferExecutionEntity _executionToEntity(pb.RecurringTransferExecutionDetail exec) {
+  static RecurringTransferExecutionEntity _executionToEntity(
+      pb.RecurringTransferExecutionDetail exec) {
     return RecurringTransferExecutionEntity(
       id: exec.id,
       recurringTransferId: exec.recurringTransferId,
@@ -290,7 +300,8 @@ class RecurringTransferDataSourceImpl implements IRecurringTransferDataSource {
     }
   }
 
-  static RecurringTransferStatus _protoToStatus(pbenum.RecurringTransferStatus s) {
+  static RecurringTransferStatus _protoToStatus(
+      pbenum.RecurringTransferStatus s) {
     switch (s) {
       case pbenum.RecurringTransferStatus.RECURRING_TRANSFER_STATUS_ACTIVE:
         return RecurringTransferStatus.active;

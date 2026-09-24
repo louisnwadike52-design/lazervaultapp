@@ -13,8 +13,8 @@ class MonthlyTrendLineChart extends StatelessWidget {
     final dataPoints = timeSeries.dataPoints;
     if (dataPoints.isEmpty) return _buildEmptyState();
 
-    final maxY = dataPoints.fold<double>(
-        0, (max, p) => p.amount > max ? p.amount : max);
+    final maxY =
+        dataPoints.fold<double>(0, (max, p) => p.amount > max ? p.amount : max);
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),

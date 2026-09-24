@@ -11,4 +11,4 @@ class GetWatchlistsUseCase {
   Future<Either<Failure, List<Watchlist>>> call() async {
     return await repository.getWatchlists();
   }
-} 
+}

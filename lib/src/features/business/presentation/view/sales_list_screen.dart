@@ -14,7 +14,6 @@ import '../../data/services/sales_service.dart';
 import '../../domain/entities/sale_entity.dart';
 part 'sales_list_screen_widgets.dart';
 
-
 /// Sell landing page — lists all recorded sales with a revenue/receivables
 /// summary and a FAB to record a new sale. Themed to match the invoice/business
 /// dark theme. A PAID sale is realised revenue; an UNPAID sale is a receivable.
@@ -69,8 +68,10 @@ class _SalesListScreenState extends State<SalesListScreen>
       // best-effort — a failure there must not blank the list.
       final results = await Future.wait([
         svc.listSales(page: 1, limit: _limit),
-        svc.getSummary().catchError((_) => _summaryTotals ?? const SalesSummary(
-              revenue: 0, receivables: 0, count: 0, currency: 'NGN')),
+        svc.getSummary().catchError((_) =>
+            _summaryTotals ??
+            const SalesSummary(
+                revenue: 0, receivables: 0, count: 0, currency: 'NGN')),
       ]);
       if (!mounted) return;
       final sales = results[0] as List<SaleEntity>;
@@ -130,7 +131,9 @@ class _SalesListScreenState extends State<SalesListScreen>
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text('Sales',
             style: GoogleFonts.inter(
-                color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+                color: Colors.white,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w700)),
         actions: [
           // Sales voice + chat, pinned to the business agent
           // (DIRECT_ROUTES['sales'] → chat-business-service) so the assistant
@@ -156,7 +159,9 @@ class _SalesListScreenState extends State<SalesListScreen>
         icon: const Icon(Icons.add, color: Colors.white),
         label: Text('Record sale',
             style: GoogleFonts.inter(
-                color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600)),
       ),
       body: SafeArea(
         child: _loading
@@ -187,8 +192,8 @@ class _SalesListScreenState extends State<SalesListScreen>
                           if (isLoadingMore)
                             Padding(
                               padding: EdgeInsets.all(16.w),
-                              child: const Center(
-                                  child: LazerVaultLoader.small()),
+                              child:
+                                  const Center(child: LazerVaultLoader.small()),
                             ),
                         ],
                       ],
@@ -201,9 +206,13 @@ class _SalesListScreenState extends State<SalesListScreen>
   Widget _summary() {
     return Row(
       children: [
-        Expanded(child: _statCard('Revenue', _revenue, _green, Icons.trending_up_rounded)),
+        Expanded(
+            child: _statCard(
+                'Revenue', _revenue, _green, Icons.trending_up_rounded)),
         SizedBox(width: 12.w),
-        Expanded(child: _statCard('Receivables', _receivables, _amber, Icons.schedule_rounded)),
+        Expanded(
+            child: _statCard(
+                'Receivables', _receivables, _amber, Icons.schedule_rounded)),
       ],
     );
   }
@@ -260,70 +269,72 @@ class _SalesListScreenState extends State<SalesListScreen>
       onTap: () => _openDetail(s),
       behavior: HitTestBehavior.opaque,
       child: Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.all(14.w),
-      decoration: BoxDecoration(
-        color: _card,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: _border),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 42.w,
-            height: 42.w,
-            decoration: BoxDecoration(
-              color: _accent.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12.r),
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: _card,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: _border),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 42.w,
+              height: 42.w,
+              decoration: BoxDecoration(
+                color: _accent.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Icon(Icons.point_of_sale_rounded,
+                  color: _accentText, size: 20.sp),
             ),
-            child: Icon(Icons.point_of_sale_rounded, color: _accentText, size: 20.sp),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600)),
+                  SizedBox(height: 3.h),
+                  Text('$who · $qty$date',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                          GoogleFonts.inter(color: _muted, fontSize: 11.5.sp)),
+                ],
+              ),
+            ),
+            SizedBox(width: 10.w),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                Text(_money(s.amount),
                     style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 14.sp,
-                        fontWeight: FontWeight.w600)),
-                SizedBox(height: 3.h),
-                Text('$who · $qty$date',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(color: _muted, fontSize: 11.5.sp)),
+                        fontWeight: FontWeight.w700)),
+                SizedBox(height: 5.h),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                  decoration: BoxDecoration(
+                    color: (paid ? _green : _amber).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                  child: Text(paid ? 'Paid' : 'Receivable',
+                      style: GoogleFonts.inter(
+                          color: paid ? _green : _amber,
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.w600)),
+                ),
               ],
             ),
-          ),
-          SizedBox(width: 10.w),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(_money(s.amount),
-                  style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w700)),
-              SizedBox(height: 5.h),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                decoration: BoxDecoration(
-                  color: (paid ? _green : _amber).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(6.r),
-                ),
-                child: Text(paid ? 'Paid' : 'Receivable',
-                    style: GoogleFonts.inter(
-                        color: paid ? _green : _amber,
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.w600)),
-              ),
-            ],
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
@@ -352,7 +363,9 @@ class _SalesListScreenState extends State<SalesListScreen>
           SizedBox(height: 16.h),
           Text('No sales yet',
               style: GoogleFonts.inter(
-                  color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w600)),
+                  color: Colors.white,
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600)),
           SizedBox(height: 6.h),
           Text('Tap “Record sale” to log your first one.',
               style: GoogleFonts.inter(color: _muted, fontSize: 12.5.sp)),
@@ -368,7 +381,8 @@ class _SalesListScreenState extends State<SalesListScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline_rounded, size: 44.sp, color: const Color(0xFFEF4444)),
+            Icon(Icons.error_outline_rounded,
+                size: 44.sp, color: const Color(0xFFEF4444)),
             SizedBox(height: 14.h),
             Text(_error ?? 'Could not load sales',
                 textAlign: TextAlign.center,
@@ -378,10 +392,12 @@ class _SalesListScreenState extends State<SalesListScreen>
               onPressed: _loadFirst,
               style: ElevatedButton.styleFrom(
                 backgroundColor: _accent,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
               ),
               child: Text('Retry',
-                  style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600)),
+                  style: GoogleFonts.inter(
+                      color: Colors.white, fontWeight: FontWeight.w600)),
             ),
           ],
         ),

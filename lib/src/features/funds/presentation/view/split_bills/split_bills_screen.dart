@@ -13,7 +13,6 @@ import 'package:intl/intl.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'split_bills_screen_widgets.dart';
 
-
 /// Split Bills Screen for dividing payments among multiple participants
 ///
 /// Allows users to:
@@ -105,7 +104,8 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
           }
           for (var i = 0; i < _selectedParticipants.length; i++) {
             final extra = (i == 0 && remainderCents > 0) ? remainderCents : 0;
-            _customAmounts[_selectedParticipants[i].id] = (baseCents + extra) / 100.0;
+            _customAmounts[_selectedParticipants[i].id] =
+                (baseCents + extra) / 100.0;
           }
         });
         break;
@@ -113,9 +113,12 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
       case SplitMethod.custom:
         // Custom amounts are set manually by user
         // Calculate my share as remainder
-        double totalAssigned = _customAmounts.values.fold(0.0, (sum, amt) => sum + amt);
+        double totalAssigned =
+            _customAmounts.values.fold(0.0, (sum, amt) => sum + amt);
         setState(() {
-          _myShare = _includeMyself ? (_totalAmount - totalAssigned).clamp(0.0, _totalAmount) : 0.0;
+          _myShare = _includeMyself
+              ? (_totalAmount - totalAssigned).clamp(0.0, _totalAmount)
+              : 0.0;
         });
         break;
 
@@ -124,11 +127,15 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
         setState(() {
           for (var participant in _selectedParticipants) {
             final percentage = _percentages[participant.id] ?? 0.0;
-            _customAmounts[participant.id] = _totalAmount * (percentage / 100.0);
+            _customAmounts[participant.id] =
+                _totalAmount * (percentage / 100.0);
           }
 
-          double totalAssigned = _customAmounts.values.fold(0.0, (sum, amt) => sum + amt);
-          _myShare = _includeMyself ? (_totalAmount - totalAssigned).clamp(0.0, _totalAmount) : 0.0;
+          double totalAssigned =
+              _customAmounts.values.fold(0.0, (sum, amt) => sum + amt);
+          _myShare = _includeMyself
+              ? (_totalAmount - totalAssigned).clamp(0.0, _totalAmount)
+              : 0.0;
         });
         break;
     }
@@ -149,9 +156,11 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
       setState(() {
         _selectedParticipants.add(recipient);
         if (_totalAmount > 0) {
-          _customAmounts[recipient.id] = _totalAmount / (_selectedParticipants.length + (_includeMyself ? 1 : 0));
+          _customAmounts[recipient.id] = _totalAmount /
+              (_selectedParticipants.length + (_includeMyself ? 1 : 0));
         }
-        _percentages[recipient.id] = 100.0 / (_selectedParticipants.length + (_includeMyself ? 1 : 0));
+        _percentages[recipient.id] =
+            100.0 / (_selectedParticipants.length + (_includeMyself ? 1 : 0));
       });
       _calculateSplits();
     }
@@ -191,8 +200,10 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
     }
 
     // Verify total splits equal total amount
-    double totalSplits = _customAmounts.values.fold(0.0, (sum, amt) => sum + amt) + _myShare;
-    if ((totalSplits - _totalAmount).abs() > 0.01) { // Allow 1 cent tolerance
+    double totalSplits =
+        _customAmounts.values.fold(0.0, (sum, amt) => sum + amt) + _myShare;
+    if ((totalSplits - _totalAmount).abs() > 0.01) {
+      // Allow 1 cent tolerance
       Get.snackbar(
         'Split Error',
         'Total splits ($_currencySymbol${NumberFormat('#,##0.00').format(totalSplits)}) do not equal total amount ($_currencySymbol${NumberFormat('#,##0.00').format(_totalAmount)})',
@@ -278,7 +289,8 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                       SizedBox(height: 8.h),
                       TextField(
                         controller: _totalAmountController,
-                        keyboardType: TextInputType.numberWithOptions(decimal: true),
+                        keyboardType:
+                            TextInputType.numberWithOptions(decimal: true),
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 32.sp,
@@ -308,14 +320,17 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                           hintStyle: TextStyle(
                             color: Colors.white.withValues(alpha: 0.6),
                           ),
-                          prefixIcon: Icon(Icons.description_outlined, color: Colors.white.withValues(alpha: 0.8)),
+                          prefixIcon: Icon(Icons.description_outlined,
+                              color: Colors.white.withValues(alpha: 0.8)),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                            borderSide: BorderSide(
+                                color: Colors.white.withValues(alpha: 0.3)),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                            borderSide: BorderSide(
+                                color: Colors.white.withValues(alpha: 0.3)),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -344,15 +359,18 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                       Row(
                         children: [
                           Expanded(
-                            child: _buildSplitMethodChip(SplitMethod.equal, 'Equal'),
+                            child: _buildSplitMethodChip(
+                                SplitMethod.equal, 'Equal'),
                           ),
                           SizedBox(width: 8.w),
                           Expanded(
-                            child: _buildSplitMethodChip(SplitMethod.custom, 'Custom'),
+                            child: _buildSplitMethodChip(
+                                SplitMethod.custom, 'Custom'),
                           ),
                           SizedBox(width: 8.w),
                           Expanded(
-                            child: _buildSplitMethodChip(SplitMethod.percentage, 'Percentage'),
+                            child: _buildSplitMethodChip(
+                                SplitMethod.percentage, 'Percentage'),
                           ),
                         ],
                       ),
@@ -374,7 +392,8 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.person, color: Color.fromARGB(255, 78, 3, 208)),
+                            Icon(Icons.person,
+                                color: Color.fromARGB(255, 78, 3, 208)),
                             SizedBox(width: 12.w),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -429,7 +448,8 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                         ),
                       ),
                       TextButton.icon(
-                        onPressed: () => _showAddParticipantBottomSheet(context),
+                        onPressed: () =>
+                            _showAddParticipantBottomSheet(context),
                         icon: Icon(Icons.add, size: 20),
                         label: Text('Add'),
                         style: TextButton.styleFrom(
@@ -462,7 +482,8 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                           ),
                           SizedBox(height: 8.h),
                           TextButton(
-                            onPressed: () => _showAddParticipantBottomSheet(context),
+                            onPressed: () =>
+                                _showAddParticipantBottomSheet(context),
                             child: Text('Add Participants'),
                           ),
                         ],
@@ -490,10 +511,12 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                     child: Container(
                       padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
-                        color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                        color: Color.fromARGB(255, 78, 3, 208)
+                            .withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
+                          color: Color.fromARGB(255, 78, 3, 208)
+                              .withValues(alpha: 0.3),
                         ),
                       ),
                       child: Column(
@@ -501,10 +524,13 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Total Amount:', style: TextStyle(fontSize: 14.sp)),
+                              Text('Total Amount:',
+                                  style: TextStyle(fontSize: 14.sp)),
                               Text(
                                 '$_currencySymbol${NumberFormat('#,##0.00').format(_totalAmount)}',
-                                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
@@ -512,10 +538,13 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Total Participants:', style: TextStyle(fontSize: 14.sp)),
+                              Text('Total Participants:',
+                                  style: TextStyle(fontSize: 14.sp)),
                               Text(
                                 '$_totalParticipants',
-                                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
@@ -524,12 +553,16 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                               children: [
                                 SizedBox(height: 8.h),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text('Per Person:', style: TextStyle(fontSize: 14.sp)),
+                                    Text('Per Person:',
+                                        style: TextStyle(fontSize: 14.sp)),
                                     Text(
                                       '$_currencySymbol${NumberFormat('#,##0.00').format(_totalAmount / _totalParticipants)}',
-                                      style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
+                                      style: TextStyle(
+                                          fontSize: 14.sp,
+                                          fontWeight: FontWeight.bold),
                                     ),
                                   ],
                                 ),
@@ -596,9 +629,8 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 12.h),
         decoration: BoxDecoration(
-          color: isSelected
-              ? Color.fromARGB(255, 78, 3, 208)
-              : Colors.grey[200],
+          color:
+              isSelected ? Color.fromARGB(255, 78, 3, 208) : Colors.grey[200],
           borderRadius: BorderRadius.circular(8),
         ),
         child: Center(
@@ -630,7 +662,8 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
         children: [
           // Avatar
           CircleAvatar(
-            backgroundColor: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+            backgroundColor:
+                Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
             child: Text(
               participant.name[0].toUpperCase(),
               style: TextStyle(
@@ -692,14 +725,16 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                   hintText: '0.00',
                   prefixText: _currencySymbol,
                   isDense: true,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 onChanged: (value) {
                   setState(() {
-                    _customAmounts[participant.id] = double.tryParse(value) ?? 0.0;
+                    _customAmounts[participant.id] =
+                        double.tryParse(value) ?? 0.0;
                   });
                   _calculateSplits();
                 },
@@ -715,14 +750,16 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                   hintText: '0',
                   suffixText: '%',
                   isDense: true,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 onChanged: (value) {
                   setState(() {
-                    _percentages[participant.id] = double.tryParse(value) ?? 0.0;
+                    _percentages[participant.id] =
+                        double.tryParse(value) ?? 0.0;
                   });
                   _calculateSplits();
                 },
@@ -773,7 +810,8 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                 ),
                 // Title
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                   child: Text(
                     'Select Participants',
                     style: TextStyle(
@@ -797,7 +835,8 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
 
                       if (state is RecipientLoaded) {
                         final availableRecipients = state.recipients
-                            .where((r) => !_selectedParticipants.any((p) => p.id == r.id))
+                            .where((r) =>
+                                !_selectedParticipants.any((p) => p.id == r.id))
                             .toList();
 
                         if (availableRecipients.isEmpty) {
@@ -813,7 +852,8 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                             final recipient = availableRecipients[index];
                             return ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                                backgroundColor: Color.fromARGB(255, 78, 3, 208)
+                                    .withValues(alpha: 0.1),
                                 child: Text(
                                   recipient.name[0].toUpperCase(),
                                   style: TextStyle(
@@ -823,7 +863,8 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                               ),
                               title: Text(recipient.name),
                               subtitle: Text(recipient.accountNumber),
-                              trailing: Icon(Icons.add_circle_outline, color: Color.fromARGB(255, 78, 3, 208)),
+                              trailing: Icon(Icons.add_circle_outline,
+                                  color: Color.fromARGB(255, 78, 3, 208)),
                               onTap: () {
                                 _addParticipant(recipient);
                                 Navigator.pop(bottomSheetContext);

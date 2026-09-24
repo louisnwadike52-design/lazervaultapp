@@ -124,7 +124,8 @@ class NameConfirmationRequired extends KYCState {
   });
 
   @override
-  List<Object?> get props => [verificationId, verifiedName, profileName, matchScore];
+  List<Object?> get props =>
+      [verificationId, verifiedName, profileName, matchScore];
 }
 
 class BVNNameConfirmed extends KYCState {
@@ -163,7 +164,9 @@ class KYCCubit extends Cubit<KYCState> {
 
     result.fold(
       (failure) {
-        if (!isClosed) emit(KYCError(failure: failure, userMessage: _getUserMessage(failure)));
+        if (!isClosed)
+          emit(KYCError(
+              failure: failure, userMessage: _getUserMessage(failure)));
       },
       (profile) {
         if (!isClosed) emit(KYCStatusLoaded(profile: profile));
@@ -179,10 +182,13 @@ class KYCCubit extends Cubit<KYCState> {
 
     result.fold(
       (failure) {
-        if (!isClosed) emit(KYCError(failure: failure, userMessage: _getUserMessage(failure)));
+        if (!isClosed)
+          emit(KYCError(
+              failure: failure, userMessage: _getUserMessage(failure)));
       },
       (requirements) {
-        if (!isClosed) emit(CountryRequirementsLoaded(requirements: requirements));
+        if (!isClosed)
+          emit(CountryRequirementsLoaded(requirements: requirements));
       },
     );
   }
@@ -201,7 +207,9 @@ class KYCCubit extends Cubit<KYCState> {
 
     result.fold(
       (failure) {
-        if (!isClosed) emit(KYCError(failure: failure, userMessage: _getUserMessage(failure)));
+        if (!isClosed)
+          emit(KYCError(
+              failure: failure, userMessage: _getUserMessage(failure)));
       },
       (response) {
         if (!isClosed) emit(KYCInitiated(response: response));
@@ -217,7 +225,9 @@ class KYCCubit extends Cubit<KYCState> {
 
     result.fold(
       (failure) {
-        if (!isClosed) emit(KYCError(failure: failure, userMessage: _getUserMessage(failure)));
+        if (!isClosed)
+          emit(KYCError(
+              failure: failure, userMessage: _getUserMessage(failure)));
       },
       (response) {
         if (!isClosed) emit(IDVerificationSuccess(response: response));
@@ -233,7 +243,9 @@ class KYCCubit extends Cubit<KYCState> {
 
     result.fold(
       (failure) {
-        if (!isClosed) emit(KYCError(failure: failure, userMessage: _getUserMessage(failure)));
+        if (!isClosed)
+          emit(KYCError(
+              failure: failure, userMessage: _getUserMessage(failure)));
       },
       (response) {
         if (!isClosed) emit(IDVerificationSuccess(response: response));
@@ -249,7 +261,9 @@ class KYCCubit extends Cubit<KYCState> {
 
     result.fold(
       (failure) {
-        if (!isClosed) emit(KYCError(failure: failure, userMessage: _getUserMessage(failure)));
+        if (!isClosed)
+          emit(KYCError(
+              failure: failure, userMessage: _getUserMessage(failure)));
       },
       (documents) {
         if (!isClosed) emit(DocumentsLoaded(documents: documents));
@@ -271,7 +285,9 @@ class KYCCubit extends Cubit<KYCState> {
 
     result.fold(
       (failure) {
-        if (!isClosed) emit(KYCError(failure: failure, userMessage: _getUserMessage(failure)));
+        if (!isClosed)
+          emit(KYCError(
+              failure: failure, userMessage: _getUserMessage(failure)));
       },
       (response) {
         if (!isClosed) emit(KYCSkipped(response: response));
@@ -307,7 +323,9 @@ class KYCCubit extends Cubit<KYCState> {
 
     result.fold(
       (failure) {
-        if (!isClosed) emit(KYCError(failure: failure, userMessage: _getUserMessage(failure)));
+        if (!isClosed)
+          emit(KYCError(
+              failure: failure, userMessage: _getUserMessage(failure)));
       },
       (session) {
         if (!isClosed) emit(VerificationSessionCreated(session: session));
@@ -333,12 +351,15 @@ class KYCCubit extends Cubit<KYCState> {
 
     result.fold(
       (failure) {
-        if (!isClosed) emit(KYCError(failure: failure, userMessage: _getUserMessage(failure)));
+        if (!isClosed)
+          emit(KYCError(
+              failure: failure, userMessage: _getUserMessage(failure)));
       },
       (confirmResult) {
         final recon = confirmResult.bvnNameReconciliation;
-        final needsNameConfirm = confirmResult.message == 'name_confirmation_required' ||
-            (recon != null && recon.nameAction == 'confirm');
+        final needsNameConfirm =
+            confirmResult.message == 'name_confirmation_required' ||
+                (recon != null && recon.nameAction == 'confirm');
         if (needsNameConfirm) {
           if (!isClosed) {
             emit(NameConfirmationRequired(
@@ -369,7 +390,9 @@ class KYCCubit extends Cubit<KYCState> {
 
     result.fold(
       (failure) {
-        if (!isClosed) emit(KYCError(failure: failure, userMessage: _getUserMessage(failure)));
+        if (!isClosed)
+          emit(KYCError(
+              failure: failure, userMessage: _getUserMessage(failure)));
       },
       (message) {
         if (!isClosed) emit(BVNNameConfirmed(message: message));
@@ -391,7 +414,9 @@ class KYCCubit extends Cubit<KYCState> {
 
     result.fold(
       (failure) {
-        if (!isClosed) emit(KYCError(failure: failure, userMessage: _getUserMessage(failure)));
+        if (!isClosed)
+          emit(KYCError(
+              failure: failure, userMessage: _getUserMessage(failure)));
       },
       (uploadURL) {
         if (!isClosed) emit(DocumentUploadURLReady(uploadURL: uploadURL));
@@ -413,7 +438,9 @@ class KYCCubit extends Cubit<KYCState> {
 
     result.fold(
       (failure) {
-        if (!isClosed) emit(KYCError(failure: failure, userMessage: _getUserMessage(failure)));
+        if (!isClosed)
+          emit(KYCError(
+              failure: failure, userMessage: _getUserMessage(failure)));
       },
       (message) {
         if (!isClosed) emit(DocumentsSubmitted(message: message));
@@ -446,7 +473,8 @@ class KYCCubit extends Cubit<KYCState> {
         return 'Too many attempts. Please try again later.';
       default:
         if (statusCode >= 500) return 'Server error. Please try again later.';
-        if (statusCode >= 400) return 'Request failed. Please check your details.';
+        if (statusCode >= 400)
+          return 'Request failed. Please check your details.';
         return 'Something went wrong. Please try again.';
     }
   }

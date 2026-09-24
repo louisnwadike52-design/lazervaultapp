@@ -68,8 +68,8 @@ class WizardProgressBar extends StatelessWidget {
     final isLast = step == totalSteps - 1;
 
     final horizontal = 20.w;
-    final effectivePadding = padding ??
-        EdgeInsets.symmetric(horizontal: horizontal, vertical: 16.h);
+    final effectivePadding =
+        padding ?? EdgeInsets.symmetric(horizontal: horizontal, vertical: 16.h);
 
     return Padding(
       padding: effectivePadding,
@@ -99,7 +99,10 @@ class WizardProgressBar extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: isLast
-                            ? [completionColor, completionColor.withValues(alpha: 0.75)]
+                            ? [
+                                completionColor,
+                                completionColor.withValues(alpha: 0.75)
+                              ]
                             : [accent, accentDeep],
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,

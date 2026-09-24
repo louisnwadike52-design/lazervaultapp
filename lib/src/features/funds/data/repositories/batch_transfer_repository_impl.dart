@@ -43,7 +43,8 @@ class BatchTransferRepositoryImpl implements IBatchTransferRepository {
   }
 
   @override
-  Future<Either<Failure, (List<BatchTransferHistoryEntity>, int)>> getBatchTransfers({
+  Future<Either<Failure, (List<BatchTransferHistoryEntity>, int)>>
+      getBatchTransfers({
     required int page,
     required int pageSize,
   }) async {

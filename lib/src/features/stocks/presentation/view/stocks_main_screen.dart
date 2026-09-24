@@ -204,7 +204,8 @@ class _StocksMainScreenState extends State<StocksMainScreen>
         ),
         labelColor: Colors.white.withValues(alpha: 0.7),
         unselectedLabelColor: Colors.white.withValues(alpha: 0.5),
-        labelStyle: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
+        labelStyle:
+            GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
         unselectedLabelStyle: GoogleFonts.inter(fontSize: 14.sp),
         indicatorPadding: EdgeInsets.all(4.w),
         dividerColor: Colors.transparent,
@@ -353,8 +354,9 @@ class _StocksMainScreenState extends State<StocksMainScreen>
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
                   color: (portfolio.totalReturnPercent >= 0
-                      ? Colors.green
-                      : Colors.red).withValues(alpha: 0.2),
+                          ? Colors.green
+                          : Colors.red)
+                      .withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Row(
@@ -474,7 +476,8 @@ class _StocksMainScreenState extends State<StocksMainScreen>
 
   Widget _buildMarketIndices(Map<String, double> indices) {
     if (indices.isEmpty) {
-      return _buildEmptyCard('Market Overview', Icons.show_chart, 'Market data unavailable');
+      return _buildEmptyCard(
+          'Market Overview', Icons.show_chart, 'Market data unavailable');
     }
 
     return Column(
@@ -505,7 +508,9 @@ class _StocksMainScreenState extends State<StocksMainScreen>
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
-            children: indices.entries.map((entry) => _buildIndexCard(entry.key, entry.value)).toList(),
+            children: indices.entries
+                .map((entry) => _buildIndexCard(entry.key, entry.value))
+                .toList(),
           ),
         ),
       ],
@@ -690,15 +695,16 @@ class _StocksMainScreenState extends State<StocksMainScreen>
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
                   decoration: BoxDecoration(
-                    color: (stock.changePercent >= 0
-                        ? Colors.green
-                        : Colors.red).withValues(alpha: 0.15),
+                    color:
+                        (stock.changePercent >= 0 ? Colors.green : Colors.red)
+                            .withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(4.r),
                   ),
                   child: Text(
                     '${stock.changePercent >= 0 ? '+' : ''}${stock.changePercent.toStringAsFixed(1)}%',
                     style: GoogleFonts.inter(
-                      color: stock.changePercent >= 0 ? Colors.green : Colors.red,
+                      color:
+                          stock.changePercent >= 0 ? Colors.green : Colors.red,
                       fontSize: 9.sp,
                       fontWeight: FontWeight.w600,
                     ),
@@ -718,7 +724,8 @@ class _StocksMainScreenState extends State<StocksMainScreen>
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              CurrencySymbols.formatAmountWithCurrency(stock.currentPrice, stock.currency),
+              CurrencySymbols.formatAmountWithCurrency(
+                  stock.currentPrice, stock.currency),
               style: GoogleFonts.inter(
                 color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 11.sp,
@@ -808,7 +815,8 @@ class _StocksMainScreenState extends State<StocksMainScreen>
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  CurrencySymbols.formatAmountWithCurrency(stock.currentPrice, stock.currency),
+                  CurrencySymbols.formatAmountWithCurrency(
+                      stock.currentPrice, stock.currency),
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 14.sp,
@@ -818,15 +826,20 @@ class _StocksMainScreenState extends State<StocksMainScreen>
                 Row(
                   children: [
                     Icon(
-                      stock.changePercent >= 0 ? Icons.arrow_upward : Icons.arrow_downward,
-                      color: stock.changePercent >= 0 ? Colors.green : Colors.red,
+                      stock.changePercent >= 0
+                          ? Icons.arrow_upward
+                          : Icons.arrow_downward,
+                      color:
+                          stock.changePercent >= 0 ? Colors.green : Colors.red,
                       size: 12.sp,
                     ),
                     SizedBox(width: 2.w),
                     Text(
                       '${stock.changePercent >= 0 ? '+' : ''}${stock.changePercent.toStringAsFixed(2)}%',
                       style: GoogleFonts.inter(
-                        color: stock.changePercent >= 0 ? Colors.green : Colors.red,
+                        color: stock.changePercent >= 0
+                            ? Colors.green
+                            : Colors.red,
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w500,
                       ),

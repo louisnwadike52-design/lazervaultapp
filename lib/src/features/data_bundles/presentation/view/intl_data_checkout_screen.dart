@@ -11,7 +11,6 @@ import '../../domain/entities/intl_data_bundle.dart';
 import '../../domain/entities/intl_data_operator.dart';
 part 'intl_data_checkout_screen_widgets.dart';
 
-
 /// Screen 2 of the international data purchase flow.
 /// Shows a review card for the selected bundle + recipient phone input
 /// with per-country validation + "Confirm & Pay" CTA that opens the
@@ -20,8 +19,7 @@ class IntlDataCheckoutScreen extends StatefulWidget {
   const IntlDataCheckoutScreen({super.key});
 
   @override
-  State<IntlDataCheckoutScreen> createState() =>
-      _IntlDataCheckoutScreenState();
+  State<IntlDataCheckoutScreen> createState() => _IntlDataCheckoutScreenState();
 }
 
 class _IntlDataCheckoutScreenState extends State<IntlDataCheckoutScreen>
@@ -62,8 +60,7 @@ class _IntlDataCheckoutScreenState extends State<IntlDataCheckoutScreen>
   /// When FX is missing we do NOT fall back to Reloadly's sender wallet
   /// amount (which would be GBP/USD, wrong units for the user) — the
   /// caller should block continue instead.
-  double get _senderAmount =>
-      _fxRate > 0 ? _bundle.localAmount * _fxRate : 0;
+  double get _senderAmount => _fxRate > 0 ? _bundle.localAmount * _fxRate : 0;
 
   @override
   void initState() {
@@ -159,12 +156,22 @@ class _IntlDataCheckoutScreenState extends State<IntlDataCheckoutScreen>
       // is satisfied. Seed empty so the screen doesn't crash on bad args.
       _country = IntlDataCountry.all.first;
       _operator = const IntlDataOperator(
-        id: '', countryCode: '', countryName: '', operatorName: '',
-        senderCurrencyCode: '', destCurrencyCode: '', fxRate: 0,
+        id: '',
+        countryCode: '',
+        countryName: '',
+        operatorName: '',
+        senderCurrencyCode: '',
+        destCurrencyCode: '',
+        fxRate: 0,
       );
       _bundle = const IntlDataBundle(
-        id: '', operatorId: '', amount: 0, localAmount: 0,
-        description: '', destCurrencyCode: '', senderCurrencyCode: '',
+        id: '',
+        operatorId: '',
+        amount: 0,
+        localAmount: 0,
+        description: '',
+        destCurrencyCode: '',
+        senderCurrencyCode: '',
       );
     }
   }
@@ -477,8 +484,8 @@ class _IntlDataCheckoutScreenState extends State<IntlDataCheckoutScreen>
           disabledBackgroundColor: _primary.withValues(alpha: 0.35),
           disabledForegroundColor: Colors.white,
           padding: EdgeInsets.symmetric(vertical: 14.h),
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         ),
         child: Text(
           'Confirm & Pay',

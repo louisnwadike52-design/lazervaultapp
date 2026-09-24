@@ -106,8 +106,8 @@ class _CableTVHistoryScreenState extends State<CableTVHistoryScreen> {
                     color: _primary,
                     backgroundColor: _card,
                     child: ListView.separated(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 20.w, vertical: 8.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                       physics: const AlwaysScrollableScrollPhysics(),
                       itemCount: filtered.length,
                       separatorBuilder: (_, __) => SizedBox(height: 10.h),
@@ -186,8 +186,8 @@ class _CableTVHistoryScreenState extends State<CableTVHistoryScreen> {
                   color: Colors.white.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
-                child: Icon(Icons.close, color: const Color(0xFF9CA3AF),
-                    size: 16.sp),
+                child: Icon(Icons.close,
+                    color: const Color(0xFF9CA3AF), size: 16.sp),
               ),
             ),
         ],
@@ -206,9 +206,7 @@ class _CableTVHistoryScreenState extends State<CableTVHistoryScreen> {
             color: selected ? _primary : _card,
             borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
-              color: selected
-                  ? _primary
-                  : Colors.white.withValues(alpha: 0.08),
+              color: selected ? _primary : Colors.white.withValues(alpha: 0.08),
             ),
           ),
           child: Text(
@@ -244,9 +242,7 @@ class _CableTVHistoryScreenState extends State<CableTVHistoryScreen> {
         ),
         child: Icon(Icons.live_tv, color: _primary, size: 20.sp),
       ),
-      title: p.customerNumber.isEmpty
-          ? 'Cable TV payment'
-          : p.customerNumber,
+      title: p.customerNumber.isEmpty ? 'Cable TV payment' : p.customerNumber,
       subtitle: p.reference,
       date: p.createdAt,
       amount: p.amount,
@@ -261,9 +257,8 @@ class _CableTVHistoryScreenState extends State<CableTVHistoryScreen> {
 
   Widget _buildEmpty() {
     final isFiltered = _filterSmartCardNumber != null;
-    final title = isFiltered
-        ? 'No purchases for this card'
-        : 'No cable TV payments yet';
+    final title =
+        isFiltered ? 'No purchases for this card' : 'No cable TV payments yet';
     final subtitle = isFiltered
         ? 'No transactions found for smart card ${_filterSmartCardNumber!}.'
         : 'Pay your first cable TV subscription and it will show up here.';
@@ -327,8 +322,8 @@ class _CableTVHistoryScreenState extends State<CableTVHistoryScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _primary,
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(
-                      horizontal: 20.w, vertical: 12.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.r)),
                 ),

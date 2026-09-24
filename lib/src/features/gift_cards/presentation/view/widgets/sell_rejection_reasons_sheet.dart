@@ -8,7 +8,8 @@ class GiftCardRejectionReason {
   final String title;
   final String sampleComment;
   final String explanation;
-  const GiftCardRejectionReason(this.title, this.sampleComment, this.explanation);
+  const GiftCardRejectionReason(
+      this.title, this.sampleComment, this.explanation);
 }
 
 /// The 21 standard reasons a gift-card sell can be rejected (per Prestmit's
@@ -190,7 +191,8 @@ class SellRejectionReasonsSheet extends StatelessWidget {
                     ),
                     GestureDetector(
                       onTap: () => Navigator.of(context).maybePop(),
-                      child: Icon(Icons.close, color: const Color(0xFF9CA3AF), size: 22.sp),
+                      child: Icon(Icons.close,
+                          color: const Color(0xFF9CA3AF), size: 22.sp),
                     ),
                   ],
                 ),
@@ -232,7 +234,8 @@ class SellRejectionReasonsSheet extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFEF4444).withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+        border:
+            Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -249,7 +252,8 @@ class SellRejectionReasonsSheet extends StatelessWidget {
           SizedBox(height: 6.h),
           Text(
             reason,
-            style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp, height: 1.4),
+            style: GoogleFonts.inter(
+                color: Colors.white, fontSize: 14.sp, height: 1.4),
           ),
         ],
       ),

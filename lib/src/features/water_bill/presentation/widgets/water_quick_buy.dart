@@ -38,7 +38,8 @@ class WaterQuickBuy extends StatefulWidget {
   State<WaterQuickBuy> createState() => _WaterQuickBuyState();
 }
 
-class _WaterQuickBuyState extends State<WaterQuickBuy> with TransactionPinMixin {
+class _WaterQuickBuyState extends State<WaterQuickBuy>
+    with TransactionPinMixin {
   @override
   ITransactionPinService get transactionPinService =>
       serviceLocator<ITransactionPinService>();
@@ -155,7 +156,8 @@ class _WaterQuickBuyState extends State<WaterQuickBuy> with TransactionPinMixin 
     } else if (s is CustomerValidated) {
       setState(() {
         _validation = s.validationResult.isValid ? s.validationResult : null;
-        _validateError = s.validationResult.isValid ? null : 'Customer not found';
+        _validateError =
+            s.validationResult.isValid ? null : 'Customer not found';
         _validating = false;
       });
     } else if (s is CustomerValidationFailed) {
@@ -280,7 +282,8 @@ class _WaterQuickBuyState extends State<WaterQuickBuy> with TransactionPinMixin 
               transactionId: txnId,
               verificationToken: token,
             );
-            result = await completer.future.timeout(const Duration(seconds: 90));
+            result =
+                await completer.future.timeout(const Duration(seconds: 90));
           } finally {
             await sub.cancel();
           }
@@ -534,7 +537,9 @@ class _WaterQuickBuyState extends State<WaterQuickBuy> with TransactionPinMixin 
             },
             child: Text('Retry',
                 style: GoogleFonts.inter(
-                    color: _accent, fontSize: 12.sp, fontWeight: FontWeight.w600)),
+                    color: _accent,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600)),
           ),
         ]);
       }
@@ -617,7 +622,8 @@ class _WaterQuickBuyState extends State<WaterQuickBuy> with TransactionPinMixin 
       decoration: BoxDecoration(
         color: const Color(0xFF10B981).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
+        border:
+            Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
       ),
       child: Row(children: [
         Icon(Icons.verified, color: const Color(0xFF10B981), size: 16.sp),
@@ -708,7 +714,8 @@ class _WaterQuickBuyState extends State<WaterQuickBuy> with TransactionPinMixin 
     );
   }
 
-  Widget _row(String label, String value, {Color? valueColor, bool bold = false}) {
+  Widget _row(String label, String value,
+      {Color? valueColor, bool bold = false}) {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Text(label, style: GoogleFonts.inter(color: _muted, fontSize: 13.sp)),
       Flexible(
@@ -787,7 +794,8 @@ class _WaterQuickBuyState extends State<WaterQuickBuy> with TransactionPinMixin 
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
         ),
         child: _submitting
-            ? SizedBox(width: 20.w, height: 20.w, child: LazerVaultLoader.small())
+            ? SizedBox(
+                width: 20.w, height: 20.w, child: LazerVaultLoader.small())
             : Text(
                 _amount != null && _amount! > 0
                     ? 'Pay ₦${_amount!.toStringAsFixed(0)}'

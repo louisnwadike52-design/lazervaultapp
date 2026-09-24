@@ -38,7 +38,10 @@ final class TransferFailure extends TransferState {
   final bool isRetryable;
   final bool isKYCError;
 
-  const TransferFailure({required this.message, this.isRetryable = false, this.isKYCError = false});
+  const TransferFailure(
+      {required this.message,
+      this.isRetryable = false,
+      this.isKYCError = false});
 
   @override
   List<Object?> get props => [message, isRetryable, isKYCError];
@@ -51,7 +54,8 @@ final class TransferPinFailure extends TransferState {
   const TransferPinFailure({required this.pinInfo});
 
   @override
-  List<Object?> get props => [pinInfo.isLocked, pinInfo.attemptsRemaining, pinInfo.message];
+  List<Object?> get props =>
+      [pinInfo.isLocked, pinInfo.attemptsRemaining, pinInfo.message];
 }
 
 // Fee lookup states
@@ -87,8 +91,15 @@ final class TransferFeeLoaded extends TransferState {
   });
 
   @override
-  List<Object?> get props =>
-      [fee, currency, feeType, totalAmount, breakdown, quotedForAmountMinor, quotedForType];
+  List<Object?> get props => [
+        fee,
+        currency,
+        feeType,
+        totalAmount,
+        breakdown,
+        quotedForAmountMinor,
+        quotedForType
+      ];
 }
 
 final class TransferFeeError extends TransferState {

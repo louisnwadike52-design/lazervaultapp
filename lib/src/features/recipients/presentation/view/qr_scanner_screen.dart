@@ -17,7 +17,6 @@ import 'package:lazervault/src/features/qr_payment/domain/qr_payload_parser.dart
 import 'package:lazervault/src/features/qr_payment/domain/repositories/qr_payment_repository.dart';
 part 'qr_scanner_screen_widgets.dart';
 
-
 /// QR Code Scanner Screen for scanning recipient QR codes
 ///
 /// Scans QR codes containing recipient information and returns the data
@@ -228,7 +227,9 @@ class _QRScannerScreenState extends State<QRScannerScreen>
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => Padding(
         padding: EdgeInsets.only(
-            left: 20, right: 20, top: 20,
+            left: 20,
+            right: 20,
+            top: 20,
             bottom: MediaQuery.of(ctx).viewInsets.bottom + 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -628,8 +629,8 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                 child: ElevatedButton.icon(
                   onPressed: () => openAppSettings(),
                   icon: const Icon(Icons.settings_outlined, size: 18),
-                  label: Text('Open Settings',
-                      style: TextStyle(fontSize: 15.sp)),
+                  label:
+                      Text('Open Settings', style: TextStyle(fontSize: 15.sp)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4E03D0),
                     foregroundColor: Colors.white,
@@ -781,10 +782,18 @@ class _QRScannerScreenState extends State<QRScannerScreen>
         height: 40.h,
         decoration: BoxDecoration(
           border: Border(
-            top: isTop ? BorderSide(color: Colors.greenAccent, width: 4) : BorderSide.none,
-            bottom: !isTop ? BorderSide(color: Colors.greenAccent, width: 4) : BorderSide.none,
-            left: isLeft ? BorderSide(color: Colors.greenAccent, width: 4) : BorderSide.none,
-            right: !isLeft ? BorderSide(color: Colors.greenAccent, width: 4) : BorderSide.none,
+            top: isTop
+                ? BorderSide(color: Colors.greenAccent, width: 4)
+                : BorderSide.none,
+            bottom: !isTop
+                ? BorderSide(color: Colors.greenAccent, width: 4)
+                : BorderSide.none,
+            left: isLeft
+                ? BorderSide(color: Colors.greenAccent, width: 4)
+                : BorderSide.none,
+            right: !isLeft
+                ? BorderSide(color: Colors.greenAccent, width: 4)
+                : BorderSide.none,
           ),
         ),
       ),

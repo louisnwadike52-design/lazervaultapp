@@ -22,5 +22,14 @@ class EducationProviderEntity extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, name, serviceId, variationCode, logoUrl, isActive, amount, description];
+  List<Object?> get props => [
+        id,
+        name,
+        serviceId,
+        variationCode,
+        logoUrl,
+        isActive,
+        amount,
+        description
+      ];
 }

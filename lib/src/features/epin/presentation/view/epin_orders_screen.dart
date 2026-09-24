@@ -83,8 +83,7 @@ class _EPinOrdersScreenState extends State<EPinOrdersScreen> {
                       if (state.orders.isEmpty) return _buildEmpty();
                       return RefreshIndicator(
                         color: _primary,
-                        onRefresh: () =>
-                            context.read<EPinCubit>().loadOrders(),
+                        onRefresh: () => context.read<EPinCubit>().loadOrders(),
                         child: ListView.builder(
                           padding: EdgeInsets.symmetric(horizontal: 20.w),
                           itemCount: state.orders.length,
@@ -137,9 +136,8 @@ class _EPinOrdersScreenState extends State<EPinOrdersScreen> {
   }
 
   Widget _buildOrderTile(EPinOrder order) {
-    final color = order.isFailed
-        ? _error
-        : (order.isPending ? _warning : _success);
+    final color =
+        order.isFailed ? _error : (order.isPending ? _warning : _success);
     String created = order.createdAt;
     final parsed = DateTime.tryParse(order.createdAt);
     if (parsed != null) {
@@ -200,8 +198,7 @@ class _EPinOrdersScreenState extends State<EPinOrdersScreen> {
                 ),
                 SizedBox(height: 4.h),
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6.r),
@@ -245,13 +242,11 @@ class _EPinOrdersScreenState extends State<EPinOrdersScreen> {
                     Text(
                       message,
                       textAlign: TextAlign.center,
-                      style:
-                          TextStyle(color: _textSecondary, fontSize: 14.sp),
+                      style: TextStyle(color: _textSecondary, fontSize: 14.sp),
                     ),
                     SizedBox(height: 16.h),
                     TextButton(
-                      onPressed: () =>
-                          context.read<EPinCubit>().loadOrders(),
+                      onPressed: () => context.read<EPinCubit>().loadOrders(),
                       child: const Text('Retry',
                           style: TextStyle(color: _primary)),
                     ),

@@ -24,7 +24,8 @@ class SplitBillPdfService {
     final out = StringBuffer();
     for (final rune in raw.runes) {
       // Printable ASCII survives; everything else becomes the fill glyph.
-      out.write(rune >= 0x20 && rune <= 0x7E ? String.fromCharCode(rune) : fill);
+      out.write(
+          rune >= 0x20 && rune <= 0x7E ? String.fromCharCode(rune) : fill);
     }
     return out.toString();
   }

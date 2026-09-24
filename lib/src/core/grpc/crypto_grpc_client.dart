@@ -52,7 +52,8 @@ class CryptoGrpcClient {
   ///
   /// [id] - Cryptocurrency ID (e.g., 'bitcoin', 'ethereum')
   /// [vsCurrency] - Currency for prices (default: 'usd')
-  Future<GetCryptoByIdResponse> getCryptoById(String id, {String vsCurrency = 'usd'}) async {
+  Future<GetCryptoByIdResponse> getCryptoById(String id,
+      {String vsCurrency = 'usd'}) async {
     try {
       final request = GetCryptoByIdRequest()
         ..id = id
@@ -71,8 +72,7 @@ class CryptoGrpcClient {
   /// [query] - Search query (name or symbol)
   Future<SearchCryptosResponse> searchCryptos(String query) async {
     try {
-      final request = SearchCryptosRequest()
-        ..query = query;
+      final request = SearchCryptosRequest()..query = query;
 
       final response = await _client.searchCryptos(request);
       return response;
@@ -84,14 +84,15 @@ class CryptoGrpcClient {
   /// Get trending cryptocurrencies
   ///
   /// [limit] - Number of results (default: 10)
-  Future<GetTrendingCryptosResponse> getTrendingCryptos({int limit = 10}) async {
+  Future<GetTrendingCryptosResponse> getTrendingCryptos(
+      {int limit = 10}) async {
     // Include currency metadata so backend returns prices in user's fiat currency
     final options = await _callOptionsHelper.withAuth();
     try {
-      final request = GetTrendingCryptosRequest()
-        ..limit = limit;
+      final request = GetTrendingCryptosRequest()..limit = limit;
 
-      final response = await _client.getTrendingCryptos(request, options: options);
+      final response =
+          await _client.getTrendingCryptos(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -102,7 +103,8 @@ class CryptoGrpcClient {
   ///
   /// [limit] - Number of results (default: 100)
   /// [vsCurrency] - Currency for prices (default: 'usd')
-  Future<GetTopCryptosResponse> getTopCryptos({int limit = 100, String vsCurrency = 'usd'}) async {
+  Future<GetTopCryptosResponse> getTopCryptos(
+      {int limit = 100, String vsCurrency = 'usd'}) async {
     try {
       final request = GetTopCryptosRequest()
         ..limit = limit
@@ -133,7 +135,8 @@ class CryptoGrpcClient {
         ..page = page
         ..perPage = perPage;
 
-      final response = await _client.getSupportedAssets(request, options: options);
+      final response =
+          await _client.getSupportedAssets(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -145,7 +148,8 @@ class CryptoGrpcClient {
   /// [id] - Cryptocurrency ID
   /// [range] - Time range ('1d', '7d', '30d', '90d', '1y', 'all')
   /// [vsCurrency] - Currency for prices (default: 'usd')
-  Future<GetCryptoPriceHistoryResponse> getCryptoPriceHistory(String id, {String range = '7d', String vsCurrency = 'usd'}) async {
+  Future<GetCryptoPriceHistoryResponse> getCryptoPriceHistory(String id,
+      {String range = '7d', String vsCurrency = 'usd'}) async {
     try {
       final request = GetCryptoPriceHistoryRequest()
         ..id = id
@@ -170,11 +174,13 @@ class CryptoGrpcClient {
   /// When [unitsOnly] is true the server skips per-asset CoinGecko/Quidax
   /// price lookups and returns FiatValue=0 — callers fan out per-asset
   /// rate fetches to fill in fiat values progressively.
-  Future<GetCryptoHoldingsResponse> getHoldings({bool unitsOnly = false}) async {
+  Future<GetCryptoHoldingsResponse> getHoldings(
+      {bool unitsOnly = false}) async {
     final options = await _callOptionsHelper.withAuth();
     try {
       final request = GetCryptoHoldingsRequest()..unitsOnly = unitsOnly;
-      final response = await _client.getCryptoHoldings(request, options: options);
+      final response =
+          await _client.getCryptoHoldings(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -255,9 +261,11 @@ class CryptoGrpcClient {
     return await _client.resolveRecipientWallet(request, options: options);
   }
 
-  Future<GetCryptoWithdrawalStatusResponse> getCryptoWithdrawalStatus(String transactionId) async {
+  Future<GetCryptoWithdrawalStatusResponse> getCryptoWithdrawalStatus(
+      String transactionId) async {
     final options = await _callOptionsHelper.withAuth();
-    final request = GetCryptoWithdrawalStatusRequest()..transactionId = transactionId;
+    final request = GetCryptoWithdrawalStatusRequest()
+      ..transactionId = transactionId;
     return await _client.getCryptoWithdrawalStatus(request, options: options);
   }
 
@@ -293,7 +301,8 @@ class CryptoGrpcClient {
   /// Returns the per-currency, per-network catalogue (deposit_enabled,
   /// withdraw_enabled, min_deposit, default network). Drives the Receive
   /// network dropdown and the Send network picker.
-  Future<GetSupportedAssetNetworksResponse> getSupportedAssetNetworks({String currency = ''}) async {
+  Future<GetSupportedAssetNetworksResponse> getSupportedAssetNetworks(
+      {String currency = ''}) async {
     final options = await _callOptionsHelper.withAuth();
     final request = GetSupportedAssetNetworksRequest()..currency = currency;
     return await _client.getSupportedAssetNetworks(request, options: options);
@@ -314,7 +323,8 @@ class CryptoGrpcClient {
   /// the active network, and every enabled network with a `provisioned` flag.
   /// Backs the network badges (accordion, wallet sheet, detail, sell) and the
   /// network pickers on buy/sell/send/swap. Safe to lazy-call per asset.
-  Future<GetAssetNetworkStatusResponse> getAssetNetworkStatus({required String currency}) async {
+  Future<GetAssetNetworkStatusResponse> getAssetNetworkStatus(
+      {required String currency}) async {
     final options = await _callOptionsHelper.withAuth();
     final request = GetAssetNetworkStatusRequest()..currency = currency;
     return await _client.getAssetNetworkStatus(request, options: options);
@@ -391,7 +401,8 @@ class CryptoGrpcClient {
     return await _client.createSwapQuote(request, options: options);
   }
 
-  Future<RefreshSwapQuoteResponse> refreshSwapQuote(String transactionId) async {
+  Future<RefreshSwapQuoteResponse> refreshSwapQuote(
+      String transactionId) async {
     final options = await _callOptionsHelper.withAuth();
     final request = RefreshSwapQuoteRequest()..transactionId = transactionId;
     return await _client.refreshSwapQuote(request, options: options);
@@ -431,7 +442,8 @@ class CryptoGrpcClient {
       final request = GetCryptoTransactionsRequest()
         ..limit = limit
         ..offset = offset;
-      final response = await _client.getCryptoTransactions(request, options: options);
+      final response =
+          await _client.getCryptoTransactions(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -579,7 +591,8 @@ class CryptoGrpcClient {
       final request = RemoveFromWatchlistRequest()
         ..watchlistId = watchlistId
         ..cryptoId = cryptoId;
-      final response = await _client.removeFromWatchlist(request, options: options);
+      final response =
+          await _client.removeFromWatchlist(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -592,8 +605,7 @@ class CryptoGrpcClient {
   }) async {
     final options = await _callOptionsHelper.withAuth();
     try {
-      final request = DeleteWatchlistRequest()
-        ..watchlistId = watchlistId;
+      final request = DeleteWatchlistRequest()..watchlistId = watchlistId;
       final response = await _client.deleteWatchlist(request, options: options);
       return response;
     } catch (e) {
@@ -611,7 +623,8 @@ class CryptoGrpcClient {
       final request = GetCryptoFiatRateRequest()
         ..cryptoId = cryptoId
         ..fiatCurrency = fiatCurrency;
-      final response = await _client.getCryptoFiatRate(request, options: options);
+      final response =
+          await _client.getCryptoFiatRate(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -624,7 +637,8 @@ class CryptoGrpcClient {
     final options = await _callOptionsHelper.withAuth();
     try {
       final request = GetGlobalMarketDataRequest();
-      final response = await _client.getGlobalMarketData(request, options: options);
+      final response =
+          await _client.getGlobalMarketData(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -711,7 +725,8 @@ class CryptoGrpcClient {
   Future<GetFearGreedIndexResponse> getFearGreedIndex() async {
     final options = await _callOptionsHelper.withAuth();
     try {
-      return await _client.getFearGreedIndex(GetFearGreedIndexRequest(), options: options);
+      return await _client.getFearGreedIndex(GetFearGreedIndexRequest(),
+          options: options);
     } catch (e) {
       rethrow;
     }
@@ -740,7 +755,8 @@ class CryptoGrpcClient {
     }
   }
 
-  Future<GetPriceAlertsResponse> getPriceAlerts({bool activeOnly = true}) async {
+  Future<GetPriceAlertsResponse> getPriceAlerts(
+      {bool activeOnly = true}) async {
     final options = await _callOptionsHelper.withAuth();
     try {
       final request = GetPriceAlertsRequest()..activeOnly = activeOnly;
@@ -819,7 +835,8 @@ class CryptoGrpcClient {
   /// crypto_learn_lessons table (migration 031). Public read — no auth
   /// required, but we still attach standard call options so the gateway
   /// can log who fetched what.
-  Future<GetLearnLessonsResponse> getLearnLessons({String category = ''}) async {
+  Future<GetLearnLessonsResponse> getLearnLessons(
+      {String category = ''}) async {
     final options = await _callOptionsHelper.withAuth();
     try {
       final request = GetLearnLessonsRequest()..category = category;

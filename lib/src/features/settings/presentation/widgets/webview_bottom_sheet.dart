@@ -146,7 +146,8 @@ class _WebViewSheetState extends State<_WebViewSheet> {
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.open_in_new, color: _secondary, size: 20.sp),
+                    icon:
+                        Icon(Icons.open_in_new, color: _secondary, size: 20.sp),
                     tooltip: 'Open in browser',
                     onPressed: _openExternally,
                   ),
@@ -206,7 +207,10 @@ class _WebViewSheetState extends State<_WebViewSheet> {
               SizedBox(height: 16.h),
               Text(
                 "Couldn't load this page.",
-                style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w600),
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600),
               ),
               SizedBox(height: 8.h),
               Text(
@@ -217,10 +221,12 @@ class _WebViewSheetState extends State<_WebViewSheet> {
               SizedBox(height: 16.h),
               OutlinedButton.icon(
                 onPressed: _openExternally,
-                icon: const Icon(Icons.open_in_new, color: Colors.white, size: 18),
+                icon: const Icon(Icons.open_in_new,
+                    color: Colors.white, size: 18),
                 label: Text('Open in browser',
                     style: GoogleFonts.inter(color: Colors.white)),
-                style: OutlinedButton.styleFrom(side: const BorderSide(color: _border)),
+                style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: _border)),
               ),
             ],
           ),
@@ -243,7 +249,8 @@ class _WebViewSheetState extends State<_WebViewSheet> {
           ),
         ),
         if (_loading)
-          const Center(child: CircularProgressIndicator(color: Color(0xFF6D28D9))),
+          const Center(
+              child: CircularProgressIndicator(color: Color(0xFF6D28D9))),
       ],
     );
   }

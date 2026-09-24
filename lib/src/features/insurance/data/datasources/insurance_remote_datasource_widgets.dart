@@ -215,14 +215,16 @@ abstract class InsuranceRemoteDataSource {
     required String customerId,
   });
 
-  Future<({List<MyCoverPolicyDetail> policies, int total})> getMyCoverCustomerPolicies({
+  Future<({List<MyCoverPolicyDetail> policies, int total})>
+      getMyCoverCustomerPolicies({
     required String accessToken,
     required String customerId,
     int page = 1,
     int limit = 20,
   });
 
-  Future<({List<MyCoverPurchase> purchases, int total})> getMyCoverCustomerPurchases({
+  Future<({List<MyCoverPurchase> purchases, int total})>
+      getMyCoverCustomerPurchases({
     required String accessToken,
     required String customerId,
     int page = 1,
@@ -252,7 +254,8 @@ abstract class InsuranceRemoteDataSource {
     required String claimId,
   });
 
-  Future<({String claimId, String claimNumber, String status})> fileCreditLifeClaim({
+  Future<({String claimId, String claimNumber, String status})>
+      fileCreditLifeClaim({
     required String accessToken,
     required String policyId,
     required String claimType,

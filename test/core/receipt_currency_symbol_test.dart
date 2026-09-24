@@ -20,8 +20,20 @@ void main() {
 
   test('without an embedded font every symbol is pure ASCII', () {
     const codes = [
-      'NGN', 'GBP', 'EUR', 'USD', 'ZAR', 'CAD', 'AUD',
-      'INR', 'JPY', 'KES', 'GHS', 'XOF', 'zar', '',
+      'NGN',
+      'GBP',
+      'EUR',
+      'USD',
+      'ZAR',
+      'CAD',
+      'AUD',
+      'INR',
+      'JPY',
+      'KES',
+      'GHS',
+      'XOF',
+      'zar',
+      '',
     ];
     for (final c in codes) {
       final s = receiptCurrencySymbol(c);

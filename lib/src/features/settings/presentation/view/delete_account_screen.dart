@@ -55,27 +55,33 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: _card,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text('Delete your account?',
             style: GoogleFonts.inter(
-                color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16.sp)),
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 16.sp)),
         content: Text(
           'This starts a 30-day cancellable grace period. Sign in any time before it ends to cancel. '
           'After that, your account is queued for permanent deletion and reviewed by our team — this cannot be undone.',
-          style: GoogleFonts.inter(color: _textSecondary, fontSize: 13.sp, height: 1.45),
+          style: GoogleFonts.inter(
+              color: _textSecondary, fontSize: 13.sp, height: 1.45),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
             child: Text('Keep my account',
                 style: GoogleFonts.inter(
-                    color: const Color(0xFF3B82F6), fontWeight: FontWeight.w600)),
+                    color: const Color(0xFF3B82F6),
+                    fontWeight: FontWeight.w600)),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             child: Text('Delete account',
                 style: GoogleFonts.inter(
-                    color: const Color(0xFFEF4444), fontWeight: FontWeight.w700)),
+                    color: const Color(0xFFEF4444),
+                    fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -88,7 +94,8 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
     final confirmed = await _confirmDeleteDialog();
     if (!confirmed || !mounted) return;
     setState(() => _busy = true);
-    final result = await serviceLocator<IAuthRepository>().requestAccountDeletion();
+    final result =
+        await serviceLocator<IAuthRepository>().requestAccountDeletion();
     if (!mounted) return;
     setState(() => _busy = false);
 
@@ -138,17 +145,25 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: _card,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text('Withdraw your funds first',
-            style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16.sp)),
+            style: GoogleFonts.inter(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 16.sp)),
         content: Text(
           'Your account still holds a balance. Please withdraw or transfer all funds to zero before deleting your account, so none of your money is lost.',
-          style: GoogleFonts.inter(color: _textSecondary, fontSize: 13.sp, height: 1.45),
+          style: GoogleFonts.inter(
+              color: _textSecondary, fontSize: 13.sp, height: 1.45),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('Got it', style: GoogleFonts.inter(color: const Color(0xFF3B82F6), fontWeight: FontWeight.w600)),
+            child: Text('Got it',
+                style: GoogleFonts.inter(
+                    color: const Color(0xFF3B82F6),
+                    fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -176,7 +191,10 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
         systemOverlayStyle: SystemUiOverlayStyle.light,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text('Delete account',
-            style: GoogleFonts.inter(color: Colors.white, fontSize: 17.sp, fontWeight: FontWeight.w600)),
+            style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 17.sp,
+                fontWeight: FontWeight.w600)),
       ),
       body: ListView(
         padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 32.h),
@@ -196,34 +214,51 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                 Expanded(
                   child: Text(
                     'This permanently deletes your Lazervault account and personal data.',
-                    style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp, height: 1.4, fontWeight: FontWeight.w600),
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 13.sp,
+                        height: 1.4,
+                        fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
             ),
           ),
           SizedBox(height: 18.h),
-          Text('What happens', style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w700)),
+          Text('What happens',
+              style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700)),
           SizedBox(height: 10.h),
           _bullet('You are signed out on all devices immediately.'),
-          _bullet('Your account enters a 30-day grace period — sign back in any time before then to cancel and keep your account.'),
-          _bullet('After 30 days your account is queued for permanent deletion (reviewed by our team). Once finalized, your data cannot be recovered.'),
-          _bullet('Make sure your balance is zero — withdraw or transfer any funds first.'),
+          _bullet(
+              'Your account enters a 30-day grace period — sign back in any time before then to cancel and keep your account.'),
+          _bullet(
+              'After 30 days your account is queued for permanent deletion (reviewed by our team). Once finalized, your data cannot be recovered.'),
+          _bullet(
+              'Make sure your balance is zero — withdraw or transfer any funds first.'),
           SizedBox(height: 22.h),
           Text('Type DELETE to confirm',
-              style: GoogleFonts.inter(color: _textSecondary, fontSize: 12.5.sp, fontWeight: FontWeight.w600)),
+              style: GoogleFonts.inter(
+                  color: _textSecondary,
+                  fontSize: 12.5.sp,
+                  fontWeight: FontWeight.w600)),
           SizedBox(height: 8.h),
           TextField(
             controller: _confirm,
             enabled: !_busy,
             textCapitalization: TextCapitalization.characters,
-            style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp, letterSpacing: 1.5),
+            style: GoogleFonts.inter(
+                color: Colors.white, fontSize: 15.sp, letterSpacing: 1.5),
             decoration: InputDecoration(
               hintText: 'DELETE',
-              hintStyle: GoogleFonts.inter(color: _textSecondary.withValues(alpha: 0.5)),
+              hintStyle: GoogleFonts.inter(
+                  color: _textSecondary.withValues(alpha: 0.5)),
               filled: true,
               fillColor: _card,
-              contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
                 borderSide: const BorderSide(color: _divider),
@@ -245,14 +280,18 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                 disabledBackgroundColor: _danger.withValues(alpha: 0.35),
                 foregroundColor: Colors.white,
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28.r)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(28.r)),
               ),
               child: _busy
                   ? SizedBox(
-                      width: 22.w, height: 22.w,
-                      child: const CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white))
+                      width: 22.w,
+                      height: 22.w,
+                      child: const CircularProgressIndicator(
+                          strokeWidth: 2.4, color: Colors.white))
                   : Text('Delete my account',
-                      style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.w700)),
+                      style: GoogleFonts.inter(
+                          fontSize: 16.sp, fontWeight: FontWeight.w700)),
             ),
           ),
         ],
@@ -267,12 +306,16 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
           children: [
             Padding(
               padding: EdgeInsets.only(top: 6.h, right: 10.w),
-              child: Container(width: 5.w, height: 5.w,
-                  decoration: const BoxDecoration(color: _textSecondary, shape: BoxShape.circle)),
+              child: Container(
+                  width: 5.w,
+                  height: 5.w,
+                  decoration: const BoxDecoration(
+                      color: _textSecondary, shape: BoxShape.circle)),
             ),
             Expanded(
               child: Text(text,
-                  style: GoogleFonts.inter(color: _textSecondary, fontSize: 13.sp, height: 1.45)),
+                  style: GoogleFonts.inter(
+                      color: _textSecondary, fontSize: 13.sp, height: 1.45)),
             ),
           ],
         ),

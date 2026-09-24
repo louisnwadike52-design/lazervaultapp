@@ -12,4 +12,4 @@ abstract class IWithdrawalRepository {
     String? targetSortCode,
     String? accessToken,
   });
-} 
+}

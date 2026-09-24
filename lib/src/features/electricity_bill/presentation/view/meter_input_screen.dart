@@ -29,7 +29,8 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
   void initState() {
     super.initState();
     final args = Get.arguments;
-    if (args is Map<String, dynamic> && args['provider'] is ElectricityProviderEntity) {
+    if (args is Map<String, dynamic> &&
+        args['provider'] is ElectricityProviderEntity) {
       _provider = args['provider'] as ElectricityProviderEntity;
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -337,14 +338,18 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
           children: [
             Icon(
               icon,
-              color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withValues(alpha: 0.6),
+              color: isSelected
+                  ? const Color(0xFF4E03D0)
+                  : Colors.white.withValues(alpha: 0.6),
               size: 32.sp,
             ),
             SizedBox(height: 12.h),
             Text(
               label,
               style: GoogleFonts.inter(
-                color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.6),
+                color: isSelected
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.6),
                 fontSize: 16.sp,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),

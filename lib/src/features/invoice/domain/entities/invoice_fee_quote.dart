@@ -16,8 +16,22 @@ class InvoiceFeeQuote {
 /// ISO-4217 zero-decimal currencies (¥1/₩1 — no cents). Mirrors the backend's
 /// set in invoice-service currency_exponent.go.
 const Set<String> _zeroDecimalCurrencies = {
-  'BIF', 'CLP', 'DJF', 'GNF', 'ISK', 'JPY', 'KMF', 'KRW',
-  'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF',
+  'BIF',
+  'CLP',
+  'DJF',
+  'GNF',
+  'ISK',
+  'JPY',
+  'KMF',
+  'KRW',
+  'PYG',
+  'RWF',
+  'UGX',
+  'VND',
+  'VUV',
+  'XAF',
+  'XOF',
+  'XPF',
 };
 
 /// Formats a fee amount with the right fraction digits for its currency:

@@ -127,8 +127,7 @@ class _WaterSavedAccountsScreenState extends State<WaterSavedAccountsScreen> {
   }
 
   Widget _buildBody() {
-    if (_error != null &&
-        (_beneficiaries == null || _beneficiaries!.isEmpty)) {
+    if (_error != null && (_beneficiaries == null || _beneficiaries!.isEmpty)) {
       // Raw thrown strings (SocketException / 'Failed host lookup') were
       // being printed straight to the user. AppErrorView maps them via
       // friendlyError() into plain connectivity copy.
@@ -185,8 +184,7 @@ class _WaterSavedAccountsScreenState extends State<WaterSavedAccountsScreen> {
             Text(
               'After paying your water bill, tap "Save Contact" on the receipt to add the account here for one-tap repeat purchases.',
               textAlign: TextAlign.center,
-              style:
-                  TextStyle(fontSize: 14.sp, color: const Color(0xFF9CA3AF)),
+              style: TextStyle(fontSize: 14.sp, color: const Color(0xFF9CA3AF)),
             ),
           ],
         ),
@@ -226,9 +224,7 @@ class _WaterSavedAccountsScreenState extends State<WaterSavedAccountsScreen> {
     final anyPaused = autos.any((ar) => ar.status.toLowerCase() == 'paused');
     final color = anyActive
         ? const Color(0xFF10B981)
-        : (anyPaused
-            ? const Color(0xFFFB923C)
-            : const Color(0xFF9CA3AF));
+        : (anyPaused ? const Color(0xFFFB923C) : const Color(0xFF9CA3AF));
     return _pill(color, 'Auto \u00D7${autos.length}');
   }
 
@@ -254,9 +250,7 @@ class _WaterSavedAccountsScreenState extends State<WaterSavedAccountsScreen> {
           SizedBox(width: 4.w),
           Text(label,
               style: TextStyle(
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w600,
-                  color: color)),
+                  fontSize: 11.sp, fontWeight: FontWeight.w600, color: color)),
         ],
       ),
     );
@@ -450,8 +444,7 @@ class _WaterSavedAccountsScreenState extends State<WaterSavedAccountsScreen> {
     );
   }
 
-  void _showDetailsDialog(
-      WaterBeneficiary b, List<WaterAutoRecharge> autos) {
+  void _showDetailsDialog(WaterBeneficiary b, List<WaterAutoRecharge> autos) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -508,8 +501,8 @@ class _WaterSavedAccountsScreenState extends State<WaterSavedAccountsScreen> {
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             child: Text('Close',
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
           ),
         ],
       ),
@@ -575,8 +568,8 @@ class _WaterSavedAccountsScreenState extends State<WaterSavedAccountsScreen> {
           SizedBox(
             width: 90.w,
             child: Text(label,
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
           ),
           Expanded(
             child: Text(value,
@@ -596,8 +589,8 @@ class _WaterSavedAccountsScreenState extends State<WaterSavedAccountsScreen> {
           SizedBox(
             width: 110.w,
             child: Text(label,
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
           ),
           Expanded(
             child: Text(value,
@@ -650,16 +643,13 @@ class _WaterSavedAccountsScreenState extends State<WaterSavedAccountsScreen> {
                   fillColor: const Color(0xFF0A0A0A),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.r),
-                      borderSide:
-                          const BorderSide(color: Color(0xFF2D2D2D))),
+                      borderSide: const BorderSide(color: Color(0xFF2D2D2D))),
                   enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.r),
-                      borderSide:
-                          const BorderSide(color: Color(0xFF2D2D2D))),
+                      borderSide: const BorderSide(color: Color(0xFF2D2D2D))),
                   focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.r),
-                      borderSide:
-                          const BorderSide(color: _primary)),
+                      borderSide: const BorderSide(color: _primary)),
                   contentPadding:
                       EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
                 ),
@@ -726,8 +716,8 @@ class _WaterSavedAccountsScreenState extends State<WaterSavedAccountsScreen> {
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             child: Text('Cancel',
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
           ),
           TextButton(
             onPressed: () {

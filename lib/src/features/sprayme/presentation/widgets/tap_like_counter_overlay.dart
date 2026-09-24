@@ -51,7 +51,8 @@ class TapLikeCounterOverlayState extends State<TapLikeCounterOverlay>
     _pulseScale = TweenSequence<double>([
       TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.4), weight: 50),
       TweenSequenceItem(tween: Tween(begin: 1.4, end: 1.0), weight: 50),
-    ]).animate(CurvedAnimation(parent: _pulseController, curve: Curves.easeOut));
+    ]).animate(
+        CurvedAnimation(parent: _pulseController, curve: Curves.easeOut));
 
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 400),
@@ -143,7 +144,8 @@ class TapLikeCounterOverlayState extends State<TapLikeCounterOverlay>
               child: ScaleTransition(
                 scale: _pulseScale,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFF1744).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20.r),
@@ -258,7 +260,9 @@ class _AnimatedTapHeartState extends State<_AnimatedTapHeart>
         final x = widget.heart.x - widget.heart.size / 2 + _driftX * t + waveX;
         final y = widget.heart.y - widget.heart.size / 2 - 200 * t;
         final opacity = t < 0.6 ? 1.0 : 1.0 - (t - 0.6) / 0.4;
-        final scale = t < 0.1 ? t / 0.1 : (t < 0.3 ? 1.2 - (t - 0.1) * 1.0 : 1.0 - (t - 0.3) * 0.4);
+        final scale = t < 0.1
+            ? t / 0.1
+            : (t < 0.3 ? 1.2 - (t - 0.1) * 1.0 : 1.0 - (t - 0.3) * 0.4);
 
         return Positioned(
           left: x,

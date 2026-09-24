@@ -648,7 +648,8 @@ class _SellStockScreenState extends State<SellStockScreen>
         SizedBox(height: 8.h),
         Row(
           children: [
-            _buildWithdrawMethod('Wallet', 'wallet', Icons.account_balance_wallet),
+            _buildWithdrawMethod(
+                'Wallet', 'wallet', Icons.account_balance_wallet),
             SizedBox(width: 12.w),
             _buildWithdrawMethod('Bank', 'bank', Icons.account_balance),
           ],
@@ -672,9 +673,8 @@ class _SellStockScreenState extends State<SellStockScreen>
                 : Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
-              color: isSelected
-                  ? Colors.red
-                  : Colors.white.withValues(alpha: 0.1),
+              color:
+                  isSelected ? Colors.red : Colors.white.withValues(alpha: 0.1),
             ),
           ),
           child: Row(
@@ -682,7 +682,9 @@ class _SellStockScreenState extends State<SellStockScreen>
             children: [
               Icon(
                 icon,
-                color: isSelected ? Colors.red : Colors.white.withValues(alpha: 0.5),
+                color: isSelected
+                    ? Colors.red
+                    : Colors.white.withValues(alpha: 0.5),
                 size: 18.sp,
               ),
               SizedBox(width: 8.w),
@@ -728,14 +730,19 @@ class _SellStockScreenState extends State<SellStockScreen>
           SizedBox(height: 12.h),
           _buildSummaryItem('Stock', _selectedStock?.symbol ?? '-'),
           _buildSummaryItem('Shares to Sell', shares.toStringAsFixed(2)),
-          _buildSummaryItem('Current Price', _selectedStock != null
-              ? CurrencySymbols.formatAmountWithCurrency(_selectedStock!.currentPrice, ccy)
-              : '-'),
-          _buildSummaryItem('Gross Amount', CurrencySymbols.formatAmountWithCurrency(amount, ccy)),
+          _buildSummaryItem(
+              'Current Price',
+              _selectedStock != null
+                  ? CurrencySymbols.formatAmountWithCurrency(
+                      _selectedStock!.currentPrice, ccy)
+                  : '-'),
+          _buildSummaryItem('Gross Amount',
+              CurrencySymbols.formatAmountWithCurrency(amount, ccy)),
           _buildSummaryItem('Est. platform fee (~0.25%)',
               CurrencySymbols.formatAmountWithCurrency(fee, ccy)),
           Divider(color: Colors.white.withValues(alpha: 0.1)),
-          _buildSummaryItem('You\'ll Receive', CurrencySymbols.formatAmountWithCurrency(netAmount, ccy),
+          _buildSummaryItem('You\'ll Receive',
+              CurrencySymbols.formatAmountWithCurrency(netAmount, ccy),
               isTotal: true),
         ],
       ),
@@ -751,9 +758,8 @@ class _SellStockScreenState extends State<SellStockScreen>
           Text(
             label,
             style: GoogleFonts.inter(
-              color: isTotal
-                  ? Colors.white
-                  : Colors.white.withValues(alpha: 0.7),
+              color:
+                  isTotal ? Colors.white : Colors.white.withValues(alpha: 0.7),
               fontSize: isTotal ? 16.sp : 14.sp,
               fontWeight: isTotal ? FontWeight.w600 : FontWeight.normal,
             ),
@@ -761,9 +767,7 @@ class _SellStockScreenState extends State<SellStockScreen>
           Text(
             value,
             style: GoogleFonts.inter(
-              color: isTotal
-                  ? Colors.green
-                  : Colors.white,
+              color: isTotal ? Colors.green : Colors.white,
               fontSize: isTotal ? 16.sp : 14.sp,
               fontWeight: isTotal ? FontWeight.w700 : FontWeight.w600,
             ),
@@ -834,7 +838,8 @@ class _SellStockScreenState extends State<SellStockScreen>
     );
   }
 
-  Widget _buildReviewCard(double shares, double amount, double fee, double netAmount) {
+  Widget _buildReviewCard(
+      double shares, double amount, double fee, double netAmount) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -868,7 +873,8 @@ class _SellStockScreenState extends State<SellStockScreen>
                 ),
                 child: Center(
                   child: Text(
-                    _selectedStock?.symbol.substring(0, 2).toUpperCase() ?? '??',
+                    _selectedStock?.symbol.substring(0, 2).toUpperCase() ??
+                        '??',
                     style: GoogleFonts.inter(
                       color: const Color(0xFF6366F1),
                       fontSize: 14.sp,

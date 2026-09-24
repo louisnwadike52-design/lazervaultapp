@@ -16,7 +16,7 @@ class CandlestickPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..strokeWidth = 1.5;
     final bodyPaint = Paint();
-    
+
     final priceRange = maxPrice - minPrice;
     final candleWidth = (size.width / priceHistory.length) * 0.7;
     final spacing = size.width / priceHistory.length;
@@ -24,31 +24,35 @@ class CandlestickPainter extends CustomPainter {
     for (int i = 0; i < priceHistory.length; i++) {
       final price = priceHistory[i];
       final isPositive = price.close >= price.open;
-      
+
       // Colors
       final color = isPositive ? Colors.green : Colors.red;
       paint.color = color;
       bodyPaint.color = isPositive ? color.withValues(alpha: 0.8) : color;
-      
+
       // Positions
       final x = (i + 0.5) * spacing;
-      final highY = size.height - ((price.high - minPrice) / priceRange) * size.height;
-      final lowY = size.height - ((price.low - minPrice) / priceRange) * size.height;
-      final openY = size.height - ((price.open - minPrice) / priceRange) * size.height;
-      final closeY = size.height - ((price.close - minPrice) / priceRange) * size.height;
-      
+      final highY =
+          size.height - ((price.high - minPrice) / priceRange) * size.height;
+      final lowY =
+          size.height - ((price.low - minPrice) / priceRange) * size.height;
+      final openY =
+          size.height - ((price.open - minPrice) / priceRange) * size.height;
+      final closeY =
+          size.height - ((price.close - minPrice) / priceRange) * size.height;
+
       // Draw high-low line
       canvas.drawLine(
         Offset(x, highY),
         Offset(x, lowY),
         paint,
       );
-      
+
       // Draw candle body
       final bodyTop = isPositive ? closeY : openY;
       final bodyBottom = isPositive ? openY : closeY;
       final bodyHeight = (bodyBottom - bodyTop).abs();
-      
+
       if (bodyHeight < 1) {
         // Draw line for doji
         canvas.drawLine(
@@ -64,7 +68,7 @@ class CandlestickPainter extends CustomPainter {
           candleWidth,
           bodyHeight,
         );
-        
+
         if (isPositive) {
           canvas.drawRect(rect, bodyPaint);
           canvas.drawRect(rect, paint..style = PaintingStyle.stroke);
@@ -72,7 +76,7 @@ class CandlestickPainter extends CustomPainter {
           canvas.drawRect(rect, bodyPaint);
         }
       }
-      
+
       paint.style = PaintingStyle.fill;
     }
   }
@@ -95,7 +99,7 @@ class OHLCPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..strokeWidth = 1.5;
-    
+
     final priceRange = maxPrice - minPrice;
     final spacing = size.width / priceHistory.length;
     final tickWidth = spacing * 0.3;
@@ -103,31 +107,35 @@ class OHLCPainter extends CustomPainter {
     for (int i = 0; i < priceHistory.length; i++) {
       final price = priceHistory[i];
       final isPositive = price.close >= price.open;
-      
+
       // Color
       paint.color = isPositive ? Colors.green : Colors.red;
-      
+
       // Positions
       final x = (i + 0.5) * spacing;
-      final highY = size.height - ((price.high - minPrice) / priceRange) * size.height;
-      final lowY = size.height - ((price.low - minPrice) / priceRange) * size.height;
-      final openY = size.height - ((price.open - minPrice) / priceRange) * size.height;
-      final closeY = size.height - ((price.close - minPrice) / priceRange) * size.height;
-      
+      final highY =
+          size.height - ((price.high - minPrice) / priceRange) * size.height;
+      final lowY =
+          size.height - ((price.low - minPrice) / priceRange) * size.height;
+      final openY =
+          size.height - ((price.open - minPrice) / priceRange) * size.height;
+      final closeY =
+          size.height - ((price.close - minPrice) / priceRange) * size.height;
+
       // Draw high-low line
       canvas.drawLine(
         Offset(x, highY),
         Offset(x, lowY),
         paint,
       );
-      
+
       // Draw open tick (left)
       canvas.drawLine(
         Offset(x - tickWidth / 2, openY),
         Offset(x, openY),
         paint,
       );
-      
+
       // Draw close tick (right)
       canvas.drawLine(
         Offset(x, closeY),
@@ -164,10 +172,14 @@ class HollowCandlestickPainter extends CustomPainter {
       final x = (i + 0.5) * (size.width / priceHistory.length);
 
       // Calculate Y positions
-      final openY = size.height - ((price.open - minPrice) / priceRange) * size.height;
-      final closeY = size.height - ((price.close - minPrice) / priceRange) * size.height;
-      final highY = size.height - ((price.high - minPrice) / priceRange) * size.height;
-      final lowY = size.height - ((price.low - minPrice) / priceRange) * size.height;
+      final openY =
+          size.height - ((price.open - minPrice) / priceRange) * size.height;
+      final closeY =
+          size.height - ((price.close - minPrice) / priceRange) * size.height;
+      final highY =
+          size.height - ((price.high - minPrice) / priceRange) * size.height;
+      final lowY =
+          size.height - ((price.low - minPrice) / priceRange) * size.height;
 
       final isUpCandle = price.close > price.open;
       final color = isUpCandle ? Colors.green : Colors.red;
@@ -208,7 +220,7 @@ class HollowCandlestickPainter extends CustomPainter {
   @override
   bool shouldRepaint(HollowCandlestickPainter oldDelegate) {
     return priceHistory != oldDelegate.priceHistory ||
-           maxPrice != oldDelegate.maxPrice ||
-           minPrice != oldDelegate.minPrice;
+        maxPrice != oldDelegate.maxPrice ||
+        minPrice != oldDelegate.minPrice;
   }
-} 
+}

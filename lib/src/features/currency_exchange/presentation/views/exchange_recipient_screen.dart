@@ -27,7 +27,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'exchange_recipient_screen_widgets.dart';
 
-
 // ---------------------------------------------------------------------------
 // Screen
 // ---------------------------------------------------------------------------
@@ -513,8 +512,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
       bool handledNavigation = false;
       final success = await validateTransactionPin(
         context: context,
-        transactionId:
-            'exchange-${DateTime.now().millisecondsSinceEpoch}',
+        transactionId: 'exchange-${DateTime.now().millisecondsSinceEpoch}',
         transactionType: 'international_transfer',
         amount: cubit.amount,
         currency: cubit.fromCurrency,
@@ -537,11 +535,10 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
             recipientAddress: _addressController.text.trim().isNotEmpty
                 ? _addressController.text.trim()
                 : null,
-            beneficiaryType: (_effectiveRule()
-                        ?.supportsBeneficiaryType ??
-                    false)
-                ? _beneficiaryKind.wireValue
-                : null,
+            beneficiaryType:
+                (_effectiveRule()?.supportsBeneficiaryType ?? false)
+                    ? _beneficiaryKind.wireValue
+                    : null,
             providerFields: _collectProviderFields(),
           );
           final state = cubit.state;
@@ -972,7 +969,8 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
             _goBackToStep1();
           }
         },
-        child: AppGradientBackground(child: Scaffold(
+        child: AppGradientBackground(
+            child: Scaffold(
           backgroundColor: Colors.transparent,
           appBar: AppBar(
             backgroundColor: Colors.transparent,
@@ -1055,8 +1053,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
           GestureDetector(
             onTap: _changeSourceCurrency,
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(20),
@@ -1750,7 +1747,6 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
     return out;
   }
 
-
   /// The field set the corridor's ACTIVE rail requires, as resolved by the
   /// backend. Null until it answers (or if it cannot).
   ExchangeRequirements? _serverRequirements;
@@ -1843,9 +1839,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
     // resolution, amount bounds) and swap in the active rail's fields. But take
     // requiresBankCode from the SERVER: the same currency can route on a bank code on
     // one rail and a SWIFT/BIC on another, and the bundled flag describes Flutterwave.
-    return bundled
-        .copyWithFields(server.fields)
-        .copyWithBankCodeRequirement(
+    return bundled.copyWithFields(server.fields).copyWithBankCodeRequirement(
           requiresBankCode: server.requiresBankCode,
           requiresBranchCode: server.requiresBranch,
         );
@@ -1938,9 +1932,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                     // GBP / EUR per FlutterwaveCountryRules). African
                     // corridors don't CoP-check the name, so forcing
                     // users to pick a type there is pure form friction.
-                    if (_effectiveRule()
-                            ?.supportsBeneficiaryType ??
-                        false) ...[
+                    if (_effectiveRule()?.supportsBeneficiaryType ?? false) ...[
                       _buildBeneficiaryKindPicker(),
                       const SizedBox(height: 16),
                     ],
@@ -1953,9 +1945,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                     // the canonical source — render the verified card only.
                     if (_verifiedAccountName != null && !_isManualNameEntry)
                       _buildVerifiedCard()
-                    else if (!(_effectiveRule()
-                            ?.omitBeneficiaryName ??
-                        false))
+                    else if (!(_effectiveRule()?.omitBeneficiaryName ?? false))
                       _buildField(
                         controller: _nameController,
                         label: _beneficiaryKind == _BeneficiaryKind.business
@@ -1970,8 +1960,8 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                             return ExchangeValidators.beneficiaryName(
                               v,
                               rule,
-                              isBusiness: _beneficiaryKind ==
-                                  _BeneficiaryKind.business,
+                              isBusiness:
+                                  _beneficiaryKind == _BeneficiaryKind.business,
                             );
                           }
                           return (v ?? '').trim().isEmpty
@@ -2073,7 +2063,8 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: ExchangeTheme.warning.withValues(alpha: 0.15),
+                            color:
+                                ExchangeTheme.warning.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: const Row(
@@ -2280,18 +2271,16 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
-                      color: selected
-                          ? ExchangeTheme.primary
-                          : Colors.transparent,
+                      color:
+                          selected ? ExchangeTheme.primary : Colors.transparent,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       kind.label,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: selected
-                            ? Colors.white
-                            : const Color(0xFF9CA3AF),
+                        color:
+                            selected ? Colors.white : const Color(0xFF9CA3AF),
                         fontWeight:
                             selected ? FontWeight.w600 : FontWeight.w400,
                         fontSize: 14,

@@ -423,8 +423,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                                       () => _selectedStatus = statusLabel),
                                   child: Container(
                                     margin: EdgeInsets.only(
-                                      right:
-                                          statusLabel != 'Blocked' ? 8.w : 0,
+                                      right: statusLabel != 'Blocked' ? 8.w : 0,
                                     ),
                                     padding:
                                         EdgeInsets.symmetric(vertical: 10.h),
@@ -432,8 +431,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                                       color: isSelected
                                           ? color.withValues(alpha: 0.15)
                                           : const Color(0xFF1F1F1F),
-                                      borderRadius:
-                                          BorderRadius.circular(10.r),
+                                      borderRadius: BorderRadius.circular(10.r),
                                       border: Border.all(
                                         color: isSelected
                                             ? color
@@ -538,8 +536,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
               color: const Color(0xFF6B7280),
               fontSize: 15.sp,
             ),
-            prefixIcon:
-                Icon(icon, color: const Color(0xFF9CA3AF), size: 20.sp),
+            prefixIcon: Icon(icon, color: const Color(0xFF9CA3AF), size: 20.sp),
             filled: true,
             fillColor: const Color(0xFF1F1F1F),
             border: OutlineInputBorder(

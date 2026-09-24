@@ -31,17 +31,35 @@ TransferReceiptData _r(String status) => TransferReceiptData(
 
 void main() {
   group('receipt status', () {
-    test('every spelling the backend sends for a landed transfer reads as success', () {
+    test(
+        'every spelling the backend sends for a landed transfer reads as success',
+        () {
       // 'successful' is the one that was missing, and it is the one actually sent.
-      for (final s in ['completed', 'complete', 'success', 'successful', 'SUCCESSFUL', ' Success ']) {
+      for (final s in [
+        'completed',
+        'complete',
+        'success',
+        'successful',
+        'SUCCESSFUL',
+        ' Success '
+      ]) {
         expect(_r(s).isSuccess, isTrue, reason: '"$s" must read as success');
-        expect(_r(s).isPending, isFalse, reason: '"$s" is settled, not in progress');
+        expect(_r(s).isPending, isFalse,
+            reason: '"$s" is settled, not in progress');
       }
     });
 
     test('in-progress statuses are pending, not failures', () {
-      for (final s in ['pending', 'processing', 'in_progress', 'queued', 'submitted', 'PENDING']) {
-        expect(_r(s).isPending, isTrue, reason: '"$s" must read as in progress');
+      for (final s in [
+        'pending',
+        'processing',
+        'in_progress',
+        'queued',
+        'submitted',
+        'PENDING'
+      ]) {
+        expect(_r(s).isPending, isTrue,
+            reason: '"$s" must read as in progress');
         expect(_r(s).isSuccess, isFalse, reason: '"$s" has not landed yet');
       }
     });
@@ -59,7 +77,8 @@ void main() {
       // Only this case may render the red X.
       for (final s in ['failed', 'reversed', 'cancelled']) {
         expect(_r(s).isSuccess, isFalse);
-        expect(_r(s).isPending, isFalse, reason: '"$s" must not be softened to in-progress');
+        expect(_r(s).isPending, isFalse,
+            reason: '"$s" must not be softened to in-progress');
       }
     });
 

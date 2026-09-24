@@ -24,7 +24,8 @@ class RebalanceAllocationScreen extends StatefulWidget {
   });
 
   @override
-  State<RebalanceAllocationScreen> createState() => _RebalanceAllocationScreenState();
+  State<RebalanceAllocationScreen> createState() =>
+      _RebalanceAllocationScreenState();
 }
 
 class _RebalanceAllocationScreenState extends State<RebalanceAllocationScreen> {
@@ -107,7 +108,8 @@ class _RebalanceAllocationScreenState extends State<RebalanceAllocationScreen> {
                   colors: isSelected
                       ? [
                           const Color(0xFF6366F1).withValues(alpha: 0.3),
-                          const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
+                          const Color.fromARGB(255, 78, 3, 208)
+                              .withValues(alpha: 0.3),
                         ]
                       : [
                           const Color(0xFF2A2A3E).withValues(alpha: 0.8),
@@ -141,7 +143,9 @@ class _RebalanceAllocationScreenState extends State<RebalanceAllocationScreen> {
                           ),
                           child: Icon(
                             strategy['icon'],
-                            color: isSelected ? const Color(0xFF6366F1) : Colors.grey[400],
+                            color: isSelected
+                                ? const Color(0xFF6366F1)
+                                : Colors.grey[400],
                             size: 24.sp,
                           ),
                         ),
@@ -198,7 +202,8 @@ class _RebalanceAllocationScreenState extends State<RebalanceAllocationScreen> {
 
           // Allocation cards for each holding
           ...widget.holdings.map((holding) {
-            final currentAllocation = widget.currentAllocations[holding.symbol] ?? 0.0;
+            final currentAllocation =
+                widget.currentAllocations[holding.symbol] ?? 0.0;
             final targetAllocation = _localAllocations[holding.symbol] ?? 0.0;
             final isCustom = widget.strategy == 'Custom';
 
@@ -232,9 +237,11 @@ class _RebalanceAllocationScreenState extends State<RebalanceAllocationScreen> {
                       ),
                       if (!isCustom)
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 12.w, vertical: 4.h),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                            color:
+                                const Color(0xFF6366F1).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                           child: Text(
@@ -326,7 +333,8 @@ class _RebalanceAllocationScreenState extends State<RebalanceAllocationScreen> {
                                 max: 100,
                                 divisions: 100,
                                 activeColor: const Color(0xFF6366F1),
-                                inactiveColor: Colors.white.withValues(alpha: 0.1),
+                                inactiveColor:
+                                    Colors.white.withValues(alpha: 0.1),
                                 onChanged: (value) {
                                   _updateAllocation(holding.symbol, value);
                                 },
@@ -377,7 +385,10 @@ class _RebalanceAllocationScreenState extends State<RebalanceAllocationScreen> {
                                   height: 8.h,
                                   decoration: BoxDecoration(
                                     gradient: const LinearGradient(
-                                      colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                                      colors: [
+                                        Color(0xFF6366F1),
+                                        Color.fromARGB(255, 78, 3, 208)
+                                      ],
                                     ),
                                     borderRadius: BorderRadius.circular(4.r),
                                   ),

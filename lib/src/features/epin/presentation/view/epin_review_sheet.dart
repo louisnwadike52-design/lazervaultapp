@@ -159,7 +159,8 @@ class _EpinReviewSheet extends StatelessWidget {
                     backgroundColor: _primary,
                     disabledBackgroundColor: _primary.withValues(alpha: 0.3),
                     foregroundColor: Colors.white,
-                    disabledForegroundColor: Colors.white.withValues(alpha: 0.6),
+                    disabledForegroundColor:
+                        Colors.white.withValues(alpha: 0.6),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16.r),
@@ -262,8 +263,7 @@ class _EpinReviewSheet extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label,
-                    style:
-                        TextStyle(color: _textSecondary, fontSize: 11.sp)),
+                    style: TextStyle(color: _textSecondary, fontSize: 11.sp)),
                 SizedBox(height: 2.h),
                 Text(
                   value,
@@ -274,8 +274,7 @@ class _EpinReviewSheet extends StatelessWidget {
                 ),
                 if (sub != null)
                   Text(sub,
-                      style: TextStyle(
-                          color: _textSecondary, fontSize: 11.sp)),
+                      style: TextStyle(color: _textSecondary, fontSize: 11.sp)),
               ],
             ),
           ),

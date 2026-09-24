@@ -30,7 +30,8 @@ class WaterPaymentModel extends WaterPaymentEntity {
       receiptNumber: json['receipt_number'] as String?,
       status: _parseStatus(json['status'] as String?),
       errorMessage: json['error_message'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String? ?? DateTime.now().toIso8601String()),
+      createdAt: DateTime.parse(
+          json['created_at'] as String? ?? DateTime.now().toIso8601String()),
       completedAt: json['completed_at'] != null
           ? DateTime.parse(json['completed_at'] as String)
           : null,
@@ -83,7 +84,8 @@ class WaterPaymentModel extends WaterPaymentEntity {
       customerName: '',
       amount: payment.amount,
       currency: 'NGN',
-      receiptNumber: receiptNumber.isNotEmpty ? receiptNumber : payment.reference,
+      receiptNumber:
+          receiptNumber.isNotEmpty ? receiptNumber : payment.reference,
       status: _parseStatus(payment.status),
       createdAt: DateTime.tryParse(payment.createdAt) ?? DateTime.now(),
       transactionReference: payment.reference,

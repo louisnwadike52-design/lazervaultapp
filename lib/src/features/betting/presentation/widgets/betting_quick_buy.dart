@@ -89,8 +89,7 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
   /// Best-effort read of saved betting accounts for the duplicate-save guard.
   Future<void> _loadSavedBeneficiaries() async {
     try {
-      final list =
-          await serviceLocator<BettingRepository>().getBeneficiaries();
+      final list = await serviceLocator<BettingRepository>().getBeneficiaries();
       if (!mounted) return;
       setState(() => _beneficiaries = list);
       _recomputeExistingBeneficiary();
@@ -149,8 +148,8 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
 
   Future<void> _prefillPhone() async {
     try {
-      final raw =
-          await serviceLocator<FlutterSecureStorage>().read(key: 'stored_phone');
+      final raw = await serviceLocator<FlutterSecureStorage>()
+          .read(key: 'stored_phone');
       var d = (raw ?? '').replaceAll(RegExp(r'[^\d]'), '');
       if (d.startsWith('234')) d = d.substring(3);
       if (d.startsWith('0')) d = d.substring(1);
@@ -269,7 +268,8 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
               saveBeneficiary: _saveBeneficiary && _existingBeneficiary == null,
               nickname: _saveNickname,
             );
-            result = await completer.future.timeout(const Duration(seconds: 90));
+            result =
+                await completer.future.timeout(const Duration(seconds: 90));
           } finally {
             await sub.cancel();
           }
@@ -523,7 +523,8 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
       decoration: BoxDecoration(
         color: const Color(0xFF10B981).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
+        border:
+            Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
       ),
       child: Row(children: [
         Icon(Icons.verified, color: const Color(0xFF10B981), size: 16.sp),
@@ -631,7 +632,8 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
           hintText: '0803 000 0000',
           hintStyle: GoogleFonts.inter(color: const Color(0xFF6B7280)),
           prefixIcon: _dialCodePrefix(),
-          prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+          prefixIconConstraints:
+              const BoxConstraints(minWidth: 0, minHeight: 0),
           border: InputBorder.none,
           contentPadding:
               EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
@@ -661,7 +663,8 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
     );
   }
 
-  Widget _row(String label, String value, {Color? valueColor, bool bold = false}) {
+  Widget _row(String label, String value,
+      {Color? valueColor, bool bold = false}) {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Text(label, style: GoogleFonts.inter(color: _muted, fontSize: 13.sp)),
       Flexible(
@@ -692,7 +695,8 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
         ),
         child: _submitting
-            ? SizedBox(width: 20.w, height: 20.w, child: LazerVaultLoader.small())
+            ? SizedBox(
+                width: 20.w, height: 20.w, child: LazerVaultLoader.small())
             : Text(
                 _amount != null && _amount! > 0
                     ? 'Fund ₦${_amount!.toStringAsFixed(0)}'

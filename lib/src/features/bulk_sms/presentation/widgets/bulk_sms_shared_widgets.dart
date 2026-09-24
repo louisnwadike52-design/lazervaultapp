@@ -115,9 +115,7 @@ class CampaignTile extends StatelessWidget {
                 SizedBox(width: 10.w),
                 Expanded(
                   child: Text(
-                    campaign.senderId.isEmpty
-                        ? 'Bulk SMS'
-                        : campaign.senderId,
+                    campaign.senderId.isEmpty ? 'Bulk SMS' : campaign.senderId,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 14.sp,

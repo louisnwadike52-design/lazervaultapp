@@ -3,7 +3,8 @@ part of 'sell_gift_card_screen.dart';
 /// Formats card number in groups of 4 with dashes (XXXX-XXXX-XXXX-XXXX)
 class _CardNumberFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
     var text = newValue.text.replaceAll('-', '');
 
     // Limit to 16 characters (typical gift card length)

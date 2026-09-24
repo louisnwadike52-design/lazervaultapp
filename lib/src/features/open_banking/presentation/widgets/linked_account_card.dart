@@ -70,7 +70,8 @@ class LinkedAccountCard extends StatelessWidget {
                   width: 48.w,
                   height: 48.w,
                   decoration: BoxDecoration(
-                    color: _getBankColor(account.bankName).withValues(alpha: 0.1),
+                    color:
+                        _getBankColor(account.bankName).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Icon(
@@ -105,7 +106,8 @@ class LinkedAccountCard extends StatelessWidget {
                                 vertical: 4.h,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                                color: const Color(0xFF3B82F6)
+                                    .withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(8.r),
                               ),
                               child: Text(
@@ -278,7 +280,8 @@ class LinkedAccountCard extends StatelessWidget {
                               value: 'direct_debit',
                               child: Row(
                                 children: [
-                                  Icon(Icons.bolt_rounded, size: 20, color: Color(0xFF10B981)),
+                                  Icon(Icons.bolt_rounded,
+                                      size: 20, color: Color(0xFF10B981)),
                                   SizedBox(width: 8),
                                   Text('Manage Direct Debit',
                                       style: TextStyle(color: Colors.white)),
@@ -290,9 +293,11 @@ class LinkedAccountCard extends StatelessWidget {
                               value: 'default',
                               child: Row(
                                 children: [
-                                  Icon(Icons.star_outline, size: 20, color: Color(0xFF9CA3AF)),
+                                  Icon(Icons.star_outline,
+                                      size: 20, color: Color(0xFF9CA3AF)),
                                   SizedBox(width: 8),
-                                  Text('Set as Default', style: TextStyle(color: Colors.white)),
+                                  Text('Set as Default',
+                                      style: TextStyle(color: Colors.white)),
                                 ],
                               ),
                             ),
@@ -300,7 +305,8 @@ class LinkedAccountCard extends StatelessWidget {
                             value: 'unlink',
                             child: Row(
                               children: [
-                                Icon(Icons.link_off, size: 20, color: Colors.red),
+                                Icon(Icons.link_off,
+                                    size: 20, color: Colors.red),
                                 SizedBox(width: 8),
                                 Text(
                                   'Unlink Account',

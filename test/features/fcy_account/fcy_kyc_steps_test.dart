@@ -6,7 +6,8 @@ import 'package:lazervault/src/features/fcy_account/presentation/cubit/fcy_kyc_s
 /// not be asked for, and a step whose every field is known must disappear rather
 /// than render empty.
 void main() {
-  FcyPrefillField filled(String v) => FcyPrefillField(value: v, prefilled: true);
+  FcyPrefillField filled(String v) =>
+      FcyPrefillField(value: v, prefilled: true);
 
   List<FcyKycFieldId> allFields(List<FcyKycStep> steps) =>
       steps.expand((s) => s.fields).toList();
@@ -57,8 +58,7 @@ void main() {
         prefill: FcyPrefill(firstName: filled('Ada'), lastName: filled('Obi')),
         values: {},
       );
-      final personal =
-          steps.firstWhere((s) => s.title == 'About you');
+      final personal = steps.firstWhere((s) => s.title == 'About you');
       expect(personal.fields, isNot(contains(FcyKycFieldId.firstName)));
       expect(personal.fields, contains(FcyKycFieldId.email));
       expect(personal.fields, contains(FcyKycFieldId.birthDate));
@@ -116,8 +116,8 @@ void main() {
   });
 
   group('validation', () {
-    List<FcyKycStep> steps() => buildFcyKycSteps(
-        currency: 'USD', prefill: FcyPrefill.none, values: {});
+    List<FcyKycStep> steps() =>
+        buildFcyKycSteps(currency: 'USD', prefill: FcyPrefill.none, values: {});
 
     test('names the first missing field in words a user understands', () {
       final financial =

@@ -17,7 +17,8 @@ class LockFundModel {
       status: _convertProtoLockStatus(proto.status),
       autoRenew: proto.autoRenew,
       goalName: proto.goalName.isEmpty ? null : proto.goalName,
-      goalDescription: proto.goalDescription.isEmpty ? null : proto.goalDescription,
+      goalDescription:
+          proto.goalDescription.isEmpty ? null : proto.goalDescription,
       earlyUnlockPenaltyPercent: proto.earlyUnlockPenaltyPercent,
       accruedInterest: proto.accruedInterest,
       paymentMethod: proto.paymentMethod.isEmpty ? null : proto.paymentMethod,
@@ -28,8 +29,11 @@ class LockFundModel {
       progressPercent: proto.progressPercent,
       totalValue: proto.totalValue,
       canUnlockEarly: proto.canUnlockEarly,
-      sourceAccountId: proto.sourceAccountId.isEmpty ? null : proto.sourceAccountId,
-      destinationAccountId: proto.destinationAccountId.isEmpty ? null : proto.destinationAccountId,
+      sourceAccountId:
+          proto.sourceAccountId.isEmpty ? null : proto.sourceAccountId,
+      destinationAccountId: proto.destinationAccountId.isEmpty
+          ? null
+          : proto.destinationAccountId,
       // The plan this lock was created from. The gateway has always sent it and
       // this mapper dropped it, which left the app resolving capabilities from
       // the `lock_type` display enum — a denormalized label, not the plan

@@ -96,7 +96,8 @@ class TransactionPinVerificationResult {
     this.isLocked = false,
     this.lockedUntil,
     this.noPinSet = false,
-  }) : isLockedUntil = lockedUntil != null && lockedUntil.isAfter(DateTime.now());
+  }) : isLockedUntil =
+            lockedUntil != null && lockedUntil.isAfter(DateTime.now());
 
   /// Server says the user has no PIN (cleared / never set) — route to setup.
   factory TransactionPinVerificationResult.noPinSet({String? message}) {

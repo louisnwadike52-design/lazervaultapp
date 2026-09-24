@@ -6,7 +6,8 @@ import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/features/autosave/data/models/autosave_rule_model.dart';
-import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart' as entity;
+import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart'
+    as entity;
 import 'package:lazervault/src/features/autosave/domain/repositories/i_autosave_repository.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_state.dart'
     show RuleSortOption;
@@ -46,7 +47,7 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
       // Convert amounts from major units (Naira) to minor units (kobo)
       // The gateway proxy expects kobo and converts to major for the backend
       final amountInKobo = amountType == entity.AmountType.percentage
-          ? amountValue  // Percentages are NOT converted
+          ? amountValue // Percentages are NOT converted
           : amountValue * 100;
 
       final request = autosave_pb.CreateAutoSaveRuleRequest(
@@ -88,7 +89,8 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         request.maximumPerSave = maximumPerSave * 100; // Naira -> kobo
       }
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth(
           CallOptions(timeout: const Duration(seconds: 15)),
         );
@@ -102,7 +104,9 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         return Right(AutoSaveRuleModel.fromProto(response.rule));
       } else {
         return Left(ServerFailure(
-          message: response.msg.isNotEmpty ? response.msg : 'Failed to create auto-save rule.',
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'Failed to create auto-save rule.',
           statusCode: 400,
         ));
       }
@@ -134,7 +138,8 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         request.status = _statusToProto(status);
       }
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth(
           CallOptions(timeout: const Duration(seconds: 15)),
         );
@@ -151,7 +156,9 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         return Right(rules);
       } else {
         return Left(ServerFailure(
-          message: response.msg.isNotEmpty ? response.msg : 'Failed to get auto-save rules.',
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'Failed to get auto-save rules.',
           statusCode: 400,
         ));
       }
@@ -198,7 +205,8 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
       request.sortBy = sortFields.$1;
       request.sortDir = sortFields.$2;
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth(
           CallOptions(timeout: const Duration(seconds: 15)),
         );
@@ -231,8 +239,7 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
       ));
     } catch (e) {
       return Left(ServerFailure(
-        message:
-            'An unexpected error occurred while getting auto-save rules.',
+        message: 'An unexpected error occurred while getting auto-save rules.',
         statusCode: 500,
       ));
     }
@@ -294,7 +301,8 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         request.maximumPerSave = maximumPerSave * 100; // Naira -> kobo
       }
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth(
           CallOptions(timeout: const Duration(seconds: 15)),
         );
@@ -308,7 +316,9 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         return Right(AutoSaveRuleModel.fromProto(response.rule));
       } else {
         return Left(ServerFailure(
-          message: response.msg.isNotEmpty ? response.msg : 'Failed to update auto-save rule.',
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'Failed to update auto-save rule.',
           statusCode: 400,
         ));
       }
@@ -336,7 +346,8 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         action: action,
       );
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth(
           CallOptions(timeout: const Duration(seconds: 15)),
         );
@@ -350,7 +361,9 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         return Right(AutoSaveRuleModel.fromProto(response.rule));
       } else {
         return Left(ServerFailure(
-          message: response.msg.isNotEmpty ? response.msg : 'Failed to toggle auto-save rule.',
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'Failed to toggle auto-save rule.',
           statusCode: 400,
         ));
       }
@@ -376,7 +389,8 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         ruleId: ruleId,
       );
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth(
           CallOptions(timeout: const Duration(seconds: 15)),
         );
@@ -390,7 +404,9 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         return const Right(true);
       } else {
         return Left(ServerFailure(
-          message: response.msg.isNotEmpty ? response.msg : 'Failed to delete auto-save rule.',
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'Failed to delete auto-save rule.',
           statusCode: 400,
         ));
       }
@@ -408,7 +424,8 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
   }
 
   @override
-  Future<Either<Failure, List<entity.AutoSaveTransactionEntity>>> getAutoSaveTransactions({
+  Future<Either<Failure, List<entity.AutoSaveTransactionEntity>>>
+      getAutoSaveTransactions({
     String? ruleId,
     String? accountId,
     int? limit,
@@ -430,7 +447,8 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         request.offset = offset;
       }
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth(
           CallOptions(timeout: const Duration(seconds: 15)),
         );
@@ -447,7 +465,9 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         return Right(transactions);
       } else {
         return Left(ServerFailure(
-          message: response.msg.isNotEmpty ? response.msg : 'Failed to get auto-save transactions.',
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'Failed to get auto-save transactions.',
           statusCode: 400,
         ));
       }
@@ -458,18 +478,21 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
       ));
     } catch (e) {
       return Left(ServerFailure(
-        message: 'An unexpected error occurred while getting auto-save transactions.',
+        message:
+            'An unexpected error occurred while getting auto-save transactions.',
         statusCode: 500,
       ));
     }
   }
 
   @override
-  Future<Either<Failure, entity.AutoSaveStatisticsEntity>> getAutoSaveStatistics() async {
+  Future<Either<Failure, entity.AutoSaveStatisticsEntity>>
+      getAutoSaveStatistics() async {
     try {
       final request = autosave_pb.GetAutoSaveStatisticsRequest();
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth(
           CallOptions(timeout: const Duration(seconds: 15)),
         );
@@ -483,7 +506,9 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         return Right(AutoSaveStatisticsModel.fromProto(response.statistics));
       } else {
         return Left(ServerFailure(
-          message: response.msg.isNotEmpty ? response.msg : 'Failed to get auto-save statistics.',
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'Failed to get auto-save statistics.',
           statusCode: 400,
         ));
       }
@@ -494,7 +519,8 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
       ));
     } catch (e) {
       return Left(ServerFailure(
-        message: 'An unexpected error occurred while getting auto-save statistics.',
+        message:
+            'An unexpected error occurred while getting auto-save statistics.',
         statusCode: 500,
       ));
     }
@@ -587,7 +613,8 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         request.customAmount = customAmount * 100; // Naira -> kobo
       }
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth(
           CallOptions(timeout: const Duration(seconds: 30)),
         );
@@ -601,7 +628,9 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         return Right(AutoSaveTransactionModel.fromProto(response.transaction));
       } else {
         return Left(ServerFailure(
-          message: response.msg.isNotEmpty ? response.msg : 'Failed to trigger auto-save.',
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'Failed to trigger auto-save.',
           statusCode: 400,
         ));
       }
@@ -647,7 +676,8 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
     }
   }
 
-  static autosave_pb.AutoSaveStatus _statusToProto(entity.AutoSaveStatus status) {
+  static autosave_pb.AutoSaveStatus _statusToProto(
+      entity.AutoSaveStatus status) {
     switch (status) {
       case entity.AutoSaveStatus.active:
         return autosave_pb.AutoSaveStatus.STATUS_ACTIVE;
@@ -662,7 +692,8 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
     }
   }
 
-  static autosave_pb.ScheduleFrequency _frequencyToProto(entity.ScheduleFrequency? freq) {
+  static autosave_pb.ScheduleFrequency _frequencyToProto(
+      entity.ScheduleFrequency? freq) {
     if (freq == null) return autosave_pb.ScheduleFrequency.FREQUENCY_UNKNOWN;
 
     switch (freq) {

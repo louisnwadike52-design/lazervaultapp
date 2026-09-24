@@ -146,8 +146,7 @@ class _SaleDetailSheet extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style: GoogleFonts.inter(color: _label, fontSize: 13.sp)),
+          Text(label, style: GoogleFonts.inter(color: _label, fontSize: 13.sp)),
           SizedBox(width: 16.w),
           Expanded(
             child: Text(value,

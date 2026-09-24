@@ -36,7 +36,9 @@ class _ConnectBanner extends StatelessWidget {
               'emails into tasks and events for the day.',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
-                  color: EmailPalette.textSecondary, fontSize: 13.sp, height: 1.5),
+                  color: EmailPalette.textSecondary,
+                  fontSize: 13.sp,
+                  height: 1.5),
             ),
             if (message != null && message!.isNotEmpty) ...[
               SizedBox(height: 12.h),

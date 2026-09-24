@@ -81,7 +81,9 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
                       // the default timeframe (merged into the loaded state).
                       if (state is PortfolioLoaded && !_historyRequested) {
                         _historyRequested = true;
-                        context.read<PortfolioCubit>().loadHistory(_selectedTimeframe);
+                        context
+                            .read<PortfolioCubit>()
+                            .loadHistory(_selectedTimeframe);
                       }
                     },
                     builder: (context, state) {
@@ -145,10 +147,10 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
               context.read<PortfolioCubit>().refreshPortfolio();
             },
           ),
-                ServiceVoiceButton(
-          serviceName: 'portfolio',
-        ),
-],
+          ServiceVoiceButton(
+            serviceName: 'portfolio',
+          ),
+        ],
       ),
     );
   }
@@ -484,8 +486,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
         ),
         titlesData: FlTitlesData(
           show: true,
-          rightTitles:
-              AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
           topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
@@ -616,7 +617,9 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
                     ),
                     child: asset.iconUrl != null && asset.iconUrl!.isNotEmpty
                         ? UniversalImageLoader(
-                            imagePath: asset.iconUrl!, height: 28.h, width: 28.w)
+                            imagePath: asset.iconUrl!,
+                            height: 28.h,
+                            width: 28.w)
                         : Icon(_getAssetIcon(asset.assetType),
                             color: Colors.white, size: 28.sp),
                   ),
@@ -717,7 +720,9 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
         _buildMetricCard(
           'Gain/Loss',
           '${summary.totalGainLoss >= 0 ? '+' : ''}${summary.currency} ${summary.totalGainLoss.toStringAsFixed(2)}',
-          summary.totalGainLoss >= 0 ? Icons.arrow_upward : Icons.arrow_downward,
+          summary.totalGainLoss >= 0
+              ? Icons.arrow_upward
+              : Icons.arrow_downward,
           summary.totalGainLoss >= 0 ? Colors.green : Colors.red,
         ),
         _buildMetricCard(
@@ -802,13 +807,29 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
       if (assetTypes.containsKey('stock'))
         {'label': 'Stocks', 'value': 'stock', 'count': assetTypes['stock']},
       if (assetTypes.containsKey('investment'))
-        {'label': 'Investments', 'value': 'investment', 'count': assetTypes['investment']},
+        {
+          'label': 'Investments',
+          'value': 'investment',
+          'count': assetTypes['investment']
+        },
       if (assetTypes.containsKey('account'))
-        {'label': 'Accounts', 'value': 'account', 'count': assetTypes['account']},
+        {
+          'label': 'Accounts',
+          'value': 'account',
+          'count': assetTypes['account']
+        },
       if (assetTypes.containsKey('savings'))
-        {'label': 'Savings', 'value': 'savings', 'count': assetTypes['savings']},
+        {
+          'label': 'Savings',
+          'value': 'savings',
+          'count': assetTypes['savings']
+        },
       if (assetTypes.containsKey('financial_goal'))
-        {'label': 'Goals', 'value': 'financial_goal', 'count': assetTypes['financial_goal']},
+        {
+          'label': 'Goals',
+          'value': 'financial_goal',
+          'count': assetTypes['financial_goal']
+        },
     ];
 
     return Column(
@@ -840,7 +861,8 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
                   });
                 },
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? Color.fromARGB(255, 78, 3, 208)
@@ -860,12 +882,14 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
                         style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontSize: 14.sp,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.w500,
                         ),
                       ),
                       SizedBox(width: 6.w),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 6.w, vertical: 2.h),
                         decoration: BoxDecoration(
                           color: isSelected
                               ? Colors.white.withValues(alpha: 0.2)
@@ -1011,9 +1035,11 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
                       ),
                       SizedBox(height: 4.h),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8.w, vertical: 2.h),
                         decoration: BoxDecoration(
-                          color: _getAssetTypeColor(asset.assetType).withValues(alpha: 0.2),
+                          color: _getAssetTypeColor(asset.assetType)
+                              .withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(6.r),
                         ),
                         child: Text(
@@ -1045,7 +1071,9 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
                     Row(
                       children: [
                         Icon(
-                          isPositive ? Icons.arrow_upward : Icons.arrow_downward,
+                          isPositive
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
                           color: gainLossColor,
                           size: 14.sp,
                         ),

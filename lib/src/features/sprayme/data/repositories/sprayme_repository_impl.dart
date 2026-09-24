@@ -22,31 +22,38 @@ class SprayMeRepositoryImpl implements ISprayMeRepository {
     required String occasionType,
     String coverImageUrl = '',
     String currency = 'NGN',
-  }) => _dataSource.createSession(
-    title: title,
-    description: description,
-    occasionType: occasionType,
-    coverImageUrl: coverImageUrl,
-    currency: currency,
-  );
+  }) =>
+      _dataSource.createSession(
+        title: title,
+        description: description,
+        occasionType: occasionType,
+        coverImageUrl: coverImageUrl,
+        currency: currency,
+      );
 
   @override
-  Future<SpraySession> getSession(String sessionId) => _dataSource.getSession(sessionId);
+  Future<SpraySession> getSession(String sessionId) =>
+      _dataSource.getSession(sessionId);
 
   @override
-  Future<SpraySession> getSessionByCode(String code) => _dataSource.getSessionByCode(code);
+  Future<SpraySession> getSessionByCode(String code) =>
+      _dataSource.getSessionByCode(code);
 
   @override
-  Future<SpraySession> joinSession(String sessionCode) => _dataSource.joinSession(sessionCode);
+  Future<SpraySession> joinSession(String sessionCode) =>
+      _dataSource.joinSession(sessionCode);
 
   @override
-  Future<void> leaveSession(String sessionId) => _dataSource.leaveSession(sessionId);
+  Future<void> leaveSession(String sessionId) =>
+      _dataSource.leaveSession(sessionId);
 
   @override
-  Future<SpraySession> endSession(String sessionId) => _dataSource.endSession(sessionId);
+  Future<SpraySession> endSession(String sessionId) =>
+      _dataSource.endSession(sessionId);
 
   @override
-  Future<List<SpraySession>> getMySessions({String filter = 'all', int page = 1, int pageSize = 20}) =>
+  Future<List<SpraySession>> getMySessions(
+          {String filter = 'all', int page = 1, int pageSize = 20}) =>
       _dataSource.getMySessions(filter: filter, page: page, pageSize: pageSize);
 
   @override
@@ -72,8 +79,14 @@ class SprayMeRepositoryImpl implements ISprayMeRepository {
   Future<SprayWallet> getWallet() => _dataSource.getWallet();
 
   @override
-  Future<SprayWallet> fundWallet({required int amount, required String sourceAccountId, required String verificationToken}) =>
-      _dataSource.fundWallet(amount: amount, sourceAccountId: sourceAccountId, verificationToken: verificationToken);
+  Future<SprayWallet> fundWallet(
+          {required int amount,
+          required String sourceAccountId,
+          required String verificationToken}) =>
+      _dataSource.fundWallet(
+          amount: amount,
+          sourceAccountId: sourceAccountId,
+          verificationToken: verificationToken);
 
   @override
   Future<SprayWallet> buyGiftCredit({
@@ -94,16 +107,30 @@ class SprayMeRepositoryImpl implements ISprayMeRepository {
       );
 
   @override
-  Future<SprayWallet> withdrawFromWallet({required int amount, required String destinationAccountId, required String verificationToken}) =>
-      _dataSource.withdrawFromWallet(amount: amount, destinationAccountId: destinationAccountId, verificationToken: verificationToken);
+  Future<SprayWallet> withdrawFromWallet(
+          {required int amount,
+          required String destinationAccountId,
+          required String verificationToken}) =>
+      _dataSource.withdrawFromWallet(
+          amount: amount,
+          destinationAccountId: destinationAccountId,
+          verificationToken: verificationToken);
 
   @override
-  Future<SprayActionResult> sendGift({required String sessionId, required String giftId, int quantity = 1}) =>
-      _dataSource.sendGift(sessionId: sessionId, giftId: giftId, quantity: quantity);
+  Future<SprayActionResult> sendGift(
+          {required String sessionId,
+          required String giftId,
+          int quantity = 1}) =>
+      _dataSource.sendGift(
+          sessionId: sessionId, giftId: giftId, quantity: quantity);
 
   @override
-  Future<SprayActionResult> sprayMoney({required String sessionId, required int denomination, required int tapCount}) =>
-      _dataSource.sprayMoney(sessionId: sessionId, denomination: denomination, tapCount: tapCount);
+  Future<SprayActionResult> sprayMoney(
+          {required String sessionId,
+          required int denomination,
+          required int tapCount}) =>
+      _dataSource.sprayMoney(
+          sessionId: sessionId, denomination: denomination, tapCount: tapCount);
 
   @override
   Future<({int totalLikes, int totalLikeTaps, int liveLikeTaps})> sendLike(
@@ -112,20 +139,26 @@ class SprayMeRepositoryImpl implements ISprayMeRepository {
       _dataSource.sendLike(sessionId, count: count);
 
   @override
-  Future<List<SprayGift>> getGiftCatalog({String? category}) => _dataSource.getGiftCatalog(category: category);
+  Future<List<SprayGift>> getGiftCatalog({String? category}) =>
+      _dataSource.getGiftCatalog(category: category);
 
   @override
-  Future<SessionStats> getSessionStats(String sessionId) => _dataSource.getSessionStats(sessionId);
+  Future<SessionStats> getSessionStats(String sessionId) =>
+      _dataSource.getSessionStats(sessionId);
 
   @override
-  Future<MySprayStats> getMySprayStats({String period = 'all'}) => _dataSource.getMySprayStats(period: period);
+  Future<MySprayStats> getMySprayStats({String period = 'all'}) =>
+      _dataSource.getMySprayStats(period: period);
 
   @override
-  Future<List<SprayTransaction>> getSessionTransactions(String sessionId, {int page = 1, int pageSize = 20}) =>
-      _dataSource.getSessionTransactions(sessionId, page: page, pageSize: pageSize);
+  Future<List<SprayTransaction>> getSessionTransactions(String sessionId,
+          {int page = 1, int pageSize = 20}) =>
+      _dataSource.getSessionTransactions(sessionId,
+          page: page, pageSize: pageSize);
 
   @override
-  Future<List<SprayTransaction>> getMyTransactions({String type = 'all', int page = 1, int pageSize = 20}) =>
+  Future<List<SprayTransaction>> getMyTransactions(
+          {String type = 'all', int page = 1, int pageSize = 20}) =>
       _dataSource.getMyTransactions(type: type, page: page, pageSize: pageSize);
 
   @override
@@ -133,33 +166,41 @@ class SprayMeRepositoryImpl implements ISprayMeRepository {
       _dataSource.getSessionParticipants(sessionId);
 
   @override
-  Future<SprayComment> addComment({required String sessionId, required String text}) =>
+  Future<SprayComment> addComment(
+          {required String sessionId, required String text}) =>
       _dataSource.addComment(sessionId: sessionId, text: text);
 
   @override
-  Future<List<SprayComment>> getComments(String sessionId, {int page = 1, int pageSize = 50}) =>
+  Future<List<SprayComment>> getComments(String sessionId,
+          {int page = 1, int pageSize = 50}) =>
       _dataSource.getComments(sessionId, page: page, pageSize: pageSize);
 
   // ─── Live video streaming ──
 
   @override
-  Future<Map<String, dynamic>> startStream(String sessionId, {bool recordingEnabled = false}) =>
+  Future<Map<String, dynamic>> startStream(String sessionId,
+          {bool recordingEnabled = false}) =>
       _dataSource.startStream(sessionId, recordingEnabled: recordingEnabled);
 
   @override
-  Future<SpraySession> stopStream(String sessionId) => _dataSource.stopStream(sessionId);
+  Future<SpraySession> stopStream(String sessionId) =>
+      _dataSource.stopStream(sessionId);
 
   @override
-  Future<void> pauseStream(String sessionId) => _dataSource.pauseStream(sessionId);
+  Future<void> pauseStream(String sessionId) =>
+      _dataSource.pauseStream(sessionId);
 
   @override
-  Future<void> resumeStream(String sessionId) => _dataSource.resumeStream(sessionId);
+  Future<void> resumeStream(String sessionId) =>
+      _dataSource.resumeStream(sessionId);
 
   @override
-  Future<Map<String, dynamic>> getStreamToken(String sessionId) => _dataSource.getStreamToken(sessionId);
+  Future<Map<String, dynamic>> getStreamToken(String sessionId) =>
+      _dataSource.getStreamToken(sessionId);
 
   @override
-  Future<void> inviteCoHost(String sessionId, {required String userId, String userName = ''}) =>
+  Future<void> inviteCoHost(String sessionId,
+          {required String userId, String userName = ''}) =>
       _dataSource.inviteCoHost(sessionId, userId: userId, userName: userName);
 
   @override

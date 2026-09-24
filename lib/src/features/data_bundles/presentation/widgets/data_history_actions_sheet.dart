@@ -22,8 +22,7 @@ class DataHistoryActionsSheet {
   /// empty string when we can't infer a carrier, and the caller then
   /// refuses to save rather than storing an ugly placeholder.
   static String _resolveNetworkName(String networkCode, String networkName) {
-    if (networkName.isNotEmpty &&
-        networkName.toLowerCase() != 'unknown') {
+    if (networkName.isNotEmpty && networkName.toLowerCase() != 'unknown') {
       return networkName;
     }
     final code = networkCode.toUpperCase().replaceAll('-DATA', '');
@@ -155,9 +154,14 @@ class DataHistoryActionsSheet {
                   'fxRate': (meta['fx_rate_used'] ?? meta['fx_rate']) is num
                       ? (meta['fx_rate_used'] ?? meta['fx_rate']) as num
                       : 0,
-                  'operatorId': (meta['reloadly_operator_id'] ?? meta['operator_id'] ?? '').toString(),
+                  'operatorId': (meta['reloadly_operator_id'] ??
+                          meta['operator_id'] ??
+                          '')
+                      .toString(),
                   'operatorName': (meta['operator_name'] ?? '').toString(),
-                  'bundleDescription': (meta['bundle_description'] ?? meta['plan_name'] ?? '').toString(),
+                  'bundleDescription':
+                      (meta['bundle_description'] ?? meta['plan_name'] ?? '')
+                          .toString(),
                 },
               );
             } else if (networkCode.isNotEmpty) {
@@ -215,44 +219,44 @@ class DataHistoryActionsSheet {
             color: const Color(0xFF10B981),
             label: 'Set Rollover',
             onTap: () async {
-            Get.back();
-            // No save-contact gate: the rollover screen already handles having
-            // no beneficiary (see the else branch below), so requiring one only
-            // created a way for this action to do nothing at all — the gate ran
-            // against a context Get.back() had just unmounted and returned
-            // false without showing anything.
-            //
-            // Binding to an existing saved contact is still worth doing, so it
-            // is attempted best-effort and never blocks the navigation.
-            DataBeneficiary? beneficiary;
-            try {
-              final ds = GetIt.I<DataBeneficiaryRemoteDataSource>();
-              final list = await ds.getBeneficiaries(
-                networkCode: networkCode.isNotEmpty ? networkCode : null,
-              );
-              beneficiary = list.cast<DataBeneficiary?>().firstWhere(
-                (b) =>
-                    b != null &&
-                    b.phoneNumber == p.phoneNumber &&
-                    (networkCode.isEmpty ||
-                        b.networkCode.toLowerCase() ==
-                            networkCode.toLowerCase()),
-                orElse: () => null,
-              );
-            } catch (_) {}
-            if (beneficiary != null) {
-              Get.toNamed(
-                AppRoutes.dataBundlesRolloverCreate,
-                arguments: {
-                  'beneficiary': beneficiary,
-                  'locked': true,
-                },
-              );
-            } else {
-              Get.toNamed(AppRoutes.dataBundlesRolloverCreate);
-            }
-          },
-        ),
+              Get.back();
+              // No save-contact gate: the rollover screen already handles having
+              // no beneficiary (see the else branch below), so requiring one only
+              // created a way for this action to do nothing at all — the gate ran
+              // against a context Get.back() had just unmounted and returned
+              // false without showing anything.
+              //
+              // Binding to an existing saved contact is still worth doing, so it
+              // is attempted best-effort and never blocks the navigation.
+              DataBeneficiary? beneficiary;
+              try {
+                final ds = GetIt.I<DataBeneficiaryRemoteDataSource>();
+                final list = await ds.getBeneficiaries(
+                  networkCode: networkCode.isNotEmpty ? networkCode : null,
+                );
+                beneficiary = list.cast<DataBeneficiary?>().firstWhere(
+                      (b) =>
+                          b != null &&
+                          b.phoneNumber == p.phoneNumber &&
+                          (networkCode.isEmpty ||
+                              b.networkCode.toLowerCase() ==
+                                  networkCode.toLowerCase()),
+                      orElse: () => null,
+                    );
+              } catch (_) {}
+              if (beneficiary != null) {
+                Get.toNamed(
+                  AppRoutes.dataBundlesRolloverCreate,
+                  arguments: {
+                    'beneficiary': beneficiary,
+                    'locked': true,
+                  },
+                );
+              } else {
+                Get.toNamed(AppRoutes.dataBundlesRolloverCreate);
+              }
+            },
+          ),
         if (isCompleted)
           BillHistoryAction(
             icon: isSaved ? Icons.edit_note : Icons.bookmark_add_outlined,
@@ -319,7 +323,6 @@ class DataHistoryActionsSheet {
   /// If the contact is not yet saved, shows the save-beneficiary sheet inline.
   /// Returns `true` when the contact is already saved or was just saved
   /// successfully, `false` if the user dismissed the save sheet.
-
 
   static String _statusLabel(DataPurchaseEntity p) {
     if (p.isCompleted) return 'Completed';

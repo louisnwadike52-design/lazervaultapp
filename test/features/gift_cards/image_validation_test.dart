@@ -39,7 +39,20 @@ void main() {
       // ftypheic at offset 4 — iOS HEIC magic. Even with .jpg
       // extension this would fail Prestmit's content sniff.
       final bytes = _bytes(
-        [0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x68, 0x65, 0x69, 0x63],
+        [
+          0x00,
+          0x00,
+          0x00,
+          0x18,
+          0x66,
+          0x74,
+          0x79,
+          0x70,
+          0x68,
+          0x65,
+          0x69,
+          0x63
+        ],
         padTo: 1024,
       );
       final res = GiftCardValidation.validateImageBytes(bytes);
@@ -48,7 +61,20 @@ void main() {
 
     test("rejects WEBP", () {
       final bytes = _bytes(
-        [0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50],
+        [
+          0x52,
+          0x49,
+          0x46,
+          0x46,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x57,
+          0x45,
+          0x42,
+          0x50
+        ],
         padTo: 1024,
       );
       final res = GiftCardValidation.validateImageBytes(bytes);
@@ -72,7 +98,8 @@ void main() {
       const exact = 5 * 1024 * 1024;
       final bytes = _bytes([0xFF, 0xD8, 0xFF], padTo: exact);
       final res = GiftCardValidation.validateImageBytes(bytes);
-      expect(res.isRight(), isTrue, reason: "Exactly 5MB is the boundary — accept");
+      expect(res.isRight(), isTrue,
+          reason: "Exactly 5MB is the boundary — accept");
     });
   });
 

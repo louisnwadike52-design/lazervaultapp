@@ -31,8 +31,7 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen> {
   double get _amount => (_args['amount'] as num?)?.toDouble() ?? 0;
   double get _fee => (_args['fee'] as num?)?.toDouble() ?? 0;
   double get _total => (_args['total'] as num?)?.toDouble() ?? 0;
-  String get _paymentMethod =>
-      (_args['paymentMethod'] as String?) ?? '—';
+  String get _paymentMethod => (_args['paymentMethod'] as String?) ?? '—';
   String get _description =>
       (_args['description'] as String?) ?? 'Portfolio operation';
 

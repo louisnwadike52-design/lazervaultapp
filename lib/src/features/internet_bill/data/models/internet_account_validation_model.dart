@@ -10,7 +10,8 @@ class InternetAccountValidationModel extends InternetAccountValidationEntity {
     required super.dueAmount,
   });
 
-  factory InternetAccountValidationModel.fromProto(pb.InternetAccountValidation proto) {
+  factory InternetAccountValidationModel.fromProto(
+      pb.InternetAccountValidation proto) {
     return InternetAccountValidationModel(
       isValid: proto.isValid,
       customerName: proto.customerName,

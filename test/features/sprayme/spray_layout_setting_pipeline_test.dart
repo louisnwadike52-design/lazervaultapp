@@ -24,7 +24,8 @@ void main() {
   });
 
   group('spray layout admin setting pipeline', () {
-    test('an admin value survives applyRemoteSnapshot and parses back', () async {
+    test('an admin value survives applyRemoteSnapshot and parses back',
+        () async {
       await FeatureFlags.init();
       await FeatureFlags.applyRemoteSnapshot({
         FeatureFlags.spraymeDefaultLayoutMode: 'spotlight',
@@ -41,11 +42,13 @@ void main() {
         await FeatureFlags.applyRemoteSnapshot({
           FeatureFlags.spraymeDefaultLayoutMode: mode.settingValue,
         });
-        expect(sprayLayoutModeFromSetting(FeatureFlags.spraymeLayoutMode), mode);
+        expect(
+            sprayLayoutModeFromSetting(FeatureFlags.spraymeLayoutMode), mode);
       }
     });
 
-    test('no admin value yet → null, and the room falls back to grid', () async {
+    test('no admin value yet → null, and the room falls back to grid',
+        () async {
       await FeatureFlags.init();
       expect(FeatureFlags.spraymeLayoutMode, isNull);
       expect(sprayLayoutModeFromSetting(FeatureFlags.spraymeLayoutMode),

@@ -30,11 +30,12 @@ class InsuranceDetailsScreen extends StatefulWidget {
   State<InsuranceDetailsScreen> createState() => _InsuranceDetailsScreenState();
 }
 
-class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with TickerProviderStateMixin {
+class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen>
+    with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late AnimationController _slideController;
-      late TabController _tabController;
-  
+  late TabController _tabController;
+
   @override
   void initState() {
     super.initState();
@@ -47,7 +48,7 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
       vsync: this,
     );
     _tabController = TabController(length: 3, vsync: this);
-    
+
     _fadeController.forward();
     _slideController.forward();
   }
@@ -64,29 +65,30 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
   Widget build(BuildContext context) {
     return BlocConsumer<AuthenticationCubit, AuthenticationState>(
       listener: (context, authState) {
-        final userId = authState is AuthenticationSuccess 
-            ? authState.profile.user.id 
+        final userId = authState is AuthenticationSuccess
+            ? authState.profile.user.id
             : 'guest_user';
-        
+
         final cubit = context.read<InsuranceCubit>();
         cubit.setUserId(userId);
       },
       builder: (context, authState) {
-        final userId = authState is AuthenticationSuccess 
-            ? authState.profile.user.id 
+        final userId = authState is AuthenticationSuccess
+            ? authState.profile.user.id
             : 'guest_user';
-        
+
         // Initialize the details screen with the passed insurance data
         WidgetsBinding.instance.addPostFrameCallback((_) {
           final cubit = context.read<InsuranceCubit>();
           cubit.setUserId(userId);
           // Load details using the passed insurance data (only once)
-          if (cubit.state is! InsuranceDetailsLoaded || 
-              (cubit.state as InsuranceDetailsLoaded).insurance.id != widget.insurance.id) {
+          if (cubit.state is! InsuranceDetailsLoaded ||
+              (cubit.state as InsuranceDetailsLoaded).insurance.id !=
+                  widget.insurance.id) {
             cubit.loadInsuranceDetailsWithData(widget.insurance);
           }
         });
-        
+
         return _buildDetailsScreen();
       },
     );
@@ -183,11 +185,11 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
                 color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(22.r),
                 boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
                 ],
               ),
               child: Icon(
@@ -247,7 +249,8 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
                 value: 'claim',
                 child: Row(
                   children: [
-                    Icon(Icons.report_problem, color: Colors.white, size: 20.sp),
+                    Icon(Icons.report_problem,
+                        color: Colors.white, size: 20.sp),
                     SizedBox(width: 12.w),
                     Text(
                       'File Claim',
@@ -334,7 +337,10 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
                 height: 60.w,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                    colors: [
+                      Color(0xFF6366F1),
+                      Color.fromARGB(255, 78, 3, 208)
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(30.r),
                 ),
@@ -369,7 +375,8 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
           Row(
             children: [
               Expanded(
-                child: _buildOverviewItem('Premium', '\$${insurance.premiumAmount.toStringAsFixed(2)}'),
+                child: _buildOverviewItem('Premium',
+                    '\$${insurance.premiumAmount.toStringAsFixed(2)}'),
               ),
               Container(
                 width: 1.w,
@@ -377,10 +384,11 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
                 color: Colors.white.withValues(alpha: 0.1),
               ),
               Expanded(
-                child: _buildOverviewItem('Coverage',
-                  insurance.coverageAmount >= 1000
-                    ? '\$${(insurance.coverageAmount / 1000).toStringAsFixed(0)}K'
-                    : '\$${insurance.coverageAmount.toStringAsFixed(0)}'),
+                child: _buildOverviewItem(
+                    'Coverage',
+                    insurance.coverageAmount >= 1000
+                        ? '\$${(insurance.coverageAmount / 1000).toStringAsFixed(0)}K'
+                        : '\$${insurance.coverageAmount.toStringAsFixed(0)}'),
               ),
               Container(
                 width: 1.w,
@@ -388,12 +396,13 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
                 color: Colors.white.withValues(alpha: 0.1),
               ),
               Expanded(
-                child: _buildOverviewItem('Expires',
-                  insurance.daysUntilExpiry < 0
-                    ? 'Expired'
-                    : insurance.daysUntilExpiry == 0
-                      ? 'Today'
-                      : '${insurance.daysUntilExpiry} days'),
+                child: _buildOverviewItem(
+                    'Expires',
+                    insurance.daysUntilExpiry < 0
+                        ? 'Expired'
+                        : insurance.daysUntilExpiry == 0
+                            ? 'Today'
+                            : '${insurance.daysUntilExpiry} days'),
               ),
             ],
           ),
@@ -520,15 +529,18 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
           ]),
           SizedBox(height: 24.h),
           _buildCoverageSection('Coverage Details', [
-            _buildInfoRow('Deductible', '\$${_safeDouble(insurance.coverageDetails['deductible']).toStringAsFixed(2)}'),
-            _buildInfoRow('Coverage Limit', '\$${_safeDouble(insurance.coverageDetails['coverage_limit']).toStringAsFixed(2)}'),
+            _buildInfoRow('Deductible',
+                '\$${_safeDouble(insurance.coverageDetails['deductible']).toStringAsFixed(2)}'),
+            _buildInfoRow('Coverage Limit',
+                '\$${_safeDouble(insurance.coverageDetails['coverage_limit']).toStringAsFixed(2)}'),
             _buildInfoRow('Currency', insurance.currency),
           ]),
           SizedBox(height: 24.h),
           _buildCoverageSection('Policy Dates', [
             _buildInfoRow('Start Date', _formatDate(insurance.startDate)),
             _buildInfoRow('End Date', _formatDate(insurance.endDate)),
-            _buildInfoRow('Next Payment', _formatDate(insurance.nextPaymentDate)),
+            _buildInfoRow(
+                'Next Payment', _formatDate(insurance.nextPaymentDate)),
           ]),
           if (insurance.beneficiaries.isNotEmpty) ...[
             SizedBox(height: 24.h),
@@ -536,7 +548,8 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
           ],
           if (insurance.coverageDetails['features'] != null) ...[
             SizedBox(height: 24.h),
-            _buildFeaturesSection(_safeStringList(insurance.coverageDetails['features'])),
+            _buildFeaturesSection(
+                _safeStringList(insurance.coverageDetails['features'])),
           ],
           if (insurance.description != null) ...[
             SizedBox(height: 24.h),
@@ -641,7 +654,8 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
                 decoration: BoxDecoration(
                   color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20.r),
-                  border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
                 ),
                 child: Text(
                   beneficiary,
@@ -694,7 +708,8 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
                 decoration: BoxDecoration(
                   color: const Color(0xFF10B981).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20.r),
-                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.3)),
                 ),
                 child: Text(
                   feature,
@@ -848,13 +863,13 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
                     color: const Color(0xFF9CA3AF),
                   ),
                 ),
-                                 Text(
-                   payment.transactionId!,
-                   style: GoogleFonts.inter(
-                     fontSize: 14.sp,
-                     color: Colors.white,
-                   ),
-                 ),
+                Text(
+                  payment.transactionId!,
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    color: Colors.white,
+                  ),
+                ),
               ],
             ),
           ],
@@ -952,100 +967,101 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
 
   Widget _buildClaimCard(InsuranceClaim claim) {
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.insuranceClaimTracking, arguments: claim),
+      onTap: () =>
+          Get.toNamed(AppRoutes.insuranceClaimTracking, arguments: claim),
       child: Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                claim.title,
-                style: GoogleFonts.inter(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              _buildClaimStatusBadge(claim.status),
-            ],
-          ),
-          SizedBox(height: 8.h),
-                     Text(
-             claim.claimNumber,
-             style: GoogleFonts.inter(
-               fontSize: 12.sp,
-               color: const Color(0xFF9CA3AF),
-             ),
-           ),
-          SizedBox(height: 12.h),
-          Text(
-            claim.description,
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              color: const Color(0xFF9CA3AF),
-              height: 1.4,
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 6,
+              offset: Offset(0, 2),
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          SizedBox(height: 12.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Claim Amount',
-                style: GoogleFonts.inter(
-                  fontSize: 14.sp,
-                  color: const Color(0xFF9CA3AF),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  claim.title,
+                  style: GoogleFonts.inter(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
+                _buildClaimStatusBadge(claim.status),
+              ],
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              claim.claimNumber,
+              style: GoogleFonts.inter(
+                fontSize: 12.sp,
+                color: const Color(0xFF9CA3AF),
               ),
-              Text(
-                '\$${claim.claimAmount.toStringAsFixed(2)}',
-                style: GoogleFonts.inter(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF10B981),
+            ),
+            SizedBox(height: 12.h),
+            Text(
+              claim.description,
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                color: const Color(0xFF9CA3AF),
+                height: 1.4,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            SizedBox(height: 12.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Claim Amount',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    color: const Color(0xFF9CA3AF),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: 8.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Incident Date',
-                style: GoogleFonts.inter(
-                  fontSize: 14.sp,
-                  color: const Color(0xFF9CA3AF),
+                Text(
+                  '\$${claim.claimAmount.toStringAsFixed(2)}',
+                  style: GoogleFonts.inter(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF10B981),
+                  ),
                 ),
-              ),
-              Text(
-                _formatDate(claim.incidentDate),
-                style: GoogleFonts.inter(
-                  fontSize: 14.sp,
-                  color: Colors.white,
+              ],
+            ),
+            SizedBox(height: 8.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Incident Date',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    color: const Color(0xFF9CA3AF),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+                Text(
+                  _formatDate(claim.incidentDate),
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
-    ),
     );
   }
 
@@ -1215,7 +1231,8 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
               ],
             ),
             child: FloatingActionButton.extended(
-              onPressed: () => Get.toNamed(AppRoutes.insurancePayment, arguments: state.insurance),
+              onPressed: () => Get.toNamed(AppRoutes.insurancePayment,
+                  arguments: state.insurance),
               backgroundColor: Colors.transparent,
               elevation: 0,
               icon: Icon(
@@ -1304,12 +1321,12 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
       case 'terms':
         InsuranceTermsBottomSheet.show(
           context,
-          urlResolver: () => serviceLocator<InsuranceRepository>()
-              .getInsuranceTermsLink(
+          urlResolver: () =>
+              serviceLocator<InsuranceRepository>().getInsuranceTermsLink(
             locale: serviceLocator<LocaleManager>().currentCountry,
           ),
         );
         break;
     }
   }
-} 
+}

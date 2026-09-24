@@ -15,7 +15,6 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 part 'crowdfund_list_screen_widgets.dart';
 
-
 class CrowdfundListScreen extends StatefulWidget {
   const CrowdfundListScreen({super.key});
 
@@ -48,6 +47,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
   /// parallel) for donations whose campaigns weren't in the snapshot
   /// (i.e. campaigns the user has funded but didn't create).
   final Map<String, _CampaignMeta> _campaignMetaCache = {};
+
   /// IDs we tried to back-fill but couldn't (404, network error,
   /// deleted campaign). Tracked separately so the UI swaps from
   /// "Loading campaign…" to "Campaign unavailable" once the warm-up
@@ -328,14 +328,18 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
                 color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(19.r),
               ),
-              child: Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 16.sp),
+              child: Icon(Icons.arrow_back_ios_new,
+                  color: Colors.white, size: 16.sp),
             ),
           ),
           SizedBox(width: 12.w),
           Expanded(
             child: Text(
               'Campaigns',
-              style: GoogleFonts.inter(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w700),
+              style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w700),
             ),
           ),
           GestureDetector(
@@ -542,8 +546,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
         //   3. Anything else with a cache → render the cache (paint
         //      stays stable across refresh / filter / tab change).
         //   4. No cache yet → shimmer.
-        final render =
-            state is CrowdfundLoaded ? state : _lastBrowse;
+        final render = state is CrowdfundLoaded ? state : _lastBrowse;
         if (state is CrowdfundError && render == null) {
           return _buildErrorState(state.message);
         }
@@ -624,8 +627,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
             });
           }
         }
-        final render =
-            state is UserDonationsLoaded ? state : _lastFunded;
+        final render = state is UserDonationsLoaded ? state : _lastFunded;
         if (state is CrowdfundError && render == null) {
           return _buildErrorState(state.message);
         }

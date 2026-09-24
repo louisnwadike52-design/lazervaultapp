@@ -37,6 +37,7 @@ class CancelCrowdfundSheet extends StatefulWidget {
 class _CancelCrowdfundSheetState extends State<CancelCrowdfundSheet>
     with TransactionPinMixin {
   final _reasonController = TextEditingController();
+
   /// Inline validation for the reason field.
   ///
   /// The minimum-length rule was enforced with a snackbar. From inside a bottom

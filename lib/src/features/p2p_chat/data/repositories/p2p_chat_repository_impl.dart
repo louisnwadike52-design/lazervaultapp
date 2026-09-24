@@ -46,16 +46,14 @@ class P2PChatRepositoryImpl implements P2PChatRepository {
   Future<List<P2PConversationEntity>> listConversations(
       {int page = 1, int limit = 20}) async {
     final token = await _getToken();
-    return _remoteDatasource.listConversations(token,
-        page: page, limit: limit);
+    return _remoteDatasource.listConversations(token, page: page, limit: limit);
   }
 
   @override
   Future<List<P2PConversationEntity>> listConnections(
       {int page = 1, int limit = 20}) async {
     final token = await _getToken();
-    return _remoteDatasource.listConnections(token,
-        page: page, limit: limit);
+    return _remoteDatasource.listConnections(token, page: page, limit: limit);
   }
 
   @override
@@ -148,14 +146,16 @@ class P2PChatRepositoryImpl implements P2PChatRepository {
   Future<P2PMessageEntity> editMessage(
       String conversationId, String messageId, String content) async {
     final token = await _getToken();
-    return _remoteDatasource.editMessage(conversationId, messageId, content, token);
+    return _remoteDatasource.editMessage(
+        conversationId, messageId, content, token);
   }
 
   @override
   Future<List<P2PReaction>> reactToMessage(
       String conversationId, String messageId, String emoji) async {
     final token = await _getToken();
-    return _remoteDatasource.reactToMessage(conversationId, messageId, emoji, token);
+    return _remoteDatasource.reactToMessage(
+        conversationId, messageId, emoji, token);
   }
 
   @override

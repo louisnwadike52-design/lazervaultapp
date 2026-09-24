@@ -27,7 +27,7 @@ class SocialAccountCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -59,7 +59,7 @@ class SocialAccountCard extends StatelessWidget {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: Color(account.provider.brandColorValue).withValues(alpha:0.15),
+        color: Color(account.provider.brandColorValue).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Center(
@@ -117,7 +117,7 @@ class SocialAccountCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha:0.2),
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: const Text(
@@ -317,7 +317,7 @@ class LinkProviderCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -336,7 +336,8 @@ class LinkProviderCard extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: Color(provider.brandColorValue).withValues(alpha:0.15),
+                    color:
+                        Color(provider.brandColorValue).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(

@@ -198,6 +198,7 @@ class GoogleCalendarConnectionResult {
   final bool success;
   final String? syncToken;
   final int eventsSynced;
+
   /// True when the backend responded that calendar sync isn't configured
   /// (HTTP 503, `configured:false`) — the UI should show a "coming soon"
   /// state rather than a hard connection error.

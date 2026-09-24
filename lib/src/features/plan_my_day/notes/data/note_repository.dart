@@ -21,9 +21,8 @@ class NoteRepository {
   static const Duration _timeout = Duration(seconds: 30);
   static const String _accessTokenKey = 'access_token';
 
-  static String _normalizeBase(String base) => base
-      .replaceAll(RegExp(r'/+$'), '')
-      .replaceAll(RegExp(r'/api/v1$'), '');
+  static String _normalizeBase(String base) =>
+      base.replaceAll(RegExp(r'/+$'), '').replaceAll(RegExp(r'/api/v1$'), '');
 
   NoteRepository({
     String? baseUrl,
@@ -56,8 +55,9 @@ class NoteRepository {
   Uri _uri(String path) => Uri.parse('$_baseUrl/api/v1/planning$path');
 
   Future<List<Note>> getNotes() async {
-    final res =
-        await _client.get(_uri('/notes'), headers: await _headers()).timeout(_timeout);
+    final res = await _client
+        .get(_uri('/notes'), headers: await _headers())
+        .timeout(_timeout);
     final data = _ok(res, 'Failed to load notes');
     final list = (data['notes'] as List<dynamic>?) ?? const [];
     return list.map((e) => Note.fromJson(e as Map<String, dynamic>)).toList();

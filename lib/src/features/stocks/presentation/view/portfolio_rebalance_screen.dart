@@ -21,14 +21,16 @@ class PortfolioRebalanceScreen extends StatefulWidget {
   });
 
   @override
-  State<PortfolioRebalanceScreen> createState() => _PortfolioRebalanceScreenState();
+  State<PortfolioRebalanceScreen> createState() =>
+      _PortfolioRebalanceScreenState();
 }
 
-class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen> with TickerProviderStateMixin {
+class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen>
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _slideAnimation;
-  
+
   String _selectedStrategy = 'Conservative';
   final List<String> _strategies = ['Conservative', 'Moderate', 'Aggressive'];
 
@@ -47,9 +49,8 @@ class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen> wit
     final targetPercent = holdings.isNotEmpty ? 100.0 / holdings.length : 0.0;
 
     _currentAllocations = holdings.map((holding) {
-      final currentPercent = totalValue > 0
-          ? (holding.totalValue / totalValue) * 100.0
-          : 0.0;
+      final currentPercent =
+          totalValue > 0 ? (holding.totalValue / totalValue) * 100.0 : 0.0;
       return {
         'symbol': holding.symbol,
         'name': holding.name,
@@ -77,15 +78,15 @@ class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen> wit
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _slideAnimation = Tween<double>(begin: 30.0, end: 0.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _animationController.forward();
   }
 
@@ -268,7 +269,8 @@ class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen> wit
               ),
               Builder(builder: (context) {
                 final isBalanced = _currentAllocations.every((a) {
-                  final diff = (a['target'] as double) - (a['current'] as double);
+                  final diff =
+                      (a['target'] as double) - (a['current'] as double);
                   return diff.abs() < 1.0;
                 });
                 final statusColor = isBalanced ? Colors.green : Colors.orange;
@@ -335,7 +337,7 @@ class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen> wit
     final isSelected = _selectedStrategy == strategy;
     Color color;
     String description;
-    
+
     switch (strategy) {
       case 'Conservative':
         color = Colors.green;
@@ -374,7 +376,6 @@ class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen> wit
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Material(
         color: Colors.transparent,
@@ -396,9 +397,11 @@ class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen> wit
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Icon(
-                    strategy == 'Conservative' ? Icons.security :
-                    strategy == 'Moderate' ? Icons.balance :
-                    Icons.trending_up,
+                    strategy == 'Conservative'
+                        ? Icons.security
+                        : strategy == 'Moderate'
+                            ? Icons.balance
+                            : Icons.trending_up,
                     color: color,
                     size: 20.sp,
                   ),
@@ -473,7 +476,8 @@ class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen> wit
             ),
           ),
           SizedBox(height: 20.h),
-          ..._currentAllocations.map((allocation) => _buildAllocationItem(allocation)),
+          ..._currentAllocations
+              .map((allocation) => _buildAllocationItem(allocation)),
         ],
       ),
     );
@@ -484,7 +488,7 @@ class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen> wit
     final target = allocation['target'] as double;
     final difference = target - current;
     final isIncrease = difference > 0;
-    
+
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(16.w),
@@ -498,7 +502,6 @@ class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen> wit
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Column(
         children: [
@@ -557,9 +560,11 @@ class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen> wit
                     ),
                   ),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                     decoration: BoxDecoration(
-                      color: (isIncrease ? Colors.green : Colors.red).withValues(alpha: 0.2),
+                      color: (isIncrease ? Colors.green : Colors.red)
+                          .withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(6.r),
                     ),
                     child: Text(
@@ -621,7 +626,8 @@ class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen> wit
                     LinearProgressIndicator(
                       value: target / 100,
                       backgroundColor: Colors.white.withValues(alpha: 0.1),
-                      valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF4A90E2)),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                          const Color(0xFF4A90E2)),
                       minHeight: 4.h,
                     ),
                   ],
@@ -700,7 +706,8 @@ class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen> wit
     return items;
   }
 
-  Widget _buildActionItem(String action, String amount, String description, Color color) {
+  Widget _buildActionItem(
+      String action, String amount, String description, Color color) {
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(16.w),
@@ -859,4 +866,4 @@ class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen> wit
       'strategy': _selectedStrategy,
     });
   }
-} 
+}

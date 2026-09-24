@@ -58,7 +58,10 @@ class _RemindersScreenState extends State<RemindersScreen>
       // Navigate to electricity bill home where the beneficiary flow will handle it
       Get.toNamed(
         AppRoutes.electricityBillHome,
-        arguments: {'fromReminder': true, 'beneficiaryId': reminder.beneficiaryId},
+        arguments: {
+          'fromReminder': true,
+          'beneficiaryId': reminder.beneficiaryId
+        },
       );
     } else {
       // No beneficiary linked, go to electricity bill home to start fresh
@@ -106,7 +109,9 @@ class _RemindersScreenState extends State<RemindersScreen>
             onPressed: () {
               Get.back();
               if (mounted) {
-                context.read<ReminderCubit>().deleteReminder(reminderId: reminder.id);
+                context
+                    .read<ReminderCubit>()
+                    .deleteReminder(reminderId: reminder.id);
               }
             },
             child: Text(
@@ -229,7 +234,8 @@ class _RemindersScreenState extends State<RemindersScreen>
                           padding: EdgeInsets.all(20.w),
                           children: [
                             if (due.isNotEmpty) ...[
-                              _buildSectionHeader('Due Reminders', Colors.orange),
+                              _buildSectionHeader(
+                                  'Due Reminders', Colors.orange),
                               SizedBox(height: 12.h),
                               ...due.map((r) => Padding(
                                     padding: EdgeInsets.only(bottom: 12.h),
@@ -238,7 +244,8 @@ class _RemindersScreenState extends State<RemindersScreen>
                               SizedBox(height: 24.h),
                             ],
                             if (active.isNotEmpty) ...[
-                              _buildSectionHeader('Upcoming Reminders', const Color(0xFF4E03D0)),
+                              _buildSectionHeader('Upcoming Reminders',
+                                  const Color(0xFF4E03D0)),
                               SizedBox(height: 12.h),
                               ...active.map((r) => Padding(
                                     padding: EdgeInsets.only(bottom: 12.h),
@@ -246,7 +253,8 @@ class _RemindersScreenState extends State<RemindersScreen>
                                   )),
                             ],
                             if (completed.isNotEmpty) ...[
-                              if (active.isNotEmpty || due.isNotEmpty) SizedBox(height: 24.h),
+                              if (active.isNotEmpty || due.isNotEmpty)
+                                SizedBox(height: 24.h),
                               _buildSectionHeader('Completed', Colors.grey),
                               SizedBox(height: 12.h),
                               ...completed.map((r) => Padding(
@@ -419,7 +427,8 @@ class _RemindersScreenState extends State<RemindersScreen>
     );
   }
 
-  Widget _buildReminderCard(PaymentReminderEntity reminder, {bool isDue = false}) {
+  Widget _buildReminderCard(PaymentReminderEntity reminder,
+      {bool isDue = false}) {
     final dateFormat = DateFormat('MMM dd, yyyy');
     final timeFormat = DateFormat('hh:mm a');
 
@@ -446,7 +455,8 @@ class _RemindersScreenState extends State<RemindersScreen>
                 width: 48.w,
                 height: 48.w,
                 decoration: BoxDecoration(
-                  color: _getStatusColor(reminder.status).withValues(alpha: 0.2),
+                  color:
+                      _getStatusColor(reminder.status).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Icon(
@@ -470,7 +480,9 @@ class _RemindersScreenState extends State<RemindersScreen>
                         color: Colors.white,
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
-                        decoration: reminder.isCompleted ? TextDecoration.lineThrough : null,
+                        decoration: reminder.isCompleted
+                            ? TextDecoration.lineThrough
+                            : null,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -492,7 +504,8 @@ class _RemindersScreenState extends State<RemindersScreen>
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(reminder.status).withValues(alpha: 0.2),
+                  color:
+                      _getStatusColor(reminder.status).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
@@ -591,7 +604,10 @@ class _RemindersScreenState extends State<RemindersScreen>
                     Icon(Icons.payment, color: Colors.white, size: 18.sp),
                     SizedBox(width: 8.w),
                     Text('Pay Now',
-                      style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                        style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600)),
                   ],
                 ),
               ),

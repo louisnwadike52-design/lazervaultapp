@@ -31,11 +31,17 @@ class DonorStarRating extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        ...List.generate(5, (index) => Icon(
-          index < rating.starCount ? Icons.star_rounded : Icons.star_border_rounded,
-          color: index < rating.starCount ? _filledStarColor : _emptyStarColor,
-          size: 12.sp,
-        )),
+        ...List.generate(
+            5,
+            (index) => Icon(
+                  index < rating.starCount
+                      ? Icons.star_rounded
+                      : Icons.star_border_rounded,
+                  color: index < rating.starCount
+                      ? _filledStarColor
+                      : _emptyStarColor,
+                  size: 12.sp,
+                )),
         SizedBox(width: 4.w),
         Text(
           'AI Rating',
@@ -81,14 +87,20 @@ class DonorStarRating extends StatelessWidget {
           // Stars row with score and label
           Row(
             children: [
-              ...List.generate(5, (index) => Padding(
-                padding: EdgeInsets.only(right: 2.w),
-                child: Icon(
-                  index < rating.starCount ? Icons.star_rounded : Icons.star_border_rounded,
-                  color: index < rating.starCount ? _filledStarColor : _emptyStarColor,
-                  size: 20.sp,
-                ),
-              )),
+              ...List.generate(
+                  5,
+                  (index) => Padding(
+                        padding: EdgeInsets.only(right: 2.w),
+                        child: Icon(
+                          index < rating.starCount
+                              ? Icons.star_rounded
+                              : Icons.star_border_rounded,
+                          color: index < rating.starCount
+                              ? _filledStarColor
+                              : _emptyStarColor,
+                          size: 20.sp,
+                        ),
+                      )),
               SizedBox(width: 8.w),
               Text(
                 rating.overallScore.toStringAsFixed(1),
@@ -132,35 +144,44 @@ class DonorStarRating extends StatelessWidget {
             Wrap(
               spacing: 6.w,
               runSpacing: 6.h,
-              children: rating.traits.map((t) => Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF4E03D0).withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(6.r),
-                  border: Border.all(
-                    color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Text(
-                  t,
-                  style: GoogleFonts.inter(
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.w600,
-                    color: PayFlowTheme.accentOnDark,
-                  ),
-                ),
-              )).toList(growable: false),
+              children: rating.traits
+                  .map((t) => Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8.w, vertical: 3.h),
+                        decoration: BoxDecoration(
+                          color:
+                              const Color(0xFF4E03D0).withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(6.r),
+                          border: Border.all(
+                            color:
+                                const Color(0xFF4E03D0).withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Text(
+                          t,
+                          style: GoogleFonts.inter(
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.w600,
+                            color: PayFlowTheme.accentOnDark,
+                          ),
+                        ),
+                      ))
+                  .toList(growable: false),
             ),
           ],
           SizedBox(height: 14.h),
           // Factor breakdown bars
-          _buildFactorBar('Generosity', rating.generosityScore, const Color(0xFF4E03D0)),
+          _buildFactorBar(
+              'Generosity', rating.generosityScore, const Color(0xFF4E03D0)),
           SizedBox(height: 8.h),
-          _buildFactorBar('Repeat Support', rating.repeatSupportScore, const Color(0xFF10B981)),
+          _buildFactorBar('Repeat Support', rating.repeatSupportScore,
+              const Color(0xFF10B981)),
           SizedBox(height: 8.h),
-          _buildFactorBar('Engagement', rating.engagementScore, const Color(0xFFF59E0B)),
+          _buildFactorBar(
+              'Engagement', rating.engagementScore, const Color(0xFFF59E0B)),
           SizedBox(height: 8.h),
-          _buildFactorBar('Early Support', rating.earlySupportScore, const Color.fromARGB(255, 78, 3, 208)),
+          _buildFactorBar('Early Support', rating.earlySupportScore,
+              const Color.fromARGB(255, 78, 3, 208)),
         ],
       ),
     );

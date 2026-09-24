@@ -12,14 +12,15 @@ class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});
 
   @override
-  State<TransactionHistoryScreen> createState() => _TransactionHistoryScreenState();
+  State<TransactionHistoryScreen> createState() =>
+      _TransactionHistoryScreenState();
 }
 
 class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  
+
   final TextEditingController _searchController = TextEditingController();
   List<CurrencyTransaction> _allTransactions = [];
   List<CurrencyTransaction> _filteredTransactions = [];
@@ -38,7 +39,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
     _animationController.forward();
-    
+
     _loadMockTransactions();
   }
 
@@ -163,7 +164,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
         type: TransactionType.send,
       ),
     ];
-    
+
     _filteredTransactions = List.from(_allTransactions);
     setState(() {});
   }
@@ -177,18 +178,19 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
             transaction.fromCurrency.toLowerCase().contains(query) ||
             transaction.toCurrency.toLowerCase().contains(query) ||
             transaction.referenceNumber?.toLowerCase().contains(query) == true;
-        
-        final matchesStatus = _selectedStatusFilter == null || 
+
+        final matchesStatus = _selectedStatusFilter == null ||
             transaction.status == _selectedStatusFilter;
-        
+
         final matchesCurrency = _selectedCurrencyFilter == null ||
             transaction.fromCurrency == _selectedCurrencyFilter ||
             transaction.toCurrency == _selectedCurrencyFilter;
-        
+
         final matchesDate = _selectedDateRange == null ||
             (transaction.createdAt.isAfter(_selectedDateRange!.start) &&
-             transaction.createdAt.isBefore(_selectedDateRange!.end.add(const Duration(days: 1))));
-        
+                transaction.createdAt.isBefore(
+                    _selectedDateRange!.end.add(const Duration(days: 1))));
+
         return matchesSearch && matchesStatus && matchesCurrency && matchesDate;
       }).toList();
     });
@@ -281,7 +283,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: IconButton(
-                icon: Icon(Icons.file_download, color: Colors.white, size: 20.sp),
+                icon:
+                    Icon(Icons.file_download, color: Colors.white, size: 20.sp),
                 onPressed: () => _exportTransactions(),
               ),
             ),
@@ -331,7 +334,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
                       _searchController.clear();
                       _filterTransactions();
                     },
-                    child: Icon(Icons.clear, color: Colors.grey[400], size: 20.sp),
+                    child:
+                        Icon(Icons.clear, color: Colors.grey[400], size: 20.sp),
                   ),
               ],
             ),
@@ -363,7 +367,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
     );
   }
 
-  Widget _buildFilterButton(String label, IconData icon, String value, VoidCallback onTap) {
+  Widget _buildFilterButton(
+      String label, IconData icon, String value, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -434,7 +439,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
     final isSelected = _selectedStatusFilter == status;
     Color chipColor = Colors.grey[900]!;
     Color textColor = Colors.grey[400]!;
-    
+
     if (isSelected) {
       switch (status) {
         case TransactionStatus.completed:
@@ -458,7 +463,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
           textColor = Colors.white;
       }
     }
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -472,13 +477,12 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
           color: chipColor,
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
+          ],
         ),
         child: Text(
           label,
@@ -496,11 +500,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
     final totalSent = _filteredTransactions
         .where((t) => t.status == TransactionStatus.completed)
         .fold(0.0, (sum, t) => sum + t.fromAmount);
-    
+
     final totalFees = _filteredTransactions
         .where((t) => t.status == TransactionStatus.completed)
         .fold(0.0, (sum, t) => sum + t.fees);
-    
+
     final completedCount = _filteredTransactions
         .where((t) => t.status == TransactionStatus.completed)
         .length;
@@ -540,7 +544,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
     );
   }
 
-  Widget _buildSummaryCard(String title, String value, IconData icon, Color color) {
+  Widget _buildSummaryCard(
+      String title, String value, IconData icon, Color color) {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -589,9 +594,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
   }
 
   Widget _buildTransactionCard(CurrencyTransaction transaction, int index) {
-    final fromCurrency = CurrencyData.getCurrencyByCode(transaction.fromCurrency);
+    final fromCurrency =
+        CurrencyData.getCurrencyByCode(transaction.fromCurrency);
     final toCurrency = CurrencyData.getCurrencyByCode(transaction.toCurrency);
-    
+
     return FadeTransition(
       opacity: _fadeAnimation,
       child: Container(
@@ -616,7 +622,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
                         width: 48.w,
                         height: 48.h,
                         decoration: BoxDecoration(
-                          color: _getStatusColor(transaction.status).withValues(alpha: 0.2),
+                          color: _getStatusColor(transaction.status)
+                              .withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -645,7 +652,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
                                   ),
                                 ),
                                 SizedBox(width: 8.w),
-                                Icon(Icons.arrow_forward, color: Colors.grey[400], size: 16.sp),
+                                Icon(Icons.arrow_forward,
+                                    color: Colors.grey[400], size: 16.sp),
                                 SizedBox(width: 8.w),
                                 if (toCurrency != null) ...[
                                   _buildCurrencyFlag(toCurrency),
@@ -692,9 +700,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
                           ),
                           SizedBox(height: 4.h),
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8.w, vertical: 2.h),
                             decoration: BoxDecoration(
-                              color: _getStatusColor(transaction.status).withValues(alpha: 0.2),
+                              color: _getStatusColor(transaction.status)
+                                  .withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(8.r),
                             ),
                             child: Text(
@@ -710,18 +720,21 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
                       ),
                     ],
                   ),
-                  if (transaction.status == TransactionStatus.failed && transaction.failureReason != null) ...[
+                  if (transaction.status == TransactionStatus.failed &&
+                      transaction.failureReason != null) ...[
                     SizedBox(height: 12.h),
                     Container(
                       padding: EdgeInsets.all(8.w),
                       decoration: BoxDecoration(
                         color: Colors.red.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8.r),
-                        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                        border: Border.all(
+                            color: Colors.red.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.error_outline, color: Colors.red, size: 16.sp),
+                          Icon(Icons.error_outline,
+                              color: Colors.red, size: 16.sp),
                           SizedBox(width: 8.w),
                           Expanded(
                             child: Text(
@@ -858,7 +871,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date).inDays;
-    
+
     if (difference == 0) {
       return 'Today ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
     } else if (difference == 1) {
@@ -896,7 +909,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
                   width: 60.w,
                   height: 60.h,
                   decoration: BoxDecoration(
-                    color: _getStatusColor(transaction.status).withValues(alpha: 0.2),
+                    color: _getStatusColor(transaction.status)
+                        .withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -933,7 +947,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
             SizedBox(height: 24.h),
             _buildDetailRow('From', transaction.formattedFromAmount),
             _buildDetailRow('To', transaction.formattedToAmount),
-            _buildDetailRow('Exchange Rate', '1 ${transaction.fromCurrency} = ${transaction.exchangeRate.toStringAsFixed(4)} ${transaction.toCurrency}'),
+            _buildDetailRow('Exchange Rate',
+                '1 ${transaction.fromCurrency} = ${transaction.exchangeRate.toStringAsFixed(4)} ${transaction.toCurrency}'),
             _buildDetailRow('Fees', transaction.formattedFees),
             _buildDetailRow('Total Cost', transaction.formattedTotalCost),
             _buildDetailRow('Recipient', transaction.recipient.name),
@@ -941,7 +956,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
             _buildDetailRow('Status', _getStatusText(transaction.status)),
             _buildDetailRow('Created', _formatDate(transaction.createdAt)),
             if (transaction.completedAt != null)
-              _buildDetailRow('Completed', _formatDate(transaction.completedAt!)),
+              _buildDetailRow(
+                  'Completed', _formatDate(transaction.completedAt!)),
             if (transaction.failureReason != null)
               _buildDetailRow('Failure Reason', transaction.failureReason!),
             SizedBox(height: 24.h),
@@ -954,7 +970,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
                       _shareTransaction(transaction);
                     },
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                      side: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.3)),
                       padding: EdgeInsets.symmetric(vertical: 12.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
@@ -1055,7 +1072,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
         );
       },
     );
-    
+
     if (picked != null) {
       setState(() {
         _selectedDateRange = picked;
@@ -1065,8 +1082,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
   }
 
   void _showCurrencyFilter() {
-    final currencies = CurrencyData.allCurrencies.map((c) => c.code).toSet().toList();
-    
+    final currencies =
+        CurrencyData.allCurrencies.map((c) => c.code).toSet().toList();
+
     Get.bottomSheet(
       Container(
         height: 400.h,
@@ -1119,7 +1137,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
     return Container(
       margin: EdgeInsets.only(bottom: 8.h),
       decoration: BoxDecoration(
-        color: isSelected ? Colors.blue.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.05),
+        color: isSelected
+            ? Colors.blue.withValues(alpha: 0.2)
+            : Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Material(
@@ -1136,21 +1156,22 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
           child: Padding(
             padding: EdgeInsets.all(16.w),
             child: Row(
-                             children: [
-                 if (currency != null) ...[
-                   () {
-                     final currencyData = CurrencyData.getCurrencyByCode(currency);
-                     if (currencyData != null) {
-                       return Row(
-                         children: [
-                           _buildCurrencyFlag(currencyData),
-                           SizedBox(width: 12.w),
-                         ],
-                       );
-                     }
-                     return const SizedBox.shrink();
-                   }(),
-                 ],
+              children: [
+                if (currency != null) ...[
+                  () {
+                    final currencyData =
+                        CurrencyData.getCurrencyByCode(currency);
+                    if (currencyData != null) {
+                      return Row(
+                        children: [
+                          _buildCurrencyFlag(currencyData),
+                          SizedBox(width: 12.w),
+                        ],
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  }(),
+                ],
                 Text(
                   label,
                   style: GoogleFonts.inter(
@@ -1199,4 +1220,4 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
       colorText: Colors.white,
     );
   }
-} 
+}

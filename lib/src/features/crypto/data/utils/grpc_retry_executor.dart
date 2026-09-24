@@ -39,7 +39,8 @@ class CryptoErrorMessages {
     if (message.contains('timeout')) {
       return 'Request timed out during $operation. Please try again.';
     }
-    if (message.contains('unauthorized') || message.contains('authentication')) {
+    if (message.contains('unauthorized') ||
+        message.contains('authentication')) {
       return 'Authentication failed. Please log in again.';
     }
     if (message.contains('not found')) {
@@ -77,15 +78,17 @@ class GrpcRetryExecutor {
         if (attempt < effectiveConfig.maxAttempts) {
           await Future.delayed(delay);
           delay = Duration(
-            milliseconds: (delay.inMilliseconds * effectiveConfig.backoffMultiplier)
-                .clamp(0, effectiveConfig.maxDelay.inMilliseconds)
-                .toInt(),
+            milliseconds:
+                (delay.inMilliseconds * effectiveConfig.backoffMultiplier)
+                    .clamp(0, effectiveConfig.maxDelay.inMilliseconds)
+                    .toInt(),
           );
         }
       }
     }
 
     throw lastException ??
-        Exception('$operationName failed after ${effectiveConfig.maxAttempts} attempts');
+        Exception(
+            '$operationName failed after ${effectiveConfig.maxAttempts} attempts');
   }
 }

@@ -17,7 +17,7 @@ class _DepositAmountScreenState extends State<DepositAmountScreen>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  
+
   final TextEditingController _amountController = TextEditingController();
   Map<String, dynamic> _currency = {};
   Map<String, dynamic> _paymentMethod = {};
@@ -43,11 +43,11 @@ class _DepositAmountScreenState extends State<DepositAmountScreen>
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _animationController.forward();
   }
 
@@ -75,7 +75,7 @@ class _DepositAmountScreenState extends State<DepositAmountScreen>
     }
 
     final paymentType = _paymentMethod['type'] ?? '';
-    
+
     // Validate based on payment method type
     switch (paymentType) {
       case 'local_account':
@@ -100,42 +100,44 @@ class _DepositAmountScreenState extends State<DepositAmountScreen>
     final sourceAccount = _paymentMethod['sourceAccount'];
     if (sourceAccount != null) {
       final availableBalance = sourceAccount['balance'] ?? 0.0;
-      
+
       if (_enteredAmount > availableBalance) {
         _validationMessage = 'Insufficient balance in source account';
         return;
       }
-      
+
       // Check minimum transfer amount
       if (_enteredAmount < 1.0) {
         _validationMessage = 'Minimum transfer amount is £1.00';
         return;
       }
-      
+
       // Check maximum transfer amount (daily limit)
       if (_enteredAmount > 50000.0) {
         _validationMessage = 'Maximum daily transfer limit is £50,000';
         return;
       }
     }
-    
+
     _isAmountValid = true;
   }
 
   void _validateCryptoDeposit() {
     final minAmount = _paymentMethod['minAmount'] ?? 0.0;
     final maxAmount = _paymentMethod['maxAmount'] ?? double.infinity;
-    
+
     if (_enteredAmount < minAmount) {
-      _validationMessage = 'Minimum amount is ${minAmount.toStringAsFixed(4)} ${_paymentMethod['name']?.split(' ')[0] ?? ''}';
+      _validationMessage =
+          'Minimum amount is ${minAmount.toStringAsFixed(4)} ${_paymentMethod['name']?.split(' ')[0] ?? ''}';
       return;
     }
-    
+
     if (_enteredAmount > maxAmount) {
-      _validationMessage = 'Maximum amount is ${maxAmount.toStringAsFixed(2)} ${_paymentMethod['name']?.split(' ')[0] ?? ''}';
+      _validationMessage =
+          'Maximum amount is ${maxAmount.toStringAsFixed(2)} ${_paymentMethod['name']?.split(' ')[0] ?? ''}';
       return;
     }
-    
+
     _isAmountValid = true;
   }
 
@@ -156,9 +158,10 @@ class _DepositAmountScreenState extends State<DepositAmountScreen>
 
   void _validateFlutterwaveDeposit() {
     final countryCode = _paymentMethod['country_code'] as String? ??
-        _currency['country_code'] as String? ?? '';
-    final currencyCode = _currency['code'] as String? ??
-        _currency['currency'] as String? ?? '';
+        _currency['country_code'] as String? ??
+        '';
+    final currencyCode =
+        _currency['code'] as String? ?? _currency['currency'] as String? ?? '';
 
     // Country-aware limits
     double minAmount;
@@ -198,12 +201,14 @@ class _DepositAmountScreenState extends State<DepositAmountScreen>
     }
 
     if (_enteredAmount < minAmount) {
-      _validationMessage = 'Minimum deposit amount is $symbol${minAmount.toStringAsFixed(0)}';
+      _validationMessage =
+          'Minimum deposit amount is $symbol${minAmount.toStringAsFixed(0)}';
       return;
     }
 
     if (_enteredAmount > maxAmount) {
-      _validationMessage = 'Maximum deposit amount is $symbol${maxAmount.toStringAsFixed(0)}';
+      _validationMessage =
+          'Maximum deposit amount is $symbol${maxAmount.toStringAsFixed(0)}';
       return;
     }
 
@@ -217,7 +222,7 @@ class _DepositAmountScreenState extends State<DepositAmountScreen>
 
   void _proceedToReview() {
     if (!_isAmountValid) return;
-    
+
     Get.toNamed(
       AppRoutes.depositReview,
       arguments: {
@@ -231,14 +236,14 @@ class _DepositAmountScreenState extends State<DepositAmountScreen>
   // Get appropriate quick amounts based on payment method
   List<String> get _quickAmounts {
     final paymentType = _paymentMethod['type'] ?? '';
-    
+
     switch (paymentType) {
       case 'local_account':
         final sourceAccount = _paymentMethod['sourceAccount'];
         final balance = sourceAccount?['balance'] ?? 0.0;
         return [
           '100',
-          '500', 
+          '500',
           '1000',
           (balance * 0.5).toStringAsFixed(0), // 50% of balance
         ];
@@ -440,13 +445,12 @@ class _DepositAmountScreenState extends State<DepositAmountScreen>
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -467,7 +471,8 @@ class _DepositAmountScreenState extends State<DepositAmountScreen>
                     fontSize: 32.sp,
                     fontWeight: FontWeight.w600,
                   ),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: '0.00',
@@ -508,17 +513,18 @@ class _DepositAmountScreenState extends State<DepositAmountScreen>
                 onTap: () => _setQuickAmount(amount),
                 borderRadius: BorderRadius.circular(12.r),
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12.r),
                     boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 6,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Text(
                     '${_currency['symbol']}$amount',
@@ -604,13 +610,15 @@ class _DepositAmountScreenState extends State<DepositAmountScreen>
             : null,
         color: _isAmountValid ? null : Colors.grey[800],
         borderRadius: BorderRadius.circular(20.r),
-        boxShadow: _isAmountValid ? [
-          BoxShadow(
-            color: Colors.green.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: Offset(0, 6),
-          ),
-        ] : null,
+        boxShadow: _isAmountValid
+            ? [
+                BoxShadow(
+                  color: Colors.green.withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: Offset(0, 6),
+                ),
+              ]
+            : null,
       ),
       child: SizedBox(
         width: double.infinity,
@@ -661,7 +669,7 @@ class _DepositAmountScreenState extends State<DepositAmountScreen>
       'CNY': 'https://flagcdn.com/w320/cn.png',
       'INR': 'https://flagcdn.com/w320/in.png',
     };
-    
+
     return Container(
       width: size,
       height: size * 0.7,
@@ -707,9 +715,9 @@ class _DepositAmountScreenState extends State<DepositAmountScreen>
   Widget _buildSourceAccountInfo() {
     final sourceAccount = _paymentMethod['sourceAccount'];
     if (sourceAccount == null) return const SizedBox.shrink();
-    
+
     final isUp = sourceAccount['isUp'] ?? true;
-    
+
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -828,7 +836,7 @@ class _DepositAmountScreenState extends State<DepositAmountScreen>
     final minAmount = _paymentMethod['minAmount'] ?? 0.0;
     final maxAmount = _paymentMethod['maxAmount'] ?? 0.0;
     final fee = _paymentMethod['fee'] ?? '0%';
-    
+
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -868,9 +876,11 @@ class _DepositAmountScreenState extends State<DepositAmountScreen>
           SizedBox(height: 8.h),
           _buildCryptoInfoRow('Network', network),
           SizedBox(height: 8.h),
-          _buildCryptoInfoRow('Min Amount', '${minAmount.toStringAsFixed(4)} ${cryptoName.split(' ')[0]}'),
+          _buildCryptoInfoRow('Min Amount',
+              '${minAmount.toStringAsFixed(4)} ${cryptoName.split(' ')[0]}'),
           SizedBox(height: 8.h),
-          _buildCryptoInfoRow('Max Amount', '${maxAmount.toStringAsFixed(2)} ${cryptoName.split(' ')[0]}'),
+          _buildCryptoInfoRow('Max Amount',
+              '${maxAmount.toStringAsFixed(2)} ${cryptoName.split(' ')[0]}'),
           SizedBox(height: 8.h),
           _buildCryptoInfoRow('Network Fee', fee),
           SizedBox(height: 16.h),
@@ -928,4 +938,4 @@ class _DepositAmountScreenState extends State<DepositAmountScreen>
       ],
     );
   }
-} 
+}

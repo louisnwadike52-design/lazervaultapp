@@ -127,7 +127,8 @@ class AirtimeHistoryActionsSheet {
                 } catch (e) {
                   // Unbound is a valid reminder — beneficiary_id is optional
                   // server-side — so carry on rather than failing the action.
-                  debugPrint('[AirtimeActions] reminder beneficiary bind failed: $e');
+                  debugPrint(
+                      '[AirtimeActions] reminder beneficiary bind failed: $e');
                 }
               }
               await BillReminderCreateSheet.show(
@@ -323,8 +324,7 @@ class AirtimeHistoryActionsSheet {
         Get.snackbar(
           'Country info missing',
           'This older transaction doesn\'t have a country tag. Pick the destination country to continue.',
-          backgroundColor:
-              const Color(0xFFFB923C).withValues(alpha: 0.92),
+          backgroundColor: const Color(0xFFFB923C).withValues(alpha: 0.92),
           colorText: Colors.white,
           snackPosition: SnackPosition.TOP,
           duration: const Duration(seconds: 4),
@@ -355,21 +355,18 @@ class AirtimeHistoryActionsSheet {
         country = IntlAirtimeCountry(
           id: countryCode.toLowerCase(),
           countryCode: countryCode,
-          countryName: (meta['country_name'] ?? meta['countryName'])
-                  ?.toString() ??
-              countryCode,
-          dialCode: (meta['dial_code'] ?? meta['dialCode'])
-                  ?.toString() ??
-              '',
+          countryName:
+              (meta['country_name'] ?? meta['countryName'])?.toString() ??
+                  countryCode,
+          dialCode: (meta['dial_code'] ?? meta['dialCode'])?.toString() ?? '',
           currencyCode: t.currency,
-          currencySymbol: (meta['currency_symbol'] ?? meta['currencySymbol'])
-                  ?.toString() ??
-              '',
-          flagEmoji: (meta['country_flag'] ??
-                  meta['countryFlag'] ??
-                  meta['flag'])
-                  ?.toString() ??
-              '',
+          currencySymbol:
+              (meta['currency_symbol'] ?? meta['currencySymbol'])?.toString() ??
+                  '',
+          flagEmoji:
+              (meta['country_flag'] ?? meta['countryFlag'] ?? meta['flag'])
+                      ?.toString() ??
+                  '',
           isActive: true,
         );
       }

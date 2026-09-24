@@ -11,7 +11,6 @@ import '../data/support_models.dart';
 import 'support_chat_screen.dart';
 part 'support_tickets_screen_widgets.dart';
 
-
 /// The support hub — the first screen for every "contact support" entry point
 /// (drawer, settings help, account sheet). Lists the user's tickets split into
 /// open and closed tabs, and creates new tickets (live chat or a reported
@@ -50,7 +49,8 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen>
     // Keep unread badges + statuses fresh while the hub is on screen (staff
     // replies land as unread counts). Silent — never disturbs the list state
     // on a transient failure.
-    _poll = Timer.periodic(const Duration(seconds: 15), (_) => _load(silent: true));
+    _poll =
+        Timer.periodic(const Duration(seconds: 15), (_) => _load(silent: true));
   }
 
   @override
@@ -86,10 +86,8 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen>
     }
   }
 
-  List<SupportTicket> get _open =>
-      _tickets.where((t) => !t.isClosed).toList();
-  List<SupportTicket> get _closed =>
-      _tickets.where((t) => t.isClosed).toList();
+  List<SupportTicket> get _open => _tickets.where((t) => !t.isClosed).toList();
+  List<SupportTicket> get _closed => _tickets.where((t) => t.isClosed).toList();
 
   /// Opens a thread and refreshes the list on return (read/unread + status
   /// may have changed — e.g. replying to a closed ticket reopens it).
@@ -130,7 +128,8 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen>
           const Center(child: CircularProgressIndicator(color: _primary)),
     );
     try {
-      final ticket = await _api.createTicket(subject: subject, message: message);
+      final ticket =
+          await _api.createTicket(subject: subject, message: message);
       if (!mounted) return;
       Navigator.of(context).pop(); // dismiss the loader
       await _openThread(ticket);
@@ -305,8 +304,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen>
                   padding: EdgeInsets.symmetric(horizontal: 32.w),
                   child: Text('Couldn\'t load your tickets.\n$_error',
                       textAlign: TextAlign.center,
-                      style:
-                          TextStyle(color: _textSecondary, fontSize: 13.sp)),
+                      style: TextStyle(color: _textSecondary, fontSize: 13.sp)),
                 ),
                 SizedBox(height: 16.h),
                 OutlinedButton.icon(
@@ -359,8 +357,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen>
                 if (!closedTab) ...[
                   SizedBox(height: 16.h),
                   ElevatedButton(
-                    style:
-                        ElevatedButton.styleFrom(backgroundColor: _primary),
+                    style: ElevatedButton.styleFrom(backgroundColor: _primary),
                     onPressed: _onCreateNewTicket,
                     child: const Text('Create new ticket',
                         style: TextStyle(color: Colors.white)),
@@ -418,7 +415,9 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen>
                     children: [
                       Expanded(
                         child: Text(
-                          t.subject.isNotEmpty ? t.subject : 'Chat with support',
+                          t.subject.isNotEmpty
+                              ? t.subject
+                              : 'Chat with support',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(

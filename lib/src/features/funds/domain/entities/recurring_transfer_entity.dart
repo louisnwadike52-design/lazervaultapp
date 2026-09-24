@@ -119,7 +119,15 @@ class RecurringTransferEntity extends Equatable {
   }
 
   static String _dayName(int day) {
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const days = [
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday'
+    ];
     return days[day % 7];
   }
 
@@ -139,10 +147,23 @@ class RecurringTransferEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        id, userId, accountId, recipientAccountNumber, recipientName,
-        amount, currency, frequency, scheduleDay, scheduleTime,
-        status, nextRunAt, totalExecutions, successfulExecutions,
-        failedExecutions, consecutiveFailures, updatedAt,
+        id,
+        userId,
+        accountId,
+        recipientAccountNumber,
+        recipientName,
+        amount,
+        currency,
+        frequency,
+        scheduleDay,
+        scheduleTime,
+        status,
+        nextRunAt,
+        totalExecutions,
+        successfulExecutions,
+        failedExecutions,
+        consecutiveFailures,
+        updatedAt,
       ];
 }
 
@@ -176,5 +197,6 @@ class RecurringTransferExecutionEntity extends Equatable {
   bool get isSuccess => status == 'success';
 
   @override
-  List<Object?> get props => [id, recurringTransferId, status, amount, executedAt];
+  List<Object?> get props =>
+      [id, recurringTransferId, status, amount, executedAt];
 }

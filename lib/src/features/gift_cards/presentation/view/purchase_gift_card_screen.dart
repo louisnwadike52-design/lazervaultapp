@@ -607,9 +607,8 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
   }
 
   /// Get the sender currency label for display
-  String get _senderCurrency => _brand.senderCurrencyCode.isNotEmpty
-      ? _brand.senderCurrencyCode
-      : 'NGN';
+  String get _senderCurrency =>
+      _brand.senderCurrencyCode.isNotEmpty ? _brand.senderCurrencyCode : 'NGN';
 
   /// Get the recipient currency label for display
   String get _recipientCurrency =>
@@ -935,12 +934,10 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
               if (recipient == null || recipient <= 0) {
                 return 'Please enter a valid amount';
               }
-              if (_brand.minAmount > 0 &&
-                  recipient < _brand.minAmount) {
+              if (_brand.minAmount > 0 && recipient < _brand.minAmount) {
                 return 'Minimum is $_recipientCurrency ${_brand.minAmount.toStringAsFixed(0)}';
               }
-              if (_brand.maxAmount > 0 &&
-                  recipient > _brand.maxAmount) {
+              if (_brand.maxAmount > 0 && recipient > _brand.maxAmount) {
                 return 'Maximum is $_recipientCurrency ${_brand.maxAmount.toStringAsFixed(0)}';
               }
               return null;
@@ -1141,7 +1138,8 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
   String? get _blockReason {
     if (_liveUnavailable.isNotEmpty) return 'Unavailable';
     if (_liveLoading) return 'Checking availability';
-    if (_selectedAmount == null || _selectedAmount! <= 0) return 'Buy Gift Card';
+    if (_selectedAmount == null || _selectedAmount! <= 0)
+      return 'Buy Gift Card';
     final funding = _funding;
     if (funding.isInsufficient) return 'Insufficient balance';
     if (funding.isUnusable) return 'Account unavailable';
@@ -1225,8 +1223,8 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
         decoration: BoxDecoration(
           color: const Color(0xFFEF4444).withValues(alpha: 0.10),
           borderRadius: BorderRadius.circular(14.r),
-          border:
-              Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.32)),
+          border: Border.all(
+              color: const Color(0xFFEF4444).withValues(alpha: 0.32)),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1286,8 +1284,8 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
         decoration: BoxDecoration(
           color: const Color(0xFFF59E0B).withValues(alpha: 0.10),
           borderRadius: BorderRadius.circular(14.r),
-          border:
-              Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.32)),
+          border: Border.all(
+              color: const Color(0xFFF59E0B).withValues(alpha: 0.32)),
         ),
         child: Text(
           'Our supplier has not published any amounts for this card right now. '

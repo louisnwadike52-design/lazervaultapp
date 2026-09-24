@@ -1,6 +1,7 @@
 import '../../domain/entities/reminder_entity.dart';
 import 'package:lazervault/src/generated/electricity_bill.pb.dart' as pb;
-import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart' as $timestamp;
+import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart'
+    as $timestamp;
 
 class BillPaymentReminderModel extends PaymentReminderEntity {
   const BillPaymentReminderModel({
@@ -35,7 +36,9 @@ class BillPaymentReminderModel extends PaymentReminderEntity {
       status: ReminderStatusExtension.fromString(proto.status),
       notifiedAt: proto.hasNotifiedAt() ? proto.notifiedAt.toDateTime() : null,
       createdAt: proto.createdAt.toDateTime(),
-      updatedAt: proto.hasUpdatedAt() ? proto.updatedAt.toDateTime() : proto.createdAt.toDateTime(),
+      updatedAt: proto.hasUpdatedAt()
+          ? proto.updatedAt.toDateTime()
+          : proto.createdAt.toDateTime(),
     );
   }
 

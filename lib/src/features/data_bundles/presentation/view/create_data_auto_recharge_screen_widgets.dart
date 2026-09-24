@@ -42,16 +42,14 @@ class _PlanPickerSheet extends StatelessWidget {
                   s is DataBundlesError,
               builder: (context, state) {
                 if (state is DataBundlesLoading) {
-                  return const Center(
-                      child: LazerVaultLoader.tiny());
+                  return const Center(child: LazerVaultLoader.tiny());
                 }
                 if (state is DataBundlesError) {
                   return Padding(
                     padding: EdgeInsets.all(20.w),
                     child: Text(state.message,
                         style: TextStyle(
-                            color: const Color(0xFFEF4444),
-                            fontSize: 13.sp)),
+                            color: const Color(0xFFEF4444), fontSize: 13.sp)),
                   );
                 }
                 final plans = state is DataPlansLoaded ? state.plans : const [];
@@ -60,8 +58,7 @@ class _PlanPickerSheet extends StatelessWidget {
                     padding: EdgeInsets.all(20.w),
                     child: Text('No plans available for this network',
                         style: TextStyle(
-                            color: const Color(0xFF9CA3AF),
-                            fontSize: 13.sp)),
+                            color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
                   );
                 }
                 return ListView.separated(
@@ -77,8 +74,7 @@ class _PlanPickerSheet extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: const Color(0xFF0A0A0A),
                           borderRadius: BorderRadius.circular(10.r),
-                          border:
-                              Border.all(color: const Color(0xFF2D2D2D)),
+                          border: Border.all(color: const Color(0xFF2D2D2D)),
                         ),
                         child: Row(
                           children: [

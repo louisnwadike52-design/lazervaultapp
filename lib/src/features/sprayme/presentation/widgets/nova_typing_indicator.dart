@@ -86,7 +86,8 @@ class _NovaTypingIndicatorState extends State<NovaTypingIndicator>
   Widget build(BuildContext context) {
     // Honour the platform's reduced-motion setting: the stage label still
     // updates, but the dots hold still.
-    final reduceMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
 
     return Padding(
       padding: EdgeInsets.only(bottom: 8.h),

@@ -51,7 +51,9 @@ class _BuyCreditsScreenState extends State<BuyCreditsScreen>
     final state = context.read<BulkSmsCubit>().state;
     final pkg = _selected(state);
     if (pkg == null) {
-      LVSnackbar.showError(title: 'Select a package', message: 'Choose a unit bundle to continue.');
+      LVSnackbar.showError(
+          title: 'Select a package',
+          message: 'Choose a unit bundle to continue.');
       return;
     }
     setState(() => _isProcessing = true);
@@ -204,8 +206,8 @@ class _BuyCreditsScreenState extends State<BuyCreditsScreen>
           ),
           Text(
             'Balance $balance',
-            style: TextStyle(
-                color: BulkSmsTheme.textSecondary, fontSize: 12.sp),
+            style:
+                TextStyle(color: BulkSmsTheme.textSecondary, fontSize: 12.sp),
           ),
         ],
       ),

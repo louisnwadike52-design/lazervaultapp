@@ -8,7 +8,8 @@ import 'package:intl/intl.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/funds/presentation/send_funds_launcher.dart';
-import 'package:lazervault/core/services/grpc_call_options_helper.dart' as grpc_helper;
+import 'package:lazervault/core/services/grpc_call_options_helper.dart'
+    as grpc_helper;
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_message_entity.dart';
@@ -19,7 +20,6 @@ import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_grpc;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'p2p_transfer_bubble_widgets.dart';
-
 
 class P2PTransferBubble extends StatelessWidget {
   final P2PMessageEntity message;
@@ -121,9 +121,8 @@ class P2PTransferBubble extends StatelessWidget {
     } else if (isFailed) {
       iconColor = const Color(0xFFEF4444); // red
       icon = Icons.error_outline_rounded;
-      label = message.isCryptoTransfer
-          ? 'Crypto Send Failed'
-          : 'Transfer Failed';
+      label =
+          message.isCryptoTransfer ? 'Crypto Send Failed' : 'Transfer Failed';
     } else if (isScheduled) {
       iconColor = const Color(0xFFF59E0B); // amber
       icon = Icons.schedule;
@@ -372,10 +371,9 @@ class P2PTransferBubble extends StatelessWidget {
               height: 56.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: (isSent
-                        ? const Color(0xFFEF4444)
-                        : const Color(0xFF10B981))
-                    .withOpacity(0.15),
+                color:
+                    (isSent ? const Color(0xFFEF4444) : const Color(0xFF10B981))
+                        .withOpacity(0.15),
               ),
               child: Icon(
                 isSent ? Icons.arrow_upward : Icons.arrow_downward,
@@ -490,7 +488,9 @@ class P2PTransferBubble extends StatelessWidget {
                                     '${me.firstName} ${me.lastName}'.trim();
                                 if (full.isNotEmpty) myName = full;
                               }
-                            } catch (_) {/* provider not in tree → keep 'You' */}
+                            } catch (_) {
+                              /* provider not in tree → keep 'You' */
+                            }
                             final fromName = isSent ? myName : _displayName;
                             final toName = isSent ? _displayName : myName;
                             Get.toNamed(

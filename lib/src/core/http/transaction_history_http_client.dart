@@ -13,15 +13,15 @@ class TransactionHistoryHttpClient {
     required this.baseUrl,
     String? authToken,
   })  : storage = kAppSecureStorage,
-      dio = Dio(BaseOptions(
-        baseUrl: baseUrl,
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
-        sendTimeout: const Duration(seconds: 30),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      )) {
+        dio = Dio(BaseOptions(
+          baseUrl: baseUrl,
+          connectTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
+          sendTimeout: const Duration(seconds: 30),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        )) {
     if (authToken != null) {
       dio.options.headers['Authorization'] = 'Bearer $authToken';
     }
@@ -87,7 +87,8 @@ class TransactionHistoryHttpClient {
       if (response.statusCode == 200) {
         return response.data as Map<String, dynamic>;
       } else {
-        throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');
+        throw Exception(
+            'HTTP ${response.statusCode}: ${response.statusMessage}');
       }
     } on DioException catch (e) {
       if (e.response != null) {
@@ -129,7 +130,8 @@ class TransactionHistoryHttpClient {
       if (response.statusCode == 200) {
         return response.data as Map<String, dynamic>;
       } else {
-        throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');
+        throw Exception(
+            'HTTP ${response.statusCode}: ${response.statusMessage}');
       }
     } on DioException catch (e) {
       if (e.response != null) {
@@ -157,7 +159,8 @@ class TransactionHistoryHttpClient {
       } else if (response.statusCode == 404) {
         throw Exception('Transaction not found');
       } else {
-        throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');
+        throw Exception(
+            'HTTP ${response.statusCode}: ${response.statusMessage}');
       }
     } on DioException catch (e) {
       if (e.response != null) {
@@ -192,7 +195,8 @@ class TransactionHistoryHttpClient {
       if (response.statusCode == 200) {
         return response.data as Map<String, dynamic>;
       } else {
-        throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');
+        throw Exception(
+            'HTTP ${response.statusCode}: ${response.statusMessage}');
       }
     } on DioException catch (e) {
       if (e.response != null) {
@@ -217,7 +221,8 @@ class TransactionHistoryHttpClient {
       if (response.statusCode == 200 || response.statusCode == 202) {
         return response.data as Map<String, dynamic>;
       } else {
-        throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');
+        throw Exception(
+            'HTTP ${response.statusCode}: ${response.statusMessage}');
       }
     } on DioException catch (e) {
       if (e.response != null) {

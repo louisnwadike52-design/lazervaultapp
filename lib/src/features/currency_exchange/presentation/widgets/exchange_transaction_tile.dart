@@ -100,7 +100,9 @@ class ExchangeTransactionTile extends StatelessWidget {
       ),
       child: Icon(
         isConversion ? Icons.swap_horiz : Icons.send,
-        color: isConversion ? const Color(0xFF4E03D0) : const Color.fromARGB(255, 78, 3, 208),
+        color: isConversion
+            ? const Color(0xFF4E03D0)
+            : const Color.fromARGB(255, 78, 3, 208),
         size: 20,
       ),
     );

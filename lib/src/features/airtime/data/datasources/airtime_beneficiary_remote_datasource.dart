@@ -370,7 +370,8 @@ class AirtimeBeneficiaryRemoteDataSourceImpl
   @override
   Future<void> deleteReminder(String reminderId) async {
     try {
-      final request = pb.DeleteAirtimeReminderRequest()..reminderId = reminderId;
+      final request = pb.DeleteAirtimeReminderRequest()
+        ..reminderId = reminderId;
       final options = await grpcClient.callOptions;
       await grpcClient.utilityPaymentsClient
           .deleteAirtimeReminder(request, options: options);
@@ -388,8 +389,7 @@ class AirtimeBeneficiaryRemoteDataSourceImpl
       await grpcClient.utilityPaymentsClient
           .markAirtimeReminderComplete(request, options: options);
     } on GrpcError catch (e) {
-      throw Exception(
-          'Failed to mark airtime reminder complete: ${e.message}');
+      throw Exception('Failed to mark airtime reminder complete: ${e.message}');
     }
   }
 

@@ -96,6 +96,7 @@ class SpraySession {
     if (s == 'UNSPECIFIED') return 'active';
     return s.toLowerCase();
   }
+
   bool get isLiveVideo => isLive && streamType == 'live_video';
 
   SpraySession copyWith({

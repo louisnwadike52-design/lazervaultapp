@@ -16,7 +16,7 @@ class CurrencyLocalizationService {
   }) {
     final currency = currencyCode ?? _defaultCurrency;
     final symbol = _getSymbol(currency);
-    
+
     final formatter = NumberFormat.currency(
       locale: 'en_US',
       symbol: showSymbol ? symbol : '',

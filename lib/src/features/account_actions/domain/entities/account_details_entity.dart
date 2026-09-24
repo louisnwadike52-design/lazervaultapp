@@ -10,8 +10,8 @@ class AccountDetailsEntity extends Equatable {
   final String? cardHolderName;
   final String? cardType;
   final String? expiryDate;
-  final String? cardNumber;  // Full card number (masked for security)
-  final String? cvv;  // Only available with auth
+  final String? cardNumber; // Full card number (masked for security)
+  final String? cvv; // Only available with auth
   final String? accountNumber;
   final String? iban;
   final String? bicSwift;
@@ -23,6 +23,7 @@ class AccountDetailsEntity extends Equatable {
   final bool enableOnlinePayments;
   final bool enableATMWithdrawals;
   final bool enableInternationalPayments;
+
   /// Account-level control: whether this wallet may originate an
   /// international / send-abroad (exchange) transfer. Persisted + enforced
   /// server-side (accounts-service + exchange-service). Defaults true.
@@ -58,10 +59,11 @@ class AccountDetailsEntity extends Equatable {
   });
 
   /// Returns true if the card is frozen/blocked
-  bool get isFrozen => status.toLowerCase() == 'frozen' ||
-                      status.toLowerCase() == 'blocked_temporary' ||
-                      status.toLowerCase() == 'blocked_permanent' ||
-                      status.toLowerCase() == 'blocked_stolen';
+  bool get isFrozen =>
+      status.toLowerCase() == 'frozen' ||
+      status.toLowerCase() == 'blocked_temporary' ||
+      status.toLowerCase() == 'blocked_permanent' ||
+      status.toLowerCase() == 'blocked_stolen';
 
   /// Returns true if the card is active
   bool get isActive => status.toLowerCase() == 'active';
@@ -179,13 +181,16 @@ class AccountDetailsEntity extends Equatable {
       bicSwift: bicSwift ?? this.bicSwift,
       dailyLimit: dailyLimit ?? this.dailyLimit,
       monthlyLimit: monthlyLimit ?? this.monthlyLimit,
-      singleTransactionLimit: singleTransactionLimit ?? this.singleTransactionLimit,
+      singleTransactionLimit:
+          singleTransactionLimit ?? this.singleTransactionLimit,
       enable3DSecure: enable3DSecure ?? this.enable3DSecure,
       enableContactless: enableContactless ?? this.enableContactless,
       enableOnlinePayments: enableOnlinePayments ?? this.enableOnlinePayments,
       enableATMWithdrawals: enableATMWithdrawals ?? this.enableATMWithdrawals,
-      enableInternationalPayments: enableInternationalPayments ?? this.enableInternationalPayments,
-      allowInternationalTransfers: allowInternationalTransfers ?? this.allowInternationalTransfers,
+      enableInternationalPayments:
+          enableInternationalPayments ?? this.enableInternationalPayments,
+      allowInternationalTransfers:
+          allowInternationalTransfers ?? this.allowInternationalTransfers,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

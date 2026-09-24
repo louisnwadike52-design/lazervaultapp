@@ -309,9 +309,7 @@ class TierProgressIndicator extends StatelessWidget {
   }) {
     final theme = Theme.of(context);
     final color = isActive
-        ? (isCompleted
-            ? const Color(0xFF4CAF50)
-            : const Color(0xFF2196F3))
+        ? (isCompleted ? const Color(0xFF4CAF50) : const Color(0xFF2196F3))
         : const Color(0xFF9E9E9E);
 
     return InkWell(
@@ -355,7 +353,8 @@ class TierProgressIndicator extends StatelessWidget {
                   Text(
                     description,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                      color: theme.textTheme.bodySmall?.color
+                          ?.withValues(alpha: 0.7),
                     ),
                   ),
                 ],

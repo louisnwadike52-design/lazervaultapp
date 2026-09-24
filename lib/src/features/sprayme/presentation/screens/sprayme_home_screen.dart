@@ -138,7 +138,8 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
         .where((i) => i.session.id != invite.session.id)
         .toList());
     try {
-      await serviceLocator<ISprayMeRepository>().declineInvite(invite.session.id);
+      await serviceLocator<ISprayMeRepository>()
+          .declineInvite(invite.session.id);
     } catch (_) {
       // Left dismissed locally; the next load reconciles.
     }

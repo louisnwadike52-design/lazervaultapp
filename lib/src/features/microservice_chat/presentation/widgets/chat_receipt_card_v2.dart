@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'chat_receipt_extras.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/src/features/widgets/unified_transaction_receipt.dart';
@@ -190,7 +191,14 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
         if (_s('total_amount').isNotEmpty)
           'total_amount': '${_symbol(_s('currency'))}${_s('total_amount')}',
         'status': _s('status'),
-        ...extra,
+        // Hidden keys stripped: this metadata is rendered as rows too, so
+        // spreading extra wholesale put the same UUIDs and kobo duplicates on the
+        // inline card that the full-screen one was showing.
+        ...Map<String, dynamic>.fromEntries(
+          extra.entries.where(
+            (e) => !kChatReceiptHiddenExtras.contains(e.key),
+          ),
+        ),
       },
     );
   }

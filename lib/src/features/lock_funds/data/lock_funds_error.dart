@@ -19,15 +19,18 @@ String friendlyLockError(Object e) {
     switch (e.code) {
       // Validation-class codes: prefer the server's human message.
       case StatusCode.invalidArgument:
-        return server ?? 'Some of the details are invalid. Please review and try again.';
+        return server ??
+            'Some of the details are invalid. Please review and try again.';
       case StatusCode.failedPrecondition:
-        return server ?? "This can't be completed right now. Please try again later.";
+        return server ??
+            "This can't be completed right now. Please try again later.";
       case StatusCode.alreadyExists:
         return server ?? 'That already exists.';
       case StatusCode.resourceExhausted:
         return server ?? "You've reached a limit. Please try again later.";
       case StatusCode.outOfRange:
-        return server ?? 'Some of the details are out of range. Please review and try again.';
+        return server ??
+            'Some of the details are out of range. Please review and try again.';
       // Everything else: fixed, friendly copy — never the raw server text.
       case StatusCode.notFound:
         return 'We could not find that. Please refresh and try again.';

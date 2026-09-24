@@ -57,7 +57,8 @@ class _EducationQuickBuyState extends State<EducationQuickBuy>
   // arrive / fail, instead of freezing on the snapshot it opened with.
   // `_fetchingProducts` scopes a generic cubit error to THIS fetch (the cubit
   // is shared with the purchase flow).
-  final ValueNotifier<BillListFetchState<EducationProviderEntity>> _productState =
+  final ValueNotifier<BillListFetchState<EducationProviderEntity>>
+      _productState =
       ValueNotifier(const BillListFetchState<EducationProviderEntity>.idle());
   bool _fetchingProducts = false;
   EducationProviderEntity? _product;
@@ -150,8 +151,8 @@ class _EducationQuickBuyState extends State<EducationQuickBuy>
 
   Future<void> _prefillPhone() async {
     try {
-      final raw =
-          await serviceLocator<FlutterSecureStorage>().read(key: 'stored_phone');
+      final raw = await serviceLocator<FlutterSecureStorage>()
+          .read(key: 'stored_phone');
       var d = (raw ?? '').replaceAll(RegExp(r'[^\d]'), '');
       if (d.startsWith('234')) d = d.substring(3);
       if (d.startsWith('0')) d = d.substring(1);
@@ -249,7 +250,8 @@ class _EducationQuickBuyState extends State<EducationQuickBuy>
               idempotencyKey: txnId,
               billersCode: billers,
             );
-            result = await completer.future.timeout(const Duration(seconds: 90));
+            result =
+                await completer.future.timeout(const Duration(seconds: 90));
           } finally {
             await sub.cancel();
           }
@@ -388,9 +390,11 @@ class _EducationQuickBuyState extends State<EducationQuickBuy>
             child: Text(
               _product?.name ?? 'Select exam / PIN type',
               style: GoogleFonts.inter(
-                color: _product != null ? Colors.white : const Color(0xFF6B7280),
+                color:
+                    _product != null ? Colors.white : const Color(0xFF6B7280),
                 fontSize: 15.sp,
-                fontWeight: _product != null ? FontWeight.w600 : FontWeight.w400,
+                fontWeight:
+                    _product != null ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
           ),
@@ -423,7 +427,8 @@ class _EducationQuickBuyState extends State<EducationQuickBuy>
           ),
         );
     return Row(children: [
-      btn(Icons.remove, _quantity > 1 ? () => setState(() => _quantity--) : null),
+      btn(Icons.remove,
+          _quantity > 1 ? () => setState(() => _quantity--) : null),
       SizedBox(width: 16.w),
       Text('$_quantity',
           style: GoogleFonts.inter(
@@ -483,7 +488,8 @@ class _EducationQuickBuyState extends State<EducationQuickBuy>
           hintText: '0803 000 0000',
           hintStyle: GoogleFonts.inter(color: const Color(0xFF6B7280)),
           prefixIcon: _dialCodePrefix(),
-          prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+          prefixIconConstraints:
+              const BoxConstraints(minWidth: 0, minHeight: 0),
           border: InputBorder.none,
           contentPadding:
               EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
@@ -545,7 +551,8 @@ class _EducationQuickBuyState extends State<EducationQuickBuy>
     );
   }
 
-  Widget _row(String label, String value, {Color? valueColor, bool bold = false}) {
+  Widget _row(String label, String value,
+      {Color? valueColor, bool bold = false}) {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Text(label, style: GoogleFonts.inter(color: _muted, fontSize: 13.sp)),
       Flexible(
@@ -576,7 +583,8 @@ class _EducationQuickBuyState extends State<EducationQuickBuy>
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
         ),
         child: _submitting
-            ? SizedBox(width: 20.w, height: 20.w, child: LazerVaultLoader.small())
+            ? SizedBox(
+                width: 20.w, height: 20.w, child: LazerVaultLoader.small())
             : Text(
                 _product != null
                     ? 'Pay ₦${_total.toStringAsFixed(0)}'

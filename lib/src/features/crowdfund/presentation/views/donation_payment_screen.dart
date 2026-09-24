@@ -17,7 +17,6 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 part 'donation_payment_screen_widgets.dart';
 
-
 class DonationPaymentScreen extends StatefulWidget {
   final Crowdfund crowdfund;
 
@@ -95,16 +94,17 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
     final currency = widget.crowdfund.currency.toUpperCase();
 
     // Find personal account matching the campaign currency
-    final personal = accounts.where((a) =>
-        a.accountType.toLowerCase() == 'personal' &&
-        a.currency.toUpperCase() == currency).firstOrNull;
+    final personal = accounts
+        .where((a) =>
+            a.accountType.toLowerCase() == 'personal' &&
+            a.currency.toUpperCase() == currency)
+        .firstOrNull;
 
     setState(() {
       _personalAccount = personal;
       _accountLoading = false;
-      _accountError = personal == null
-          ? 'No personal $currency account found'
-          : null;
+      _accountError =
+          personal == null ? 'No personal $currency account found' : null;
     });
   }
 
@@ -132,8 +132,9 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
     if (value <= 0) return '';
     final isInt = value == value.roundToDouble();
     final whole = value.floor();
-    final fractional =
-        isInt ? '' : '.${((value - whole) * 100).round().toString().padLeft(2, '0')}';
+    final fractional = isInt
+        ? ''
+        : '.${((value - whole) * 100).round().toString().padLeft(2, '0')}';
     final wholeStr = whole.toString();
     final buf = StringBuffer();
     for (var i = 0; i < wholeStr.length; i++) {
@@ -217,7 +218,8 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
       amount: amount,
       currency: widget.crowdfund.currency,
       title: 'Confirm Donation',
-      message: 'Confirm donation of ${widget.crowdfund.currency} ${amount.toStringAsFixed(2)}',
+      message:
+          'Confirm donation of ${widget.crowdfund.currency} ${amount.toStringAsFixed(2)}',
       // We have a dedicated DonationProcessingScreen that owns the
       // post-PIN processing UI, so the bottom sheet should ONLY
       // show "PIN Verified" — not "Transaction Successful" (which
@@ -434,13 +436,10 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
             children: [
               CircleAvatar(
                 radius: 20.r,
-                backgroundColor:
-                    const Color(0xFF4E03D0).withValues(alpha: 0.2),
-                backgroundImage:
-                    widget.crowdfund.creator.profilePicture != null
-                        ? NetworkImage(
-                            widget.crowdfund.creator.profilePicture!)
-                        : null,
+                backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                backgroundImage: widget.crowdfund.creator.profilePicture != null
+                    ? NetworkImage(widget.crowdfund.creator.profilePicture!)
+                    : null,
                 child: widget.crowdfund.creator.profilePicture == null
                     ? Text(
                         widget.crowdfund.creator.initials,
@@ -628,9 +627,8 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
             decoration: BoxDecoration(
-              color: selected
-                  ? const Color(0xFF4E03D0)
-                  : const Color(0xFF1F1F1F),
+              color:
+                  selected ? const Color(0xFF4E03D0) : const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(20.r),
               boxShadow: selected
                   ? [
@@ -713,8 +711,8 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
     }
 
     final account = _personalAccount!;
-    final hasSufficientBalance =
-        _getDonationAmount() <= 0 || account.availableBalance >= _getDonationAmount();
+    final hasSufficientBalance = _getDonationAmount() <= 0 ||
+        account.availableBalance >= _getDonationAmount();
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
@@ -726,8 +724,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
         ),
         borderRadius: BorderRadius.circular(12.r),
         border: !hasSufficientBalance
-            ? Border.all(
-                color: const Color(0xFFEF4444).withValues(alpha: 0.5))
+            ? Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.5))
             : null,
       ),
       child: Row(

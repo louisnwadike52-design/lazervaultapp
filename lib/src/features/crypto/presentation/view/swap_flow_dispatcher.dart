@@ -43,7 +43,9 @@ import 'crypto_receipt_screen.dart';
 class SwapFlowResult {
   final bool initiated;
   final String? message;
-  const SwapFlowResult.initiated() : initiated = true, message = null;
+  const SwapFlowResult.initiated()
+      : initiated = true,
+        message = null;
   const SwapFlowResult.error(this.message) : initiated = false;
 }
 
@@ -132,7 +134,8 @@ Future<SwapFlowResult> runSwapFlow({
   } catch (_) {}
   final cryptoConfig = _readCryptoConfig(context);
   if (side == 'buy') {
-    final minOrderError = _checkMinOrder(cryptoConfig, fiatCurrency, fiatAmount);
+    final minOrderError =
+        _checkMinOrder(cryptoConfig, fiatCurrency, fiatAmount);
     if (minOrderError != null) {
       return SwapFlowResult.error(minOrderError);
     }
@@ -169,8 +172,7 @@ Future<SwapFlowResult> runSwapFlow({
     // units (e.g. 0.001 BTC) for "convert" mode.
     final lowerFromCrypto = fromCryptoSymbol.toLowerCase();
     if (lowerFromCrypto.isEmpty) {
-      return const SwapFlowResult.error(
-          'Convert requires a from-asset symbol');
+      return const SwapFlowResult.error('Convert requires a from-asset symbol');
     }
     if (lowerFromCrypto == lowerCrypto) {
       return const SwapFlowResult.error('Cannot convert an asset to itself');
@@ -217,199 +219,199 @@ Future<SwapFlowResult> runSwapFlow({
   // down still target the SHARED cubit via `context` so the landing updates.
   final cubit = GetIt.I<CryptoCubit>();
   try {
-  // Step 2 — create the quote. CryptoCubit emits SwapQuotePending on success
-  // and SwapFailed on category error.
-  // Quote is display-only — no PIN needed here. The PIN is collected on the
-  // quote sheet's Confirm and finalizes the trade at ConfirmSwap.
-  await cubit.createSwapQuote(
-    accountId: accountId,
-    side: side,
-    fromCurrency: fromCurrency,
-    toCurrency: toCurrency,
-    fromAmountMinorUnits: fromAmountMinor,
-    toAmountMinorUnits: toAmountMinor,
-    description: description,
-    clientIntentId: clientIntentId,
-  );
+    // Step 2 — create the quote. CryptoCubit emits SwapQuotePending on success
+    // and SwapFailed on category error.
+    // Quote is display-only — no PIN needed here. The PIN is collected on the
+    // quote sheet's Confirm and finalizes the trade at ConfirmSwap.
+    await cubit.createSwapQuote(
+      accountId: accountId,
+      side: side,
+      fromCurrency: fromCurrency,
+      toCurrency: toCurrency,
+      fromAmountMinorUnits: fromAmountMinor,
+      toAmountMinorUnits: toAmountMinor,
+      description: description,
+      clientIntentId: clientIntentId,
+    );
 
-  // Bail early if the create failed before the modal even opens.
-  if (cubit.state is SwapFailed) {
-    final st = cubit.state as SwapFailed;
-    // Compensation path: accounts-service released the hold (or never
-    // placed one). Refresh the balance card so the user sees the real
-    // state — otherwise stale "available" lingers from before the tap.
-    if (context.mounted) _kickAccountSummariesRefresh(context);
-    return SwapFlowResult.error(st.message);
-  }
-  if (cubit.state is! SwapQuotePending) {
-    return const SwapFlowResult.error('Unable to create swap quote.');
-  }
-  // Our fee, captured while the quote state still carries it: SwapCompleted
-  // does not. Without it the receipt printed Quidax's GROSS proceeds with no
-  // fee line at all — 69,978.61 on a sale that credited 69,628.71.
-  final int quotedSpreadMinor =
-      (cubit.state as SwapQuotePending).spreadMinorUnits;
-
-  // PR12 — no balance refresh here. CreateSwapQuote is display-only
-  // now; the user's NGN isn't touched until they tap Confirm and the
-  // saga places the hold + recomputes against Quidax. Refreshing the
-  // balance card after CreateSwapQuote would be a wasted RPC (and
-  // momentarily misleading — there's no hold to show).
-
-  // Step 3 — modal: shows the quote (15s timer, auto-refresh). Its Confirm
-  // triggers the PIN sheet; entering the PIN finalizes the trade via
-  // confirmSwapQuote(token). Cancelling the PIN keeps the quote sheet open.
-  if (!context.mounted) return const SwapFlowResult.initiated();
-  var confirmAttempted = false;
-  // Capture the swap OUTCOME the instant confirmSwapQuote emits it. We subscribe
-  // BEFORE showing the quote sheet: an unrelated emit (e.g. a holdings refresh
-  // emitting CryptosLoaded) can overwrite cubit.state between the swap emit and
-  // our read below, so a post-hoc cubit.state read misses the outcome and the
-  // receipt/processing screen is wrongly skipped (user lands back on the asset
-  // list with no confirmation). firstWhere on the pre-subscribed broadcast
-  // stream resolves with the FIRST terminal swap state — SwapPending for an
-  // async 'processing' confirm, SwapCompleted for a sync one — even if a later
-  // emit supersedes it. Never throws: timeout / stream-close fall back to state.
-  // NOTE: deliberately NO .timeout() on this subscription. The quote review +
-  // PIN entry can take longer than any reasonable timeout; a countdown started
-  // here would fire mid-flow and resolve to the stale pre-confirm quote state,
-  // skipping the receipt and stranding the caller's sheet on a spinner. We bound
-  // it at the await point below (after confirm), where the emit has landed.
-  final swapOutcome = cubit.stream.firstWhere(
-      (s) => s is SwapCompleted || s is SwapPending || s is SwapFailed);
-  await showQuoteTimerSheet(
-    context,
-    cubit: cubit,
-    // The tx-PIN sheet runs the confirmation in its own processing phase, so
-    // confirmSwapQuote executes WHILE the PIN spinner shows and the terminal
-    // swap state is emitted before the sheet closes — captured by swapOutcome.
-    onConfirm: () async {
-      await requestPin?.call((token) async {
-        confirmAttempted = true;
-        await cubit.confirmSwapQuote(transactionPin: token);
-      });
-    },
-  );
-  if (!context.mounted) return const SwapFlowResult.initiated();
-
-  // Step 4 — hand off to the processing screen. The cubit state is one of
-  // SwapCompleted / SwapPending / SwapFailed after the modal popped. We
-  // build the details payload here (the screen + receipt need it for
-  // display) and navigate to the processing screen which polls until
-  // terminal, then forwards to the crypto_receipt_screen.
-  // When the user confirmed, use the captured swap outcome (robust against the
-  // state being overwritten by an unrelated emit before we read it). When they
-  // cancelled the PIN, confirmSwapQuote never ran — don't await the outcome (it
-  // would block until the 25s timeout); just read the current state, which stays
-  // SwapQuotePending and aborts quietly below.
-  var terminal = cubit.state;
-  if (confirmAttempted) {
-    // confirmSwapQuote ran inside the PIN's processing phase, so the terminal
-    // state has effectively already been emitted; the timeout is just a backstop.
-    try {
-      terminal = await swapOutcome.timeout(const Duration(seconds: 20));
-    } catch (_) {
-      terminal = cubit.state;
+    // Bail early if the create failed before the modal even opens.
+    if (cubit.state is SwapFailed) {
+      final st = cubit.state as SwapFailed;
+      // Compensation path: accounts-service released the hold (or never
+      // placed one). Refresh the balance card so the user sees the real
+      // state — otherwise stale "available" lingers from before the tap.
+      if (context.mounted) _kickAccountSummariesRefresh(context);
+      return SwapFlowResult.error(st.message);
     }
+    if (cubit.state is! SwapQuotePending) {
+      return const SwapFlowResult.error('Unable to create swap quote.');
+    }
+    // Our fee, captured while the quote state still carries it: SwapCompleted
+    // does not. Without it the receipt printed Quidax's GROSS proceeds with no
+    // fee line at all — 69,978.61 on a sale that credited 69,628.71.
+    final int quotedSpreadMinor =
+        (cubit.state as SwapQuotePending).spreadMinorUnits;
+
+    // PR12 — no balance refresh here. CreateSwapQuote is display-only
+    // now; the user's NGN isn't touched until they tap Confirm and the
+    // saga places the hold + recomputes against Quidax. Refreshing the
+    // balance card after CreateSwapQuote would be a wasted RPC (and
+    // momentarily misleading — there's no hold to show).
+
+    // Step 3 — modal: shows the quote (15s timer, auto-refresh). Its Confirm
+    // triggers the PIN sheet; entering the PIN finalizes the trade via
+    // confirmSwapQuote(token). Cancelling the PIN keeps the quote sheet open.
     if (!context.mounted) return const SwapFlowResult.initiated();
-  } else {
-    // No confirm (PIN cancelled) — don't await; swallow the never-resolving
-    // future's error so it can't surface as an unhandled exception.
-    unawaited(swapOutcome.catchError((_) => cubit.state));
-  }
-  // CANCELLED: the user dismissed the quote sheet or tapped Cancel on the PIN
-  // before confirming, so confirmSwapQuote never ran and the state is still the
-  // pre-confirm quote state (SwapQuotePending). Abort quietly — do NOT push the
-  // processing/receipt screen. Only a confirmed outcome (Completed/Pending/
-  // Failed) proceeds below.
-  if (terminal is! SwapCompleted &&
-      terminal is! SwapPending &&
-      terminal is! SwapFailed) {
-    return const SwapFlowResult.initiated();
-  }
-  if (terminal is SwapFailed) {
-    // PR14: saga persisted the failed row + enqueued a rollback record.
-    // Refresh transactions so the user sees "Trade failed" in history
-    // on return to dashboard. Holdings refresh is harmless here (no
-    // crypto moved on a failed buy) but cheap so we keep one call site.
-    if (context.mounted) {
-      unawaited(context.read<CryptoCubit>().refreshHoldingsAfterSwap());
+    var confirmAttempted = false;
+    // Capture the swap OUTCOME the instant confirmSwapQuote emits it. We subscribe
+    // BEFORE showing the quote sheet: an unrelated emit (e.g. a holdings refresh
+    // emitting CryptosLoaded) can overwrite cubit.state between the swap emit and
+    // our read below, so a post-hoc cubit.state read misses the outcome and the
+    // receipt/processing screen is wrongly skipped (user lands back on the asset
+    // list with no confirmation). firstWhere on the pre-subscribed broadcast
+    // stream resolves with the FIRST terminal swap state — SwapPending for an
+    // async 'processing' confirm, SwapCompleted for a sync one — even if a later
+    // emit supersedes it. Never throws: timeout / stream-close fall back to state.
+    // NOTE: deliberately NO .timeout() on this subscription. The quote review +
+    // PIN entry can take longer than any reasonable timeout; a countdown started
+    // here would fire mid-flow and resolve to the stale pre-confirm quote state,
+    // skipping the receipt and stranding the caller's sheet on a spinner. We bound
+    // it at the await point below (after confirm), where the emit has landed.
+    final swapOutcome = cubit.stream.firstWhere(
+        (s) => s is SwapCompleted || s is SwapPending || s is SwapFailed);
+    await showQuoteTimerSheet(
+      context,
+      cubit: cubit,
+      // The tx-PIN sheet runs the confirmation in its own processing phase, so
+      // confirmSwapQuote executes WHILE the PIN spinner shows and the terminal
+      // swap state is emitted before the sheet closes — captured by swapOutcome.
+      onConfirm: () async {
+        await requestPin?.call((token) async {
+          confirmAttempted = true;
+          await cubit.confirmSwapQuote(transactionPin: token);
+        });
+      },
+    );
+    if (!context.mounted) return const SwapFlowResult.initiated();
+
+    // Step 4 — hand off to the processing screen. The cubit state is one of
+    // SwapCompleted / SwapPending / SwapFailed after the modal popped. We
+    // build the details payload here (the screen + receipt need it for
+    // display) and navigate to the processing screen which polls until
+    // terminal, then forwards to the crypto_receipt_screen.
+    // When the user confirmed, use the captured swap outcome (robust against the
+    // state being overwritten by an unrelated emit before we read it). When they
+    // cancelled the PIN, confirmSwapQuote never ran — don't await the outcome (it
+    // would block until the 25s timeout); just read the current state, which stays
+    // SwapQuotePending and aborts quietly below.
+    var terminal = cubit.state;
+    if (confirmAttempted) {
+      // confirmSwapQuote ran inside the PIN's processing phase, so the terminal
+      // state has effectively already been emitted; the timeout is just a backstop.
+      try {
+        terminal = await swapOutcome.timeout(const Duration(seconds: 20));
+      } catch (_) {
+        terminal = cubit.state;
+      }
+      if (!context.mounted) return const SwapFlowResult.initiated();
+    } else {
+      // No confirm (PIN cancelled) — don't await; swallow the never-resolving
+      // future's error so it can't surface as an unhandled exception.
+      unawaited(swapOutcome.catchError((_) => cubit.state));
     }
-    // Compensation path: hold released by the saga, NGN restored. Same
-    // refresh story as the early-fail branch above.
-    if (context.mounted) _kickAccountSummariesRefresh(context);
-    // Modal already closed; surface the error and let the screen recover.
-    return SwapFlowResult.error(terminal.message);
-  }
+    // CANCELLED: the user dismissed the quote sheet or tapped Cancel on the PIN
+    // before confirming, so confirmSwapQuote never ran and the state is still the
+    // pre-confirm quote state (SwapQuotePending). Abort quietly — do NOT push the
+    // processing/receipt screen. Only a confirmed outcome (Completed/Pending/
+    // Failed) proceeds below.
+    if (terminal is! SwapCompleted &&
+        terminal is! SwapPending &&
+        terminal is! SwapFailed) {
+      return const SwapFlowResult.initiated();
+    }
+    if (terminal is SwapFailed) {
+      // PR14: saga persisted the failed row + enqueued a rollback record.
+      // Refresh transactions so the user sees "Trade failed" in history
+      // on return to dashboard. Holdings refresh is harmless here (no
+      // crypto moved on a failed buy) but cheap so we keep one call site.
+      if (context.mounted) {
+        unawaited(context.read<CryptoCubit>().refreshHoldingsAfterSwap());
+      }
+      // Compensation path: hold released by the saga, NGN restored. Same
+      // refresh story as the early-fail branch above.
+      if (context.mounted) _kickAccountSummariesRefresh(context);
+      // Modal already closed; surface the error and let the screen recover.
+      return SwapFlowResult.error(terminal.message);
+    }
 
-  // Post-confirm balance refresh: on SwapCompleted the captureHold
-  // committed (balance debited; reserved cleared); on SwapPending the
-  // hold remains. Either way the user-visible figures have changed
-  // since the buy screen first loaded, so re-pull.
-  _kickAccountSummariesRefresh(context);
+    // Post-confirm balance refresh: on SwapCompleted the captureHold
+    // committed (balance debited; reserved cleared); on SwapPending the
+    // hold remains. Either way the user-visible figures have changed
+    // since the buy screen first loaded, so re-pull.
+    _kickAccountSummariesRefresh(context);
 
-  // Build the details payload for the receipt UI. We don't have all the
-  // server-known numbers yet (fees, exact fill); the receipt screen
-  // refreshes via cubit state on terminal.
-  // Pass `terminal`, NOT cubit.state: an unrelated holdings/price emit can
-  // clobber cubit.state between the confirm and here (the terminal snapshot
-  // exists precisely to survive that race), which would blank the receipt.
-  final details = _buildReceiptDetails(quotedSpreadMinor, side, fromCurrency, toCurrency,
-      fromAmountMinor, cryptoSymbol, fromCryptoSymbol, terminal);
+    // Build the details payload for the receipt UI. We don't have all the
+    // server-known numbers yet (fees, exact fill); the receipt screen
+    // refreshes via cubit state on terminal.
+    // Pass `terminal`, NOT cubit.state: an unrelated holdings/price emit can
+    // clobber cubit.state between the confirm and here (the terminal snapshot
+    // exists precisely to survive that race), which would blank the receipt.
+    final details = _buildReceiptDetails(quotedSpreadMinor, side, fromCurrency,
+        toCurrency, fromAmountMinor, cryptoSymbol, fromCryptoSymbol, terminal);
 
-  final transactionId = (terminal is SwapCompleted)
-      ? terminal.transactionId
-      : (terminal is SwapPending ? terminal.transactionId : '');
+    final transactionId = (terminal is SwapCompleted)
+        ? terminal.transactionId
+        : (terminal is SwapPending ? terminal.transactionId : '');
 
-  // Inject the DEDICATED swap cubit into the pushed route (Get.to pushes OUTSIDE
-  // the crypto screen's subtree, so the CryptoCubit the receipt/processing screen
-  // reads via BlocProvider isn't otherwise in scope). It stays alive while the
-  // receipt polls and is closed in the finally once the receipt is dismissed.
-  final cryptoCubit = cubit;
-  // The ROOT navigator persists across the sheet teardown; the buy/sell sheet and
-  // the asset-picker route (AllAssetsScreen / UserHoldingsScreen / SwapCryptoScreen)
-  // all live on it (showModalBottomSheet uses the nearest = root navigator; the
-  // pickers are Get-pushed on root).
-  final rootNav = Navigator.of(context, rootNavigator: true);
+    // Inject the DEDICATED swap cubit into the pushed route (Get.to pushes OUTSIDE
+    // the crypto screen's subtree, so the CryptoCubit the receipt/processing screen
+    // reads via BlocProvider isn't otherwise in scope). It stays alive while the
+    // receipt polls and is closed in the finally once the receipt is dismissed.
+    final cryptoCubit = cubit;
+    // The ROOT navigator persists across the sheet teardown; the buy/sell sheet and
+    // the asset-picker route (AllAssetsScreen / UserHoldingsScreen / SwapCryptoScreen)
+    // all live on it (showModalBottomSheet uses the nearest = root navigator; the
+    // pickers are Get-pushed on root).
+    final rootNav = Navigator.of(context, rootNavigator: true);
 
-  // Processing already ran INSIDE the tx-PIN sheet's own phase, so EVERY confirmed
-  // outcome — completed or pending, async OR sync — goes STRAIGHT to a LIVE
-  // receipt. There is no separate processing/loading screen anymore: the receipt
-  // shows a pending badge and polls ITSELF to completed (refreshing the wallet/
-  // holdings) when settlement lands. This removes the old CryptoSwapProcessingScreen
-  // and its "View in History" → history-screen path (which lost the CryptoCubit
-  // scope and surfaced a cubit error).
-  final receipt = CryptoTransactionReceipt(
-    transactionId: transactionId,
-    transactionDetails: details,
-    timestamp: DateTime.now(),
-    status: terminal is SwapCompleted
-        ? CryptoTransactionStatus.completed
-        : CryptoTransactionStatus.pending,
-  );
-  // Push the receipt AND tear down the still-open buy/sell sheet + the asset-picker
-  // routes up to the named crypto landing in ONE atomic pushAndRemoveUntil. This is
-  // deliberately done BEFORE dismissing the caller's sheet and with NO settle delay:
-  // the previous "pop the sheet, wait 320ms, then push" sequence briefly REVEALED
-  // the asset picker (AllAssetsScreen) between the PIN sheet closing and the receipt
-  // appearing — the flash the user saw. Removing everything up to /crypto in the
-  // same frame the receipt is pushed means the picker is never shown. It also keeps
-  // the Back chain correct: ONE Back from the receipt returns to the crypto landing,
-  // a second Back returns to the dashboard (carousel state preserved).
-  await rootNav.pushAndRemoveUntil(
-    MaterialPageRoute(
-      builder: (_) => BlocProvider<CryptoCubit>.value(
-        value: cryptoCubit,
-        child: CryptoReceiptScreen(receipt: receipt),
+    // Processing already ran INSIDE the tx-PIN sheet's own phase, so EVERY confirmed
+    // outcome — completed or pending, async OR sync — goes STRAIGHT to a LIVE
+    // receipt. There is no separate processing/loading screen anymore: the receipt
+    // shows a pending badge and polls ITSELF to completed (refreshing the wallet/
+    // holdings) when settlement lands. This removes the old CryptoSwapProcessingScreen
+    // and its "View in History" → history-screen path (which lost the CryptoCubit
+    // scope and surfaced a cubit error).
+    final receipt = CryptoTransactionReceipt(
+      transactionId: transactionId,
+      transactionDetails: details,
+      timestamp: DateTime.now(),
+      status: terminal is SwapCompleted
+          ? CryptoTransactionStatus.completed
+          : CryptoTransactionStatus.pending,
+    );
+    // Push the receipt AND tear down the still-open buy/sell sheet + the asset-picker
+    // routes up to the named crypto landing in ONE atomic pushAndRemoveUntil. This is
+    // deliberately done BEFORE dismissing the caller's sheet and with NO settle delay:
+    // the previous "pop the sheet, wait 320ms, then push" sequence briefly REVEALED
+    // the asset picker (AllAssetsScreen) between the PIN sheet closing and the receipt
+    // appearing — the flash the user saw. Removing everything up to /crypto in the
+    // same frame the receipt is pushed means the picker is never shown. It also keeps
+    // the Back chain correct: ONE Back from the receipt returns to the crypto landing,
+    // a second Back returns to the dashboard (carousel state preserved).
+    await rootNav.pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider<CryptoCubit>.value(
+          value: cryptoCubit,
+          child: CryptoReceiptScreen(receipt: receipt),
+        ),
       ),
-    ),
-    (route) => route.settings.name == AppRoutes.crypto || route.isFirst,
-  );
-  // Best-effort: if a caller's sheet somehow lived on a different navigator and
-  // survived the removeUntil, let it clean up. No-op when already torn down
-  // (its context is unmounted → canPop guard fails).
-  onBeforeProcessing?.call();
-  return const SwapFlowResult.initiated();
+      (route) => route.settings.name == AppRoutes.crypto || route.isFirst,
+    );
+    // Best-effort: if a caller's sheet somehow lived on a different navigator and
+    // survived the removeUntil, let it clean up. No-op when already torn down
+    // (its context is unmounted → canPop guard fails).
+    onBeforeProcessing?.call();
+    return const SwapFlowResult.initiated();
   } finally {
     // Close the dedicated swap cubit now that the receipt / processing screen has
     // been dismissed (the Get.to calls above are awaited). The SHARED asset-list
@@ -537,7 +539,8 @@ CryptoRuntimeConfig _readCryptoConfig(BuildContext context) {
 // user-facing error string. The floor comes from CryptoConfigCubit
 // (`crypto.min_order.{ccy}.minor_units` system_settings); a currency without
 // a configured floor passes through (the server is the security boundary).
-String? _checkMinOrder(CryptoRuntimeConfig config, String fiatCurrency, double amount) {
+String? _checkMinOrder(
+    CryptoRuntimeConfig config, String fiatCurrency, double amount) {
   final ccy = fiatCurrency.toLowerCase();
   final minMinor = config.minOrderFor(ccy);
   if (minMinor == null || minMinor <= 0) {

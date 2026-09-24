@@ -75,8 +75,7 @@ class SavedBatchRepositoryImpl implements ISavedBatchRepository {
   Future<Either<Failure, SavedBatchEntity>> updateSavedBatch(
       {required String id, required String name}) async {
     try {
-      final res =
-          await remoteDataSource.updateSavedBatch(id: id, name: name);
+      final res = await remoteDataSource.updateSavedBatch(id: id, name: name);
       return Right(res);
     } catch (e) {
       return Left(_toFailure(e));

@@ -1,5 +1,6 @@
 import 'dart:convert';
-import 'package:lazervault/core/config/country_config.dart' show CountryConfigs, CountryConfig;
+import 'package:lazervault/core/config/country_config.dart'
+    show CountryConfigs, CountryConfig;
 
 /// Represents a saved signup draft for resumption
 /// This is stored locally (not synced to backend) for pre-account creation state
@@ -13,7 +14,8 @@ class SignupDraft {
   final DateTime? dateOfBirth;
   final String? primaryContactType; // 'email' or 'phone'
   final int currentPage;
-  final String currentStep; // 'form_page_0', 'form_page_1', 'email_verify', etc.
+  final String
+      currentStep; // 'form_page_0', 'form_page_1', 'email_verify', etc.
   final DateTime savedAt;
   final String? deviceId;
   final String? locale; // Locale string (e.g., 'en-NG', 'en-GH', 'en-KE')
@@ -246,7 +248,8 @@ class SignupProgress {
       status: SignupStatus.fromString(json['status'] as String?),
       currentStep: json['currentStep'] as String?,
       steps: (json['steps'] as List<dynamic>?)
-              ?.map((s) => SignupStepProgress.fromJson(s as Map<String, dynamic>))
+              ?.map(
+                  (s) => SignupStepProgress.fromJson(s as Map<String, dynamic>))
               .toList() ??
           [],
       signupCompletedAt: json['signupCompletedAt'] != null

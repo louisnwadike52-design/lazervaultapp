@@ -143,18 +143,21 @@ class AuxiliaryItem extends Equatable {
 class InsuranceProductFormField extends Equatable {
   final String name;
   final String label;
-  final String type; // "text", "number", "date", "select", "boolean", "email", "phone"
+  final String
+      type; // "text", "number", "date", "select", "boolean", "email", "phone"
   final bool required;
   final List<String> options;
   final String defaultValue;
   final String validationRegex;
   final String placeholder;
   final String description;
+
   /// MyCover.ai utility-list UUID powering this field's options when
   /// the values come from /v2/products/utility/{id}. Non-empty implies
   /// the Flutter form should fetch the picker from that endpoint
   /// instead of using [options].
   final String utilityId;
+
   /// Name of another field whose value scopes this field's utility
   /// query (e.g. vehicle_model depends on vehicle_make). Empty for
   /// independent selects.
@@ -183,7 +186,17 @@ class InsuranceProductFormField extends Equatable {
   });
 
   @override
-  List<Object?> get props => [name, label, type, required, options, defaultValue, utilityId, dependsOn, itemFields];
+  List<Object?> get props => [
+        name,
+        label,
+        type,
+        required,
+        options,
+        defaultValue,
+        utilityId,
+        dependsOn,
+        itemFields
+      ];
 }
 
 /// One sub-field of a structured-array item (see
@@ -206,7 +219,8 @@ class InsuranceProductFormItemField extends Equatable {
   });
 
   @override
-  List<Object?> get props => [name, label, type, required, options, placeholder];
+  List<Object?> get props =>
+      [name, label, type, required, options, placeholder];
 }
 
 /// Insurance product from MyCover.ai marketplace
@@ -316,7 +330,8 @@ class InsuranceCategoryInfo extends Equatable {
     this.productCount = 0,
   });
 
-  InsuranceProductCategory get category => InsuranceProductCategory.fromString(name);
+  InsuranceProductCategory get category =>
+      InsuranceProductCategory.fromString(name);
 
   @override
   List<Object?> get props => [id, name, productCount];
@@ -348,7 +363,8 @@ class InsuranceQuote extends Equatable {
       validUntil != null && DateTime.now().isAfter(validUntil!);
 
   @override
-  List<Object?> get props => [quoteId, productId, premium, currency, validUntil];
+  List<Object?> get props =>
+      [quoteId, productId, premium, currency, validUntil];
 }
 
 /// Paginated wrapper for user policies (Slice 4).
@@ -441,7 +457,9 @@ class InsurancePurchaseResult extends Equatable {
   // isn't confirmed yet (awaiting webhook / async). The receipt shows a
   // "confirming" state and resolves via the balance-WS, not a poll.
   bool get isProcessing =>
-      status == 'processing' || status == 'pending' || status == 'awaiting_webhook';
+      status == 'processing' ||
+      status == 'pending' ||
+      status == 'awaiting_webhook';
 
   bool get hasCertificate => certificateUrl.isNotEmpty;
 

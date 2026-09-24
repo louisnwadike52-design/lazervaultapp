@@ -33,7 +33,8 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
   Future<void> _getProvidersWithCache({String? country}) async {
     final cacheKey = 'electricity_providers:${country ?? 'all'}';
 
-    await for (final result in _cacheManager!.get<List<ElectricityProviderEntity>>(
+    await for (final result
+        in _cacheManager!.get<List<ElectricityProviderEntity>>(
       key: cacheKey,
       fetcher: () async {
         final result = await repository.getProviders(country: country);
@@ -46,7 +47,8 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
       serializer: (providers) =>
           jsonEncode(providers.map((p) => p.toJson()).toList()),
       deserializer: (json) => (jsonDecode(json) as List)
-          .map((j) => ElectricityProviderEntity.fromJson(j as Map<String, dynamic>))
+          .map((j) =>
+              ElectricityProviderEntity.fromJson(j as Map<String, dynamic>))
           .toList(),
     )) {
       if (isClosed) return;
@@ -56,7 +58,8 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
           isStale: result.isStale,
         ));
       } else if (result.hasError) {
-        emit(ElectricityBillError(message: getUserFriendlyErrorMessage(result.error)));
+        emit(ElectricityBillError(
+            message: getUserFriendlyErrorMessage(result.error)));
       }
     }
   }
@@ -106,9 +109,9 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
       // about this meter. Carrying that through is what lets the screen offer
       // "continue if you are sure" instead of claiming the number is wrong.
       (failure) => emit(MeterValidationFailed(
-            message: failure.message,
-            isUnavailable: _isUnavailable(failure),
-          )),
+        message: failure.message,
+        isUnavailable: _isUnavailable(failure),
+      )),
       (validationResult) {
         // A response is not a confirmation. The backend answers a REJECTED
         // meter with a normal success envelope carrying is_valid=false, and
@@ -153,9 +156,9 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
     if (isClosed) return;
     result.fold(
       (failure) => emit(SmartMeterValidationFailed(
-            message: failure.message,
-            isUnavailable: _isUnavailable(failure),
-          )),
+        message: failure.message,
+        isUnavailable: _isUnavailable(failure),
+      )),
       (smartResult) {
         if (smartResult.isValid) {
           emit(SmartMeterValidated(result: smartResult));
@@ -251,7 +254,8 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
     if (payment.isCompleted) {
       // Sync mode: payment completed — fetch full receipt (includes token).
       emit(PaymentInitiated(payment: payment));
-      final verifyResult = await repository.verifyPayment(paymentId: payment.id);
+      final verifyResult =
+          await repository.verifyPayment(paymentId: payment.id);
       if (isClosed) return;
       verifyResult.fold(
         (failure) {
@@ -350,7 +354,8 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
             errorMessage: payment.errorMessage ?? 'Payment failed',
           ));
         } else if (payment.isProcessing) {
-          emit(PaymentProcessing(payment: payment, progress: 0.6, currentStep: 'Processing...'));
+          emit(PaymentProcessing(
+              payment: payment, progress: 0.6, currentStep: 'Processing...'));
         } else {
           emit(PaymentVerified(payment: payment));
         }

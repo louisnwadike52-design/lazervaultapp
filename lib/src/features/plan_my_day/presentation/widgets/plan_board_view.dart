@@ -108,7 +108,8 @@ class _PlanBoardViewState extends State<PlanBoardView> {
   // ── Summary header ──────────────────────────────────────────────────────
   Widget _progressHeader() {
     final total = widget.tasks
-        .where((t) => PlanTaskStatus.boardColumns.any((s) => s.value == t.status))
+        .where(
+            (t) => PlanTaskStatus.boardColumns.any((s) => s.value == t.status))
         .length;
     final done = _countFor(PlanTaskStatus.done);
     final pct = total == 0 ? 0.0 : done / total;
@@ -316,15 +317,13 @@ class _PlanBoardViewState extends State<PlanBoardView> {
                           ? const Color(0xFF10B981)
                           : Colors.transparent,
                       border: Border.all(
-                        color: task.isCompleted
-                            ? const Color(0xFF10B981)
-                            : _muted,
+                        color:
+                            task.isCompleted ? const Color(0xFF10B981) : _muted,
                         width: 2,
                       ),
                     ),
                     child: task.isCompleted
-                        ? const Icon(Icons.check,
-                            size: 14, color: Colors.white)
+                        ? const Icon(Icons.check, size: 14, color: Colors.white)
                         : null,
                   ),
                 ),
@@ -367,16 +366,14 @@ class _PlanBoardViewState extends State<PlanBoardView> {
                             SizedBox(width: 8.w),
                             Icon(Icons.event_rounded,
                                 size: 13.sp,
-                                color: overdue
-                                    ? const Color(0xFFEF4444)
-                                    : _muted),
+                                color:
+                                    overdue ? const Color(0xFFEF4444) : _muted),
                             SizedBox(width: 3.w),
                             Text(
                               DateFormat('MMM d').format(task.dueDate!),
                               style: GoogleFonts.inter(
-                                color: overdue
-                                    ? const Color(0xFFEF4444)
-                                    : _muted,
+                                color:
+                                    overdue ? const Color(0xFFEF4444) : _muted,
                                 fontSize: 11.sp,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -407,8 +404,8 @@ class _PlanBoardViewState extends State<PlanBoardView> {
                             if (_contactFor(task) != null)
                               TaskContactChip(
                                 contact: _contactFor(task)!,
-                                onTap: () =>
-                                    widget.onOpenContact?.call(_contactFor(task)!),
+                                onTap: () => widget.onOpenContact
+                                    ?.call(_contactFor(task)!),
                               ),
                           ],
                         ),
@@ -454,8 +451,8 @@ class _PlanBoardViewState extends State<PlanBoardView> {
                 color: status.color.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.inbox_rounded,
-                  color: status.color, size: 40.sp),
+              child:
+                  Icon(Icons.inbox_rounded, color: status.color, size: 40.sp),
             ),
             SizedBox(height: 16.h),
             Text(
@@ -520,7 +517,6 @@ class _PlanBoardViewState extends State<PlanBoardView> {
         height: 10.w,
         decoration: BoxDecoration(color: c, shape: BoxShape.circle),
       );
-
 
   Widget _pill(String text, Color c) => Container(
         padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),

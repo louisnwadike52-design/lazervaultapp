@@ -26,5 +26,6 @@ class InternetPackageEntity extends Equatable {
   double get displayAmount => roundUpToNearestTen(amount);
 
   @override
-  List<Object?> get props => [id, name, variationCode, amount, providerId, validity];
+  List<Object?> get props =>
+      [id, name, variationCode, amount, providerId, validity];
 }

@@ -30,13 +30,15 @@ class BulkSmsUtils {
 
   /// Estimated credits (units) needed = segments × recipients. One credit is
   /// one segment delivered to one recipient.
-  static int estimatedUnits({required String message, required int recipientCount}) {
+  static int estimatedUnits(
+      {required String message, required int recipientCount}) {
     if (recipientCount <= 0) return 0;
     final segs = segmentCount(message);
     return segs * recipientCount;
   }
 
-  static final RegExp _variablePattern = RegExp(r'\{\{\s*([a-zA-Z0-9_]+)\s*\}\}');
+  static final RegExp _variablePattern =
+      RegExp(r'\{\{\s*([a-zA-Z0-9_]+)\s*\}\}');
 
   /// The distinct `{{variable}}` keys referenced in [template], in first-seen
   /// order.

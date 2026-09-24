@@ -36,9 +36,9 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
   SprayRoomCubit({
     required ISprayMeRepository repository,
     required SprayMeWebSocketService wsService,
-  }) : _repository = repository,
-       _wsService = wsService,
-       super(const SprayRoomState());
+  })  : _repository = repository,
+        _wsService = wsService,
+        super(const SprayRoomState());
 
   // ─── Initialize Room ─────────────────────────────────────────
 
@@ -48,8 +48,8 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
     // Resolve who we are (best-effort) so live earnings refresh + self-echo
     // suppression work. Non-fatal if it fails.
     try {
-      _currentUserId ??= await serviceLocator<SecureStorageService>()
-          .getUserId();
+      _currentUserId ??=
+          await serviceLocator<SecureStorageService>().getUserId();
     } catch (_) {}
 
     try {
@@ -274,8 +274,7 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
         emit(
           state.copyWith(
             recentEvents: updatedEvents,
-            totalSprayed:
-                state.totalSprayed +
+            totalSprayed: state.totalSprayed +
                 ((event.data['total_amount'] as num?)?.toInt() ?? 0),
           ),
         );
@@ -284,14 +283,11 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
         emit(
           state.copyWith(
             recentEvents: updatedEvents,
-            totalLikes:
-                (event.data['total_likes'] as num?)?.toInt() ??
+            totalLikes: (event.data['total_likes'] as num?)?.toInt() ??
                 state.totalLikes,
-            totalLikeTaps:
-                (event.data['total_like_taps'] as num?)?.toInt() ??
+            totalLikeTaps: (event.data['total_like_taps'] as num?)?.toInt() ??
                 state.totalLikeTaps + 1,
-            liveLikeTaps:
-                (event.data['live_like_taps'] as num?)?.toInt() ??
+            liveLikeTaps: (event.data['live_like_taps'] as num?)?.toInt() ??
                 state.liveLikeTaps + 1,
           ),
         );
@@ -342,8 +338,7 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
         emit(
           state.copyWith(
             recentEvents: updatedEvents,
-            totalSprayed:
-                (event.data['total_sprayed'] as num?)?.toInt() ??
+            totalSprayed: (event.data['total_sprayed'] as num?)?.toInt() ??
                 state.totalSprayed,
             sessionEnded: true,
             actionInProgress: false,

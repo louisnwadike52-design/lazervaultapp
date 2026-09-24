@@ -48,8 +48,7 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
   /// invoice currency. Null for a same-currency payment.
   InvoiceFxQuote? _fxQuote;
 
-  bool get _isSplit =>
-      (widget.invoice.invoice?.taggedUsers?.length ?? 0) > 1;
+  bool get _isSplit => (widget.invoice.invoice?.taggedUsers?.length ?? 0) > 1;
 
   /// The amount THIS payer owes: their equal share for a split invoice, else
   /// the full invoice amount. The backend charges the same share.
@@ -81,8 +80,8 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
           final authState = context.read<AuthenticationCubit>().state;
           if (authState is AuthenticationSuccess) {
             context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
-              userId: authState.profile.userId,
-            );
+                  userId: authState.profile.userId,
+                );
           }
           // The invoice (or this user's share of it) is settled — drop it from
           // the dashboard badge and launch prompt straight away.
@@ -626,7 +625,8 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
       amount: pinAmount,
       currency: pinCurrency,
       title: 'Confirm Payment',
-      message: 'Confirm invoice payment of $pinCurrency ${pinAmount.toStringAsFixed(2)}',
+      message:
+          'Confirm invoice payment of $pinCurrency ${pinAmount.toStringAsFixed(2)}',
       onPinValidated: (token) async {
         verificationToken = token;
       },
@@ -652,12 +652,12 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
 
     // Call cubit with all security params
     await taggedInvoiceCubit.payInvoice(
-          widget.invoice.invoiceId,
-          _selectedAccountId!,
-          pin: '',
-          verificationToken: verificationToken!,
-          transactionId: transactionId,
-          idempotencyKey: idempotencyKey,
-        );
+      widget.invoice.invoiceId,
+      _selectedAccountId!,
+      pin: '',
+      verificationToken: verificationToken!,
+      transactionId: transactionId,
+      idempotencyKey: idempotencyKey,
+    );
   }
 }

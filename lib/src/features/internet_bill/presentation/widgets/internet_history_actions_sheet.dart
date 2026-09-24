@@ -249,8 +249,7 @@ class InternetHistoryActionsSheet {
                 ? Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle,
-                          color: _success, size: 16.sp),
+                      Icon(Icons.check_circle, color: _success, size: 16.sp),
                       SizedBox(width: 4.w),
                       Text(
                         'Saved',
@@ -289,7 +288,6 @@ class InternetHistoryActionsSheet {
   /// persisted beneficiary. Returns true when the contact is already
   /// saved or is saved inline; false when the user dismisses the
   /// sheet.
-
 
   /// Minimal `InternetProviderEntity` assembled from history-row data.
   /// The account-input screen only reads `serviceId` (for input rules)

@@ -68,7 +68,19 @@ class InvoicesLoaded extends InvoiceState {
   }
 
   @override
-  List<Object?> get props => [invoices, statistics, currentPage, totalPages, totalCount, pageSize, hasNext, hasPrevious, currentFilter, isStale, isRevalidating];
+  List<Object?> get props => [
+        invoices,
+        statistics,
+        currentPage,
+        totalPages,
+        totalCount,
+        pageSize,
+        hasNext,
+        hasPrevious,
+        currentFilter,
+        isStale,
+        isRevalidating
+      ];
 }
 
 class InvoiceDetailsLoaded extends InvoiceState {
@@ -186,7 +198,8 @@ class InvoiceServiceFeePaid extends InvoiceState {
   final String serviceFeeRef;
   final double newBalance;
 
-  const InvoiceServiceFeePaid({required this.serviceFeeRef, required this.newBalance});
+  const InvoiceServiceFeePaid(
+      {required this.serviceFeeRef, required this.newBalance});
 
   @override
   List<Object?> get props => [serviceFeeRef, newBalance];
@@ -228,5 +241,6 @@ class InvoiceCreationQueued extends InvoiceState {
   });
 
   @override
-  List<Object?> get props => [title, totalAmount, currency, message, mutationId];
+  List<Object?> get props =>
+      [title, totalAmount, currency, message, mutationId];
 }

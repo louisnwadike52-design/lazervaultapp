@@ -16,7 +16,6 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 part 'voice_cloning_screen_widgets.dart';
 
-
 /// Dedicated voice cloning recording screen.
 ///
 /// SHORT GUIDED FLOW: the user reads ONE fixed, phonetically-balanced script
@@ -475,19 +474,21 @@ class _VoiceCloningScreenState extends State<VoiceCloningScreen>
         setState(() => _uploadStatus = 'Uploading to cloning service...');
       }
 
-      final response = await http.post(
-        Uri.parse('$_voiceGatewayUrl/voice/clone/upload'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode({
-          'user_id': userId,
-          'audio_data': audioB64,
-          'sample_rate': 16000,
-          'duration_seconds': _recordingSeconds,
-        }),
-      ).timeout(const Duration(seconds: 120)); // 2 min for slow networks
+      final response = await http
+          .post(
+            Uri.parse('$_voiceGatewayUrl/voice/clone/upload'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode({
+              'user_id': userId,
+              'audio_data': audioB64,
+              'sample_rate': 16000,
+              'duration_seconds': _recordingSeconds,
+            }),
+          )
+          .timeout(const Duration(seconds: 120)); // 2 min for slow networks
 
       if (!mounted || _disposed) return;
 
@@ -559,7 +560,8 @@ class _VoiceCloningScreenState extends State<VoiceCloningScreen>
       if (mounted && !_disposed) {
         setState(() {
           _step = _CloningStep.error;
-          _errorMessage = 'Network error. Please check your internet connection.';
+          _errorMessage =
+              'Network error. Please check your internet connection.';
         });
       }
     } catch (e) {
@@ -629,8 +631,8 @@ class _VoiceCloningScreenState extends State<VoiceCloningScreen>
             timer.cancel();
             setState(() {
               _step = _CloningStep.error;
-              _errorMessage = _friendlyError(
-                  data['custom_voice_error'] as String? ?? '');
+              _errorMessage =
+                  _friendlyError(data['custom_voice_error'] as String? ?? '');
             });
           } else {
             // still pending — reflect progress/score
@@ -1132,13 +1134,13 @@ class _VoiceCloningScreenState extends State<VoiceCloningScreen>
                     shape: BoxShape.circle,
                     color: _isPaused
                         ? const Color(0xFFFB923C).withValues(alpha: 0.1)
-                        : const Color(0xFFEF4444)
-                            .withValues(alpha: 0.08 + (_currentAmplitude * 0.12)),
+                        : const Color(0xFFEF4444).withValues(
+                            alpha: 0.08 + (_currentAmplitude * 0.12)),
                     border: Border.all(
                       color: _isPaused
                           ? const Color(0xFFFB923C).withValues(alpha: 0.4)
-                          : const Color(0xFFEF4444)
-                              .withValues(alpha: 0.3 + (_currentAmplitude * 0.4)),
+                          : const Color(0xFFEF4444).withValues(
+                              alpha: 0.3 + (_currentAmplitude * 0.4)),
                       width: 2,
                     ),
                   ),
@@ -1238,9 +1240,8 @@ class _VoiceCloningScreenState extends State<VoiceCloningScreen>
               ),
               SizedBox(width: 24.w),
               _buildControlButton(
-                icon: _isPaused
-                    ? Icons.play_arrow_rounded
-                    : Icons.pause_rounded,
+                icon:
+                    _isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
                 label: _isPaused ? 'Resume' : 'Pause',
                 color: const Color(0xFFFB923C),
                 onTap: _isPaused ? _resumeRecording : _pauseRecording,
@@ -1417,10 +1418,9 @@ class _VoiceCloningScreenState extends State<VoiceCloningScreen>
             width: 80.w,
             height: 80.w,
             decoration: BoxDecoration(
-              color: (isReady
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFF3B82F6))
-                  .withValues(alpha: 0.12),
+              color:
+                  (isReady ? const Color(0xFF10B981) : const Color(0xFF3B82F6))
+                      .withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
             child: isPending

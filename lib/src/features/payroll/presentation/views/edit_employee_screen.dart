@@ -16,7 +16,6 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/account_ve
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 part 'edit_employee_screen_widgets.dart';
 
-
 class EditEmployeeScreen extends StatefulWidget {
   final EmployeeEntity employee;
 
@@ -150,7 +149,8 @@ class _EditEmployeeScreenState extends State<EditEmployeeScreen> {
               ? AppPhoneField.complete(_phone)
               : widget.employee.phone,
           nin: _ninController.text.trim(),
-          bankAccountNumber: _isInternal ? '' : _bankAccountController.text.trim(),
+          bankAccountNumber:
+              _isInternal ? '' : _bankAccountController.text.trim(),
           bankCode: _isInternal ? '' : _bankCode,
           bankName: _isInternal ? '' : _bankName,
           bankAccountName: _isInternal ? '' : _bankAccountName,
@@ -167,8 +167,9 @@ class _EditEmployeeScreenState extends State<EditEmployeeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor:
-            isError ? InvoiceThemeColors.errorRed : InvoiceThemeColors.successGreen,
+        backgroundColor: isError
+            ? InvoiceThemeColors.errorRed
+            : InvoiceThemeColors.successGreen,
       ),
     );
   }
@@ -589,7 +590,6 @@ class _EditEmployeeScreenState extends State<EditEmployeeScreen> {
       children: [
         _buildSectionTitle('Employment Details'),
         SizedBox(height: 16.h),
-
         Text(
           'Employment Type',
           style: GoogleFonts.inter(
@@ -618,11 +618,13 @@ class _EditEmployeeScreenState extends State<EditEmployeeScreen> {
               child: GestureDetector(
                 onTap: () => setState(() => _employmentType = type),
                 child: Container(
-                  margin: EdgeInsets.only(right: type != EmploymentType.contract ? 8.w : 0),
+                  margin: EdgeInsets.only(
+                      right: type != EmploymentType.contract ? 8.w : 0),
                   padding: EdgeInsets.symmetric(vertical: 10.h),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2)
+                        ? InvoiceThemeColors.primaryPurple
+                            .withValues(alpha: 0.2)
                         : InvoiceThemeColors.secondaryBackground,
                     borderRadius: BorderRadius.circular(10.r),
                     border: Border.all(
@@ -650,7 +652,6 @@ class _EditEmployeeScreenState extends State<EditEmployeeScreen> {
           }).toList(),
         ),
         SizedBox(height: 14.h),
-
         _buildTextField(
           controller: _payRateController,
           label: 'Pay Rate (Naira)',
@@ -668,7 +669,6 @@ class _EditEmployeeScreenState extends State<EditEmployeeScreen> {
           },
         ),
         SizedBox(height: 14.h),
-
         Text(
           'Pay Frequency',
           style: GoogleFonts.inter(
@@ -697,11 +697,13 @@ class _EditEmployeeScreenState extends State<EditEmployeeScreen> {
               child: GestureDetector(
                 onTap: () => setState(() => _payFrequency = freq),
                 child: Container(
-                  margin: EdgeInsets.only(right: freq != PayFrequency.weekly ? 8.w : 0),
+                  margin: EdgeInsets.only(
+                      right: freq != PayFrequency.weekly ? 8.w : 0),
                   padding: EdgeInsets.symmetric(vertical: 10.h),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2)
+                        ? InvoiceThemeColors.primaryPurple
+                            .withValues(alpha: 0.2)
                         : InvoiceThemeColors.secondaryBackground,
                     borderRadius: BorderRadius.circular(10.r),
                     border: Border.all(
@@ -729,7 +731,6 @@ class _EditEmployeeScreenState extends State<EditEmployeeScreen> {
           }).toList(),
         ),
         SizedBox(height: 14.h),
-
         _buildTextField(
           controller: _departmentController,
           label: 'Department',
@@ -744,7 +745,6 @@ class _EditEmployeeScreenState extends State<EditEmployeeScreen> {
           icon: Icons.work_outline,
         ),
         SizedBox(height: 14.h),
-
         Text(
           'Start Date',
           style: GoogleFonts.inter(
@@ -867,7 +867,8 @@ class _EditEmployeeScreenState extends State<EditEmployeeScreen> {
               color: InvoiceThemeColors.textGray500,
               fontSize: 15.sp,
             ),
-            prefixIcon: Icon(icon, color: InvoiceThemeColors.textGray400, size: 20.sp),
+            prefixIcon:
+                Icon(icon, color: InvoiceThemeColors.textGray400, size: 20.sp),
             filled: true,
             fillColor: InvoiceThemeColors.secondaryBackground,
             border: OutlineInputBorder(

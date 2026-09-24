@@ -71,7 +71,9 @@ class MarketIndexCard extends StatelessWidget {
           Row(
             children: [
               Icon(
-                isPositive ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                isPositive
+                    ? Icons.arrow_upward_rounded
+                    : Icons.arrow_downward_rounded,
                 color: move,
                 size: 14.sp,
               ),

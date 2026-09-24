@@ -115,6 +115,7 @@ class RichCardText extends StatelessWidget {
 String plainFromRichText(String input) {
   var s = decodeHtmlEntities(input.replaceAll(_htmlTag, ''));
   // Strip the most common markdown emphasis/heading/link syntax, keeping link text.
-  s = s.replaceAllMapped(_mdSyntax, (m) => m.groupCount >= 1 && m.group(1) != null ? m.group(1)! : '');
+  s = s.replaceAllMapped(_mdSyntax,
+      (m) => m.groupCount >= 1 && m.group(1) != null ? m.group(1)! : '');
   return s.replaceAll(RegExp(r'\s+'), ' ').trim();
 }

@@ -49,14 +49,17 @@ void main() {
 
     test('every live session is shown, even several at once', () {
       final all = [
-        s('l1', 'active'), s('l2', 'active'), s('l3', 'active'),
+        s('l1', 'active'),
+        s('l2', 'active'),
+        s('l3', 'active'),
         for (var i = 0; i < 9; i++) s('e$i', 'ended'),
       ];
       final shown = homeOrder(all);
       expect(shown.where((x) => x.isActive).length, 3);
     });
 
-    test('more live sessions than the cap does not produce a negative take', () {
+    test('more live sessions than the cap does not produce a negative take',
+        () {
       // take(-1) throws; the clamp is what prevents it.
       final all = [for (var i = 0; i < 7; i++) s('l$i', 'active')];
       expect(() => homeOrder(all), returnsNormally);

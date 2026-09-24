@@ -18,5 +18,6 @@ class TVPackageEntity extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, name, variationCode, amount, providerId, validity];
+  List<Object?> get props =>
+      [id, name, variationCode, amount, providerId, validity];
 }

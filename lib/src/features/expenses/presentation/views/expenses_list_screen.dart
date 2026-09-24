@@ -275,8 +275,8 @@ class _ExpensesListScreenState extends State<ExpensesListScreen>
               _heroStat('Approved', s.totalApprovedMinor, s.approvedCount,
                   ExpenseStatus.approved.color),
               _heroDivider(),
-              _heroStat('Reimbursed', s.totalReimbursedMinor,
-                  s.reimbursedCount, ExpenseStatus.reimbursed.color),
+              _heroStat('Reimbursed', s.totalReimbursedMinor, s.reimbursedCount,
+                  ExpenseStatus.reimbursed.color),
             ],
           ),
         ],
@@ -476,7 +476,8 @@ class _ExpensesListScreenState extends State<ExpensesListScreen>
               Text(
                 label,
                 style: GoogleFonts.inter(
-                  color: selected ? Colors.white : InvoiceThemeColors.textGray400,
+                  color:
+                      selected ? Colors.white : InvoiceThemeColors.textGray400,
                   fontSize: 12.sp,
                   fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                 ),
@@ -639,7 +640,8 @@ class _ExpensesListScreenState extends State<ExpensesListScreen>
                 color: e.category.color.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Icon(e.category.icon, color: e.category.color, size: 22.sp),
+              child:
+                  Icon(e.category.icon, color: e.category.color, size: 22.sp),
             ),
             SizedBox(width: 12.w),
             Expanded(
@@ -685,8 +687,7 @@ class _ExpensesListScreenState extends State<ExpensesListScreen>
                 ),
                 SizedBox(height: 5.h),
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                   decoration: BoxDecoration(
                     color: e.status.color.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6.r),

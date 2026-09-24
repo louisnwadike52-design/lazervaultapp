@@ -37,8 +37,9 @@ class TradeQuantityScreen extends StatefulWidget {
 class _TradeQuantityScreenState extends State<TradeQuantityScreen> {
   Color get _accent => widget.accentColor ?? InvestTradingUi.accent;
 
-  Color get _sideColor =>
-      widget.orderSide == OrderSide.buy ? InvestTradingUi.buy : InvestTradingUi.sell;
+  Color get _sideColor => widget.orderSide == OrderSide.buy
+      ? InvestTradingUi.buy
+      : InvestTradingUi.sell;
 
   late TextEditingController _quantityController;
   late TextEditingController _limitPriceController;
@@ -149,7 +150,8 @@ class _TradeQuantityScreenState extends State<TradeQuantityScreen> {
                     ),
                     SizedBox(height: 8.h),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                       decoration: BoxDecoration(
                         color: _sideColor,
                         borderRadius: BorderRadius.circular(10.r),
@@ -250,14 +252,16 @@ class _TradeQuantityScreenState extends State<TradeQuantityScreen> {
             SizedBox(height: 12.h),
             TextFormField(
               controller: _limitPriceController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               style: GoogleFonts.inter(
                 fontSize: 18.sp,
                 color: InvestTradingUi.textPrimary,
               ),
               decoration: InvestTradingUi.tradingInputDecoration(
                 accentColor: _accent,
-                prefixText: '${CurrencySymbols.getSymbol(widget.stock.currency)} ',
+                prefixText:
+                    '${CurrencySymbols.getSymbol(widget.stock.currency)} ',
                 hintText: widget.stock.currentPrice.toStringAsFixed(2),
               ).copyWith(
                 contentPadding:
@@ -281,14 +285,16 @@ class _TradeQuantityScreenState extends State<TradeQuantityScreen> {
             SizedBox(height: 12.h),
             TextFormField(
               controller: _stopPriceController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               style: GoogleFonts.inter(
                 fontSize: 18.sp,
                 color: InvestTradingUi.textPrimary,
               ),
               decoration: InvestTradingUi.tradingInputDecoration(
                 accentColor: _accent,
-                prefixText: '${CurrencySymbols.getSymbol(widget.stock.currency)} ',
+                prefixText:
+                    '${CurrencySymbols.getSymbol(widget.stock.currency)} ',
                 hintText: widget.stock.currentPrice.toStringAsFixed(2),
               ).copyWith(
                 contentPadding:

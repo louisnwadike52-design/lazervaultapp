@@ -379,7 +379,8 @@ class ReviewScreen extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.35)),
+        border:
+            Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.35)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -120,7 +120,6 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(

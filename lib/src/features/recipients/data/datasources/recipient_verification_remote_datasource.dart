@@ -80,7 +80,7 @@ class RecipientVerificationRemoteDataSourceImpl
     required this.baseUrl,
     required this.secureStorage,
     String? authToken,
-  })  : dio = Dio(BaseOptions(
+  }) : dio = Dio(BaseOptions(
           baseUrl: baseUrl,
           connectTimeout: const Duration(seconds: 30),
           receiveTimeout: const Duration(seconds: 30),
@@ -111,7 +111,8 @@ class RecipientVerificationRemoteDataSourceImpl
 
     // Add service name and request ID
     dio.options.headers['X-Service-Name'] = 'lazervault-flutter-recipients';
-    dio.options.headers['X-Request-ID'] = ApiHeaders.generateRequestIdWithPrefix('recipient');
+    dio.options.headers['X-Request-ID'] =
+        ApiHeaders.generateRequestIdWithPrefix('recipient');
 
     // Add user ID
     final userId = await secureStorage.getUserId();
@@ -253,7 +254,8 @@ class RecipientVerificationRemoteDataSourceImpl
           throw Exception('Invalid response format');
         }
       } else {
-        throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');
+        throw Exception(
+            'HTTP ${response.statusCode}: ${response.statusMessage}');
       }
     } on DioException catch (e) {
       if (e.response != null) {

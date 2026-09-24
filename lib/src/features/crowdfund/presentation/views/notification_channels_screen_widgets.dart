@@ -109,14 +109,16 @@ class _NotificationChannelsScreenState
               state.success
                   ? 'Test notification sent successfully'
                   : 'Failed to send test notification',
-              backgroundColor:
-                  state.success ? const Color(0xFF3B82F6) : const Color(0xFFEF4444),
+              backgroundColor: state.success
+                  ? const Color(0xFF3B82F6)
+                  : const Color(0xFFEF4444),
               colorText: Colors.white,
               snackPosition: SnackPosition.TOP,
             );
           } else if (state is NotificationChannelUpdated) {
             setState(() {
-              final index = _channels.indexWhere((ch) => ch.id == state.channel.id);
+              final index =
+                  _channels.indexWhere((ch) => ch.id == state.channel.id);
               if (index >= 0) _channels[index] = state.channel;
             });
           } else if (state is CrowdfundError) {
@@ -146,11 +148,14 @@ class _NotificationChannelsScreenState
 
           return RefreshIndicator(
             onRefresh: () async {
-              context.read<CrowdfundCubit>().loadNotificationChannels(widget.crowdfundId);
+              context
+                  .read<CrowdfundCubit>()
+                  .loadNotificationChannels(widget.crowdfundId);
             },
             color: const Color(0xFF3B82F6),
             backgroundColor: const Color(0xFF1F1F1F),
-            child: _channels.isEmpty ? _buildEmptyState() : _buildChannelsList(),
+            child:
+                _channels.isEmpty ? _buildEmptyState() : _buildChannelsList(),
           );
         },
       ),
@@ -264,9 +269,7 @@ class _NotificationChannelsScreenState
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12),
-        border: available
-            ? null
-            : Border.all(color: const Color(0xFF2D2D2D)),
+        border: available ? null : Border.all(color: const Color(0xFF2D2D2D)),
       ),
       child: Row(
         children: [
@@ -274,14 +277,14 @@ class _NotificationChannelsScreenState
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: Color(type.brandColor).withValues(alpha: available ? 0.2 : 0.1),
+              color: Color(type.brandColor)
+                  .withValues(alpha: available ? 0.2 : 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               _getIconForType(type),
-              color: available
-                  ? Color(type.brandColor)
-                  : const Color(0xFF6B7280),
+              color:
+                  available ? Color(type.brandColor) : const Color(0xFF6B7280),
               size: 24,
             ),
           ),
@@ -295,7 +298,8 @@ class _NotificationChannelsScreenState
                     Text(
                       type.displayName,
                       style: TextStyle(
-                        color: available ? Colors.white : const Color(0xFF6B7280),
+                        color:
+                            available ? Colors.white : const Color(0xFF6B7280),
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -499,7 +503,9 @@ class _NotificationChannelsScreenState
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
-              context.read<CrowdfundCubit>().loadNotificationChannels(widget.crowdfundId);
+              context
+                  .read<CrowdfundCubit>()
+                  .loadNotificationChannels(widget.crowdfundId);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF3B82F6),
@@ -557,7 +563,9 @@ class _NotificationChannelsScreenState
           ElevatedButton(
             onPressed: () {
               Navigator.pop(dialogContext);
-              context.read<CrowdfundCubit>().disconnectNotificationChannel(channel.id);
+              context
+                  .read<CrowdfundCubit>()
+                  .disconnectNotificationChannel(channel.id);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),

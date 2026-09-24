@@ -29,7 +29,8 @@ class VoiceRegistrationScreen extends StatefulWidget {
 
 class _VoiceRegistrationScreenState extends State<VoiceRegistrationScreen>
     with WidgetsBindingObserver {
-  final VoiceBiometricsService _voiceService = GetIt.I<VoiceBiometricsService>();
+  final VoiceBiometricsService _voiceService =
+      GetIt.I<VoiceBiometricsService>();
   final AudioRecorder _recorder = AudioRecorder();
   final Connectivity _connectivity = Connectivity();
 
@@ -152,7 +153,8 @@ class _VoiceRegistrationScreenState extends State<VoiceRegistrationScreen>
         Navigator.pop(context, false);
       }
     } catch (e) {
-      _showError('Failed to check microphone permission: ${_getErrorMessage(e)}');
+      _showError(
+          'Failed to check microphone permission: ${_getErrorMessage(e)}');
       Navigator.pop(context, false);
     }
   }
@@ -482,7 +484,8 @@ class _VoiceRegistrationScreenState extends State<VoiceRegistrationScreen>
 
     // Check network connectivity
     if (!await _checkNetworkConnectivity()) {
-      _showError('No internet connection. Please check your network and try again.');
+      _showError(
+          'No internet connection. Please check your network and try again.');
       return;
     }
 
@@ -941,7 +944,8 @@ class _VoiceRegistrationScreenState extends State<VoiceRegistrationScreen>
                     const Text('• Find a quiet environment'),
                     const Text('• Speak naturally and clearly'),
                     const Text('• Hold phone steady near your mouth'),
-                    const Text('• Each sample lasts $sampleDurationSeconds seconds'),
+                    const Text(
+                        '• Each sample lasts $sampleDurationSeconds seconds'),
                   ],
                 ),
               ),
@@ -965,9 +969,10 @@ class _VoiceRegistrationScreenState extends State<VoiceRegistrationScreen>
                         ),
                       )
                     : ElevatedButton.icon(
-                        onPressed: _currentSample < requiredSamples && _hasPermission
-                            ? _recordSample
-                            : null,
+                        onPressed:
+                            _currentSample < requiredSamples && _hasPermission
+                                ? _recordSample
+                                : null,
                         icon: const Icon(Icons.mic, size: 32),
                         label: Text(
                           _currentSample < requiredSamples

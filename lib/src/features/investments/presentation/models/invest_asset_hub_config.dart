@@ -101,7 +101,8 @@ class InvestAssetHubConfig {
       appBarScrolledTitle: 'Treasury ETFs',
       heroEyebrow: 'Lower risk',
       heroTitle: 'Treasury ETFs',
-      heroSubtitle: 'Short-duration government bond funds — yields move with policy rates.',
+      heroSubtitle:
+          'Short-duration government bond funds — yields move with policy rates.',
       heroIcon: Icons.shield_rounded,
       accentColor: Color(0xFF0EA5E9),
       popularSectionTitle: 'Treasury & cash ETFs',
@@ -117,7 +118,8 @@ class InvestAssetHubConfig {
       appBarScrolledTitle: 'Bond ETFs',
       heroEyebrow: 'Fixed income',
       heroTitle: 'Bond ETFs',
-      heroSubtitle: 'Credit and duration exposure via funds — not primary T-bill auctions.',
+      heroSubtitle:
+          'Credit and duration exposure via funds — not primary T-bill auctions.',
       heroIcon: Icons.stacked_line_chart_rounded,
       accentColor: Color(0xFF607D8B),
       popularSectionTitle: 'Bond ETFs',
@@ -133,7 +135,8 @@ class InvestAssetHubConfig {
       appBarScrolledTitle: 'REITs',
       heroEyebrow: 'Real estate',
       heroTitle: 'REITs',
-      heroSubtitle: 'Listed property trusts — income and volatility differ from residential bricks.',
+      heroSubtitle:
+          'Listed property trusts — income and volatility differ from residential bricks.',
       heroIcon: Icons.home_work_rounded,
       accentColor: Color(0xFF795548),
       popularSectionTitle: 'REIT & property ETFs',
@@ -149,7 +152,8 @@ class InvestAssetHubConfig {
       appBarScrolledTitle: 'T-Bills',
       heroEyebrow: 'Nigeria',
       heroTitle: 'Treasury bills',
-      heroSubtitle: 'Government-backed local bills — maturities and rates are set by the market.',
+      heroSubtitle:
+          'Government-backed local bills — maturities and rates are set by the market.',
       heroIcon: Icons.account_balance_rounded,
       accentColor: Color(0xFF059669),
       popularSectionTitle: 'T-Bill programmes',
@@ -166,7 +170,8 @@ class InvestAssetHubConfig {
       appBarScrolledTitle: 'Mutual funds',
       heroEyebrow: 'Managed',
       heroTitle: 'Mutual funds',
-      heroSubtitle: 'Professionally managed baskets — risk label depends on the fund mandate.',
+      heroSubtitle:
+          'Professionally managed baskets — risk label depends on the fund mandate.',
       heroIcon: Icons.analytics_rounded,
       accentColor: Color(0xFF9C27B0),
       popularSectionTitle: 'Funds',

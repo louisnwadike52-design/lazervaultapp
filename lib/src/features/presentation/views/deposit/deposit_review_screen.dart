@@ -21,7 +21,7 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  
+
   Map<String, dynamic> _currency = {};
   Map<String, dynamic> _paymentMethod = {};
   double _amount = 0.0;
@@ -47,11 +47,11 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _animationController.forward();
   }
 
@@ -116,7 +116,6 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
           },
         );
       });
-
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -171,12 +170,17 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
   /// Process deposit via Flutterwave Standard (hosted checkout)
   Future<void> _processFlutterwaveDeposit() async {
     if (!GetIt.instance.isRegistered<IDepositRepository>()) {
-      throw Exception('Deposit service is not available. Please restart the app.');
+      throw Exception(
+          'Deposit service is not available. Please restart the app.');
     }
     final repo = GetIt.instance<IDepositRepository>();
-    final targetAccountId = (_currency['id'] ?? _currency['accountId'] ?? '') as String;
-    final currency = (_currency['code'] ?? _currency['currency'] ?? '') as String;
-    final countryCode = (_paymentMethod['country_code'] ?? _currency['country_code'] ?? '') as String;
+    final targetAccountId =
+        (_currency['id'] ?? _currency['accountId'] ?? '') as String;
+    final currency =
+        (_currency['code'] ?? _currency['currency'] ?? '') as String;
+    final countryCode = (_paymentMethod['country_code'] ??
+        _currency['country_code'] ??
+        '') as String;
     final sourceBankName = (_paymentMethod['name'] ?? 'Flutterwave') as String;
 
     if (targetAccountId.isEmpty || currency.isEmpty) {
@@ -214,7 +218,8 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
 
           if (!mounted) return;
           if (!paymentResult.success) {
-            throw Exception(paymentResult.errorMessage ?? 'Payment was not completed');
+            throw Exception(
+                paymentResult.errorMessage ?? 'Payment was not completed');
           }
           // Payment completed on Flutterwave side — webhook will credit account
         }
@@ -236,15 +241,16 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
   double _calculateFee() {
     final feeString = _paymentMethod['fee'] ?? 'Free';
     if (feeString == 'Free') return 0.0;
-    
+
     // Parse percentage fees (e.g., "0.5%")
     if (feeString.contains('%')) {
       final percentage = double.tryParse(feeString.replaceAll('%', '')) ?? 0.0;
       return _amount * (percentage / 100);
     }
-    
+
     // Parse fixed fees (e.g., "£0.50")
-    final fixedFee = double.tryParse(feeString.replaceAll(RegExp(r'[^\d.]'), '')) ?? 0.0;
+    final fixedFee =
+        double.tryParse(feeString.replaceAll(RegExp(r'[^\d.]'), '')) ?? 0.0;
     return fixedFee;
   }
 
@@ -320,7 +326,8 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: IconButton(
-              onPressed: _isProcessing ? null : () => Navigator.of(context).pop(),
+              onPressed:
+                  _isProcessing ? null : () => Navigator.of(context).pop(),
               icon: Icon(
                 Icons.arrow_back,
                 color: _isProcessing ? Colors.grey[600] : Colors.white,
@@ -504,7 +511,7 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
 
   Widget _buildTransactionBreakdown() {
     final fee = _calculateFee();
-    
+
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -530,13 +537,20 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
             ),
           ),
           SizedBox(height: 16.h),
-          _buildBreakdownRow('Deposit Amount', '${_currency['symbol']}${_amount.toStringAsFixed(2)}'),
+          _buildBreakdownRow('Deposit Amount',
+              '${_currency['symbol']}${_amount.toStringAsFixed(2)}'),
           SizedBox(height: 8.h),
-          _buildBreakdownRow('Processing Fee', fee > 0 ? '${_currency['symbol']}${fee.toStringAsFixed(2)}' : 'Free'),
+          _buildBreakdownRow(
+              'Processing Fee',
+              fee > 0
+                  ? '${_currency['symbol']}${fee.toStringAsFixed(2)}'
+                  : 'Free'),
           SizedBox(height: 8.h),
           Divider(color: Colors.white.withValues(alpha: 0.2)),
           SizedBox(height: 8.h),
-          _buildBreakdownRow('Total Amount', '${_currency['symbol']}${_totalAmount.toStringAsFixed(2)}', isTotal: true),
+          _buildBreakdownRow('Total Amount',
+              '${_currency['symbol']}${_totalAmount.toStringAsFixed(2)}',
+              isTotal: true),
           SizedBox(height: 16.h),
           Row(
             children: [
@@ -557,7 +571,8 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
     );
   }
 
-  Widget _buildBreakdownRow(String label, String value, {bool isTotal = false}) {
+  Widget _buildBreakdownRow(String label, String value,
+      {bool isTotal = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -584,7 +599,7 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
   Widget _buildSourceAccountDetails() {
     final sourceAccount = _paymentMethod['sourceAccount'];
     if (sourceAccount == null) return const SizedBox.shrink();
-    
+
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -603,7 +618,8 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
         children: [
           Row(
             children: [
-              Icon(Icons.account_balance_wallet, color: Colors.orange, size: 20.sp),
+              Icon(Icons.account_balance_wallet,
+                  color: Colors.orange, size: 20.sp),
               SizedBox(width: 8.w),
               Text(
                 'Source Account',
@@ -785,7 +801,8 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
     if (_isConfirmed) {
       return Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(colors: [Colors.green[700]!, Colors.green[500]!]),
+          gradient:
+              LinearGradient(colors: [Colors.green[700]!, Colors.green[500]!]),
           borderRadius: BorderRadius.circular(20.r),
         ),
         child: SizedBox(
@@ -822,18 +839,20 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
 
     return Container(
       decoration: BoxDecoration(
-        gradient: _isProcessing 
-            ? null 
+        gradient: _isProcessing
+            ? null
             : LinearGradient(colors: [Colors.green[700]!, Colors.green[500]!]),
         color: _isProcessing ? Colors.grey[800] : null,
         borderRadius: BorderRadius.circular(20.r),
-        boxShadow: _isProcessing ? null : [
-          BoxShadow(
-            color: Colors.green.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: Offset(0, 6),
-          ),
-        ],
+        boxShadow: _isProcessing
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.green.withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: Offset(0, 6),
+                ),
+              ],
       ),
       child: SizedBox(
         width: double.infinity,
@@ -900,7 +919,7 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
       'CNY': 'https://flagcdn.com/w320/cn.png',
       'INR': 'https://flagcdn.com/w320/in.png',
     };
-    
+
     return Container(
       width: size,
       height: size * 0.7,
@@ -931,4 +950,4 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
       ),
     );
   }
-} 
+}

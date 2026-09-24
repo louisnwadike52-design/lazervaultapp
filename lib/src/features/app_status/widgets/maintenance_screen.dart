@@ -30,8 +30,7 @@ class MaintenanceModal extends StatefulWidget {
     required this.onRetry,
     this.icon = Icons.construction_rounded,
     this.title = 'Under maintenance',
-    this.message =
-        'Our servers are being worked on right now. Your money and '
+    this.message = 'Our servers are being worked on right now. Your money and '
         'data are safe. Please hold on a moment while we get things '
         'back up.',
     this.retryLabel = 'Try again',

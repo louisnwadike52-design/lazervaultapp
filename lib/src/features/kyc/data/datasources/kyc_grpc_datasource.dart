@@ -16,7 +16,8 @@ class KYCGrpcDataSource {
   final auth_proto.AuthServiceClient authClient;
   final GrpcCallOptionsHelper callOptionsHelper;
 
-  KYCGrpcDataSource({required this.authClient, required this.callOptionsHelper});
+  KYCGrpcDataSource(
+      {required this.authClient, required this.callOptionsHelper});
 
   /// Builds CallOptions carrying the user's JWT (Bearer) plus a timeout. The
   /// AuthServiceClient has no auth interceptor, so every authenticated KYC RPC
@@ -58,13 +59,16 @@ class KYCGrpcDataSource {
       );
 
       // Check for async verification (Onfido/Persona - returns session URL)
-      final hasSessionUrl = response.hasSessionUrl() && response.sessionUrl.isNotEmpty;
+      final hasSessionUrl =
+          response.hasSessionUrl() && response.sessionUrl.isNotEmpty;
       final isPending = response.hasStatus() && response.status == 'pending';
 
       // For async flows, don't require verified=true
       if (!response.success && !hasSessionUrl) {
         throw APIException(
-          message: response.errorMessage.isNotEmpty ? response.errorMessage : 'ID verification failed',
+          message: response.errorMessage.isNotEmpty
+              ? response.errorMessage
+              : 'ID verification failed',
           statusCode: 422,
         );
       }
@@ -95,13 +99,17 @@ class KYCGrpcDataSource {
         'current_tier': currentTier,
         'message': response.errorMessage.isNotEmpty
             ? response.errorMessage
-            : (isPending ? 'Verification in progress' : 'ID verified successfully'),
-        'reference': response.hasIdentity() && response.identity.hasPhoneNumber()
-            ? _maskPhoneNumber(response.identity.phoneNumber)
-            : null,
+            : (isPending
+                ? 'Verification in progress'
+                : 'ID verified successfully'),
+        'reference':
+            response.hasIdentity() && response.identity.hasPhoneNumber()
+                ? _maskPhoneNumber(response.identity.phoneNumber)
+                : null,
         'identity_type': identityType.toString().split('.').last,
         // Async verification fields
-        if (response.hasVerificationId()) 'verification_id': response.verificationId,
+        if (response.hasVerificationId())
+          'verification_id': response.verificationId,
         if (hasSessionUrl) 'session_url': response.sessionUrl,
         if (response.hasSessionToken() && response.sessionToken.isNotEmpty)
           'session_token': response.sessionToken,
@@ -109,40 +117,48 @@ class KYCGrpcDataSource {
     } on GrpcError catch (e) {
       // Handle gRPC-specific errors
       final message = e.toString();
-      if (e.code == StatusCode.unauthenticated || message.contains('Unauthenticated')) {
+      if (e.code == StatusCode.unauthenticated ||
+          message.contains('Unauthenticated')) {
         throw APIException(
           message: 'Session expired. Please log in again.',
           statusCode: 401,
         );
-      } else if (e.code == StatusCode.invalidArgument || message.contains('InvalidArgument')) {
+      } else if (e.code == StatusCode.invalidArgument ||
+          message.contains('InvalidArgument')) {
         throw APIException(
-          message: friendlyGrpcError(e, 'Invalid ID details provided. Please check and try again.'),
+          message: friendlyGrpcError(
+              e, 'Invalid ID details provided. Please check and try again.'),
           statusCode: 422,
         );
-      } else if (e.code == StatusCode.alreadyExists || message.contains('AlreadyExists')) {
+      } else if (e.code == StatusCode.alreadyExists ||
+          message.contains('AlreadyExists')) {
         throw APIException(
           message: 'This ID has already been used for another account.',
           statusCode: 409,
         );
       } else if (e.code == StatusCode.deadlineExceeded) {
         throw APIException(
-          message: 'Verification is taking longer than expected. Please try again.',
+          message:
+              'Verification is taking longer than expected. Please try again.',
           statusCode: 504,
         );
       } else {
         throw APIException(
-          message: friendlyGrpcError(e, 'ID verification failed. Please try again.'),
+          message:
+              friendlyGrpcError(e, 'ID verification failed. Please try again.'),
           statusCode: 500,
         );
       }
     } on TimeoutException {
       throw APIException(
-        message: 'Verification timed out. Please check your connection and try again.',
+        message:
+            'Verification timed out. Please check your connection and try again.',
         statusCode: 504,
       );
     } on SocketException {
       throw APIException(
-        message: 'No internet connection. Please check your network and try again.',
+        message:
+            'No internet connection. Please check your network and try again.',
         statusCode: 503,
       );
     } catch (e) {
@@ -187,7 +203,8 @@ class KYCGrpcDataSource {
         return auth_proto.IdentityType.IDENTITY_TYPE_INTERNATIONAL_PASSPORT;
       case IDType.votersCard:
         throw APIException(
-          message: "Voter's Card verification is not yet available. Please use BVN or NIN instead.",
+          message:
+              "Voter's Card verification is not yet available. Please use BVN or NIN instead.",
           statusCode: 422,
         );
       default:
@@ -233,7 +250,8 @@ class KYCGrpcDataSource {
       final request = auth_proto.GetMeRequest();
 
       // Make gRPC call
-      final response = await authClient.getMe(request, options: await _authOptions());
+      final response =
+          await authClient.getMe(request, options: await _authOptions());
       final user = response.user;
 
       // Determine KYC status from user data — prefer explicit kyc fields, fallback to identity_verified
@@ -276,7 +294,8 @@ class KYCGrpcDataSource {
         'current_tier': currentTier,
         'tier_info': [],
         'documents': [],
-        'identity_verified': user.hasIdentityVerified() ? user.identityVerified : false,
+        'identity_verified':
+            user.hasIdentityVerified() ? user.identityVerified : false,
         'identity_type': user.hasIdentityType() ? user.identityType : null,
         'masked_identity_number': null,
       };
@@ -289,13 +308,14 @@ class KYCGrpcDataSource {
   }
 
   /// Get country requirements from server via gRPC
-  Future<Map<String, dynamic>> getCountryRequirements(String countryCode) async {
+  Future<Map<String, dynamic>> getCountryRequirements(
+      String countryCode) async {
     try {
       final grpcRequest = auth_pb.GetCountryRequirementsRequest()
         ..countryCode = countryCode;
 
-      final response = await authClient
-          .getCountryRequirements(grpcRequest, options: await _authOptions(timeoutSeconds: 15));
+      final response = await authClient.getCountryRequirements(grpcRequest,
+          options: await _authOptions(timeoutSeconds: 15));
 
       if (!response.success) {
         throw APIException(
@@ -371,7 +391,8 @@ class KYCGrpcDataSource {
       ..countryCode = countryCode;
 
     try {
-      final response = await authClient.initiateKYC(request, options: await _authOptions());
+      final response =
+          await authClient.initiateKYC(request, options: await _authOptions());
 
       if (!response.success) {
         throw APIException(
@@ -419,7 +440,8 @@ class KYCGrpcDataSource {
       ..proofOfAddressUrl = request.proofOfAddressUrl ?? '';
 
     try {
-      final response = await authClient.uploadDocument(grpcRequest, options: await _authOptions());
+      final response = await authClient.uploadDocument(grpcRequest,
+          options: await _authOptions());
 
       if (!response.success) {
         throw APIException(
@@ -456,18 +478,19 @@ class KYCGrpcDataSource {
     required String userId,
     bool skipTier2 = true,
   }) async {
-    final request = auth_proto.SkipKYCUpgradeRequest()
-      ..skipTier2 = skipTier2;
+    final request = auth_proto.SkipKYCUpgradeRequest()..skipTier2 = skipTier2;
 
     try {
-      final response = await authClient.skipKYCUpgrade(request, options: await _authOptions());
+      final response = await authClient.skipKYCUpgrade(request,
+          options: await _authOptions());
 
       // Map proto tier to entity tier
-      final assignedTier = response.assignedTier == auth_proto.KYCTier.KYC_TIER_1
-          ? KYCTier.tier1
-          : response.assignedTier == auth_proto.KYCTier.KYC_TIER_2
-              ? KYCTier.tier2
-              : KYCTier.tier3;
+      final assignedTier =
+          response.assignedTier == auth_proto.KYCTier.KYC_TIER_1
+              ? KYCTier.tier1
+              : response.assignedTier == auth_proto.KYCTier.KYC_TIER_2
+                  ? KYCTier.tier2
+                  : KYCTier.tier3;
 
       return {
         'success': response.success,
@@ -495,7 +518,8 @@ class KYCGrpcDataSource {
     final request = auth_proto.GetUserDocumentsRequest();
 
     try {
-      final response = await authClient.getUserDocuments(request, options: await _authOptions());
+      final response = await authClient.getUserDocuments(request,
+          options: await _authOptions());
 
       final documents = response.documents.map((doc) {
         return {
@@ -505,7 +529,8 @@ class KYCGrpcDataSource {
           'status': _mapProtoDocumentStatus(doc.status),
           'uploaded_at': doc.uploadedAt,
           'verified_at': doc.hasVerifiedAt() ? doc.verifiedAt : null,
-          'rejection_reason': doc.hasRejectionReason() ? doc.rejectionReason : null,
+          'rejection_reason':
+              doc.hasRejectionReason() ? doc.rejectionReason : null,
         };
       }).toList();
 
@@ -532,7 +557,8 @@ class KYCGrpcDataSource {
       case IDType.kenyaNationalId:
       case IDType.kraPin:
       case IDType.saIdCard:
-        return auth_proto.DocumentType.DOCUMENT_TYPE_NIN; // National ID equivalent
+        return auth_proto
+            .DocumentType.DOCUMENT_TYPE_NIN; // National ID equivalent
       case IDType.driversLicense:
       case IDType.ukDrivingLicense:
       case IDType.usStateId:
@@ -643,22 +669,25 @@ class KYCGrpcDataSource {
         sessionUrl: response.hasSessionUrl() && response.sessionUrl.isNotEmpty
             ? response.sessionUrl
             : null,
-        sessionToken: response.hasSessionToken() && response.sessionToken.isNotEmpty
-            ? response.sessionToken
-            : null,
+        sessionToken:
+            response.hasSessionToken() && response.sessionToken.isNotEmpty
+                ? response.sessionToken
+                : null,
         provider: response.provider,
         status: status,
       );
     } on GrpcError catch (e) {
       final message = e.toString();
-      if (e.code == StatusCode.unauthenticated || message.contains('Unauthenticated')) {
+      if (e.code == StatusCode.unauthenticated ||
+          message.contains('Unauthenticated')) {
         throw APIException(
           message: 'Session expired. Please log in again.',
           statusCode: 401,
         );
       } else if (e.code == StatusCode.invalidArgument) {
         throw APIException(
-          message: friendlyGrpcError(e, 'Invalid details provided. Please check and try again.'),
+          message: friendlyGrpcError(
+              e, 'Invalid details provided. Please check and try again.'),
           statusCode: 422,
         );
       } else if (e.code == StatusCode.deadlineExceeded) {
@@ -673,12 +702,14 @@ class KYCGrpcDataSource {
       );
     } on TimeoutException {
       throw APIException(
-        message: 'Request timed out. Please check your connection and try again.',
+        message:
+            'Request timed out. Please check your connection and try again.',
         statusCode: 504,
       );
     } on SocketException {
       throw APIException(
-        message: 'No internet connection. Please check your network and try again.',
+        message:
+            'No internet connection. Please check your network and try again.',
         statusCode: 503,
       );
     } catch (e) {
@@ -742,7 +773,8 @@ class KYCGrpcDataSource {
       );
     } on GrpcError catch (e) {
       final message = e.toString();
-      if (e.code == StatusCode.unauthenticated || message.contains('Unauthenticated')) {
+      if (e.code == StatusCode.unauthenticated ||
+          message.contains('Unauthenticated')) {
         throw APIException(
           message: 'Session expired. Please log in again.',
           statusCode: 401,
@@ -764,12 +796,14 @@ class KYCGrpcDataSource {
       );
     } on TimeoutException {
       throw APIException(
-        message: 'Request timed out. Please check your connection and try again.',
+        message:
+            'Request timed out. Please check your connection and try again.',
         statusCode: 504,
       );
     } on SocketException {
       throw APIException(
-        message: 'No internet connection. Please check your network and try again.',
+        message:
+            'No internet connection. Please check your network and try again.',
         statusCode: 503,
       );
     } catch (e) {
@@ -805,11 +839,13 @@ class KYCGrpcDataSource {
       return DocumentUploadURL(
         uploadUrl: response.uploadUrl,
         storageKey: response.storageKey,
-        expiresAt: DateTime.fromMillisecondsSinceEpoch(response.expiresAt.toInt() * 1000),
+        expiresAt: DateTime.fromMillisecondsSinceEpoch(
+            response.expiresAt.toInt() * 1000),
       );
     } on GrpcError catch (e) {
       final message = e.toString();
-      if (e.code == StatusCode.unauthenticated || message.contains('Unauthenticated')) {
+      if (e.code == StatusCode.unauthenticated ||
+          message.contains('Unauthenticated')) {
         throw APIException(
           message: 'Session expired. Please log in again.',
           statusCode: 401,
@@ -826,12 +862,14 @@ class KYCGrpcDataSource {
       );
     } on TimeoutException {
       throw APIException(
-        message: 'Request timed out. Please check your connection and try again.',
+        message:
+            'Request timed out. Please check your connection and try again.',
         statusCode: 504,
       );
     } on SocketException {
       throw APIException(
-        message: 'No internet connection. Please check your network and try again.',
+        message:
+            'No internet connection. Please check your network and try again.',
         statusCode: 503,
       );
     } catch (e) {
@@ -875,7 +913,8 @@ class KYCGrpcDataSource {
       return response.message;
     } on GrpcError catch (e) {
       final message = e.toString();
-      if (e.code == StatusCode.unauthenticated || message.contains('Unauthenticated')) {
+      if (e.code == StatusCode.unauthenticated ||
+          message.contains('Unauthenticated')) {
         throw APIException(
           message: 'Session expired. Please log in again.',
           statusCode: 401,
@@ -892,12 +931,14 @@ class KYCGrpcDataSource {
       );
     } on TimeoutException {
       throw APIException(
-        message: 'Request timed out. Please check your connection and try again.',
+        message:
+            'Request timed out. Please check your connection and try again.',
         statusCode: 504,
       );
     } on SocketException {
       throw APIException(
-        message: 'No internet connection. Please check your network and try again.',
+        message:
+            'No internet connection. Please check your network and try again.',
         statusCode: 503,
       );
     } catch (e) {
@@ -950,34 +991,56 @@ class KYCGrpcDataSource {
   /// Map ID type string to KYC proto IDType enum (for new KYCService RPCs)
   auth_enum.IdentityType _mapIDTypeStringToAuthProto(String idType) {
     switch (idType) {
-      case 'bvn': return auth_enum.IdentityType.IDENTITY_TYPE_BVN;
-      case 'nin': return auth_enum.IdentityType.IDENTITY_TYPE_NIN;
-      case 'ghanaCard': return auth_enum.IdentityType.IDENTITY_TYPE_GHANA_CARD;
-      case 'kenyaNationalId': return auth_enum.IdentityType.IDENTITY_TYPE_KENYA_NATIONAL_ID;
-      case 'kraPin': return auth_enum.IdentityType.IDENTITY_TYPE_KRA_PIN;
-      case 'saIdCard': return auth_enum.IdentityType.IDENTITY_TYPE_SA_ID;
-      case 'saPassport': return auth_enum.IdentityType.IDENTITY_TYPE_SA_PASSPORT;
-      case 'ukPassport': return auth_enum.IdentityType.IDENTITY_TYPE_UK_PASSPORT;
-      case 'ukDrivingLicense': return auth_enum.IdentityType.IDENTITY_TYPE_UK_DRIVING_LICENSE;
-      case 'usSsn': return auth_enum.IdentityType.IDENTITY_TYPE_US_SSN;
-      case 'usStateId': return auth_enum.IdentityType.IDENTITY_TYPE_US_STATE_ID;
-      case 'usPassport': return auth_enum.IdentityType.IDENTITY_TYPE_US_PASSPORT;
-      case 'driversLicense': return auth_enum.IdentityType.IDENTITY_TYPE_DRIVERS_LICENSE;
-      case 'internationalPassport': return auth_enum.IdentityType.IDENTITY_TYPE_INTERNATIONAL_PASSPORT;
-      default: return auth_enum.IdentityType.IDENTITY_TYPE_UNSPECIFIED;
+      case 'bvn':
+        return auth_enum.IdentityType.IDENTITY_TYPE_BVN;
+      case 'nin':
+        return auth_enum.IdentityType.IDENTITY_TYPE_NIN;
+      case 'ghanaCard':
+        return auth_enum.IdentityType.IDENTITY_TYPE_GHANA_CARD;
+      case 'kenyaNationalId':
+        return auth_enum.IdentityType.IDENTITY_TYPE_KENYA_NATIONAL_ID;
+      case 'kraPin':
+        return auth_enum.IdentityType.IDENTITY_TYPE_KRA_PIN;
+      case 'saIdCard':
+        return auth_enum.IdentityType.IDENTITY_TYPE_SA_ID;
+      case 'saPassport':
+        return auth_enum.IdentityType.IDENTITY_TYPE_SA_PASSPORT;
+      case 'ukPassport':
+        return auth_enum.IdentityType.IDENTITY_TYPE_UK_PASSPORT;
+      case 'ukDrivingLicense':
+        return auth_enum.IdentityType.IDENTITY_TYPE_UK_DRIVING_LICENSE;
+      case 'usSsn':
+        return auth_enum.IdentityType.IDENTITY_TYPE_US_SSN;
+      case 'usStateId':
+        return auth_enum.IdentityType.IDENTITY_TYPE_US_STATE_ID;
+      case 'usPassport':
+        return auth_enum.IdentityType.IDENTITY_TYPE_US_PASSPORT;
+      case 'driversLicense':
+        return auth_enum.IdentityType.IDENTITY_TYPE_DRIVERS_LICENSE;
+      case 'internationalPassport':
+        return auth_enum.IdentityType.IDENTITY_TYPE_INTERNATIONAL_PASSPORT;
+      default:
+        return auth_enum.IdentityType.IDENTITY_TYPE_UNSPECIFIED;
     }
   }
 
   /// Map auth proto KYC verification status to entity KYCStatus
   KYCStatus _mapAuthProtoKYCStatus(auth_enum.KYCVerificationStatus status) {
     switch (status) {
-      case auth_enum.KYCVerificationStatus.KYC_STATUS_APPROVED: return KYCStatus.approved;
-      case auth_enum.KYCVerificationStatus.KYC_STATUS_IN_PROGRESS: return KYCStatus.inProgress;
-      case auth_enum.KYCVerificationStatus.KYC_STATUS_PENDING_REVIEW: return KYCStatus.pendingReview;
-      case auth_enum.KYCVerificationStatus.KYC_STATUS_REJECTED: return KYCStatus.rejected;
-      case auth_enum.KYCVerificationStatus.KYC_STATUS_EXPIRED: return KYCStatus.expired;
-      case auth_enum.KYCVerificationStatus.KYC_STATUS_NOT_STARTED: return KYCStatus.notStarted;
-      default: return KYCStatus.inProgress;
+      case auth_enum.KYCVerificationStatus.KYC_STATUS_APPROVED:
+        return KYCStatus.approved;
+      case auth_enum.KYCVerificationStatus.KYC_STATUS_IN_PROGRESS:
+        return KYCStatus.inProgress;
+      case auth_enum.KYCVerificationStatus.KYC_STATUS_PENDING_REVIEW:
+        return KYCStatus.pendingReview;
+      case auth_enum.KYCVerificationStatus.KYC_STATUS_REJECTED:
+        return KYCStatus.rejected;
+      case auth_enum.KYCVerificationStatus.KYC_STATUS_EXPIRED:
+        return KYCStatus.expired;
+      case auth_enum.KYCVerificationStatus.KYC_STATUS_NOT_STARTED:
+        return KYCStatus.notStarted;
+      default:
+        return KYCStatus.inProgress;
     }
   }
 

@@ -60,8 +60,7 @@ Future<void> startAccountReauthorization(
   if (!context.mounted) return;
 
   // 2. Shared Connect sheet in reauth mode
-  final customerName =
-      '${user.firstName} ${user.lastName}'.trim();
+  final customerName = '${user.firstName} ${user.lastName}'.trim();
   final result = await showMonoConnectBottomSheet(
     context: context,
     publicKey: MonoConfig.publicKey,

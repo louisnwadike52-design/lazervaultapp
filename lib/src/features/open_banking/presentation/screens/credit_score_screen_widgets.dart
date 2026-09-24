@@ -77,7 +77,13 @@ class _CreditScoreGaugePainter extends CustomPainter {
       fontSize: 10,
     );
     final labels = ['300', '450', '600', '750', '850'];
-    final angles = [startAngle, startAngle + sweepAngle * 0.27, startAngle + sweepAngle * 0.545, startAngle + sweepAngle * 0.818, startAngle + sweepAngle];
+    final angles = [
+      startAngle,
+      startAngle + sweepAngle * 0.27,
+      startAngle + sweepAngle * 0.545,
+      startAngle + sweepAngle * 0.818,
+      startAngle + sweepAngle
+    ];
     final labelRadius = radius + 20;
 
     for (var i = 0; i < labels.length; i++) {

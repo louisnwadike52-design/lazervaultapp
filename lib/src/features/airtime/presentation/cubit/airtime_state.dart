@@ -90,7 +90,8 @@ class AirtimePhoneNumberValidated extends AirtimeState {
   });
 
   @override
-  List<Object?> get props => [isValid, error, cleanNumber, detectedProvider, formattedNumber];
+  List<Object?> get props =>
+      [isValid, error, cleanNumber, detectedProvider, formattedNumber];
 }
 
 // Transaction review states
@@ -114,7 +115,8 @@ class AirtimeTransactionReviewReady extends AirtimeState {
   });
 
   @override
-  List<Object?> get props => [country, provider, phoneNumber, recipientName, amount, fee, totalAmount];
+  List<Object?> get props =>
+      [country, provider, phoneNumber, recipientName, amount, fee, totalAmount];
 }
 
 // Payment states

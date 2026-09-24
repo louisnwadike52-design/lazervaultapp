@@ -2,7 +2,6 @@ import 'package:equatable/equatable.dart';
 import 'package:livekit_client/livekit_client.dart';
 import 'package:lazervault/src/features/voice_session/models/voice_language.dart';
 
-
 abstract class VoiceSessionState extends Equatable {
   const VoiceSessionState();
 
@@ -281,7 +280,7 @@ class VoiceSessionUserCaptionFinal extends VoiceSessionState {
 /// AI agent started speaking — prepare caption display
 class VoiceSessionAgentCaptionStart extends VoiceSessionState {
   final Room room;
-  final String text;  // Full text that will be spoken
+  final String text; // Full text that will be spoken
   const VoiceSessionAgentCaptionStart(this.room, this.text);
   @override
   List<Object?> get props => [room, text];
@@ -290,8 +289,8 @@ class VoiceSessionAgentCaptionStart extends VoiceSessionState {
 /// Chunk of text as AI agent speaks — for word-by-word streaming effect
 class VoiceSessionAgentCaptionText extends VoiceSessionState {
   final Room room;
-  final String text;  // Current chunk being spoken
-  final String fullText;  // Full response for context
+  final String text; // Current chunk being spoken
+  final String fullText; // Full response for context
   const VoiceSessionAgentCaptionText(this.room, this.text, this.fullText);
   @override
   List<Object?> get props => [room, text, fullText];
@@ -309,9 +308,9 @@ class VoiceSessionAgentCaptionEnd extends VoiceSessionState {
 /// This wraps the current state with caption data
 class VoiceSessionWithCaption extends VoiceSessionState {
   final VoiceSessionState baseState;
-  final String? userCaption;  // Current user caption (null if none)
-  final String? agentCaption;  // Current agent caption (null if none)
-  final bool isAgentSpeaking;  // True if agent is currently speaking
+  final String? userCaption; // Current user caption (null if none)
+  final String? agentCaption; // Current agent caption (null if none)
+  final bool isAgentSpeaking; // True if agent is currently speaking
 
   const VoiceSessionWithCaption({
     required this.baseState,
@@ -321,5 +320,6 @@ class VoiceSessionWithCaption extends VoiceSessionState {
   });
 
   @override
-  List<Object?> get props => [baseState, userCaption, agentCaption, isAgentSpeaking];
+  List<Object?> get props =>
+      [baseState, userCaption, agentCaption, isAgentSpeaking];
 }

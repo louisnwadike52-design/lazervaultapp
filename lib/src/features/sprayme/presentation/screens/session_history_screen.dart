@@ -46,8 +46,13 @@ class _SessionHistoryScreenState extends State<SessionHistoryScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: Text(
-          widget.sessionId != null ? 'Session History' : 'My LazerSpray History',
-          style: TextStyle(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w600),
+          widget.sessionId != null
+              ? 'Session History'
+              : 'My LazerSpray History',
+          style: TextStyle(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
       ),
@@ -68,15 +73,20 @@ class _SessionHistoryScreenState extends State<SessionHistoryScreen> {
                         _loadTransactions();
                       },
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 16.w, vertical: 8.h),
                         decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF1F1F1F),
+                          color: isSelected
+                              ? const Color(0xFF3B82F6)
+                              : const Color(0xFF1F1F1F),
                           borderRadius: BorderRadius.circular(20.r),
                         ),
                         child: Text(
                           f[0].toUpperCase() + f.substring(1),
                           style: TextStyle(
-                            color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
+                            color: isSelected
+                                ? Colors.white
+                                : const Color(0xFF9CA3AF),
                             fontSize: 13.sp,
                             fontWeight: FontWeight.w600,
                           ),
@@ -97,7 +107,9 @@ class _SessionHistoryScreenState extends State<SessionHistoryScreen> {
                 }
                 if (state is SprayMeError) {
                   return Center(
-                    child: Text(state.message, style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
+                    child: Text(state.message,
+                        style: TextStyle(
+                            color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
                   );
                 }
                 if (state is TransactionsLoaded) {
@@ -142,7 +154,9 @@ class _SessionHistoryScreenState extends State<SessionHistoryScreen> {
           SizedBox(height: 4.h),
           Text(
             'Start spraying to see your history here',
-            style: TextStyle(color: const Color(0xFF9CA3AF).withValues(alpha: 0.6), fontSize: 13.sp),
+            style: TextStyle(
+                color: const Color(0xFF9CA3AF).withValues(alpha: 0.6),
+                fontSize: 13.sp),
           ),
         ],
       ),
@@ -159,13 +173,15 @@ class _SessionHistoryScreenState extends State<SessionHistoryScreen> {
       case 'gift':
         icon = Icons.card_giftcard;
         color = const Color(0xFFFFD700);
-        title = '${tx.giftEmoji ?? ""} ${tx.giftName ?? "Gift"} x${tx.quantity}';
+        title =
+            '${tx.giftEmoji ?? ""} ${tx.giftName ?? "Gift"} x${tx.quantity}';
         subtitle = '${tx.senderName} \u2192 ${tx.recipientName}';
       case 'money_spray':
         icon = Icons.monetization_on;
         color = const Color(0xFF10B981);
         title = 'Money Spray';
-        subtitle = '${tx.senderName} sprayed ${tx.currency} ${tx.amountMajor.toStringAsFixed(0)}';
+        subtitle =
+            '${tx.senderName} sprayed ${tx.currency} ${tx.amountMajor.toStringAsFixed(0)}';
       case 'like':
         icon = Icons.favorite;
         color = const Color(0xFFFF1744);
@@ -224,7 +240,8 @@ class _SessionHistoryScreenState extends State<SessionHistoryScreen> {
                 SizedBox(height: 2.h),
                 Text(
                   subtitle,
-                  style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                  style: TextStyle(
+                      color: const Color(0xFF9CA3AF), fontSize: 12.sp),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

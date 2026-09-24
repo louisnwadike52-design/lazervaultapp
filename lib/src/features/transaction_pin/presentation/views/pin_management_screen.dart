@@ -17,7 +17,6 @@ import 'package:lazervault/src/features/transaction_pin/services/transaction_pin
 import 'package:lazervault/src/features/transaction_pin/widgets/pin_success_view.dart';
 part 'pin_management_screen_widgets.dart';
 
-
 /// Settings → Security → Transaction PIN.
 ///
 /// One screen that switches between SET and UPDATE flows based on whether
@@ -137,7 +136,8 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
       setState(() {
         _hasExistingPin = false;
         _stage = _PinStage.enterNew;
-        _inlineError = 'Could not check PIN status. You can still set or change your PIN.';
+        _inlineError =
+            'Could not check PIN status. You can still set or change your PIN.';
       });
     }
   }
@@ -435,7 +435,8 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
           _currentPin = '';
           _newPin = '';
           _confirmPin = '';
-          _stage = _hasExistingPin ? _PinStage.enterCurrent : _PinStage.enterNew;
+          _stage =
+              _hasExistingPin ? _PinStage.enterCurrent : _PinStage.enterNew;
           _inlineError = 'Current PIN is incorrect.';
         });
         return;
@@ -451,8 +452,7 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
         setState(() {
           _confirmPin = '';
           _stage = _PinStage.confirmNew;
-          _inlineError =
-              'Connection timed out. Please re-enter to try again.';
+          _inlineError = 'Connection timed out. Please re-enter to try again.';
         });
         return;
       case StatusCode.alreadyExists:
@@ -481,7 +481,8 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
         _handleFailure(_friendlyErrorMessage(e.message ?? 'Invalid PIN.'));
         return;
       default:
-        _handleFailure(_friendlyErrorMessage(e.message ?? 'Could not save your PIN. Try again.'));
+        _handleFailure(_friendlyErrorMessage(
+            e.message ?? 'Could not save your PIN. Try again.'));
         return;
     }
   }

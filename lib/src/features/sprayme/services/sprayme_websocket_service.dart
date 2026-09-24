@@ -32,7 +32,8 @@ class SprayRoomEvent {
       senderId: json['sender_id'] as String? ?? '',
       senderName: json['sender_name'] as String? ?? '',
       data: json['data'] as Map<String, dynamic>? ?? {},
-      timestamp: (json['timestamp'] as num?)?.toInt() ?? DateTime.now().millisecondsSinceEpoch,
+      timestamp: (json['timestamp'] as num?)?.toInt() ??
+          DateTime.now().millisecondsSinceEpoch,
     );
   }
 }
@@ -49,7 +50,8 @@ class SprayMeWebSocketService {
   WebSocketChannel? _channel;
   StreamSubscription? _channelSubscription;
   final _eventController = StreamController<SprayRoomEvent>.broadcast();
-  final _connectionController = StreamController<SprayWebSocketConnectionState>.broadcast();
+  final _connectionController =
+      StreamController<SprayWebSocketConnectionState>.broadcast();
   Timer? _pingTimer;
   Timer? _reconnectTimer;
   bool _isConnected = false;
@@ -64,7 +66,8 @@ class SprayMeWebSocketService {
   Stream<SprayRoomEvent> get events => _eventController.stream;
 
   /// Stream of connection state changes
-  Stream<SprayWebSocketConnectionState> get connectionState => _connectionController.stream;
+  Stream<SprayWebSocketConnectionState> get connectionState =>
+      _connectionController.stream;
 
   bool get isConnected => _isConnected;
   String? get currentSessionId => _currentSessionId;
@@ -196,7 +199,8 @@ class SprayMeWebSocketService {
       final data = jsonDecode(message as String) as Map<String, dynamic>;
       final msgType = data['type'] as String?;
 
-      if (msgType == 'connected' || msgType == 'pong' || msgType == 'shutdown') return;
+      if (msgType == 'connected' || msgType == 'pong' || msgType == 'shutdown')
+        return;
 
       // Parse as spray room event
       final event = SprayRoomEvent.fromJson(data);

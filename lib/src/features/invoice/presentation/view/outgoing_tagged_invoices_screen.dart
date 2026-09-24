@@ -249,8 +249,8 @@ class _OutgoingTaggedInvoicesScreenState
           _buildFilterChip(
               'Paid', InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_COMPLETED),
           SizedBox(width: 12.w),
-          _buildFilterChip('Overdue',
-              InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_OVERDUE),
+          _buildFilterChip(
+              'Overdue', InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_OVERDUE),
         ],
       ),
     );
@@ -272,9 +272,8 @@ class _OutgoingTaggedInvoicesScreenState
           color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(22.r),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF3B82F6)
-                : const Color(0xFF374151),
+            color:
+                isSelected ? const Color(0xFF3B82F6) : const Color(0xFF374151),
             width: 1,
           ),
         ),

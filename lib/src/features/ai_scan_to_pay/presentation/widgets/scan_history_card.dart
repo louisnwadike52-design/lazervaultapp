@@ -20,7 +20,8 @@ class ScanHistoryCard extends StatelessWidget {
       margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),        boxShadow: [
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
@@ -42,7 +43,8 @@ class ScanHistoryCard extends StatelessWidget {
                   width: 50.w,
                   height: 50.w,
                   decoration: BoxDecoration(
-                    color: _getStatusColor(session.status).withValues(alpha: 0.2),
+                    color:
+                        _getStatusColor(session.status).withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -52,7 +54,7 @@ class ScanHistoryCard extends StatelessWidget {
                   ),
                 ),
                 SizedBox(width: 16.w),
-                
+
                 // Content
                 Expanded(
                   child: Column(
@@ -76,7 +78,8 @@ class ScanHistoryCard extends StatelessWidget {
                               vertical: 4.h,
                             ),
                             decoration: BoxDecoration(
-                              color: _getStatusColor(session.status).withValues(alpha: 0.2),
+                              color: _getStatusColor(session.status)
+                                  .withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(8.r),
                             ),
                             child: Text(
@@ -91,7 +94,7 @@ class ScanHistoryCard extends StatelessWidget {
                         ],
                       ),
                       SizedBox(height: 8.h),
-                      
+
                       // Date and time
                       Row(
                         children: [
@@ -102,7 +105,8 @@ class ScanHistoryCard extends StatelessWidget {
                           ),
                           SizedBox(width: 4.w),
                           Text(
-                            DateFormat('MMM dd, yyyy • hh:mm a').format(session.createdAt),
+                            DateFormat('MMM dd, yyyy • hh:mm a')
+                                .format(session.createdAt),
                             style: GoogleFonts.inter(
                               fontSize: 12.sp,
                               color: Colors.grey[400],
@@ -110,7 +114,7 @@ class ScanHistoryCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      
+
                       // Additional info if available
                       if (session.extractedData != null) ...[
                         SizedBox(height: 8.h),
@@ -136,7 +140,7 @@ class ScanHistoryCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 // Arrow icon
                 Icon(
                   Icons.arrow_forward_ios,
@@ -188,4 +192,4 @@ class ScanHistoryCard extends StatelessWidget {
         return Icons.account_balance_wallet;
     }
   }
-} 
+}

@@ -79,4 +79,3 @@ void openCryptoTransactionReceipt(CryptoTransactionHistory transaction) {
         fromHistory: true,
       ));
 }
-

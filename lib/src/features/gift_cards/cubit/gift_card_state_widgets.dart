@@ -75,8 +75,10 @@ class GiftCardPurchaseError extends GiftCardState {
 
 class MyGiftCardsLoaded extends GiftCardState {
   final List<GiftCard> giftCards;
+
   /// More pages available behind the current accumulator.
   final bool hasMore;
+
   /// Set while a tail-of-list "load more" round-trip is in flight; the
   /// list view should keep showing the existing items and append a
   /// loading indicator at the bottom rather than swap to a full
@@ -274,10 +276,10 @@ class GiftCardRedeeming extends GiftCardState {}
 
 /// The merchant redeem code was successfully retrieved from the provider
 class RedeemCodeLoaded extends GiftCardState {
-  final String redemptionCode;          // The actual merchant code (e.g., Amazon code)
-  final String redemptionPin;           // PIN code (if applicable)
-  final String transactionId;           // Provider transaction ID
-  final String status;                  // "available", "pending", "unavailable"
+  final String redemptionCode; // The actual merchant code (e.g., Amazon code)
+  final String redemptionPin; // PIN code (if applicable)
+  final String transactionId; // Provider transaction ID
+  final String status; // "available", "pending", "unavailable"
   final String message;
 
   const RedeemCodeLoaded({
@@ -289,7 +291,8 @@ class RedeemCodeLoaded extends GiftCardState {
   });
 
   @override
-  List<Object> get props => [redemptionCode, redemptionPin, transactionId, status, message];
+  List<Object> get props =>
+      [redemptionCode, redemptionPin, transactionId, status, message];
 }
 
 class GiftCardRedeemError extends GiftCardState {
@@ -474,6 +477,7 @@ class PayoutMethodsLoading extends GiftCardState {
 /// selection list.
 class PayoutMethodsLoaded extends GiftCardState {
   final List<PayoutMethodEntity> methods;
+
   /// Pre-selected method when the system_settings default is in the
   /// available list, empty string when the UI should pick the first row.
   final String defaultMethodName;
@@ -574,7 +578,8 @@ class OCRExtracted extends GiftCardState {
     required this.rawText,
   });
   @override
-  List<Object> get props => [brand, cardNumber, pin, denomination, currency, confidence, rawText];
+  List<Object> get props =>
+      [brand, cardNumber, pin, denomination, currency, confidence, rawText];
 }
 
 class OCRFailed extends GiftCardState {

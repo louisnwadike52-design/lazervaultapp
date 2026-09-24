@@ -40,19 +40,28 @@ import 'package:lazervault/src/features/recipients/presentation/widgets/unified_
 part 'invoice_preview_screen_part1.dart';
 part 'invoice_preview_screen_part2.dart';
 
-
 String _getCurrencySymbolFromCode(String code) {
   switch (code.toUpperCase()) {
-    case 'NGN': return '₦';
-    case 'GBP': return '£';
-    case 'EUR': return '€';
-    case 'ZAR': return 'R';
-    case 'CAD': return 'C\$';
-    case 'AUD': return 'A\$';
-    case 'INR': return '₹';
-    case 'JPY': return '¥';
-    case 'USD': return '\$';
-    default: return '₦';
+    case 'NGN':
+      return '₦';
+    case 'GBP':
+      return '£';
+    case 'EUR':
+      return '€';
+    case 'ZAR':
+      return 'R';
+    case 'CAD':
+      return 'C\$';
+    case 'AUD':
+      return 'A\$';
+    case 'INR':
+      return '₹';
+    case 'JPY':
+      return '¥';
+    case 'USD':
+      return '\$';
+    default:
+      return '₦';
   }
 }
 
@@ -137,7 +146,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
 
   Future<void> _loadFeeQuote() async {
     try {
-      final quote = await serviceLocator<InvoiceRepository>().getServiceFeeQuote();
+      final quote =
+          await serviceLocator<InvoiceRepository>().getServiceFeeQuote();
       if (mounted) setState(() => _feeQuote = quote);
     } catch (_) {}
   }
@@ -243,7 +253,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                     ? InvoiceThemeColors.successGreen
                     : invoice.status == InvoiceStatus.pending
                         ? const Color(0xFFFB923C)
-                        : invoice.status == InvoiceStatus.cancelled || invoice.status == InvoiceStatus.expired
+                        : invoice.status == InvoiceStatus.cancelled ||
+                                invoice.status == InvoiceStatus.expired
                             ? const Color(0xFFEF4444)
                             : InvoiceThemeColors.successGreen;
             return Container(
@@ -298,7 +309,10 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
             SizedBox(height: 32.h),
             _buildNotesSection(),
           ],
-          if (widget.showTaggedUsers && invoice.isPartiallyPaid && invoice.taggedUsers != null && invoice.taggedUsers!.isNotEmpty) ...[
+          if (widget.showTaggedUsers &&
+              invoice.isPartiallyPaid &&
+              invoice.taggedUsers != null &&
+              invoice.taggedUsers!.isNotEmpty) ...[
             SizedBox(height: 32.h),
             _buildPreviewPaymentProgress(),
           ],
@@ -321,14 +335,16 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
       decoration: BoxDecoration(
         color: const Color(0xFFFEF3C7),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
+        border:
+            Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.pie_chart, color: const Color(0xFFF59E0B), size: 18.sp),
+              Icon(Icons.pie_chart,
+                  color: const Color(0xFFF59E0B), size: 18.sp),
               SizedBox(width: 8.w),
               Text(
                 'Payment Progress',
@@ -346,11 +362,17 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
             children: [
               Text(
                 '$currencySymbol${invoice.paidAmount.toStringAsFixed(2)} of $currencySymbol${invoice.totalAmount.toStringAsFixed(2)}',
-                style: GoogleFonts.inter(color: const Color(0xFF92400E), fontSize: 13.sp, fontWeight: FontWeight.w600),
+                style: GoogleFonts.inter(
+                    color: const Color(0xFF92400E),
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600),
               ),
               Text(
                 '$paid / $total paid',
-                style: GoogleFonts.inter(color: const Color(0xFF92400E), fontSize: 13.sp, fontWeight: FontWeight.w500),
+                style: GoogleFonts.inter(
+                    color: const Color(0xFF92400E),
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w500),
               ),
             ],
           ),
@@ -360,33 +382,40 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
             child: LinearProgressIndicator(
               value: progress,
               backgroundColor: const Color(0xFFF59E0B).withValues(alpha: 0.2),
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
               minHeight: 8.h,
             ),
           ),
           SizedBox(height: 12.h),
           // Paid users
           ...paidUsers.map((user) => Padding(
-            padding: EdgeInsets.only(bottom: 4.h),
-            child: Row(
-              children: [
-                Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 13.sp),
-                SizedBox(width: 6.w),
-                Text(user.displayName, style: GoogleFonts.inter(color: const Color(0xFF111827), fontSize: 12.sp)),
-              ],
-            ),
-          )),
+                padding: EdgeInsets.only(bottom: 4.h),
+                child: Row(
+                  children: [
+                    Icon(Icons.check_circle,
+                        color: const Color(0xFF10B981), size: 13.sp),
+                    SizedBox(width: 6.w),
+                    Text(user.displayName,
+                        style: GoogleFonts.inter(
+                            color: const Color(0xFF111827), fontSize: 12.sp)),
+                  ],
+                ),
+              )),
           // Unpaid users
           ...unpaidUsers.map((user) => Padding(
-            padding: EdgeInsets.only(bottom: 4.h),
-            child: Row(
-              children: [
-                Icon(Icons.radio_button_unchecked, color: const Color(0xFFFB923C), size: 13.sp),
-                SizedBox(width: 6.w),
-                Text(user.displayName, style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 12.sp)),
-              ],
-            ),
-          )),
+                padding: EdgeInsets.only(bottom: 4.h),
+                child: Row(
+                  children: [
+                    Icon(Icons.radio_button_unchecked,
+                        color: const Color(0xFFFB923C), size: 13.sp),
+                    SizedBox(width: 6.w),
+                    Text(user.displayName,
+                        style: GoogleFonts.inter(
+                            color: const Color(0xFF6B7280), fontSize: 12.sp)),
+                  ],
+                ),
+              )),
         ],
       ),
     );
@@ -541,13 +570,16 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
     String? logoUrl,
   }) {
     final info = <String>[];
-    
+
     if (details != null) {
-      if (details.companyName?.isNotEmpty == true) info.add(details.companyName!);
-      if (details.contactName?.isNotEmpty == true) info.add(details.contactName!);
+      if (details.companyName?.isNotEmpty == true)
+        info.add(details.companyName!);
+      if (details.contactName?.isNotEmpty == true)
+        info.add(details.contactName!);
       if (details.email?.isNotEmpty == true) info.add(details.email!);
       if (details.phone?.isNotEmpty == true) info.add(details.phone!);
-      if (details.addressLine1?.isNotEmpty == true) info.add(details.addressLine1!);
+      if (details.addressLine1?.isNotEmpty == true)
+        info.add(details.addressLine1!);
       if (details.city?.isNotEmpty == true) info.add(details.city!);
       if (details.state?.isNotEmpty == true) info.add(details.state!);
       if (details.postcode?.isNotEmpty == true) info.add(details.postcode!);
@@ -608,16 +640,16 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
           ),
           SizedBox(height: 12.h),
           ...info.map((line) => Padding(
-            padding: EdgeInsets.only(bottom: 4.h),
-            child: Text(
-              line,
-              style: GoogleFonts.inter(
-                color: const Color(0xFF111827),
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          )),
+                padding: EdgeInsets.only(bottom: 4.h),
+                child: Text(
+                  line,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF111827),
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              )),
           if (info.isEmpty)
             Text(
               'No information provided',
@@ -766,7 +798,9 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                   padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
                     border: Border(
-                      top: index > 0 ? BorderSide(color: const Color(0xFFE5E7EB)) : BorderSide.none,
+                      top: index > 0
+                          ? BorderSide(color: const Color(0xFFE5E7EB))
+                          : BorderSide.none,
                     ),
                   ),
                   child: Row(
@@ -800,7 +834,10 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                       ),
                       Expanded(
                         child: Text(
-                          item.quantity.toStringAsFixed(item.quantity.truncateToDouble() == item.quantity ? 0 : 1),
+                          item.quantity.toStringAsFixed(
+                              item.quantity.truncateToDouble() == item.quantity
+                                  ? 0
+                                  : 1),
                           style: GoogleFonts.inter(
                             color: const Color(0xFF111827),
                             fontSize: 14.sp,
@@ -897,7 +934,9 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
             ),
           ),
           Text(
-            amount < 0 ? '-${_getCurrencySymbolFromCode(invoice.currency)}${(-amount).toStringAsFixed(2)}' : '${_getCurrencySymbolFromCode(invoice.currency)}${amount.toStringAsFixed(2)}',
+            amount < 0
+                ? '-${_getCurrencySymbolFromCode(invoice.currency)}${(-amount).toStringAsFixed(2)}'
+                : '${_getCurrencySymbolFromCode(invoice.currency)}${amount.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
               color: const Color(0xFF111827),
               fontSize: 16.sp,
@@ -964,7 +1003,9 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                   // Show receipt and remove "newly created" flag
                   Get.offAllNamed(AppRoutes.invoicePaymentReceipt, arguments: {
                     'invoice_id': invoice.id,
-                    'payment_reference': state.invoice != null ? 'UNLOCK-${state.invoice!.id.substring(0, 8)}' : 'UNLOCK-${DateTime.now().millisecondsSinceEpoch}',
+                    'payment_reference': state.invoice != null
+                        ? 'UNLOCK-${state.invoice!.id.substring(0, 8)}'
+                        : 'UNLOCK-${DateTime.now().millisecondsSinceEpoch}',
                     'amount': _feeAmount,
                     'currency': _feeCurrencyCode,
                     'status': 'completed',
@@ -994,10 +1035,12 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                 height: 56.h,
                 margin: EdgeInsets.only(bottom: 12.h),
                 child: ElevatedButton.icon(
-                  onPressed: _isProcessingPayment ? null : _handleServiceFeePayment,
+                  onPressed:
+                      _isProcessingPayment ? null : _handleServiceFeePayment,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF3B82F6),
-                    disabledBackgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.6),
+                    disabledBackgroundColor:
+                        const Color(0xFF3B82F6).withValues(alpha: 0.6),
                     shadowColor: Colors.transparent,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -1005,11 +1048,10 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                   ),
                   icon: _isProcessingPayment
                       ? LazerVaultLoader.small()
-                      : Icon(Icons.lock_outline, color: Colors.white, size: 20.sp),
+                      : Icon(Icons.lock_outline,
+                          color: Colors.white, size: 20.sp),
                   label: Text(
-                    _isProcessingPayment
-                        ? 'Processing Payment...'
-                        : _feeLabel,
+                    _isProcessingPayment ? 'Processing Payment...' : _feeLabel,
                     style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 15.sp,
@@ -1020,27 +1062,34 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
               ),
             ),
           // View Payment Receipt CTA for paid invoices
-          if (invoice.status == InvoiceStatus.paid && invoice.paymentReference != null && !_isNewlyCreated)
+          if (invoice.status == InvoiceStatus.paid &&
+              invoice.paymentReference != null &&
+              !_isNewlyCreated)
             Container(
               width: double.infinity,
               height: 48.h,
               margin: EdgeInsets.only(bottom: 12.h),
               child: ElevatedButton.icon(
-                onPressed: () => Get.toNamed(AppRoutes.invoicePaymentReceipt, arguments: {
+                onPressed: () =>
+                    Get.toNamed(AppRoutes.invoicePaymentReceipt, arguments: {
                   'invoice_id': invoice.id,
                   'payment_reference': invoice.paymentReference,
-                  'amount': invoice.totalAmount > 0 ? invoice.totalAmount : invoice.amount,
+                  'amount': invoice.totalAmount > 0
+                      ? invoice.totalAmount
+                      : invoice.amount,
                   'currency': invoice.currency,
                   'status': 'completed',
                 }),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.15),
+                  backgroundColor:
+                      const Color(0xFF10B981).withValues(alpha: 0.15),
                   shadowColor: Colors.transparent,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                 ),
-                icon: Icon(Icons.receipt_long, color: const Color(0xFF10B981), size: 20.sp),
+                icon: Icon(Icons.receipt_long,
+                    color: const Color(0xFF10B981), size: 20.sp),
                 label: Text(
                   'View Payment Receipt',
                   style: GoogleFonts.inter(
@@ -1052,7 +1101,9 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
               ),
             ),
           // Tagged users CTA + Tag User button (only for creator view)
-          if (widget.showTaggedUsers && invoice.taggedUsers != null && invoice.taggedUsers!.isNotEmpty)
+          if (widget.showTaggedUsers &&
+              invoice.taggedUsers != null &&
+              invoice.taggedUsers!.isNotEmpty)
             GestureDetector(
               onTap: () => _showTaggedUsersDetailSheet(context),
               child: Container(
@@ -1065,7 +1116,9 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.people, color: Colors.white.withValues(alpha: 0.9), size: 20.sp),
+                    Icon(Icons.people,
+                        color: Colors.white.withValues(alpha: 0.9),
+                        size: 20.sp),
                     SizedBox(width: 10.w),
                     Text(
                       '${invoice.taggedUsers!.length} Tagged User${invoice.taggedUsers!.length == 1 ? '' : 's'}',
@@ -1085,41 +1138,43 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                       ),
                     ),
                     SizedBox(width: 2.w),
-                    Icon(Icons.chevron_right, color: Colors.white.withValues(alpha: 0.7), size: 18.sp),
+                    Icon(Icons.chevron_right,
+                        color: Colors.white.withValues(alpha: 0.7),
+                        size: 18.sp),
                   ],
                 ),
               ),
             ),
           if (widget.showTaggedUsers)
-          SizedBox(
-            width: double.infinity,
-            height: 52.h,
-            child: ElevatedButton.icon(
-              onPressed: () => _showTagUserBottomSheet(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white.withValues(alpha: 0.1),
-                shadowColor: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
+            SizedBox(
+              width: double.infinity,
+              height: 52.h,
+              child: ElevatedButton.icon(
+                onPressed: () => _showTagUserBottomSheet(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white.withValues(alpha: 0.1),
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
                 ),
-              ),
-              icon: Icon(
-                Icons.person_add_outlined,
-                color: Colors.white.withValues(alpha: 0.9),
-                size: 20.sp,
-              ),
-              label: Text(
-                'Tag User for Payment',
-                style: GoogleFonts.inter(
+                icon: Icon(
+                  Icons.person_add_outlined,
                   color: Colors.white.withValues(alpha: 0.9),
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
+                  size: 20.sp,
+                ),
+                label: Text(
+                  'Tag User for Payment',
+                  style: GoogleFonts.inter(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
-          ),
           SizedBox(height: 16.w),
-          
+
           // QR Code, Download, and Share icon-only buttons row
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1148,7 +1203,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                 width: 52.w,
                 height: 52.w,
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                  color: const Color.fromARGB(255, 78, 3, 208)
+                      .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16.r),
                 ),
                 child: IconButton(
@@ -1212,7 +1268,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) => Container(
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.65),
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.65),
         decoration: BoxDecoration(
           color: const Color(0xFFF8F9FA),
           borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
@@ -1233,16 +1290,21 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
               padding: EdgeInsets.all(20.w),
               child: Row(
                 children: [
-                  Icon(Icons.people, color: InvoiceThemeColors.primaryPurple, size: 20.sp),
+                  Icon(Icons.people,
+                      color: InvoiceThemeColors.primaryPurple, size: 20.sp),
                   SizedBox(width: 10.w),
                   Text(
                     'Tagged Users (${users.length})',
-                    style: GoogleFonts.inter(color: const Color(0xFF111827), fontSize: 16.sp, fontWeight: FontWeight.w600),
+                    style: GoogleFonts.inter(
+                        color: const Color(0xFF111827),
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600),
                   ),
                   const Spacer(),
                   GestureDetector(
                     onTap: () => Navigator.pop(ctx),
-                    child: Icon(Icons.close, color: const Color(0xFF6B7280), size: 20.sp),
+                    child: Icon(Icons.close,
+                        color: const Color(0xFF6B7280), size: 20.sp),
                   ),
                 ],
               ),
@@ -1260,7 +1322,11 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                       : user.status == 'viewed'
                           ? const Color(0xFFFB923C)
                           : const Color(0xFF6B7280);
-                  final statusLabel = user.status == 'paid' ? 'Paid' : user.status == 'viewed' ? 'Viewed' : 'Pending';
+                  final statusLabel = user.status == 'paid'
+                      ? 'Paid'
+                      : user.status == 'viewed'
+                          ? 'Viewed'
+                          : 'Pending';
                   final typeColor = user.isPlatformUser
                       ? InvoiceThemeColors.primaryPurple
                       : user.tagType == 'email'
@@ -1268,10 +1334,12 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                           : const Color(0xFF10B981);
 
                   return GestureDetector(
-                    onTap: user.isPlatformUser ? () {
-                      Navigator.pop(ctx);
-                      _showUserProfileModal(context, user);
-                    } : null,
+                    onTap: user.isPlatformUser
+                        ? () {
+                            Navigator.pop(ctx);
+                            _showUserProfileModal(context, user);
+                          }
+                        : null,
                     child: Container(
                       margin: EdgeInsets.only(bottom: 8.h),
                       padding: EdgeInsets.all(14.w),
@@ -1279,7 +1347,10 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12.r),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 4, offset: const Offset(0, 1)),
+                          BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 4,
+                              offset: const Offset(0, 1)),
                         ],
                       ),
                       child: Column(
@@ -1288,13 +1359,28 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                             children: [
                               CircleAvatar(
                                 radius: 20.r,
-                                backgroundColor: typeColor.withValues(alpha: 0.1),
-                                backgroundImage: user.profilePicture != null ? NetworkImage(user.profilePicture!) : null,
+                                backgroundColor:
+                                    typeColor.withValues(alpha: 0.1),
+                                backgroundImage: user.profilePicture != null
+                                    ? NetworkImage(user.profilePicture!)
+                                    : null,
                                 child: user.profilePicture == null
                                     ? user.isPlatformUser
-                                        ? Text(user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : '?',
-                                            style: GoogleFonts.inter(color: typeColor, fontSize: 16.sp, fontWeight: FontWeight.w700))
-                                        : Icon(user.tagType == 'email' ? Icons.email_outlined : Icons.sms_outlined, color: typeColor, size: 18.sp)
+                                        ? Text(
+                                            user.displayName.isNotEmpty
+                                                ? user.displayName[0]
+                                                    .toUpperCase()
+                                                : '?',
+                                            style: GoogleFonts.inter(
+                                                color: typeColor,
+                                                fontSize: 16.sp,
+                                                fontWeight: FontWeight.w700))
+                                        : Icon(
+                                            user.tagType == 'email'
+                                                ? Icons.email_outlined
+                                                : Icons.sms_outlined,
+                                            color: typeColor,
+                                            size: 18.sp)
                                     : null,
                               ),
                               SizedBox(width: 12.w),
@@ -1304,10 +1390,22 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                                   children: [
                                     Row(
                                       children: [
-                                        Flexible(child: Text(user.displayName, style: GoogleFonts.inter(color: const Color(0xFF111827), fontSize: 14.sp, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis)),
+                                        Flexible(
+                                            child: Text(user.displayName,
+                                                style: GoogleFonts.inter(
+                                                    color:
+                                                        const Color(0xFF111827),
+                                                    fontSize: 14.sp,
+                                                    fontWeight:
+                                                        FontWeight.w600),
+                                                overflow:
+                                                    TextOverflow.ellipsis)),
                                         if (user.isPlatformUser) ...[
                                           SizedBox(width: 4.w),
-                                          Icon(Icons.open_in_new, color: InvoiceThemeColors.primaryPurple, size: 12.sp),
+                                          Icon(Icons.open_in_new,
+                                              color: InvoiceThemeColors
+                                                  .primaryPurple,
+                                              size: 12.sp),
                                         ],
                                       ],
                                     ),
@@ -1315,17 +1413,41 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                                     Row(
                                       children: [
                                         Container(
-                                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                                          decoration: BoxDecoration(color: typeColor.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(4.r)),
-                                          child: Text(user.tagMethodLabel, style: GoogleFonts.inter(color: typeColor, fontSize: 10.sp, fontWeight: FontWeight.w600)),
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 6.w, vertical: 2.h),
+                                          decoration: BoxDecoration(
+                                              color: typeColor.withValues(
+                                                  alpha: 0.08),
+                                              borderRadius:
+                                                  BorderRadius.circular(4.r)),
+                                          child: Text(user.tagMethodLabel,
+                                              style: GoogleFonts.inter(
+                                                  color: typeColor,
+                                                  fontSize: 10.sp,
+                                                  fontWeight: FontWeight.w600)),
                                         ),
                                         if (user.username.isNotEmpty) ...[
                                           SizedBox(width: 6.w),
-                                          Flexible(child: Text('@${user.username}', style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 12.sp), overflow: TextOverflow.ellipsis)),
+                                          Flexible(
+                                              child: Text('@${user.username}',
+                                                  style: GoogleFonts.inter(
+                                                      color: const Color(
+                                                          0xFF6B7280),
+                                                      fontSize: 12.sp),
+                                                  overflow:
+                                                      TextOverflow.ellipsis)),
                                         ],
-                                        if (user.tagValue != null && user.tagValue!.isNotEmpty) ...[
+                                        if (user.tagValue != null &&
+                                            user.tagValue!.isNotEmpty) ...[
                                           SizedBox(width: 6.w),
-                                          Flexible(child: Text(user.tagValue!, style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 12.sp), overflow: TextOverflow.ellipsis)),
+                                          Flexible(
+                                              child: Text(user.tagValue!,
+                                                  style: GoogleFonts.inter(
+                                                      color: const Color(
+                                                          0xFF6B7280),
+                                                      fontSize: 12.sp),
+                                                  overflow:
+                                                      TextOverflow.ellipsis)),
                                         ],
                                       ],
                                     ),
@@ -1333,9 +1455,16 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                                 ),
                               ),
                               Container(
-                                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                                decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8.r)),
-                                child: Text(statusLabel, style: GoogleFonts.inter(color: statusColor, fontSize: 11.sp, fontWeight: FontWeight.w600)),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 10.w, vertical: 4.h),
+                                decoration: BoxDecoration(
+                                    color: statusColor.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8.r)),
+                                child: Text(statusLabel,
+                                    style: GoogleFonts.inter(
+                                        color: statusColor,
+                                        fontSize: 11.sp,
+                                        fontWeight: FontWeight.w600)),
                               ),
                             ],
                           ),
@@ -1344,19 +1473,36 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                             Row(
                               children: [
                                 SizedBox(width: 52.w),
-                                Icon(Icons.schedule, color: const Color(0xFF9CA3AF), size: 12.sp),
+                                Icon(Icons.schedule,
+                                    color: const Color(0xFF9CA3AF),
+                                    size: 12.sp),
                                 SizedBox(width: 4.w),
-                                Text(_formatRelativeDate(user.taggedAt!), style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
+                                Text(_formatRelativeDate(user.taggedAt!),
+                                    style: GoogleFonts.inter(
+                                        color: const Color(0xFF9CA3AF),
+                                        fontSize: 11.sp)),
                                 if (user.paidAt != null) ...[
                                   SizedBox(width: 12.w),
-                                  Icon(Icons.check_circle_outline, color: const Color(0xFF10B981), size: 12.sp),
+                                  Icon(Icons.check_circle_outline,
+                                      color: const Color(0xFF10B981),
+                                      size: 12.sp),
                                   SizedBox(width: 4.w),
-                                  Text('Paid ${_formatRelativeDate(user.paidAt!)}', style: GoogleFonts.inter(color: const Color(0xFF10B981), fontSize: 11.sp)),
+                                  Text(
+                                      'Paid ${_formatRelativeDate(user.paidAt!)}',
+                                      style: GoogleFonts.inter(
+                                          color: const Color(0xFF10B981),
+                                          fontSize: 11.sp)),
                                 ] else if (user.viewedAt != null) ...[
                                   SizedBox(width: 12.w),
-                                  Icon(Icons.visibility_outlined, color: const Color(0xFFFB923C), size: 12.sp),
+                                  Icon(Icons.visibility_outlined,
+                                      color: const Color(0xFFFB923C),
+                                      size: 12.sp),
                                   SizedBox(width: 4.w),
-                                  Text('Viewed ${_formatRelativeDate(user.viewedAt!)}', style: GoogleFonts.inter(color: const Color(0xFFFB923C), fontSize: 11.sp)),
+                                  Text(
+                                      'Viewed ${_formatRelativeDate(user.viewedAt!)}',
+                                      style: GoogleFonts.inter(
+                                          color: const Color(0xFFFB923C),
+                                          fontSize: 11.sp)),
                                 ],
                               ],
                             ),
@@ -1379,7 +1525,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
       context: context,
       builder: (context) => Dialog(
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         child: Padding(
           padding: EdgeInsets.all(24.w),
           child: Column(
@@ -1387,29 +1534,55 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
             children: [
               CircleAvatar(
                 radius: 40.r,
-                backgroundColor: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
-                backgroundImage: user.profilePicture != null ? NetworkImage(user.profilePicture!) : null,
+                backgroundColor:
+                    InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
+                backgroundImage: user.profilePicture != null
+                    ? NetworkImage(user.profilePicture!)
+                    : null,
                 child: user.profilePicture == null
-                    ? Text(user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : '?',
-                        style: GoogleFonts.inter(color: InvoiceThemeColors.primaryPurple, fontSize: 32.sp, fontWeight: FontWeight.w700))
+                    ? Text(
+                        user.displayName.isNotEmpty
+                            ? user.displayName[0].toUpperCase()
+                            : '?',
+                        style: GoogleFonts.inter(
+                            color: InvoiceThemeColors.primaryPurple,
+                            fontSize: 32.sp,
+                            fontWeight: FontWeight.w700))
                     : null,
               ),
               SizedBox(height: 16.h),
-              Text(user.displayName, style: GoogleFonts.inter(color: const Color(0xFF111827), fontSize: 20.sp, fontWeight: FontWeight.w700), textAlign: TextAlign.center),
+              Text(user.displayName,
+                  style: GoogleFonts.inter(
+                      color: const Color(0xFF111827),
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w700),
+                  textAlign: TextAlign.center),
               if (user.username.isNotEmpty) ...[
                 SizedBox(height: 4.h),
-                Text('@${user.username}', style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 14.sp, fontWeight: FontWeight.w500)),
+                Text('@${user.username}',
+                    style: GoogleFonts.inter(
+                        color: const Color(0xFF6B7280),
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500)),
               ],
               SizedBox(height: 16.h),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                decoration: BoxDecoration(color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(20.r)),
+                decoration: BoxDecoration(
+                    color: InvoiceThemeColors.primaryPurple
+                        .withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(20.r)),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.verified, color: InvoiceThemeColors.primaryPurple, size: 14.sp),
+                    Icon(Icons.verified,
+                        color: InvoiceThemeColors.primaryPurple, size: 14.sp),
                     SizedBox(width: 4.w),
-                    Text('Lazervault User', style: GoogleFonts.inter(color: InvoiceThemeColors.primaryPurple, fontSize: 12.sp, fontWeight: FontWeight.w600)),
+                    Text('Lazervault User',
+                        style: GoogleFonts.inter(
+                            color: InvoiceThemeColors.primaryPurple,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w600)),
                   ],
                 ),
               ),
@@ -1422,9 +1595,12 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                     backgroundColor: InvoiceThemeColors.primaryPurple,
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 12.h),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r)),
                   ),
-                  child: Text('Close', style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                  child: Text('Close',
+                      style: GoogleFonts.inter(
+                          fontSize: 14.sp, fontWeight: FontWeight.w600)),
                 ),
               ),
             ],
@@ -1466,7 +1642,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
             ],
           ),
           backgroundColor: InvoiceThemeColors.infoBlue,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 10),
         ),
@@ -1486,7 +1663,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
           SnackBar(
             content: const Text('Invoice PDF downloaded'),
             backgroundColor: InvoiceThemeColors.successGreen,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r)),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -1496,7 +1674,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
           SnackBar(
             content: Text('Invoice PDF saved to $filePath'),
             backgroundColor: InvoiceThemeColors.infoBlue,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r)),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -1506,9 +1685,11 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to download PDF: ${e.toString().replaceFirst('Exception: ', '')}'),
+          content: Text(
+              'Failed to download PDF: ${e.toString().replaceFirst('Exception: ', '')}'),
           backgroundColor: InvoiceThemeColors.errorRed,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -1529,7 +1710,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
             ],
           ),
           backgroundColor: InvoiceThemeColors.infoBlue,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 2),
         ),
@@ -1548,9 +1730,11 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to share invoice: ${e.toString().replaceFirst('Exception: ', '')}'),
+          content: Text(
+              'Failed to share invoice: ${e.toString().replaceFirst('Exception: ', '')}'),
           backgroundColor: InvoiceThemeColors.errorRed,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -1593,7 +1777,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                         width: 40.w,
                         height: 40.w,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                          color:
+                              const Color(0xFF10B981).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(10.r),
                         ),
                         child: Icon(
@@ -1714,7 +1899,9 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                       SizedBox(width: 12.w),
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: _isSendingEmail ? null : () => _sendInvoiceToEmail(ctx),
+                          onPressed: _isSendingEmail
+                              ? null
+                              : () => _sendInvoiceToEmail(ctx),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF10B981),
                             foregroundColor: Colors.white,
@@ -1755,7 +1942,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
         SnackBar(
           content: Text('Please enter an email address'),
           backgroundColor: InvoiceThemeColors.errorRed,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -1769,7 +1957,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
         SnackBar(
           content: Text('Please enter a valid email address'),
           backgroundColor: InvoiceThemeColors.errorRed,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -1796,7 +1985,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
             ],
           ),
           backgroundColor: const Color(0xFF10B981),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 3),
         ),
@@ -1813,7 +2003,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
         SnackBar(
           content: Text('Invoice sent successfully to $email'),
           backgroundColor: const Color(0xFF10B981),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 3),
         ),
@@ -1823,9 +2014,11 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to send invoice: ${e.toString().replaceFirst('Exception: ', '')}'),
+          content: Text(
+              'Failed to send invoice: ${e.toString().replaceFirst('Exception: ', '')}'),
           backgroundColor: InvoiceThemeColors.errorRed,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -1842,7 +2035,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
     String qrData;
     String title;
     String subtitle;
-    Color accentColor = const Color(0xFFEA580C); // Orange color for all QR codes
+    Color accentColor =
+        const Color(0xFFEA580C); // Orange color for all QR codes
 
     switch (type) {
       case 'invoice':
@@ -1929,7 +2123,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                 ],
               ),
               SizedBox(height: 24.h),
-              
+
               // QR Code with RepaintBoundary for sharing
               RepaintBoundary(
                 key: qrKey,
@@ -1973,7 +2167,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                 ),
               ),
               SizedBox(height: 24.h),
-              
+
               // Invoice info
               Container(
                 padding: EdgeInsets.all(16.w),
@@ -2028,7 +2222,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                 ),
               ),
               SizedBox(height: 24.h),
-              
+
               // Action buttons
               Row(
                 children: [
@@ -2087,7 +2281,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
     );
   }
 
-  Future<void> _shareQRCode(BuildContext context, GlobalKey qrKey, String title) async {
+  Future<void> _shareQRCode(
+      BuildContext context, GlobalKey qrKey, String title) async {
     try {
       // Show loading
       if (!context.mounted) return;
@@ -2101,7 +2296,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
             ],
           ),
           backgroundColor: InvoiceThemeColors.infoBlue,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 2),
         ),
@@ -2115,8 +2311,9 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
       }
       final RenderRepaintBoundary boundary = boundaryObj;
       ui.Image image = await boundary.toImage(pixelRatio: 3.0);
-      ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      
+      ByteData? byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
+
       if (byteData == null) {
         throw Exception('Failed to generate QR code image');
       }
@@ -2127,7 +2324,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
       final Directory tempDir = await getTemporaryDirectory();
       final String fileName = 'qr_code_${invoice.displayNumber}.png';
       final File file = File('${tempDir.path}/$fileName');
-      
+
       // Write image to file
       await file.writeAsBytes(pngBytes);
 
@@ -2138,10 +2335,12 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
       // Share the QR code image
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
-        text: '$title - ${invoice.title}\nAmount: ${_getCurrencySymbolFromCode(invoice.currency)}${invoice.totalAmount.toStringAsFixed(2)}',
+        text:
+            '$title - ${invoice.title}\nAmount: ${_getCurrencySymbolFromCode(invoice.currency)}${invoice.totalAmount.toStringAsFixed(2)}',
         subject: '$title - ${invoice.title}',
         // Required by iOS/iPadOS to anchor the share sheet popover.
-        sharePositionOrigin: context.mounted ? shareOriginFromContext(context) : null,
+        sharePositionOrigin:
+            context.mounted ? shareOriginFromContext(context) : null,
       ));
 
       // Clean up temp file after a delay
@@ -2150,15 +2349,16 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
           file.delete();
         }
       });
-
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to share QR code: ${e.toString().replaceFirst('Exception: ', '')}'),
+          content: Text(
+              'Failed to share QR code: ${e.toString().replaceFirst('Exception: ', '')}'),
           backgroundColor: InvoiceThemeColors.errorRed,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -2173,7 +2373,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
     // Get the default account for payment
     try {
       final accountState = Get.find<AccountCardsSummaryCubit>().state;
-      if (accountState is AccountCardsSummaryLoaded && accountState.accountSummaries.isNotEmpty) {
+      if (accountState is AccountCardsSummaryLoaded &&
+          accountState.accountSummaries.isNotEmpty) {
         _selectedAccountId = accountState.accountSummaries.first.id;
       }
     } catch (_) {
@@ -2189,7 +2390,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
     HapticFeedback.mediumImpact();
 
     // Generate transaction ID
-    final transactionId = 'INV-SVC-FEE-${DateTime.now().millisecondsSinceEpoch}';
+    final transactionId =
+        'INV-SVC-FEE-${DateTime.now().millisecondsSinceEpoch}';
 
     // Show PIN bottomsheet and verify
     String? verificationToken;
@@ -2201,7 +2403,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
       amount: _feeAmount,
       currency: _feeCurrencyCode,
       title: 'Confirm Service Fee',
-      message: 'Confirm invoice unlock fee of $_feeCurrencyCode ${formatFeeAmount(_feeAmount, _feeCurrencyCode)}',
+      message:
+          'Confirm invoice unlock fee of $_feeCurrencyCode ${formatFeeAmount(_feeAmount, _feeCurrencyCode)}',
       onPinValidated: (token) async {
         verificationToken = token;
       },

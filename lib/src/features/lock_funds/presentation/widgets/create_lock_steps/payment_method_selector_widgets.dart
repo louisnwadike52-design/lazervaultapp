@@ -44,9 +44,7 @@ class _SheetAccountTile extends StatelessWidget {
                 ? const Color(0xFF4E03D0).withValues(alpha: 0.12)
                 : const Color(0xFF0A0A0A),
             border: Border.all(
-              color: isSelected
-                  ? const Color(0xFF8B5CF6)
-                  : Colors.transparent,
+              color: isSelected ? const Color(0xFF8B5CF6) : Colors.transparent,
               width: 1.2,
             ),
             borderRadius: BorderRadius.circular(12.r),

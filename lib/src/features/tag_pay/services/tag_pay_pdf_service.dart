@@ -641,9 +641,7 @@ class TagPayPdfService {
     // whole document.
     final rawExtra = transferDetails['extraRows'];
     final extraRows = rawExtra is List<MapEntry<String, String>>
-        ? rawExtra
-            .map((e) => MapEntry(e.key, _pdfSafe(e.value) ?? ''))
-            .toList()
+        ? rawExtra.map((e) => MapEntry(e.key, _pdfSafe(e.value) ?? '')).toList()
         : const <MapEntry<String, String>>[];
     final status = transferDetails['status'] as String? ?? 'completed';
     final transferType =
@@ -810,10 +808,12 @@ class TagPayPdfService {
     required UnifiedTransaction transaction,
     ReceiptCopyType copyType = ReceiptCopyType.sender,
     ReceiptFileFormat format = ReceiptFileFormat.pdf,
+
     /// Rows the CALLER resolved that the transaction itself cannot carry —
     /// today the gift card behind a payout, which is looked up by reference
     /// because the ledger credit stores only a description.
     List<MapEntry<String, String>> extraRows = const [],
+
     /// The logged-in user's display name. On an INFLOW they are the
     /// beneficiary — the entity's counterparty is the SENDER, so without
     /// this the sender got printed under Beneficiary Details and FROM
@@ -846,9 +846,10 @@ class TagPayPdfService {
     final String? sourceAccountName;
     final String? sourceAccountInfo;
     if (incoming) {
-      recipientName = (currentUserName != null && currentUserName.trim().isNotEmpty)
-          ? currentUserName.trim()
-          : 'You';
+      recipientName =
+          (currentUserName != null && currentUserName.trim().isNotEmpty)
+              ? currentUserName.trim()
+              : 'You';
       sourceAccountName = _firstNonEmpty([
         metadata['From'],
         metadata['Sender'],
@@ -1122,6 +1123,7 @@ class TagPayPdfService {
   /// addresses ride in that metadata, so one generator covers every crypto flow.
   static Future<File> generateCryptoReceipt({
     required UnifiedTransaction transaction,
+
     /// Logged-in user's display name — the FROM party on a crypto BUY, which
     /// has no on-chain sender address to fall back on.
     String? currentUserName,

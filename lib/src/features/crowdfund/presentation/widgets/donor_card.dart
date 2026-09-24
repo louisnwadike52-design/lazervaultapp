@@ -12,7 +12,6 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 part 'donor_card_widgets.dart';
 
-
 /// Donor detail modal. Lazy-fetches the AI rating on mount so that
 /// scrolling the donations list never triggers an LLM call — only
 /// tapping a row does. Anonymous and the campaign-creator's own
@@ -21,6 +20,7 @@ part 'donor_card_widgets.dart';
 class DonorDetailDialog extends StatefulWidget {
   final CrowdfundDonation donation;
   final Crowdfund crowdfund;
+
   /// Pool of all donations on the current campaign — used to
   /// aggregate the same donor's full contribution history before
   /// asking the LLM for a rating. Without it the rating sees
@@ -79,10 +79,8 @@ class _DonorDetailDialogState extends State<DonorDetailDialog> {
       final now = DateTime.now();
       final campaignAgeDays =
           now.difference(crowdfund.createdAt).inDays.clamp(0, 100000);
-      final daysSince = now
-          .difference(donation.donationDate)
-          .inDays
-          .clamp(0, 100000);
+      final daysSince =
+          now.difference(donation.donationDate).inDays.clamp(0, 100000);
       final offset = donation.donationDate
           .difference(crowdfund.createdAt)
           .inDays
@@ -98,12 +96,13 @@ class _DonorDetailDialogState extends State<DonorDetailDialog> {
           donation.message != null && donation.message!.trim().isNotEmpty;
       final pool = widget.allDonations;
       if (pool != null && pool.isNotEmpty) {
-        final donorRows = pool.where((d) => d.donor.userId == donation.donor.userId);
+        final donorRows =
+            pool.where((d) => d.donor.userId == donation.donor.userId);
         if (donorRows.isNotEmpty) {
           aggregatedTotal = donorRows.fold<double>(0.0, (s, d) => s + d.amount);
           aggregatedCount = donorRows.length;
-          aggregatedHasMessage = donorRows.any(
-              (d) => d.message != null && d.message!.trim().isNotEmpty);
+          aggregatedHasMessage = donorRows
+              .any((d) => d.message != null && d.message!.trim().isNotEmpty);
         }
       }
 

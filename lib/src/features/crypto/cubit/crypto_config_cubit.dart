@@ -137,7 +137,8 @@ class CryptoRuntimeConfig extends Equatable {
 
   /// Returns the per-currency minimum order in minor units, or null if not
   /// configured (callers should treat null as "no app-layer floor").
-  int? minOrderFor(String currency) => minOrderMinorUnits[currency.toLowerCase()];
+  int? minOrderFor(String currency) =>
+      minOrderMinorUnits[currency.toLowerCase()];
 
   /// Returns the per-currency decimal precision, falling back to 8 (default
   /// cryptocurrency precision) for unknown currencies.
@@ -255,15 +256,12 @@ class CryptoConfigCubit extends Cubit<CryptoConfigState> {
       }
 
       final cfg = CryptoRuntimeConfig(
-        minOrderMinorUnits: minOrders.isNotEmpty
-            ? minOrders
-            : state.config.minOrderMinorUnits,
-        currencyDecimals: decimals.isNotEmpty
-            ? decimals
-            : state.config.currencyDecimals,
-        quickAmounts: quickAmounts.isNotEmpty
-            ? quickAmounts
-            : state.config.quickAmounts,
+        minOrderMinorUnits:
+            minOrders.isNotEmpty ? minOrders : state.config.minOrderMinorUnits,
+        currencyDecimals:
+            decimals.isNotEmpty ? decimals : state.config.currencyDecimals,
+        quickAmounts:
+            quickAmounts.isNotEmpty ? quickAmounts : state.config.quickAmounts,
         defaultSpreadBps: resp.defaultSpreadBps,
         quoteExpirySeconds: resp.quoteExpirySeconds == 0
             ? state.config.quoteExpirySeconds

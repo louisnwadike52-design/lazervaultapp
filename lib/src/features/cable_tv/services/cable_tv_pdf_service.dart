@@ -18,8 +18,7 @@ class CableTVPdfService {
   static pw.Font? _regularFont;
   static pw.Font? _boldFont;
 
-  static String _currencySymbolFor(String code) =>
-      receiptCurrencySymbol(code);
+  static String _currencySymbolFor(String code) => receiptCurrencySymbol(code);
 
   static String _currencyNameFor(String code) {
     switch (code.toUpperCase()) {
@@ -79,7 +78,8 @@ class CableTVPdfService {
 
     String paymentDate;
     try {
-      paymentDate = _fullDateTimeFormat.format(DateTime.parse(payment.createdAt));
+      paymentDate =
+          _fullDateTimeFormat.format(DateTime.parse(payment.createdAt));
     } catch (_) {
       paymentDate = payment.createdAt;
     }
@@ -424,8 +424,9 @@ class CableTVPdfService {
   static String _formatStatus(String status) {
     return status
         .split('_')
-        .map((word) =>
-            word.isNotEmpty ? word[0].toUpperCase() + word.substring(1).toLowerCase() : '')
+        .map((word) => word.isNotEmpty
+            ? word[0].toUpperCase() + word.substring(1).toLowerCase()
+            : '')
         .join(' ');
   }
 
@@ -472,7 +473,8 @@ class CableTVPdfService {
       final file = await generateReceipt(payment: payment);
 
       final amount = _currencyFormat.format(payment.amount);
-      final provider = payment.billType.isNotEmpty ? payment.billType : payment.providerId;
+      final provider =
+          payment.billType.isNotEmpty ? payment.billType : payment.providerId;
 
       await SharePlus.instance.share(ShareParams(
         // iOS: a non-zero popover anchor is required — CGRectZero throws

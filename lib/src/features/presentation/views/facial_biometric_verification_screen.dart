@@ -12,8 +12,6 @@ class FacialBiometricVerificationScreen extends StatefulWidget {
 
 class _FacialBiometricVerificationScreenState
     extends State<FacialBiometricVerificationScreen> {
-
-
   @override
   void initState() {
     super.initState();

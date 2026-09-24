@@ -36,7 +36,8 @@ class StockRemoteDataSourceRealImpl implements IStockRemoteDataSource {
       if (searchQuery != null) queryParams['q'] = searchQuery;
       if (limit > 0) queryParams['limit'] = limit.toString();
 
-      final uri = Uri.parse('$baseUrl/stocks').replace(queryParameters: queryParams);
+      final uri =
+          Uri.parse('$baseUrl/stocks').replace(queryParameters: queryParams);
       final headers = await _headers;
       final response = await client.get(uri, headers: headers);
 
@@ -115,7 +116,8 @@ class StockRemoteDataSourceRealImpl implements IStockRemoteDataSource {
 
       // Combine and sort by absolute change
       final allMovers = [...gainers, ...losers];
-      allMovers.sort((a, b) => b.changePercent.abs().compareTo(a.changePercent.abs()));
+      allMovers.sort(
+          (a, b) => b.changePercent.abs().compareTo(a.changePercent.abs()));
 
       return allMovers;
     } catch (e) {
@@ -256,10 +258,12 @@ class StockRemoteDataSourceRealImpl implements IStockRemoteDataSource {
   }) async {
     try {
       final queryParams = <String, String>{};
-      if (status != null) queryParams['status'] = status.toString().split('.').last;
+      if (status != null)
+        queryParams['status'] = status.toString().split('.').last;
       if (symbol != null) queryParams['symbol'] = symbol.toUpperCase();
 
-      final uri = Uri.parse('$baseUrl/orders').replace(queryParameters: queryParams);
+      final uri =
+          Uri.parse('$baseUrl/orders').replace(queryParameters: queryParams);
       final response = await client.get(uri, headers: await _headers);
 
       if (response.statusCode == 200) {
@@ -325,7 +329,8 @@ class StockRemoteDataSourceRealImpl implements IStockRemoteDataSource {
   }
 
   @override
-  Future<WatchlistModel> createWatchlist(String name, List<String> symbols) async {
+  Future<WatchlistModel> createWatchlist(
+      String name, List<String> symbols) async {
     try {
       final uri = Uri.parse('$baseUrl/watchlists');
       final body = {
@@ -353,7 +358,8 @@ class StockRemoteDataSourceRealImpl implements IStockRemoteDataSource {
   }
 
   @override
-  Future<WatchlistModel> updateWatchlist(String watchlistId, String name, List<String> symbols) async {
+  Future<WatchlistModel> updateWatchlist(
+      String watchlistId, String name, List<String> symbols) async {
     try {
       final uri = Uri.parse('$baseUrl/watchlists/$watchlistId');
       final body = {
@@ -381,7 +387,8 @@ class StockRemoteDataSourceRealImpl implements IStockRemoteDataSource {
   }
 
   @override
-  Future<WatchlistModel> addToWatchlist(String watchlistId, String symbol) async {
+  Future<WatchlistModel> addToWatchlist(
+      String watchlistId, String symbol) async {
     try {
       final uri = Uri.parse('$baseUrl/watchlists/$watchlistId/symbols');
       final body = {'symbol': symbol.toUpperCase()};
@@ -406,9 +413,11 @@ class StockRemoteDataSourceRealImpl implements IStockRemoteDataSource {
   }
 
   @override
-  Future<WatchlistModel> removeFromWatchlist(String watchlistId, String symbol) async {
+  Future<WatchlistModel> removeFromWatchlist(
+      String watchlistId, String symbol) async {
     try {
-      final uri = Uri.parse('$baseUrl/watchlists/$watchlistId/symbols/${symbol.toUpperCase()}');
+      final uri = Uri.parse(
+          '$baseUrl/watchlists/$watchlistId/symbols/${symbol.toUpperCase()}');
       final response = await client.delete(uri, headers: await _headers);
 
       if (response.statusCode == 200) {
@@ -416,7 +425,8 @@ class StockRemoteDataSourceRealImpl implements IStockRemoteDataSource {
       } else if (response.statusCode == 401) {
         throw Exception('Unauthorized: Please log in');
       } else {
-        throw Exception('Failed to remove from watchlist: ${response.statusCode}');
+        throw Exception(
+            'Failed to remove from watchlist: ${response.statusCode}');
       }
     } catch (e) {
       print('Error removing from watchlist: $e');
@@ -459,7 +469,8 @@ class StockRemoteDataSourceRealImpl implements IStockRemoteDataSource {
         }
         return result;
       } else {
-        throw Exception('Failed to load market indices: ${response.statusCode}');
+        throw Exception(
+            'Failed to load market indices: ${response.statusCode}');
       }
     } catch (e) {
       print('Error fetching market indices: $e');
@@ -521,27 +532,33 @@ class StockRemoteDataSourceRealImpl implements IStockRemoteDataSource {
 
   @override
   Future<StockAnalysisModel> getStockAnalysis(String symbol) async {
-    throw UnimplementedError('Stock analysis not yet implemented in microservice');
+    throw UnimplementedError(
+        'Stock analysis not yet implemented in microservice');
   }
 
   @override
   Future<TradingSessionModel> getCurrentTradingSession() async {
-    throw UnimplementedError('Trading sessions not yet implemented in microservice');
+    throw UnimplementedError(
+        'Trading sessions not yet implemented in microservice');
   }
 
   @override
-  Future<TradingSessionModel> startTradingSession(double startingBalance) async {
-    throw UnimplementedError('Trading sessions not yet implemented in microservice');
+  Future<TradingSessionModel> startTradingSession(
+      double startingBalance) async {
+    throw UnimplementedError(
+        'Trading sessions not yet implemented in microservice');
   }
 
   @override
   Future<TradingSessionModel> endTradingSession(String sessionId) async {
-    throw UnimplementedError('Trading sessions not yet implemented in microservice');
+    throw UnimplementedError(
+        'Trading sessions not yet implemented in microservice');
   }
 
   @override
   Future<List<TradingSessionModel>> getTradingSessionHistory() async {
-    throw UnimplementedError('Trading sessions not yet implemented in microservice');
+    throw UnimplementedError(
+        'Trading sessions not yet implemented in microservice');
   }
 
   @override
@@ -550,12 +567,14 @@ class StockRemoteDataSourceRealImpl implements IStockRemoteDataSource {
     DateTime? expirationDate,
     OptionType? type,
   }) async {
-    throw UnimplementedError('Options trading not yet implemented in microservice');
+    throw UnimplementedError(
+        'Options trading not yet implemented in microservice');
   }
 
   @override
   Future<OptionContractModel> getOptionDetails(String optionSymbol) async {
-    throw UnimplementedError('Options trading not yet implemented in microservice');
+    throw UnimplementedError(
+        'Options trading not yet implemented in microservice');
   }
 
   @override

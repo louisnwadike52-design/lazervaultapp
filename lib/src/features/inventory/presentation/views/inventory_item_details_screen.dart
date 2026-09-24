@@ -12,7 +12,6 @@ import '../widgets/adjust_quantity_bottom_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'inventory_item_details_screen_widgets.dart';
 
-
 class InventoryItemDetailsScreen extends StatefulWidget {
   final InventoryItemEntity item;
 
@@ -372,8 +371,7 @@ class _InventoryItemDetailsScreenState
             ],
           ),
           SizedBox(height: 14.h),
-          _buildDetailRow('Quantity',
-              '${_item.quantity} ${_item.unit}',
+          _buildDetailRow('Quantity', '${_item.quantity} ${_item.unit}',
               valueColor: quantityColor),
           if (_item.isLowStock) ...[
             SizedBox(height: 4.h),
@@ -583,7 +581,11 @@ class _InventoryItemDetailsScreenState
             ? Icons.sync_outlined
             : Icons.remove_circle_outline;
 
-    final sign = isAdd ? '+' : isSet ? '' : '-';
+    final sign = isAdd
+        ? '+'
+        : isSet
+            ? ''
+            : '-';
 
     return Container(
       margin: EdgeInsets.only(bottom: 8.h),
@@ -651,8 +653,18 @@ class _InventoryItemDetailsScreenState
 
   String _formatDate(DateTime dt) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[dt.month - 1]} ${dt.day}, ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }

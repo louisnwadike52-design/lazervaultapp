@@ -413,8 +413,9 @@ mixin BankScanFlowMixin<T extends StatefulWidget> on State<T> {
       // For internal C2C the dispatch prefers internalUserId (the user UUID);
       // accountNumber is kept human-friendly (account id / username) for the
       // receipt's masked display.
-      accountNumber:
-          action.resolvedAccountId ?? action.username ?? (action.resolvedUserId ?? ''),
+      accountNumber: action.resolvedAccountId ??
+          action.username ??
+          (action.resolvedUserId ?? ''),
       bankName: 'LazerVault',
       sortCode: '',
       isFavorite: false,
@@ -502,7 +503,8 @@ mixin BankScanFlowMixin<T extends StatefulWidget> on State<T> {
     );
   }
 
-  void _showScanErrorSheet(String title, String message, {bool isWarning = false}) {
+  void _showScanErrorSheet(String title, String message,
+      {bool isWarning = false}) {
     final color = isWarning ? Colors.orange : Colors.red;
     final icon = isWarning ? Icons.warning_amber_rounded : Icons.error_outline;
 

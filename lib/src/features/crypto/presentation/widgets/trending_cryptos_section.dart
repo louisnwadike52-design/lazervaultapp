@@ -24,13 +24,12 @@ class TrendingCryptosSection extends StatelessWidget {
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
+          ],
         ),
         child: Center(
           child: Column(
@@ -91,7 +90,7 @@ class TrendingCryptosSection extends StatelessWidget {
               itemCount: cryptos.length,
               itemBuilder: (context, index) {
                 final crypto = cryptos[index];
-    return Container(
+                return Container(
                   width: 140.w,
                   margin: EdgeInsets.only(right: 12.w),
                   child: _buildTrendingCard(crypto),
@@ -106,16 +105,17 @@ class TrendingCryptosSection extends StatelessWidget {
 
   Widget _buildTrendingCard(Crypto crypto) {
     final isPositive = crypto.priceChangePercentage24h >= 0;
-    
+
     return GestureDetector(
       onTap: () => onCryptoTap?.call(crypto),
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(16.r),          boxShadow: [
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: [
             BoxShadow(
-              color: isPositive 
+              color: isPositive
                   ? Colors.green.withValues(alpha: 0.1)
                   : Colors.red.withValues(alpha: 0.1),
               blurRadius: 8,
@@ -132,7 +132,8 @@ class TrendingCryptosSection extends StatelessWidget {
                   width: 24.w,
                   height: 24.w,
                   decoration: BoxDecoration(
-                    color: _getCryptoColor(crypto.symbol).withValues(alpha: 0.2),
+                    color:
+                        _getCryptoColor(crypto.symbol).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Center(
@@ -175,7 +176,7 @@ class TrendingCryptosSection extends StatelessWidget {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
               decoration: BoxDecoration(
-                color: isPositive 
+                color: isPositive
                     ? Colors.green.withValues(alpha: 0.2)
                     : Colors.red.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8.r),
@@ -207,7 +208,7 @@ class TrendingCryptosSection extends StatelessWidget {
       'MATIC': Colors.indigo,
       'LINK': Colors.blue,
     };
-    
+
     return colors[symbol.toUpperCase()] ?? Colors.grey;
   }
-} 
+}

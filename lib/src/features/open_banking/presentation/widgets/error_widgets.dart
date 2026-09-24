@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import '../../cubit/open_banking_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
-
 /// Widget that displays banking errors with appropriate UI and actions
 class BankingErrorWidget extends StatelessWidget {
   final OpenBankingError error;
@@ -190,7 +189,8 @@ class _InsufficientFundsContent extends StatelessWidget {
       final available = error.details!['available_balance'] as int?;
       final currency = error.details!['currency'] as String? ?? 'NGN';
       if (available != null) {
-        balanceInfo = 'Available: $currency${(available / 100).toStringAsFixed(2)}';
+        balanceInfo =
+            'Available: $currency${(available / 100).toStringAsFixed(2)}';
       }
     }
 
@@ -229,7 +229,8 @@ class _LimitExceededContent extends StatelessWidget {
       final limit = error.details!['limit'] as int?;
       final currency = error.details!['currency'] as String? ?? 'NGN';
       if (limit != null && limitType != null) {
-        limitInfo = '${limitType.toUpperCase()} limit: $currency${(limit / 100).toStringAsFixed(2)}';
+        limitInfo =
+            '${limitType.toUpperCase()} limit: $currency${(limit / 100).toStringAsFixed(2)}';
       }
     }
 

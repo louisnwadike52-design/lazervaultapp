@@ -86,8 +86,8 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
                 'periodEnd': pr?.payPeriodEnd,
                 'totalNet': pr?.totalNet ?? 0.0,
                 'currency': acct?.currency ?? 'NGN',
-                'employeeCount':
-                    pr?.employeeCount ?? (state.successfulPayments + state.failedPayments),
+                'employeeCount': pr?.employeeCount ??
+                    (state.successfulPayments + state.failedPayments),
                 'successfulPayments': state.successfulPayments,
                 'failedPayments': state.failedPayments,
                 'reference': widget.payRunId,
@@ -153,7 +153,8 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
     );
   }
 
-  Widget _buildPayRunContent(PayRunEntity payRun, List<PaySlipEntity> paySlips) {
+  Widget _buildPayRunContent(
+      PayRunEntity payRun, List<PaySlipEntity> paySlips) {
     return Column(
       children: [
         Expanded(
@@ -204,7 +205,10 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [InvoiceThemeColors.primaryPurple, InvoiceThemeColors.primaryPurpleLight],
+          colors: [
+            InvoiceThemeColors.primaryPurple,
+            InvoiceThemeColors.primaryPurpleLight
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -353,11 +357,13 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
           SizedBox(height: 14.h),
           _buildBreakdownRow('Total Gross', payRun.formattedTotalGross,
               InvoiceThemeColors.primaryPurpleLight),
-          _buildBreakdownRow('Total Deductions',
-              '-${payRun.formattedTotalDeductions}', InvoiceThemeColors.errorRed),
-          Divider(color: InvoiceThemeColors.borderColor, height: 20.h),
           _buildBreakdownRow(
-              'Total Net Pay', payRun.formattedTotalNet, InvoiceThemeColors.successGreen,
+              'Total Deductions',
+              '-${payRun.formattedTotalDeductions}',
+              InvoiceThemeColors.errorRed),
+          Divider(color: InvoiceThemeColors.borderColor, height: 20.h),
+          _buildBreakdownRow('Total Net Pay', payRun.formattedTotalNet,
+              InvoiceThemeColors.successGreen,
               isBold: true),
           SizedBox(height: 8.h),
           _buildBreakdownRow(
@@ -552,18 +558,15 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
               'Calculate Payroll',
               Icons.calculate_outlined,
               InvoiceThemeColors.primaryPurple,
-              () => context
-                  .read<PayrollCubit>()
-                  .calculatePayRun(widget.payRunId),
+              () =>
+                  context.read<PayrollCubit>().calculatePayRun(widget.payRunId),
             ),
           if (payRun.canApprove)
             _buildActionButton(
               'Approve Pay Run',
               Icons.check_circle_outline,
               InvoiceThemeColors.successGreen,
-              () => context
-                  .read<PayrollCubit>()
-                  .approvePayRun(widget.payRunId),
+              () => context.read<PayrollCubit>().approvePayRun(widget.payRunId),
             ),
           if (payRun.canProcess)
             _buildActionButton(
@@ -614,8 +617,7 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
     if (accountId == null || accountId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-              'Select a business account from your dashboard first.'),
+          content: Text('Select a business account from your dashboard first.'),
           backgroundColor: InvoiceThemeColors.errorRed,
         ),
       );
@@ -692,8 +694,7 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
             if (attemptsMatch != null) ...[
               SizedBox(height: 12.h),
               Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                 decoration: BoxDecoration(
                   color:
                       InvoiceThemeColors.warningOrange.withValues(alpha: 0.15),
@@ -719,11 +720,9 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
             if (isLocked) ...[
               SizedBox(height: 12.h),
               Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                 decoration: BoxDecoration(
-                  color:
-                      InvoiceThemeColors.errorRed.withValues(alpha: 0.15),
+                  color: InvoiceThemeColors.errorRed.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Row(
@@ -769,7 +768,8 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.error_outline, size: 48.sp, color: InvoiceThemeColors.errorRed),
+          Icon(Icons.error_outline,
+              size: 48.sp, color: InvoiceThemeColors.errorRed),
           SizedBox(height: 16.h),
           Text(
             message,

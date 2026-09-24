@@ -17,7 +17,6 @@ import '../widgets/airtime_history_actions_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'airtime_history_screen_widgets.dart';
 
-
 class AirtimeHistoryScreen extends StatefulWidget {
   const AirtimeHistoryScreen({super.key});
 
@@ -93,16 +92,14 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                       final inScope = state.transactions
                           .where((t) => AirtimeScope.match(t, _scope))
                           .toList();
-                      final filtered =
-                          inScope.where(_filters.match).toList();
+                      final filtered = inScope.where(_filters.match).toList();
                       if (filtered.isEmpty) {
                         final hasFilters = _filters.isActive;
                         return RefreshIndicator(
                           onRefresh: () async {
-                            final userId = context
-                                    .read<AuthenticationCubit>()
-                                    .userId ??
-                                '';
+                            final userId =
+                                context.read<AuthenticationCubit>().userId ??
+                                    '';
                             context
                                 .read<AirtimeCubit>()
                                 .loadTransactionHistory(userId);
@@ -144,13 +141,12 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                 color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
               child: Icon(
                 Icons.arrow_back_ios_new,
@@ -159,9 +155,9 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
               ),
             ),
           ),
-          
+
           SizedBox(width: 16.w),
-          
+
           // Title and subtitle
           Expanded(
             child: Column(
@@ -188,7 +184,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
               ],
             ),
           ),
-          
+
           // Filter button
           GestureDetector(
             onTap: () => _showFilterBottomSheet(),
@@ -224,8 +220,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                         decoration: BoxDecoration(
                           color: _scopeAccent,
                           shape: BoxShape.circle,
-                          border:
-                              Border.all(color: Colors.white, width: 1.5),
+                          border: Border.all(color: Colors.white, width: 1.5),
                         ),
                       ),
                     ),
@@ -397,12 +392,10 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
         SizedBox(height: 24.h),
         Center(
           child: OutlinedButton(
-            onPressed: () =>
-                setState(() => _filters = const _AirtimeFilters()),
+            onPressed: () => setState(() => _filters = const _AirtimeFilters()),
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: _scopeAccent),
-              padding:
-                  EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
               ),
@@ -602,7 +595,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
               ),
             ),
             SizedBox(height: 20.h),
-            
+
             // Transaction info
             Row(
               children: [
@@ -660,9 +653,9 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                 ),
               ],
             ),
-            
+
             SizedBox(height: 24.h),
-            
+
             // Action buttons
             Column(
               children: [
@@ -692,18 +685,21 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                     ),
                   ),
                 ),
-                
+
                 SizedBox(height: 12.h),
-                
+
                 // View Details
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     onPressed: () {
                       Get.back(); // Close bottom sheet
-                      Get.toNamed(AppRoutes.airtimeDetails, arguments: {'transaction': transaction});
+                      Get.toNamed(AppRoutes.airtimeDetails,
+                          arguments: {'transaction': transaction});
                     },
-                    icon: Icon(Icons.receipt_long, color: Colors.white.withValues(alpha: 0.8), size: 20.sp),
+                    icon: Icon(Icons.receipt_long,
+                        color: Colors.white.withValues(alpha: 0.8),
+                        size: 20.sp),
                     label: Text(
                       'View Details',
                       style: TextStyle(
@@ -713,7 +709,8 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                       ),
                     ),
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                      side: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.3)),
                       padding: EdgeInsets.symmetric(vertical: 16.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16.r),
@@ -723,12 +720,11 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                 ),
               ],
             ),
-            
+
             SizedBox(height: 20.h),
           ],
         ),
       ),
     );
   }
-
 }

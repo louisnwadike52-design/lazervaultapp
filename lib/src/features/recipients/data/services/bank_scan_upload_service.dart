@@ -69,8 +69,8 @@ class BankScanUploadService {
     required String filename,
     required String contentType,
   }) async {
-    final compressed =
-        await ImageCompressor.compressForUpload(bytes, contentType: contentType);
+    final compressed = await ImageCompressor.compressForUpload(bytes,
+        contentType: contentType);
     bytes = compressed.bytes;
     contentType = compressed.contentType;
     filename = ImageCompressor.alignedFilename(filename, contentType);
@@ -86,8 +86,7 @@ class BankScanUploadService {
     // path here is just `/bank-scan/upload-url`. Appending `/v1/...` produced a
     // doubled `/api/v1/v1/bank-scan/upload-url` → HTTP 404 "Could not start scan
     // upload". The core-gateway route is POST /api/v1/bank-scan/upload-url.
-    final uploadUrlEndpoint =
-        '${_endpoints.httpCore}/bank-scan/upload-url';
+    final uploadUrlEndpoint = '${_endpoints.httpCore}/bank-scan/upload-url';
 
     // Step 1: ask core-gateway for a scoped upload URL.
     final ticketResp = await _httpClient

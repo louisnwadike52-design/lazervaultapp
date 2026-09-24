@@ -58,8 +58,10 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
     final args = _args();
     final p = args['provider'];
     if (p is CableTVProviderEntity) return p;
-    final code = (args['providerCode'] ?? args['provider_code'])?.toString() ?? '';
-    final name = (args['providerName'] ?? args['provider_name'])?.toString() ?? '';
+    final code =
+        (args['providerCode'] ?? args['provider_code'])?.toString() ?? '';
+    final name =
+        (args['providerName'] ?? args['provider_name'])?.toString() ?? '';
     if (code.isEmpty) return null;
     return CableTVProviderEntity(
       id: code,
@@ -147,8 +149,7 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.tv_off,
-                    size: 48.sp, color: const Color(0xFF4B5563)),
+                Icon(Icons.tv_off, size: 48.sp, color: const Color(0xFF4B5563)),
                 SizedBox(height: 16.h),
                 Text('Provider missing',
                     style: GoogleFonts.inter(
@@ -244,7 +245,8 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
                         width: 48.w,
                         height: 48.w,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
+                          color:
+                              const Color(0xFF4E03D0).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                         child: Icon(
@@ -314,7 +316,8 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
                               ? 'e.g. 08012345678'
                               : 'Enter 10-digit smart card number',
                           hintStyle: GoogleFonts.inter(
-                            color: const Color(0xFF9CA3AF).withValues(alpha: 0.6),
+                            color:
+                                const Color(0xFF9CA3AF).withValues(alpha: 0.6),
                             fontSize: 16.sp,
                           ),
                           counterText: '',
@@ -538,7 +541,8 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF4E03D0),
-          disabledBackgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.4),
+          disabledBackgroundColor:
+              const Color(0xFF4E03D0).withValues(alpha: 0.4),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),
           ),

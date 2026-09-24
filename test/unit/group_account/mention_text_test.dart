@@ -122,8 +122,8 @@ void main() {
     });
 
     test('keeps several', () {
-      final got = MentionText.survivingMentions(
-          '@Ada Obi and @Chris N please', chosen);
+      final got =
+          MentionText.survivingMentions('@Ada Obi and @Chris N please', chosen);
       expect(got, containsAll(['u1', 'u2']));
     });
 
@@ -160,8 +160,8 @@ void main() {
     const names = {'u1': 'Ada Obi', 'u2': 'Ada'};
 
     test('highlights the mentioned name and leaves the rest plain', () {
-      final r = MentionHighlighting.spans(
-          'hey @Ada Obi please pay', ['u1'], names);
+      final r =
+          MentionHighlighting.spans('hey @Ada Obi please pay', ['u1'], names);
       expect(r.map((s) => s.text).join(), 'hey @Ada Obi please pay',
           reason: 'spans must reassemble into the original message');
       expect(r.where((s) => s.isMention).map((s) => s.text), ['@Ada Obi']);
@@ -179,18 +179,17 @@ void main() {
     // "Ada" is a prefix of "Ada Obi": matching the short one first would leave
     // " Obi" dangling outside the highlight.
     test('the longer name wins when one is a prefix of another', () {
-      final r =
-          MentionHighlighting.spans('@Ada Obi', ['u1', 'u2'], names);
+      final r = MentionHighlighting.spans('@Ada Obi', ['u1', 'u2'], names);
       expect(r.single.text, '@Ada Obi');
     });
 
     test("your own mention is marked differently from someone else's", () {
-      final mine = MentionHighlighting.spans(
-          '@Ada Obi', ['u1'], names, selfUserId: 'u1');
+      final mine = MentionHighlighting.spans('@Ada Obi', ['u1'], names,
+          selfUserId: 'u1');
       expect(mine.single.isSelf, isTrue);
 
-      final theirs = MentionHighlighting.spans(
-          '@Ada Obi', ['u1'], names, selfUserId: 'someone');
+      final theirs = MentionHighlighting.spans('@Ada Obi', ['u1'], names,
+          selfUserId: 'someone');
       expect(theirs.single.isSelf, isFalse);
     });
 

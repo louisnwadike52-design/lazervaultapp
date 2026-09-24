@@ -38,12 +38,13 @@ class InternetBillRemoteDataSourceImpl implements InternetBillRemoteDataSource {
   InternetBillRemoteDataSourceImpl({required this.grpcClient});
 
   @override
-  Future<List<InternetProviderModel>> getProviders({bool activeOnly = true}) async {
-    final request = pb.GetInternetProvidersRequest()
-      ..activeOnly = activeOnly;
+  Future<List<InternetProviderModel>> getProviders(
+      {bool activeOnly = true}) async {
+    final request = pb.GetInternetProvidersRequest()..activeOnly = activeOnly;
 
     final options = await grpcClient.callOptions;
-    final response = await grpcClient.utilityPaymentsClient.getInternetProviders(
+    final response =
+        await grpcClient.utilityPaymentsClient.getInternetProviders(
       request,
       options: options,
     );
@@ -63,7 +64,8 @@ class InternetBillRemoteDataSourceImpl implements InternetBillRemoteDataSource {
       ..accountNumber = accountNumber;
 
     final options = await grpcClient.callOptions;
-    final response = await grpcClient.utilityPaymentsClient.validateInternetAccount(
+    final response =
+        await grpcClient.utilityPaymentsClient.validateInternetAccount(
       request,
       options: options,
     );
@@ -72,9 +74,9 @@ class InternetBillRemoteDataSourceImpl implements InternetBillRemoteDataSource {
   }
 
   @override
-  Future<List<InternetPackageModel>> getPackages({required String providerId}) async {
-    final request = pb.GetInternetPackagesRequest()
-      ..providerId = providerId;
+  Future<List<InternetPackageModel>> getPackages(
+      {required String providerId}) async {
+    final request = pb.GetInternetPackagesRequest()..providerId = providerId;
 
     final options = await grpcClient.callOptions;
     final response = await grpcClient.utilityPaymentsClient.getInternetPackages(

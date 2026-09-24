@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 
 import '../../domain/entities/lock_fund_entity.dart';
 import '../cubit/lock_funds_cubit.dart';
@@ -35,7 +36,8 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
   void initState() {
     super.initState();
     if (widget.existingAutoSave != null) {
-      _amountController.text = widget.existingAutoSave!.amount.toStringAsFixed(0);
+      _amountController.text =
+          widget.existingAutoSave!.amount.toStringAsFixed(0);
       _frequency = widget.existingAutoSave!.frequency;
     }
   }
@@ -46,7 +48,8 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
     super.dispose();
   }
 
-  double get _amount => double.tryParse(_amountController.text.replaceAll(',', '')) ?? 0;
+  double get _amount =>
+      double.tryParse(_amountController.text.replaceAll(',', '')) ?? 0;
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +59,8 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
           setState(() => _isSubmitting = false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(_isEditing ? 'Auto-save updated' : 'Auto-save created'),
+              content:
+                  Text(_isEditing ? 'Auto-save updated' : 'Auto-save created'),
               backgroundColor: const Color(0xFF10B981),
             ),
           );
@@ -64,7 +68,9 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
         } else if (state is LockFundsError) {
           setState(() => _isSubmitting = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: const Color(0xFFEF4444)),
+            SnackBar(
+                content: Text(state.message),
+                backgroundColor: const Color(0xFFEF4444)),
           );
         }
       },
@@ -79,13 +85,17 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
           ),
           title: Text(
             _isEditing ? 'Edit Auto-Save' : 'Set Up Auto-Save',
-            style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w600),
+            style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600),
           ),
           centerTitle: true,
           actions: [
             if (_isEditing)
               IconButton(
-                icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
+                icon:
+                    const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
                 onPressed: _onDelete,
               ),
           ],
@@ -106,18 +116,24 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
                   ),
                   child: Row(
                     children: [
-                      Text(widget.lockFund.lockType.icon, style: TextStyle(fontSize: 28.sp)),
+                      Text(widget.lockFund.lockType.icon,
+                          style: TextStyle(fontSize: 28.sp)),
                       SizedBox(width: 12.w),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             widget.lockFund.displayName,
-                            style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600),
+                            style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600),
                           ),
                           Text(
                             widget.lockFund.formattedAmount,
-                            style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+                            style: GoogleFonts.inter(
+                                color: const Color(0xFF9CA3AF),
+                                fontSize: 14.sp),
                           ),
                         ],
                       ),
@@ -134,20 +150,28 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
                     decoration: BoxDecoration(
                       color: const Color(0xFF1F1F1F),
                       borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                      border: Border.all(
+                          color:
+                              const Color(0xFF10B981).withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         _buildStat(
                           'Total Saved',
-                          currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+                          currency_formatter.CurrencySymbols
+                              .formatAmountWithCurrency(
                             widget.existingAutoSave!.totalSaved,
                             widget.lockFund.currency,
                           ),
                         ),
-                        _buildStat('Deposits', '${widget.existingAutoSave!.runCount}'),
-                        _buildStat('Status', widget.existingAutoSave!.isActive ? 'Active' : 'Paused'),
+                        _buildStat(
+                            'Deposits', '${widget.existingAutoSave!.runCount}'),
+                        _buildStat(
+                            'Status',
+                            widget.existingAutoSave!.isActive
+                                ? 'Active'
+                                : 'Paused'),
                       ],
                     ),
                   ),
@@ -157,23 +181,38 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
                 // Amount input
                 Text(
                   'Auto-Save Amount',
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600),
                 ),
                 SizedBox(height: 12.h),
                 TextField(
                   controller: _amountController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d,.]'))],
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w600),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[\d,.]'))
+                  ],
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w600),
                   decoration: InputDecoration(
-                    prefixText: '${currency_formatter.CurrencySymbols.getSymbol(widget.lockFund.currency)} ',
-                    prefixStyle: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 20.sp),
+                    prefixText:
+                        '${currency_formatter.CurrencySymbols.getSymbol(widget.lockFund.currency)} ',
+                    prefixStyle: GoogleFonts.inter(
+                        color: const Color(0xFF9CA3AF), fontSize: 20.sp),
                     hintText: '0.00',
-                    hintStyle: GoogleFonts.inter(color: const Color(0xFF4B5563), fontSize: 20.sp),
+                    hintStyle: GoogleFonts.inter(
+                        color: const Color(0xFF4B5563), fontSize: 20.sp),
                     filled: true,
                     fillColor: const Color(0xFF1F1F1F),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide.none),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: BorderSide.none),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
                   ),
                   onChanged: (_) => setState(() {}),
                 ),
@@ -182,7 +221,10 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
                 // Frequency selector
                 Text(
                   'Frequency',
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600),
                 ),
                 SizedBox(height: 12.h),
                 Row(
@@ -195,19 +237,27 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
                           margin: EdgeInsets.symmetric(horizontal: 4.w),
                           padding: EdgeInsets.symmetric(vertical: 14.h),
                           decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF1F1F1F),
+                            color: isSelected
+                                ? const Color(0xFF6366F1)
+                                : const Color(0xFF1F1F1F),
                             borderRadius: BorderRadius.circular(12.r),
                             border: Border.all(
-                              color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF2D2D2D),
+                              color: isSelected
+                                  ? const Color(0xFF6366F1)
+                                  : const Color(0xFF2D2D2D),
                             ),
                           ),
                           child: Center(
                             child: Text(
                               freq[0].toUpperCase() + freq.substring(1),
                               style: GoogleFonts.inter(
-                                color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
+                                color: isSelected
+                                    ? Colors.white
+                                    : const Color(0xFF9CA3AF),
                                 fontSize: 14.sp,
-                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.w400,
                               ),
                             ),
                           ),
@@ -232,12 +282,16 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
                       children: [
                         Text(
                           'Summary',
-                          style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600),
+                          style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600),
                         ),
                         SizedBox(height: 8.h),
                         Text(
                           '${currency_formatter.CurrencySymbols.formatAmountWithCurrency(_amount, widget.lockFund.currency)} will be saved $_frequency into "${widget.lockFund.displayName}"',
-                          style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+                          style: GoogleFonts.inter(
+                              color: const Color(0xFF9CA3AF), fontSize: 13.sp),
                         ),
                       ],
                     ),
@@ -254,11 +308,15 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
                       onPressed: _onPause,
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Color(0xFFFB923C)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r)),
                       ),
                       child: Text(
                         'Pause Auto-Save',
-                        style: GoogleFonts.inter(color: const Color(0xFFFB923C), fontSize: 16.sp, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inter(
+                            color: const Color(0xFFFB923C),
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -274,13 +332,17 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF6366F1),
                       disabledBackgroundColor: const Color(0xFF2D2D2D),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r)),
                     ),
                     child: _isSubmitting
                         ? LazerVaultLoader.small()
                         : Text(
                             _isEditing ? 'Update Auto-Save' : 'Start Auto-Save',
-                            style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600),
+                            style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600),
                           ),
                   ),
                 ),
@@ -295,9 +357,15 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
   Widget _buildStat(String label, String value) {
     return Column(
       children: [
-        Text(label, style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+        Text(label,
+            style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
         SizedBox(height: 4.h),
-        Text(value, style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600)),
+        Text(value,
+            style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600)),
       ],
     );
   }
@@ -324,9 +392,9 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
 
   void _onPause() {
     context.read<LockFundsCubit>().updateAutoSave(
-      autoSaveId: widget.existingAutoSave!.id,
-      status: 'paused',
-    );
+          autoSaveId: widget.existingAutoSave!.id,
+          status: 'paused',
+        );
   }
 
   void _onDelete() {
@@ -334,7 +402,8 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        title: Text('Stop Auto-Save?', style: GoogleFonts.inter(color: Colors.white)),
+        title: Text('Stop Auto-Save?',
+            style: GoogleFonts.inter(color: Colors.white)),
         content: Text(
           'This will permanently stop the auto-save for this Piggyvault.',
           style: GoogleFonts.inter(color: const Color(0xFF9CA3AF)),
@@ -342,15 +411,19 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('Cancel', style: GoogleFonts.inter(color: const Color(0xFF9CA3AF))),
+            child: Text('Cancel',
+                style: GoogleFonts.inter(color: const Color(0xFF9CA3AF))),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
-              context.read<LockFundsCubit>().deleteAutoSave(autoSaveId: widget.existingAutoSave!.id);
+              context
+                  .read<LockFundsCubit>()
+                  .deleteAutoSave(autoSaveId: widget.existingAutoSave!.id);
               Navigator.of(context).pop(true);
             },
-            child: Text('Stop', style: GoogleFonts.inter(color: const Color(0xFFEF4444))),
+            child: Text('Stop',
+                style: GoogleFonts.inter(color: const Color(0xFFEF4444))),
           ),
         ],
       ),

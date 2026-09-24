@@ -38,43 +38,62 @@ class TaxObligationEntity extends Equatable {
 
   String get taxTypeDisplay {
     switch (taxType) {
-      case TaxType.vat: return 'VAT';
-      case TaxType.paye: return 'PAYE';
-      case TaxType.wht: return 'WHT';
-      case TaxType.cit: return 'CIT';
+      case TaxType.vat:
+        return 'VAT';
+      case TaxType.paye:
+        return 'PAYE';
+      case TaxType.wht:
+        return 'WHT';
+      case TaxType.cit:
+        return 'CIT';
     }
   }
 
   String get statusDisplay {
     switch (status) {
-      case TaxObligationStatus.pending: return 'Pending';
-      case TaxObligationStatus.filed: return 'Filed';
-      case TaxObligationStatus.paid: return 'Paid';
-      case TaxObligationStatus.overdue: return 'Overdue';
+      case TaxObligationStatus.pending:
+        return 'Pending';
+      case TaxObligationStatus.filed:
+        return 'Filed';
+      case TaxObligationStatus.paid:
+        return 'Paid';
+      case TaxObligationStatus.overdue:
+        return 'Overdue';
     }
   }
 
   Color get statusColor {
     switch (status) {
-      case TaxObligationStatus.pending: return const Color(0xFFFB923C);
-      case TaxObligationStatus.filed: return const Color(0xFF3B82F6);
-      case TaxObligationStatus.paid: return const Color(0xFF10B981);
-      case TaxObligationStatus.overdue: return const Color(0xFFEF4444);
+      case TaxObligationStatus.pending:
+        return const Color(0xFFFB923C);
+      case TaxObligationStatus.filed:
+        return const Color(0xFF3B82F6);
+      case TaxObligationStatus.paid:
+        return const Color(0xFF10B981);
+      case TaxObligationStatus.overdue:
+        return const Color(0xFFEF4444);
     }
   }
 
   Color get taxTypeColor {
     switch (taxType) {
-      case TaxType.vat: return const Color(0xFF3B82F6);
-      case TaxType.paye: return const Color(0xFF10B981);
-      case TaxType.wht: return const Color(0xFFFB923C);
-      case TaxType.cit: return const Color.fromARGB(255, 78, 3, 208);
+      case TaxType.vat:
+        return const Color(0xFF3B82F6);
+      case TaxType.paye:
+        return const Color(0xFF10B981);
+      case TaxType.wht:
+        return const Color(0xFFFB923C);
+      case TaxType.cit:
+        return const Color.fromARGB(255, 78, 3, 208);
     }
   }
 
   String get formattedAmount => '\u20A6${amount.toStringAsFixed(2)}';
 
-  bool get isOverdue => status == TaxObligationStatus.overdue || (status == TaxObligationStatus.pending && dueDate.isBefore(DateTime.now()));
+  bool get isOverdue =>
+      status == TaxObligationStatus.overdue ||
+      (status == TaxObligationStatus.pending &&
+          dueDate.isBefore(DateTime.now()));
 
   int get daysUntilDue => dueDate.difference(DateTime.now()).inDays;
 

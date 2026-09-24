@@ -35,8 +35,7 @@ class WaterBeneficiary extends Equatable {
 
   factory WaterBeneficiary.fromProto(pb.WaterBeneficiary proto) {
     String? tsToIso(bool has, dynamic ts) => has
-        ? DateTime.fromMillisecondsSinceEpoch(
-                ts.seconds.toInt() * 1000,
+        ? DateTime.fromMillisecondsSinceEpoch(ts.seconds.toInt() * 1000,
                 isUtc: true)
             .toIso8601String()
         : null;
@@ -57,6 +56,5 @@ class WaterBeneficiary extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [id, accountNumber, providerCode, topupCount];
+  List<Object?> get props => [id, accountNumber, providerCode, topupCount];
 }

@@ -49,8 +49,8 @@ class _CampaignHeroImageState extends State<_CampaignHeroImage> {
         fadeInDuration: const Duration(milliseconds: 180),
         placeholder: (context, _) => Container(
           decoration: const BoxDecoration(
-            gradient: LinearGradient(
-                colors: [Color(0xFF1A1A3E), Color(0xFF0A0E27)]),
+            gradient:
+                LinearGradient(colors: [Color(0xFF1A1A3E), Color(0xFF0A0E27)]),
           ),
         ),
         errorWidget: (context, error, stackTrace) {

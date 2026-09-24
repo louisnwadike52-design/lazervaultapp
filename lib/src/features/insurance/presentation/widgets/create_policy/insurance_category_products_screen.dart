@@ -13,10 +13,12 @@ class InsuranceCategoryProductsScreen extends StatefulWidget {
   const InsuranceCategoryProductsScreen({super.key});
 
   @override
-  State<InsuranceCategoryProductsScreen> createState() => _InsuranceCategoryProductsScreenState();
+  State<InsuranceCategoryProductsScreen> createState() =>
+      _InsuranceCategoryProductsScreenState();
 }
 
-class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProductsScreen> {
+class _InsuranceCategoryProductsScreenState
+    extends State<InsuranceCategoryProductsScreen> {
   // Slice 4: scroll-to-bottom pagination. The controller listens for the
   // user reaching the bottom of the product list and triggers
   // loadMoreProducts on the cubit. Mirror's the canonical pattern at
@@ -102,15 +104,21 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 64.w, height: 64.w,
+              width: 64.w,
+              height: 64.w,
               decoration: BoxDecoration(
-                color: const Color(0xFFEF4444).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(32.r)),
-              child: Icon(Icons.cloud_off_outlined, color: const Color(0xFFEF4444), size: 32.sp),
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(32.r)),
+              child: Icon(Icons.cloud_off_outlined,
+                  color: const Color(0xFFEF4444), size: 32.sp),
             ),
             SizedBox(height: 16.h),
-            Text(message, textAlign: TextAlign.center,
-              style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF), height: 1.5)),
+            Text(message,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    color: const Color(0xFF9CA3AF),
+                    height: 1.5)),
             SizedBox(height: 24.h),
             GestureDetector(
               onTap: () {
@@ -119,9 +127,11 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
                 // exact category UUID the user originally picked.
                 if (cubit.categories.isNotEmpty) {
                   if (cubit.selectedCategoryInfo != null) {
-                    cubit.loadProductsPaginated(info: cubit.selectedCategoryInfo);
+                    cubit.loadProductsPaginated(
+                        info: cubit.selectedCategoryInfo);
                   } else {
-                    cubit.loadProductsPaginated(category: cubit.selectedCategory);
+                    cubit.loadProductsPaginated(
+                        category: cubit.selectedCategory);
                   }
                 } else {
                   cubit.loadCategories();
@@ -139,7 +149,10 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
                     Icon(Icons.refresh, color: Colors.white, size: 16.sp),
                     SizedBox(width: 6.w),
                     Text('Try Again',
-                      style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.white)),
+                        style: GoogleFonts.inter(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white)),
                   ],
                 ),
               ),
@@ -150,7 +163,8 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
     );
   }
 
-  Widget _buildCategoriesOnly(BuildContext context, List<InsuranceCategoryInfo> categories, CreatePolicyCubit cubit) {
+  Widget _buildCategoriesOnly(BuildContext context,
+      List<InsuranceCategoryInfo> categories, CreatePolicyCubit cubit) {
     return SingleChildScrollView(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Column(
@@ -158,10 +172,14 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
         children: [
           SizedBox(height: 8.h),
           Text('Choose a Category',
-            style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+              style: GoogleFonts.inter(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white)),
           SizedBox(height: 4.h),
           Text('Select an insurance category to browse available plans',
-            style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
+              style: GoogleFonts.inter(
+                  fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
           SizedBox(height: 20.h),
           _buildCategoryGrid(context, categories, cubit, null),
         ],
@@ -169,8 +187,11 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
     );
   }
 
-  Widget _buildWithProducts(BuildContext context, CreatePolicyCubit cubit, List<InsuranceProduct> products,
-      bool isLoading, {InsuranceProductCategory? selectedCategory, bool hasMore = false, bool isLoadingMore = false}) {
+  Widget _buildWithProducts(BuildContext context, CreatePolicyCubit cubit,
+      List<InsuranceProduct> products, bool isLoading,
+      {InsuranceProductCategory? selectedCategory,
+      bool hasMore = false,
+      bool isLoadingMore = false}) {
     final selectedProductId = cubit.selectedProduct?.id;
     // Find the category info for the header
     final categoryInfo = cubit.selectedCategoryInfo;
@@ -192,17 +213,22 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
           children: [
             SizedBox(height: 8.h),
             // Category header with back-to-categories option
-            _buildSelectedCategoryHeader(context, cubit, selectedCategory, categoryInfo),
+            _buildSelectedCategoryHeader(
+                context, cubit, selectedCategory, categoryInfo),
             SizedBox(height: 20.h),
             Text('Available Plans',
-              style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+                style: GoogleFonts.inter(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white)),
             SizedBox(height: 12.h),
             if (isLoading)
               ...List.generate(3, (_) => _buildProductSkeleton())
             else if (products.isEmpty)
               _buildEmptyProducts()
             else
-              ...products.map((p) => _buildProductCard(context, p, cubit, isSelected: p.id == selectedProductId)),
+              ...products.map((p) => _buildProductCard(context, p, cubit,
+                  isSelected: p.id == selectedProductId)),
             // Slice 4: scroll-load footer
             if (isLoadingMore)
               Padding(
@@ -231,8 +257,11 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
     );
   }
 
-  Widget _buildCategoryGrid(BuildContext context, List<InsuranceCategoryInfo> categories,
-      CreatePolicyCubit cubit, InsuranceProductCategory? selected) {
+  Widget _buildCategoryGrid(
+      BuildContext context,
+      List<InsuranceCategoryInfo> categories,
+      CreatePolicyCubit cubit,
+      InsuranceProductCategory? selected) {
     // Hide categories the backend reports as having zero stable products.
     // MyCover.ai's /v2/products/categories returns Agency Banking and
     // Credit Life with productCount=0 because none of their SKUs reach
@@ -243,7 +272,10 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3, crossAxisSpacing: 12.w, mainAxisSpacing: 12.h, childAspectRatio: 1.0),
+          crossAxisCount: 3,
+          crossAxisSpacing: 12.w,
+          mainAxisSpacing: 12.h,
+          childAspectRatio: 1.0),
       itemCount: visible.length,
       itemBuilder: (context, index) {
         final cat = visible[index];
@@ -259,11 +291,15 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
           onTap: () => cubit.loadProductsPaginated(info: cat),
           child: Container(
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF6366F1).withValues(alpha: 0.15) : const Color(0xFF1F1F1F),
+              color: isSelected
+                  ? const Color(0xFF6366F1).withValues(alpha: 0.15)
+                  : const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF2D2D2D),
-                width: isSelected ? 2 : 1),
+                  color: isSelected
+                      ? const Color(0xFF6366F1)
+                      : const Color(0xFF2D2D2D),
+                  width: isSelected ? 2 : 1),
             ),
             child: Stack(
               children: [
@@ -271,13 +307,22 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(cat.category.icon, size: 28.sp,
-                        color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF9CA3AF)),
+                      Icon(cat.category.icon,
+                          size: 28.sp,
+                          color: isSelected
+                              ? const Color(0xFF6366F1)
+                              : const Color(0xFF9CA3AF)),
                       SizedBox(height: 8.h),
-                      Text(cat.name, textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(fontSize: 12.sp,
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                          color: isSelected ? Colors.white : const Color(0xFF9CA3AF))),
+                      Text(cat.name,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                              fontSize: 12.sp,
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              color: isSelected
+                                  ? Colors.white
+                                  : const Color(0xFF9CA3AF))),
                     ],
                   ),
                 ),
@@ -294,7 +339,8 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
                         shape: BoxShape.circle,
                         color: Colors.white.withValues(alpha: 0.08),
                       ),
-                      child: Icon(Icons.info_outline, size: 13.sp, color: const Color(0xFF9CA3AF)),
+                      child: Icon(Icons.info_outline,
+                          size: 13.sp, color: const Color(0xFF9CA3AF)),
                     ),
                   ),
                 ),
@@ -306,26 +352,33 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
     );
   }
 
-  Widget _buildSelectedCategoryHeader(BuildContext context, CreatePolicyCubit cubit,
-      InsuranceProductCategory? selected, InsuranceCategoryInfo? categoryInfo) {
-    final categoryName = categoryInfo?.name ?? selected?.displayName ?? 'Insurance';
+  Widget _buildSelectedCategoryHeader(
+      BuildContext context,
+      CreatePolicyCubit cubit,
+      InsuranceProductCategory? selected,
+      InsuranceCategoryInfo? categoryInfo) {
+    final categoryName =
+        categoryInfo?.name ?? selected?.displayName ?? 'Insurance';
     final productCount = categoryInfo?.productCount ?? 0;
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
         color: const Color(0xFF6366F1).withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.2)),
+        border:
+            Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           Container(
-            width: 40.w, height: 40.w,
+            width: 40.w,
+            height: 40.w,
             decoration: BoxDecoration(
               color: const Color(0xFF6366F1).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10.r),
             ),
-            child: Icon(selected?.icon ?? Icons.shield, size: 22.sp, color: const Color(0xFF6366F1)),
+            child: Icon(selected?.icon ?? Icons.shield,
+                size: 22.sp, color: const Color(0xFF6366F1)),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -333,11 +386,16 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(categoryName,
-                  style: GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+                    style: GoogleFonts.inter(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white)),
                 if (productCount > 0) ...[
                   SizedBox(height: 2.h),
-                  Text('$productCount plan${productCount > 1 ? 's' : ''} available',
-                    style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF9CA3AF))),
+                  Text(
+                      '$productCount plan${productCount > 1 ? 's' : ''} available',
+                      style: GoogleFonts.inter(
+                          fontSize: 12.sp, color: const Color(0xFF9CA3AF))),
                 ],
               ],
             ),
@@ -354,10 +412,14 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.swap_horiz, size: 14.sp, color: const Color(0xFF9CA3AF)),
+                  Icon(Icons.swap_horiz,
+                      size: 14.sp, color: const Color(0xFF9CA3AF)),
                   SizedBox(width: 4.w),
                   Text('Change',
-                    style: GoogleFonts.inter(fontSize: 12.sp, fontWeight: FontWeight.w600, color: const Color(0xFF9CA3AF))),
+                      style: GoogleFonts.inter(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF9CA3AF))),
                 ],
               ),
             ),
@@ -367,7 +429,8 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
     );
   }
 
-  Widget _buildProductCard(BuildContext context, InsuranceProduct product, CreatePolicyCubit cubit,
+  Widget _buildProductCard(
+      BuildContext context, InsuranceProduct product, CreatePolicyCubit cubit,
       {bool isSelected = false}) {
     return GestureDetector(
       onTap: () => cubit.selectProduct(product),
@@ -382,7 +445,8 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
               : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF2D2D2D),
+            color:
+                isSelected ? const Color(0xFF6366F1) : const Color(0xFF2D2D2D),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -393,24 +457,40 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
               // Product icon with selection state
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                width: 40.w, height: 40.w,
+                width: 40.w,
+                height: 40.w,
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFF6366F1).withValues(alpha: 0.2)
-                      : const Color(0xFF6366F1).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8.r)),
-                child: Center(child: Icon(product.category.icon, size: 22.sp,
-                  color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF6366F1).withValues(alpha: 0.7))),
+                    color: isSelected
+                        ? const Color(0xFF6366F1).withValues(alpha: 0.2)
+                        : const Color(0xFF6366F1).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8.r)),
+                child: Center(
+                    child: Icon(product.category.icon,
+                        size: 22.sp,
+                        color: isSelected
+                            ? const Color(0xFF6366F1)
+                            : const Color(0xFF6366F1).withValues(alpha: 0.7))),
               ),
               SizedBox(width: 12.w),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(product.name, style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600,
-                  color: isSelected ? Colors.white : Colors.white),
-                  maxLines: 1, overflow: TextOverflow.ellipsis),
-                SizedBox(height: 2.h),
-                Text(product.providerName, style: GoogleFonts.inter(fontSize: 12.sp,
-                  color: isSelected ? const Color(0xFF6366F1).withValues(alpha: 0.8) : const Color(0xFF9CA3AF))),
-              ])),
+              Expanded(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                    Text(product.name,
+                        style: GoogleFonts.inter(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                            color: isSelected ? Colors.white : Colors.white),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
+                    SizedBox(height: 2.h),
+                    Text(product.providerName,
+                        style: GoogleFonts.inter(
+                            fontSize: 12.sp,
+                            color: isSelected
+                                ? const Color(0xFF6366F1).withValues(alpha: 0.8)
+                                : const Color(0xFF9CA3AF))),
+                  ])),
               // Info button
               GestureDetector(
                 onTap: () => _showProductInfoSheet(context, product),
@@ -421,7 +501,8 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
                     shape: BoxShape.circle,
                     color: Colors.white.withValues(alpha: 0.06),
                   ),
-                  child: Icon(Icons.info_outline, color: const Color(0xFF9CA3AF), size: 18.sp),
+                  child: Icon(Icons.info_outline,
+                      color: const Color(0xFF9CA3AF), size: 18.sp),
                 ),
               ),
               SizedBox(width: 4.w),
@@ -429,40 +510,63 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 200),
                 child: isSelected
-                    ? Icon(Icons.check_circle, color: const Color(0xFF6366F1), size: 22.sp, key: const ValueKey('check'))
-                    : Icon(Icons.chevron_right, color: const Color(0xFF9CA3AF), size: 20.sp, key: const ValueKey('chevron')),
+                    ? Icon(Icons.check_circle,
+                        color: const Color(0xFF6366F1),
+                        size: 22.sp,
+                        key: const ValueKey('check'))
+                    : Icon(Icons.chevron_right,
+                        color: const Color(0xFF9CA3AF),
+                        size: 20.sp,
+                        key: const ValueKey('chevron')),
               ),
             ]),
             SizedBox(height: 12.h),
             if (product.description.isNotEmpty) ...[
-              if (product.description.contains('<') && product.description.contains('>'))
+              if (product.description.contains('<') &&
+                  product.description.contains('>'))
                 ConstrainedBox(
                   constraints: BoxConstraints(maxHeight: 40.h),
                   child: HtmlWidget(
                     product.description,
-                    textStyle: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF9CA3AF)),
-                    customStylesBuilder: (_) => {'color': 'rgba(156,163,175,1)', 'background-color': 'transparent'},
+                    textStyle: GoogleFonts.inter(
+                        fontSize: 12.sp, color: const Color(0xFF9CA3AF)),
+                    customStylesBuilder: (_) => {
+                      'color': 'rgba(156,163,175,1)',
+                      'background-color': 'transparent'
+                    },
                   ),
                 )
               else
-                Text(product.description, style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF9CA3AF)),
-                  maxLines: 2, overflow: TextOverflow.ellipsis),
+                Text(product.description,
+                    style: GoogleFonts.inter(
+                        fontSize: 12.sp, color: const Color(0xFF9CA3AF)),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis),
             ] else
-              Text('Tap the info button for details', style: GoogleFonts.inter(
-                fontSize: 12.sp, color: const Color(0xFF9CA3AF).withValues(alpha: 0.6), fontStyle: FontStyle.italic)),
+              Text('Tap the info button for details',
+                  style: GoogleFonts.inter(
+                      fontSize: 12.sp,
+                      color: const Color(0xFF9CA3AF).withValues(alpha: 0.6),
+                      fontStyle: FontStyle.italic)),
             SizedBox(height: 12.h),
             Row(children: [
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(4.r)),
-                child: Text(product.premiumRange, style: GoogleFonts.inter(fontSize: 12.sp, fontWeight: FontWeight.w600, color: const Color(0xFF10B981))),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4.r)),
+                child: Text(product.premiumRange,
+                    style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF10B981))),
               ),
               const Spacer(),
               if (product.benefits.isNotEmpty)
-                Text('${product.benefits.length} benefit${product.benefits.length > 1 ? 's' : ''}',
-                  style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFF9CA3AF))),
+                Text(
+                    '${product.benefits.length} benefit${product.benefits.length > 1 ? 's' : ''}',
+                    style: GoogleFonts.inter(
+                        fontSize: 11.sp, color: const Color(0xFF9CA3AF))),
             ]),
             // Selected indicator bar
             if (isSelected) ...[
@@ -472,7 +576,10 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
                 height: 3.h,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                    colors: [
+                      Color(0xFF6366F1),
+                      Color.fromARGB(255, 78, 3, 208)
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(2.r),
                 ),
@@ -487,8 +594,11 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
   Widget _buildProductSkeleton() {
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.all(16.w), height: 120.h,
-      decoration: BoxDecoration(color: const Color(0xFF1F1F1F), borderRadius: BorderRadius.circular(12.r)),
+      padding: EdgeInsets.all(16.w),
+      height: 120.h,
+      decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r)),
       child: const Center(child: LazerVaultLoader.tiny()),
     );
   }
@@ -500,10 +610,14 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
         Icon(Icons.search_off, size: 48.sp, color: const Color(0xFF9CA3AF)),
         SizedBox(height: 12.h),
         Text('No products available',
-          style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600, color: const Color(0xFF9CA3AF))),
+            style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF9CA3AF))),
         SizedBox(height: 4.h),
         Text('Try selecting a different category',
-          style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF9CA3AF))),
+            style: GoogleFonts.inter(
+                fontSize: 12.sp, color: const Color(0xFF9CA3AF))),
       ]),
     );
   }
@@ -518,7 +632,8 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (_) => Container(
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.45),
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.45),
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
@@ -529,10 +644,11 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
             // Handle bar
             Container(
               margin: EdgeInsets.only(top: 12.h),
-              width: 40.w, height: 4.h,
+              width: 40.w,
+              height: 4.h,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(2.r)),
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2.r)),
             ),
             Padding(
               padding: EdgeInsets.all(20.w),
@@ -541,20 +657,31 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
                 children: [
                   Row(children: [
                     Container(
-                      width: 48.w, height: 48.w,
+                      width: 48.w,
+                      height: 48.w,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6366F1).withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12.r)),
-                      child: Icon(cat.category.icon, size: 26.sp, color: const Color(0xFF6366F1)),
+                          color:
+                              const Color(0xFF6366F1).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12.r)),
+                      child: Icon(cat.category.icon,
+                          size: 26.sp, color: const Color(0xFF6366F1)),
                     ),
                     SizedBox(width: 14.w),
-                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text(cat.name, style: GoogleFonts.inter(
-                        fontSize: 18.sp, fontWeight: FontWeight.w700, color: Colors.white)),
-                      SizedBox(height: 2.h),
-                      Text('Insurance Category', style: GoogleFonts.inter(
-                        fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
-                    ])),
+                    Expanded(
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                          Text(cat.name,
+                              style: GoogleFonts.inter(
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white)),
+                          SizedBox(height: 2.h),
+                          Text('Insurance Category',
+                              style: GoogleFonts.inter(
+                                  fontSize: 13.sp,
+                                  color: const Color(0xFF9CA3AF))),
+                        ])),
                   ]),
                   SizedBox(height: 20.h),
                   // Description or fallback
@@ -564,21 +691,30 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
                     Text(
                       'Browse ${cat.name.toLowerCase()} insurance products from trusted providers. '
                       'Compare plans, get instant quotes, and purchase coverage directly from the app.',
-                      style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF), height: 1.5),
+                      style: GoogleFonts.inter(
+                          fontSize: 14.sp,
+                          color: const Color(0xFF9CA3AF),
+                          height: 1.5),
                     ),
                   SizedBox(height: 16.h),
                   // Product count badge
                   if (cat.productCount > 0)
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8.r)),
+                          color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8.r)),
                       child: Row(mainAxisSize: MainAxisSize.min, children: [
-                        Icon(Icons.inventory_2_outlined, size: 16.sp, color: const Color(0xFF10B981)),
+                        Icon(Icons.inventory_2_outlined,
+                            size: 16.sp, color: const Color(0xFF10B981)),
                         SizedBox(width: 6.w),
-                        Text('${cat.productCount} product${cat.productCount > 1 ? 's' : ''} available',
-                          style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600, color: const Color(0xFF10B981))),
+                        Text(
+                            '${cat.productCount} product${cat.productCount > 1 ? 's' : ''} available',
+                            style: GoogleFonts.inter(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF10B981))),
                       ]),
                     ),
                 ],
@@ -609,10 +745,11 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
               // Handle bar
               Container(
                 margin: EdgeInsets.only(top: 12.h),
-                width: 40.w, height: 4.h,
+                width: 40.w,
+                height: 4.h,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(2.r)),
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2.r)),
               ),
               Expanded(
                 child: ListView(
@@ -622,41 +759,62 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
                     // Header
                     Row(children: [
                       Container(
-                        width: 52.w, height: 52.w,
+                        width: 52.w,
+                        height: 52.w,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF6366F1).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12.r)),
-                        child: Icon(product.category.icon, size: 28.sp, color: const Color(0xFF6366F1)),
+                            color:
+                                const Color(0xFF6366F1).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12.r)),
+                        child: Icon(product.category.icon,
+                            size: 28.sp, color: const Color(0xFF6366F1)),
                       ),
                       SizedBox(width: 14.w),
-                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(product.name, style: GoogleFonts.inter(
-                          fontSize: 18.sp, fontWeight: FontWeight.w700, color: Colors.white)),
-                        SizedBox(height: 2.h),
-                        Text(product.providerName, style: GoogleFonts.inter(
-                          fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
-                      ])),
+                      Expanded(
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                            Text(product.name,
+                                style: GoogleFonts.inter(
+                                    fontSize: 18.sp,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white)),
+                            SizedBox(height: 2.h),
+                            Text(product.providerName,
+                                style: GoogleFonts.inter(
+                                    fontSize: 13.sp,
+                                    color: const Color(0xFF9CA3AF))),
+                          ])),
                     ]),
                     SizedBox(height: 16.h),
 
                     // Premium range + category badges
                     Row(children: [
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 10.w, vertical: 6.h),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6.r)),
-                        child: Text(product.premiumRange, style: GoogleFonts.inter(
-                          fontSize: 13.sp, fontWeight: FontWeight.w600, color: const Color(0xFF10B981))),
+                            color:
+                                const Color(0xFF10B981).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6.r)),
+                        child: Text(product.premiumRange,
+                            style: GoogleFonts.inter(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF10B981))),
                       ),
                       SizedBox(width: 8.w),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 10.w, vertical: 6.h),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6.r)),
-                        child: Text(product.category.displayName, style: GoogleFonts.inter(
-                          fontSize: 13.sp, fontWeight: FontWeight.w600, color: const Color(0xFF6366F1))),
+                            color:
+                                const Color(0xFF6366F1).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6.r)),
+                        child: Text(product.category.displayName,
+                            style: GoogleFonts.inter(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF6366F1))),
                       ),
                       const Spacer(),
                       if (product.isRenewable)
@@ -670,55 +828,90 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
 
                     // Description
                     if (product.description.isNotEmpty)
-                      _buildSheetSection('About this Plan', child: _buildSheetRichContent(product.description))
+                      _buildSheetSection('About this Plan',
+                          child: _buildSheetRichContent(product.description))
                     else
-                      _buildSheetSection('About this Plan', child: Text(
-                        'Details for this insurance plan will be available after getting a quote. '
-                        'Select the plan and fill in your details to see pricing and coverage information.',
-                        style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF), height: 1.5),
-                      )),
+                      _buildSheetSection('About this Plan',
+                          child: Text(
+                            'Details for this insurance plan will be available after getting a quote. '
+                            'Select the plan and fill in your details to see pricing and coverage information.',
+                            style: GoogleFonts.inter(
+                                fontSize: 14.sp,
+                                color: const Color(0xFF9CA3AF),
+                                height: 1.5),
+                          )),
 
                     // How It Works
                     if (product.howItWorks.isNotEmpty) ...[
                       SizedBox(height: 16.h),
-                      _buildSheetSection('How It Works', child: _buildSheetRichContent(product.howItWorks)),
+                      _buildSheetSection('How It Works',
+                          child: _buildSheetRichContent(product.howItWorks)),
                     ],
 
                     // Benefits
                     if (product.benefits.isNotEmpty) ...[
                       SizedBox(height: 16.h),
-                      _buildSheetSection('Benefits', child: Column(
-                        children: product.benefits.map((b) => Padding(
-                          padding: EdgeInsets.only(bottom: 8.h),
-                          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Icon(Icons.check_circle, size: 16.sp, color: const Color(0xFF10B981)),
-                            SizedBox(width: 8.w),
-                            Expanded(child: Text(b, style: GoogleFonts.inter(
-                              fontSize: 13.sp, color: Colors.white, height: 1.4))),
-                          ]),
-                        )).toList(),
-                      )),
+                      _buildSheetSection('Benefits',
+                          child: Column(
+                            children: product.benefits
+                                .map((b) => Padding(
+                                      padding: EdgeInsets.only(bottom: 8.h),
+                                      child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Icon(Icons.check_circle,
+                                                size: 16.sp,
+                                                color: const Color(0xFF10B981)),
+                                            SizedBox(width: 8.w),
+                                            Expanded(
+                                                child: Text(b,
+                                                    style: GoogleFonts.inter(
+                                                        fontSize: 13.sp,
+                                                        color: Colors.white,
+                                                        height: 1.4))),
+                                          ]),
+                                    ))
+                                .toList(),
+                          )),
                     ],
 
                     // Full Benefits (from MyCover.ai — may be HTML)
                     if (product.fullBenefits.isNotEmpty) ...[
                       SizedBox(height: 16.h),
-                      _buildSheetSection('Full Coverage Details', child: _buildSheetRichContent(product.fullBenefits)),
+                      _buildSheetSection('Full Coverage Details',
+                          child: _buildSheetRichContent(product.fullBenefits)),
                     ],
 
                     // Metadata
                     if (product.metadata.isNotEmpty) ...[
                       SizedBox(height: 16.h),
-                      _buildSheetSection('Additional Info', child: Column(
-                        children: product.metadata.entries.map((e) => Padding(
-                          padding: EdgeInsets.only(bottom: 8.h),
-                          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                            Text(e.key, style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
-                            Flexible(child: Text(e.value, textAlign: TextAlign.end,
-                              style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w500, color: Colors.white))),
-                          ]),
-                        )).toList(),
-                      )),
+                      _buildSheetSection('Additional Info',
+                          child: Column(
+                            children: product.metadata.entries
+                                .map((e) => Padding(
+                                      padding: EdgeInsets.only(bottom: 8.h),
+                                      child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(e.key,
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 13.sp,
+                                                    color: const Color(
+                                                        0xFF9CA3AF))),
+                                            Flexible(
+                                                child: Text(e.value,
+                                                    textAlign: TextAlign.end,
+                                                    style: GoogleFonts.inter(
+                                                        fontSize: 13.sp,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: Colors.white))),
+                                          ]),
+                                    ))
+                                .toList(),
+                          )),
                     ],
 
                     SizedBox(height: 20.h),
@@ -740,8 +933,11 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: GoogleFonts.inter(
-          fontSize: 15.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+        Text(title,
+            style: GoogleFonts.inter(
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w700,
+                color: Colors.white)),
         SizedBox(height: 10.h),
         child,
       ],
@@ -752,24 +948,29 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
     if (content.contains('<') && content.contains('>')) {
       return HtmlWidget(
         content,
-        textStyle: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF), height: 1.5),
-        customStylesBuilder: (_) => {'color': 'rgba(156,163,175,1)', 'background-color': 'transparent'},
+        textStyle: GoogleFonts.inter(
+            fontSize: 14.sp, color: const Color(0xFF9CA3AF), height: 1.5),
+        customStylesBuilder: (_) =>
+            {'color': 'rgba(156,163,175,1)', 'background-color': 'transparent'},
       );
     }
-    return Text(content, style: GoogleFonts.inter(
-      fontSize: 14.sp, color: const Color(0xFF9CA3AF), height: 1.5));
+    return Text(content,
+        style: GoogleFonts.inter(
+            fontSize: 14.sp, color: const Color(0xFF9CA3AF), height: 1.5));
   }
 
   Widget _buildFeatureBadge(IconData icon, String label) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(4.r)),
+          color: Colors.white.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(4.r)),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         Icon(icon, size: 12.sp, color: const Color(0xFF9CA3AF)),
         SizedBox(width: 3.w),
-        Text(label, style: GoogleFonts.inter(fontSize: 10.sp, color: const Color(0xFF9CA3AF))),
+        Text(label,
+            style: GoogleFonts.inter(
+                fontSize: 10.sp, color: const Color(0xFF9CA3AF))),
       ]),
     );
   }

@@ -10,4 +10,4 @@ class ProfileModel extends ProfileEntity {
 
   // Potentially add fromProto or fromJson if the backend returns a combined Profile object
   // factory ProfileModel.fromProto(pb.Profile proto) { ... }
-} 
+}

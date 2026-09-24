@@ -65,7 +65,9 @@ class _RmbReceiptScreenState extends State<RmbReceiptScreen> {
       if (!mounted) return;
       if (initial && _transfer == null) {
         setState(() => _error = e.toString());
-      } else if (!widget.fromHistory && _transfer != null && !_isTerminal(_transfer!.status)) {
+      } else if (!widget.fromHistory &&
+          _transfer != null &&
+          !_isTerminal(_transfer!.status)) {
         // Transient error mid-poll — keep polling (don't strand on a network blip).
         _schedule();
       }

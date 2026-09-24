@@ -30,4 +30,4 @@ abstract class UseCaseWithoutParams<T> {
 
   /// Executes the use case.
   ResultFuture<T> call();
-} 
+}

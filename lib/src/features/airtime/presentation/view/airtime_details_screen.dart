@@ -98,13 +98,12 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
                 color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
               child: Icon(
                 Icons.arrow_back_ios_new,
@@ -139,13 +138,12 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
                 color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
               child: _isSharing
                   ? Padding(
@@ -215,7 +213,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
   Widget _buildStatusCard(AirtimeTransaction transaction) {
     final isSuccess = transaction.status == AirtimeTransactionStatus.completed;
     final isPending = transaction.status == AirtimeTransactionStatus.pending ||
-                     transaction.status == AirtimeTransactionStatus.processing;
+        transaction.status == AirtimeTransactionStatus.processing;
     final isFailed = transaction.status == AirtimeTransactionStatus.failed;
 
     Color statusColor;
@@ -252,7 +250,6 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
             offset: Offset(0, 2),
           ),
         ],
-
       ),
       child: Row(
         children: [
@@ -269,9 +266,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
               size: 24.sp,
             ),
           ),
-
           SizedBox(width: 16.w),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -301,7 +296,8 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
     );
   }
 
-  Widget _buildTransactionSummary(AirtimeTransaction transaction, NetworkProvider networkProvider) {
+  Widget _buildTransactionSummary(
+      AirtimeTransaction transaction, NetworkProvider networkProvider) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -314,7 +310,6 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
             offset: Offset(0, 2),
           ),
         ],
-
       ),
       child: Column(
         children: [
@@ -346,9 +341,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
                   ),
                 ),
               ),
-
               SizedBox(width: 16.w),
-
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -413,7 +406,8 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
     );
   }
 
-  Widget _buildTransactionDetailsCard(AirtimeTransaction transaction, NetworkProvider networkProvider) {
+  Widget _buildTransactionDetailsCard(
+      AirtimeTransaction transaction, NetworkProvider networkProvider) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -426,7 +420,6 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
             offset: Offset(0, 2),
           ),
         ],
-
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -439,31 +432,32 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
               color: Colors.white,
             ),
           ),
-
           SizedBox(height: 16.h),
-
           _buildDetailRow('Transaction ID', transaction.transactionReference),
           _buildDivider(),
           _buildDetailRow('Phone Number', transaction.formattedRecipientNumber),
-
-          if (transaction.recipientName != null && transaction.recipientName!.isNotEmpty) ...[
+          if (transaction.recipientName != null &&
+              transaction.recipientName!.isNotEmpty) ...[
             _buildDivider(),
             _buildDetailRow('Recipient Name', transaction.recipientName!),
           ],
-
           _buildDivider(),
           _buildDetailRow('Network Provider', networkProvider.name),
           _buildDivider(),
-          _buildDetailRow('Date & Time', DateFormat('MMMM dd, yyyy \u2022 hh:mm a').format(transaction.createdAt)),
-
+          _buildDetailRow(
+              'Date & Time',
+              DateFormat('MMMM dd, yyyy \u2022 hh:mm a')
+                  .format(transaction.createdAt)),
           if (transaction.completedAt != null) ...[
             _buildDivider(),
-            _buildDetailRow('Completed At', DateFormat('MMMM dd, yyyy \u2022 hh:mm a').format(transaction.completedAt!)),
+            _buildDetailRow(
+                'Completed At',
+                DateFormat('MMMM dd, yyyy \u2022 hh:mm a')
+                    .format(transaction.completedAt!)),
           ],
-
           _buildDivider(),
           _buildDetailRow('Status', transaction.status.displayName,
-            valueColor: transaction.status.color),
+              valueColor: transaction.status.color),
         ],
       ),
     );
@@ -482,7 +476,6 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
             offset: Offset(0, 2),
           ),
         ],
-
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -495,22 +488,20 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
               color: Colors.white,
             ),
           ),
-
           SizedBox(height: 16.h),
-
-          _buildBreakdownRow('Airtime Amount', '${transaction.currencySymbol}${transaction.amount.toStringAsFixed(0)}'),
-
-
+          _buildBreakdownRow('Airtime Amount',
+              '${transaction.currencySymbol}${transaction.amount.toStringAsFixed(0)}'),
           if (transaction.fee != null) ...[
             SizedBox(height: 8.h),
-            _buildBreakdownRow('Service Fee', '${transaction.currencySymbol}${transaction.fee!.toStringAsFixed(0)}'),
+            _buildBreakdownRow('Service Fee',
+                '${transaction.currencySymbol}${transaction.fee!.toStringAsFixed(0)}'),
           ],
-
           SizedBox(height: 12.h),
           Divider(color: Colors.white.withValues(alpha: 0.1)),
           SizedBox(height: 12.h),
-
-          _buildBreakdownRow('Total Amount', '${transaction.currencySymbol}${transaction.totalAmount.toStringAsFixed(0)}', isTotal: true),
+          _buildBreakdownRow('Total Amount',
+              '${transaction.currencySymbol}${transaction.totalAmount.toStringAsFixed(0)}',
+              isTotal: true),
         ],
       ),
     );
@@ -546,7 +537,8 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
     );
   }
 
-  Widget _buildBreakdownRow(String label, String amount, {bool isTotal = false}) {
+  Widget _buildBreakdownRow(String label, String amount,
+      {bool isTotal = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -563,9 +555,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
           style: TextStyle(
             fontSize: isTotal ? 16.sp : 14.sp,
             fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
-            color: isTotal
-                ? Colors.white
-                : Colors.white.withValues(alpha: 0.8),
+            color: isTotal ? Colors.white : Colors.white.withValues(alpha: 0.8),
           ),
         ),
       ],
@@ -610,7 +600,8 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
-            onPressed: _isDownloading ? null : () => _downloadReceipt(transaction),
+            onPressed:
+                _isDownloading ? null : () => _downloadReceipt(transaction),
             icon: _isDownloading
                 ? LazerVaultLoader.tiny()
                 : Icon(

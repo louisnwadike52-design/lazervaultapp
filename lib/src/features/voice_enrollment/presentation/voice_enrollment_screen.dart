@@ -113,13 +113,15 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
   void _resumeSessionIfPaused() {
     if (!_sessionPaused) return;
     _sessionPaused = false;
-    _voiceSession?.notifyCustomVoiceSetupFinished(succeeded: _enrollmentSucceeded);
+    _voiceSession?.notifyCustomVoiceSetupFinished(
+        succeeded: _enrollmentSucceeded);
   }
 
   /// Handle app lifecycle changes — stop recording if user backgrounds the app
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       final cubit = context.read<VoiceEnrollmentCubit>();
       final currentState = cubit.state;
       if (currentState is VoiceEnrollmentRecording) {
@@ -214,7 +216,8 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
                   height: 120.w,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                    color:
+                        Theme.of(context).primaryColor.withValues(alpha: 0.1),
                     border: Border.all(
                       color: Theme.of(context).primaryColor,
                       width: 3,
@@ -356,7 +359,8 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
                   color: Theme.of(context).primaryColor,
                   boxShadow: [
                     BoxShadow(
-                      color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
+                      color:
+                          Theme.of(context).primaryColor.withValues(alpha: 0.3),
                       blurRadius: 20,
                       spreadRadius: 5,
                     ),
@@ -544,7 +548,8 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
     );
   }
 
-  Widget _buildReplacingStep(BuildContext context, VoiceEnrollmentReplacing state) {
+  Widget _buildReplacingStep(
+      BuildContext context, VoiceEnrollmentReplacing state) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -562,9 +567,7 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
               color: const Color(0xFF3B82F6),
             ),
           ),
-
           SizedBox(height: 32.h),
-
           Text(
             state.message,
             style: TextStyle(
@@ -572,9 +575,7 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
               fontWeight: FontWeight.w600,
             ),
           ),
-
           SizedBox(height: 16.h),
-
           Text(
             'Removing old voice data and re-enrolling...',
             style: TextStyle(
@@ -582,9 +583,7 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
               color: Colors.grey[600],
             ),
           ),
-
           SizedBox(height: 48.h),
-
           LazerVaultLoader.medium(),
         ],
       ),
@@ -603,9 +602,7 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
               size: 80.sp,
               color: Colors.orange,
             ),
-
             SizedBox(height: 32.h),
-
             Text(
               'Microphone Permission Required',
               style: TextStyle(
@@ -614,9 +611,7 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
               ),
               textAlign: TextAlign.center,
             ),
-
             SizedBox(height: 16.h),
-
             Text(
               'Voice enrollment requires access to your microphone. Please grant permission to continue.',
               style: TextStyle(
@@ -625,9 +620,7 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
               ),
               textAlign: TextAlign.center,
             ),
-
             const Spacer(),
-
             SizedBox(
               width: double.infinity,
               height: 56.h,
@@ -697,7 +690,8 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
       enableDrag: false,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (sheetContext) => _buildSuccessBottomSheet(context, sheetContext, state),
+      builder: (sheetContext) =>
+          _buildSuccessBottomSheet(context, sheetContext, state),
     );
   }
 
@@ -710,10 +704,12 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Row(
           children: [
-            const Icon(Icons.warning_rounded, color: Color(0xFFFB923C), size: 24),
+            const Icon(Icons.warning_rounded,
+                color: Color(0xFFFB923C), size: 24),
             SizedBox(width: 8.w),
             Expanded(
               child: Text(
@@ -792,7 +788,8 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
             style: ElevatedButton.styleFrom(
               backgroundColor: InvoiceThemeColors.primaryPurple,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.r)),
             ),
           ),
         ],
@@ -893,7 +890,8 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: InvoiceThemeColors.successGreen.withValues(alpha: 0.4),
+                          color: InvoiceThemeColors.successGreen
+                              .withValues(alpha: 0.4),
                           blurRadius: 24,
                           spreadRadius: 4,
                           offset: const Offset(0, 6),
@@ -1127,7 +1125,8 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
                     borderRadius: BorderRadius.circular(16.r),
                     boxShadow: [
                       BoxShadow(
-                        color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3),
+                        color: InvoiceThemeColors.primaryPurple
+                            .withValues(alpha: 0.3),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -1213,19 +1212,22 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
         icon = Icons.cloud_off_rounded;
         iconColor = const Color(0xFFFB923C);
         title = 'Service Unavailable';
-        hint = 'The voice processing service is temporarily down. Your progress has been saved.';
+        hint =
+            'The voice processing service is temporarily down. Your progress has been saved.';
         canRetry = true;
       case 'POOR_AUDIO':
         icon = Icons.graphic_eq_rounded;
         iconColor = const Color(0xFFEF4444);
         title = 'Audio Quality Issue';
-        hint = 'Tips: move to a quiet room, hold the phone close, and speak at a normal volume.';
+        hint =
+            'Tips: move to a quiet room, hold the phone close, and speak at a normal volume.';
         canRetry = true;
       case 'ALREADY_ENROLLED':
         icon = Icons.person_rounded;
         iconColor = const Color(0xFF3B82F6);
         title = 'Could Not Replace Profile';
-        hint = 'The existing voice profile could not be replaced automatically. Try again or contact support.';
+        hint =
+            'The existing voice profile could not be replaced automatically. Try again or contact support.';
         canRetry = true;
       case 'DELETE_FAILED':
         icon = Icons.warning_amber_rounded;
@@ -1246,7 +1248,8 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Row(
           children: [
             Icon(icon, color: iconColor, size: 24),
@@ -1287,7 +1290,8 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.lightbulb_outline_rounded, color: iconColor, size: 18),
+                    Icon(Icons.lightbulb_outline_rounded,
+                        color: iconColor, size: 18),
                     SizedBox(width: 8.w),
                     Expanded(
                       child: Text(
@@ -1335,13 +1339,16 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
                 size: 18,
               ),
               label: Text(
-                errorState.errorCode == 'POOR_AUDIO' ? 'Re-record' : 'Try Again',
+                errorState.errorCode == 'POOR_AUDIO'
+                    ? 'Re-record'
+                    : 'Try Again',
                 style: GoogleFonts.inter(fontWeight: FontWeight.w600),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: InvoiceThemeColors.primaryPurple,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.r)),
               ),
             ),
         ],

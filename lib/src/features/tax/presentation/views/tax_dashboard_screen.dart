@@ -362,9 +362,9 @@ class _TaxDashboardScreenState extends State<TaxDashboardScreen> {
   // ---------------------------------------------------------------------------
 
   Widget _buildUpcomingDeadlines() {
-    final deadlines = _dashboardData!['upcomingDeadlines']
-            as List<TaxCalendarEventEntity>? ??
-        [];
+    final deadlines =
+        _dashboardData!['upcomingDeadlines'] as List<TaxCalendarEventEntity>? ??
+            [];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -382,9 +382,8 @@ class _TaxDashboardScreenState extends State<TaxDashboardScreen> {
           _buildEmptyDeadlinesCard()
         else
           Column(
-            children: deadlines
-                .map((event) => _buildDeadlineItem(event))
-                .toList(),
+            children:
+                deadlines.map((event) => _buildDeadlineItem(event)).toList(),
           ),
       ],
     );

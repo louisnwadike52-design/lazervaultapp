@@ -44,6 +44,7 @@ class _MyDonationsScreenState extends State<MyDonationsScreen>
   /// parallel back-fill so a fresh My Donations visit never costs
   /// more than one round-trip regardless of donation count.
   final Map<String, ({String title, String status})> _campaignMetaCache = {};
+
   /// IDs whose campaign couldn't be fetched (deleted / 404 /
   /// network). Shown as "Campaign unavailable" so the row stops
   /// spinning forever and the user understands why View Campaign
@@ -120,9 +121,7 @@ class _MyDonationsScreenState extends State<MyDonationsScreen>
       List<CrowdfundDonation> all, int tabIndex) {
     switch (tabIndex) {
       case 1:
-        return all
-            .where((d) => d.status == DonationStatus.completed)
-            .toList();
+        return all.where((d) => d.status == DonationStatus.completed).toList();
       case 2:
         return all
             .where((d) =>
@@ -185,8 +184,7 @@ class _MyDonationsScreenState extends State<MyDonationsScreen>
             curr is CrowdfundError,
         builder: (context, state) {
           if (state is CrowdfundLoading && _lastSeen.isEmpty) {
-            return const Center(
-                child: LazerVaultLoader.small());
+            return const Center(child: LazerVaultLoader.small());
           }
           if (state is UserDonationsLoaded) {
             // Trigger a back-fill the first time we see this set, OR
@@ -211,9 +209,8 @@ class _MyDonationsScreenState extends State<MyDonationsScreen>
 
   Widget _buildLoaded(UserDonationsLoaded state) {
     final donations = state.donations;
-    final completed = donations
-        .where((d) => d.status == DonationStatus.completed)
-        .toList();
+    final completed =
+        donations.where((d) => d.status == DonationStatus.completed).toList();
     final totalDonated =
         completed.fold<double>(0.0, (sum, d) => sum + d.amount);
     // Surface unique funded campaign count (more interesting than
@@ -370,8 +367,8 @@ class _MyDonationsScreenState extends State<MyDonationsScreen>
 
   Widget _buildDonationTile(CrowdfundDonation donation) {
     final donationPalette = _donationStatusPalette(donation.status);
-    final dateStr = DateFormat('MMM dd · HH:mm')
-        .format(donation.donationDate.toLocal());
+    final dateStr =
+        DateFormat('MMM dd · HH:mm').format(donation.donationDate.toLocal());
     final title = _campaignTitleFor(donation.crowdfundId);
     final campaignStatus = _campaignStatusFor(donation.crowdfundId);
     final initial = _initialFor(title);
@@ -443,8 +440,7 @@ class _MyDonationsScreenState extends State<MyDonationsScreen>
                               fontWeight: FontWeight.w600)),
                       Text('  ·  ',
                           style: GoogleFonts.inter(
-                              color: const Color(0xFF6B7280),
-                              fontSize: 11.sp)),
+                              color: const Color(0xFF6B7280), fontSize: 11.sp)),
                       Flexible(
                         child: Text(dateStr,
                             maxLines: 1,
@@ -498,8 +494,7 @@ class _MyDonationsScreenState extends State<MyDonationsScreen>
   String _initialFor(String title) {
     final trimmed = title.trim();
     if (trimmed.isEmpty) return '…';
-    if (trimmed == 'Loading campaign…' ||
-        trimmed == 'Campaign unavailable') {
+    if (trimmed == 'Loading campaign…' || trimmed == 'Campaign unavailable') {
       return '…';
     }
     return String.fromCharCode(trimmed.runes.first).toUpperCase();
@@ -513,15 +508,25 @@ class _MyDonationsScreenState extends State<MyDonationsScreen>
 
   ({Color color, String label}) _donationStatusPalette(DonationStatus s) =>
       switch (s) {
-        DonationStatus.completed =>
-          (color: const Color(0xFF10B981), label: 'Completed'),
-        DonationStatus.pending =>
-          (color: const Color(0xFFF59E0B), label: 'Pending'),
-        DonationStatus.processing =>
-          (color: const Color(0xFFF59E0B), label: 'Processing'),
-        DonationStatus.failed =>
-          (color: const Color(0xFFEF4444), label: 'Failed'),
-        DonationStatus.refunded =>
-          (color: const Color(0xFF6B7280), label: 'Refunded'),
+        DonationStatus.completed => (
+            color: const Color(0xFF10B981),
+            label: 'Completed'
+          ),
+        DonationStatus.pending => (
+            color: const Color(0xFFF59E0B),
+            label: 'Pending'
+          ),
+        DonationStatus.processing => (
+            color: const Color(0xFFF59E0B),
+            label: 'Processing'
+          ),
+        DonationStatus.failed => (
+            color: const Color(0xFFEF4444),
+            label: 'Failed'
+          ),
+        DonationStatus.refunded => (
+            color: const Color(0xFF6B7280),
+            label: 'Refunded'
+          ),
       };
 }

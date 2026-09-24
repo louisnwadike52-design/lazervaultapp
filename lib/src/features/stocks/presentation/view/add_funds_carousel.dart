@@ -93,15 +93,18 @@ class _AddFundsCarouselState extends State<AddFundsCarousel> {
     switch (_currentPage) {
       case 0: // Amount
         if (_amount <= 0) {
-          _showError('Please enter an amount greater than ${CurrencySymbols.getSymbol(widget.currency)}0');
+          _showError(
+              'Please enter an amount greater than ${CurrencySymbols.getSymbol(widget.currency)}0');
           return false;
         }
         if (_amount < 10) {
-          _showError('Minimum deposit amount is ${CurrencySymbols.getSymbol(widget.currency)}10');
+          _showError(
+              'Minimum deposit amount is ${CurrencySymbols.getSymbol(widget.currency)}10');
           return false;
         }
         if (_amount > 100000) {
-          _showError('Maximum deposit amount is ${CurrencySymbols.getSymbol(widget.currency)}100,000');
+          _showError(
+              'Maximum deposit amount is ${CurrencySymbols.getSymbol(widget.currency)}100,000');
           return false;
         }
         return true;
@@ -130,10 +133,10 @@ class _AddFundsCarouselState extends State<AddFundsCarousel> {
 
   void _proceedToProcessing() {
     Get.to(() => AddFundsProcessingScreen(
-      amount: _amount,
-      paymentMethod: _paymentMethod,
-      paymentDetails: _paymentDetails,
-    ));
+          amount: _amount,
+          paymentMethod: _paymentMethod,
+          paymentDetails: _paymentDetails,
+        ));
   }
 
   @override
@@ -177,7 +180,8 @@ class _AddFundsCarouselState extends State<AddFundsCarousel> {
               // Linear progress bar
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
-                width: (screenWidth - 32.w) * ((_currentPage + 1) / _totalPages),
+                width:
+                    (screenWidth - 32.w) * ((_currentPage + 1) / _totalPages),
                 height: 4.h,
                 decoration: BoxDecoration(
                   gradient: _currentPage == _totalPages - 1
@@ -185,7 +189,10 @@ class _AddFundsCarouselState extends State<AddFundsCarousel> {
                           colors: [Color(0xFF4CAF50), Color(0xFF45A049)],
                         )
                       : const LinearGradient(
-                          colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                          colors: [
+                            Color(0xFF6366F1),
+                            Color.fromARGB(255, 78, 3, 208)
+                          ],
                         ),
                   borderRadius: BorderRadius.circular(2.r),
                 ),

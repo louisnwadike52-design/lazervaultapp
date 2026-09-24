@@ -225,7 +225,8 @@ class AccountActionsRepositoryImpl implements IAccountActionsRepository {
                 ? response.account.monthlyLimit
                 : (monthlyLimit ?? current.monthlyLimit),
             // singleTransactionLimit is not in proto response, use the value passed in
-            singleTransactionLimit: singleTransactionLimit ?? current.singleTransactionLimit,
+            singleTransactionLimit:
+                singleTransactionLimit ?? current.singleTransactionLimit,
           ));
         },
       );
@@ -354,7 +355,8 @@ class AccountActionsRepositoryImpl implements IAccountActionsRepository {
         id: response.documentId,
         type: DocumentType.accountStatement,
         title: 'Account Statement',
-        description: 'Statement from ${startDate.day}/${startDate.month}/${startDate.year} to ${endDate.day}/${endDate.month}/${endDate.year}',
+        description:
+            'Statement from ${startDate.day}/${startDate.month}/${startDate.year} to ${endDate.day}/${endDate.month}/${endDate.year}',
         // Honour what the backend actually rendered — the user may have
         // asked for PDF and got CSV (or vice versa) via a future
         // upgrade; we never want to lie about the file extension.
@@ -363,10 +365,12 @@ class AccountActionsRepositoryImpl implements IAccountActionsRepository {
             : format,
         downloadUrl: response.downloadUrl,
         createdAt: DateTime.now(),
-        validUntil: DateTime.fromMillisecondsSinceEpoch(response.validUntil.toInt() * 1000),
+        validUntil: DateTime.fromMillisecondsSinceEpoch(
+            response.validUntil.toInt() * 1000),
         sha256: response.sha256.isEmpty ? null : response.sha256,
         generatedAt: response.generatedAt.toInt() > 0
-            ? DateTime.fromMillisecondsSinceEpoch(response.generatedAt.toInt() * 1000)
+            ? DateTime.fromMillisecondsSinceEpoch(
+                response.generatedAt.toInt() * 1000)
             : null,
         cached: response.cached,
         transactionCount: response.transactionCount.toInt(),
@@ -404,7 +408,8 @@ class AccountActionsRepositoryImpl implements IAccountActionsRepository {
         format: DocumentFormat.pdf,
         downloadUrl: response.downloadUrl,
         createdAt: DateTime.now(),
-        validUntil: DateTime.fromMillisecondsSinceEpoch(response.validUntil.toInt() * 1000),
+        validUntil: DateTime.fromMillisecondsSinceEpoch(
+            response.validUntil.toInt() * 1000),
       ));
     } catch (e) {
       return Left(Failure(
@@ -439,7 +444,8 @@ class AccountActionsRepositoryImpl implements IAccountActionsRepository {
         format: DocumentFormat.pdf,
         downloadUrl: response.downloadUrl,
         createdAt: DateTime.now(),
-        validUntil: DateTime.fromMillisecondsSinceEpoch(response.validUntil.toInt() * 1000),
+        validUntil: DateTime.fromMillisecondsSinceEpoch(
+            response.validUntil.toInt() * 1000),
       ));
     } catch (e) {
       return Left(Failure(
@@ -453,7 +459,8 @@ class AccountActionsRepositoryImpl implements IAccountActionsRepository {
   AccountDetailsEntity _mapAccountToEntity(accounts_msg.Account proto) {
     return AccountDetailsEntity(
       id: proto.id,
-      accountType: proto.accountType.isNotEmpty ? proto.accountType : 'Personal',
+      accountType:
+          proto.accountType.isNotEmpty ? proto.accountType : 'Personal',
       currency: proto.currency.isNotEmpty ? proto.currency : 'NGN',
       balance: proto.balance / 100,
       status: proto.status.isNotEmpty ? proto.status : 'active',
@@ -462,20 +469,27 @@ class AccountActionsRepositoryImpl implements IAccountActionsRepository {
       expiryDate: null,
       cardNumber: null,
       cvv: null,
-      accountNumber: proto.accountNumber.isNotEmpty ? proto.accountNumber : null,
+      accountNumber:
+          proto.accountNumber.isNotEmpty ? proto.accountNumber : null,
       iban: null,
       bicSwift: null,
       dailyLimit: proto.dailyLimit / 100,
       monthlyLimit: proto.monthlyLimit / 100,
-      singleTransactionLimit: proto.singleTransactionLimit > 0 ? proto.singleTransactionLimit / 100 : null,
+      singleTransactionLimit: proto.singleTransactionLimit > 0
+          ? proto.singleTransactionLimit / 100
+          : null,
       enable3DSecure: false,
       enableContactless: false,
       enableOnlinePayments: true,
       enableATMWithdrawals: false,
       enableInternationalPayments: proto.allowInternationalTransfers,
       allowInternationalTransfers: proto.allowInternationalTransfers,
-      createdAt: proto.createdAt.isNotEmpty ? DateTime.tryParse(proto.createdAt) : null,
-      updatedAt: proto.updatedAt.isNotEmpty ? DateTime.tryParse(proto.updatedAt) : null,
+      createdAt: proto.createdAt.isNotEmpty
+          ? DateTime.tryParse(proto.createdAt)
+          : null,
+      updatedAt: proto.updatedAt.isNotEmpty
+          ? DateTime.tryParse(proto.updatedAt)
+          : null,
     );
   }
 

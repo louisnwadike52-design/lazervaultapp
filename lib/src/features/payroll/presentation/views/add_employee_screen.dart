@@ -18,7 +18,6 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/account_ve
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 part 'add_employee_screen_widgets.dart';
 
-
 class AddEmployeeScreen extends StatefulWidget {
   const AddEmployeeScreen({super.key});
 
@@ -142,7 +141,8 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
           email: _emailController.text.trim(),
           phone: AppPhoneField.complete(_phone),
           nin: _ninController.text.trim(),
-          bankAccountNumber: isInternal ? '' : _bankAccountController.text.trim(),
+          bankAccountNumber:
+              isInternal ? '' : _bankAccountController.text.trim(),
           bankCode: isInternal ? '' : _bankCode,
           bankName: isInternal ? '' : _bankName,
           bankAccountName: isInternal ? '' : _bankAccountName,
@@ -163,8 +163,9 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor:
-            isError ? InvoiceThemeColors.errorRed : InvoiceThemeColors.successGreen,
+        backgroundColor: isError
+            ? InvoiceThemeColors.errorRed
+            : InvoiceThemeColors.successGreen,
       ),
     );
   }
@@ -525,7 +526,8 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
     setState(() {
       _selectedUser = result;
       // Prefill the personal fields from the picked user.
-      _nameController.text = result.name.isNotEmpty ? result.name : result.displayName;
+      _nameController.text =
+          result.name.isNotEmpty ? result.name : result.displayName;
       if (result.email.isNotEmpty) _emailController.text = result.email;
     });
   }
@@ -816,11 +818,13 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
               child: GestureDetector(
                 onTap: () => setState(() => _employmentType = type),
                 child: Container(
-                  margin: EdgeInsets.only(right: type != EmploymentType.contract ? 8.w : 0),
+                  margin: EdgeInsets.only(
+                      right: type != EmploymentType.contract ? 8.w : 0),
                   padding: EdgeInsets.symmetric(vertical: 10.h),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2)
+                        ? InvoiceThemeColors.primaryPurple
+                            .withValues(alpha: 0.2)
                         : InvoiceThemeColors.secondaryBackground,
                     borderRadius: BorderRadius.circular(10.r),
                     border: Border.all(
@@ -860,8 +864,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
           ],
           validator: (v) {
             if (v == null || v.trim().isEmpty) return 'Pay rate is required';
-            final amount =
-                double.tryParse(v.replaceAll(',', ''));
+            final amount = double.tryParse(v.replaceAll(',', ''));
             if (amount == null || amount <= 0) return 'Enter a valid amount';
             return null;
           },
@@ -897,11 +900,13 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
               child: GestureDetector(
                 onTap: () => setState(() => _payFrequency = freq),
                 child: Container(
-                  margin: EdgeInsets.only(right: freq != PayFrequency.weekly ? 8.w : 0),
+                  margin: EdgeInsets.only(
+                      right: freq != PayFrequency.weekly ? 8.w : 0),
                   padding: EdgeInsets.symmetric(vertical: 10.h),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2)
+                        ? InvoiceThemeColors.primaryPurple
+                            .withValues(alpha: 0.2)
                         : InvoiceThemeColors.secondaryBackground,
                     borderRadius: BorderRadius.circular(10.r),
                     border: Border.all(
@@ -1068,7 +1073,8 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
               color: InvoiceThemeColors.textGray500,
               fontSize: 15.sp,
             ),
-            prefixIcon: Icon(icon, color: InvoiceThemeColors.textGray400, size: 20.sp),
+            prefixIcon:
+                Icon(icon, color: InvoiceThemeColors.textGray400, size: 20.sp),
             filled: true,
             fillColor: InvoiceThemeColors.secondaryBackground,
             border: OutlineInputBorder(

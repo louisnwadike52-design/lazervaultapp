@@ -3,7 +3,6 @@ import 'package:lazervault/src/features/funds/domain/usecases/initiate_withdrawa
 import 'package:lazervault/src/features/funds/cubit/withdrawal_state.dart';
 import 'package:lazervault/src/core/services/analytics_service.dart';
 
-
 class WithdrawalCubit extends Cubit<WithdrawalState> {
   final InitiateWithdrawalUseCase _initiateWithdrawalUseCase;
 
@@ -93,4 +92,4 @@ class WithdrawalCubit extends Cubit<WithdrawalState> {
       recordWithdrawal('failure');
     }
   }
-} 
+}

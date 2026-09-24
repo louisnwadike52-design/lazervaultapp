@@ -600,75 +600,75 @@ class _ContactlessPaymentHomeViewState
     return GestureDetector(
       onTap: () => _openReceiptFor(transaction),
       child: Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF1F1F1F).withValues(alpha: 0.8),
-            const Color(0xFF1F1F35).withValues(alpha: 0.9),
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF1F1F1F).withValues(alpha: 0.8),
+              const Color(0xFF1F1F35).withValues(alpha: 0.9),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(12.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44.w,
-            height: 44.w,
-            decoration: BoxDecoration(
-              color: const Color(0xFF9B6BFF).withValues(alpha: 0.16),
-              borderRadius: BorderRadius.circular(12.r),
+        child: Row(
+          children: [
+            Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFF9B6BFF).withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Icon(icon, color: const Color(0xFF9B6BFF), size: 22.sp),
             ),
-            child: Icon(icon, color: const Color(0xFF9B6BFF), size: 22.sp),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  transaction.receiverName,
-                  style: GoogleFonts.inter(
-                    // Lighter purple, per the landing's accent language.
-                    color: const Color(0xFFCBB7FF),
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    transaction.receiverName,
+                    style: GoogleFonts.inter(
+                      // Lighter purple, per the landing's accent language.
+                      color: const Color(0xFFCBB7FF),
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                SizedBox(height: 2.h),
-                Text(
-                  transaction.description ?? 'Contactless payment',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF),
-                    fontSize: 12.sp,
+                  SizedBox(height: 2.h),
+                  Text(
+                    transaction.description ?? 'Contactless payment',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 12.sp,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Text(
-            currency_formatter.CurrencySymbols.formatAmountWithCurrency(
-                transaction.amount, transaction.currency),
-            style: GoogleFonts.inter(
-              color: const Color(0xFF10B981),
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w700,
+            Text(
+              currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+                  transaction.amount, transaction.currency),
+              style: GoogleFonts.inter(
+                color: const Color(0xFF10B981),
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }

@@ -20,14 +20,12 @@ import '../widgets/internet_rollover_preference_sheet.dart';
 import '../../data/datasources/internet_beneficiary_remote_datasource.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
-
 part 'internet_payment_confirmation_screen_widgets.dart';
 
 /// Upper bound on the saved-state probe. The probe only decides whether to
 /// pre-tick / lock the save + auto-renew toggles, so it must never be able
 /// to block them from rendering. On timeout we fail open and show them.
 const Duration _probeTimeout = Duration(seconds: 8);
-
 
 /// Confirm-payment screen for internet subscriptions. Mirrors the data
 /// bundles confirm screen — same save-as-beneficiary + rollover UX so
@@ -46,8 +44,7 @@ class InternetPaymentConfirmationScreen extends StatefulWidget {
 }
 
 class _InternetPaymentConfirmationScreenState
-    extends State<InternetPaymentConfirmationScreen>
-    with TransactionPinMixin {
+    extends State<InternetPaymentConfirmationScreen> with TransactionPinMixin {
   final _currencyFormat = NumberFormat('#,##0', 'en_NG');
   bool _isProcessing = false;
 
@@ -107,9 +104,8 @@ class _InternetPaymentConfirmationScreenState
 
       InternetAutoRecharge? rolloverMatch;
       if (match != null) {
-        final recharges = await ds
-            .getAutoRecharges(status: 'active')
-            .timeout(_probeTimeout);
+        final recharges =
+            await ds.getAutoRecharges(status: 'active').timeout(_probeTimeout);
         for (final ar in recharges) {
           if (ar.beneficiaryId == match.id && ar.status == 'active') {
             rolloverMatch = ar;
@@ -296,8 +292,7 @@ class _InternetPaymentConfirmationScreenState
     final args = Get.arguments as Map<String, dynamic>;
     final provider = args['provider'] as InternetProviderEntity;
     final package = args['package'] as InternetPackageEntity;
-    final validation =
-        args['validation'] as InternetAccountValidationEntity;
+    final validation = args['validation'] as InternetAccountValidationEntity;
     final accountNumber = args['accountNumber'] as String;
 
     return MultiBlocProvider(
@@ -373,10 +368,12 @@ class _InternetPaymentConfirmationScreenState
                               _buildInfoTile(
                                 icon: Icons.bookmark,
                                 title: 'Already saved',
-                                subtitle: (_existingBeneficiary!.nickname != null &&
-                                        _existingBeneficiary!.nickname!.isNotEmpty)
-                                    ? _existingBeneficiary!.nickname!
-                                    : _existingBeneficiary!.accountNumber,
+                                subtitle:
+                                    (_existingBeneficiary!.nickname != null &&
+                                            _existingBeneficiary!
+                                                .nickname!.isNotEmpty)
+                                        ? _existingBeneficiary!.nickname!
+                                        : _existingBeneficiary!.accountNumber,
                               ),
                             SizedBox(height: 8.h),
                             if (_existingRollover == null)
@@ -481,6 +478,7 @@ class _InternetPaymentConfirmationScreenState
         ),
       );
     }
+
     Widget divider() => Container(
           margin: EdgeInsets.symmetric(vertical: 4.h),
           height: 1,

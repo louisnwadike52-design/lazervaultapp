@@ -125,7 +125,8 @@ class SendFundsLauncher {
           'recipient': recipient,
           if (prefillAmountMinor != null) 'prefillAmount': prefillAmountMinor,
           if (prefillCurrency != null) 'prefillCurrency': prefillCurrency,
-          if (prefillDescription != null && prefillDescription.trim().isNotEmpty)
+          if (prefillDescription != null &&
+              prefillDescription.trim().isNotEmpty)
             'prefillDescription': prefillDescription.trim(),
           if (prefillAmountMinor != null) 'autoShowConfirm': true,
           if (checkRecurring) 'checkRecurring': true,

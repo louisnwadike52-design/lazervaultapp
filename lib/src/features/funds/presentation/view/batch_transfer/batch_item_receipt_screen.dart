@@ -19,8 +19,7 @@ class BatchItemReceiptScreen extends StatefulWidget {
   const BatchItemReceiptScreen({super.key});
 
   @override
-  State<BatchItemReceiptScreen> createState() =>
-      _BatchItemReceiptScreenState();
+  State<BatchItemReceiptScreen> createState() => _BatchItemReceiptScreenState();
 }
 
 class _BatchItemReceiptScreenState extends State<BatchItemReceiptScreen> {
@@ -42,9 +41,10 @@ class _BatchItemReceiptScreenState extends State<BatchItemReceiptScreen> {
     final batchData = {
       'batchId': r.batchId,
       'currency': r.item.currency,
-      'timestamp':
-          r.item.transactionDate ?? r.item.updatedAt ?? r.item.createdAt ??
-              DateTime.now(),
+      'timestamp': r.item.transactionDate ??
+          r.item.updatedAt ??
+          r.item.createdAt ??
+          DateTime.now(),
       'senderAccountName': r.sourceAccountName,
       'senderAccountInfo': r.sourceAccountNumber.isEmpty
           ? null
@@ -167,8 +167,7 @@ class _BatchItemReceiptScreenState extends State<BatchItemReceiptScreen> {
         padding: EdgeInsets.all(24.w),
         child: Text(state.message,
             textAlign: TextAlign.center,
-            style:
-                GoogleFonts.inter(color: btTextSecondary, fontSize: 13.sp)),
+            style: GoogleFonts.inter(color: btTextSecondary, fontSize: 13.sp)),
       ));
     }
     if (state is BatchItemReceiptLoaded) {
@@ -352,13 +351,10 @@ class _BatchItemReceiptScreenState extends State<BatchItemReceiptScreen> {
       if (it.transferType.isNotEmpty) ('Type', it.transferType),
       if (it.narration.isNotEmpty) ('Narration', it.narration),
       if (it.providerName.isNotEmpty) ('Provider', it.providerName),
-      if (it.providerStatus.isNotEmpty)
-        ('Provider status', it.providerStatus),
+      if (it.providerStatus.isNotEmpty) ('Provider status', it.providerStatus),
       if (it.providerRef.isNotEmpty) ('Provider ref', it.providerRef),
-      if (it.paymentReference.isNotEmpty)
-        ('Payment ref', it.paymentReference),
-      if (ts != null)
-        ('Date', DateFormat('MMM dd, yyyy • HH:mm').format(ts)),
+      if (it.paymentReference.isNotEmpty) ('Payment ref', it.paymentReference),
+      if (ts != null) ('Date', DateFormat('MMM dd, yyyy • HH:mm').format(ts)),
     ];
     if (rows.isEmpty) return const SizedBox.shrink();
     return Container(

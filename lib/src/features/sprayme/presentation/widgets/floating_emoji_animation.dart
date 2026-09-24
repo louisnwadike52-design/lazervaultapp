@@ -46,7 +46,8 @@ class _FloatingEmojiAnimationState extends State<FloatingEmojiAnimation>
       TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 30),
     ]).animate(_controller);
 
-    _translateY = Tween<double>(begin: 0, end: -300 - _random.nextDouble() * 150)
+    _translateY = Tween<double>(
+            begin: 0, end: -300 - _random.nextDouble() * 150)
         .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
 
     // Sinusoidal horizontal drift
@@ -130,7 +131,8 @@ class _BurstEmojiAnimationState extends State<BurstEmojiAnimation>
     );
 
     _particles = List.generate(widget.count, (i) {
-      final angle = (2 * pi * i / widget.count) + (_random.nextDouble() - 0.5) * 0.5;
+      final angle =
+          (2 * pi * i / widget.count) + (_random.nextDouble() - 0.5) * 0.5;
       final distance = 80 + _random.nextDouble() * 120;
       return _BurstParticle(
         dx: cos(angle) * distance,
@@ -169,7 +171,8 @@ class _BurstEmojiAnimationState extends State<BurstEmojiAnimation>
                   scale: p.scale * (1.0 - progress * 0.3),
                   child: Transform.rotate(
                     angle: p.rotation * progress,
-                    child: Text(widget.emoji, style: const TextStyle(fontSize: 36)),
+                    child: Text(widget.emoji,
+                        style: const TextStyle(fontSize: 36)),
                   ),
                 ),
               ),
@@ -253,11 +256,14 @@ class _RainEmojiAnimationState extends State<RainEmojiAnimation>
       builder: (context, _) {
         return Stack(
           children: _drops.map((drop) {
-            final progress = ((_controller.value - drop.delay) / (1.0 - drop.delay))
-                .clamp(0.0, 1.0) * drop.speed;
+            final progress =
+                ((_controller.value - drop.delay) / (1.0 - drop.delay))
+                        .clamp(0.0, 1.0) *
+                    drop.speed;
             final y = -50 + progress * (size.height + 100);
             final x = drop.x * size.width + sin(progress * 3) * drop.wobble;
-            final opacity = progress < 0.8 ? 1.0 : (1.0 - (progress - 0.8) / 0.2);
+            final opacity =
+                progress < 0.8 ? 1.0 : (1.0 - (progress - 0.8) / 0.2);
 
             return Positioned(
               left: x - 18,
@@ -266,7 +272,8 @@ class _RainEmojiAnimationState extends State<RainEmojiAnimation>
                 opacity: opacity.clamp(0.0, 1.0),
                 child: Transform.scale(
                   scale: drop.scale,
-                  child: Text(widget.emoji, style: const TextStyle(fontSize: 32)),
+                  child:
+                      Text(widget.emoji, style: const TextStyle(fontSize: 32)),
                 ),
               ),
             );
@@ -337,7 +344,8 @@ class _GlowAnimationState extends State<GlowAnimation>
       builder: (context, _) {
         final progress = _controller.value;
         final scale = 1.0 + progress * 3;
-        final opacity = progress < 0.3 ? progress / 0.3 : (1.0 - (progress - 0.3) / 0.7);
+        final opacity =
+            progress < 0.3 ? progress / 0.3 : (1.0 - (progress - 0.3) / 0.7);
 
         return Positioned(
           left: widget.center.dx - 60 * scale / 2,
@@ -421,7 +429,8 @@ class _ShakeAnimationState extends State<ShakeAnimation>
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
-        final shake = sin(_animation.value * pi * 6) * 5 * (1 - _animation.value);
+        final shake =
+            sin(_animation.value * pi * 6) * 5 * (1 - _animation.value);
         return Transform.translate(
           offset: Offset(shake, 0),
           child: child,

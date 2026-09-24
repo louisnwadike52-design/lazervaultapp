@@ -24,7 +24,6 @@ import '../../../../core/utils/form_field_validators.dart';
 import 'create_policy_state.dart';
 part 'create_policy_cubit_widgets.dart';
 
-
 /// Cubit for managing insurance policy creation via MyCover.ai marketplace
 class CreatePolicyCubit extends Cubit<CreatePolicyState> {
   final InsuranceRepository _repository;
@@ -241,14 +240,17 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
       if (isClosed) return;
       if (e.code == StatusCode.failedPrecondition) {
         emit(const CreatePolicyError(
-          message: 'Insurance marketplace is not available at this time. Please try again later or contact support.',
+          message:
+              'Insurance marketplace is not available at this time. Please try again later or contact support.',
         ));
       } else if (e.code == StatusCode.unavailable) {
         emit(const CreatePolicyError(
-          message: 'Unable to connect to insurance service. Please check your connection and try again.',
+          message:
+              'Unable to connect to insurance service. Please check your connection and try again.',
         ));
       } else {
-        emit(CreatePolicyError(message: friendlyGrpcError(e, 'Failed to load categories')));
+        emit(CreatePolicyError(
+            message: friendlyGrpcError(e, 'Failed to load categories')));
       }
     } catch (e) {
       if (isClosed) return;
@@ -257,14 +259,17 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
           errorStr.contains('not configured') ||
           errorStr.contains('marketplace')) {
         emit(const CreatePolicyError(
-          message: 'Insurance marketplace is not available at this time. Please try again later or contact support.',
+          message:
+              'Insurance marketplace is not available at this time. Please try again later or contact support.',
         ));
       } else if (errorStr.contains('temporarily unavailable')) {
         emit(const CreatePolicyError(
-          message: 'Unable to connect to insurance service. Please check your connection and try again.',
+          message:
+              'Unable to connect to insurance service. Please check your connection and try again.',
         ));
       } else {
-        emit(CreatePolicyError(message: 'Failed to load categories: $errorStr'));
+        emit(
+            CreatePolicyError(message: 'Failed to load categories: $errorStr'));
       }
     }
   }
@@ -299,9 +304,9 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
       _selectedCategory = category;
       _selectedCategoryInfo = category != null
           ? _categories.cast<InsuranceCategoryInfo?>().firstWhere(
-              (c) => c!.category == category,
-              orElse: () => null,
-            )
+                (c) => c!.category == category,
+                orElse: () => null,
+              )
           : null;
     }
 
@@ -309,7 +314,8 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
 
     // Pass category UUID (id) to backend to avoid the extra GetCategories() call
     final categoryId = _selectedCategoryInfo?.id;
-    final cacheKey = 'insurance_products_${_locale}_${categoryId ?? category?.name ?? 'all'}';
+    final cacheKey =
+        'insurance_products_${_locale}_${categoryId ?? category?.name ?? 'all'}';
 
     try {
       await for (final result in _cacheManager.get<List<InsuranceProduct>>(
@@ -320,39 +326,43 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
         ),
         config: CacheConfig.insuranceProducts,
         serializer: (products) => jsonEncode(
-          products.map((p) => {
-            'id': p.id,
-            'name': p.name,
-            'description': p.description,
-            'category': p.category.name,
-            'providerName': p.providerName,
-            'providerLogo': p.providerLogo,
-            'minPremium': p.minPremium,
-            'maxPremium': p.maxPremium,
-            'currency': p.currency,
-            'benefits': p.benefits,
-            'termsUrl': p.termsUrl,
-            'metadata': p.metadata,
-            'formFields': p.formFields.map((f) => {
-              'name': f.name,
-              'label': f.label,
-              'type': f.type,
-              'required': f.required,
-              'options': f.options,
-              'defaultValue': f.defaultValue,
-              'validationRegex': f.validationRegex,
-              'placeholder': f.placeholder,
-              'description': f.description,
-            }).toList(),
-            'isActive': p.isActive,
-            'purchaseRoute': p.purchaseRoute,
-            'providerId': p.providerId,
-            'basePrice': p.basePrice,
-            'howItWorks': p.howItWorks,
-            'fullBenefits': p.fullBenefits,
-            'isRenewable': p.isRenewable,
-            'isClaimable': p.isClaimable,
-          }).toList(),
+          products
+              .map((p) => {
+                    'id': p.id,
+                    'name': p.name,
+                    'description': p.description,
+                    'category': p.category.name,
+                    'providerName': p.providerName,
+                    'providerLogo': p.providerLogo,
+                    'minPremium': p.minPremium,
+                    'maxPremium': p.maxPremium,
+                    'currency': p.currency,
+                    'benefits': p.benefits,
+                    'termsUrl': p.termsUrl,
+                    'metadata': p.metadata,
+                    'formFields': p.formFields
+                        .map((f) => {
+                              'name': f.name,
+                              'label': f.label,
+                              'type': f.type,
+                              'required': f.required,
+                              'options': f.options,
+                              'defaultValue': f.defaultValue,
+                              'validationRegex': f.validationRegex,
+                              'placeholder': f.placeholder,
+                              'description': f.description,
+                            })
+                        .toList(),
+                    'isActive': p.isActive,
+                    'purchaseRoute': p.purchaseRoute,
+                    'providerId': p.providerId,
+                    'basePrice': p.basePrice,
+                    'howItWorks': p.howItWorks,
+                    'fullBenefits': p.fullBenefits,
+                    'isRenewable': p.isRenewable,
+                    'isClaimable': p.isClaimable,
+                  })
+              .toList(),
         ),
         deserializer: (json) {
           final list = jsonDecode(json) as List;
@@ -362,7 +372,8 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
               id: map['id'] as String,
               name: map['name'] as String,
               description: map['description'] as String,
-              category: InsuranceProductCategory.fromString(map['category'] as String),
+              category: InsuranceProductCategory.fromString(
+                  map['category'] as String),
               providerName: map['providerName'] as String,
               providerLogo: (map['providerLogo'] as String?) ?? '',
               minPremium: (map['minPremium'] as num).toDouble(),
@@ -415,12 +426,18 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     } catch (e) {
       if (isClosed) return;
       final msg = e.toString().toLowerCase();
-      if (msg.contains('connection') || msg.contains('unavailable') || msg.contains('socket')) {
-        emit(const CreatePolicyError(message: 'Unable to connect. Please check your connection and try again.'));
+      if (msg.contains('connection') ||
+          msg.contains('unavailable') ||
+          msg.contains('socket')) {
+        emit(const CreatePolicyError(
+            message:
+                'Unable to connect. Please check your connection and try again.'));
       } else if (msg.contains('timeout') || msg.contains('deadline')) {
-        emit(const CreatePolicyError(message: 'Request timed out. Please try again.'));
+        emit(const CreatePolicyError(
+            message: 'Request timed out. Please try again.'));
       } else {
-        emit(const CreatePolicyError(message: 'Failed to load insurance products. Please try again.'));
+        emit(const CreatePolicyError(
+            message: 'Failed to load insurance products. Please try again.'));
       }
     }
   }
@@ -445,9 +462,9 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
       _selectedCategory = category;
       _selectedCategoryInfo = category != null
           ? _categories.cast<InsuranceCategoryInfo?>().firstWhere(
-              (c) => c!.category == category,
-              orElse: () => null,
-            )
+                (c) => c!.category == category,
+                orElse: () => null,
+              )
           : null;
     }
     // Clear stale products from a previous category before emitting
@@ -483,8 +500,9 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
         currentPage: 1,
       ));
     } catch (e) {
-      developer.log('[loadProductsPaginated] threw: runtimeType=${e.runtimeType} '
-          'message=${e.toString()}');
+      developer
+          .log('[loadProductsPaginated] threw: runtimeType=${e.runtimeType} '
+              'message=${e.toString()}');
       if (isClosed) return;
       if (myGeneration != _productsLoadGeneration) return; // superseded
       final msg = e.toString().toLowerCase();
@@ -646,12 +664,12 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
   /// editable/empty and financial-products-service still auto-fills them from
   /// the same KYC record at purchase time (defence in depth).
   Future<void> _autoFillIdentityNumbers(InsuranceProduct product) async {
-    final hasBvnField = product.formFields.any(
-        (f) => _isBvnField(f.name) && (_formData[f.name] ?? '').isEmpty);
-    final hasNinField = product.formFields.any(
-        (f) => _isNinField(f.name) && (_formData[f.name] ?? '').isEmpty);
-    final hasDobField = product.formFields.any(
-        (f) => _isDobField(f.name) && (_formData[f.name] ?? '').isEmpty);
+    final hasBvnField = product.formFields
+        .any((f) => _isBvnField(f.name) && (_formData[f.name] ?? '').isEmpty);
+    final hasNinField = product.formFields
+        .any((f) => _isNinField(f.name) && (_formData[f.name] ?? '').isEmpty);
+    final hasDobField = product.formFields
+        .any((f) => _isDobField(f.name) && (_formData[f.name] ?? '').isEmpty);
     if (!hasBvnField && !hasNinField && !hasDobField) return;
 
     final prefill = await _fetchInsurancePrefill();
@@ -782,14 +800,19 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
 
   bool _isBvnField(String name) {
     final n = name.toLowerCase();
-    return n == 'bvn' || n.startsWith('bvn_') || n.endsWith('_bvn') ||
+    return n == 'bvn' ||
+        n.startsWith('bvn_') ||
+        n.endsWith('_bvn') ||
         n.contains('bvn_number');
   }
 
   bool _isNinField(String name) {
     final n = name.toLowerCase();
-    return n == 'nin' || n.startsWith('nin_') || n.endsWith('_nin') ||
-        n.contains('nin_number') || n == 'national_id' ||
+    return n == 'nin' ||
+        n.startsWith('nin_') ||
+        n.endsWith('_nin') ||
+        n.contains('nin_number') ||
+        n == 'national_id' ||
         n == 'national_identification_number';
   }
 
@@ -820,7 +843,8 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     if (isClosed) return;
 
     // Trim text values (not dropdowns/booleans)
-    final trimmedValue = (value == 'true' || value == 'false') ? value : value.trim();
+    final trimmedValue =
+        (value == 'true' || value == 'false') ? value : value.trim();
     final previous = _formData[name];
     _formData = {..._formData, name: trimmedValue};
 
@@ -835,10 +859,10 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     // for ₦52,500 then edit `vehicle_value` from 1M to 5M and
     // submit at the stale premium. The user has to re-tap "Get
     // Quote" after such an edit.
-    if (_quote != null
-        && previous != null
-        && previous != trimmedValue
-        && _premiumDrivingFields.contains(name)) {
+    if (_quote != null &&
+        previous != null &&
+        previous != trimmedValue &&
+        _premiumDrivingFields.contains(name)) {
       _quote = null;
       _lastIdempotencyKey = null; // fresh quote ⇒ fresh idempotency key
     }
@@ -916,8 +940,11 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
       if (required && value.isEmpty) {
         errors[field.name] = '${field.label} is required';
       } else if (required && isArray && _isEmptyJsonArray(value)) {
-        errors[field.name] = 'Add at least one ${field.label.toLowerCase()} entry';
-      } else if (isArray && isInsuredItemsField(field.name) && value.isNotEmpty) {
+        errors[field.name] =
+            'Add at least one ${field.label.toLowerCase()} entry';
+      } else if (isArray &&
+          isInsuredItemsField(field.name) &&
+          value.isNotEmpty) {
         // Per-item content rules MyCover enforces (image, description ≥ 5,
         // value ≥ ₦50,000). Catch them here so the user fixes the entry in
         // the form instead of failing the purchase right after PIN entry.
@@ -965,13 +992,15 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
 
   /// Get a quote for the selected product with current form data
   Future<void> getQuote() async {
-    developer.log('[getQuote] enter; closed=$isClosed product=${_selectedProduct?.id} pending=$_quotePending');
+    developer.log(
+        '[getQuote] enter; closed=$isClosed product=${_selectedProduct?.id} pending=$_quotePending');
     if (isClosed || _selectedProduct == null) {
       developer.log('[getQuote] early return: isClosed/product-null');
       return;
     }
     if (_quotePending) {
-      developer.log('[getQuote] early return: _quotePending=true (concurrent call)');
+      developer
+          .log('[getQuote] early return: _quotePending=true (concurrent call)');
       return;
     }
 
@@ -980,7 +1009,9 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
       // with formErrors. Read those out of the current state so the
       // log line names the offending fields.
       final s = state;
-      final errs = s is InsuranceProductSelected ? s.formErrors : const <String, String>{};
+      final errs = s is InsuranceProductSelected
+          ? s.formErrors
+          : const <String, String>{};
       developer.log('[getQuote] early return: validateFormFields=false; '
           'errors=${errs.entries.map((e) => "${e.key}:${e.value}").join(", ")}; '
           'formDataKeys=${_formData.keys.toList()}');
@@ -988,7 +1019,8 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     }
 
     _quotePending = true;
-    developer.log('[getQuote] validation passed; firing gRPC. formDataKeys=${_formData.keys.toList()}');
+    developer.log(
+        '[getQuote] validation passed; firing gRPC. formDataKeys=${_formData.keys.toList()}');
     // Reset idempotency key when requesting a new quote (even if it fails)
     _lastIdempotencyKey = null;
 
@@ -1016,14 +1048,22 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
       developer.log('[getQuote] threw: $e');
       if (isClosed) return;
       final msg = e.toString().toLowerCase();
-      if (msg.contains('connection') || msg.contains('unavailable') || msg.contains('socket')) {
-        emit(const CreatePolicyError(message: 'Unable to connect. Please check your connection and try again.'));
+      if (msg.contains('connection') ||
+          msg.contains('unavailable') ||
+          msg.contains('socket')) {
+        emit(const CreatePolicyError(
+            message:
+                'Unable to connect. Please check your connection and try again.'));
       } else if (msg.contains('timeout') || msg.contains('deadline')) {
-        emit(const CreatePolicyError(message: 'Quote request timed out. Please try again.'));
+        emit(const CreatePolicyError(
+            message: 'Quote request timed out. Please try again.'));
       } else if (msg.contains('not found')) {
-        emit(const CreatePolicyError(message: 'This product is currently unavailable. Please try another plan.'));
+        emit(const CreatePolicyError(
+            message:
+                'This product is currently unavailable. Please try another plan.'));
       } else {
-        emit(const CreatePolicyError(message: 'Failed to get quote. Please try again.'));
+        emit(const CreatePolicyError(
+            message: 'Failed to get quote. Please try again.'));
       }
     } finally {
       _quotePending = false;
@@ -1057,7 +1097,9 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
           error.code == StatusCode.unknown;
     }
     final s = error.toString().toLowerCase();
-    return s.contains('network') || s.contains('connection') || s.contains('socket');
+    return s.contains('network') ||
+        s.contains('connection') ||
+        s.contains('socket');
   }
 
   /// Turns a purchase GrpcError into a clear, actionable message. The
@@ -1126,7 +1168,8 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
       // the insurer couldn't rate/match it (e.g. "External: There is no row at
       // position 0."). Usually an unsupported device make/model/type combo.
       final lower = msg.toLowerCase();
-      if (lower.contains('no row at position') || lower.startsWith('external:')) {
+      if (lower.contains('no row at position') ||
+          lower.startsWith('external:')) {
         return "The insurer couldn't process these details. Please double-check "
             'your selections (e.g. device make, model and type) and try again.';
       }
@@ -1178,13 +1221,15 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
   }) async {
     if (isClosed) return;
     if (_selectedProduct == null || _quote == null) {
-      emit(const CreatePolicyError(message: 'Quote not available. Please go back and get a new quote.'));
+      emit(const CreatePolicyError(
+          message: 'Quote not available. Please go back and get a new quote.'));
       return;
     }
 
     // Check quote expiry BEFORE the isPurchasing guard so user always gets feedback
     if (_quote!.isExpired) {
-      emit(const CreatePolicyError(message: 'Quote has expired. Please get a new quote.'));
+      emit(const CreatePolicyError(
+          message: 'Quote has expired. Please get a new quote.'));
       return;
     }
 
@@ -1304,19 +1349,29 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
       } else {
         final msg = e.toString().toLowerCase();
         if (msg.contains('insufficient') || msg.contains('balance')) {
-          emit(const CreatePolicyError(message: 'Insufficient balance. Please fund your account and try again.'));
-        } else if (msg.contains('pin') && (msg.contains('expired') || msg.contains('token'))) {
+          emit(const CreatePolicyError(
+              message:
+                  'Insufficient balance. Please fund your account and try again.'));
+        } else if (msg.contains('pin') &&
+            (msg.contains('expired') || msg.contains('token'))) {
           // Auth-service stamps PIN-verification tokens with a 10-minute
           // TTL (DefaultPinConfig.TokenExpiry). If the user pauses on
           // the confirm screen past that, MyCover purchase fails with a
           // bare "invalid token" — surface a clearer recovery hint.
-          emit(const CreatePolicyError(message: 'Your PIN session expired. Please re-enter your transaction PIN.'));
+          emit(const CreatePolicyError(
+              message:
+                  'Your PIN session expired. Please re-enter your transaction PIN.'));
         } else if (msg.contains('pin') || msg.contains('permission')) {
-          emit(const CreatePolicyError(message: 'Invalid transaction PIN. Please try again.'));
-        } else if (msg.contains('quote') && (msg.contains('expired') || msg.contains('not found'))) {
-          emit(const CreatePolicyError(message: 'Quote has expired. Please get a new quote and try again.'));
+          emit(const CreatePolicyError(
+              message: 'Invalid transaction PIN. Please try again.'));
+        } else if (msg.contains('quote') &&
+            (msg.contains('expired') || msg.contains('not found'))) {
+          emit(const CreatePolicyError(
+              message:
+                  'Quote has expired. Please get a new quote and try again.'));
         } else {
-          emit(const CreatePolicyError(message: 'Purchase failed. Please try again.'));
+          emit(const CreatePolicyError(
+              message: 'Purchase failed. Please try again.'));
         }
         _restoreQuoteState();
       }
@@ -1338,10 +1393,13 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
   }
 
   /// Generate idempotency key from purchase parameters
-  String _generateIdempotencyKey(String quoteId, String productId, double premium) {
+  String _generateIdempotencyKey(
+      String quoteId, String productId, double premium) {
     final now = DateTime.now();
-    final minuteTruncated = DateTime(now.year, now.month, now.day, now.hour, now.minute);
-    final input = '$quoteId:$productId:$premium:${minuteTruncated.toIso8601String()}';
+    final minuteTruncated =
+        DateTime(now.year, now.month, now.day, now.hour, now.minute);
+    final input =
+        '$quoteId:$productId:$premium:${minuteTruncated.toIso8601String()}';
     return sha256.convert(utf8.encode(input)).toString();
   }
 
@@ -1350,7 +1408,8 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     if (isClosed) return;
 
     try {
-      final result = await _repository.getInsurancePurchaseStatus(reference: reference);
+      final result =
+          await _repository.getInsurancePurchaseStatus(reference: reference);
       if (isClosed) return;
 
       if (result.isCompleted && _selectedProduct != null && _quote != null) {
@@ -1521,15 +1580,22 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     );
     if (coverageError != null) errors['coverage'] = coverageError;
     final dateRangeError = FormFieldValidators.validateDateRange(
-      _startDate, _endDate, minDurationDays: 30,
+      _startDate,
+      _endDate,
+      minDurationDays: 30,
     );
     if (dateRangeError != null) errors['dateRange'] = dateRangeError;
     final startDateError = FormFieldValidators.validateDateBounds(
-      _startDate, fieldName: 'Start date', maxYearsInPast: 1, maxYearsInFuture: 10,
+      _startDate,
+      fieldName: 'Start date',
+      maxYearsInPast: 1,
+      maxYearsInFuture: 10,
     );
     if (startDateError != null) errors['startDate'] = startDateError;
     final paymentDateError = FormFieldValidators.validatePaymentDate(
-      _nextPaymentDate, _startDate, _endDate,
+      _nextPaymentDate,
+      _startDate,
+      _endDate,
     );
     if (paymentDateError != null) errors['paymentDate'] = paymentDateError;
     if (errors.isNotEmpty) {
@@ -1546,7 +1612,10 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
   bool validateScreen4() => true;
 
   bool validateScreen5() {
-    return validateScreen1() && validateScreen2() && validateScreen3() && validateScreen4();
+    return validateScreen1() &&
+        validateScreen2() &&
+        validateScreen3() &&
+        validateScreen4();
   }
 
   Insurance buildInsurance(String userId) {

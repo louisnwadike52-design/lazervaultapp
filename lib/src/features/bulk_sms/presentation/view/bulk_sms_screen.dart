@@ -95,8 +95,8 @@ class _BulkSmsScreenState extends State<BulkSmsScreen> {
   }
 
   Widget _balanceCard(BulkSmsState state) {
-    final loading = state.balanceStatus == SectionStatus.loading &&
-        state.balance == null;
+    final loading =
+        state.balanceStatus == SectionStatus.loading && state.balance == null;
     final credits = state.balance?.creditsRemaining ?? 0;
     final provider = state.balance?.providerName ?? '';
     return BulkSmsGradientCard(
@@ -156,8 +156,7 @@ class _BulkSmsScreenState extends State<BulkSmsScreen> {
   }
 
   Widget _senderChip(BulkSmsState state) {
-    final approved =
-        state.senderIds.where((s) => s.status.isApproved).toList();
+    final approved = state.senderIds.where((s) => s.status.isApproved).toList();
     final pending = state.senderIds.where((s) => s.status.isPending).toList();
     final String label;
     final IconData icon;

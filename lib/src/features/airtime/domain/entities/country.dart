@@ -78,4 +78,4 @@ class Country extends Equatable {
         isActive,
         popularPrefixes,
       ];
-} 
+}

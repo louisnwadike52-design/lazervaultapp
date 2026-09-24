@@ -107,7 +107,8 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
 
           if (state is LinkedSocialAccountsLoaded) {
             return RefreshIndicator(
-              onRefresh: () => context.read<SocialLinkingCubit>().loadLinkedAccounts(),
+              onRefresh: () =>
+                  context.read<SocialLinkingCubit>().loadLinkedAccounts(),
               color: const Color(0xFF3B82F6),
               backgroundColor: const Color(0xFF1F1F1F),
               child: state.accounts.isEmpty
@@ -173,7 +174,8 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF3B82F6),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -210,10 +212,12 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
               account: account,
               onUnlink: () =>
                   context.read<SocialLinkingCubit>().unlinkAccount(account.id),
-              onSetPrimary: () =>
-                  context.read<SocialLinkingCubit>().setPrimaryAccount(account.id),
-              onReauthorize: () =>
-                  context.read<SocialLinkingCubit>().reauthorizeAccount(account.id),
+              onSetPrimary: () => context
+                  .read<SocialLinkingCubit>()
+                  .setPrimaryAccount(account.id),
+              onReauthorize: () => context
+                  .read<SocialLinkingCubit>()
+                  .reauthorizeAccount(account.id),
             )),
         const SizedBox(height: 16),
         TextButton.icon(
@@ -348,8 +352,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
 
   void _showAddAccountSheet(BuildContext context) {
     final cubit = context.read<SocialLinkingCubit>();
-    final linkedProviders =
-        cubit.linkedAccounts.map((a) => a.provider).toSet();
+    final linkedProviders = cubit.linkedAccounts.map((a) => a.provider).toSet();
 
     showModalBottomSheet(
       context: context,

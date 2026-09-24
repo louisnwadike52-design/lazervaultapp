@@ -18,20 +18,28 @@ class TransferStatusSnapshot {
   });
 
   static const _terminal = {
-    'completed', 'success', 'successful', 'delivered',
-    'failed', 'cancelled', 'canceled', 'declined', 'rejected',
-    'reversed', 'refunded',
+    'completed',
+    'success',
+    'successful',
+    'delivered',
+    'failed',
+    'cancelled',
+    'canceled',
+    'declined',
+    'rejected',
+    'reversed',
+    'refunded',
   };
   bool get isTerminal => _terminal.contains(status.toLowerCase());
 }
 
 /// Transfer types supported by the payments service
 enum TransferType {
-  internal,  // C2C within LazerVault
-  domestic,  // To external Nigerian bank
+  internal, // C2C within LazerVault
+  domestic, // To external Nigerian bank
   international, // Cross-border
-  username,  // By LazerTag username
-  phone,     // By phone number
+  username, // By LazerTag username
+  phone, // By phone number
 }
 
 /// Result of a transfer operation from payments service
@@ -40,15 +48,16 @@ class PaymentsTransferResult {
   final String? transferId;
   final String? reference;
   final String? status;
-  final int? amount;        // Amount in minor units (kobo)
+  final int? amount; // Amount in minor units (kobo)
   final int? fee;
   final String? errorCode;
   final String? errorMessage;
   final DateTime? createdAt;
-  final double? newBalance;  // New balance in major units
+  final double? newBalance; // New balance in major units
   final String? recipientName;
   final DateTime? scheduledAt;
-  final String? providerReference; // Flutterwave/provider tx reference for receipt compliance
+  final String?
+      providerReference; // Flutterwave/provider tx reference for receipt compliance
 
   // History-only enrichment (populated by getPaymentHistory from the payment
   // record). Lets a receipt built from a HISTORY row show the real
@@ -95,7 +104,8 @@ class PaymentsTransferResult {
   });
 
   /// Create result from SendFundsResponse (Transfer Gateway API)
-  factory PaymentsTransferResult.fromSendFundsResponse(payments.SendFundsResponse response) {
+  factory PaymentsTransferResult.fromSendFundsResponse(
+      payments.SendFundsResponse response) {
     final hasPayment = response.hasPayment();
     final payment = hasPayment ? response.payment : null;
 
@@ -114,15 +124,20 @@ class PaymentsTransferResult {
       transferId: payment?.id.isNotEmpty == true ? payment!.id : null,
       reference: payment?.hasReference() == true ? payment!.reference : null,
       status: payment?.hasStatus() == true ? payment!.status : null,
-      amount: payment?.hasAmount() == true ? (payment!.amount * 100).toInt() : null,
+      amount:
+          payment?.hasAmount() == true ? (payment!.amount * 100).toInt() : null,
       fee: null, // Fee not included in current response
       errorCode: null,
-      errorMessage: response.hasMessage() && response.message.isNotEmpty ? response.message : null,
-      createdAt: payment?.hasCreatedAt() == true && payment!.createdAt.isNotEmpty
-          ? DateTime.tryParse(payment.createdAt)?.toLocal()
+      errorMessage: response.hasMessage() && response.message.isNotEmpty
+          ? response.message
           : null,
+      createdAt:
+          payment?.hasCreatedAt() == true && payment!.createdAt.isNotEmpty
+              ? DateTime.tryParse(payment.createdAt)?.toLocal()
+              : null,
       newBalance: response.hasNewBalance() ? response.newBalance : null,
-      recipientName: response.hasRecipientName() ? response.recipientName : null,
+      recipientName:
+          response.hasRecipientName() ? response.recipientName : null,
       providerReference: providerRef,
     );
   }
@@ -133,23 +148,27 @@ abstract class IPaymentsTransferDataSource {
   /// Send funds with PIN verification (unified for internal and external transfers)
   /// Uses Transfer Gateway (port 50076) -> Core-Payment-Service (port 50053)
   Future<PaymentsTransferResult> sendFunds({
-    required String fromAccountId,      // Source account to debit
-    required String toAccountNumber,    // Destination account number (for external transfers)
-    String? toAccountId,               // Account UUID (for internal transfers)
-    required String type,               // "internal" or "external" - PRIMARY KEY
-    required double amount,             // Amount in major units (e.g., 100.50)
-    required String description,        // Transfer description
-    required String transactionId,      // Transaction ID for PIN verification
-    required String verificationToken,  // Token from TransactionPinService
-    String? destinationBankCode,        // External: bank code (NUBAN sort code)
-    String? beneficiaryName,            // External: recipient name as shown on the bank account
-    DateTime? scheduledAt,              // Optional: schedule for future execution
-    int? expenseCategory,              // Budget category enum value selected by user
-    String? flow,                       // Funnel flow ("long"|"short") → x-flow metadata for backend metrics
+    required String fromAccountId, // Source account to debit
+    required String
+        toAccountNumber, // Destination account number (for external transfers)
+    String? toAccountId, // Account UUID (for internal transfers)
+    required String type, // "internal" or "external" - PRIMARY KEY
+    required double amount, // Amount in major units (e.g., 100.50)
+    required String description, // Transfer description
+    required String transactionId, // Transaction ID for PIN verification
+    required String verificationToken, // Token from TransactionPinService
+    String? destinationBankCode, // External: bank code (NUBAN sort code)
+    String?
+        beneficiaryName, // External: recipient name as shown on the bank account
+    DateTime? scheduledAt, // Optional: schedule for future execution
+    int? expenseCategory, // Budget category enum value selected by user
+    String?
+        flow, // Funnel flow ("long"|"short") → x-flow metadata for backend metrics
   });
 
   /// Get payment/transfer history
-  Future<({List<PaymentsTransferResult> transfers, int total})> getPaymentHistory({
+  Future<({List<PaymentsTransferResult> transfers, int total})>
+      getPaymentHistory({
     required String accountId,
     int? limit,
     int? offset,
@@ -187,7 +206,8 @@ abstract class IPaymentsTransferDataSource {
   /// Current status of a transfer by its reference — drives the receipt screen's
   /// pull-to-refresh / live reconciliation (pending → processing → completed /
   /// failed). Returns null if the transfer can't be found or the lookup fails.
-  Future<TransferStatusSnapshot?> getTransferStatus({required String reference});
+  Future<TransferStatusSnapshot?> getTransferStatus(
+      {required String reference});
 
   /// ALL of the account's EXTERNAL bank transfers (any status: pending /
   /// processing / completed / failed / reversed), as UnifiedTransactions. These

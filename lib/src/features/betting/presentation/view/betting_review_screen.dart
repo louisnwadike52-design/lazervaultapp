@@ -201,8 +201,7 @@ class _BettingReviewScreenState extends State<BettingReviewScreen>
       return const Scaffold(
         backgroundColor: _bg,
         body: Center(
-          child:
-              Text('Invalid data', style: TextStyle(color: Colors.white)),
+          child: Text('Invalid data', style: TextStyle(color: Colors.white)),
         ),
       );
     }

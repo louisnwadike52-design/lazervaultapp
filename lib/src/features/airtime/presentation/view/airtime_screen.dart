@@ -129,28 +129,28 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
               Expanded(
                 child: ServiceEntranceAnimation(
                   child: RefreshIndicator(
-                  onRefresh: _onRefresh,
-                  color: _invoicePurple,
-                  backgroundColor: const Color(0xFF1F1F1F),
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(height: 16.h),
-                        _buildQuickActionsRow(),
-                        SizedBox(height: 16.h),
-                        _buildTabToggle(),
-                        SizedBox(height: 20.h),
-                        if (_selectedTab == 0) ..._buildBuyContent(),
-                        if (_selectedTab == 1) ..._buildIntlContent(),
-                        if (_selectedTab == 2) ..._buildSellContent(),
-                        SizedBox(height: 20.h),
-                      ],
+                    onRefresh: _onRefresh,
+                    color: _invoicePurple,
+                    backgroundColor: const Color(0xFF1F1F1F),
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: 16.h),
+                          _buildQuickActionsRow(),
+                          SizedBox(height: 16.h),
+                          _buildTabToggle(),
+                          SizedBox(height: 20.h),
+                          if (_selectedTab == 0) ..._buildBuyContent(),
+                          if (_selectedTab == 1) ..._buildIntlContent(),
+                          if (_selectedTab == 2) ..._buildSellContent(),
+                          SizedBox(height: 20.h),
+                        ],
+                      ),
                     ),
                   ),
-                ),
                 ),
               ),
             ],
@@ -251,7 +251,8 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
     // the toggle is pointless — collapse it to nothing (that tab's content
     // shows on its own).
     final items = <Widget>[
-      if (_buyTabEnabled) _buildTabItem(0, Icons.phone_android, 'Buy', _buyColor),
+      if (_buyTabEnabled)
+        _buildTabItem(0, Icons.phone_android, 'Buy', _buyColor),
       if (_intlTabEnabled)
         _buildTabItem(1, Icons.public, 'International', _invoicePurple),
       if (_sellTabEnabled)
@@ -486,14 +487,14 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
         ),
       ),
       SizedBox(height: 12.h),
-      _buildStep('1', 'Select your network',
-          'Choose MTN, Airtel, Glo, or 9mobile'),
+      _buildStep(
+          '1', 'Select your network', 'Choose MTN, Airtel, Glo, or 9mobile'),
       SizedBox(height: 10.h),
       _buildStep('2', 'Enter your phone & amount',
           'Specify how much airtime to convert'),
       SizedBox(height: 10.h),
-      _buildStep('3', 'Transfer airtime',
-          "Send airtime to the provider's number"),
+      _buildStep(
+          '3', 'Transfer airtime', "Send airtime to the provider's number"),
       SizedBox(height: 10.h),
       _buildStep('4', 'Get cash in wallet',
           'Cash is credited instantly to your wallet'),

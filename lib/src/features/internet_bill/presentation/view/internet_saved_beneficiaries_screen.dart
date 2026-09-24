@@ -83,8 +83,8 @@ class _InternetSavedBeneficiariesScreenState
         elevation: 0,
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: Icon(Icons.arrow_back_ios_new,
-              color: Colors.white, size: 20.sp),
+          icon:
+              Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20.sp),
         ),
         title: Text('Saved ISP Accounts',
             style: TextStyle(
@@ -124,8 +124,7 @@ class _InternetSavedBeneficiariesScreenState
               }
             },
           ),
-          BlocListener<InternetAutoRechargeCubit,
-              InternetAutoRechargeState>(
+          BlocListener<InternetAutoRechargeCubit, InternetAutoRechargeState>(
             listener: (context, state) {
               if (!mounted) return;
               if (state is InternetAutoRechargesLoaded) {
@@ -140,8 +139,7 @@ class _InternetSavedBeneficiariesScreenState
   }
 
   Widget _buildBody() {
-    if (_error != null &&
-        (_beneficiaries == null || _beneficiaries!.isEmpty)) {
+    if (_error != null && (_beneficiaries == null || _beneficiaries!.isEmpty)) {
       // Raw thrown strings (SocketException / 'Failed host lookup') were
       // being printed straight to the user. AppErrorView maps them via
       // friendlyError() into plain connectivity copy.
@@ -198,8 +196,7 @@ class _InternetSavedBeneficiariesScreenState
             Text(
               'After buying internet, tap "Save Contact" on the receipt to add the account here for one-tap repeat purchases.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 14.sp, color: const Color(0xFF9CA3AF)),
+              style: TextStyle(fontSize: 14.sp, color: const Color(0xFF9CA3AF)),
             ),
           ],
         ),
@@ -214,14 +211,14 @@ class _InternetSavedBeneficiariesScreenState
             ? ''
             : b.providerName;
     return BillBeneficiaryItem(
-      displayName: (b.nickname?.isNotEmpty == true) ? b.nickname! : b.accountNumber,
+      displayName:
+          (b.nickname?.isNotEmpty == true) ? b.nickname! : b.accountNumber,
       identifier: b.accountNumber,
       providerName: providerForBadge,
       providerColor: _providerColor(b.providerCode),
-      lastPlanOrAmount:
-          (b.lastPlanName != null && b.lastPlanName!.isNotEmpty)
-              ? b.lastPlanName
-              : null,
+      lastPlanOrAmount: (b.lastPlanName != null && b.lastPlanName!.isNotEmpty)
+          ? b.lastPlanName
+          : null,
       usageCount: b.topupCount,
       trailing: autos.isNotEmpty ? _autosBadge(autos) : null,
       onTap: () => _showOptions(b),
@@ -233,15 +230,11 @@ class _InternetSavedBeneficiariesScreenState
 
   Widget _autosBadge(List<InternetAutoRecharge> autos) {
     if (autos.length == 1) return _autoBadge(autos.first);
-    final anyActive =
-        autos.any((ar) => ar.status.toLowerCase() == 'active');
-    final anyPaused =
-        autos.any((ar) => ar.status.toLowerCase() == 'paused');
+    final anyActive = autos.any((ar) => ar.status.toLowerCase() == 'active');
+    final anyPaused = autos.any((ar) => ar.status.toLowerCase() == 'paused');
     final color = anyActive
         ? const Color(0xFF10B981)
-        : (anyPaused
-            ? const Color(0xFFFB923C)
-            : const Color(0xFF9CA3AF));
+        : (anyPaused ? const Color(0xFFFB923C) : const Color(0xFF9CA3AF));
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
@@ -256,9 +249,7 @@ class _InternetSavedBeneficiariesScreenState
           SizedBox(width: 4.w),
           Text('Roll \u00D7${autos.length}',
               style: TextStyle(
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w600,
-                  color: color)),
+                  fontSize: 11.sp, fontWeight: FontWeight.w600, color: color)),
         ],
       ),
     );
@@ -266,8 +257,7 @@ class _InternetSavedBeneficiariesScreenState
 
   Widget _autoBadge(InternetAutoRecharge ar) {
     final isActive = ar.status.toLowerCase() == 'active';
-    final color =
-        isActive ? const Color(0xFF10B981) : const Color(0xFFFB923C);
+    final color = isActive ? const Color(0xFF10B981) : const Color(0xFFFB923C);
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
@@ -282,9 +272,7 @@ class _InternetSavedBeneficiariesScreenState
           SizedBox(width: 4.w),
           Text('Roll',
               style: TextStyle(
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w600,
-                  color: color)),
+                  fontSize: 11.sp, fontWeight: FontWeight.w600, color: color)),
         ],
       ),
     );
@@ -339,12 +327,12 @@ class _InternetSavedBeneficiariesScreenState
                     : (ar.status.toLowerCase() == 'paused'
                         ? const Color(0xFFFB923C)
                         : const Color(0xFFEF4444));
-                final title = ar.planName.isNotEmpty ? ar.planName : ar.packageId;
+                final title =
+                    ar.planName.isNotEmpty ? ar.planName : ar.packageId;
                 return ListTile(
                   leading: Icon(Icons.autorenew, color: color, size: 22.sp),
                   title: Text(title,
-                      style: TextStyle(
-                          color: Colors.white, fontSize: 14.sp)),
+                      style: TextStyle(color: Colors.white, fontSize: 14.sp)),
                   subtitle: Text(
                     '${ar.frequency[0].toUpperCase()}${ar.frequency.substring(1)} · ₦${ar.amount.toStringAsFixed(0)}',
                     style: TextStyle(
@@ -402,8 +390,7 @@ class _InternetSavedBeneficiariesScreenState
             ),
             SizedBox(height: 16.h),
             ListTile(
-              leading: const Icon(Icons.info_outline,
-                  color: Color(0xFF4E03D0)),
+              leading: const Icon(Icons.info_outline, color: Color(0xFF4E03D0)),
               title: Text('View Details',
                   style: TextStyle(color: Colors.white, fontSize: 15.sp)),
               onTap: () {
@@ -413,17 +400,15 @@ class _InternetSavedBeneficiariesScreenState
             ),
             const Divider(color: Color(0xFF2D2D2D), height: 1),
             ListTile(
-              leading:
-                  const Icon(Icons.history, color: Color(0xFF9CA3AF)),
+              leading: const Icon(Icons.history, color: Color(0xFF9CA3AF)),
               title: Text('View Purchases',
                   style: TextStyle(color: Colors.white, fontSize: 15.sp)),
               onTap: () {
                 Navigator.of(ctx).pop();
-                Get.toNamed(AppRoutes.internetBillHistory,
-                    arguments: {
-                      'accountNumber': b.accountNumber,
-                      'providerCode': b.providerCode,
-                    });
+                Get.toNamed(AppRoutes.internetBillHistory, arguments: {
+                  'accountNumber': b.accountNumber,
+                  'providerCode': b.providerCode,
+                });
               },
             ),
             const Divider(color: Color(0xFF2D2D2D), height: 1),
@@ -438,12 +423,10 @@ class _InternetSavedBeneficiariesScreenState
             ),
             const Divider(color: Color(0xFF2D2D2D), height: 1),
             ListTile(
-              leading:
-                  const Icon(Icons.autorenew, color: Color(0xFF10B981)),
+              leading: const Icon(Icons.autorenew, color: Color(0xFF10B981)),
               title: Text(
                 hasRollover ? 'Update Rollover' : 'Set Rollover',
-                style:
-                    TextStyle(color: Colors.white, fontSize: 15.sp),
+                style: TextStyle(color: Colors.white, fontSize: 15.sp),
               ),
               subtitle: hasRollover
                   ? Text(
@@ -492,8 +475,8 @@ class _InternetSavedBeneficiariesScreenState
                     Get.snackbar(
                       'Rollover updated',
                       'Your schedule was updated',
-                      backgroundColor: const Color(0xFF10B981)
-                          .withValues(alpha: 0.9),
+                      backgroundColor:
+                          const Color(0xFF10B981).withValues(alpha: 0.9),
                       colorText: Colors.white,
                       snackPosition: SnackPosition.TOP,
                       margin: EdgeInsets.all(16.w),
@@ -520,8 +503,8 @@ class _InternetSavedBeneficiariesScreenState
             ),
             const Divider(color: Color(0xFF2D2D2D), height: 1),
             ListTile(
-              leading: const Icon(Icons.edit_outlined,
-                  color: Color(0xFF9CA3AF)),
+              leading:
+                  const Icon(Icons.edit_outlined, color: Color(0xFF9CA3AF)),
               title: Text('Edit Nickname',
                   style: TextStyle(color: Colors.white, fontSize: 15.sp)),
               onTap: () {
@@ -531,8 +514,8 @@ class _InternetSavedBeneficiariesScreenState
             ),
             const Divider(color: Color(0xFF2D2D2D), height: 1),
             ListTile(
-              leading: const Icon(Icons.delete_outline,
-                  color: Color(0xFFEF4444)),
+              leading:
+                  const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
               title: Text('Delete Contact',
                   style: TextStyle(
                       color: const Color(0xFFEF4444), fontSize: 15.sp)),
@@ -562,8 +545,8 @@ class _InternetSavedBeneficiariesScreenState
       isActive: true,
       commissionRate: 0,
     );
-    final hasPackage = (b.lastPackageId?.isNotEmpty == true) &&
-        (b.lastAmount ?? 0) > 0;
+    final hasPackage =
+        (b.lastPackageId?.isNotEmpty == true) && (b.lastAmount ?? 0) > 0;
     if (hasPackage) {
       final packageEntity = InternetPackageEntity(
         id: b.lastPackageId!,
@@ -580,9 +563,8 @@ class _InternetSavedBeneficiariesScreenState
         // The Flutter entity doesn't carry the live customer_name —
         // fall back to the nickname or account number so the
         // confirmation screen's "Customer Name" row still renders.
-        customerName: (b.nickname?.isNotEmpty == true)
-            ? b.nickname!
-            : b.accountNumber,
+        customerName:
+            (b.nickname?.isNotEmpty == true) ? b.nickname! : b.accountNumber,
         accountNumber: b.accountNumber,
         status: 'repeat_purchase',
         dueAmount: 0,
@@ -717,8 +699,7 @@ class _InternetSavedBeneficiariesScreenState
                 ),
               ),
               Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8.r),
@@ -824,8 +805,8 @@ class _InternetSavedBeneficiariesScreenState
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) => AlertDialog(
           backgroundColor: const Color(0xFF1F1F1F),
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
           title: Text('Edit Nickname',
               style: TextStyle(color: Colors.white, fontSize: 17.sp)),
           content: Column(
@@ -834,8 +815,7 @@ class _InternetSavedBeneficiariesScreenState
             children: [
               Text('${b.providerName} · ${b.accountNumber}',
                   style: TextStyle(
-                      fontSize: 13.sp,
-                      color: const Color(0xFF9CA3AF))),
+                      fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
               SizedBox(height: 16.h),
               TextField(
                 controller: controller,
@@ -849,18 +829,15 @@ class _InternetSavedBeneficiariesScreenState
                   fillColor: const Color(0xFF0A0A0A),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.r),
-                      borderSide:
-                          const BorderSide(color: Color(0xFF2D2D2D))),
+                      borderSide: const BorderSide(color: Color(0xFF2D2D2D))),
                   enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.r),
-                      borderSide:
-                          const BorderSide(color: Color(0xFF2D2D2D))),
+                      borderSide: const BorderSide(color: Color(0xFF2D2D2D))),
                   focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.r),
-                      borderSide:
-                          const BorderSide(color: Color(0xFF4E03D0))),
-                  contentPadding: EdgeInsets.symmetric(
-                      horizontal: 14.w, vertical: 12.h),
+                      borderSide: const BorderSide(color: Color(0xFF4E03D0))),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
                 ),
               ),
             ],
@@ -870,8 +847,7 @@ class _InternetSavedBeneficiariesScreenState
                 onPressed: () => Navigator.of(ctx).pop(),
                 child: Text('Cancel',
                     style: TextStyle(
-                        color: const Color(0xFF9CA3AF),
-                        fontSize: 14.sp))),
+                        color: const Color(0xFF9CA3AF), fontSize: 14.sp))),
             TextButton(
               onPressed: loading
                   ? null
@@ -886,9 +862,7 @@ class _InternetSavedBeneficiariesScreenState
                       }
                       setLocal(() => loading = true);
                       try {
-                        await context
-                            .read<InternetBeneficiaryCubit>()
-                            .update(
+                        await context.read<InternetBeneficiaryCubit>().update(
                               beneficiaryId: b.id,
                               nickname: trimmed.isEmpty ? null : trimmed,
                             );
@@ -901,8 +875,8 @@ class _InternetSavedBeneficiariesScreenState
                         Get.snackbar(
                           'Updated',
                           'Nickname saved',
-                          backgroundColor: const Color(0xFF10B981)
-                              .withValues(alpha: 0.9),
+                          backgroundColor:
+                              const Color(0xFF10B981).withValues(alpha: 0.9),
                           colorText: Colors.white,
                           snackPosition: SnackPosition.TOP,
                           margin: EdgeInsets.all(16.w),
@@ -922,8 +896,8 @@ class _InternetSavedBeneficiariesScreenState
                         Get.snackbar(
                           'Could not save',
                           msg.isEmpty ? 'Please try again' : msg,
-                          backgroundColor: const Color(0xFFEF4444)
-                              .withValues(alpha: 0.9),
+                          backgroundColor:
+                              const Color(0xFFEF4444).withValues(alpha: 0.9),
                           colorText: Colors.white,
                           snackPosition: SnackPosition.TOP,
                           margin: EdgeInsets.all(16.w),
@@ -954,25 +928,22 @@ class _InternetSavedBeneficiariesScreenState
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r)),
-        title: Text(
-            hasAuto ? 'Delete Contact & Rollover' : 'Delete Contact',
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Text(hasAuto ? 'Delete Contact & Rollover' : 'Delete Contact',
             style: TextStyle(color: Colors.white, fontSize: 17.sp)),
         content: Text(
           hasAuto
               ? 'This contact has an active rollover. Deleting will also remove the linked schedule.\n\nDelete $name?'
               : 'Delete $name? This cannot be undone.',
-          style: TextStyle(
-              color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+          style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
               child: Text('Cancel',
                   style: TextStyle(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 14.sp))),
+                      color: const Color(0xFF9CA3AF), fontSize: 14.sp))),
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();

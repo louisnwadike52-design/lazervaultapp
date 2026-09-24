@@ -31,7 +31,9 @@ UnifiedTransaction contactlessSessionToUnified(
     id: session.id,
     serviceType: TransactionServiceType.contactlessPay,
     title: otherName.isNotEmpty
-        ? (viewerIsReceiver ? 'Tap to Pay from $otherName' : 'Tap to Pay to $otherName')
+        ? (viewerIsReceiver
+            ? 'Tap to Pay from $otherName'
+            : 'Tap to Pay to $otherName')
         : 'Tap to Pay',
     description: (session.description ?? '').trim().isNotEmpty
         ? session.description!.trim()
@@ -42,7 +44,8 @@ UnifiedTransaction contactlessSessionToUnified(
     // raised so an unpaid session still sorts and renders sensibly.
     createdAt: session.completedAt ?? session.createdAt,
     status: _statusFor(session.status),
-    flow: viewerIsReceiver ? TransactionFlow.incoming : TransactionFlow.outgoing,
+    flow:
+        viewerIsReceiver ? TransactionFlow.incoming : TransactionFlow.outgoing,
     transactionReference: session.id,
     counterpartyName: otherName.isNotEmpty ? otherName : null,
     // Deliberately null, same reasoning as the QR mapper: this feeds the PDF's

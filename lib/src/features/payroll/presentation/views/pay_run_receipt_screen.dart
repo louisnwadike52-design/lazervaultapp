@@ -124,8 +124,7 @@ class _PayRunReceiptScreenState extends State<PayRunReceiptScreen>
     return '${fmt(start)} – ${fmt(end)}';
   }
 
-  Color get _headerColor =>
-      _nonePaid ? _red : (_allPaid ? _green : _orange);
+  Color get _headerColor => _nonePaid ? _red : (_allPaid ? _green : _orange);
 
   String get _headerTitle {
     if (_nonePaid) return 'Payment Failed';
@@ -201,8 +200,7 @@ class _PayRunReceiptScreenState extends State<PayRunReceiptScreen>
                         fontSize: 20.sp,
                         fontWeight: FontWeight.w700)),
                 Text(_data['name']?.toString() ?? 'Payroll',
-                    style: GoogleFonts.inter(
-                        color: _label, fontSize: 12.sp)),
+                    style: GoogleFonts.inter(color: _label, fontSize: 12.sp)),
               ],
             ),
           ),
@@ -233,7 +231,9 @@ class _PayRunReceiptScreenState extends State<PayRunReceiptScreen>
               child: Icon(
                 _nonePaid
                     ? Icons.close_rounded
-                    : (_allPaid ? Icons.check_rounded : Icons.priority_high_rounded),
+                    : (_allPaid
+                        ? Icons.check_rounded
+                        : Icons.priority_high_rounded),
                 color: Colors.white,
                 size: 40.sp,
               ),
@@ -337,14 +337,10 @@ class _PayRunReceiptScreenState extends State<PayRunReceiptScreen>
           SizedBox(height: 14.h),
           _detailRow('Pay Period', _period),
           if (src != null && src.isNotEmpty)
-            _detailRow(
-                'Paid From',
-                last4 != null && last4.isNotEmpty
-                    ? '$src •••• $last4'
-                    : src),
+            _detailRow('Paid From',
+                last4 != null && last4.isNotEmpty ? '$src •••• $last4' : src),
           _detailRow('Date & Time', _processedAt),
-          _detailRow(
-              'Status',
+          _detailRow('Status',
               _nonePaid ? 'Failed' : (_allPaid ? 'Completed' : 'Partial'),
               valueColor: _headerColor),
           if (_reference.isNotEmpty)
@@ -459,46 +455,47 @@ class _PayRunReceiptScreenState extends State<PayRunReceiptScreen>
           SizedBox(height: 10.h),
           Row(
             children: [
-          Expanded(
-            child: OutlinedButton(
-              onPressed: () {
-                final id =
-                    (_data['payRunId'] ?? _data['reference'])?.toString();
-                if (id != null && id.isNotEmpty) {
-                  Get.toNamed(AppRoutes.payRunDetails, parameters: {'id': id});
-                }
-              },
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: _border),
-                padding: EdgeInsets.symmetric(vertical: 16.h),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14.r)),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {
+                    final id =
+                        (_data['payRunId'] ?? _data['reference'])?.toString();
+                    if (id != null && id.isNotEmpty) {
+                      Get.toNamed(AppRoutes.payRunDetails,
+                          parameters: {'id': id});
+                    }
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: _border),
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14.r)),
+                  ),
+                  child: Text('View Pay Slips',
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600)),
+                ),
               ),
-              child: Text('View Pay Slips',
-                  style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600)),
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: _goToPayrollHome,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _orange,
-                padding: EdgeInsets.symmetric(vertical: 16.h),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14.r)),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _goToPayrollHome,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _orange,
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14.r)),
+                  ),
+                  child: Text('Done',
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w700)),
+                ),
               ),
-              child: Text('Done',
-                  style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w700)),
-            ),
-          ),
             ],
           ),
         ],

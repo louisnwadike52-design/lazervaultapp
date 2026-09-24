@@ -24,4 +24,4 @@ class WithdrawalFailure extends WithdrawalState {
   const WithdrawalFailure(this.message, {this.statusCode});
   @override
   List<Object?> get props => [message, statusCode];
-} 
+}

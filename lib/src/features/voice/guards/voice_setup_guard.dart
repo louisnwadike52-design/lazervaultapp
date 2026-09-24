@@ -18,7 +18,7 @@ class VoiceSetupGuard {
   VoiceSetupGuard({
     required VoiceActivationManager voiceManager,
     required VoiceSetupManager setupManager,
-  })  : _voiceManager = voiceManager;
+  }) : _voiceManager = voiceManager;
 
   /// Check if user can access voice feature
   /// Returns true if enrolled, false otherwise
@@ -92,7 +92,8 @@ class VoiceSetupGuard {
           context: context,
           barrierDismissible: false,
           builder: (context) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             title: Row(
               children: [
                 Container(
@@ -294,7 +295,8 @@ class VoiceSetupGuard {
           context: context,
           barrierDismissible: false,
           builder: (context) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             title: const Row(
               children: [
                 Icon(

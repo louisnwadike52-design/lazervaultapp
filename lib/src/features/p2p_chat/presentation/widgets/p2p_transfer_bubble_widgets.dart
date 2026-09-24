@@ -30,7 +30,8 @@ class _SendAgainButtonState extends State<_SendAgainButton> {
 
     try {
       // Try saved recipient first, then resolve account directly
-      final recipient = await _lookupSavedRecipient() ?? await _resolveRecipientFromAccount();
+      final recipient =
+          await _lookupSavedRecipient() ?? await _resolveRecipientFromAccount();
 
       if (!mounted) return;
       try {

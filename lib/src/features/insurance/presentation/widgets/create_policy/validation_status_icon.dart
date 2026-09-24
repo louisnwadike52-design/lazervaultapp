@@ -61,7 +61,6 @@ class _ValidationStatusIconState extends State<ValidationStatusIcon>
         widget.status != ValidationStatus.neutral) {
       _controller.forward(from: 0.5);
     }
-
   }
 
   @override
@@ -88,9 +87,7 @@ class _ValidationStatusIconState extends State<ValidationStatusIcon>
               : Colors.red.withValues(alpha: 0.2),
         ),
         child: Icon(
-          widget.status == ValidationStatus.valid
-              ? Icons.check
-              : Icons.close,
+          widget.status == ValidationStatus.valid ? Icons.check : Icons.close,
           size: (widget.size * 0.7).sp,
           color: widget.status == ValidationStatus.valid
               ? Colors.green

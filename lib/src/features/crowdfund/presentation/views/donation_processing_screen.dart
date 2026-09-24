@@ -11,7 +11,6 @@ import '../cubit/crowdfund_state.dart';
 import 'donation_receipt_screen.dart';
 part 'donation_processing_screen_widgets.dart';
 
-
 /// Everything needed to re-dispatch the SAME donation.
 ///
 /// `transactionId` is the client-minted id that binds the PIN

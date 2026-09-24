@@ -62,7 +62,13 @@ class _ElectricityRolloverPreferenceSheetState
 
   // Backend uses ISO-8601 weekday numbering (Monday = 1 .. Sunday = 7).
   static const _weekdayLabels = [
-    'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun',
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+    'Sun',
   ];
 
   void _submit() {
@@ -115,14 +121,12 @@ class _ElectricityRolloverPreferenceSheetState
               ),
             ),
             SizedBox(height: 20.h),
-
             _frequencyPicker(),
             SizedBox(height: 16.h),
             if (_frequency == 'weekly') _dayOfWeekPicker(),
             if (_frequency == 'monthly') _dayOfMonthPicker(),
             SizedBox(height: 16.h),
             _timePicker(),
-
             SizedBox(height: 24.h),
             Row(
               children: [
@@ -196,8 +200,7 @@ class _ElectricityRolloverPreferenceSheetState
             for (final freq in const ['daily', 'weekly', 'monthly'])
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(
-                      right: freq == 'monthly' ? 0 : 8.w),
+                  padding: EdgeInsets.only(right: freq == 'monthly' ? 0 : 8.w),
                   child: _chip(
                     label: freq[0].toUpperCase() + freq.substring(1),
                     selected: _frequency == freq,

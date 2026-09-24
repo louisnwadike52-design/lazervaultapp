@@ -17,7 +17,8 @@ class FaceRegistrationModel extends FaceRegistrationEntity {
       faceId: response.faceId.isNotEmpty ? response.faceId : null,
       message: response.message,
       error: response.error.isNotEmpty ? response.error : null,
-      numFacesDetected: response.numFacesDetected > 0 ? response.numFacesDetected : null,
+      numFacesDetected:
+          response.numFacesDetected > 0 ? response.numFacesDetected : null,
       duplicateDetails: response.hasDuplicateDetails()
           ? DuplicateDetailsModel.fromProto(response.duplicateDetails)
           : null,
@@ -42,7 +43,8 @@ class DuplicateDetailsModel extends DuplicateDetailsEntity {
       threshold: details.threshold,
       totalMatches: details.totalMatches,
       message: details.message,
-      securityNote: details.securityNote.isNotEmpty ? details.securityNote : null,
+      securityNote:
+          details.securityNote.isNotEmpty ? details.securityNote : null,
       primaryMatch: details.hasPrimaryMatch()
           ? PrimaryMatchModel.fromProto(details.primaryMatch)
           : null,

@@ -19,8 +19,7 @@ class CrowdfundLeaderboardScreen extends StatefulWidget {
       _CrowdfundLeaderboardScreenState();
 }
 
-class _CrowdfundLeaderboardScreenState
-    extends State<CrowdfundLeaderboardScreen>
+class _CrowdfundLeaderboardScreenState extends State<CrowdfundLeaderboardScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   Timer? _tabDebounceTimer;

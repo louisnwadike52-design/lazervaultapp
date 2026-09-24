@@ -179,7 +179,8 @@ class _GiftCardPurchaseProcessingScreenState
     _purchaseStarted = true;
 
     _purchaseWatchdog?.cancel();
-    _purchaseWatchdog = Timer(_purchaseWatchdogTimeout, _handlePurchaseWatchdog);
+    _purchaseWatchdog =
+        Timer(_purchaseWatchdogTimeout, _handlePurchaseWatchdog);
 
     final args = widget.purchaseArgs;
     context.read<GiftCardCubit>().purchaseGiftCardWithToken(

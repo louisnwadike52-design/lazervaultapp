@@ -18,7 +18,11 @@ class _StageBreadcrumb extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final steps = hasExistingPin
-        ? const [_PinStage.enterCurrent, _PinStage.enterNew, _PinStage.confirmNew]
+        ? const [
+            _PinStage.enterCurrent,
+            _PinStage.enterNew,
+            _PinStage.confirmNew
+          ]
         : const [_PinStage.enterNew, _PinStage.confirmNew];
 
     int currentIdx = steps.indexOf(stage);
@@ -36,9 +40,7 @@ class _StageBreadcrumb extends StatelessWidget {
           width: 28.w,
           height: 4.h,
           decoration: BoxDecoration(
-            color: filled
-                ? const Color(0xFF3B82F6)
-                : const Color(0xFF2D2D2D),
+            color: filled ? const Color(0xFF3B82F6) : const Color(0xFF2D2D2D),
             borderRadius: BorderRadius.circular(2.r),
           ),
         );

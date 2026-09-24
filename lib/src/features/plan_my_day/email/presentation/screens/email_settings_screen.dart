@@ -11,7 +11,6 @@ import 'package:lazervault/src/features/plan_my_day/email/presentation/widgets/e
 import 'package:lazervault/src/features/plan_my_day/email/presentation/widgets/tone_selector.dart';
 part 'email_settings_screen_widgets.dart';
 
-
 /// Settings: connect/disconnect, auto-reply on/off, daily digest hour, and
 /// managing auto-reply rules (list + add + delete).
 class EmailSettingsScreen extends StatefulWidget {
@@ -63,7 +62,8 @@ class _EmailSettingsScreenState extends State<EmailSettingsScreen> {
             context.read<EmailCubit>().loadSettings();
           }
         },
-        buildWhen: (_, s) => s is EmailSettingsLoading || s is EmailSettingsLoaded,
+        buildWhen: (_, s) =>
+            s is EmailSettingsLoading || s is EmailSettingsLoaded,
         builder: (context, state) {
           if (state is EmailSettingsLoading) {
             return const Center(child: LazerVaultLoader.small());
@@ -116,7 +116,8 @@ class _EmailSettingsScreenState extends State<EmailSettingsScreen> {
           Row(
             children: [
               Icon(Icons.mail_outline_rounded,
-                  color: connected ? EmailPalette.success : EmailPalette.primary,
+                  color:
+                      connected ? EmailPalette.success : EmailPalette.primary,
                   size: 22.sp),
               SizedBox(width: 10.w),
               Expanded(
@@ -152,8 +153,8 @@ class _EmailSettingsScreenState extends State<EmailSettingsScreen> {
                         fontSize: 14.sp, fontWeight: FontWeight.w600)),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: EmailPalette.error,
-                  side:
-                      BorderSide(color: EmailPalette.error.withValues(alpha: 0.5)),
+                  side: BorderSide(
+                      color: EmailPalette.error.withValues(alpha: 0.5)),
                   padding: EdgeInsets.symmetric(vertical: 13.h),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r)),
@@ -209,8 +210,9 @@ class _EmailSettingsScreenState extends State<EmailSettingsScreen> {
             activeThumbColor: EmailPalette.success,
             onChanged: state.saving
                 ? null
-                : (v) =>
-                    context.read<EmailCubit>().updateSettings(autoReplyEnabled: v),
+                : (v) => context
+                    .read<EmailCubit>()
+                    .updateSettings(autoReplyEnabled: v),
           ),
         ],
       ),
@@ -271,7 +273,8 @@ class _EmailSettingsScreenState extends State<EmailSettingsScreen> {
             const Spacer(),
             TextButton.icon(
               onPressed: () => _showRuleSheet(),
-              icon: const Icon(Icons.add, size: 18, color: EmailPalette.primary),
+              icon:
+                  const Icon(Icons.add, size: 18, color: EmailPalette.primary),
               label: Text('Add',
                   style: GoogleFonts.inter(
                       color: EmailPalette.primary,
@@ -287,7 +290,9 @@ class _EmailSettingsScreenState extends State<EmailSettingsScreen> {
               'No rules yet. Add a rule to auto-draft or auto-send replies for '
               'emails from a sender or with a subject keyword.',
               style: GoogleFonts.inter(
-                  color: EmailPalette.textSecondary, fontSize: 13.sp, height: 1.4),
+                  color: EmailPalette.textSecondary,
+                  fontSize: 13.sp,
+                  height: 1.4),
             ),
           )
         else
@@ -327,8 +332,7 @@ class _EmailSettingsScreenState extends State<EmailSettingsScreen> {
                 constraints: const BoxConstraints(),
                 icon: const Icon(Icons.delete_outline,
                     size: 20, color: EmailPalette.error),
-                onPressed: () =>
-                    context.read<EmailCubit>().deleteRule(rule.id),
+                onPressed: () => context.read<EmailCubit>().deleteRule(rule.id),
               ),
             ],
           ),
@@ -446,8 +450,9 @@ class _EmailSettingsScreenState extends State<EmailSettingsScreen> {
                               ? EmailPalette.primary
                               : Colors.white,
                           fontSize: 15.sp,
-                          fontWeight:
-                              h == current ? FontWeight.w600 : FontWeight.w400)),
+                          fontWeight: h == current
+                              ? FontWeight.w600
+                              : FontWeight.w400)),
                   trailing: h == current
                       ? const Icon(Icons.check, color: EmailPalette.primary)
                       : null,

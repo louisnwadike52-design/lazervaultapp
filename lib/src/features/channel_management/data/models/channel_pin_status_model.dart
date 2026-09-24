@@ -1,6 +1,7 @@
 import 'package:lazervault/src/features/channel_management/domain/entities/channel_pin_status.dart';
 import 'package:lazervault/src/generated/transaction_pin.pb.dart' as pin_pb;
-import 'package:lazervault/src/generated/transaction_pin.pbenum.dart' as pin_enum;
+import 'package:lazervault/src/generated/transaction_pin.pbenum.dart'
+    as pin_enum;
 
 class ChannelPinStatusModel extends ChannelPinStatus {
   const ChannelPinStatusModel({
@@ -19,8 +20,7 @@ class ChannelPinStatusModel extends ChannelPinStatus {
       isActive: proto.isActive,
       isLocked: proto.isLocked,
       createdAt: proto.hasCreatedAt() ? proto.createdAt.toDateTime() : null,
-      lastUsedAt:
-          proto.hasLastUsedAt() ? proto.lastUsedAt.toDateTime() : null,
+      lastUsedAt: proto.hasLastUsedAt() ? proto.lastUsedAt.toDateTime() : null,
     );
   }
 

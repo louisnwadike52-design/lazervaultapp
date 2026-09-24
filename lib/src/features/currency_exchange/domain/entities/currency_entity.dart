@@ -86,4 +86,4 @@ class Currency {
   String toString() {
     return 'Currency(code: $code, name: $name, symbol: $symbol)';
   }
-} 
+}

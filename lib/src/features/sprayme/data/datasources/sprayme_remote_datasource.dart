@@ -31,7 +31,8 @@ class SprayMeRemoteDataSource {
         'cover_image_url': coverImageUrl,
         'currency': currency,
       });
-      return SpraySession.fromJson(response.data['session'] as Map<String, dynamic>);
+      return SpraySession.fromJson(
+          response.data['session'] as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _mapDioError(e, 'create session');
     }
@@ -40,7 +41,8 @@ class SprayMeRemoteDataSource {
   Future<SpraySession> getSession(String sessionId) async {
     try {
       final response = await _dio.get('/api/v1/sprayme/sessions/$sessionId');
-      return SpraySession.fromJson(response.data['session'] as Map<String, dynamic>);
+      return SpraySession.fromJson(
+          response.data['session'] as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _mapDioError(e, 'load session');
     }
@@ -49,7 +51,8 @@ class SprayMeRemoteDataSource {
   Future<SpraySession> getSessionByCode(String code) async {
     try {
       final response = await _dio.get('/api/v1/sprayme/sessions/code/$code');
-      return SpraySession.fromJson(response.data['session'] as Map<String, dynamic>);
+      return SpraySession.fromJson(
+          response.data['session'] as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _mapDioError(e, 'find session');
     }
@@ -60,7 +63,8 @@ class SprayMeRemoteDataSource {
       final response = await _dio.post('/api/v1/sprayme/sessions/join', data: {
         'session_code': sessionCode,
       });
-      return SpraySession.fromJson(response.data['session'] as Map<String, dynamic>);
+      return SpraySession.fromJson(
+          response.data['session'] as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _mapDioError(e, 'join session');
     }
@@ -76,16 +80,20 @@ class SprayMeRemoteDataSource {
 
   Future<SpraySession> endSession(String sessionId) async {
     try {
-      final response = await _dio.post('/api/v1/sprayme/sessions/$sessionId/end');
-      return SpraySession.fromJson(response.data['session'] as Map<String, dynamic>);
+      final response =
+          await _dio.post('/api/v1/sprayme/sessions/$sessionId/end');
+      return SpraySession.fromJson(
+          response.data['session'] as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _mapDioError(e, 'end session');
     }
   }
 
-  Future<List<SpraySession>> getMySessions({String filter = 'all', int page = 1, int pageSize = 20}) async {
+  Future<List<SpraySession>> getMySessions(
+      {String filter = 'all', int page = 1, int pageSize = 20}) async {
     try {
-      final response = await _dio.get('/api/v1/sprayme/sessions/my', queryParameters: {
+      final response =
+          await _dio.get('/api/v1/sprayme/sessions/my', queryParameters: {
         'filter': filter,
         'page': page,
         'page_size': pageSize,
@@ -177,13 +185,17 @@ class SprayMeRemoteDataSource {
   Future<SprayWallet> getWallet() async {
     try {
       final response = await _dio.get('/api/v1/sprayme/wallet');
-      return SprayWallet.fromJson(response.data['wallet'] as Map<String, dynamic>);
+      return SprayWallet.fromJson(
+          response.data['wallet'] as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _mapDioError(e, 'load wallet');
     }
   }
 
-  Future<SprayWallet> fundWallet({required int amount, required String sourceAccountId, required String verificationToken}) async {
+  Future<SprayWallet> fundWallet(
+      {required int amount,
+      required String sourceAccountId,
+      required String verificationToken}) async {
     try {
       final response = await _dio.post('/api/v1/sprayme/wallet/fund', data: {
         'amount': amount,
@@ -193,7 +205,8 @@ class SprayMeRemoteDataSource {
         // auth-service, bound to source_account_id.
         'verification_token': verificationToken,
       });
-      return SprayWallet.fromJson(response.data['wallet'] as Map<String, dynamic>);
+      return SprayWallet.fromJson(
+          response.data['wallet'] as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _mapDioError(e, 'fund wallet');
     }
@@ -211,7 +224,8 @@ class SprayMeRemoteDataSource {
     String currency = 'NGN',
   }) async {
     try {
-      final response = await _dio.post('/api/v1/sprayme/wallet/buy-gift', data: {
+      final response =
+          await _dio.post('/api/v1/sprayme/wallet/buy-gift', data: {
         'items': items,
         'source_account_id': sourceAccountId,
         // Canonical tx-PIN modal token (BuyGiftCreditRequest.verification_token).
@@ -220,22 +234,28 @@ class SprayMeRemoteDataSource {
         'session_id': sessionId,
         'currency': currency,
       });
-      return SprayWallet.fromJson(response.data['wallet'] as Map<String, dynamic>);
+      return SprayWallet.fromJson(
+          response.data['wallet'] as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _mapDioError(e, 'buy gift credit');
     }
   }
 
-  Future<SprayWallet> withdrawFromWallet({required int amount, required String destinationAccountId, required String verificationToken}) async {
+  Future<SprayWallet> withdrawFromWallet(
+      {required int amount,
+      required String destinationAccountId,
+      required String verificationToken}) async {
     try {
-      final response = await _dio.post('/api/v1/sprayme/wallet/withdraw', data: {
+      final response =
+          await _dio.post('/api/v1/sprayme/wallet/withdraw', data: {
         'amount': amount,
         'destination_account_id': destinationAccountId,
         // Canonical tx-PIN modal token (WithdrawFromWalletRequest.verification_token),
         // bound to destination_account_id.
         'verification_token': verificationToken,
       });
-      return SprayWallet.fromJson(response.data['wallet'] as Map<String, dynamic>);
+      return SprayWallet.fromJson(
+          response.data['wallet'] as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _mapDioError(e, 'withdraw from wallet');
     }
@@ -243,9 +263,13 @@ class SprayMeRemoteDataSource {
 
   // ─── Spray Actions ──────────────────────────────────────────
 
-  Future<SprayActionResult> sendGift({required String sessionId, required String giftId, int quantity = 1}) async {
+  Future<SprayActionResult> sendGift(
+      {required String sessionId,
+      required String giftId,
+      int quantity = 1}) async {
     try {
-      final response = await _dio.post('/api/v1/sprayme/sessions/$sessionId/gift', data: {
+      final response =
+          await _dio.post('/api/v1/sprayme/sessions/$sessionId/gift', data: {
         'gift_id': giftId,
         'quantity': quantity,
       });
@@ -255,9 +279,13 @@ class SprayMeRemoteDataSource {
     }
   }
 
-  Future<SprayActionResult> sprayMoney({required String sessionId, required int denomination, required int tapCount}) async {
+  Future<SprayActionResult> sprayMoney(
+      {required String sessionId,
+      required int denomination,
+      required int tapCount}) async {
     try {
-      final response = await _dio.post('/api/v1/sprayme/sessions/$sessionId/spray', data: {
+      final response =
+          await _dio.post('/api/v1/sprayme/sessions/$sessionId/spray', data: {
         'denomination': denomination,
         'tap_count': tapCount,
       });
@@ -293,8 +321,10 @@ class SprayMeRemoteDataSource {
   Future<List<SprayGift>> getGiftCatalog({String? category}) async {
     try {
       final params = <String, dynamic>{};
-      if (category != null && category.isNotEmpty) params['category'] = category;
-      final response = await _dio.get('/api/v1/sprayme/gifts', queryParameters: params);
+      if (category != null && category.isNotEmpty)
+        params['category'] = category;
+      final response =
+          await _dio.get('/api/v1/sprayme/gifts', queryParameters: params);
       final gifts = response.data['gifts'] as List<dynamic>? ?? [];
       return gifts
           .whereType<Map<String, dynamic>>()
@@ -309,8 +339,10 @@ class SprayMeRemoteDataSource {
 
   Future<SessionStats> getSessionStats(String sessionId) async {
     try {
-      final response = await _dio.get('/api/v1/sprayme/sessions/$sessionId/stats');
-      return SessionStats.fromJson(response.data['stats'] as Map<String, dynamic>);
+      final response =
+          await _dio.get('/api/v1/sprayme/sessions/$sessionId/stats');
+      return SessionStats.fromJson(
+          response.data['stats'] as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _mapDioError(e, 'load stats');
     }
@@ -318,8 +350,10 @@ class SprayMeRemoteDataSource {
 
   Future<MySprayStats> getMySprayStats({String period = 'all'}) async {
     try {
-      final response = await _dio.get('/api/v1/sprayme/stats/my', queryParameters: {'period': period});
-      return MySprayStats.fromJson(response.data['stats'] as Map<String, dynamic>);
+      final response = await _dio
+          .get('/api/v1/sprayme/stats/my', queryParameters: {'period': period});
+      return MySprayStats.fromJson(
+          response.data['stats'] as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _mapDioError(e, 'load stats');
     }
@@ -327,28 +361,39 @@ class SprayMeRemoteDataSource {
 
   // ─── History ────────────────────────────────────────────────
 
-  Future<List<SprayTransaction>> getSessionTransactions(String sessionId, {int page = 1, int pageSize = 20}) async {
+  Future<List<SprayTransaction>> getSessionTransactions(String sessionId,
+      {int page = 1, int pageSize = 20}) async {
     try {
-      final response = await _dio.get('/api/v1/sprayme/sessions/$sessionId/transactions', queryParameters: {
-        'page': page,
-        'page_size': pageSize,
-      });
+      final response = await _dio.get(
+          '/api/v1/sprayme/sessions/$sessionId/transactions',
+          queryParameters: {
+            'page': page,
+            'page_size': pageSize,
+          });
       final txs = response.data['transactions'] as List<dynamic>? ?? [];
-      return txs.whereType<Map<String, dynamic>>().map((j) => SprayTransaction.fromJson(j)).toList();
+      return txs
+          .whereType<Map<String, dynamic>>()
+          .map((j) => SprayTransaction.fromJson(j))
+          .toList();
     } on DioException catch (e) {
       throw _mapDioError(e, 'load transactions');
     }
   }
 
-  Future<List<SprayTransaction>> getMyTransactions({String type = 'all', int page = 1, int pageSize = 20}) async {
+  Future<List<SprayTransaction>> getMyTransactions(
+      {String type = 'all', int page = 1, int pageSize = 20}) async {
     try {
-      final response = await _dio.get('/api/v1/sprayme/transactions', queryParameters: {
+      final response =
+          await _dio.get('/api/v1/sprayme/transactions', queryParameters: {
         'type': type,
         'page': page,
         'page_size': pageSize,
       });
       final txs = response.data['transactions'] as List<dynamic>? ?? [];
-      return txs.whereType<Map<String, dynamic>>().map((j) => SprayTransaction.fromJson(j)).toList();
+      return txs
+          .whereType<Map<String, dynamic>>()
+          .map((j) => SprayTransaction.fromJson(j))
+          .toList();
     } on DioException catch (e) {
       throw _mapDioError(e, 'load transactions');
     }
@@ -356,11 +401,16 @@ class SprayMeRemoteDataSource {
 
   // ─── Participants ───────────────────────────────────────────
 
-  Future<List<SessionParticipant>> getSessionParticipants(String sessionId) async {
+  Future<List<SessionParticipant>> getSessionParticipants(
+      String sessionId) async {
     try {
-      final response = await _dio.get('/api/v1/sprayme/sessions/$sessionId/participants');
+      final response =
+          await _dio.get('/api/v1/sprayme/sessions/$sessionId/participants');
       final ps = response.data['participants'] as List<dynamic>? ?? [];
-      return ps.whereType<Map<String, dynamic>>().map((j) => SessionParticipant.fromJson(j)).toList();
+      return ps
+          .whereType<Map<String, dynamic>>()
+          .map((j) => SessionParticipant.fromJson(j))
+          .toList();
     } on DioException catch (e) {
       throw _mapDioError(e, 'load participants');
     }
@@ -368,23 +418,29 @@ class SprayMeRemoteDataSource {
 
   // ─── Comments ─────────────────────────────────────────────
 
-  Future<SprayComment> addComment({required String sessionId, required String text}) async {
+  Future<SprayComment> addComment(
+      {required String sessionId, required String text}) async {
     try {
-      final response = await _dio.post('/api/v1/sprayme/sessions/$sessionId/comment', data: {
+      final response =
+          await _dio.post('/api/v1/sprayme/sessions/$sessionId/comment', data: {
         'text': text,
       });
-      return SprayComment.fromJson(response.data['comment'] as Map<String, dynamic>);
+      return SprayComment.fromJson(
+          response.data['comment'] as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _mapDioError(e, 'add comment');
     }
   }
 
-  Future<List<SprayComment>> getComments(String sessionId, {int page = 1, int pageSize = 50}) async {
+  Future<List<SprayComment>> getComments(String sessionId,
+      {int page = 1, int pageSize = 50}) async {
     try {
-      final response = await _dio.get('/api/v1/sprayme/sessions/$sessionId/comments', queryParameters: {
-        'page': page,
-        'page_size': pageSize,
-      });
+      final response = await _dio.get(
+          '/api/v1/sprayme/sessions/$sessionId/comments',
+          queryParameters: {
+            'page': page,
+            'page_size': pageSize,
+          });
       final comments = response.data['comments'] as List<dynamic>? ?? [];
       return comments
           .whereType<Map<String, dynamic>>()
@@ -398,9 +454,11 @@ class SprayMeRemoteDataSource {
   // ─── Live Video Streaming ───────────────────────────────────
 
   /// Host: start the live video broadcast. Returns {session, url, room_name, token, role}.
-  Future<Map<String, dynamic>> startStream(String sessionId, {bool recordingEnabled = false}) async {
+  Future<Map<String, dynamic>> startStream(String sessionId,
+      {bool recordingEnabled = false}) async {
     try {
-      final response = await _dio.post('/api/v1/sprayme/sessions/$sessionId/stream/start', data: {
+      final response = await _dio
+          .post('/api/v1/sprayme/sessions/$sessionId/stream/start', data: {
         'recording_enabled': recordingEnabled,
       });
       return Map<String, dynamic>.from(response.data as Map);
@@ -412,8 +470,10 @@ class SprayMeRemoteDataSource {
   /// Host: stop the live video broadcast.
   Future<SpraySession> stopStream(String sessionId) async {
     try {
-      final response = await _dio.post('/api/v1/sprayme/sessions/$sessionId/stream/stop');
-      return SpraySession.fromJson(response.data['session'] as Map<String, dynamic>);
+      final response =
+          await _dio.post('/api/v1/sprayme/sessions/$sessionId/stream/stop');
+      return SpraySession.fromJson(
+          response.data['session'] as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _mapDioError(e, 'stop live video');
     }
@@ -442,7 +502,8 @@ class SprayMeRemoteDataSource {
   /// {mode:'webrtc', url, room_name, token, role, paused} or {mode:'hls', hls_url, paused}.
   Future<Map<String, dynamic>> getStreamToken(String sessionId) async {
     try {
-      final response = await _dio.post('/api/v1/sprayme/sessions/$sessionId/stream/token');
+      final response =
+          await _dio.post('/api/v1/sprayme/sessions/$sessionId/stream/token');
       return Map<String, dynamic>.from(response.data as Map);
     } on DioException catch (e) {
       throw _mapDioError(e, 'join live video');
@@ -450,9 +511,11 @@ class SprayMeRemoteDataSource {
   }
 
   /// Host: promote a participant to co-host.
-  Future<void> inviteCoHost(String sessionId, {required String userId, String userName = ''}) async {
+  Future<void> inviteCoHost(String sessionId,
+      {required String userId, String userName = ''}) async {
     try {
-      await _dio.post('/api/v1/sprayme/sessions/$sessionId/cohost/invite', data: {
+      await _dio
+          .post('/api/v1/sprayme/sessions/$sessionId/cohost/invite', data: {
         'user_id': userId,
         'user_name': userName,
       });
@@ -464,7 +527,8 @@ class SprayMeRemoteDataSource {
   /// Host: demote a co-host back to a viewer.
   Future<void> revokeCoHost(String sessionId, {required String userId}) async {
     try {
-      await _dio.post('/api/v1/sprayme/sessions/$sessionId/cohost/revoke', data: {
+      await _dio
+          .post('/api/v1/sprayme/sessions/$sessionId/cohost/revoke', data: {
         'user_id': userId,
       });
     } on DioException catch (e) {
@@ -525,9 +589,11 @@ class SprayMeRemoteDataSource {
   }
 
   /// Host: toggle recording of the live stream mid-broadcast.
-  Future<void> toggleRecording(String sessionId, {required bool enabled}) async {
+  Future<void> toggleRecording(String sessionId,
+      {required bool enabled}) async {
     try {
-      await _dio.post('/api/v1/sprayme/sessions/$sessionId/recording/toggle', data: {
+      await _dio
+          .post('/api/v1/sprayme/sessions/$sessionId/recording/toggle', data: {
         'enabled': enabled,
       });
     } on DioException catch (e) {
@@ -560,28 +626,36 @@ class SprayMeRemoteDataSource {
     // Prefer a known server error code (operator gates, "session is full", etc.)
     // over generic status-based text.
     final data = e.response?.data;
-    final serverErr = (data is Map && data['error'] is String) ? data['error'] as String : null;
+    final serverErr = (data is Map && data['error'] is String)
+        ? data['error'] as String
+        : null;
     if (serverErr != null && _serverErrorMessages.containsKey(serverErr)) {
       return Exception(_serverErrorMessages[serverErr]);
     }
 
-    if (statusCode == 401) return Exception('Session expired. Please log in again.');
-    if (statusCode == 403) return Exception('You do not have permission to $operation.');
+    if (statusCode == 401)
+      return Exception('Session expired. Please log in again.');
+    if (statusCode == 403)
+      return Exception('You do not have permission to $operation.');
     if (statusCode == 404) {
       switch (operation) {
         case 'add comment':
         case 'load comments':
           // Session not found (not because it ended - comments work on ended sessions)
-          return Exception('Session not found. Please check the session code and try again.');
+          return Exception(
+              'Session not found. Please check the session code and try again.');
         case 'load session':
         case 'find session':
-          return Exception('Session not found. It may have ended or the code is invalid.');
+          return Exception(
+              'Session not found. It may have ended or the code is invalid.');
         case 'join session':
-          return Exception('Session not found. Please check the code and try again.');
+          return Exception(
+              'Session not found. Please check the code and try again.');
         case 'send gift':
         case 'spray money':
         case 'send like':
-          return Exception('This session has ended. You can no longer $operation.');
+          return Exception(
+              'This session has ended. You can no longer $operation.');
         case 'load wallet':
           return Exception('Wallet not found. Please try again.');
         default:
@@ -592,24 +666,31 @@ class SprayMeRemoteDataSource {
       // 409 now covers several conflicts (already-joined, session full, not live).
       // Known codes were handled above; fall back sensibly by operation.
       if (serverErr != null) return Exception(serverErr);
-      if (operation == 'join session') return Exception('You have already joined this session.');
-      return Exception('That action conflicts with the current state. Please refresh and try again.');
+      if (operation == 'join session')
+        return Exception('You have already joined this session.');
+      return Exception(
+          'That action conflicts with the current state. Please refresh and try again.');
     }
     if (statusCode == 422) {
-      if (data is Map && data['error'] != null) return Exception('${data['error']}');
+      if (data is Map && data['error'] != null)
+        return Exception('${data['error']}');
       return Exception('Insufficient balance to $operation.');
     }
-    if (statusCode != null && statusCode >= 500) return Exception('Server error. Please try again later.');
+    if (statusCode != null && statusCode >= 500)
+      return Exception('Server error. Please try again later.');
 
     switch (e.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.receiveTimeout:
       case DioExceptionType.sendTimeout:
-        return Exception('Connection timed out. Please check your internet and try again.');
+        return Exception(
+            'Connection timed out. Please check your internet and try again.');
       case DioExceptionType.connectionError:
-        return Exception('Unable to connect. Please check your internet connection.');
+        return Exception(
+            'Unable to connect. Please check your internet connection.');
       default:
-        if (data is Map && data['error'] != null) return Exception('${data['error']}');
+        if (data is Map && data['error'] != null)
+          return Exception('${data['error']}');
         return Exception('Failed to $operation. Please try again.');
     }
   }

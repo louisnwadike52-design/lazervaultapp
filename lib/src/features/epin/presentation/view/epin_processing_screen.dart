@@ -30,8 +30,8 @@ class _EPinProcessingScreenState extends State<EPinProcessingScreen>
   /// Failure "Back" returns to the Bills Hub landing the service was launched
   /// from, preserving the carousel / active account / locale that sit below it.
   void _exitToBillsHub() {
-    Get.until((route) =>
-        route.settings.name == AppRoutes.billsHub || route.isFirst);
+    Get.until(
+        (route) => route.settings.name == AppRoutes.billsHub || route.isFirst);
   }
 
   late AnimationController _pulse;
@@ -48,8 +48,10 @@ class _EPinProcessingScreenState extends State<EPinProcessingScreen>
   String _businessName = '';
 
   static const _steps = [
-    _Step('Payment Initiated', 'Your order has been submitted', Icons.receipt_long),
-    _Step('Confirming Details', 'Validating payment and account', Icons.verified_user),
+    _Step('Payment Initiated', 'Your order has been submitted',
+        Icons.receipt_long),
+    _Step('Confirming Details', 'Validating payment and account',
+        Icons.verified_user),
     _Step('Printing Cards', 'Generating your recharge PINs', Icons.sync),
     _Step('Cards Ready', 'Your recharge cards are ready', Icons.check_circle),
   ];
@@ -200,8 +202,9 @@ class _EPinProcessingScreenState extends State<EPinProcessingScreen>
                 AnimatedBuilder(
                   animation: _pulse,
                   builder: (context, _) {
-                    final scale =
-                        isActive && !_hasFailed ? 1.0 + (_pulse.value * 0.1) : 1.0;
+                    final scale = isActive && !_hasFailed
+                        ? 1.0 + (_pulse.value * 0.1)
+                        : 1.0;
                     return Transform.scale(
                       scale: scale,
                       child: Container(
@@ -288,9 +291,8 @@ class _EPinProcessingScreenState extends State<EPinProcessingScreen>
                 child: Container(
                   width: 2,
                   height: 22.h,
-                  color: isCompleted
-                      ? _primary.withValues(alpha: 0.4)
-                      : _divider,
+                  color:
+                      isCompleted ? _primary.withValues(alpha: 0.4) : _divider,
                 ),
               ),
           ],
@@ -420,8 +422,7 @@ class _EPinProcessingScreenState extends State<EPinProcessingScreen>
                   ),
                 ),
                 child: Text('Back',
-                    style:
-                        GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                    style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
               ),
             ),
           ],

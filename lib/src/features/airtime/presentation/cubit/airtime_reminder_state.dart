@@ -53,7 +53,8 @@ class AirtimeReminderUpdated extends AirtimeReminderState {
 
 class AirtimeReminderCompleted extends AirtimeReminderState {
   final String message;
-  const AirtimeReminderCompleted({this.message = 'Reminder marked as complete'});
+  const AirtimeReminderCompleted(
+      {this.message = 'Reminder marked as complete'});
 
   @override
   List<Object?> get props => [message];

@@ -103,8 +103,8 @@ class _GiftEntranceAnimationState extends State<GiftEntranceAnimation>
         weight: 40,
       ),
       TweenSequenceItem(
-        tween: Tween(begin: 1.0, end: 0.5)
-            .chain(CurveTween(curve: Curves.easeIn)),
+        tween:
+            Tween(begin: 1.0, end: 0.5).chain(CurveTween(curve: Curves.easeIn)),
         weight: 25,
       ),
     ]).animate(_mainController);
@@ -224,7 +224,8 @@ class _GiftEntranceAnimationState extends State<GiftEntranceAnimation>
 
             // Trail particles (behind emoji)
             ..._particles.map((p) {
-              final progress = (_mainController.value - p.delay).clamp(0.0, 1.0);
+              final progress =
+                  (_mainController.value - p.delay).clamp(0.0, 1.0);
               if (progress <= 0) return const SizedBox.shrink();
               final trailX = emojiX - 40 - (progress * 60);
               final trailOpacity = p.opacity * (1.0 - progress);

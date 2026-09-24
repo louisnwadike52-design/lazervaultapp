@@ -153,9 +153,7 @@ class _TradeActionSelectorScreenState extends State<TradeActionSelectorScreen> {
               ],
             ),
           ),
-
           SizedBox(height: 28.h),
-
           Text(
             'Buy or sell',
             style: GoogleFonts.inter(
@@ -165,7 +163,6 @@ class _TradeActionSelectorScreenState extends State<TradeActionSelectorScreen> {
             ),
           ),
           SizedBox(height: 14.h),
-
           Row(
             children: [
               Expanded(
@@ -189,9 +186,7 @@ class _TradeActionSelectorScreenState extends State<TradeActionSelectorScreen> {
               ),
             ],
           ),
-
           SizedBox(height: 28.h),
-
           Text(
             'Order type',
             style: GoogleFonts.inter(
@@ -201,7 +196,6 @@ class _TradeActionSelectorScreenState extends State<TradeActionSelectorScreen> {
             ),
           ),
           SizedBox(height: 14.h),
-
           _buildOrderTypeRow(
             'Market',
             'Execute at the best price now',
@@ -254,14 +248,11 @@ class _TradeActionSelectorScreenState extends State<TradeActionSelectorScreen> {
           duration: const Duration(milliseconds: 200),
           padding: EdgeInsets.symmetric(vertical: 18.h),
           decoration: BoxDecoration(
-            color: selected
-                ? activeColor
-                : InvestTradingUi.surfaceElevated,
+            color: selected ? activeColor : InvestTradingUi.surfaceElevated,
             borderRadius: BorderRadius.circular(14.r),
             border: Border.all(
-              color: selected
-                  ? activeColor
-                  : Colors.white.withValues(alpha: 0.1),
+              color:
+                  selected ? activeColor : Colors.white.withValues(alpha: 0.1),
               width: selected ? 2 : 1,
             ),
           ),
@@ -278,7 +269,8 @@ class _TradeActionSelectorScreenState extends State<TradeActionSelectorScreen> {
                 style: GoogleFonts.inter(
                   fontSize: 15.sp,
                   fontWeight: FontWeight.w800,
-                  color: selected ? fgWhenActive : InvestTradingUi.textSecondary,
+                  color:
+                      selected ? fgWhenActive : InvestTradingUi.textSecondary,
                 ),
               ),
             ],

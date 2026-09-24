@@ -49,10 +49,8 @@ Iterable<(String, String)> _allSources() => _pmdDir
 /// The removals are DOCUMENTED in a comment that names Outlook and the switches it
 /// replaced — exactly the words these tests search for. Without stripping, the rationale
 /// would match as a regression and fail on correct code.
-String _stripComments(String source) => source
-    .split('\n')
-    .where((l) => !l.trimLeft().startsWith('//'))
-    .join('\n');
+String _stripComments(String source) =>
+    source.split('\n').where((l) => !l.trimLeft().startsWith('//')).join('\n');
 
 void main() {
   group('no unbacked connection', () {
@@ -63,7 +61,8 @@ void main() {
         expect(
           _stripComments(source).toLowerCase().contains('outlook'),
           isFalse,
-          reason: '$path references Outlook. There is no Outlook OAuth client, token '
+          reason:
+              '$path references Outlook. There is no Outlook OAuth client, token '
               'store or sync path — any CTA for it can only show "coming soon".',
         );
       }
@@ -92,7 +91,8 @@ void main() {
       //
       // `catch (_) {}` is a deliberate swallow, not a control handler, so it is excluded
       // — three of those exist in this tree and are correct.
-      final pattern = RegExp(r'(?<!catch\s)\((?:value|v|_|checked)\)\s*\{\s*\}');
+      final pattern =
+          RegExp(r'(?<!catch\s)\((?:value|v|_|checked)\)\s*\{\s*\}');
       for (final (path, source) in _allSources()) {
         for (final line in _stripComments(source).split('\n')) {
           if (line.contains('catch')) continue;
@@ -116,7 +116,8 @@ void main() {
         'Sync past events',
       ]) {
         expect(body.contains(gone), isFalse,
-            reason: '"$gone" is back in calendar_settings_screen.dart with no backend '
+            reason:
+                '"$gone" is back in calendar_settings_screen.dart with no backend '
                 'that reads it');
       }
     });
@@ -128,7 +129,8 @@ void main() {
       // entire surface. If the chip loses its gate, users reach a connect button that
       // Google refuses with access_denied until verification completes.
       final chipIdx = _planScreen.indexOf("'Sync'");
-      expect(chipIdx, isNot(-1), reason: 'the Sync chip was renamed — re-point this test');
+      expect(chipIdx, isNot(-1),
+          reason: 'the Sync chip was renamed — re-point this test');
       final before = _planScreen.substring(
         chipIdx < 400 ? 0 : chipIdx - 400,
         chipIdx,
@@ -136,7 +138,8 @@ void main() {
       expect(
         before.contains('FeatureFlags.planMyDayGoogleIntegrations'),
         isTrue,
-        reason: 'the Sync chip is no longer gated on planMyDayGoogleIntegrations',
+        reason:
+            'the Sync chip is no longer gated on planMyDayGoogleIntegrations',
       );
     });
 
@@ -152,7 +155,8 @@ void main() {
     test('the flag defaults to OFF', () {
       // Default-on would expose both surfaces on any install whose settings sync has not
       // run yet — which is every fresh install.
-      final flags = File('lib/core/config/feature_flags.dart').readAsStringSync();
+      final flags =
+          File('lib/core/config/feature_flags.dart').readAsStringSync();
       // The getter's read, not the const declaration — the window must clear the
       // 34-character identifier itself before it reaches the `??`.
       final idx = flags.indexOf('getBool(planMyDayGoogleIntegrationsVisible)');
@@ -160,7 +164,8 @@ void main() {
       expect(
         flags.substring(idx, idx + 70).contains('?? false'),
         isTrue,
-        reason: 'the Plan My Day Google flag must default OFF — Google has not approved '
+        reason:
+            'the Plan My Day Google flag must default OFF — Google has not approved '
             'the Gmail/Calendar scopes for non-test accounts yet',
       );
     });

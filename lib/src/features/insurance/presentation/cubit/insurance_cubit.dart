@@ -47,7 +47,9 @@ class InsuranceCubit extends Cubit<InsuranceState> {
           return error.message?.isNotEmpty == true ? error.message! : fallback;
       }
     }
-    if (msg.contains('connection') || msg.contains('socket') || msg.contains('network')) {
+    if (msg.contains('connection') ||
+        msg.contains('socket') ||
+        msg.contains('network')) {
       return 'Unable to connect. Please check your internet connection.';
     }
     if (msg.contains('timeout') || msg.contains('deadline')) {
@@ -103,7 +105,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
   String get currentUserId => _currentUserId ?? '';
 
   /// Check if user is authenticated
-  bool get _isAuthenticated => _currentUserId != null && _currentUserId!.isNotEmpty;
+  bool get _isAuthenticated =>
+      _currentUserId != null && _currentUserId!.isNotEmpty;
 
   bool _isLoadingInsurances = false;
   // Slice 4 race guard: same pattern as CreatePolicyCubit. Increments
@@ -141,12 +144,15 @@ class InsuranceCubit extends Cubit<InsuranceState> {
         page: 1,
         limit: limit,
       );
-      final recentPaymentsFuture =
-          _safeCall(() => repository.getUserPayments(currentUserId), <InsurancePayment>[]);
-      final overduePaymentsFuture =
-          _safeCall(() => repository.getOverduePayments(currentUserId), <InsurancePayment>[]);
-      final statisticsFuture =
-          _safeCall(() => repository.getInsuranceStatistics(currentUserId), <String, dynamic>{});
+      final recentPaymentsFuture = _safeCall(
+          () => repository.getUserPayments(currentUserId),
+          <InsurancePayment>[]);
+      final overduePaymentsFuture = _safeCall(
+          () => repository.getOverduePayments(currentUserId),
+          <InsurancePayment>[]);
+      final statisticsFuture = _safeCall(
+          () => repository.getInsuranceStatistics(currentUserId),
+          <String, dynamic>{});
 
       final page = await pageFuture;
       if (isClosed) return;
@@ -168,7 +174,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(InsuranceError(_friendlyError(e, 'Failed to load insurance policies. Please try again.')));
+      emit(InsuranceError(_friendlyError(
+          e, 'Failed to load insurance policies. Please try again.')));
     } finally {
       _isLoadingInsurances = false;
     }
@@ -195,7 +202,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
         limit: limit,
       );
       if (isClosed) return;
-      if (myGeneration != _insurancesLoadGeneration) return; // superseded by refresh
+      if (myGeneration != _insurancesLoadGeneration)
+        return; // superseded by refresh
       // Re-read state in case a pull-to-refresh rebuilt it.
       final latest = state;
       if (latest is! InsurancesLoaded) return;
@@ -245,9 +253,12 @@ class InsuranceCubit extends Cubit<InsuranceState> {
         return;
       }
 
-      final payments = await _safeCall(() => repository.getInsurancePayments(insuranceId), <InsurancePayment>[]);
+      final payments = await _safeCall(
+          () => repository.getInsurancePayments(insuranceId),
+          <InsurancePayment>[]);
       if (isClosed) return;
-      final claims = await _safeCall(() => repository.getInsuranceClaims(insuranceId), <InsuranceClaim>[]);
+      final claims = await _safeCall(
+          () => repository.getInsuranceClaims(insuranceId), <InsuranceClaim>[]);
       if (isClosed) return;
 
       emit(InsuranceDetailsLoaded(
@@ -257,7 +268,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(InsuranceError(_friendlyError(e, 'Failed to load insurance details. Please try again.')));
+      emit(InsuranceError(_friendlyError(
+          e, 'Failed to load insurance details. Please try again.')));
     }
   }
 
@@ -296,9 +308,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       // rows (typical for fresh purchases), synthesize the initial
       // purchase row from the policy so users see the transaction that
       // bought the cover, matching what they expect under "Payments".
-      final payments = fetched.isEmpty
-          ? _synthesizePurchasePayment(insurance)
-          : fetched;
+      final payments =
+          fetched.isEmpty ? _synthesizePurchasePayment(insurance) : fetched;
 
       // Update the state with loaded payments and claims
       emit(InsuranceDetailsLoaded(
@@ -308,7 +319,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(InsuranceError(_friendlyError(e, 'Failed to load insurance details. Please try again.')));
+      emit(InsuranceError(_friendlyError(
+          e, 'Failed to load insurance details. Please try again.')));
     }
   }
 
@@ -326,12 +338,12 @@ class InsuranceCubit extends Cubit<InsuranceState> {
         amount: insurance.premiumAmount,
         currency: insurance.currency.isNotEmpty ? insurance.currency : 'NGN',
         paymentMethod: PaymentMethod.wallet,
-        status: insurance.startDate.isBefore(DateTime.now().add(const Duration(days: 1)))
+        status: insurance.startDate
+                .isBefore(DateTime.now().add(const Duration(days: 1)))
             ? PaymentStatus.completed
             : PaymentStatus.pending,
-        referenceNumber: insurance.policyNumber.isNotEmpty
-            ? insurance.policyNumber
-            : null,
+        referenceNumber:
+            insurance.policyNumber.isNotEmpty ? insurance.policyNumber : null,
         paymentDate: insurance.startDate,
         dueDate: insurance.startDate,
         processedAt: insurance.startDate,
@@ -356,7 +368,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       await loadInsurances();
     } catch (e) {
       if (isClosed) return;
-      emit(InsuranceError(_friendlyError(e, 'Failed to create insurance policy. Please try again.')));
+      emit(InsuranceError(_friendlyError(
+          e, 'Failed to create insurance policy. Please try again.')));
     }
   }
 
@@ -380,7 +393,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       await loadInsurances();
     } catch (e) {
       if (isClosed) return;
-      emit(InsuranceError(_friendlyError(e, 'Failed to cancel insurance. Please try again.')));
+      emit(InsuranceError(
+          _friendlyError(e, 'Failed to cancel insurance. Please try again.')));
     }
   }
 
@@ -400,7 +414,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
 
       // Check payment result status
       if (createdPayment.status == PaymentStatus.completed) {
-        final receiptUrl = await repository.generatePaymentReceipt(createdPayment.id);
+        final receiptUrl =
+            await repository.generatePaymentReceipt(createdPayment.id);
         if (isClosed) return;
 
         emit(PaymentCompleted(
@@ -410,7 +425,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       } else if (createdPayment.status == PaymentStatus.failed) {
         emit(PaymentFailed(
           payment: createdPayment,
-          error: createdPayment.failureReason ?? 'Payment processing failed. Please try again.',
+          error: createdPayment.failureReason ??
+              'Payment processing failed. Please try again.',
         ));
       } else {
         // Payment is pending - emit completed with the pending payment
@@ -423,7 +439,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       if (isClosed) return;
       emit(PaymentFailed(
         payment: payment,
-        error: _friendlyError(e, 'Payment processing failed. Please try again.'),
+        error:
+            _friendlyError(e, 'Payment processing failed. Please try again.'),
       ));
     }
   }
@@ -496,7 +513,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       emit(ClaimSubmitted(submittedClaim));
     } catch (e) {
       if (isClosed) return;
-      emit(InsuranceError(_friendlyError(e, 'Failed to submit claim. Please try again.')));
+      emit(InsuranceError(
+          _friendlyError(e, 'Failed to submit claim. Please try again.')));
     }
   }
 
@@ -515,7 +533,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       emit(ClaimsLoaded(claims));
     } catch (e) {
       if (isClosed) return;
-      emit(InsuranceError(_friendlyError(e, 'Failed to load claims. Please try again.')));
+      emit(InsuranceError(
+          _friendlyError(e, 'Failed to load claims. Please try again.')));
     }
   }
 
@@ -530,7 +549,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       emit(ClaimUpdated(updatedClaim));
     } catch (e) {
       if (isClosed) return;
-      emit(InsuranceError(_friendlyError(e, 'Failed to update claim. Please try again.')));
+      emit(InsuranceError(
+          _friendlyError(e, 'Failed to update claim. Please try again.')));
     }
   }
 
@@ -565,7 +585,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       emit(InsuranceSearchResults(results: results, query: query));
     } catch (e) {
       if (isClosed) return;
-      emit(InsuranceError(_friendlyError(e, 'Search failed. Please try again.')));
+      emit(InsuranceError(
+          _friendlyError(e, 'Search failed. Please try again.')));
     }
   }
 
@@ -579,9 +600,11 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       if (page == 1) {
         emit(InsuranceLoading());
       }
-      final result = await repository.getMyCoverCustomers(page: page, limit: limit);
+      final result =
+          await repository.getMyCoverCustomers(page: page, limit: limit);
       if (isClosed) return;
-      final hasMore = result.customers.length >= limit && (page * limit) < result.total;
+      final hasMore =
+          result.customers.length >= limit && (page * limit) < result.total;
       if (page > 1 && currentState is MyCoverCustomersLoaded) {
         emit(MyCoverCustomersLoaded(
           customers: [...currentState.customers, ...result.customers],
@@ -599,7 +622,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       }
     } catch (e) {
       if (isClosed) return;
-      emit(InsuranceError(_friendlyError(e, 'Failed to load customers. Please try again.')));
+      emit(InsuranceError(
+          _friendlyError(e, 'Failed to load customers. Please try again.')));
     }
   }
 
@@ -609,9 +633,11 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       emit(InsuranceLoading());
       final customer = await repository.getMyCoverCustomerById(customerId);
       if (isClosed) return;
-      final policiesResult = await repository.getMyCoverCustomerPolicies(customerId);
+      final policiesResult =
+          await repository.getMyCoverCustomerPolicies(customerId);
       if (isClosed) return;
-      final purchasesResult = await repository.getMyCoverCustomerPurchases(customerId);
+      final purchasesResult =
+          await repository.getMyCoverCustomerPurchases(customerId);
       if (isClosed) return;
       emit(MyCoverCustomerDetailLoaded(
         customer: customer,
@@ -620,7 +646,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(InsuranceError(_friendlyError(e, 'Failed to load customer details.')));
+      emit(InsuranceError(
+          _friendlyError(e, 'Failed to load customer details.')));
     }
   }
 
@@ -631,9 +658,11 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       if (page == 1) {
         emit(InsuranceLoading());
       }
-      final result = await repository.getMyCoverPurchases(page: page, limit: limit);
+      final result =
+          await repository.getMyCoverPurchases(page: page, limit: limit);
       if (isClosed) return;
-      final hasMore = result.purchases.length >= limit && (page * limit) < result.total;
+      final hasMore =
+          result.purchases.length >= limit && (page * limit) < result.total;
       if (page > 1 && currentState is MyCoverPurchasesLoaded) {
         emit(MyCoverPurchasesLoaded(
           purchases: [...currentState.purchases, ...result.purchases],
@@ -664,20 +693,24 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       emit(MyCoverPurchaseDetailLoaded(purchase));
     } catch (e) {
       if (isClosed) return;
-      emit(InsuranceError(_friendlyError(e, 'Failed to load purchase details.')));
+      emit(InsuranceError(
+          _friendlyError(e, 'Failed to load purchase details.')));
     }
   }
 
-  Future<void> loadMyCoverProviderClaims({String? status, int page = 1, int limit = 20}) async {
+  Future<void> loadMyCoverProviderClaims(
+      {String? status, int page = 1, int limit = 20}) async {
     try {
       if (isClosed) return;
       final currentState = state;
       if (page == 1) {
         emit(InsuranceLoading());
       }
-      final result = await repository.getMyCoverClaims(status: status, page: page, limit: limit);
+      final result = await repository.getMyCoverClaims(
+          status: status, page: page, limit: limit);
       if (isClosed) return;
-      final hasMore = result.claims.length >= limit && (page * limit) < result.total;
+      final hasMore =
+          result.claims.length >= limit && (page * limit) < result.total;
       if (page > 1 && currentState is MyCoverProviderClaimsLoaded) {
         emit(MyCoverProviderClaimsLoaded(
           claims: [...currentState.claims, ...result.claims],
@@ -739,7 +772,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(InsuranceError(_friendlyError(e, 'Failed to file claim. Please try again.')));
+      emit(InsuranceError(
+          _friendlyError(e, 'Failed to file claim. Please try again.')));
     }
   }
 
@@ -767,11 +801,13 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       emit(MyCoverNotificationPrefsLoaded(prefs));
     } catch (e) {
       if (isClosed) return;
-      emit(InsuranceError(_friendlyError(e, 'Failed to load notification settings.')));
+      emit(InsuranceError(
+          _friendlyError(e, 'Failed to load notification settings.')));
     }
   }
 
-  Future<void> updateMyCoverNotificationPreferences(List<MyCoverNotificationPref> preferences) async {
+  Future<void> updateMyCoverNotificationPreferences(
+      List<MyCoverNotificationPref> preferences) async {
     try {
       if (isClosed) return;
       await repository.updateMyCoverNotificationPreferences(preferences);
@@ -779,7 +815,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       emit(MyCoverNotificationPrefsUpdated());
     } catch (e) {
       if (isClosed) return;
-      emit(InsuranceError(_friendlyError(e, 'Failed to update notification settings.')));
+      emit(InsuranceError(
+          _friendlyError(e, 'Failed to update notification settings.')));
     }
   }
 
@@ -813,7 +850,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       emit(InsuranceRefundRequested(refund));
     } catch (e) {
       if (isClosed) return;
-      emit(InsuranceError(_friendlyError(e, 'Failed to request refund. Please try again.')));
+      emit(InsuranceError(
+          _friendlyError(e, 'Failed to request refund. Please try again.')));
     }
   }
 
@@ -846,7 +884,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       emit(InsuranceRefundRequested(refund));
     } catch (e) {
       if (isClosed) return;
-      emit(InsuranceError(_friendlyError(e, 'Failed to cancel policy. Please try again.')));
+      emit(InsuranceError(
+          _friendlyError(e, 'Failed to cancel policy. Please try again.')));
     }
   }
 

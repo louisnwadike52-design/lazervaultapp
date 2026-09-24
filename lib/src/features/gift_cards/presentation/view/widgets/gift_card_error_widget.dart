@@ -70,9 +70,8 @@ class GiftCardErrorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveColor = connectionError
-        ? const Color(0xFFFB923C)
-        : const Color(0xFFEF4444);
+    final effectiveColor =
+        connectionError ? const Color(0xFFFB923C) : const Color(0xFFEF4444);
     final effectiveIcon = connectionError ? Icons.wifi_off_rounded : icon;
 
     return Center(
@@ -162,9 +161,8 @@ class GiftCardErrorList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveColor = connectionError
-        ? const Color(0xFFFB923C)
-        : const Color(0xFFEF4444);
+    final effectiveColor =
+        connectionError ? const Color(0xFFFB923C) : const Color(0xFFEF4444);
     final effectiveIcon =
         connectionError ? Icons.wifi_off_rounded : Icons.error_outline;
 

@@ -146,7 +146,8 @@ class LockFundsPdfService {
     final currencySymbol = _currencySymbolFor(lockFund.currency);
 
     final isEarlyWithdrawal = penaltyAmount > 0;
-    final reference = lockFund.transactionId ?? 'LF-${lockFund.id.length > 8 ? lockFund.id.substring(0, 8) : lockFund.id}';
+    final reference = lockFund.transactionId ??
+        'LF-${lockFund.id.length > 8 ? lockFund.id.substring(0, 8) : lockFund.id}';
 
     pdf.addPage(
       pw.Page(
@@ -157,7 +158,8 @@ class LockFundsPdfService {
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               // Header
-              _buildHeader(logo, generatedDate, isEarlyWithdrawal: isEarlyWithdrawal),
+              _buildHeader(logo, generatedDate,
+                  isEarlyWithdrawal: isEarlyWithdrawal),
               pw.SizedBox(height: 24),
 
               // Lock Info and Summary
@@ -213,7 +215,8 @@ class LockFundsPdfService {
     );
 
     final output = await getTemporaryDirectory();
-    final fileName = 'lock_withdrawal_${reference.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}.pdf';
+    final fileName =
+        'lock_withdrawal_${reference.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}.pdf';
     final file = File('${output.path}/$fileName');
     await file.writeAsBytes(await pdf.save());
     return file;
@@ -237,7 +240,8 @@ class LockFundsPdfService {
     final generatedDate = _displayDateFormat.format(DateTime.now());
     final currencySymbol = _currencySymbolFor(lockFund.currency);
 
-    final reference = lockFund.transactionId ?? 'LF-${lockFund.id.length > 8 ? lockFund.id.substring(0, 8) : lockFund.id}';
+    final reference = lockFund.transactionId ??
+        'LF-${lockFund.id.length > 8 ? lockFund.id.substring(0, 8) : lockFund.id}';
 
     pdf.addPage(
       pw.Page(
@@ -305,7 +309,8 @@ class LockFundsPdfService {
     );
 
     final output = await getTemporaryDirectory();
-    final fileName = 'lock_confirmation_${reference.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}.pdf';
+    final fileName =
+        'lock_confirmation_${reference.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}.pdf';
     final file = File('${output.path}/$fileName');
     await file.writeAsBytes(await pdf.save());
     return file;
@@ -575,7 +580,8 @@ class LockFundsPdfService {
     terms.add('Interest is calculated daily and credited at maturity.');
 
     if (lockFund.autoRenew) {
-      terms.add('Auto-renewal is enabled. Lock will automatically renew at maturity.');
+      terms.add(
+          'Auto-renewal is enabled. Lock will automatically renew at maturity.');
     }
 
     return pw.Column(
@@ -602,11 +608,13 @@ class LockFundsPdfService {
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
                           pw.Text('- ',
-                              style: _getTextStyle(fontSize: 10, color: PdfColors.grey700)),
+                              style: _getTextStyle(
+                                  fontSize: 10, color: PdfColors.grey700)),
                           pw.Expanded(
                             child: pw.Text(
                               term,
-                              style: _getTextStyle(fontSize: 10, color: PdfColors.grey700),
+                              style: _getTextStyle(
+                                  fontSize: 10, color: PdfColors.grey700),
                             ),
                           ),
                         ],
@@ -642,7 +650,8 @@ class LockFundsPdfService {
             children: [
               _buildDetailRow('Reference', reference),
               _buildDetailRow('Lock ID', lockId),
-              _buildDetailRow('Timestamp', _fullDateTimeFormat.format(DateTime.now())),
+              _buildDetailRow(
+                  'Timestamp', _fullDateTimeFormat.format(DateTime.now())),
             ],
           ),
         ),
@@ -757,7 +766,8 @@ class LockFundsPdfService {
         interestOnly: interestOnly,
       );
 
-      final reference = lockFund.transactionId ?? 'LF-${lockFund.id.length > 8 ? lockFund.id.substring(0, 8) : lockFund.id}';
+      final reference = lockFund.transactionId ??
+          'LF-${lockFund.id.length > 8 ? lockFund.id.substring(0, 8) : lockFund.id}';
       return await ReceiptDownload.saveAndOpen(
         source: file,
         fileName:
@@ -816,7 +826,8 @@ class LockFundsPdfService {
 
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
-        text: 'Lock Fund Withdrawal Receipt - $currencySymbol${amountReturned.toStringAsFixed(2)} from ${lockFund.displayName}',
+        text:
+            'Lock Fund Withdrawal Receipt - $currencySymbol${amountReturned.toStringAsFixed(2)} from ${lockFund.displayName}',
         subject: 'Lazervault Lock Fund Withdrawal Receipt',
         sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
@@ -837,7 +848,8 @@ class LockFundsPdfService {
         expectedInterest: expectedInterest,
         expectedTotal: expectedTotal,
       );
-      final reference = lockFund.transactionId ?? 'LF-${lockFund.id.length > 8 ? lockFund.id.substring(0, 8) : lockFund.id}';
+      final reference = lockFund.transactionId ??
+          'LF-${lockFund.id.length > 8 ? lockFund.id.substring(0, 8) : lockFund.id}';
       return await ReceiptDownload.saveAndOpen(
         source: file,
         fileName:
@@ -866,7 +878,8 @@ class LockFundsPdfService {
 
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
-        text: 'Lock Fund Confirmation - $currencySymbol${lockFund.amount.toStringAsFixed(2)} locked in ${lockFund.displayName}',
+        text:
+            'Lock Fund Confirmation - $currencySymbol${lockFund.amount.toStringAsFixed(2)} locked in ${lockFund.displayName}',
         subject: 'Lazervault Lock Fund Confirmation',
         sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));

@@ -10,7 +10,6 @@ import 'package:lazervault/src/features/cards/domain/entities/card_entity.dart'
     as card_entities;
 part 'card_details_screen_widgets.dart';
 
-
 class CardDetailsScreen extends StatefulWidget {
   const CardDetailsScreen({super.key});
 
@@ -408,13 +407,16 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
         icon: Icons.add_card,
         label: 'Fund Card',
         color: const Color(0xFF10B981),
-        onTap: isCancelled ? null : () => _showAmountDialog(card, isFunding: true),
+        onTap:
+            isCancelled ? null : () => _showAmountDialog(card, isFunding: true),
       ),
       _CardAction(
         icon: Icons.money_off,
         label: 'Withdraw',
         color: const Color(0xFFFB923C),
-        onTap: isCancelled ? null : () => _showAmountDialog(card, isFunding: false),
+        onTap: isCancelled
+            ? null
+            : () => _showAmountDialog(card, isFunding: false),
       ),
       _CardAction(
         icon: Icons.edit,

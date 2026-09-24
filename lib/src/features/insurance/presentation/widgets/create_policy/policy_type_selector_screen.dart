@@ -332,7 +332,8 @@ class _PolicyTypeSelectorScreenState extends State<PolicyTypeSelectorScreen>
             width: double.maxFinite,
             child: BlocBuilder<CreatePolicyCubit, dynamic>(
               builder: (context, state) {
-                final currentProvider = context.read<CreatePolicyCubit>().provider;
+                final currentProvider =
+                    context.read<CreatePolicyCubit>().provider;
 
                 return ListView.separated(
                   shrinkWrap: true,
@@ -367,7 +368,9 @@ class _PolicyTypeSelectorScreenState extends State<PolicyTypeSelectorScreen>
                             )
                           : null,
                       onTap: () {
-                        context.read<CreatePolicyCubit>().updateProvider(provider);
+                        context
+                            .read<CreatePolicyCubit>()
+                            .updateProvider(provider);
                         Navigator.of(dialogContext).pop();
                       },
                     );

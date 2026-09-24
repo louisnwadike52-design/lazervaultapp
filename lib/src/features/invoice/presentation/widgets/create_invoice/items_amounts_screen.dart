@@ -43,7 +43,8 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
         return _getCurrencySymbol(cubit.invoiceCurrency);
       }
       final state = context.read<AccountCardsSummaryCubit>().state;
-      if (state is AccountCardsSummaryLoaded && state.accountSummaries.isNotEmpty) {
+      if (state is AccountCardsSummaryLoaded &&
+          state.accountSummaries.isNotEmpty) {
         return _getCurrencySymbol(state.accountSummaries.first.currency);
       }
     } catch (_) {}
@@ -52,16 +53,26 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
 
   String _getCurrencySymbol(String currency) {
     switch (currency.toUpperCase()) {
-      case 'NGN': return '₦';
-      case 'GBP': return '£';
-      case 'EUR': return '€';
-      case 'ZAR': return 'R';
-      case 'CAD': return 'C\$';
-      case 'AUD': return 'A\$';
-      case 'INR': return '₹';
-      case 'JPY': return '¥';
-      case 'USD': return '\$';
-      default: return '₦';
+      case 'NGN':
+        return '₦';
+      case 'GBP':
+        return '£';
+      case 'EUR':
+        return '€';
+      case 'ZAR':
+        return 'R';
+      case 'CAD':
+        return 'C\$';
+      case 'AUD':
+        return 'A\$';
+      case 'INR':
+        return '₹';
+      case 'JPY':
+        return '¥';
+      case 'USD':
+        return '\$';
+      default:
+        return '₦';
     }
   }
 
@@ -360,7 +371,10 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
                   height: 52.w,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
+                      colors: [
+                        Color(0xFF3B82F6),
+                        Color.fromARGB(255, 78, 3, 208)
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(14.r),
                   ),
@@ -480,7 +494,8 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
               SizedBox(height: 8.h),
             ],
             if (discount > 0)
-              _buildSummaryRow('Discount', discount, color: Colors.red.shade400, prefix: '- '),
+              _buildSummaryRow('Discount', discount,
+                  color: Colors.red.shade400, prefix: '- '),
             SizedBox(height: 12.h),
             Divider(color: Colors.white.withValues(alpha: 0.2)),
             SizedBox(height: 12.h),
@@ -694,9 +709,11 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
                   ),
                 ),
                 SizedBox(height: 20.h),
-                _buildDialogTextField(nameController, 'Item Name *', errorText: nameError),
+                _buildDialogTextField(nameController, 'Item Name *',
+                    errorText: nameError),
                 SizedBox(height: 12.h),
-                _buildDialogTextField(descriptionController, 'Description (Optional)'),
+                _buildDialogTextField(
+                    descriptionController, 'Description (Optional)'),
                 SizedBox(height: 12.h),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -705,9 +722,11 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
                       child: _buildDialogTextField(
                         quantityController,
                         'Quantity *',
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d*\.?\d{0,2}')),
                         ],
                         errorText: quantityError,
                       ),
@@ -717,10 +736,12 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
                       child: _buildDialogTextField(
                         priceController,
                         'Unit Price *',
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         prefix: '$_currencySymbol ',
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d*\.?\d{0,2}')),
                         ],
                         errorText: priceError,
                       ),
@@ -758,11 +779,14 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
                         onTap: () {
                           final name = nameController.text.trim();
                           final description = descriptionController.text.trim();
-                          final quantity = double.tryParse(quantityController.text) ?? 0;
-                          final price = double.tryParse(priceController.text) ?? 0;
+                          final quantity =
+                              double.tryParse(quantityController.text) ?? 0;
+                          final price =
+                              double.tryParse(priceController.text) ?? 0;
 
                           setSheetState(() {
-                            nameError = name.isEmpty ? 'Enter an item name' : null;
+                            nameError =
+                                name.isEmpty ? 'Enter an item name' : null;
                             quantityError = quantity <= 0
                                 ? 'Quantity must be greater than 0'
                                 // The wire/backend quantity is an integer; a
@@ -771,17 +795,24 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
                                 : (quantity % 1 != 0
                                     ? 'Quantity must be a whole number'
                                     : null);
-                            priceError = price <= 0 ? 'Enter a unit price greater than 0' : null;
+                            priceError = price <= 0
+                                ? 'Enter a unit price greater than 0'
+                                : null;
                           });
 
-                          if (nameError != null || quantityError != null || priceError != null) {
+                          if (nameError != null ||
+                              quantityError != null ||
+                              priceError != null) {
                             return;
                           }
 
                           final item = InvoiceItem(
-                            id: DateTime.now().millisecondsSinceEpoch.toString(),
+                            id: DateTime.now()
+                                .millisecondsSinceEpoch
+                                .toString(),
                             name: name,
-                            description: description.isEmpty ? null : description,
+                            description:
+                                description.isEmpty ? null : description,
                             quantity: quantity,
                             unitPrice: price,
                             totalPrice: quantity * price,
@@ -794,7 +825,10 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
                           padding: EdgeInsets.symmetric(vertical: 14.h),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
+                              colors: [
+                                Color(0xFF3B82F6),
+                                Color.fromARGB(255, 78, 3, 208)
+                              ],
                             ),
                             borderRadius: BorderRadius.circular(12.r),
                           ),
@@ -823,9 +857,12 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
 
   void _showEditItemDialog(InvoiceItem item, int index) {
     final nameController = TextEditingController(text: item.name);
-    final descriptionController = TextEditingController(text: item.description ?? '');
-    final quantityController = TextEditingController(text: item.quantity.toString());
-    final priceController = TextEditingController(text: item.unitPrice.toString());
+    final descriptionController =
+        TextEditingController(text: item.description ?? '');
+    final quantityController =
+        TextEditingController(text: item.quantity.toString());
+    final priceController =
+        TextEditingController(text: item.unitPrice.toString());
     String? nameError;
     String? quantityError;
     String? priceError;
@@ -870,9 +907,11 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
                   ),
                 ),
                 SizedBox(height: 20.h),
-                _buildDialogTextField(nameController, 'Item Name *', errorText: nameError),
+                _buildDialogTextField(nameController, 'Item Name *',
+                    errorText: nameError),
                 SizedBox(height: 12.h),
-                _buildDialogTextField(descriptionController, 'Description (Optional)'),
+                _buildDialogTextField(
+                    descriptionController, 'Description (Optional)'),
                 SizedBox(height: 12.h),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -881,9 +920,11 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
                       child: _buildDialogTextField(
                         quantityController,
                         'Quantity *',
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d*\.?\d{0,2}')),
                         ],
                         errorText: quantityError,
                       ),
@@ -893,10 +934,12 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
                       child: _buildDialogTextField(
                         priceController,
                         'Unit Price *',
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         prefix: '$_currencySymbol ',
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d*\.?\d{0,2}')),
                         ],
                         errorText: priceError,
                       ),
@@ -934,11 +977,14 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
                         onTap: () {
                           final name = nameController.text.trim();
                           final description = descriptionController.text.trim();
-                          final quantity = double.tryParse(quantityController.text) ?? 0;
-                          final price = double.tryParse(priceController.text) ?? 0;
+                          final quantity =
+                              double.tryParse(quantityController.text) ?? 0;
+                          final price =
+                              double.tryParse(priceController.text) ?? 0;
 
                           setSheetState(() {
-                            nameError = name.isEmpty ? 'Enter an item name' : null;
+                            nameError =
+                                name.isEmpty ? 'Enter an item name' : null;
                             quantityError = quantity <= 0
                                 ? 'Quantity must be greater than 0'
                                 // The wire/backend quantity is an integer; a
@@ -947,30 +993,40 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
                                 : (quantity % 1 != 0
                                     ? 'Quantity must be a whole number'
                                     : null);
-                            priceError = price <= 0 ? 'Enter a unit price greater than 0' : null;
+                            priceError = price <= 0
+                                ? 'Enter a unit price greater than 0'
+                                : null;
                           });
 
-                          if (nameError != null || quantityError != null || priceError != null) {
+                          if (nameError != null ||
+                              quantityError != null ||
+                              priceError != null) {
                             return;
                           }
 
                           final updatedItem = InvoiceItem(
                             id: item.id,
                             name: name,
-                            description: description.isEmpty ? null : description,
+                            description:
+                                description.isEmpty ? null : description,
                             quantity: quantity,
                             unitPrice: price,
                             totalPrice: quantity * price,
                           );
 
-                          context.read<CreateInvoiceCubit>().updateItem(index, updatedItem);
+                          context
+                              .read<CreateInvoiceCubit>()
+                              .updateItem(index, updatedItem);
                           Navigator.of(sheetContext).pop();
                         },
                         child: Container(
                           padding: EdgeInsets.symmetric(vertical: 14.h),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
+                              colors: [
+                                Color(0xFF3B82F6),
+                                Color.fromARGB(255, 78, 3, 208)
+                              ],
                             ),
                             borderRadius: BorderRadius.circular(12.r),
                           ),

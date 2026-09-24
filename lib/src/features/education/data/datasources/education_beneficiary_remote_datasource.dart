@@ -13,8 +13,7 @@ import '../../domain/entities/education_reminder.dart';
 /// NO auto-recharge — education PINs are one-time purchases.
 abstract class EducationBeneficiaryRemoteDataSource {
   // Beneficiary operations
-  Future<List<EducationBeneficiary>> getBeneficiaries(
-      {String? providerCode});
+  Future<List<EducationBeneficiary>> getBeneficiaries({String? providerCode});
   Future<EducationBeneficiary> saveBeneficiary({
     required String candidateNumber,
     required String examType,
@@ -81,8 +80,7 @@ class EducationBeneficiaryRemoteDataSourceImpl
           .map((b) => EducationBeneficiary.fromProto(b))
           .toList();
     } on GrpcError catch (e) {
-      throw Exception(
-          'Failed to fetch education beneficiaries: ${e.message}');
+      throw Exception('Failed to fetch education beneficiaries: ${e.message}');
     }
   }
 
@@ -109,8 +107,7 @@ class EducationBeneficiaryRemoteDataSourceImpl
           .saveEducationBeneficiary(request, options: options);
       return EducationBeneficiary.fromProto(response.beneficiary);
     } on GrpcError catch (e) {
-      throw Exception(
-          'Failed to save education beneficiary: ${e.message}');
+      throw Exception('Failed to save education beneficiary: ${e.message}');
     }
   }
 
@@ -123,8 +120,7 @@ class EducationBeneficiaryRemoteDataSourceImpl
       await grpcClient.utilityPaymentsClient
           .deleteEducationBeneficiary(request, options: options);
     } on GrpcError catch (e) {
-      throw Exception(
-          'Failed to delete education beneficiary: ${e.message}');
+      throw Exception('Failed to delete education beneficiary: ${e.message}');
     }
   }
 
@@ -144,8 +140,7 @@ class EducationBeneficiaryRemoteDataSourceImpl
           ? EducationBeneficiary.fromProto(response.beneficiary)
           : null;
     } on GrpcError catch (e) {
-      throw Exception(
-          'Failed to update education beneficiary: ${e.message}');
+      throw Exception('Failed to update education beneficiary: ${e.message}');
     }
   }
 
@@ -167,8 +162,7 @@ class EducationBeneficiaryRemoteDataSourceImpl
           .map((r) => EducationReminder.fromProto(r))
           .toList();
     } on GrpcError catch (e) {
-      throw Exception(
-          'Failed to fetch education reminders: ${e.message}');
+      throw Exception('Failed to fetch education reminders: ${e.message}');
     }
   }
 
@@ -199,8 +193,7 @@ class EducationBeneficiaryRemoteDataSourceImpl
           .createEducationReminder(request, options: options);
       return EducationReminder.fromProto(response.reminder);
     } on GrpcError catch (e) {
-      throw Exception(
-          'Failed to create education reminder: ${e.message}');
+      throw Exception('Failed to create education reminder: ${e.message}');
     }
   }
 
@@ -232,8 +225,7 @@ class EducationBeneficiaryRemoteDataSourceImpl
       await grpcClient.utilityPaymentsClient
           .updateEducationReminder(request, options: options);
     } on GrpcError catch (e) {
-      throw Exception(
-          'Failed to update education reminder: ${e.message}');
+      throw Exception('Failed to update education reminder: ${e.message}');
     }
   }
 
@@ -246,8 +238,7 @@ class EducationBeneficiaryRemoteDataSourceImpl
       await grpcClient.utilityPaymentsClient
           .deleteEducationReminder(request, options: options);
     } on GrpcError catch (e) {
-      throw Exception(
-          'Failed to delete education reminder: ${e.message}');
+      throw Exception('Failed to delete education reminder: ${e.message}');
     }
   }
 

@@ -14,7 +14,6 @@ import 'package:lazervault/src/features/plan_my_day/email/presentation/screens/e
 import 'package:lazervault/src/features/plan_my_day/email/presentation/widgets/email_palette.dart';
 part 'email_inbox_screen_widgets.dart';
 
-
 /// Email home / inbox inside Plan My Day. Shows a connect banner when not
 /// connected; otherwise a range selector, sync action, AI digest and a
 /// paginated list of summarized emails.
@@ -332,7 +331,8 @@ class _EmailInboxScreenState extends State<EmailInboxScreen> {
         icon: const Icon(Icons.playlist_add_check_rounded, size: 20),
         label: Text(
           'Build my day from emails',
-          style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
+          style:
+              GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: EmailPalette.success,

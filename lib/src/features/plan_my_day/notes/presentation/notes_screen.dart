@@ -46,7 +46,8 @@ class NotesScreen extends StatelessWidget {
       body: BlocBuilder<NoteCubit, NoteState>(
         builder: (context, state) {
           if (state is NoteLoading || state is NoteInitial) {
-            return const Center(child: CircularProgressIndicator(color: _purple));
+            return const Center(
+                child: CircularProgressIndicator(color: _purple));
           }
           if (state is NoteError) {
             return Center(
@@ -71,7 +72,8 @@ class NotesScreen extends StatelessWidget {
                             fontSize: 18.sp,
                             fontWeight: FontWeight.w600)),
                     SizedBox(height: 6.h),
-                    Text('Jot down anything — ideas, follow-ups, meeting notes.',
+                    Text(
+                        'Jot down anything — ideas, follow-ups, meeting notes.',
                         textAlign: TextAlign.center,
                         style:
                             GoogleFonts.inter(color: _muted, fontSize: 13.sp)),

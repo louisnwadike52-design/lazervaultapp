@@ -31,7 +31,8 @@ class BankRepository {
   final Map<String, List<Map<String, String>>> _mem = {};
 
   String _cacheKey(String country) => 'banks_cache_${country.toUpperCase()}';
-  String _cacheAtKey(String country) => 'banks_cache_at_${country.toUpperCase()}';
+  String _cacheAtKey(String country) =>
+      'banks_cache_at_${country.toUpperCase()}';
 
   /// Synchronous best-effort list: the in-memory dynamic list if the repository
   /// has been warmed this session, otherwise the bundled static list. Pair with

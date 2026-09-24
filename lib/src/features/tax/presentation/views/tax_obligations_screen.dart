@@ -352,7 +352,8 @@ class _TaxObligationsScreenState extends State<TaxObligationsScreen>
                           ),
                         ),
                         if (!obligation.isOverdue &&
-                            obligation.status == TaxObligationStatus.pending) ...[
+                            obligation.status ==
+                                TaxObligationStatus.pending) ...[
                           SizedBox(width: 8.w),
                           Text(
                             '\u2022',
@@ -516,10 +517,11 @@ class _TaxObligationsScreenState extends State<TaxObligationsScreen>
                       onTap: () async {
                         final picked = await showDatePicker(
                           context: dialogContext,
-                          initialDate:
-                              selectedDueDate ?? DateTime.now().add(const Duration(days: 30)),
+                          initialDate: selectedDueDate ??
+                              DateTime.now().add(const Duration(days: 30)),
                           firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(const Duration(days: 730)),
+                          lastDate:
+                              DateTime.now().add(const Duration(days: 730)),
                           builder: (context, child) {
                             return Theme(
                               data: ThemeData.dark().copyWith(
@@ -619,7 +621,8 @@ class _TaxObligationsScreenState extends State<TaxObligationsScreen>
                           taxType: selectedType.index,
                           period: period,
                           amount: (amount * 100).toInt(),
-                          dueDate: '${selectedDueDate!.year}-${selectedDueDate!.month.toString().padLeft(2, '0')}-${selectedDueDate!.day.toString().padLeft(2, '0')}',
+                          dueDate:
+                              '${selectedDueDate!.year}-${selectedDueDate!.month.toString().padLeft(2, '0')}-${selectedDueDate!.day.toString().padLeft(2, '0')}',
                           notes: notesController.text.trim(),
                         );
                   },
@@ -718,8 +721,18 @@ class _TaxObligationsScreenState extends State<TaxObligationsScreen>
 
   String _formatDate(DateTime date) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }

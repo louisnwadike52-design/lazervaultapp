@@ -95,9 +95,11 @@ class _InsurancePaymentScreenState extends State<InsurancePaymentScreen> {
                   SizedBox(height: 20.h),
                   _buildInfoRow('Policy Number', widget.insurance.policyNumber),
                   SizedBox(height: 12.h),
-                  _buildInfoRow('Premium Amount', '\$${widget.insurance.premiumAmount.toStringAsFixed(2)}'),
+                  _buildInfoRow('Premium Amount',
+                      '\$${widget.insurance.premiumAmount.toStringAsFixed(2)}'),
                   SizedBox(height: 12.h),
-                  _buildInfoRow('Coverage', '\$${widget.insurance.coverageAmount.toStringAsFixed(0)}'),
+                  _buildInfoRow('Coverage',
+                      '\$${widget.insurance.coverageAmount.toStringAsFixed(0)}'),
                 ],
               ),
             ),
@@ -116,7 +118,8 @@ class _InsurancePaymentScreenState extends State<InsurancePaymentScreen> {
 
             SizedBox(height: 16.h),
 
-            ...PaymentMethod.values.map((method) => _buildPaymentMethodTile(method)),
+            ...PaymentMethod.values
+                .map((method) => _buildPaymentMethodTile(method)),
 
             SizedBox(height: 32.h),
 
@@ -127,7 +130,8 @@ class _InsurancePaymentScreenState extends State<InsurancePaymentScreen> {
                 onPressed: _isProcessing ? null : _processPayment,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF6366F1),
-                  disabledBackgroundColor: const Color(0xFF6366F1).withValues(alpha: 0.5),
+                  disabledBackgroundColor:
+                      const Color(0xFF6366F1).withValues(alpha: 0.5),
                   padding: EdgeInsets.symmetric(vertical: 18.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
@@ -178,7 +182,9 @@ class _InsurancePaymentScreenState extends State<InsurancePaymentScreen> {
     final isSelected = selectedPaymentMethod == method;
 
     return GestureDetector(
-      onTap: _isProcessing ? null : () => setState(() => selectedPaymentMethod = method),
+      onTap: _isProcessing
+          ? null
+          : () => setState(() => selectedPaymentMethod = method),
       child: Container(
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
@@ -186,9 +192,8 @@ class _InsurancePaymentScreenState extends State<InsurancePaymentScreen> {
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF6366F1)
-                : const Color(0xFF2D2D2D),
+            color:
+                isSelected ? const Color(0xFF6366F1) : const Color(0xFF2D2D2D),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -227,11 +232,11 @@ class _InsurancePaymentScreenState extends State<InsurancePaymentScreen> {
 
     try {
       final payment = await context.read<InsuranceCubit>().createPayment(
-        insuranceId: widget.insurance.id,
-        policyNumber: widget.insurance.policyNumber,
-        amount: widget.insurance.premiumAmount,
-        paymentMethod: selectedPaymentMethod,
-      );
+            insuranceId: widget.insurance.id,
+            policyNumber: widget.insurance.policyNumber,
+            amount: widget.insurance.premiumAmount,
+            paymentMethod: selectedPaymentMethod,
+          );
 
       if (!mounted) return;
       Get.toNamed(

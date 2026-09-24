@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 part 'insurance_how_it_works_screen_widgets.dart';
 
-
 class InsuranceHowItWorksScreen extends StatelessWidget {
   const InsuranceHowItWorksScreen({super.key});
 
@@ -211,7 +210,8 @@ class InsuranceHowItWorksScreen extends StatelessWidget {
         ),
         SizedBox(height: 16.h),
         ...List.generate(steps.length, (index) {
-          return _buildStepItem(steps[index], isLast: index == steps.length - 1);
+          return _buildStepItem(steps[index],
+              isLast: index == steps.length - 1);
         }),
       ],
     );
@@ -375,7 +375,8 @@ class InsuranceHowItWorksScreen extends StatelessWidget {
                     width: 48.w,
                     height: 48.w,
                     decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                      color: const Color.fromARGB(255, 78, 3, 208)
+                          .withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Icon(

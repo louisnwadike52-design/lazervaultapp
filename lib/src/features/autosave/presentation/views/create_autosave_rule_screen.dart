@@ -54,7 +54,6 @@ import '../../utils/autosave_trigger_labels.dart';
 part 'create_autosave_rule_screen_part1.dart';
 part 'create_autosave_rule_screen_part2.dart';
 
-
 // ─── Theme constants — aligned with the contribution flow palette ───
 const _bg = Color(0xFF0A0A0A);
 const _surface = Color(0xFF1F1F1F);
@@ -118,6 +117,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
   int? _selectedScheduleDay;
   TimeOfDay _selectedTime = const TimeOfDay(hour: 0, minute: 0);
   int? _selectedRoundUpTo;
+
   /// True once the user picks "Custom", BEFORE they have typed a value.
   /// Without this the mode had to be inferred from the value, which meant the
   /// input could never appear to collect one.
@@ -744,121 +744,121 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
 
   Widget _scheduledConfig() {
     return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _SectionTitle('Frequency'),
-          SizedBox(height: 12.h),
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            mainAxisSpacing: 12.h,
-            crossAxisSpacing: 12.w,
-            childAspectRatio: 2.2,
-            children: [
-              _FrequencyTile(
-                label: 'Daily',
-                hint: 'Every day',
-                icon: Icons.today_rounded,
-                selected: _selectedFrequency == ScheduleFrequency.daily,
-                onTap: () => setState(() {
-                  _selectedFrequency = ScheduleFrequency.daily;
-                  _selectedScheduleDay = null;
-                  _stepError = null;
-                }),
-              ),
-              _FrequencyTile(
-                label: 'Weekly',
-                hint: 'Once a week',
-                icon: Icons.view_week_rounded,
-                selected: _selectedFrequency == ScheduleFrequency.weekly,
-                onTap: () => setState(() {
-                  _selectedFrequency = ScheduleFrequency.weekly;
-                  _selectedScheduleDay = 1;
-                  _stepError = null;
-                }),
-              ),
-              _FrequencyTile(
-                label: 'Bi-weekly',
-                hint: 'Every 2 weeks',
-                icon: Icons.event_repeat_rounded,
-                selected: _selectedFrequency == ScheduleFrequency.biweekly,
-                onTap: () => setState(() {
-                  _selectedFrequency = ScheduleFrequency.biweekly;
-                  _selectedScheduleDay = 1;
-                  _stepError = null;
-                }),
-              ),
-              _FrequencyTile(
-                label: 'Monthly',
-                hint: 'Once a month',
-                icon: Icons.calendar_month_rounded,
-                selected: _selectedFrequency == ScheduleFrequency.monthly,
-                onTap: () => setState(() {
-                  _selectedFrequency = ScheduleFrequency.monthly;
-                  _selectedScheduleDay = 1;
-                  _stepError = null;
-                }),
-              ),
-            ],
-          ),
-          if (_selectedFrequency != null &&
-              _needsScheduleDay(_selectedFrequency!)) ...[
-            SizedBox(height: 28.h),
-            _SectionTitle(
-              _selectedFrequency == ScheduleFrequency.monthly
-                  ? 'Day of month'
-                  : 'Day of week',
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _SectionTitle('Frequency'),
+        SizedBox(height: 12.h),
+        GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: 2,
+          mainAxisSpacing: 12.h,
+          crossAxisSpacing: 12.w,
+          childAspectRatio: 2.2,
+          children: [
+            _FrequencyTile(
+              label: 'Daily',
+              hint: 'Every day',
+              icon: Icons.today_rounded,
+              selected: _selectedFrequency == ScheduleFrequency.daily,
+              onTap: () => setState(() {
+                _selectedFrequency = ScheduleFrequency.daily;
+                _selectedScheduleDay = null;
+                _stepError = null;
+              }),
             ),
-            SizedBox(height: 12.h),
-            if (_selectedFrequency == ScheduleFrequency.monthly)
-              _MonthDayPicker(
-                selectedDay: _selectedScheduleDay ?? 1,
-                onChanged: (d) => setState(() {
-                  _selectedScheduleDay = d;
-                  _stepError = null;
-                }),
-              )
-            else
-              _WeekDayPicker(
-                selectedDay: _selectedScheduleDay ?? 1,
-                onChanged: (d) => setState(() {
-                  _selectedScheduleDay = d;
-                  _stepError = null;
-                }),
-              ),
+            _FrequencyTile(
+              label: 'Weekly',
+              hint: 'Once a week',
+              icon: Icons.view_week_rounded,
+              selected: _selectedFrequency == ScheduleFrequency.weekly,
+              onTap: () => setState(() {
+                _selectedFrequency = ScheduleFrequency.weekly;
+                _selectedScheduleDay = 1;
+                _stepError = null;
+              }),
+            ),
+            _FrequencyTile(
+              label: 'Bi-weekly',
+              hint: 'Every 2 weeks',
+              icon: Icons.event_repeat_rounded,
+              selected: _selectedFrequency == ScheduleFrequency.biweekly,
+              onTap: () => setState(() {
+                _selectedFrequency = ScheduleFrequency.biweekly;
+                _selectedScheduleDay = 1;
+                _stepError = null;
+              }),
+            ),
+            _FrequencyTile(
+              label: 'Monthly',
+              hint: 'Once a month',
+              icon: Icons.calendar_month_rounded,
+              selected: _selectedFrequency == ScheduleFrequency.monthly,
+              onTap: () => setState(() {
+                _selectedFrequency = ScheduleFrequency.monthly;
+                _selectedScheduleDay = 1;
+                _stepError = null;
+              }),
+            ),
           ],
+        ),
+        if (_selectedFrequency != null &&
+            _needsScheduleDay(_selectedFrequency!)) ...[
           SizedBox(height: 28.h),
-          _SectionTitle('Time of day'),
-          SizedBox(height: 4.h),
-          Text(
-            'Defaults to 00:00. Tap the tile to change.',
-            style: GoogleFonts.inter(color: _textMuted, fontSize: 12.sp),
+          _SectionTitle(
+            _selectedFrequency == ScheduleFrequency.monthly
+                ? 'Day of month'
+                : 'Day of week',
           ),
           SizedBox(height: 12.h),
-          _TimePickerTile(
-            time: _selectedTime,
-            onPick: () async {
-              final picked = await showTimePicker(
-                context: context,
-                initialTime: _selectedTime,
-                builder: (ctx, child) => Theme(
-                  data: Theme.of(ctx).copyWith(
-                    colorScheme: const ColorScheme.dark(
-                      primary: _accent,
-                      onPrimary: Colors.white,
-                      surface: _surface,
-                      onSurface: Colors.white,
-                    ),
-                  ),
-                  child: child ?? const SizedBox.shrink(),
-                ),
-              );
-              if (picked != null) setState(() => _selectedTime = picked);
-            },
-          ),
+          if (_selectedFrequency == ScheduleFrequency.monthly)
+            _MonthDayPicker(
+              selectedDay: _selectedScheduleDay ?? 1,
+              onChanged: (d) => setState(() {
+                _selectedScheduleDay = d;
+                _stepError = null;
+              }),
+            )
+          else
+            _WeekDayPicker(
+              selectedDay: _selectedScheduleDay ?? 1,
+              onChanged: (d) => setState(() {
+                _selectedScheduleDay = d;
+                _stepError = null;
+              }),
+            ),
         ],
-      );
+        SizedBox(height: 28.h),
+        _SectionTitle('Time of day'),
+        SizedBox(height: 4.h),
+        Text(
+          'Defaults to 00:00. Tap the tile to change.',
+          style: GoogleFonts.inter(color: _textMuted, fontSize: 12.sp),
+        ),
+        SizedBox(height: 12.h),
+        _TimePickerTile(
+          time: _selectedTime,
+          onPick: () async {
+            final picked = await showTimePicker(
+              context: context,
+              initialTime: _selectedTime,
+              builder: (ctx, child) => Theme(
+                data: Theme.of(ctx).copyWith(
+                  colorScheme: const ColorScheme.dark(
+                    primary: _accent,
+                    onPrimary: Colors.white,
+                    surface: _surface,
+                    onSurface: Colors.white,
+                  ),
+                ),
+                child: child ?? const SizedBox.shrink(),
+              ),
+            );
+            if (picked != null) setState(() => _selectedTime = picked);
+          },
+        ),
+      ],
+    );
   }
 
   Widget _roundUpConfig() {
@@ -874,75 +874,75 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
     final isCustom = _customRoundUpMode ||
         (_selectedRoundUpTo != null && !presets.contains(_selectedRoundUpTo));
     return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _SectionTitle('Round up unit'),
-          SizedBox(height: 4.h),
-          Text(
-            'Every spend rounds up to the nearest multiple of this value.',
-            style: GoogleFonts.inter(color: _textMuted, fontSize: 12.sp),
-          ),
-          SizedBox(height: 16.h),
-          Wrap(
-            spacing: 10.w,
-            runSpacing: 10.h,
-            children: [
-              for (final p in presets)
-                _RoundUpChip(
-                  label: _currencyLabel(p.toDouble()),
-                  selected: _selectedRoundUpTo == p && !isCustom,
-                  onTap: () => setState(() {
-                    _customRoundUpMode = false;
-                    _selectedRoundUpTo = p;
-                    _customRoundUpController.clear();
-                    _stepError = null;
-                  }),
-                ),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _SectionTitle('Round up unit'),
+        SizedBox(height: 4.h),
+        Text(
+          'Every spend rounds up to the nearest multiple of this value.',
+          style: GoogleFonts.inter(color: _textMuted, fontSize: 12.sp),
+        ),
+        SizedBox(height: 16.h),
+        Wrap(
+          spacing: 10.w,
+          runSpacing: 10.h,
+          children: [
+            for (final p in presets)
               _RoundUpChip(
-                label: 'Custom',
-                icon: Icons.tune_rounded,
-                selected: isCustom,
+                label: _currencyLabel(p.toDouble()),
+                selected: _selectedRoundUpTo == p && !isCustom,
                 onTap: () => setState(() {
-                  // Enter the mode FIRST. The value stays null until the user
-                  // types one, and that is exactly the state the field below
-                  // exists to collect — deriving the mode from the value is
-                  // what made this chip inert.
-                  _customRoundUpMode = true;
-                  _selectedRoundUpTo =
-                      int.tryParse(_customRoundUpController.text);
+                  _customRoundUpMode = false;
+                  _selectedRoundUpTo = p;
+                  _customRoundUpController.clear();
                   _stepError = null;
                 }),
               ),
-            ],
-          ),
-          if (isCustom) ...[
-            SizedBox(height: 16.h),
-            _LabeledField(
-              label: 'Custom round-up unit',
-              child: _TextInput(
-                controller: _customRoundUpController,
-                hint: 'e.g. 250',
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                // Opens the keyboard the moment Custom is chosen, so the tap
-                // has a visible result rather than just revealing a box.
-                autofocus: true,
-                onChanged: (v) => setState(() {
-                  _selectedRoundUpTo = int.tryParse(v);
-                  _stepError = null;
-                }),
-              ),
+            _RoundUpChip(
+              label: 'Custom',
+              icon: Icons.tune_rounded,
+              selected: isCustom,
+              onTap: () => setState(() {
+                // Enter the mode FIRST. The value stays null until the user
+                // types one, and that is exactly the state the field below
+                // exists to collect — deriving the mode from the value is
+                // what made this chip inert.
+                _customRoundUpMode = true;
+                _selectedRoundUpTo =
+                    int.tryParse(_customRoundUpController.text);
+                _stepError = null;
+              }),
             ),
           ],
-          SizedBox(height: 22.h),
-          _PreviewCard(
-            tint: _roundUpTint,
-            icon: Icons.calculate_outlined,
-            title: 'Example',
-            body: _roundUpExampleText(),
+        ),
+        if (isCustom) ...[
+          SizedBox(height: 16.h),
+          _LabeledField(
+            label: 'Custom round-up unit',
+            child: _TextInput(
+              controller: _customRoundUpController,
+              hint: 'e.g. 250',
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              // Opens the keyboard the moment Custom is chosen, so the tap
+              // has a visible result rather than just revealing a box.
+              autofocus: true,
+              onChanged: (v) => setState(() {
+                _selectedRoundUpTo = int.tryParse(v);
+                _stepError = null;
+              }),
+            ),
           ),
         ],
-      );
+        SizedBox(height: 22.h),
+        _PreviewCard(
+          tint: _roundUpTint,
+          icon: Icons.calculate_outlined,
+          title: 'Example',
+          body: _roundUpExampleText(),
+        ),
+      ],
+    );
   }
 
   String _roundUpExampleText() {
@@ -959,88 +959,88 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
 
   Widget _onDepositConfig() {
     return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _PreviewCard(
-            tint: _onDepositTint,
-            icon: Icons.south_rounded,
-            title: 'How it works',
-            body:
-                'Whenever your source account is credited, the rule saves either a fixed amount or a percentage of that deposit. Pick the amount on the next step.',
-          ),
-          SizedBox(height: 14.h),
-          _PreviewCard(
-            tint: _success,
-            icon: Icons.shield_outlined,
-            title: 'Recursion-safe',
-            body:
-                'Saves caused by your own auto-save rules are filtered out, so the trigger can never fire itself.',
-          ),
-        ],
-      );
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _PreviewCard(
+          tint: _onDepositTint,
+          icon: Icons.south_rounded,
+          title: 'How it works',
+          body:
+              'Whenever your source account is credited, the rule saves either a fixed amount or a percentage of that deposit. Pick the amount on the next step.',
+        ),
+        SizedBox(height: 14.h),
+        _PreviewCard(
+          tint: _success,
+          icon: Icons.shield_outlined,
+          title: 'Recursion-safe',
+          body:
+              'Saves caused by your own auto-save rules are filtered out, so the trigger can never fire itself.',
+        ),
+      ],
+    );
   }
 
   Widget _externalInflowConfig() {
     return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _PreviewCard(
-            tint: _inflowTint,
-            icon: Icons.account_balance_rounded,
-            title: 'How it works',
-            body:
-                'When money lands in your linked bank account, Lazervault pulls your configured save through the bank\'s Direct Debit mandate into your savings. You pick the bank on the accounts step.',
-          ),
-          SizedBox(height: 14.h),
-          _PreviewCard(
-            tint: _onDepositTint,
-            icon: Icons.sync_rounded,
-            title: 'Detection timing',
-            body:
-                'Inflows are detected when your bank data syncs. Most saves fire within minutes of the money arriving.',
-          ),
-          SizedBox(height: 14.h),
-          _PreviewCard(
-            tint: _success,
-            icon: Icons.shield_outlined,
-            title: 'Direct Debit required',
-            body:
-                'The selected bank needs an active Direct Debit mandate. If it doesn\'t have one yet, you can set it up in the same flow.',
-          ),
-        ],
-      );
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _PreviewCard(
+          tint: _inflowTint,
+          icon: Icons.account_balance_rounded,
+          title: 'How it works',
+          body:
+              'When money lands in your linked bank account, Lazervault pulls your configured save through the bank\'s Direct Debit mandate into your savings. You pick the bank on the accounts step.',
+        ),
+        SizedBox(height: 14.h),
+        _PreviewCard(
+          tint: _onDepositTint,
+          icon: Icons.sync_rounded,
+          title: 'Detection timing',
+          body:
+              'Inflows are detected when your bank data syncs. Most saves fire within minutes of the money arriving.',
+        ),
+        SizedBox(height: 14.h),
+        _PreviewCard(
+          tint: _success,
+          icon: Icons.shield_outlined,
+          title: 'Direct Debit required',
+          body:
+              'The selected bank needs an active Direct Debit mandate. If it doesn\'t have one yet, you can set it up in the same flow.',
+        ),
+      ],
+    );
   }
 
   // ─── Amount section (rendered inside the Configure step) ────────
 
   Widget _amountSection() {
     return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (_selectedTriggerType != TriggerType.roundUp &&
-              _selectedTriggerType != TriggerType.scheduledExternal) ...[
-            _SectionTitle('Amount type'),
-            SizedBox(height: 12.h),
-            _SegmentedToggle(
-              left: 'Fixed',
-              right: 'Percentage',
-              isLeft: _selectedAmountType == AmountType.fixed,
-              onTap: (left) => setState(() {
-                _selectedAmountType =
-                    left ? AmountType.fixed : AmountType.percentage;
-                _stepError = null;
-              }),
-            ),
-            SizedBox(height: 24.h),
-          ],
-          // ROUND-UP has no amount field. What it used to collect was
-          // amountValue, and the round-up consumer never reads it: it
-          // computes the rounding delta and passes that straight to the
-          // executor. The only thing that caps a round-up is
-          // maximumPerSave, which lives on the Limits step — so this asked
-          // for a REQUIRED number that changed nothing, under a name
-          // ("per-fire cap") that promised it did.
-          if (_selectedTriggerType != TriggerType.roundUp)
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (_selectedTriggerType != TriggerType.roundUp &&
+            _selectedTriggerType != TriggerType.scheduledExternal) ...[
+          _SectionTitle('Amount type'),
+          SizedBox(height: 12.h),
+          _SegmentedToggle(
+            left: 'Fixed',
+            right: 'Percentage',
+            isLeft: _selectedAmountType == AmountType.fixed,
+            onTap: (left) => setState(() {
+              _selectedAmountType =
+                  left ? AmountType.fixed : AmountType.percentage;
+              _stepError = null;
+            }),
+          ),
+          SizedBox(height: 24.h),
+        ],
+        // ROUND-UP has no amount field. What it used to collect was
+        // amountValue, and the round-up consumer never reads it: it
+        // computes the rounding delta and passes that straight to the
+        // executor. The only thing that caps a round-up is
+        // maximumPerSave, which lives on the Limits step — so this asked
+        // for a REQUIRED number that changed nothing, under a name
+        // ("per-fire cap") that promised it did.
+        if (_selectedTriggerType != TriggerType.roundUp)
           StreamBuilder<String>(
             stream: CurrencySymbols.currencySymbolStream,
             builder: (context, snapshot) {
@@ -1093,29 +1093,29 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
               );
             },
           ),
-          if (_selectedTriggerType == TriggerType.roundUp) ...[
-            SizedBox(height: 16.h),
-            _PreviewCard(
-              tint: _textMuted,
-              icon: Icons.info_outline_rounded,
-              title: 'How much gets saved',
-              // The old copy explained the field in terms of "per-fire upper
-              // bound" and "the rounding delta you configured" — both internal
-              // vocabulary, and neither answers the actual question, which is
-              // "what number do I put here and what happens if I leave it".
-              // Worked example first, because that is what makes it land.
-              // Answers the question the removed field left hanging:
-                  // how much a round-up actually saves, and where to cap it
-                  // if you want to.
-              body: 'Each save is just the rounding difference, so it is '
-                  'always smaller than your round-up unit — spending '
-                  '₦8,050 with a ₦100 unit saves ₦50.\n\n'
-                  'Want a ceiling on a single round-up? Set "Maximum per '
-                  'save" on the last step.',
-            ),
-          ],
+        if (_selectedTriggerType == TriggerType.roundUp) ...[
+          SizedBox(height: 16.h),
+          _PreviewCard(
+            tint: _textMuted,
+            icon: Icons.info_outline_rounded,
+            title: 'How much gets saved',
+            // The old copy explained the field in terms of "per-fire upper
+            // bound" and "the rounding delta you configured" — both internal
+            // vocabulary, and neither answers the actual question, which is
+            // "what number do I put here and what happens if I leave it".
+            // Worked example first, because that is what makes it land.
+            // Answers the question the removed field left hanging:
+            // how much a round-up actually saves, and where to cap it
+            // if you want to.
+            body: 'Each save is just the rounding difference, so it is '
+                'always smaller than your round-up unit — spending '
+                '₦8,050 with a ₦100 unit saves ₦50.\n\n'
+                'Want a ceiling on a single round-up? Set "Maximum per '
+                'save" on the last step.',
+          ),
         ],
-      );
+      ],
+    );
   }
 
   // ─── Step 5: Accounts ───────────────────────────────────────────
@@ -1134,9 +1134,11 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
               return _EmptyAccountsState(onClose: () => Get.back());
             }
 
-            final dests = all.where((a) =>
-                a.accountType.toLowerCase().contains('saving') ||
-                a.accountType.toLowerCase().contains('money market')).toList();
+            final dests = all
+                .where((a) =>
+                    a.accountType.toLowerCase().contains('saving') ||
+                    a.accountType.toLowerCase().contains('money market'))
+                .toList();
 
             if (_selectedDestinationAccountId == null && dests.isNotEmpty) {
               final firstDest = dests.first.id.toString();
@@ -1194,11 +1196,8 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             return _AccountsLoadErrorState(
               message: state.message,
               onRetry: () {
-                final userId =
-                    context.read<AuthenticationCubit>().userId ?? '';
-                context
-                    .read<AccountCardsSummaryCubit>()
-                    .fetchAccountSummaries(
+                final userId = context.read<AuthenticationCubit>().userId ?? '';
+                context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
                       userId: userId,
                       accessToken: null,
                     );
@@ -1219,7 +1218,8 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
   // ─── Step 5 (Bank Inflow): linked bank source + wallet destination ───
 
   bool _isMandateReady(LinkedBankAccount account) {
-    final mandate = context.read<MandateCubit>().getMandateForAccount(account.id);
+    final mandate =
+        context.read<MandateCubit>().getMandateForAccount(account.id);
     return mandate != null &&
         (mandate.status == MandateStatus.readyToDebit ||
             mandate.status == MandateStatus.active);
@@ -1239,8 +1239,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           SizedBox(height: 12.h),
           BlocBuilder<OpenBankingCubit, OpenBankingState>(
             builder: (context, obState) {
-              final accounts =
-                  context.read<OpenBankingCubit>().linkedAccounts;
+              final accounts = context.read<OpenBankingCubit>().linkedAccounts;
               if (obState is OpenBankingLoading && accounts.isEmpty) {
                 return Padding(
                   padding: EdgeInsets.symmetric(vertical: 40.h),
@@ -1441,8 +1440,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             tint: _textMuted,
             icon: Icons.tune_rounded,
             title: 'Optional',
-            body:
-                'Skip any field. The rule still works fine without these.',
+            body: 'Skip any field. The rule still works fine without these.',
           ),
           SizedBox(height: 18.h),
           _LabeledField(

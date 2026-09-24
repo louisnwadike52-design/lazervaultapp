@@ -3,7 +3,6 @@ import '../../domain/entities/crowdfund_entities.dart';
 import '../../domain/entities/notification_channel_entities.dart';
 part 'crowdfund_state_widgets.dart';
 
-
 /// Single crowdfund details loaded with donations.
 ///
 /// Pagination fields (`donationsPage`, `hasMoreDonations`,
@@ -68,4 +67,3 @@ class CrowdfundDetailsLoaded extends CrowdfundState {
         isLoadingMoreDonations,
       ];
 }
-

@@ -35,10 +35,12 @@ class _CoverageDetailsScreenState extends State<CoverageDetailsScreen>
     super.initState();
 
     final cubit = context.read<CreatePolicyCubit>();
-    _initialPremiumRaw =
-        cubit.premiumAmount != null ? cubit.premiumAmount!.toStringAsFixed(2) : '';
-    _initialCoverageRaw =
-        cubit.coverageAmount != null ? cubit.coverageAmount!.toStringAsFixed(2) : '';
+    _initialPremiumRaw = cubit.premiumAmount != null
+        ? cubit.premiumAmount!.toStringAsFixed(2)
+        : '';
+    _initialCoverageRaw = cubit.coverageAmount != null
+        ? cubit.coverageAmount!.toStringAsFixed(2)
+        : '';
 
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 400),

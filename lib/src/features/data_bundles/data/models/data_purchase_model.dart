@@ -24,7 +24,8 @@ class DataPurchaseModel extends DataPurchaseEntity {
   factory DataPurchaseModel.fromResponse(pb.BuyDataResponse response) {
     final payment = response.payment;
     // A successful gRPC response (no exception) with empty status means completed
-    final effectiveStatus = payment.status.isEmpty ? 'completed' : payment.status;
+    final effectiveStatus =
+        payment.status.isEmpty ? 'completed' : payment.status;
     return DataPurchaseModel(
       id: payment.id,
       userId: payment.userId,
@@ -60,8 +61,7 @@ class DataPurchaseModel extends DataPurchaseEntity {
       providerReference: payment.reference,
       createdAt: payment.createdAt,
       billType: payment.billType,
-      refundSource:
-          payment.hasRefundSource() ? payment.refundSource : '',
+      refundSource: payment.hasRefundSource() ? payment.refundSource : '',
       // Metadata carries FX breakdown for intl rows; parsed lazily in
       // the entity via `metadataMap`. Currency (sender_currency) is also
       // embedded there since BillPayment proto has no currency field.

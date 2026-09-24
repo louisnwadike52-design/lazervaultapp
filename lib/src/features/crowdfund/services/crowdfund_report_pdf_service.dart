@@ -90,9 +90,8 @@ class CrowdfundReportPdfService {
         theme: theme,
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.fromLTRB(40, 36, 40, 44),
-        header: (ctx) => ctx.pageNumber == 1
-            ? pw.SizedBox()
-            : _runningHeader(crowdfund),
+        header: (ctx) =>
+            ctx.pageNumber == 1 ? pw.SizedBox() : _runningHeader(crowdfund),
         footer: (ctx) => _footer(ctx, crowdfund),
         build: (ctx) => [
           _titleBlock(crowdfund, report),
@@ -157,8 +156,8 @@ class CrowdfundReportPdfService {
                     color: PdfColors.grey600,
                     letterSpacing: 1.6)),
             pw.Text(_safe('Campaign report'),
-                style: const pw.TextStyle(
-                    fontSize: 10, color: PdfColors.grey600)),
+                style:
+                    const pw.TextStyle(fontSize: 10, color: PdfColors.grey600)),
           ],
         ),
         pw.SizedBox(height: 14),
@@ -213,8 +212,10 @@ class CrowdfundReportPdfService {
               _stat('Largest donation',
                   _money(currency, statistics.largestDonation)),
               _stat('Days remaining', '${statistics.daysRemaining}'),
-              _stat('Outstanding',
-                  _money(currency, (target - raised).clamp(0, double.infinity))),
+              _stat(
+                  'Outstanding',
+                  _money(
+                      currency, (target - raised).clamp(0, double.infinity))),
             ]),
           ],
         ],
@@ -228,7 +229,8 @@ class CrowdfundReportPdfService {
       ['Created', _date.format(c.createdAt)],
       if (c.deadline != null) ['Deadline', _date.format(c.deadline!)],
       ['Currency', c.currency],
-      if ((campaignUrl ?? '').trim().isNotEmpty) ['Campaign link', campaignUrl!.trim()],
+      if ((campaignUrl ?? '').trim().isNotEmpty)
+        ['Campaign link', campaignUrl!.trim()],
     ];
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -302,9 +304,7 @@ class CrowdfundReportPdfService {
                 _cell(m.title),
                 _cell(_money(currency, m.targetAmount)),
                 _cell(m.isReached
-                    ? (m.reachedAt != null
-                        ? _date.format(m.reachedAt!)
-                        : 'Yes')
+                    ? (m.reachedAt != null ? _date.format(m.reachedAt!) : 'Yes')
                     : 'Not yet'),
               ]),
           ],
@@ -328,8 +328,8 @@ class CrowdfundReportPdfService {
                 pw.Text('•  ', style: const pw.TextStyle(fontSize: 10.5)),
                 pw.Expanded(
                   child: pw.Text(_safe(h),
-                      style: const pw.TextStyle(
-                          fontSize: 10.5, lineSpacing: 2)),
+                      style:
+                          const pw.TextStyle(fontSize: 10.5, lineSpacing: 2)),
                 ),
               ],
             ),
@@ -370,9 +370,11 @@ class CrowdfundReportPdfService {
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
             pw.Text(_safe(c.title),
-                style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600)),
+                style:
+                    const pw.TextStyle(fontSize: 9, color: PdfColors.grey600)),
             pw.Text(_safe(c.crowdfundCode),
-                style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600)),
+                style:
+                    const pw.TextStyle(fontSize: 9, color: PdfColors.grey600)),
           ],
         ),
       );
@@ -383,9 +385,11 @@ class CrowdfundReportPdfService {
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
             pw.Text(_safe('LazerVault · ${c.crowdfundCode}'),
-                style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500)),
+                style:
+                    const pw.TextStyle(fontSize: 8, color: PdfColors.grey500)),
             pw.Text('Page ${ctx.pageNumber} of ${ctx.pagesCount}',
-                style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500)),
+                style:
+                    const pw.TextStyle(fontSize: 8, color: PdfColors.grey500)),
           ],
         ),
       );
@@ -405,7 +409,8 @@ class CrowdfundReportPdfService {
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
           pw.Text(_safe(label),
-              style: const pw.TextStyle(fontSize: 8.5, color: PdfColors.grey700)),
+              style:
+                  const pw.TextStyle(fontSize: 8.5, color: PdfColors.grey700)),
           pw.SizedBox(height: 3),
           pw.Text(_safe(value),
               style: pw.TextStyle(
@@ -430,7 +435,8 @@ class CrowdfundReportPdfService {
   /// Money with a real symbol when a TrueType face is embedded, and the ISO
   /// code otherwise. Helvetica has no ₦ glyph and silently draws a blank box.
   static String _money(String currency, double value) {
-    final code = currency.trim().isEmpty ? 'NGN' : currency.trim().toUpperCase();
+    final code =
+        currency.trim().isEmpty ? 'NGN' : currency.trim().toUpperCase();
     if (!ReceiptFonts.embedded) return '$code ${_amount.format(value)}';
     const symbols = {'NGN': '₦', 'USD': '\$', 'GBP': '£', 'EUR': '€'};
     final symbol = symbols[code];

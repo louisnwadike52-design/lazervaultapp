@@ -9,7 +9,8 @@ abstract class UseCaseWithParams<T, Params> {
   Future<Either<Failure, T>> call(Params params);
 }
 
-class InitiateDepositUseCase extends UseCaseWithParams<DepositDetails, DepositParams> {
+class InitiateDepositUseCase
+    extends UseCaseWithParams<DepositDetails, DepositParams> {
   final IDepositRepository _repository;
 
   const InitiateDepositUseCase(this._repository);
@@ -39,5 +40,6 @@ class DepositParams extends Equatable {
   });
 
   @override
-  List<Object?> get props => [targetAccountId, amount, currency, sourceBankName];
-} 
+  List<Object?> get props =>
+      [targetAccountId, amount, currency, sourceBankName];
+}

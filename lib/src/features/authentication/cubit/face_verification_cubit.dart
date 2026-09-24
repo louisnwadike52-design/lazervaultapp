@@ -42,7 +42,8 @@ class FaceVerificationCubit extends Cubit<FaceVerificationState> {
       (failure) {
         _showErrorSnackbar('Face Registration Failed', failure.message);
         if (isClosed) return;
-        emit(FaceRegistrationFailure(failure.message, statusCode: failure.statusCode));
+        emit(FaceRegistrationFailure(failure.message,
+            statusCode: failure.statusCode));
       },
       (registration) {
         if (registration.success) {
@@ -79,7 +80,8 @@ class FaceVerificationCubit extends Cubit<FaceVerificationState> {
       (failure) {
         _showErrorSnackbar('Face Verification Failed', failure.message);
         if (isClosed) return;
-        emit(FaceVerificationFailure(failure.message, statusCode: failure.statusCode));
+        emit(FaceVerificationFailure(failure.message,
+            statusCode: failure.statusCode));
       },
       (verification) {
         if (verification.success && verification.verified) {
@@ -145,5 +147,4 @@ class FaceVerificationCubit extends Cubit<FaceVerificationState> {
       duration: const Duration(seconds: 4),
     );
   }
-
 }

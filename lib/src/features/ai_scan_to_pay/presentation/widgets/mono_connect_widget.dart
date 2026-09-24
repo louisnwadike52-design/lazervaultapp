@@ -133,9 +133,11 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
   if (institutionId != null && institutionId.isNotEmpty) {
     selectedInstitution = ConnectInstitution(
       id: institutionId,
-      authMethod: ConnectAuthMethod.mobileBanking, // Better UX than internetBanking
+      authMethod:
+          ConnectAuthMethod.mobileBanking, // Better UX than internetBanking
     );
-    debugPrint('[MonoConnect] Pre-selecting institution: $institutionId (${selectedInstitutionName ?? "unknown"}) with mobileBanking');
+    debugPrint(
+        '[MonoConnect] Pre-selecting institution: $institutionId (${selectedInstitutionName ?? "unknown"}) with mobileBanking');
   }
 
   // Use authenticated user's email directly - validated during signup
@@ -165,16 +167,19 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
       : MonoConfig.getScopeForOperation(operation);
 
   debugPrint('[MonoConnect] ========== CONFIGURATION ==========');
-  debugPrint('[MonoConnect] Public Key: ${publicKey.substring(0, publicKey.length > 20 ? 20 : publicKey.length)}...');
+  debugPrint(
+      '[MonoConnect] Public Key: ${publicKey.substring(0, publicKey.length > 20 ? 20 : publicKey.length)}...');
   debugPrint('[MonoConnect] Effective Mode: ${MonoConfig.effectiveMode}');
   debugPrint('[MonoConnect] Environment: ${MonoConfig.environment}');
   debugPrint('[MonoConnect] Operation: ${operation.name}');
   debugPrint('[MonoConnect] Scope: $scope');
   debugPrint('[MonoConnect] Institution ID: $institutionId');
   debugPrint('[MonoConnect] Reference: $ref');
-  debugPrint('[MonoConnect] Customer Name: ${effectiveName ?? 'Lazervault User'}');
+  debugPrint(
+      '[MonoConnect] Customer Name: ${effectiveName ?? 'Lazervault User'}');
   debugPrint('[MonoConnect] Customer Email: $emailToUse');
-  debugPrint('[MonoConnect] Requires Business Approval: ${MonoConfig.requiresBusinessApproval}');
+  debugPrint(
+      '[MonoConnect] Requires Business Approval: ${MonoConfig.requiresBusinessApproval}');
 
   // Log environment/key mismatch warning if any
   final mismatchWarning = MonoConfig.environmentMismatchWarning;
@@ -231,7 +236,8 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
     accountId: reauthAccountId,
     selectedInstitution: selectedInstitution,
     onSuccess: (code) {
-      debugPrint('[MonoConnect] Success - Code: ${code.substring(0, code.length > 10 ? 10 : code.length)}...');
+      debugPrint(
+          '[MonoConnect] Success - Code: ${code.substring(0, code.length > 10 ? 10 : code.length)}...');
       HapticFeedback.mediumImpact();
 
       // Build the result with institution info
@@ -257,7 +263,8 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
       if (event.data.institutionId != null) {
         selectedInstitutionId = event.data.institutionId;
         selectedInstitutionName = event.data.institutionName;
-        debugPrint('[MonoConnect] Institution from event: $selectedInstitutionId - $selectedInstitutionName');
+        debugPrint(
+            '[MonoConnect] Institution from event: $selectedInstitutionId - $selectedInstitutionName');
       }
     },
     onClose: () {
@@ -309,7 +316,8 @@ Future<dynamic> _launchCustomMonoBottomSheet(
     isDismissible: false,
     enableDrag: false,
     backgroundColor: Colors.transparent,
-    barrierColor: const Color(0xFF0D0D1A).withValues(alpha: 0.85), // Dark themed overlay
+    barrierColor:
+        const Color(0xFF0D0D1A).withValues(alpha: 0.85), // Dark themed overlay
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
         top: Radius.circular(24),
@@ -328,87 +336,92 @@ Future<dynamic> _launchCustomMonoBottomSheet(
       // dismissal), so auto-logout re-arms the moment the flow ends.
       return AutoLogoutSuppressed(
           child: Container(
-      height: MediaQuery.of(context).size.height * 0.85, // 85% of screen
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
-            blurRadius: 30,
-            spreadRadius: 2,
-            offset: const Offset(0, -8),
-          ),
-          BoxShadow(
-            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
-            blurRadius: 60,
-            spreadRadius: 0,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Header: centered drag handle + an ALWAYS-available close (X) button.
-          // The sheet is isDismissible:false / enableDrag:false (no swipe/barrier
-          // close, to avoid accidental mid-link dismissal), so this X is the ONLY
-          // escape hatch. It is essential for the edge case where Mono errors on
-          // start — or navigates to its own website — WITHOUT firing onClose, which
-          // would otherwise strand the user in a sheet they cannot dismiss.
-          Padding(
-            padding: const EdgeInsets.only(top: 12, left: 8, right: 4),
-            child: Row(
-              children: [
-                const SizedBox(width: 44),
-                Expanded(
-                  child: Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
+        height: MediaQuery.of(context).size.height * 0.85, // 85% of screen
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
+              blurRadius: 30,
+              spreadRadius: 2,
+              offset: const Offset(0, -8),
+            ),
+            BoxShadow(
+              color:
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+              blurRadius: 60,
+              spreadRadius: 0,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            // Header: centered drag handle + an ALWAYS-available close (X) button.
+            // The sheet is isDismissible:false / enableDrag:false (no swipe/barrier
+            // close, to avoid accidental mid-link dismissal), so this X is the ONLY
+            // escape hatch. It is essential for the edge case where Mono errors on
+            // start — or navigates to its own website — WITHOUT firing onClose, which
+            // would otherwise strand the user in a sheet they cannot dismiss.
+            Padding(
+              padding: const EdgeInsets.only(top: 12, left: 8, right: 4),
+              child: Row(
+                children: [
+                  const SizedBox(width: 44),
+                  Expanded(
+                    child: Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color(0xFF4E03D0),
+                              Color.fromARGB(255, 78, 3, 208)
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(2),
                         ),
-                        borderRadius: BorderRadius.circular(2),
                       ),
                     ),
                   ),
-                ),
-                SizedBox(
-                  width: 44,
-                  height: 44,
-                  child: IconButton(
-                    padding: EdgeInsets.zero,
-                    tooltip: 'Close',
-                    icon: const Icon(Icons.close,
-                        color: Color(0xFF4E03D0), size: 22),
-                    onPressed: () {
-                      // Pop ONLY this sheet route, and only while it is still
-                      // active (mirrors dismissMonoSheet's guard) so we never
-                      // remove the screen underneath. whenComplete() then
-                      // resolves the caller's future as a cancel (null).
-                      final route = ModalRoute.of(sheetContext);
-                      if (route != null && route.isActive) {
-                        Navigator.of(sheetContext).pop();
-                      }
-                    },
+                  SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      tooltip: 'Close',
+                      icon: const Icon(Icons.close,
+                          color: Color(0xFF4E03D0), size: 22),
+                      onPressed: () {
+                        // Pop ONLY this sheet route, and only while it is still
+                        // active (mirrors dismissMonoSheet's guard) so we never
+                        // remove the screen underneath. whenComplete() then
+                        // resolves the caller's future as a cancel (null).
+                        final route = ModalRoute.of(sheetContext);
+                        if (route != null && route.isActive) {
+                          Navigator.of(sheetContext).pop();
+                        }
+                      },
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          // Mono WebView takes remaining space
-          Expanded(
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-              child: ConnectWebView.config(
-                config: config,
-                showLogs: true,
+                ],
               ),
             ),
-          ),
-        ],
-      ),
+            // Mono WebView takes remaining space
+            Expanded(
+              child: ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
+                child: ConnectWebView.config(
+                  config: config,
+                  showLogs: true,
+                ),
+              ),
+            ),
+          ],
+        ),
       ));
     },
   );

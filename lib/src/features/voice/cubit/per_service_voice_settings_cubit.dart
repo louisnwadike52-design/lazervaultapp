@@ -133,8 +133,7 @@ class HttpPerServiceVoiceSettingsRemoteSync
   }
 }
 
-class PerServiceVoiceSettingsCubit
-    extends Cubit<PerServiceVoiceSettingsState> {
+class PerServiceVoiceSettingsCubit extends Cubit<PerServiceVoiceSettingsState> {
   final String serviceName;
   final PerServiceVoiceSettingsStorage storage;
   final PerServiceVoiceSettingsRemoteSync? remoteSync;

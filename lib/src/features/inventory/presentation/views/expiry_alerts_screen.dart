@@ -90,8 +90,7 @@ class _ExpiryAlertsScreenState extends State<ExpiryAlertsScreen> {
           return GestureDetector(
             onTap: () => _onDaysSelected(days),
             child: Container(
-              padding:
-                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               decoration: BoxDecoration(
                 color: isSelected
                     ? const Color(0xFF3B82F6).withValues(alpha: 0.2)
@@ -111,8 +110,7 @@ class _ExpiryAlertsScreenState extends State<ExpiryAlertsScreen> {
                         ? const Color(0xFF3B82F6)
                         : const Color(0xFF9CA3AF),
                     fontSize: 13.sp,
-                    fontWeight:
-                        isSelected ? FontWeight.w600 : FontWeight.w400,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                   ),
                 ),
               ),
@@ -157,8 +155,7 @@ class _ExpiryAlertsScreenState extends State<ExpiryAlertsScreen> {
             backgroundColor: const Color(0xFF1F1F1F),
             child: ListView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding:
-                  EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
               itemCount: state.alerts.length,
               itemBuilder: (context, index) =>
                   _buildAlertCard(state.alerts[index]),
@@ -180,8 +177,7 @@ class _ExpiryAlertsScreenState extends State<ExpiryAlertsScreen> {
     final category = alert['category'] as String? ?? '';
     final quantity = (alert['quantity'] as num?)?.toInt() ?? 0;
     final expiryDate = alert['expiryDate'] as DateTime?;
-    final daysUntilExpiry =
-        (alert['daysUntilExpiry'] as num?)?.toInt() ?? 0;
+    final daysUntilExpiry = (alert['daysUntilExpiry'] as num?)?.toInt() ?? 0;
 
     final isExpired = daysUntilExpiry <= 0;
     final isUrgent = daysUntilExpiry > 0 && daysUntilExpiry <= 7;
@@ -193,7 +189,8 @@ class _ExpiryAlertsScreenState extends State<ExpiryAlertsScreen> {
       urgencyLabel = 'Expired';
     } else if (isUrgent) {
       urgencyColor = const Color(0xFFFB923C);
-      urgencyLabel = '$daysUntilExpiry day${daysUntilExpiry != 1 ? 's' : ''} left';
+      urgencyLabel =
+          '$daysUntilExpiry day${daysUntilExpiry != 1 ? 's' : ''} left';
     } else {
       urgencyColor = const Color(0xFF3B82F6);
       urgencyLabel = '$daysUntilExpiry days left';

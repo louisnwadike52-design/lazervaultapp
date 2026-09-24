@@ -31,7 +31,7 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
   late Animation<double> _fadeAnimation;
   late Animation<double> _slideAnimation;
   late Animation<double> _rotationAnimation;
-  
+
   Stock? _selectedStock;
   String _tradeType = 'buy';
   double _amount = 0.0;
@@ -75,8 +75,8 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
     _paymentMethod = args['paymentMethod'] ?? '';
     _paymentDetails = args['paymentDetails'] ?? {};
     _investCollectionId = args['investCollection'] as String?;
-    _hubAccent = InvestAssetHubConfig.forCollectionId(_investCollectionId)
-        .accentColor;
+    _hubAccent =
+        InvestAssetHubConfig.forCollectionId(_investCollectionId).accentColor;
   }
 
   void _setupAnimations() {
@@ -84,24 +84,24 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _processingController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _slideAnimation = Tween<double>(begin: 30.0, end: 0.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _rotationAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _processingController, curve: Curves.linear),
     );
-    
+
     _animationController.forward();
   }
 
@@ -114,7 +114,8 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
 
   void _processTrade() async {
     // Generate unique transaction ID
-    final transactionId = 'stock_${_tradeType}_${DateTime.now().millisecondsSinceEpoch}_${_selectedStock?.symbol}';
+    final transactionId =
+        'stock_${_tradeType}_${DateTime.now().millisecondsSinceEpoch}_${_selectedStock?.symbol}';
 
     // Validate PIN before processing stock trade
     String? verificationToken;
@@ -126,7 +127,8 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
       amount: _estimatedTotal,
       currency: 'USD',
       title: 'Confirm ${_tradeType == 'buy' ? 'Buy' : 'Sell'}',
-      message: 'Confirm ${_tradeType} of $_shares shares of ${_selectedStock?.symbol ?? 'stock'}',
+      message:
+          'Confirm ${_tradeType} of $_shares shares of ${_selectedStock?.symbol ?? 'stock'}',
       onPinValidated: (token) async {
         verificationToken = token;
       },
@@ -140,7 +142,8 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
   }
 
   /// Execute stock trade with verification token (investment-gateway / investments-service).
-  Future<void> _executeTradeWithToken(String transactionId, String verificationToken) async {
+  Future<void> _executeTradeWithToken(
+      String transactionId, String verificationToken) async {
     if (_selectedStock == null || _sharesExact <= 0) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -158,7 +161,9 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
 
     final cubit = context.read<StockCubit>();
     final side = _tradeType == 'sell' ? OrderSide.sell : OrderSide.buy;
-    final price = _orderType == OrderType.market ? null : (_limitPrice ?? _selectedStock!.currentPrice);
+    final price = _orderType == OrderType.market
+        ? null
+        : (_limitPrice ?? _selectedStock!.currentPrice);
 
     await cubit.placeOrder(
       symbol: _selectedStock!.symbol,
@@ -212,8 +217,6 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
     });
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -232,9 +235,9 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
                       offset: Offset(0, _slideAnimation.value),
                       child: FadeTransition(
                         opacity: _fadeAnimation,
-                        child: _isCompleted 
+                        child: _isCompleted
                             ? _buildSuccessScreen()
-                            : _isProcessing 
+                            : _isProcessing
                                 ? _buildProcessingScreen()
                                 : _buildReviewScreen(),
                       ),
@@ -562,17 +565,25 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
                   ),
                   Text(
                     'Last price',
-                    style: InvestTradingUi.labelMuted().copyWith(fontSize: 11.sp),
+                    style:
+                        InvestTradingUi.labelMuted().copyWith(fontSize: 11.sp),
                   ),
                 ],
               ),
             ],
           ),
           SizedBox(height: 20.h),
-          _buildDetailRow('Order Type', _tradeType.capitalizeFirst ?? _tradeType),
+          _buildDetailRow(
+              'Order Type', _tradeType.capitalizeFirst ?? _tradeType),
           _buildDetailRow('Shares', _shares.toString()),
-          _buildDetailRow('Amount', CurrencySymbols.formatAmountWithCurrency(_amount, _selectedStock?.currency ?? 'USD')),
-          _buildDetailRow('Trading Fee', CurrencySymbols.formatAmountWithCurrency(_fees, _selectedStock?.currency ?? 'USD')),
+          _buildDetailRow(
+              'Amount',
+              CurrencySymbols.formatAmountWithCurrency(
+                  _amount, _selectedStock?.currency ?? 'USD')),
+          _buildDetailRow(
+              'Trading Fee',
+              CurrencySymbols.formatAmountWithCurrency(
+                  _fees, _selectedStock?.currency ?? 'USD')),
         ],
       ),
     );
@@ -654,12 +665,19 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
             ),
           ),
           SizedBox(height: 16.h),
-          _buildSummaryRow('Trade Amount', CurrencySymbols.formatAmountWithCurrency(_amount, _selectedStock?.currency ?? 'USD')),
-          _buildSummaryRow('Trading Fee', CurrencySymbols.formatAmountWithCurrency(_fees, _selectedStock?.currency ?? 'USD')),
+          _buildSummaryRow(
+              'Trade Amount',
+              CurrencySymbols.formatAmountWithCurrency(
+                  _amount, _selectedStock?.currency ?? 'USD')),
+          _buildSummaryRow(
+              'Trading Fee',
+              CurrencySymbols.formatAmountWithCurrency(
+                  _fees, _selectedStock?.currency ?? 'USD')),
           Divider(color: InvestTradingUi.border, height: 24.h),
           _buildSummaryRow(
             'Total ${_tradeType == 'buy' ? 'Cost' : 'Proceeds'}',
-            CurrencySymbols.formatAmountWithCurrency(_estimatedTotal, _selectedStock?.currency ?? 'USD'),
+            CurrencySymbols.formatAmountWithCurrency(
+                _estimatedTotal, _selectedStock?.currency ?? 'USD'),
             isTotal: true,
           ),
         ],
@@ -682,15 +700,16 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
           _buildDetailRow('Transaction ID', _transactionId),
           _buildDetailRow('Stock', _selectedStock?.symbol ?? 'N/A'),
           _buildDetailRow('Shares', _shares.toString()),
-          _buildDetailRow('Total Amount', CurrencySymbols.formatAmountWithCurrency(_estimatedTotal, _selectedStock?.currency ?? 'USD')),
+          _buildDetailRow(
+              'Total Amount',
+              CurrencySymbols.formatAmountWithCurrency(
+                  _estimatedTotal, _selectedStock?.currency ?? 'USD')),
           _buildDetailRow('Status', 'Completed'),
           _buildDetailRow('Date', DateTime.now().toString().split(' ')[0]),
         ],
       ),
     );
   }
-
-
 
   Widget _buildDetailRow(String label, String value) {
     return Padding(
@@ -802,7 +821,7 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
 
   String _getPaymentMethodName() {
     if (_paymentDetails.isEmpty) return 'Payment Method';
-    
+
     switch (_paymentMethod) {
       case 'account':
         return _paymentDetails['name'] ?? 'Account';
@@ -817,7 +836,7 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
 
   String _getPaymentMethodDetails() {
     if (_paymentDetails.isEmpty) return '';
-    
+
     switch (_paymentMethod) {
       case 'account':
         return '${_paymentDetails['type']} ${_paymentDetails['accountNumber']}';
@@ -829,4 +848,4 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
         return '';
     }
   }
-} 
+}

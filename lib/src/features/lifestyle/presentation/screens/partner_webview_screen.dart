@@ -126,7 +126,10 @@ class _PartnerWebViewScreenState extends State<PartnerWebViewScreen> {
       ),
       body: Stack(
         children: [
-          if (_hasError) _buildErrorWidget() else WebViewWidget(controller: _controller),
+          if (_hasError)
+            _buildErrorWidget()
+          else
+            WebViewWidget(controller: _controller),
           if (_isLoading) _buildLoadingIndicator(),
         ],
       ),
@@ -211,9 +214,9 @@ class _PartnerWebViewScreenState extends State<PartnerWebViewScreen> {
     switch (action) {
       case 'share':
         SharePlus.instance.share(ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+          // iOS: a non-zero popover anchor is required — CGRectZero throws
+          // PlatformException and the share silently fails on iPhone/iPad.
+          sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
           text: '${widget.title}\n${widget.url}',
         ));
       case 'copy':

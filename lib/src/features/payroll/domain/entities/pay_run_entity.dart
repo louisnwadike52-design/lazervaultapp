@@ -14,7 +14,15 @@ class PayRunsPageResult {
   });
 }
 
-enum PayRunStatus { draft, calculating, ready, approved, processing, completed, failed }
+enum PayRunStatus {
+  draft,
+  calculating,
+  ready,
+  approved,
+  processing,
+  completed,
+  failed
+}
 
 enum RecurrenceFrequency { none, weekly, biweekly, monthly }
 
@@ -65,7 +73,8 @@ class PayRunEntity extends Equatable {
 
   String get formattedTotalGross => '\u20A6${totalGross.toStringAsFixed(2)}';
   String get formattedTotalNet => '\u20A6${totalNet.toStringAsFixed(2)}';
-  String get formattedTotalDeductions => '\u20A6${totalDeductions.toStringAsFixed(2)}';
+  String get formattedTotalDeductions =>
+      '\u20A6${totalDeductions.toStringAsFixed(2)}';
 
   String get statusDisplay {
     switch (status) {
@@ -93,7 +102,8 @@ class PayRunEntity extends Equatable {
   bool get canApprove => status == PayRunStatus.ready;
   bool get canProcess => status == PayRunStatus.approved;
 
-  String get displayName => name.isNotEmpty ? name : 'Pay Run ${payPeriodStart} - ${payPeriodEnd}';
+  String get displayName =>
+      name.isNotEmpty ? name : 'Pay Run ${payPeriodStart} - ${payPeriodEnd}';
 
   String get recurrenceFrequencyDisplay {
     switch (recurrenceFrequency) {

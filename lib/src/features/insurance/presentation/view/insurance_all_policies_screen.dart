@@ -145,8 +145,7 @@ class _InsuranceAllPoliciesScreenState extends State<InsuranceAllPoliciesScreen>
       body: BlocBuilder<InsuranceCubit, InsuranceState>(
         builder: (context, state) {
           if (state is InsuranceLoading) {
-            return const Center(
-                child: LazerVaultLoader.small());
+            return const Center(child: LazerVaultLoader.small());
           }
           if (state is InsuranceError) {
             return Center(
@@ -155,19 +154,28 @@ class _InsuranceAllPoliciesScreenState extends State<InsuranceAllPoliciesScreen>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.cloud_off_outlined, size: 48.sp, color: const Color(0xFFEF4444)),
+                    Icon(Icons.cloud_off_outlined,
+                        size: 48.sp, color: const Color(0xFFEF4444)),
                     SizedBox(height: 12.h),
-                    Text(state.message, textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
+                    Text(state.message,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                            fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
                     SizedBox(height: 16.h),
                     GestureDetector(
-                      onTap: () => context.read<InsuranceCubit>().loadInsurances(),
+                      onTap: () =>
+                          context.read<InsuranceCubit>().loadInsurances(),
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 10.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 24.w, vertical: 10.h),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF6366F1), borderRadius: BorderRadius.circular(8.r)),
-                        child: Text('Try Again', style: GoogleFonts.inter(
-                          fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.white)),
+                            color: const Color(0xFF6366F1),
+                            borderRadius: BorderRadius.circular(8.r)),
+                        child: Text('Try Again',
+                            style: GoogleFonts.inter(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white)),
                       ),
                     ),
                   ],
@@ -184,7 +192,8 @@ class _InsuranceAllPoliciesScreenState extends State<InsuranceAllPoliciesScreen>
                   return _buildEmptyTab(_tabs[tabIndex]);
                 }
                 // Slice 4 — extra slot per tab for the load-more footer.
-                final showFooter = state.isLoadingMore || (!state.hasMore && tabIndex == 0);
+                final showFooter =
+                    state.isLoadingMore || (!state.hasMore && tabIndex == 0);
                 final itemCount = filtered.length + (showFooter ? 1 : 0);
                 return RefreshIndicator(
                   onRefresh: () async =>
@@ -314,8 +323,7 @@ class _InsuranceAllPoliciesScreenState extends State<InsuranceAllPoliciesScreen>
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                   decoration: BoxDecoration(
                     color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10.r),

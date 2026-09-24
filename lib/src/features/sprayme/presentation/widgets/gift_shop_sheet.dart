@@ -11,6 +11,7 @@ class GiftShopSheet extends StatefulWidget {
   final double walletBalance; // in major units (spendable "gifts to spray")
   final String currency;
   final void Function(SprayGift gift, int quantity) onSendGift;
+
   /// Opens the buy-gifts-from-personal flow to top up the spendable balance.
   final VoidCallback? onBuyGifts;
 
@@ -34,7 +35,14 @@ class _GiftShopSheetState extends State<GiftShopSheet>
   int _quantity = 1;
   late final List<SprayGift> _allGifts;
 
-  static const _categories = ['All', 'Free', 'Basic', 'Premium', 'Luxury', 'Legendary'];
+  static const _categories = [
+    'All',
+    'Free',
+    'Basic',
+    'Premium',
+    'Luxury',
+    'Legendary'
+  ];
 
   @override
   void initState() {
@@ -103,7 +111,8 @@ class _GiftShopSheetState extends State<GiftShopSheet>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                       decoration: BoxDecoration(
                         color: const Color(0xFF2D2D2D),
                         borderRadius: BorderRadius.circular(20.r),
@@ -111,7 +120,8 @@ class _GiftShopSheetState extends State<GiftShopSheet>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.bolt, color: const Color(0xFFFFD700), size: 16.sp),
+                          Icon(Icons.bolt,
+                              color: const Color(0xFFFFD700), size: 16.sp),
                           SizedBox(width: 6.w),
                           Text(
                             '${widget.currency} ${widget.walletBalance.toStringAsFixed(0)}',
@@ -132,7 +142,8 @@ class _GiftShopSheetState extends State<GiftShopSheet>
                           widget.onBuyGifts!();
                         },
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 12.w, vertical: 6.h),
                           decoration: BoxDecoration(
                             color: const Color(0xFF7C3AED),
                             borderRadius: BorderRadius.circular(20.r),
@@ -183,7 +194,8 @@ class _GiftShopSheetState extends State<GiftShopSheet>
                   return Center(
                     child: Text(
                       'No gifts in this category',
-                      style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+                      style: TextStyle(
+                          color: const Color(0xFF9CA3AF), fontSize: 14.sp),
                     ),
                   );
                 }
@@ -199,7 +211,8 @@ class _GiftShopSheetState extends State<GiftShopSheet>
                   itemBuilder: (context, index) {
                     final gift = gifts[index];
                     final isSelected = _selectedGiftId == gift.id;
-                    final canAfford = gift.isFree || widget.walletBalance >= gift.priceMajor;
+                    final canAfford =
+                        gift.isFree || widget.walletBalance >= gift.priceMajor;
                     return GestureDetector(
                       onTap: () {
                         if (!canAfford) return;
@@ -213,7 +226,8 @@ class _GiftShopSheetState extends State<GiftShopSheet>
                         duration: const Duration(milliseconds: 200),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? _categoryHighlightColor(gift.category).withValues(alpha: 0.2)
+                              ? _categoryHighlightColor(gift.category)
+                                  .withValues(alpha: 0.2)
                               : const Color(0xFF2D2D2D).withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(12.r),
                           border: Border.all(
@@ -225,7 +239,9 @@ class _GiftShopSheetState extends State<GiftShopSheet>
                           boxShadow: isSelected
                               ? [
                                   BoxShadow(
-                                    color: _categoryHighlightColor(gift.category).withValues(alpha: 0.3),
+                                    color:
+                                        _categoryHighlightColor(gift.category)
+                                            .withValues(alpha: 0.3),
                                     blurRadius: 8,
                                     spreadRadius: 1,
                                   ),
@@ -240,7 +256,8 @@ class _GiftShopSheetState extends State<GiftShopSheet>
                               AnimatedScale(
                                 scale: isSelected ? 1.2 : 1.0,
                                 duration: const Duration(milliseconds: 200),
-                                child: Text(gift.emoji, style: TextStyle(fontSize: 30.sp)),
+                                child: Text(gift.emoji,
+                                    style: TextStyle(fontSize: 30.sp)),
                               ),
                               SizedBox(height: 3.h),
                               Text(
@@ -256,7 +273,9 @@ class _GiftShopSheetState extends State<GiftShopSheet>
                               ),
                               SizedBox(height: 2.h),
                               Text(
-                                gift.isFree ? 'Free' : _formatGiftPrice(gift.priceMajor),
+                                gift.isFree
+                                    ? 'Free'
+                                    : _formatGiftPrice(gift.priceMajor),
                                 style: TextStyle(
                                   color: gift.isFree
                                       ? const Color(0xFF10B981)
@@ -295,17 +314,23 @@ class _GiftShopSheetState extends State<GiftShopSheet>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          onPressed: _quantity > 1 ? () => setState(() => _quantity--) : null,
+                          onPressed: _quantity > 1
+                              ? () => setState(() => _quantity--)
+                              : null,
                           icon: Icon(Icons.remove, size: 18.sp),
                           color: Colors.white,
-                          constraints: BoxConstraints(maxWidth: 36.w, maxHeight: 36.h),
+                          constraints:
+                              BoxConstraints(maxWidth: 36.w, maxHeight: 36.h),
                           padding: EdgeInsets.zero,
                         ),
                         SizedBox(
                           width: 32.w,
                           child: Text(
                             '$_quantity',
-                            style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -315,7 +340,8 @@ class _GiftShopSheetState extends State<GiftShopSheet>
                               : null,
                           icon: Icon(Icons.add, size: 18.sp),
                           color: Colors.white,
-                          constraints: BoxConstraints(maxWidth: 36.w, maxHeight: 36.h),
+                          constraints:
+                              BoxConstraints(maxWidth: 36.w, maxHeight: 36.h),
                           padding: EdgeInsets.zero,
                         ),
                       ],
@@ -326,18 +352,23 @@ class _GiftShopSheetState extends State<GiftShopSheet>
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        final gift = _allGifts.where((g) => g.id == _selectedGiftId).firstOrNull;
+                        final gift = _allGifts
+                            .where((g) => g.id == _selectedGiftId)
+                            .firstOrNull;
                         if (gift == null) return;
                         // Final balance check before sending. Out of spendable
                         // credit? Send them to buy more gifts from their account.
-                        if (!gift.isFree && widget.walletBalance < gift.priceMajor * _quantity) {
+                        if (!gift.isFree &&
+                            widget.walletBalance <
+                                gift.priceMajor * _quantity) {
                           if (widget.onBuyGifts != null) {
                             widget.onBuyGifts!();
                             return;
                           }
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Not enough gifts to spray. Buy more from your account.'),
+                              content: Text(
+                                  'Not enough gifts to spray. Buy more from your account.'),
                               backgroundColor: Color(0xFFEF4444),
                             ),
                           );
@@ -357,14 +388,17 @@ class _GiftShopSheetState extends State<GiftShopSheet>
                       ),
                       child: Builder(
                         builder: (_) {
-                          final gift = _allGifts.where((g) => g.id == _selectedGiftId).firstOrNull;
+                          final gift = _allGifts
+                              .where((g) => g.id == _selectedGiftId)
+                              .firstOrNull;
                           if (gift == null) return const SizedBox.shrink();
                           final total = gift.priceMajor * _quantity;
                           return Text(
                             gift.isFree
                                 ? 'Send ${gift.emoji} x$_quantity'
                                 : 'Send ${gift.emoji} x$_quantity (${widget.currency} ${total.toStringAsFixed(0)})',
-                            style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                                fontSize: 14.sp, fontWeight: FontWeight.w600),
                           );
                         },
                       ),

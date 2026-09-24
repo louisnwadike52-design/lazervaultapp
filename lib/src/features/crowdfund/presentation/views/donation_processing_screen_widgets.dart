@@ -107,7 +107,8 @@ extension _DonationProcessingWidgets on _DonationProcessingScreenState {
                         : Text(
                             '${index + 1}',
                             style: TextStyle(
-                              color: isCurrent ? Colors.white : Colors.grey[600],
+                              color:
+                                  isCurrent ? Colors.white : Colors.grey[600],
                               fontSize: 14.sp,
                               fontWeight: FontWeight.bold,
                             ),

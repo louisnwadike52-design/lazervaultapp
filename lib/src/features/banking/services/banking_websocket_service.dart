@@ -72,7 +72,8 @@ class BankingWebSocketService {
   http.Client? _httpClient;
   StreamSubscription? _sseSubscription;
   final _eventController = StreamController<BankingStatusEvent>.broadcast();
-  final _connectionController = StreamController<BankingWebSocketConnectionState>.broadcast();
+  final _connectionController =
+      StreamController<BankingWebSocketConnectionState>.broadcast();
   Timer? _pingTimer;
   bool _isConnected = false;
   bool _useSSE = false;
@@ -89,7 +90,8 @@ class BankingWebSocketService {
   Stream<BankingStatusEvent> get bankingUpdates => _eventController.stream;
 
   /// Stream of connection state changes
-  Stream<BankingWebSocketConnectionState> get connectionState => _connectionController.stream;
+  Stream<BankingWebSocketConnectionState> get connectionState =>
+      _connectionController.stream;
 
   /// Build WebSocket headers with auth and metadata
   Future<Map<String, String>> _buildHeaders(String accessToken) async {
@@ -222,7 +224,8 @@ class BankingWebSocketService {
     final response = await _httpClient!.send(request);
 
     if (response.statusCode != 200) {
-      throw Exception('SSE connection failed with status ${response.statusCode}');
+      throw Exception(
+          'SSE connection failed with status ${response.statusCode}');
     }
 
     _isConnected = true;
@@ -232,11 +235,11 @@ class BankingWebSocketService {
         .transform(utf8.decoder)
         .transform(const LineSplitter())
         .listen(
-      _handleSSELine,
-      onError: _handleError,
-      onDone: _handleDone,
-      cancelOnError: false,
-    );
+          _handleSSELine,
+          onError: _handleError,
+          onDone: _handleDone,
+          cancelOnError: false,
+        );
 
     print('BankingWebSocketService: SSE connected successfully');
   }
@@ -328,7 +331,8 @@ class BankingWebSocketService {
       final eventType = data['event_type'] as String?;
       if (eventType != null) {
         final event = BankingStatusEvent.fromJson(data);
-        print('BankingWebSocketService: Received banking update (legacy) - $event');
+        print(
+            'BankingWebSocketService: Received banking update (legacy) - $event');
         _eventController.add(event);
       }
     } catch (e) {

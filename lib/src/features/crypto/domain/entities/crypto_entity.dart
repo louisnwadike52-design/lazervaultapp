@@ -76,7 +76,9 @@ class Crypto extends Equatable {
   factory Crypto.fromHolding(CryptoHolding h) => Crypto(
         id: h.cryptoId,
         symbol: h.cryptoSymbol,
-        name: h.cryptoName.isNotEmpty ? h.cryptoName : h.cryptoSymbol.toUpperCase(),
+        name: h.cryptoName.isNotEmpty
+            ? h.cryptoName
+            : h.cryptoSymbol.toUpperCase(),
         image: '',
         currentPrice: h.currentPrice,
         marketCap: 0,
@@ -166,17 +168,23 @@ class Crypto extends Equatable {
       currentPrice: currentPrice ?? this.currentPrice,
       marketCap: marketCap ?? this.marketCap,
       marketCapRank: marketCapRank ?? this.marketCapRank,
-      fullyDilutedValuation: fullyDilutedValuation ?? this.fullyDilutedValuation,
+      fullyDilutedValuation:
+          fullyDilutedValuation ?? this.fullyDilutedValuation,
       totalVolume: totalVolume ?? this.totalVolume,
       high24h: high24h ?? this.high24h,
       low24h: low24h ?? this.low24h,
       priceChange24h: priceChange24h ?? this.priceChange24h,
-      priceChangePercentage24h: priceChangePercentage24h ?? this.priceChangePercentage24h,
-      priceChangePercentage7d: priceChangePercentage7d ?? this.priceChangePercentage7d,
-      priceChangePercentage30d: priceChangePercentage30d ?? this.priceChangePercentage30d,
-      priceChangePercentage1y: priceChangePercentage1y ?? this.priceChangePercentage1y,
+      priceChangePercentage24h:
+          priceChangePercentage24h ?? this.priceChangePercentage24h,
+      priceChangePercentage7d:
+          priceChangePercentage7d ?? this.priceChangePercentage7d,
+      priceChangePercentage30d:
+          priceChangePercentage30d ?? this.priceChangePercentage30d,
+      priceChangePercentage1y:
+          priceChangePercentage1y ?? this.priceChangePercentage1y,
       marketCapChange24h: marketCapChange24h ?? this.marketCapChange24h,
-      marketCapChangePercentage24h: marketCapChangePercentage24h ?? this.marketCapChangePercentage24h,
+      marketCapChangePercentage24h:
+          marketCapChangePercentage24h ?? this.marketCapChangePercentage24h,
       circulatingSupply: circulatingSupply ?? this.circulatingSupply,
       totalSupply: totalSupply ?? this.totalSupply,
       maxSupply: maxSupply ?? this.maxSupply,
@@ -212,7 +220,8 @@ class CryptoWatchlist extends Equatable {
   });
 
   @override
-  List<Object> get props => [id, name, description, cryptoIds, createdAt, updatedAt];
+  List<Object> get props =>
+      [id, name, description, cryptoIds, createdAt, updatedAt];
 
   CryptoWatchlist copyWith({
     String? id,
@@ -246,6 +255,7 @@ class CryptoHolding extends Equatable {
   final double totalGainLossPercentage;
   final DateTime purchaseDate;
   final DateTime lastUpdated;
+
   /// True while the per-asset fiat rate is still being fetched in the
   /// lazy-load flow. UI uses this to render a skeleton placeholder
   /// instead of "₦0" for assets whose live price hasn't landed yet.
@@ -292,7 +302,8 @@ class CryptoHolding extends Equatable {
       currentPrice: currentPrice ?? this.currentPrice,
       totalValue: totalValue ?? this.totalValue,
       totalGainLoss: totalGainLoss ?? this.totalGainLoss,
-      totalGainLossPercentage: totalGainLossPercentage ?? this.totalGainLossPercentage,
+      totalGainLossPercentage:
+          totalGainLossPercentage ?? this.totalGainLossPercentage,
       purchaseDate: purchaseDate ?? this.purchaseDate,
       lastUpdated: lastUpdated ?? this.lastUpdated,
       priceLoading: priceLoading ?? this.priceLoading,
@@ -385,4 +396,4 @@ class CryptoTransaction extends Equatable {
         timestamp,
         status,
       ];
-} 
+}

@@ -29,7 +29,9 @@ String friendlyCryptoError(Object error, {String? context}) {
       case StatusCode.permissionDenied:
         return "You don't have permission to do that.";
       case StatusCode.notFound:
-        return _withContext(context, fallback: "We couldn't find that asset. Pull to refresh and try again.");
+        return _withContext(context,
+            fallback:
+                "We couldn't find that asset. Pull to refresh and try again.");
       case StatusCode.failedPrecondition:
         // The crypto-service handler is the source of truth for what
         // string the user sees: "Insufficient balance" (HoldFunds at
@@ -39,7 +41,9 @@ String friendlyCryptoError(Object error, {String? context}) {
         // back to a generic message if the server gave us nothing.
         final fpMsg = error.message?.trim() ?? '';
         if (fpMsg.isNotEmpty) return fpMsg;
-        return _withContext(context, fallback: "We're still getting your account ready. Please try again in a moment.");
+        return _withContext(context,
+            fallback:
+                "We're still getting your account ready. Please try again in a moment.");
       case StatusCode.invalidArgument:
         // PR-bridge: bridge_per_trade_cap_exceeded returns a user-safe
         // message ("bridged trades are capped at ₦50,000 NGN…") that
@@ -65,16 +69,19 @@ String friendlyCryptoError(Object error, {String? context}) {
         // canonical source of user-facing copy.
         final abMsg = error.message?.trim() ?? '';
         if (abMsg.isNotEmpty) return abMsg;
-        return _withContext(context, fallback: 'Quote expired. Please refresh and try again.');
+        return _withContext(context,
+            fallback: 'Quote expired. Please refresh and try again.');
       case StatusCode.internal:
       case StatusCode.unknown:
       default:
-        return _withContext(context, fallback: 'Something went wrong. Please try again.');
+        return _withContext(context,
+            fallback: 'Something went wrong. Please try again.');
     }
   }
 
   // Anything else (network-layer failure, parse error, etc.) → generic.
-  return _withContext(context, fallback: 'Something went wrong. Please try again.');
+  return _withContext(context,
+      fallback: 'Something went wrong. Please try again.');
 }
 
 String _withContext(String? context, {required String fallback}) {

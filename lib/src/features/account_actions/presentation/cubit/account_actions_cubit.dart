@@ -222,7 +222,8 @@ class AccountActionsCubit extends Cubit<AccountActionsState> {
         if (isClosed) return;
         emit(AccountFrozen(
           updatedDetails,
-          message: 'Card reported as stolen. A replacement will be shipped to your registered address.',
+          message:
+              'Card reported as stolen. A replacement will be shipped to your registered address.',
         ));
       },
     );
@@ -246,7 +247,8 @@ class AccountActionsCubit extends Cubit<AccountActionsState> {
       if (state is! AccountDetailsLoaded) return;
     }
 
-    emit(SecuritySettingsUpdating(currentDetails ?? _accountDetailsCache[accountId]!));
+    emit(SecuritySettingsUpdating(
+        currentDetails ?? _accountDetailsCache[accountId]!));
 
     final result = await _repository.updateSecuritySettings(
       accountId: accountId,
@@ -303,7 +305,8 @@ class AccountActionsCubit extends Cubit<AccountActionsState> {
   /// Update a single security setting
   Future<void> toggleSecuritySetting({
     required String accountId,
-    required String setting, // '3DSecure', 'Contactless', 'OnlinePayments', 'ATMWithdrawals', 'InternationalPayments'
+    required String
+        setting, // '3DSecure', 'Contactless', 'OnlinePayments', 'ATMWithdrawals', 'InternationalPayments'
     String? accessToken,
   }) async {
     final currentDetails = _accountDetailsCache[accountId];
@@ -317,11 +320,21 @@ class AccountActionsCubit extends Cubit<AccountActionsState> {
     // Toggle the specific setting
     await updateSecuritySettings(
       accountId: accountId,
-      enable3DSecure: setting == '3DSecure' ? !details.enable3DSecure : details.enable3DSecure,
-      enableContactless: setting == 'Contactless' ? !details.enableContactless : details.enableContactless,
-      enableOnlinePayments: setting == 'OnlinePayments' ? !details.enableOnlinePayments : details.enableOnlinePayments,
-      enableATMWithdrawals: setting == 'ATMWithdrawals' ? !details.enableATMWithdrawals : details.enableATMWithdrawals,
-      enableInternationalPayments: setting == 'InternationalPayments' ? !details.enableInternationalPayments : details.enableInternationalPayments,
+      enable3DSecure: setting == '3DSecure'
+          ? !details.enable3DSecure
+          : details.enable3DSecure,
+      enableContactless: setting == 'Contactless'
+          ? !details.enableContactless
+          : details.enableContactless,
+      enableOnlinePayments: setting == 'OnlinePayments'
+          ? !details.enableOnlinePayments
+          : details.enableOnlinePayments,
+      enableATMWithdrawals: setting == 'ATMWithdrawals'
+          ? !details.enableATMWithdrawals
+          : details.enableATMWithdrawals,
+      enableInternationalPayments: setting == 'InternationalPayments'
+          ? !details.enableInternationalPayments
+          : details.enableInternationalPayments,
       accessToken: accessToken,
     );
   }
@@ -342,7 +355,8 @@ class AccountActionsCubit extends Cubit<AccountActionsState> {
       if (state is! AccountDetailsLoaded) return;
     }
 
-    emit(SpendingLimitsUpdating(currentDetails ?? _accountDetailsCache[accountId]!));
+    emit(SpendingLimitsUpdating(
+        currentDetails ?? _accountDetailsCache[accountId]!));
 
     final result = await _repository.updateSpendingLimits(
       accountId: accountId,
@@ -427,7 +441,8 @@ class AccountActionsCubit extends Cubit<AccountActionsState> {
         if (isClosed) return;
         // Auto-hide after 30 seconds
         final expiresAt = DateTime.now().add(const Duration(seconds: 30));
-        emit(PINRevealed(_accountDetailsCache[accountId]!, pin, expiresAt: expiresAt));
+        emit(PINRevealed(_accountDetailsCache[accountId]!, pin,
+            expiresAt: expiresAt));
 
         // Auto-hide timer
         Future.delayed(const Duration(seconds: 30), () {

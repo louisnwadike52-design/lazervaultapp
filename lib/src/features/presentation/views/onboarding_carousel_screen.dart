@@ -65,7 +65,11 @@ class _OnboardingCarouselScreenState extends State<OnboardingCarouselScreen>
     ),
     _OnboardingSlide(
       icon: Icons.smart_toy_rounded,
-      orbit: [Icons.chat_bubble_rounded, Icons.auto_awesome_rounded, Icons.bolt_rounded],
+      orbit: [
+        Icons.chat_bubble_rounded,
+        Icons.auto_awesome_rounded,
+        Icons.bolt_rounded
+      ],
       title: 'Chat to get it done',
       subtitle:
           'Your AI assistant handles transfers, bills, insights and answers, all in plain language.',
@@ -73,7 +77,11 @@ class _OnboardingCarouselScreenState extends State<OnboardingCarouselScreen>
     ),
     _OnboardingSlide(
       icon: Icons.document_scanner_rounded,
-      orbit: [Icons.qr_code_rounded, Icons.receipt_long_rounded, Icons.check_rounded],
+      orbit: [
+        Icons.qr_code_rounded,
+        Icons.receipt_long_rounded,
+        Icons.check_rounded
+      ],
       title: 'Scan to pay',
       subtitle:
           'Point your camera at any bill, receipt or account number and pay instantly. AI reads the details for you.',
@@ -97,7 +105,11 @@ class _OnboardingCarouselScreenState extends State<OnboardingCarouselScreen>
     ),
     _OnboardingSlide(
       icon: Icons.savings_rounded,
-      orbit: [Icons.trending_up_rounded, Icons.pie_chart_rounded, Icons.star_rounded],
+      orbit: [
+        Icons.trending_up_rounded,
+        Icons.pie_chart_rounded,
+        Icons.star_rounded
+      ],
       title: 'Savings & investments',
       subtitle:
           'Grow your money with automated savings, stocks and high-yield plans built for your goals.',
@@ -105,7 +117,11 @@ class _OnboardingCarouselScreenState extends State<OnboardingCarouselScreen>
     ),
     _OnboardingSlide(
       icon: Icons.currency_bitcoin_rounded,
-      orbit: [Icons.credit_card_rounded, Icons.lock_rounded, Icons.public_rounded],
+      orbit: [
+        Icons.credit_card_rounded,
+        Icons.lock_rounded,
+        Icons.public_rounded
+      ],
       title: 'Cards & crypto',
       subtitle:
           'Spend with virtual cards and buy, sell or swap crypto securely, all from one wallet.',
@@ -369,7 +385,8 @@ class _Illustration extends StatelessWidget {
   final _OnboardingSlide slide;
   final double t; // 0..1 ambient phase
   final double size;
-  const _Illustration({required this.slide, required this.t, required this.size});
+  const _Illustration(
+      {required this.slide, required this.t, required this.size});
 
   @override
   Widget build(BuildContext context) {
@@ -399,17 +416,23 @@ class _Illustration extends StatelessWidget {
           for (int i = 0; i < slide.orbit.length; i++)
             Transform.translate(
               offset: Offset(
-                orbitR * math.cos(t * 2 * math.pi + i * 2 * math.pi / slide.orbit.length),
-                orbitR * math.sin(t * 2 * math.pi + i * 2 * math.pi / slide.orbit.length),
+                orbitR *
+                    math.cos(
+                        t * 2 * math.pi + i * 2 * math.pi / slide.orbit.length),
+                orbitR *
+                    math.sin(
+                        t * 2 * math.pi + i * 2 * math.pi / slide.orbit.length),
               ),
               child: Container(
                 padding: const EdgeInsets.all(9),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.18)),
                 ),
-                child: Icon(slide.orbit[i], size: size * 0.12, color: Colors.white),
+                child: Icon(slide.orbit[i],
+                    size: size * 0.12, color: Colors.white),
               ),
             ),
           // Hero tile (floats).

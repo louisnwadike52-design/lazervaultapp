@@ -324,8 +324,7 @@ class DocumentUploadRequest extends Equatable {
       if (documentFrontUrl != null) 'document_front_url': documentFrontUrl,
       if (documentBackUrl != null) 'document_back_url': documentBackUrl,
       if (selfieUrl != null) 'selfie_url': selfieUrl,
-      if (proofOfAddressUrl != null)
-        'proof_of_address_url': proofOfAddressUrl,
+      if (proofOfAddressUrl != null) 'proof_of_address_url': proofOfAddressUrl,
     };
   }
 }
@@ -404,8 +403,15 @@ class VerifyIDResponse extends Equatable {
 
   @override
   List<Object?> get props => [
-        success, message, status, currentTier, verifiedAt, reference,
-        verificationId, sessionUrl, sessionToken,
+        success,
+        message,
+        status,
+        currentTier,
+        verifiedAt,
+        reference,
+        verificationId,
+        sessionUrl,
+        sessionToken,
       ];
 }
 

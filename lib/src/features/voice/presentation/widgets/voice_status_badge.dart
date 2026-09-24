@@ -23,7 +23,8 @@ class VoiceStatusBadge extends StatefulWidget {
 }
 
 class _VoiceStatusBadgeState extends State<VoiceStatusBadge> {
-  final VoiceBiometricsService _voiceService = GetIt.I<VoiceBiometricsService>();
+  final VoiceBiometricsService _voiceService =
+      GetIt.I<VoiceBiometricsService>();
   VoiceEnrollmentStatus? _status;
   bool _isLoading = true;
 
@@ -138,7 +139,8 @@ class _VoiceStatusBadgeState extends State<VoiceStatusBadge> {
             Icon(
               isEnrolled ? Icons.verified_user : Icons.warning_amber_rounded,
               size: 18,
-              color: isEnrolled ? Colors.green.shade700 : Colors.orange.shade700,
+              color:
+                  isEnrolled ? Colors.green.shade700 : Colors.orange.shade700,
             ),
             const SizedBox(width: 8),
             Column(
@@ -148,7 +150,9 @@ class _VoiceStatusBadgeState extends State<VoiceStatusBadge> {
                 Text(
                   isEnrolled ? 'Voice Verified' : 'Voice Not Registered',
                   style: TextStyle(
-                    color: isEnrolled ? Colors.green.shade800 : Colors.orange.shade800,
+                    color: isEnrolled
+                        ? Colors.green.shade800
+                        : Colors.orange.shade800,
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
                   ),

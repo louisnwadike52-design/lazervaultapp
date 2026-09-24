@@ -9,7 +9,8 @@ import 'package:lazervault/src/features/authentication/data/models/user_model.da
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/profile/data/models/user_preferences_model.dart';
 import 'package:lazervault/src/features/profile/data/services/profile_picture_upload_service.dart';
-import 'package:lazervault/src/features/profile/domain/entities/user_preferences.dart' as domain;
+import 'package:lazervault/src/features/profile/domain/entities/user_preferences.dart'
+    as domain;
 import 'package:lazervault/src/features/profile/domain/repositories/i_profile_repository.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 import 'package:lazervault/src/generated/auth.pb.dart' as auth_pb;
@@ -49,7 +50,8 @@ class ProfileRepositoryImpl implements IProfileRepository {
       // still valid. `withAuth()` is computed INSIDE the closure so the retry
       // picks up the rotated access token, not the stale one.
       final request = user_pb.GetUserProfileRequest();
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return _userServiceClient.getUserProfile(
           request,
@@ -173,8 +175,7 @@ class ProfileRepositoryImpl implements IProfileRepository {
           : await _profilePictureUploadService.uploadBytes(
               bytes: bytes!,
               filename: filename!,
-              contentType:
-                  ProfilePictureUploadService.contentTypeFor(filename),
+              contentType: ProfilePictureUploadService.contentTypeFor(filename),
             );
       // 2. Persist the URL on auth-service.users.profile_picture.
       return await updateUserProfile(profilePicture: result.publicUrl);
@@ -297,7 +298,8 @@ class ProfileRepositoryImpl implements IProfileRepository {
     required String query,
     int limit = 10,
     int offset = 0,
-    String searchType = '', // Empty for unified search across username, name, phone, email
+    String searchType =
+        '', // Empty for unified search across username, name, phone, email
   }) async {
     try {
       final request = auth_pb.UserSearchRequest()
@@ -306,7 +308,8 @@ class ProfileRepositoryImpl implements IProfileRepository {
         ..offset = offset
         ..searchType = searchType;
 
-      print('[ProfileRepository] searchUsers: query="$query", limit=$limit, offset=$offset, searchType="$searchType"');
+      print(
+          '[ProfileRepository] searchUsers: query="$query", limit=$limit, offset=$offset, searchType="$searchType"');
       // Bound the RPC with a gRPC deadline — withAuth() only sets metadata, no
       // timeout, so without this a hung search would never return and the
       // caller's loading spinner would be stuck. DeadlineExceeded is caught
@@ -318,7 +321,8 @@ class ProfileRepositoryImpl implements IProfileRepository {
         options: options,
       );
 
-      print('[ProfileRepository] searchUsers response: success=${response.success}, msg="${response.msg}", users=${response.users.length}');
+      print(
+          '[ProfileRepository] searchUsers response: success=${response.success}, msg="${response.msg}", users=${response.users.length}');
       if (!response.success) {
         print('[ProfileRepository] User search failed: ${response.msg}');
         return [];
@@ -333,13 +337,15 @@ class ProfileRepositoryImpl implements IProfileRepository {
                 email: user.email,
                 phoneNumber: user.phoneNumber,
                 profilePicture: user.profilePicture,
-                primaryAccountId: user.hasPrimaryAccountId() ? user.primaryAccountId : null,
+                primaryAccountId:
+                    user.hasPrimaryAccountId() ? user.primaryAccountId : null,
                 emailMatchesSearchQuery: user.emailMatchesSearchQuery,
                 phoneMatchesSearchQueryExact: user.phoneMatchesSearchQueryExact,
               ))
           .toList();
     } on GrpcError catch (e) {
-      print('[ProfileRepository] gRPC Error searching users: ${e.codeName} - ${e.message}');
+      print(
+          '[ProfileRepository] gRPC Error searching users: ${e.codeName} - ${e.message}');
       return [];
     } catch (e) {
       print('[ProfileRepository] Error searching users: $e');

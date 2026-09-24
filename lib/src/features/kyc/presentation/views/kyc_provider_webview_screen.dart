@@ -105,10 +105,9 @@ class _KYCProviderWebViewScreenState extends State<KYCProviderWebViewScreen> {
               setState(() {
                 _hasError = true;
                 _isLoading = false;
-                _errorMessage =
-                    error.description.isNotEmpty
-                        ? error.description
-                        : 'Failed to load verification page.';
+                _errorMessage = error.description.isNotEmpty
+                    ? error.description
+                    : 'Failed to load verification page.';
               });
             }
           },

@@ -54,7 +54,8 @@ class CoverageSummaryService {
   /// to `10.0.2.2`. Use that for dev; production should override via
   /// `--dart-define=CHAT_GATEWAY_URL=…`.
   static String _defaultBaseUrl() {
-    const fromEnv = String.fromEnvironment('CHAT_GATEWAY_URL', defaultValue: '');
+    const fromEnv =
+        String.fromEnvironment('CHAT_GATEWAY_URL', defaultValue: '');
     if (fromEnv.isNotEmpty) return fromEnv;
     return endpointRegistry.httpChatAgent;
   }

@@ -12,7 +12,6 @@ import '../cubit/crowdfund_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'notification_channels_screen_widgets.dart';
 
-
 class _AddChannelBottomSheetState extends State<_AddChannelBottomSheet> {
   NotificationChannelType? _selectedType;
   bool _isConnecting = false;
@@ -254,7 +253,8 @@ class _AddChannelBottomSheetState extends State<_AddChannelBottomSheet> {
           ),
         ),
         const SizedBox(height: 24),
-        _buildTextField(_nameController, 'Channel Name', 'e.g., Campaign Updates Group'),
+        _buildTextField(
+            _nameController, 'Channel Name', 'e.g., Campaign Updates Group'),
         const SizedBox(height: 16),
         _buildTextField(_chatIdController, 'Chat ID', 'e.g., -1001234567890'),
         const SizedBox(height: 24),
@@ -280,9 +280,11 @@ class _AddChannelBottomSheetState extends State<_AddChannelBottomSheet> {
           ),
         ),
         const SizedBox(height: 24),
-        _buildTextField(_nameController, 'Channel Name', 'e.g., #donations-updates'),
+        _buildTextField(
+            _nameController, 'Channel Name', 'e.g., #donations-updates'),
         const SizedBox(height: 16),
-        _buildTextField(_webhookController, 'Webhook URL', 'https://discord.com/api/webhooks/...'),
+        _buildTextField(_webhookController, 'Webhook URL',
+            'https://discord.com/api/webhooks/...'),
         const SizedBox(height: 24),
         _buildConnectButton(),
       ],
@@ -306,9 +308,11 @@ class _AddChannelBottomSheetState extends State<_AddChannelBottomSheet> {
           ),
         ),
         const SizedBox(height: 24),
-        _buildTextField(_nameController, 'Channel Name', 'e.g., #campaign-updates'),
+        _buildTextField(
+            _nameController, 'Channel Name', 'e.g., #campaign-updates'),
         const SizedBox(height: 16),
-        _buildTextField(_webhookController, 'Webhook URL', 'https://hooks.slack.com/services/...'),
+        _buildTextField(_webhookController, 'Webhook URL',
+            'https://hooks.slack.com/services/...'),
         const SizedBox(height: 24),
         _buildConnectButton(),
       ],
@@ -417,7 +421,8 @@ class _AddChannelBottomSheetState extends State<_AddChannelBottomSheet> {
             ),
           ),
           const SizedBox(height: 24),
-          _buildTextField(_nameController, 'Channel Name', 'e.g., My Campaign Alerts'),
+          _buildTextField(
+              _nameController, 'Channel Name', 'e.g., My Campaign Alerts'),
           const SizedBox(height: 16),
           _buildWhatsAppPhoneField(),
         ] else ...[
@@ -457,7 +462,8 @@ class _AddChannelBottomSheetState extends State<_AddChannelBottomSheet> {
             ),
           ),
           const SizedBox(height: 24),
-          _buildTextField(_nameController, 'Channel Name', 'e.g., Campaign Group Updates'),
+          _buildTextField(
+              _nameController, 'Channel Name', 'e.g., Campaign Group Updates'),
           const SizedBox(height: 16),
           _buildTextField(
             _whatsappGroupIdController,
@@ -522,7 +528,8 @@ class _AddChannelBottomSheetState extends State<_AddChannelBottomSheet> {
     return '$code$cleaned';
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, String hint) {
+  Widget _buildTextField(
+      TextEditingController controller, String label, String hint) {
     return TextField(
       controller: controller,
       style: const TextStyle(color: Colors.white),
@@ -559,9 +566,8 @@ class _AddChannelBottomSheetState extends State<_AddChannelBottomSheet> {
               borderRadius: BorderRadius.circular(12),
             ),
           ),
-          child: _isConnecting
-              ? LazerVaultLoader.small()
-              : const Text('Connect'),
+          child:
+              _isConnecting ? LazerVaultLoader.small() : const Text('Connect'),
         ),
       ],
     );
@@ -623,11 +629,12 @@ class _AddChannelBottomSheetState extends State<_AddChannelBottomSheet> {
       slackChannelName: _selectedType == NotificationChannelType.slack
           ? _nameController.text
           : null,
-      whatsappRecipientId: _selectedType == NotificationChannelType.whatsappBusiness
-          ? (_whatsappGroupMode
-              ? 'group:${_whatsappGroupIdController.text.trim()}'
-              : _buildFullPhoneNumber())
-          : null,
+      whatsappRecipientId:
+          _selectedType == NotificationChannelType.whatsappBusiness
+              ? (_whatsappGroupMode
+                  ? 'group:${_whatsappGroupIdController.text.trim()}'
+                  : _buildFullPhoneNumber())
+              : null,
       enabledEvents: [
         NotificationEventType.newDonation,
         NotificationEventType.milestoneReached,

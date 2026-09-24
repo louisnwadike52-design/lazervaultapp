@@ -8,14 +8,16 @@ class BankingErrorCode {
   static const String limitExceeded = 'LIMIT_EXCEEDED';
   static const String dailyLimitExceeded = 'DAILY_LIMIT_EXCEEDED';
   static const String monthlyLimitExceeded = 'MONTHLY_LIMIT_EXCEEDED';
-  static const String singleTransactionLimitExceeded = 'SINGLE_TRANSACTION_LIMIT_EXCEEDED';
+  static const String singleTransactionLimitExceeded =
+      'SINGLE_TRANSACTION_LIMIT_EXCEEDED';
   static const String duplicateTransaction = 'DUPLICATE_TRANSACTION';
   static const String serviceUnavailable = 'SERVICE_UNAVAILABLE';
   static const String providerMismatch = 'PROVIDER_MISMATCH';
   static const String providerError = 'PROVIDER_ERROR';
   static const String transferFailed = 'TRANSFER_FAILED';
   static const String accountVerificationFailed = 'ACCOUNT_VERIFICATION_FAILED';
-  static const String identityVerificationFailed = 'IDENTITY_VERIFICATION_FAILED';
+  static const String identityVerificationFailed =
+      'IDENTITY_VERIFICATION_FAILED';
   static const String rateLimitExceeded = 'RATE_LIMIT_EXCEEDED';
   static const String invalidAmount = 'INVALID_AMOUNT';
   static const String unauthorized = 'UNAUTHORIZED';
@@ -55,7 +57,9 @@ class NetworkException extends BankingException {
     this.isTimeout = false,
     super.details,
   }) : super(
-          code: isTimeout ? BankingErrorCode.timeout : BankingErrorCode.networkError,
+          code: isTimeout
+              ? BankingErrorCode.timeout
+              : BankingErrorCode.networkError,
           isRetryable: true,
         );
 
@@ -260,8 +264,7 @@ class UnauthorizedException extends BankingException {
         );
 
   @override
-  String get userMessage =>
-      'Your session has expired. Please log in again.';
+  String get userMessage => 'Your session has expired. Please log in again.';
 }
 
 /// Reauthorization required - bank connection expired, needs re-linking

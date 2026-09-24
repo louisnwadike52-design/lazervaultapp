@@ -52,10 +52,12 @@ class _BatchReceiptDetailedScreenState
       'recipientCount': r.totalTransfers,
       'successfulTransfers': r.successfulTransfers,
       'failedTransfers': r.failedTransfers,
-      'timestamp': r.finalizedAt ?? r.updatedAt ?? r.createdAt ?? DateTime.now(),
+      'timestamp':
+          r.finalizedAt ?? r.updatedAt ?? r.createdAt ?? DateTime.now(),
       'senderAccountName': r.sourceAccountName,
-      'senderAccountInfo':
-          r.sourceAccountNumber.isEmpty ? null : '•••• ${r.sourceAccountNumber}',
+      'senderAccountInfo': r.sourceAccountNumber.isEmpty
+          ? null
+          : '•••• ${r.sourceAccountNumber}',
       'transfers': r.items
           .map((it) => {
                 'recipientName': it.recipientName,
@@ -183,8 +185,8 @@ class _BatchReceiptDetailedScreenState
             SizedBox(height: 12.h),
             Text(message,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                    color: btTextSecondary, fontSize: 13.sp)),
+                style:
+                    GoogleFonts.inter(color: btTextSecondary, fontSize: 13.sp)),
             SizedBox(height: 16.h),
             GestureDetector(
               onTap: () {
@@ -195,16 +197,14 @@ class _BatchReceiptDetailedScreenState
                 }
               },
               child: Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
+                padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
                 decoration: BoxDecoration(
                   color: btBlue,
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Text('Retry',
                     style: GoogleFonts.inter(
-                        color: btTextPrimary,
-                        fontWeight: FontWeight.w600)),
+                        color: btTextPrimary, fontWeight: FontWeight.w600)),
               ),
             ),
           ],
@@ -292,8 +292,7 @@ class _BatchReceiptDetailedScreenState
             SizedBox(height: 14.h),
             Text(
               DateFormat('MMM dd, yyyy • HH:mm').format(ts),
-              style:
-                  GoogleFonts.inter(color: btTextTertiary, fontSize: 11.sp),
+              style: GoogleFonts.inter(color: btTextTertiary, fontSize: 11.sp),
             ),
           ],
           if (r.sourceAccountName.isNotEmpty) ...[

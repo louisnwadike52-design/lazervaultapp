@@ -9,7 +9,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 part 'p2p_chat_input_bar_widgets.dart';
 
-
 class P2PChatInputBar extends StatefulWidget {
   final Function(String content) onSend;
 
@@ -213,9 +212,11 @@ class _P2PChatInputBarState extends State<P2PChatInputBar> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.photo_library, color: Color(0xFF3B82F6)),
+              leading:
+                  const Icon(Icons.photo_library, color: Color(0xFF3B82F6)),
               title: Text('Gallery',
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp)),
+                  style:
+                      GoogleFonts.inter(color: Colors.white, fontSize: 15.sp)),
               onTap: () {
                 Navigator.of(ctx).pop();
                 _pickImage(ImageSource.gallery);
@@ -224,7 +225,8 @@ class _P2PChatInputBarState extends State<P2PChatInputBar> {
             ListTile(
               leading: const Icon(Icons.camera_alt, color: Color(0xFF10B981)),
               title: Text('Camera',
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp)),
+                  style:
+                      GoogleFonts.inter(color: Colors.white, fontSize: 15.sp)),
               onTap: () {
                 Navigator.of(ctx).pop();
                 _pickImage(ImageSource.camera);
@@ -253,8 +255,7 @@ class _P2PChatInputBarState extends State<P2PChatInputBar> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content:
-                Text('Microphone permission is required for voice notes'),
+            content: Text('Microphone permission is required for voice notes'),
             backgroundColor: Color(0xFFEF4444),
           ),
         );
@@ -362,87 +363,87 @@ class _P2PChatInputBarState extends State<P2PChatInputBar> {
 
   Widget _buildInputRow() {
     return Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          // Attach (image) button — LEFT of the text field
-          _buildCircleButton(
-            icon: Icons.add_photo_alternate_outlined,
-            onTap: widget.enabled ? _showAttachMenu : null,
-          ),
-          SizedBox(width: 6.w),
-          // Voice-note button
-          _buildCircleButton(
-            icon: Icons.mic_none_rounded,
-            onTap: widget.enabled ? _toggleRecording : null,
-          ),
-          SizedBox(width: 6.w),
-          // Text input
-          Expanded(
-            child: Container(
-              constraints: BoxConstraints(maxHeight: 120.h),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2D2D2D),
-                borderRadius: BorderRadius.circular(24.r),
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        // Attach (image) button — LEFT of the text field
+        _buildCircleButton(
+          icon: Icons.add_photo_alternate_outlined,
+          onTap: widget.enabled ? _showAttachMenu : null,
+        ),
+        SizedBox(width: 6.w),
+        // Voice-note button
+        _buildCircleButton(
+          icon: Icons.mic_none_rounded,
+          onTap: widget.enabled ? _toggleRecording : null,
+        ),
+        SizedBox(width: 6.w),
+        // Text input
+        Expanded(
+          child: Container(
+            constraints: BoxConstraints(maxHeight: 120.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2D2D2D),
+              borderRadius: BorderRadius.circular(24.r),
+            ),
+            child: TextField(
+              controller: _controller,
+              focusNode: _focusNode,
+              enabled: widget.enabled,
+              maxLines: null,
+              maxLength: 5000,
+              textInputAction: TextInputAction.newline,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 14.sp,
               ),
-              child: TextField(
-                controller: _controller,
-                focusNode: _focusNode,
-                enabled: widget.enabled,
-                maxLines: null,
-                maxLength: 5000,
-                textInputAction: TextInputAction.newline,
-                style: GoogleFonts.inter(
-                  color: Colors.white,
+              buildCounter: (context,
+                      {required currentLength,
+                      required isFocused,
+                      required maxLength}) =>
+                  null,
+              decoration: InputDecoration(
+                hintText: 'Type a message...',
+                hintStyle: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF),
                   fontSize: 14.sp,
                 ),
-                buildCounter: (context,
-                        {required currentLength,
-                        required isFocused,
-                        required maxLength}) =>
-                    null,
-                decoration: InputDecoration(
-                  hintText: 'Type a message...',
-                  hintStyle: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF),
-                    fontSize: 14.sp,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 10.h,
-                  ),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 10.h,
                 ),
               ),
             ),
           ),
-          SizedBox(width: 8.w),
-          // Trailing action: SEND (or ✓ when editing) with text; otherwise a
-          // heart button that fires an ephemeral floating-emoji burst.
-          if (_hasText)
-            GestureDetector(
-              onTap: widget.enabled ? _onSend : null,
-              child: Container(
-                width: 40.w,
-                height: 40.w,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Color(0xFF4E03D0), // brand purple
-                ),
-                child: Icon(
-                  widget.isEditing ? Icons.check_rounded : Icons.send,
-                  color: Colors.white,
-                  size: 20.w,
-                ),
+        ),
+        SizedBox(width: 8.w),
+        // Trailing action: SEND (or ✓ when editing) with text; otherwise a
+        // heart button that fires an ephemeral floating-emoji burst.
+        if (_hasText)
+          GestureDetector(
+            onTap: widget.enabled ? _onSend : null,
+            child: Container(
+              width: 40.w,
+              height: 40.w,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Color(0xFF4E03D0), // brand purple
               ),
-            )
-          else
-            _buildCircleButton(
-              icon: Icons.favorite_rounded,
-              onTap: widget.enabled && widget.onEmojiBurst != null
-                  ? () => widget.onEmojiBurst!('❤️')
-                  : null,
+              child: Icon(
+                widget.isEditing ? Icons.check_rounded : Icons.send,
+                color: Colors.white,
+                size: 20.w,
+              ),
             ),
-        ],
+          )
+        else
+          _buildCircleButton(
+            icon: Icons.favorite_rounded,
+            onTap: widget.enabled && widget.onEmojiBurst != null
+                ? () => widget.onEmojiBurst!('❤️')
+                : null,
+          ),
+      ],
     );
   }
 
@@ -462,9 +463,8 @@ class _P2PChatInputBarState extends State<P2PChatInputBar> {
         ),
         child: Icon(
           icon,
-          color: onTap != null
-              ? const Color(0xFF9CA3AF)
-              : const Color(0xFF6B7280),
+          color:
+              onTap != null ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
           size: 20.w,
         ),
       ),
@@ -475,8 +475,7 @@ class _P2PChatInputBarState extends State<P2PChatInputBar> {
   /// captured. Shows the elapsed timer with a cancel (discard) and a send
   /// (stop + send) action.
   Widget _buildRecordingRow() {
-    final minutes =
-        _recordingDuration.inMinutes.toString().padLeft(2, '0');
+    final minutes = _recordingDuration.inMinutes.toString().padLeft(2, '0');
     final seconds =
         (_recordingDuration.inSeconds % 60).toString().padLeft(2, '0');
     return Row(

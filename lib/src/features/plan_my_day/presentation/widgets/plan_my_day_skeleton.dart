@@ -120,9 +120,13 @@ class PlanDayHeaderStatsSkeleton extends StatelessWidget {
           SizedBox(height: 12.h),
           Row(
             children: [
-              Expanded(child: _box(width: double.infinity, height: 32.h, radius: 10.r)),
+              Expanded(
+                  child:
+                      _box(width: double.infinity, height: 32.h, radius: 10.r)),
               SizedBox(width: 10.w),
-              Expanded(child: _box(width: double.infinity, height: 32.h, radius: 10.r)),
+              Expanded(
+                  child:
+                      _box(width: double.infinity, height: 32.h, radius: 10.r)),
             ],
           ),
         ],
@@ -160,9 +164,17 @@ class PlanDayFullSkeleton extends StatelessWidget {
                   SizedBox(height: 12.h),
                   Row(
                     children: [
-                      Expanded(child: _box(width: double.infinity, height: 32.h, radius: 10.r)),
+                      Expanded(
+                          child: _box(
+                              width: double.infinity,
+                              height: 32.h,
+                              radius: 10.r)),
                       SizedBox(width: 10.w),
-                      Expanded(child: _box(width: double.infinity, height: 32.h, radius: 10.r)),
+                      Expanded(
+                          child: _box(
+                              width: double.infinity,
+                              height: 32.h,
+                              radius: 10.r)),
                     ],
                   ),
                 ],
@@ -176,21 +188,34 @@ class PlanDayFullSkeleton extends StatelessWidget {
                 children: [
                   for (int i = 0; i < 7; i++) ...[
                     if (i > 0) SizedBox(width: 6.w),
-                    Expanded(child: _box(width: double.infinity, height: 74.h, radius: 12.r)),
+                    Expanded(
+                        child: _box(
+                            width: double.infinity,
+                            height: 74.h,
+                            radius: 12.r)),
                   ],
                 ],
               ),
             ),
             SizedBox(height: 14.h),
-            _box(width: double.infinity, height: 70.h, radius: 16.r), // inbox card
+            _box(
+                width: double.infinity,
+                height: 70.h,
+                radius: 16.r), // inbox card
             SizedBox(height: 14.h),
             Row(
               children: [
-                Expanded(child: _box(width: double.infinity, height: 44.h, radius: 12.r)),
+                Expanded(
+                    child: _box(
+                        width: double.infinity, height: 44.h, radius: 12.r)),
                 SizedBox(width: 8.w),
-                Expanded(child: _box(width: double.infinity, height: 44.h, radius: 12.r)),
+                Expanded(
+                    child: _box(
+                        width: double.infinity, height: 44.h, radius: 12.r)),
                 SizedBox(width: 8.w),
-                Expanded(child: _box(width: double.infinity, height: 44.h, radius: 12.r)),
+                Expanded(
+                    child: _box(
+                        width: double.infinity, height: 44.h, radius: 12.r)),
               ],
             ),
             SizedBox(height: 22.h),

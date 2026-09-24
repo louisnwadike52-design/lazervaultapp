@@ -463,8 +463,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
               icon: Icons.credit_card_outlined,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              validator: (v) => _digitsValidator(v,
-                  field: 'Account number', exactLen: 10),
+              validator: (v) =>
+                  _digitsValidator(v, field: 'Account number', exactLen: 10),
             ),
             SizedBox(height: 14.h),
             _textField(
@@ -549,7 +549,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   InputDecoration _decoration(String hint, IconData? icon) => InputDecoration(
         hintText: hint,
         hintStyle: GoogleFonts.inter(color: _hint, fontSize: 15.sp),
-        prefixIcon: icon != null ? Icon(icon, color: _label, size: 20.sp) : null,
+        prefixIcon:
+            icon != null ? Icon(icon, color: _label, size: 20.sp) : null,
         filled: true,
         fillColor: _card,
         border: OutlineInputBorder(
@@ -619,9 +620,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             child: TextFormField(
               controller: _countryController,
               style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp),
-              decoration: _decoration('Select country', Icons.flag_outlined)
-                  .copyWith(
-                suffixIcon: const Icon(Icons.keyboard_arrow_down, color: _label),
+              decoration:
+                  _decoration('Select country', Icons.flag_outlined).copyWith(
+                suffixIcon:
+                    const Icon(Icons.keyboard_arrow_down, color: _label),
               ),
             ),
           ),
@@ -732,8 +734,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
               icon: Icon(Icons.keyboard_arrow_down, color: _label, size: 20.sp),
               style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp),
               items: _segments
-                  .map((seg) =>
-                      DropdownMenuItem(value: seg, child: Text(seg)))
+                  .map((seg) => DropdownMenuItem(value: seg, child: Text(seg)))
                   .toList(),
               onChanged: (value) {
                 if (value != null) setState(() => _selectedSegment = value);

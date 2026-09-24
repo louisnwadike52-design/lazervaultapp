@@ -50,8 +50,7 @@ class TransactionHistoryScreenIntegration {
     bool showDivider = true,
   }) {
     return [
-      if (showDivider)
-        const Divider(height: 32, thickness: 1),
+      if (showDivider) const Divider(height: 32, thickness: 1),
       SizedBox(height: 16),
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -91,8 +90,7 @@ class TransactionHistoryScreenIntegration {
         leading: Icon(Icons.history),
         title: Text('${serviceName.displayName} History'),
         trailing: Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: onTap ??
-            () => _navigateToServiceHistory(serviceName),
+        onTap: onTap ?? () => _navigateToServiceHistory(serviceName),
       ),
     );
   }

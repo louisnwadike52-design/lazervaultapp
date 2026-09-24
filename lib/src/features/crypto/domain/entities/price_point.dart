@@ -41,4 +41,4 @@ class PricePoint extends Equatable {
       volume: volume ?? this.volume,
     );
   }
-} 
+}

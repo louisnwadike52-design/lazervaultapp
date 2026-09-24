@@ -177,8 +177,8 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
       }
     }
     try {
-      final raw =
-          await serviceLocator<FlutterSecureStorage>().read(key: 'stored_phone');
+      final raw = await serviceLocator<FlutterSecureStorage>()
+          .read(key: 'stored_phone');
       final local = _toLocalNg(raw ?? '');
       if (local.isNotEmpty && mounted && _phoneController.text.isEmpty) {
         _phoneController.text = local;
@@ -214,7 +214,8 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
     if (code == _networkCode) return;
     setState(() {
       _networkCode = code;
-      _networkManual = false; // auto-detection (or clear) supersedes a manual pick
+      _networkManual =
+          false; // auto-detection (or clear) supersedes a manual pick
       _plan = null; // network changed → drop the stale plan
     });
     if (code != null) {
@@ -330,7 +331,8 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
               verificationToken: token,
               idempotencyKey: txnId,
             );
-            result = await completer.future.timeout(const Duration(seconds: 90));
+            result =
+                await completer.future.timeout(const Duration(seconds: 90));
           } finally {
             await sub.cancel();
           }
@@ -582,7 +584,8 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
           hintText: '0803 000 0000',
           hintStyle: GoogleFonts.inter(color: const Color(0xFF6B7280)),
           prefixIcon: _dialCodePrefix(),
-          prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+          prefixIconConstraints:
+              const BoxConstraints(minWidth: 0, minHeight: 0),
           border: InputBorder.none,
           contentPadding:
               EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
@@ -655,8 +658,7 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
     final meta = _netMeta[code]!;
     final name = meta.$1;
     final color = Color(meta.$2);
-    final hex =
-        '#${meta.$2.toRadixString(16).padLeft(8, '0').substring(2)}';
+    final hex = '#${meta.$2.toRadixString(16).padLeft(8, '0').substring(2)}';
     final selected = _networkCode == code;
     return GestureDetector(
       onTap: () => _selectNetworkManually(code),
@@ -747,7 +749,8 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
     );
   }
 
-  Widget _row(String label, String value, {Color? valueColor, bool bold = false}) {
+  Widget _row(String label, String value,
+      {Color? valueColor, bool bold = false}) {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Text(label, style: GoogleFonts.inter(color: _muted, fontSize: 13.sp)),
       Flexible(
@@ -850,11 +853,9 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
         ),
         child: _submitting
-            ? SizedBox(width: 20.w, height: 20.w, child: LazerVaultLoader.small())
-            : Text(
-                _plan != null
-                    ? 'Buy ${_plan!.name}'
-                    : 'Buy data',
+            ? SizedBox(
+                width: 20.w, height: 20.w, child: LazerVaultLoader.small())
+            : Text(_plan != null ? 'Buy ${_plan!.name}' : 'Buy data',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.inter(

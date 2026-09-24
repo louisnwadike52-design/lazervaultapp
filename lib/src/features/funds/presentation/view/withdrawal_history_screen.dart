@@ -59,8 +59,7 @@ class _WithdrawalHistoryScreenState extends State<WithdrawalHistoryScreen> {
 
   void _maybeLoadMore() {
     if (!_hasMore || _loadingMore || _loading) return;
-    if (_scroll.position.pixels >
-        _scroll.position.maxScrollExtent - 300) {
+    if (_scroll.position.pixels > _scroll.position.maxScrollExtent - 300) {
       _load(reset: false);
     }
   }
@@ -94,8 +93,8 @@ class _WithdrawalHistoryScreenState extends State<WithdrawalHistoryScreen> {
       setState(() {
         if (reset) _items.clear();
         _items.addAll(resp.withdrawals);
-        _hasMore = resp.withdrawals.length >= _pageSize &&
-            _items.length < resp.total;
+        _hasMore =
+            resp.withdrawals.length >= _pageSize && _items.length < resp.total;
         _loading = false;
         _loadingMore = false;
         _loadError = null;
@@ -108,12 +107,12 @@ class _WithdrawalHistoryScreenState extends State<WithdrawalHistoryScreen> {
         // Only the FIRST page failure blanks the screen; a failed
         // load-more keeps what's shown and surfaces a snackbar.
         if (_items.isEmpty) {
-          _loadError =
-              'Something went wrong. Please try again.';
+          _loadError = 'Something went wrong. Please try again.';
         } else {
           Get.snackbar('', 'Couldn\'t load more withdrawals — pull to retry.',
               titleText: const SizedBox.shrink(),
-              messageText: const Text('Couldn\'t load more withdrawals — pull to retry.',
+              messageText: const Text(
+                  'Couldn\'t load more withdrawals — pull to retry.',
                   style: TextStyle(color: Colors.white)),
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: _error.withValues(alpha: 0.92),
@@ -127,15 +126,22 @@ class _WithdrawalHistoryScreenState extends State<WithdrawalHistoryScreen> {
   bool _isDone(String s) => s == 'completed' || s == 'successful';
   bool _isFailed(String s) => s == 'failed';
 
-  Color _statusColor(String s) =>
-      _isDone(s) ? _success : _isFailed(s) ? _error : _processing;
+  Color _statusColor(String s) => _isDone(s)
+      ? _success
+      : _isFailed(s)
+          ? _error
+          : _processing;
 
-  String _statusLabel(String s) =>
-      _isDone(s) ? 'Completed' : _isFailed(s) ? 'Failed' : 'Processing';
+  String _statusLabel(String s) => _isDone(s)
+      ? 'Completed'
+      : _isFailed(s)
+          ? 'Failed'
+          : 'Processing';
 
   String _money(int kobo, String currency) {
-    final v = (kobo / 100).toStringAsFixed(2).replaceAllMapped(
-        RegExp(r'(\d)(?=(\d{3})+\.)'), (m) => '${m[1]},');
+    final v = (kobo / 100)
+        .toStringAsFixed(2)
+        .replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+\.)'), (m) => '${m[1]},');
     final sym = currency.toUpperCase() == 'NGN' ? '₦' : '$currency ';
     return '$sym$v';
   }
@@ -146,7 +152,20 @@ class _WithdrawalHistoryScreenState extends State<WithdrawalHistoryScreen> {
   String _dateLabel(banking_pb.Withdrawal w) {
     if (!w.hasCreatedAt()) return '';
     final d = w.createdAt.toDateTime().toLocal();
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
     final h = d.hour % 12 == 0 ? 12 : d.hour % 12;
     final ap = d.hour >= 12 ? 'PM' : 'AM';
     return '${d.day} ${months[d.month - 1]} ${d.year} · $h:${d.minute.toString().padLeft(2, '0')} $ap';
@@ -296,8 +315,7 @@ class _WithdrawalHistoryScreenState extends State<WithdrawalHistoryScreen> {
                         color: Colors.white)),
                 SizedBox(height: 5.h),
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.14),
                     borderRadius: BorderRadius.circular(20.r),
@@ -345,7 +363,8 @@ class _WithdrawalHistoryScreenState extends State<WithdrawalHistoryScreen> {
             Text(
               'When you withdraw to a linked bank, every payout — processing, completed or failed — shows up here.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(fontSize: 12.5.sp, color: _label, height: 1.4),
+              style: GoogleFonts.inter(
+                  fontSize: 12.5.sp, color: _label, height: 1.4),
             ),
             SizedBox(height: 20.h),
             TextButton(

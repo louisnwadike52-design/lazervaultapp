@@ -42,13 +42,18 @@ class ReminderManagementScreen extends StatelessWidget {
         // the same colour.
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text('Reminders',
-            style: GoogleFonts.inter(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w600)),
+            style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w600)),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => RemindersListBody.openCreateSheet(context),
         backgroundColor: _accent,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: Text('New', style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600)),
+        label: Text('New',
+            style: GoogleFonts.inter(
+                color: Colors.white, fontWeight: FontWeight.w600)),
       ),
       body: const RemindersListBody(),
     );

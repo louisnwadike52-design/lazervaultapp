@@ -87,9 +87,15 @@ class _LegalConsentTextState extends State<LegalConsentText> {
           style: base,
           children: [
             TextSpan(text: 'By tapping "${widget.action}", you agree to our '),
-            TextSpan(text: 'Terms & Conditions', style: linkStyle, recognizer: _termsTap),
+            TextSpan(
+                text: 'Terms & Conditions',
+                style: linkStyle,
+                recognizer: _termsTap),
             const TextSpan(text: ' and '),
-            TextSpan(text: 'Privacy Policy', style: linkStyle, recognizer: _privacyTap),
+            TextSpan(
+                text: 'Privacy Policy',
+                style: linkStyle,
+                recognizer: _privacyTap),
             const TextSpan(text: '.'),
           ],
         ),

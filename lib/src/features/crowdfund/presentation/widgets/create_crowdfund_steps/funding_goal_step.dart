@@ -84,11 +84,29 @@ class _FundingGoalStepState extends State<FundingGoalStep> {
       case 'GBP':
       case 'EUR':
       case 'USD':
-        return ['100', '250', '500', '1,000', '2,500', '5,000', '10,000', '25,000'];
+        return [
+          '100',
+          '250',
+          '500',
+          '1,000',
+          '2,500',
+          '5,000',
+          '10,000',
+          '25,000'
+        ];
       case 'ZAR':
         return ['500', '1,000', '5,000', '10,000', '50,000', '100,000'];
       default:
-        return ['100', '250', '500', '1,000', '2,500', '5,000', '10,000', '25,000'];
+        return [
+          '100',
+          '250',
+          '500',
+          '1,000',
+          '2,500',
+          '5,000',
+          '10,000',
+          '25,000'
+        ];
     }
   }
 
@@ -121,7 +139,6 @@ class _FundingGoalStepState extends State<FundingGoalStep> {
             ),
           ),
           SizedBox(height: 24.h),
-
           Center(
             child: Text(
               'Funding Goal',
@@ -144,7 +161,6 @@ class _FundingGoalStepState extends State<FundingGoalStep> {
             ),
           ),
           SizedBox(height: 32.h),
-
           _buildLabel('Target Amount *'),
           SizedBox(height: 12.h),
           _buildAmountField(),
@@ -172,7 +188,6 @@ class _FundingGoalStepState extends State<FundingGoalStep> {
             _buildHint('Minimum $_currencySymbol 10'),
           ],
           SizedBox(height: 28.h),
-
           Text(
             'Quick Amounts',
             style: GoogleFonts.inter(
@@ -188,15 +203,13 @@ class _FundingGoalStepState extends State<FundingGoalStep> {
             children: _quickAmounts().map(_buildAmountChip).toList(),
           ),
           SizedBox(height: 32.h),
-
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
                   const Color(0xFF4E03D0).withValues(alpha: 0.1),
-                  const Color.fromARGB(255, 78, 3, 208)
-                      .withValues(alpha: 0.05),
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -253,9 +266,8 @@ class _FundingGoalStepState extends State<FundingGoalStep> {
 
   Widget _buildAmountField() {
     final hasError = _amountError != null;
-    final borderColor = hasError
-        ? const Color(0xFFEF4444)
-        : const Color(0xFF2D2D2D);
+    final borderColor =
+        hasError ? const Color(0xFFEF4444) : const Color(0xFF2D2D2D);
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
@@ -302,7 +314,8 @@ class _FundingGoalStepState extends State<FundingGoalStep> {
           Expanded(
             child: TextField(
               controller: widget.targetAmountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
               ],

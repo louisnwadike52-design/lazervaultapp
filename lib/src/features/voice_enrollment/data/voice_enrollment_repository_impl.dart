@@ -20,7 +20,8 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
 
   final AudioRecorder _recorder = AudioRecorder();
   Timer? _amplitudeTimer;
-  final StreamController<double> _amplitudeController = StreamController<double>.broadcast();
+  final StreamController<double> _amplitudeController =
+      StreamController<double>.broadcast();
   String? _currentRecordingPath;
 
   VoiceEnrollmentRepositoryImpl(this._secureStorage);
@@ -73,7 +74,7 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
         const RecordConfig(
           encoder: AudioEncoder.wav,
           sampleRate: 16000, // Standard for voice recognition
-          numChannels: 1,     // Mono audio
+          numChannels: 1, // Mono audio
         ),
         path: _currentRecordingPath!,
       );
@@ -96,7 +97,8 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
 
   /// Start monitoring audio amplitude for visualization
   void _startAmplitudeMonitoring() {
-    _amplitudeTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) async {
+    _amplitudeTimer =
+        Timer.periodic(const Duration(milliseconds: 100), (timer) async {
       try {
         if (await _recorder.isRecording()) {
           final amplitude = await _recorder.getAmplitude();
@@ -163,7 +165,8 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
 
       // Validate file size (should be at least 10KB for a meaningful recording)
       if (fileSize < 10000) {
-        throw Exception('Recording too short or empty ($fileSize bytes). Please speak louder and try again.');
+        throw Exception(
+            'Recording too short or empty ($fileSize bytes). Please speak louder and try again.');
       }
 
       // Reset path for next recording
@@ -280,7 +283,8 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
         print('✅ Loaded sample $i: ${bytes.length} bytes');
       }
 
-      final result = await serviceLocator<vbs.VoiceBiometricsService>().enrollVoice(
+      final result =
+          await serviceLocator<vbs.VoiceBiometricsService>().enrollVoice(
         userId: userId,
         audioSamples: samples,
         sampleRate: 16000,
@@ -321,8 +325,8 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
   @override
   Future<bool> checkEnrollmentStatus(String userId) async {
     try {
-      final status =
-          await serviceLocator<vbs.VoiceBiometricsService>().checkEnrollmentStatus(userId);
+      final status = await serviceLocator<vbs.VoiceBiometricsService>()
+          .checkEnrollmentStatus(userId);
       return status.isEnrolled;
     } catch (e) {
       print('❌ Error checking enrollment status: $e');
@@ -334,7 +338,8 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
   @override
   Future<bool> deleteEnrollment(String userId) async {
     try {
-      return await serviceLocator<vbs.VoiceBiometricsService>().deleteVoiceEnrollment(userId);
+      return await serviceLocator<vbs.VoiceBiometricsService>()
+          .deleteVoiceEnrollment(userId);
     } catch (e) {
       print('❌ Error deleting enrollment: $e');
       throw Exception('Failed to delete enrollment: $e');

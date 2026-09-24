@@ -213,8 +213,8 @@ class _BillListPickerSheetState<T> extends State<BillListPickerSheet<T>> {
                             ? emptyLabel
                             : 'No plans in this filter',
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
-                            color: _muted, fontSize: 14.sp)),
+                        style:
+                            GoogleFonts.inter(color: _muted, fontSize: 14.sp)),
                   ),
                 );
               }
@@ -279,7 +279,8 @@ class _BillListPickerSheetState<T> extends State<BillListPickerSheet<T>> {
 }
 
 class _ErrorState extends StatelessWidget {
-  const _ErrorState({required this.message, required this.accent, this.onRetry});
+  const _ErrorState(
+      {required this.message, required this.accent, this.onRetry});
 
   final String message;
   final Color accent;

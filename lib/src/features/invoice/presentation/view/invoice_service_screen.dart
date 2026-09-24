@@ -71,7 +71,8 @@ class _InvoiceServiceScreenState extends State<InvoiceServiceScreen> {
                       index: 0,
                       icon: Icons.receipt_long_outlined,
                       title: 'Generate Invoice',
-                      description: 'Create and send invoices to your clients or customers',
+                      description:
+                          'Create and send invoices to your clients or customers',
                       gradientColors: [
                         InvoiceThemeColors.primaryPurple,
                         InvoiceThemeColors.primaryPurple.withValues(alpha: 0.7),
@@ -83,7 +84,8 @@ class _InvoiceServiceScreenState extends State<InvoiceServiceScreen> {
                       index: 1,
                       icon: Icons.payment_outlined,
                       title: 'Pay Invoice',
-                      description: 'View and pay invoices that have been sent to you',
+                      description:
+                          'View and pay invoices that have been sent to you',
                       gradientColors: [
                         InvoiceThemeColors.alternativePurple,
                         InvoiceThemeColors.gradientPurple,
@@ -91,7 +93,8 @@ class _InvoiceServiceScreenState extends State<InvoiceServiceScreen> {
                       // Route to the REAL received-invoices flow (incoming tagged
                       // → PayTaggedInvoice with PIN), not the legacy pay_invoice
                       // screen whose payment step is a simulated mock.
-                      onTap: () => Get.toNamed(AppRoutes.incomingTaggedInvoices),
+                      onTap: () =>
+                          Get.toNamed(AppRoutes.incomingTaggedInvoices),
                     ),
                   ],
                 ),
@@ -181,7 +184,8 @@ class _InvoiceServiceScreenState extends State<InvoiceServiceScreen> {
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w400,
-                      color: InvoiceThemeColors.textWhite.withValues(alpha: 0.9),
+                      color:
+                          InvoiceThemeColors.textWhite.withValues(alpha: 0.9),
                       height: 1.4,
                     ),
                   ),

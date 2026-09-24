@@ -154,8 +154,7 @@ class DataBundlesPdfService {
     return file;
   }
 
-  static pw.Widget _buildHeader(
-      pw.MemoryImage? logo, String generatedDate) {
+  static pw.Widget _buildHeader(pw.MemoryImage? logo, String generatedDate) {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -422,8 +421,7 @@ class DataBundlesPdfService {
                 pw.SizedBox(height: 4),
                 pw.Text(
                   'Get help directly in-app',
-                  style:
-                      _getTextStyle(fontSize: 9, color: PdfColors.grey600),
+                  style: _getTextStyle(fontSize: 9, color: PdfColors.grey600),
                 ),
               ],
             ),
@@ -432,14 +430,12 @@ class DataBundlesPdfService {
               children: [
                 pw.Text(
                   '(C) ${DateTime.now().year} Lazervault Technologies Ltd',
-                  style:
-                      _getTextStyle(fontSize: 9, color: PdfColors.grey600),
+                  style: _getTextStyle(fontSize: 9, color: PdfColors.grey600),
                 ),
                 pw.SizedBox(height: 2),
                 pw.Text(
                   'Page 1 of 1',
-                  style:
-                      _getTextStyle(fontSize: 9, color: PdfColors.grey500),
+                  style: _getTextStyle(fontSize: 9, color: PdfColors.grey500),
                 ),
               ],
             ),

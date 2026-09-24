@@ -23,7 +23,8 @@ class BatchTransferReviewScreen extends StatefulWidget {
   const BatchTransferReviewScreen({super.key});
 
   @override
-  State<BatchTransferReviewScreen> createState() => _BatchTransferReviewScreenState();
+  State<BatchTransferReviewScreen> createState() =>
+      _BatchTransferReviewScreenState();
 }
 
 class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
@@ -51,9 +52,11 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
   // rendered as an em-dash, never as a fake zero.
   double? _totalFee;
   bool _feeLoading = false;
+
   /// Per-recipient fee, keyed by account number — the breakdown behind the
   /// total, so a user can see the sum is per payout rather than one flat fee.
   Map<String, double> _feeByRecipient = const {};
+
   /// At least one recipient's quote failed; the total shown is partial.
   bool _feeQuotesIncomplete = false;
 
@@ -130,12 +133,15 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
   void initState() {
     super.initState();
     transferData = Get.arguments as Map<String, dynamic>? ?? {};
-    recipientNames = (transferData['recipientNames'] as Map<dynamic, dynamic>?)?.cast<String, String>() ?? {};
+    recipientNames = (transferData['recipientNames'] as Map<dynamic, dynamic>?)
+            ?.cast<String, String>() ??
+        {};
 
     // Get currency from arguments, fallback to account manager
     final accountManager = GetIt.I<AccountManager>();
     _currency = transferData['currency'] as String? ??
-        accountManager.activeAccountDetails?.currency ?? 'NGN';
+        accountManager.activeAccountDetails?.currency ??
+        'NGN';
     _currencySymbol = transferData['currencySymbol'] as String? ??
         batchCurrencySymbol(_currency);
 
@@ -155,7 +161,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.1),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
+    ).animate(
+        CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
 
     _animationController.forward();
 
@@ -186,7 +193,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
   Future<void> _selectScheduleDate() async {
     final date = await showDatePicker(
       context: context,
-      initialDate: _scheduledDate ?? DateTime.now().add(const Duration(days: 1)),
+      initialDate:
+          _scheduledDate ?? DateTime.now().add(const Duration(days: 1)),
       firstDate: DateTime.now().add(const Duration(hours: 1)),
       lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
       builder: (context, child) {
@@ -200,7 +208,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
             ),
             dialogTheme: DialogThemeData(
               backgroundColor: btCard,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
             ),
           ),
           child: child!,
@@ -231,7 +240,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
             ),
             dialogTheme: DialogThemeData(
               backgroundColor: btCard,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
             ),
           ),
           child: child!,
@@ -251,7 +261,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     setState(() => _isProcessing = true);
 
     // Calculate total amount for PIN validation
-    final recipients = transferData['recipients'] as List<BatchTransferRecipient>? ?? [];
+    final recipients =
+        transferData['recipients'] as List<BatchTransferRecipient>? ?? [];
 
     if (recipients.isEmpty) {
       setState(() => _isProcessing = false);
@@ -274,13 +285,17 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     // holds amount+fee per external item, so checking the bare amount lets a
     // just-enough balance pass here and fail at the hold).
     final accountManager = GetIt.I<AccountManager>();
-    final selectedAccount = transferData['selectedAccount'] as AccountSummaryEntity?;
-    final availableBalance = selectedAccount?.availableBalance ?? accountManager.activeAccountDetails?.balance ?? 0.0;
+    final selectedAccount =
+        transferData['selectedAccount'] as AccountSummaryEntity?;
+    final availableBalance = selectedAccount?.availableBalance ??
+        accountManager.activeAccountDetails?.balance ??
+        0.0;
     final chargeTotal = totalAmount + (_totalFee ?? 0.0);
 
     if (chargeTotal > availableBalance) {
       setState(() => _isProcessing = false);
-      _showError('Insufficient balance. Available: $_currencySymbol${availableBalance.toStringAsFixed(2)}');
+      _showError(
+          'Insufficient balance. Available: $_currencySymbol${availableBalance.toStringAsFixed(2)}');
       return;
     }
 
@@ -292,7 +307,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
         _showError('Please select a date and time for the scheduled transfer.');
         return;
       }
-      if (scheduledDt.isBefore(DateTime.now().add(const Duration(minutes: 5)))) {
+      if (scheduledDt
+          .isBefore(DateTime.now().add(const Duration(minutes: 5)))) {
         setState(() => _isProcessing = false);
         _showError('Scheduled time must be at least 5 minutes in the future.');
         return;
@@ -312,7 +328,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
       amount: chargeTotal,
       currency: _currency,
       title: 'Confirm Batch Transfer',
-      message: 'Confirm batch transfer of $_currency ${chargeTotal.toStringAsFixed(2)}'
+      message:
+          'Confirm batch transfer of $_currency ${chargeTotal.toStringAsFixed(2)}'
           '${_totalFee != null && _totalFee! > 0 ? ' (incl. ${_currencySymbol}${_totalFee!.toStringAsFixed(2)} fees)' : ''}',
       onPinValidated: (token) async {
         verificationToken = token;
@@ -333,7 +350,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+        content: Text(message,
+            style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
         backgroundColor: btRed,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -341,21 +359,25 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     );
   }
 
-  void _executeBatchTransferWithToken(String transactionId, String verificationToken) {
+  void _executeBatchTransferWithToken(
+      String transactionId, String verificationToken) {
     transferData['transactionId'] = transactionId;
     transferData['verificationToken'] = verificationToken;
     transferData['currency'] = _currency;
     transferData['currencySymbol'] = _currencySymbol;
 
     // Extract sender info from selected account for receipt/PDF
-    final selectedAccount = transferData['selectedAccount'] as AccountSummaryEntity?;
+    final selectedAccount =
+        transferData['selectedAccount'] as AccountSummaryEntity?;
     if (selectedAccount != null) {
       transferData['senderAccountName'] = selectedAccount.displayName;
-      transferData['senderAccountInfo'] = '\u2022\u2022\u2022\u2022 ${selectedAccount.accountNumberLast4}';
+      transferData['senderAccountInfo'] =
+          '\u2022\u2022\u2022\u2022 ${selectedAccount.accountNumberLast4}';
     }
 
     if (_isScheduled && _scheduledDateTime != null) {
-      transferData['scheduledAt'] = _scheduledDateTime!.toUtc().toIso8601String();
+      transferData['scheduledAt'] =
+          _scheduledDateTime!.toUtc().toIso8601String();
       transferData['isScheduled'] = true;
     }
 
@@ -403,7 +425,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                 color: btCardElevated,
                 borderRadius: BorderRadius.circular(22.r),
               ),
-              child: Icon(Icons.arrow_back_ios_new, color: btTextPrimary, size: 18.sp),
+              child: Icon(Icons.arrow_back_ios_new,
+                  color: btTextPrimary, size: 18.sp),
             ),
           ),
           SizedBox(width: 16.w),
@@ -437,14 +460,16 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
   }
 
   Widget _buildReviewContent() {
-    final recipients = transferData['recipients'] as List<BatchTransferRecipient>? ?? [];
+    final recipients =
+        transferData['recipients'] as List<BatchTransferRecipient>? ?? [];
     final totalAmount = recipients.fold<double>(
       0.0,
       (sum, recipient) => sum + (recipient.amount.toDouble() / 100),
     );
     final category = transferData['category'] as String?;
     final reference = transferData['batchReference'] as String?;
-    final selectedAccount = transferData['selectedAccount'] as AccountSummaryEntity?;
+    final selectedAccount =
+        transferData['selectedAccount'] as AccountSummaryEntity?;
 
     final fee = _totalFee;
     final grandTotal = totalAmount + (fee ?? 0.0);
@@ -460,8 +485,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
           if (selectedAccount != null)
             _buildSourceAccountCard(selectedAccount, grandTotal),
 
-          if (selectedAccount != null)
-            SizedBox(height: 20.h),
+          if (selectedAccount != null) SizedBox(height: 20.h),
 
           // Transaction summary card
           _buildTransactionSummaryCard(totalAmount, recipients.length),
@@ -474,10 +498,12 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
           SizedBox(height: 20.h),
 
           // Batch details card
-          if (reference != null && reference.isNotEmpty || category != null && category.isNotEmpty)
+          if (reference != null && reference.isNotEmpty ||
+              category != null && category.isNotEmpty)
             _buildBatchDetailsCard(reference, category),
 
-          if (reference != null && reference.isNotEmpty || category != null && category.isNotEmpty)
+          if (reference != null && reference.isNotEmpty ||
+              category != null && category.isNotEmpty)
             SizedBox(height: 20.h),
 
           // Recipients list card
@@ -587,7 +613,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
         children: [
           Row(
             children: [
-              Icon(Icons.account_balance_wallet_outlined, color: btTextSecondary, size: 16.sp),
+              Icon(Icons.account_balance_wallet_outlined,
+                  color: btTextSecondary, size: 16.sp),
               SizedBox(width: 8.w),
               Text(
                 'Sending From',
@@ -629,7 +656,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                   color: btBlue.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: Icon(Icons.account_balance_wallet, color: btBlue, size: 22.sp),
+                child: Icon(Icons.account_balance_wallet,
+                    color: btBlue, size: 22.sp),
               ),
               SizedBox(width: 12.w),
               Expanded(
@@ -660,7 +688,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                 children: [
                   Text(
                     'Balance',
-                    style: GoogleFonts.inter(color: btTextTertiary, fontSize: 11.sp),
+                    style: GoogleFonts.inter(
+                        color: btTextTertiary, fontSize: 11.sp),
                   ),
                   SizedBox(height: 2.h),
                   Text(
@@ -692,7 +721,10 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                   Expanded(
                     child: Text(
                       'Insufficient balance for this transfer',
-                      style: GoogleFonts.inter(color: btRed, fontSize: 12.sp, fontWeight: FontWeight.w500),
+                      style: GoogleFonts.inter(
+                          color: btRed,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w500),
                     ),
                   ),
                 ],
@@ -710,7 +742,9 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
       decoration: BoxDecoration(
         color: btCard,
         borderRadius: BorderRadius.circular(16.r),
-        border: _isScheduled ? Border.all(color: btOrange.withValues(alpha: 0.3)) : null,
+        border: _isScheduled
+            ? Border.all(color: btOrange.withValues(alpha: 0.3))
+            : null,
       ),
       child: Column(
         children: [
@@ -723,7 +757,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                   color: btOrange.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: Icon(Icons.schedule_outlined, color: btOrange, size: 20.sp),
+                child:
+                    Icon(Icons.schedule_outlined, color: btOrange, size: 20.sp),
               ),
               SizedBox(width: 12.w),
               Expanded(
@@ -739,7 +774,9 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                       ),
                     ),
                     Text(
-                      _isScheduled ? 'Transfer will be executed at scheduled time' : 'Send immediately or schedule for later',
+                      _isScheduled
+                          ? 'Transfer will be executed at scheduled time'
+                          : 'Send immediately or schedule for later',
                       style: GoogleFonts.inter(
                         color: btTextSecondary,
                         fontSize: 12.sp,
@@ -775,10 +812,11 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                 decoration: BoxDecoration(
                   color: btBackground,
                   borderRadius: BorderRadius.circular(12.r),
-                          ),
+                ),
                 child: Row(
                   children: [
-                    Icon(Icons.calendar_today_outlined, color: btOrange, size: 18.sp),
+                    Icon(Icons.calendar_today_outlined,
+                        color: btOrange, size: 18.sp),
                     SizedBox(width: 12.w),
                     Expanded(
                       child: Column(
@@ -786,7 +824,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                         children: [
                           if (_scheduledDate != null) ...[
                             Text(
-                              DateFormat('EEEE, MMMM dd, yyyy').format(_scheduledDate!),
+                              DateFormat('EEEE, MMMM dd, yyyy')
+                                  .format(_scheduledDate!),
                               style: GoogleFonts.inter(
                                 color: btTextPrimary,
                                 fontSize: 14.sp,
@@ -813,7 +852,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                         ],
                       ),
                     ),
-                    Icon(Icons.chevron_right, color: btTextTertiary, size: 20.sp),
+                    Icon(Icons.chevron_right,
+                        color: btTextTertiary, size: 20.sp),
                   ],
                 ),
               ),
@@ -850,7 +890,9 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _isScheduled ? 'Scheduled Batch Transfer' : 'Batch Transfer',
+                      _isScheduled
+                          ? 'Scheduled Batch Transfer'
+                          : 'Batch Transfer',
                       style: GoogleFonts.inter(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w600,
@@ -871,16 +913,14 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
               ),
             ],
           ),
-
           SizedBox(height: 20.h),
-
           Container(
             width: double.infinity,
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: btBackground,
               borderRadius: BorderRadius.circular(12.r),
-                  ),
+            ),
             child: Column(
               children: [
                 Text(
@@ -929,7 +969,10 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
           SizedBox(height: 16.h),
           if (reference != null && reference.isNotEmpty)
             _buildDetailRow('Reference', reference),
-          if (reference != null && reference.isNotEmpty && category != null && category.isNotEmpty)
+          if (reference != null &&
+              reference.isNotEmpty &&
+              category != null &&
+              category.isNotEmpty)
             SizedBox(height: 12.h),
           if (category != null && category.isNotEmpty)
             _buildDetailRow('Category', category),
@@ -976,7 +1019,9 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     final amount = recipient.amount.toDouble() / 100;
     final recipientId = recipient.toAccountNumber;
     final recipientName = recipient.isExternal
-        ? (recipient.beneficiaryName ?? recipientNames[recipientId] ?? 'Recipient ${index + 1}')
+        ? (recipient.beneficiaryName ??
+            recipientNames[recipientId] ??
+            'Recipient ${index + 1}')
         : (recipientNames[recipientId] ?? 'Recipient ${index + 1}');
     final isExternal = recipient.isExternal;
 
@@ -1030,7 +1075,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                     ),
                     SizedBox(width: 6.w),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                       decoration: BoxDecoration(
                         color: isExternal
                             ? btOrange.withValues(alpha: 0.15)
@@ -1052,7 +1098,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                 Text(
                   isExternal
                       ? '${recipient.destinationBankName ?? ''} \u2022 ${recipient.toAccountNumber}'
-                      : (recipient.reference != null && recipient.reference!.isNotEmpty
+                      : (recipient.reference != null &&
+                              recipient.reference!.isNotEmpty
                           ? recipient.reference!
                           : '@${recipient.toAccountNumber}'),
                   style: GoogleFonts.inter(
@@ -1079,7 +1126,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     );
   }
 
-  Widget _buildPaymentBreakdownCard(double totalAmount, double? fee, double grandTotal) {
+  Widget _buildPaymentBreakdownCard(
+      double totalAmount, double? fee, double grandTotal) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -1117,21 +1165,23 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
             _buildBreakdownRowText(
               '',
               '${_feeByRecipient.length} bank ${_feeByRecipient.length == 1 ? 'payout' : 'payouts'}'
-              '${_feeByRecipient.length > 1 ? ' · charged per payout' : ''}',
+                  '${_feeByRecipient.length > 1 ? ' · charged per payout' : ''}',
               valueColor: btTextSecondary,
             ),
           ],
           // Never let a partial sum masquerade as the whole fee.
           if (_feeQuotesIncomplete) ...[
             SizedBox(height: 4.h),
-            _buildBreakdownRowText('', 'Some fees unavailable — final amount at receipt',
+            _buildBreakdownRowText(
+                '', 'Some fees unavailable — final amount at receipt',
                 valueColor: btOrange),
           ],
           if (_isScheduled && _scheduledDateTime != null) ...[
             SizedBox(height: 8.h),
             _buildBreakdownRowText(
               'Scheduled For',
-              DateFormat('MMM dd, yyyy \u2022 HH:mm').format(_scheduledDateTime!),
+              DateFormat('MMM dd, yyyy \u2022 HH:mm')
+                  .format(_scheduledDateTime!),
               valueColor: btOrange,
             ),
           ],
@@ -1174,7 +1224,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     );
   }
 
-  Widget _buildBreakdownRow(String label, double amount, {bool isTotal = false}) {
+  Widget _buildBreakdownRow(String label, double amount,
+      {bool isTotal = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -1187,10 +1238,14 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
           ),
         ),
         Text(
-          amount == 0 && !isTotal ? 'Free' : '$_currencySymbol${amount.toStringAsFixed(2)}',
+          amount == 0 && !isTotal
+              ? 'Free'
+              : '$_currencySymbol${amount.toStringAsFixed(2)}',
           style: GoogleFonts.inter(
             fontSize: isTotal ? 16.sp : 14.sp,
-            color: amount == 0 && !isTotal ? btGreen : (isTotal ? btGreen : btTextPrimary),
+            color: amount == 0 && !isTotal
+                ? btGreen
+                : (isTotal ? btGreen : btTextPrimary),
             fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
           ),
         ),
@@ -1198,7 +1253,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     );
   }
 
-  Widget _buildBreakdownRowText(String label, String value, {Color? valueColor}) {
+  Widget _buildBreakdownRowText(String label, String value,
+      {Color? valueColor}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -1292,9 +1348,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                                     size: 16.sp),
                                 SizedBox(width: 8.w),
                                 Text(
-                                  _isScheduled
-                                      ? 'Schedule'
-                                      : 'Confirm',
+                                  _isScheduled ? 'Schedule' : 'Confirm',
                                   style: GoogleFonts.inter(
                                       fontSize: 14.sp,
                                       fontWeight: FontWeight.w600),
@@ -1339,15 +1393,13 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
           children: [
             Text(
               'Saved batches are templates you can re-execute or edit later. No money moves until you tap Send on the saved batch.',
-              style:
-                  GoogleFonts.inter(color: btTextSecondary, fontSize: 12.sp),
+              style: GoogleFonts.inter(color: btTextSecondary, fontSize: 12.sp),
             ),
             SizedBox(height: 12.h),
             TextField(
               controller: controller,
               autofocus: true,
-              style: GoogleFonts.inter(
-                  color: btTextPrimary, fontSize: 14.sp),
+              style: GoogleFonts.inter(color: btTextPrimary, fontSize: 14.sp),
               decoration: InputDecoration(
                 hintText: 'Batch name',
                 hintStyle: GoogleFonts.inter(color: btTextTertiary),
@@ -1370,8 +1422,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
               child: Text('Cancel',
                   style: GoogleFonts.inter(color: btTextSecondary))),
           TextButton(
-              onPressed: () =>
-                  Navigator.of(ctx).pop(controller.text.trim()),
+              onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
               child: Text('Save', style: GoogleFonts.inter(color: btBlue))),
         ],
       ),

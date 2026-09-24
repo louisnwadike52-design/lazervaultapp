@@ -45,8 +45,7 @@ class AutoSaveSortDropdown extends StatelessWidget {
         child: DropdownButton<RuleSortOption>(
           value: selectedOption,
           dropdownColor: const Color(0xFF1F1F1F),
-          icon:
-              Icon(Icons.arrow_drop_down, color: Colors.white, size: 20.sp),
+          icon: Icon(Icons.arrow_drop_down, color: Colors.white, size: 20.sp),
           style: TextStyle(color: Colors.white, fontSize: 12.sp),
           items: RuleSortOption.values.map((option) {
             return DropdownMenuItem<RuleSortOption>(

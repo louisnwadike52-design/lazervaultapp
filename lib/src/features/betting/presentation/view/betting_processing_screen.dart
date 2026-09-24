@@ -30,8 +30,8 @@ class _BettingProcessingScreenState extends State<BettingProcessingScreen>
   /// Failure "Back" returns to the Bills Hub landing the service was launched
   /// from, preserving the carousel / active account / locale that sit below it.
   void _exitToBillsHub() {
-    Get.until((route) =>
-        route.settings.name == AppRoutes.billsHub || route.isFirst);
+    Get.until(
+        (route) => route.settings.name == AppRoutes.billsHub || route.isFirst);
   }
 
   late AnimationController _pulse;
@@ -50,9 +50,9 @@ class _BettingProcessingScreenState extends State<BettingProcessingScreen>
         Icons.receipt_long),
     _Step('Confirming Details', 'Validating payment and account',
         Icons.verified_user),
-    _Step('Funding Account', 'Sending funds to your betting wallet', Icons.sync),
-    _Step('Wallet Funded', 'Your betting wallet is funded',
-        Icons.check_circle),
+    _Step(
+        'Funding Account', 'Sending funds to your betting wallet', Icons.sync),
+    _Step('Wallet Funded', 'Your betting wallet is funded', Icons.check_circle),
   ];
 
   @override
@@ -289,9 +289,8 @@ class _BettingProcessingScreenState extends State<BettingProcessingScreen>
                 child: Container(
                   width: 2,
                   height: 22.h,
-                  color: isCompleted
-                      ? _primary.withValues(alpha: 0.4)
-                      : _divider,
+                  color:
+                      isCompleted ? _primary.withValues(alpha: 0.4) : _divider,
                 ),
               ),
           ],

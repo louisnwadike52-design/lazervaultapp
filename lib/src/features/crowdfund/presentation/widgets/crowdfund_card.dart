@@ -8,6 +8,7 @@ class CrowdfundCard extends StatelessWidget {
   final Crowdfund crowdfund;
   final VoidCallback? onTap;
   final VoidCallback? onCreatorTap;
+
   /// Set when the authenticated user is the campaign creator. Drives
   /// a "Yours" badge on the card so the user can spot their own
   /// campaigns in the global Browse All feed at a glance.
@@ -77,14 +78,18 @@ class CrowdfundCard extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 14.r,
-                      backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                      backgroundColor:
+                          const Color(0xFF4E03D0).withValues(alpha: 0.2),
                       backgroundImage: crowdfund.creator.profilePicture != null
                           ? NetworkImage(crowdfund.creator.profilePicture!)
                           : null,
                       child: crowdfund.creator.profilePicture == null
                           ? Text(
                               crowdfund.creator.initials,
-                              style: TextStyle(color: PayFlowTheme.accentOnDark, fontSize: 10.sp, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                  color: PayFlowTheme.accentOnDark,
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.bold),
                             )
                           : null,
                     ),
@@ -94,8 +99,10 @@ class CrowdfundCard extends StatelessWidget {
                         right: 0,
                         child: Container(
                           padding: EdgeInsets.all(1.w),
-                          decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle),
-                          child: Icon(Icons.verified, color: Colors.white, size: 8.sp),
+                          decoration: const BoxDecoration(
+                              color: Color(0xFF10B981), shape: BoxShape.circle),
+                          child: Icon(Icons.verified,
+                              color: Colors.white, size: 8.sp),
                         ),
                       ),
                   ],
@@ -107,14 +114,18 @@ class CrowdfundCard extends StatelessWidget {
                     children: [
                       Text(
                         crowdfund.title,
-                        style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.bold),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       SizedBox(height: 2.h),
                       Text(
                         '${crowdfund.creator.firstName} ${crowdfund.creator.lastName}',
-                        style: TextStyle(color: Colors.grey[500], fontSize: 11.sp),
+                        style:
+                            TextStyle(color: Colors.grey[500], fontSize: 11.sp),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
@@ -126,7 +137,8 @@ class CrowdfundCard extends StatelessWidget {
             // Description (1 line)
             Text(
               crowdfund.description,
-              style: TextStyle(color: Colors.grey[400], fontSize: 12.sp, height: 1.3),
+              style: TextStyle(
+                  color: Colors.grey[400], fontSize: 12.sp, height: 1.3),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -142,13 +154,19 @@ class CrowdfundCard extends StatelessWidget {
                   ),
                   child: Text(
                     crowdfund.category,
-                    style: TextStyle(color: PayFlowTheme.accentOnDark, fontSize: 10.sp, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                        color: PayFlowTheme.accentOnDark,
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.w600),
                   ),
                 ),
                 const Spacer(),
                 Text(
                   '${crowdfund.currency} ${crowdfund.currentAmount.toStringAsFixed(0)}',
-                  style: TextStyle(color: PayFlowTheme.accentOnDark, fontSize: 14.sp, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: PayFlowTheme.accentOnDark,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.bold),
                 ),
                 Text(
                   ' / ${crowdfund.targetAmount.toStringAsFixed(0)}',
@@ -157,7 +175,8 @@ class CrowdfundCard extends StatelessWidget {
               ],
             ),
             SizedBox(height: 6.h),
-            CrowdfundProgressIndicator(progressPercentage: crowdfund.progressPercentage),
+            CrowdfundProgressIndicator(
+                progressPercentage: crowdfund.progressPercentage),
             SizedBox(height: 6.h),
             // Footer
             Row(
@@ -169,7 +188,8 @@ class CrowdfundCard extends StatelessWidget {
                     SizedBox(width: 3.w),
                     Text(
                       '${crowdfund.donorCount} ${crowdfund.donorCount == 1 ? 'donor' : 'donors'}',
-                      style: TextStyle(color: Colors.grey[400], fontSize: 11.sp),
+                      style:
+                          TextStyle(color: Colors.grey[400], fontSize: 11.sp),
                     ),
                   ],
                 ),
@@ -178,7 +198,9 @@ class CrowdfundCard extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.access_time,
-                        color: crowdfund.daysRemaining < 7 ? const Color(0xFFF59E0B) : Colors.grey[500],
+                        color: crowdfund.daysRemaining < 7
+                            ? const Color(0xFFF59E0B)
+                            : Colors.grey[500],
                         size: 14.sp,
                       ),
                       SizedBox(width: 3.w),
@@ -187,9 +209,13 @@ class CrowdfundCard extends StatelessWidget {
                             ? 'Expired'
                             : '${crowdfund.daysRemaining} ${crowdfund.daysRemaining == 1 ? 'day' : 'days'} left',
                         style: TextStyle(
-                          color: crowdfund.daysRemaining < 7 ? const Color(0xFFF59E0B) : Colors.grey[400],
+                          color: crowdfund.daysRemaining < 7
+                              ? const Color(0xFFF59E0B)
+                              : Colors.grey[400],
                           fontSize: 11.sp,
-                          fontWeight: crowdfund.daysRemaining < 7 ? FontWeight.w600 : FontWeight.w400,
+                          fontWeight: crowdfund.daysRemaining < 7
+                              ? FontWeight.w600
+                              : FontWeight.w400,
                         ),
                       ),
                     ],
@@ -258,7 +284,11 @@ class CrowdfundCard extends StatelessWidget {
         children: [
           Icon(icon, color: textColor, size: 12.sp),
           SizedBox(width: 3.w),
-          Text(statusText, style: TextStyle(color: textColor, fontSize: 11.sp, fontWeight: FontWeight.w600)),
+          Text(statusText,
+              style: TextStyle(
+                  color: textColor,
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w600)),
         ],
       ),
     );

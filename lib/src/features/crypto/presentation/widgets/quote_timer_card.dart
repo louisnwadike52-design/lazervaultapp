@@ -66,7 +66,9 @@ class _QuoteTimerCardState extends State<QuoteTimerCard> {
       final state = context.read<CryptoCubit>().state;
       if (state is! SwapQuotePending) return;
       final remaining = state.expiresAt.difference(DateTime.now().toUtc());
-      if (remaining.inMilliseconds <= (widget.refreshGraceSeconds * 1000).toInt() && !_refreshFired) {
+      if (remaining.inMilliseconds <=
+              (widget.refreshGraceSeconds * 1000).toInt() &&
+          !_refreshFired) {
         _refreshFired = true;
         context.read<CryptoCubit>().refreshSwapQuote();
       }
@@ -181,7 +183,9 @@ class _QuoteTimerCardState extends State<QuoteTimerCard> {
                                   setState(() => _submitting = true);
                                   widget.onConfirm!();
                                 } else {
-                                  context.read<CryptoCubit>().confirmSwapQuote();
+                                  context
+                                      .read<CryptoCubit>()
+                                      .confirmSwapQuote();
                                 }
                               },
                         style: ElevatedButton.styleFrom(
@@ -198,7 +202,8 @@ class _QuoteTimerCardState extends State<QuoteTimerCard> {
                   secondsLeft <= 0
                       ? 'Quote expired. Refreshing...'
                       : 'Rate locked for ${secondsLeft.toStringAsFixed(1)}s',
-                  style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+                  style:
+                      const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
                 ),
               ],
             ),
@@ -237,7 +242,6 @@ class _QuoteTimerCardState extends State<QuoteTimerCard> {
         ? s.replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '')
         : s;
   }
-
 
   Widget _buildSummaryRow(String label, String value) {
     return Padding(

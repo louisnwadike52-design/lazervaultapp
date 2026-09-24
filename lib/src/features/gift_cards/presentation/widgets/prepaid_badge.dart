@@ -16,8 +16,15 @@ import 'package:google_fonts/google_fonts.dart';
 bool isPrepaidGiftCard(String brandName, {String category = ''}) {
   final haystack = '$brandName $category'.toLowerCase();
   if (!haystack.contains('prepaid')) return false;
-  const networks = ['visa', 'mastercard', 'master card', 'amex',
-      'american express', 'discover', 'maestro'];
+  const networks = [
+    'visa',
+    'mastercard',
+    'master card',
+    'amex',
+    'american express',
+    'discover',
+    'maestro'
+  ];
   return networks.any(haystack.contains);
 }
 

@@ -73,7 +73,8 @@ class P2PConversationsCubit extends Cubit<P2PConversationsState> {
     } catch (_) {}
     _msgSub = ws.messageStream.listen((m) {
       if (m.senderId == _currentUserId) return; // my own echo
-      if (m.conversationId == _openConversationId) return; // open chat handles it
+      if (m.conversationId == _openConversationId)
+        return; // open chat handles it
       _bumpBadge(m.conversationId);
     });
     // A newly accepted/created connection should refresh the requests badge.
@@ -304,8 +305,8 @@ class P2PConversationsCubit extends Cubit<P2PConversationsState> {
         return c;
       }).toList();
       // Drop pending entries that are no longer unread server-side (reconciled).
-      _pendingReads.removeWhere((id) =>
-          !convos.any((c) => c.id == id && c.unreadCount > 0));
+      _pendingReads.removeWhere(
+          (id) => !convos.any((c) => c.id == id && c.unreadCount > 0));
     }
 
     _safeEmit(P2PConversationsLoaded(
@@ -414,7 +415,9 @@ class P2PConversationsCubit extends Cubit<P2PConversationsState> {
     } catch (e) {
       if (previousState is P2PConversationsLoaded) _safeEmit(previousState);
       _safeEmit(P2PConversationsError(
-          message: archived ? 'Failed to archive chat' : 'Failed to unarchive chat'));
+          message: archived
+              ? 'Failed to archive chat'
+              : 'Failed to unarchive chat'));
     }
   }
 
@@ -424,8 +427,8 @@ class P2PConversationsCubit extends Cubit<P2PConversationsState> {
   Future<void> deleteConversationForMe(String conversationId) async {
     final previousState = state;
     if (previousState is P2PConversationsLoaded) {
-      final idx = previousState.conversations
-          .indexWhere((c) => c.id == conversationId);
+      final idx =
+          previousState.conversations.indexWhere((c) => c.id == conversationId);
       final removedUnread =
           idx >= 0 ? previousState.conversations[idx].unreadCount : 0;
       final remaining = previousState.conversations

@@ -20,7 +20,8 @@ class SocialLinkingGrpcDataSource {
     try {
       final request = auth_pb.GetLinkedSocialAccountsRequest();
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.getLinkedSocialAccounts(
           request,
@@ -66,7 +67,8 @@ class SocialLinkingGrpcDataSource {
         setAsPrimary: setAsPrimary,
       );
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.linkSocialAccount(
           request,
@@ -100,7 +102,8 @@ class SocialLinkingGrpcDataSource {
         accountId: accountId,
       );
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.unlinkSocialAccount(
           request,
@@ -132,7 +135,8 @@ class SocialLinkingGrpcDataSource {
         accountId: accountId,
       );
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.setPrimarySocialAccount(
           request,
@@ -168,7 +172,8 @@ class SocialLinkingGrpcDataSource {
         providerToken: providerToken,
       );
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.reauthorizeSocialAccount(
           request,
@@ -194,13 +199,15 @@ class SocialLinkingGrpcDataSource {
   }
 
   /// Map proto LinkedSocialAccount to domain entity
-  LinkedSocialAccountEntity _mapProtoToEntity(auth_pb.LinkedSocialAccount proto) {
+  LinkedSocialAccountEntity _mapProtoToEntity(
+      auth_pb.LinkedSocialAccount proto) {
     return LinkedSocialAccountEntity(
       id: proto.id,
       userId: proto.userId,
       provider: SocialProvider.fromString(proto.provider),
       providerUserId: proto.providerUserId,
-      providerEmail: proto.providerEmail.isNotEmpty ? proto.providerEmail : null,
+      providerEmail:
+          proto.providerEmail.isNotEmpty ? proto.providerEmail : null,
       displayName: proto.displayName.isNotEmpty ? proto.displayName : null,
       profilePictureUrl:
           proto.profilePictureUrl.isNotEmpty ? proto.profilePictureUrl : null,

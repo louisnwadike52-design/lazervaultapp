@@ -342,7 +342,8 @@ class CardRemoteDataSourceImpl implements ICardRemoteDataSource {
         ..newLimit = newLimit;
 
       final callOptions = await grpcClient.callOptions;
-      final response = await grpcClient.accountCardClient.updateCardSpendingLimit(
+      final response =
+          await grpcClient.accountCardClient.updateCardSpendingLimit(
         request,
         options: callOptions,
       );

@@ -13,7 +13,6 @@ import 'package:lazervault/src/features/recipients/data/datasources/bank_scan_da
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'scan_bank_details_modal_widgets.dart';
 
-
 // Shared surface tokens — kept in lockstep with SendFundsAmountSheet so the
 // scan sheet and the amount sheet it hands off to read as one flow.
 const Color _purple = Color.fromARGB(255, 78, 3, 208);
@@ -101,7 +100,9 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
   Future<void> _bootstrap() async {
     try {
       await serviceLocator<BankRepository>().warmUp(widget.country);
-    } catch (_) {/* offline — the synchronous cache / manual pick still works */}
+    } catch (_) {
+      /* offline — the synchronous cache / manual pick still works */
+    }
     if (!mounted) return;
     // Now the bank list is warm, resolve the code from the scanned name so the
     // Verify CTA enables without the user re-picking the bank.
@@ -140,7 +141,8 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
   /// even though a bank is clearly displayed. This normalises both sides (alias
   /// expansion + noise-word stripping) and scores candidates so the closest
   /// match wins.
-  Map<String, String>? _matchBank(String scanned, List<Map<String, String>> banks) {
+  Map<String, String>? _matchBank(
+      String scanned, List<Map<String, String>> banks) {
     if (banks.isEmpty) return null;
     final target = _canonicalBank(scanned);
     if (target.isEmpty) return null;
@@ -204,8 +206,19 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
         .map((t) => alias[t] ?? t)
         .join(' ');
     const noise = {
-      'bank', 'plc', 'limited', 'ltd', 'nigeria', 'ng', 'microfinance',
-      'mfb', 'the', 'of', 'and', 'company', 'co',
+      'bank',
+      'plc',
+      'limited',
+      'ltd',
+      'nigeria',
+      'ng',
+      'microfinance',
+      'mfb',
+      'the',
+      'of',
+      'and',
+      'company',
+      'co',
     };
     return expanded
         .split(RegExp(r'\s+'))
@@ -251,13 +264,13 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
     // verify" report). Mirrors SendFundsAmountSheet's layout.
     final media = MediaQuery.of(context);
     final bottomInset = media.viewInsets.bottom;
-    final available = media.size.height - media.padding.top - bottomInset - 24.h;
+    final available =
+        media.size.height - media.padding.top - bottomInset - 24.h;
     final cap = media.size.height * 0.85;
     // Guard the pathological case (an enormous keyboard on a tiny viewport) so
     // the constraint can never go non-positive and assert.
-    final maxSheetHeight = available <= 0
-        ? cap
-        : (available < cap ? available : cap);
+    final maxSheetHeight =
+        available <= 0 ? cap : (available < cap ? available : cap);
 
     Widget content = GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -265,34 +278,34 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
       child: Padding(
         padding: EdgeInsets.only(bottom: bottomInset),
         child: Container(
-        constraints: BoxConstraints(
-          maxHeight: maxSheetHeight,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(24.w),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHandle(),
-              SizedBox(height: 16.h),
-              _buildHeader(),
-              SizedBox(height: 24.h),
-              Flexible(
-                child: SingleChildScrollView(
-                  child: _buildBody(),
-                ),
-              ),
-              SizedBox(height: 16.h),
-              _buildActions(),
-              SizedBox(height: media.padding.bottom + 8.h),
-            ],
+          constraints: BoxConstraints(
+            maxHeight: maxSheetHeight,
           ),
-        ),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(24.w),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHandle(),
+                SizedBox(height: 16.h),
+                _buildHeader(),
+                SizedBox(height: 24.h),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: _buildBody(),
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                _buildActions(),
+                SizedBox(height: media.padding.bottom + 8.h),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -325,7 +338,8 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
           GestureDetector(
             onTap: () => Navigator.of(context).pop(),
             behavior: HitTestBehavior.opaque,
-            child: Icon(Icons.close_rounded, size: 22.sp, color: _textSecondary),
+            child:
+                Icon(Icons.close_rounded, size: 22.sp, color: _textSecondary),
           ),
         ],
       );
@@ -335,40 +349,41 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
   Widget _buildHeader() {
     final (icon, title, subtitle) = switch (_effectiveType) {
       'bank_details' => (
-        Icons.account_balance_outlined,
-        'Bank Details Found',
-        'Review and verify the extracted details',
-      ),
+          Icons.account_balance_outlined,
+          'Bank Details Found',
+          'Review and verify the extracted details',
+        ),
       'resolved_user' => (
-        Icons.verified_user_outlined,
-        'Lazervault User',
-        'Send instantly — free internal transfer',
-      ),
+          Icons.verified_user_outlined,
+          'Lazervault User',
+          'Send instantly — free internal transfer',
+        ),
       'internal_user' => (
-        Icons.person_outline,
-        'Lazervault User Found',
-        'We detected a Lazervault username',
-      ),
+          Icons.person_outline,
+          'Lazervault User Found',
+          'We detected a Lazervault username',
+        ),
       'phone_number' => (
-        Icons.phone_outlined,
-        'Phone Number Found',
-        'We detected a phone number',
-      ),
+          Icons.phone_outlined,
+          'Phone Number Found',
+          'We detected a phone number',
+        ),
       'email' => (
-        Icons.email_outlined,
-        'Email Found',
-        'We detected an email address',
-      ),
+          Icons.email_outlined,
+          'Email Found',
+          'We detected an email address',
+        ),
       'ambiguous' => (
-        Icons.help_outline,
-        'What Did We Find?',
-        widget.scanResult.disambiguationHint ?? 'Please help us identify this',
-      ),
+          Icons.help_outline,
+          'What Did We Find?',
+          widget.scanResult.disambiguationHint ??
+              'Please help us identify this',
+        ),
       _ => (
-        Icons.image_not_supported_outlined,
-        'No Details Found',
-        'Could not find payment details in this image',
-      ),
+          Icons.image_not_supported_outlined,
+          'No Details Found',
+          'Could not find payment details in this image',
+        ),
     };
 
     return Row(
@@ -629,7 +644,8 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
             ),
             child: Row(
               children: [
-                Icon(Icons.person_outline, color: Colors.grey[600], size: 20.sp),
+                Icon(Icons.person_outline,
+                    color: Colors.grey[600], size: 20.sp),
                 SizedBox(width: 12.w),
                 Expanded(
                   child: Text(
@@ -770,7 +786,8 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
               if (carrier != null && carrier.isNotEmpty) ...[
                 SizedBox(height: 8.h),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: Colors.grey[100],
                     borderRadius: BorderRadius.circular(12.r),
@@ -800,7 +817,8 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
             ),
             child: Row(
               children: [
-                Icon(Icons.info_outline, color: Colors.orange[700], size: 18.sp),
+                Icon(Icons.info_outline,
+                    color: Colors.orange[700], size: 18.sp),
                 SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
@@ -895,11 +913,9 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
               if (existing.isEmpty) {
                 // Try phone number as fallback
                 final phone = widget.scanResult.phoneNumber ?? '';
-                final local = phone.startsWith('234')
-                    ? '0${phone.substring(3)}'
-                    : phone;
-                if (local.length == 10 &&
-                    RegExp(r'^\d+$').hasMatch(local)) {
+                final local =
+                    phone.startsWith('234') ? '0${phone.substring(3)}' : phone;
+                if (local.length == 10 && RegExp(r'^\d+$').hasMatch(local)) {
                   _accountNumberController.text = local;
                 }
               }
@@ -1120,10 +1136,14 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
                     children: [
                       LazerVaultLoader.small(),
                       SizedBox(width: 12.w),
-                      Text('Verifying...', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
+                      Text('Verifying...',
+                          style: TextStyle(
+                              fontSize: 16.sp, fontWeight: FontWeight.w600)),
                     ],
                   )
-                : Text('Verify Account', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
+                : Text('Verify Account',
+                    style: TextStyle(
+                        fontSize: 16.sp, fontWeight: FontWeight.w600)),
           ),
         ),
       ],
@@ -1156,7 +1176,8 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
                   }
                 : null,
             icon: const Icon(Icons.search),
-            label: Text('Search User', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
+            label: Text('Search User',
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
             style: ElevatedButton.styleFrom(
               backgroundColor: _purple,
               foregroundColor: Colors.white,
@@ -1187,7 +1208,8 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
                 borderRadius: BorderRadius.circular(12.r),
               ),
             ),
-            child: Text('Scan Again', style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600)),
+            child: Text('Scan Again',
+                style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600)),
           ),
         ),
       ],
@@ -1221,7 +1243,8 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
                   }
                 : null,
             icon: const Icon(Icons.send),
-            label: Text('Send via Phone Transfer', style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600)),
+            label: Text('Send via Phone Transfer',
+                style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600)),
             style: ElevatedButton.styleFrom(
               backgroundColor: _purple,
               foregroundColor: Colors.white,
@@ -1260,7 +1283,8 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
               onPressed: () => _useAsBankAccount(),
               icon: const Icon(Icons.account_balance_outlined),
               label: Text('Use as bank account (pick bank)',
-                  style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                  style:
+                      TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600)),
               style: OutlinedButton.styleFrom(
                 foregroundColor: _purple,
                 side: BorderSide(color: _purple),
@@ -1291,7 +1315,9 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
                   borderRadius: BorderRadius.circular(12.r),
                 ),
               ),
-              child: Text('Scan Again', style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600)),
+              child: Text('Scan Again',
+                  style:
+                      TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600)),
             ),
           ),
         ],
@@ -1406,10 +1432,12 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
       return;
     }
     if (_selectedBankCode == null) {
-      setState(() => _validationHint = "Select the recipient's bank to continue");
+      setState(
+          () => _validationHint = "Select the recipient's bank to continue");
       // Open the picker immediately so the guidance is one tap from resolved
       // (the common OCR case: account read cleanly, bank logo/name didn't).
-      _showBankPicker(serviceLocator<BankRepository>().cachedSync(widget.country));
+      _showBankPicker(
+          serviceLocator<BankRepository>().cachedSync(widget.country));
       return;
     }
     if (!_hasVerificationCubit) {
@@ -1521,11 +1549,17 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            BankLogo(bankName: bankName, country: widget.country, size: 20, borderRadius: 5),
+            BankLogo(
+                bankName: bankName,
+                country: widget.country,
+                size: 20,
+                borderRadius: 5),
             SizedBox(width: 8.w),
             Text(bankName,
                 style: TextStyle(
-                    color: _purple, fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                    color: _purple,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600)),
           ],
         ),
       ),
@@ -1557,11 +1591,17 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            BankLogo(bankName: bankName, country: widget.country, size: 18, borderRadius: 4),
+            BankLogo(
+                bankName: bankName,
+                country: widget.country,
+                size: 18,
+                borderRadius: 4),
             SizedBox(width: 6.w),
             Text(bankName,
                 style: TextStyle(
-                    color: _purple, fontSize: 12.5.sp, fontWeight: FontWeight.w600)),
+                    color: _purple,
+                    fontSize: 12.5.sp,
+                    fontWeight: FontWeight.w600)),
           ],
         ),
       ),
@@ -1582,7 +1622,8 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
       ),
       child: Row(
         children: [
-          Icon(Icons.arrow_upward_rounded, color: Colors.orange[800], size: 18.sp),
+          Icon(Icons.arrow_upward_rounded,
+              color: Colors.orange[800], size: 18.sp),
           SizedBox(width: 8.w),
           Expanded(
             child: Text(
@@ -1853,7 +1894,8 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_off_outlined, color: Colors.grey[400], size: 40.sp),
+            Icon(Icons.cloud_off_outlined,
+                color: Colors.grey[400], size: 40.sp),
             SizedBox(height: 12.h),
             Text(
               "Couldn't load the bank list",

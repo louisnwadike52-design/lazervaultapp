@@ -36,7 +36,9 @@ class NetworkProviderModel extends NetworkProvider {
       minAmount: provider.minAmount,
       maxAmount: provider.maxAmount,
       operatorId: provider.operatorId.isNotEmpty ? provider.operatorId : null,
-      reloadlyOperatorId: provider.reloadlyOperatorId.isNotEmpty ? provider.reloadlyOperatorId : null,
+      reloadlyOperatorId: provider.reloadlyOperatorId.isNotEmpty
+          ? provider.reloadlyOperatorId
+          : null,
     );
   }
 
@@ -159,4 +161,4 @@ class NetworkProviderModel extends NetworkProvider {
       reloadlyOperatorId: reloadlyOperatorId ?? this.reloadlyOperatorId,
     );
   }
-} 
+}

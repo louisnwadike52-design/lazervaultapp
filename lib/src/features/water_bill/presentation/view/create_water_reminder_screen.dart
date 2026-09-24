@@ -222,8 +222,8 @@ class _CreateWaterReminderScreenState extends State<CreateWaterReminderScreen> {
                 InkWell(
                   onTap: _pickDate,
                   child: Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 16.w, vertical: 14.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFF0A0A0A),
                       borderRadius: BorderRadius.circular(12.r),
@@ -265,8 +265,7 @@ class _CreateWaterReminderScreenState extends State<CreateWaterReminderScreen> {
                   activeThumbColor: const Color(0xFFFB923C),
                   contentPadding: EdgeInsets.zero,
                   title: Text('Recurring',
-                      style: TextStyle(
-                          color: Colors.white, fontSize: 14.sp)),
+                      style: TextStyle(color: Colors.white, fontSize: 14.sp)),
                   subtitle: Text('Repeat this reminder',
                       style: TextStyle(
                           color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
@@ -301,8 +300,7 @@ class _CreateWaterReminderScreenState extends State<CreateWaterReminderScreen> {
                         : Text(
                             _isEditing ? 'Update Reminder' : 'Create Reminder',
                             style: TextStyle(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w600)),
+                                fontSize: 16.sp, fontWeight: FontWeight.w600)),
                   ),
                 ),
                 SizedBox(height: 24.h),
@@ -335,8 +333,7 @@ class _CreateWaterReminderScreenState extends State<CreateWaterReminderScreen> {
       style: TextStyle(color: Colors.white, fontSize: 15.sp),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(
-            color: const Color(0xFF4B5563), fontSize: 15.sp),
+        hintStyle: TextStyle(color: const Color(0xFF4B5563), fontSize: 15.sp),
         filled: true,
         fillColor: const Color(0xFF0A0A0A),
         border: OutlineInputBorder(
@@ -351,8 +348,7 @@ class _CreateWaterReminderScreenState extends State<CreateWaterReminderScreen> {
           borderRadius: BorderRadius.circular(12.r),
           borderSide: const BorderSide(color: Color(0xFFFB923C)),
         ),
-        contentPadding:
-            EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       ),
     );
   }
@@ -363,7 +359,8 @@ class _CreateWaterReminderScreenState extends State<CreateWaterReminderScreen> {
       listener: (context, state) {
         // Resolve the deferred edit-mode pre-fill from initState as soon
         // as the saved accounts list lands (mirrors CreateDataReminderScreen).
-        if (_pendingBeneficiaryId != null && state is WaterBeneficiariesLoaded) {
+        if (_pendingBeneficiaryId != null &&
+            state is WaterBeneficiariesLoaded) {
           final id = _pendingBeneficiaryId!;
           final match = state.beneficiaries
               .where((b) => b.id == id)
@@ -390,8 +387,8 @@ class _CreateWaterReminderScreenState extends State<CreateWaterReminderScreen> {
               border: Border.all(color: const Color(0xFF2D2D2D)),
             ),
             child: Text('Loading accounts…',
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
           );
         }
         final list = state.beneficiaries;
@@ -404,8 +401,8 @@ class _CreateWaterReminderScreenState extends State<CreateWaterReminderScreen> {
               border: Border.all(color: const Color(0xFF2D2D2D)),
             ),
             child: Text('No saved accounts (reminder will still be created)',
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
           );
         }
         return Container(
@@ -460,9 +457,8 @@ class _CreateWaterReminderScreenState extends State<CreateWaterReminderScreen> {
           color: selected ? const Color(0xFFFB923C) : const Color(0xFF0A0A0A),
           borderRadius: BorderRadius.circular(8.r),
           border: Border.all(
-              color: selected
-                  ? const Color(0xFFFB923C)
-                  : const Color(0xFF2D2D2D)),
+              color:
+                  selected ? const Color(0xFFFB923C) : const Color(0xFF2D2D2D)),
         ),
         child: Text(label,
             style: TextStyle(

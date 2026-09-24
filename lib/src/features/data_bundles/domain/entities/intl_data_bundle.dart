@@ -12,6 +12,7 @@ class IntlDataBundle extends Equatable {
   final String description; // "1GB 30 Days" style label
   final String destCurrencyCode;
   final String senderCurrencyCode;
+
   /// Live Reloadly FX rate snapshotted when the bundles were listed:
   /// multiplying [localAmount] by this yields what the user's wallet
   /// will be debited in the active locale currency. Zero when Reloadly

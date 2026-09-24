@@ -216,7 +216,8 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
           child: _buildActions(),
         ),
       ),
-      body: GiftCardBackground(child: BlocListener<GiftCardCubit, GiftCardState>(
+      body: GiftCardBackground(
+          child: BlocListener<GiftCardCubit, GiftCardState>(
         listenWhen: (_, current) =>
             current is GiftCardPurchaseCompleted ||
             current is GiftCardDetailsLoaded ||
@@ -234,9 +235,8 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
           setState(() => _liveCard = fresh);
         },
         child: RefreshIndicator(
-          onRefresh: () => context
-              .read<GiftCardCubit>()
-              .refreshGiftCardDetails(giftCard.id),
+          onRefresh: () =>
+              context.read<GiftCardCubit>().refreshGiftCardDetails(giftCard.id),
           color: const Color(0xFF7C3AED),
           backgroundColor: const Color(0xFF1F1F1F),
           child: SingleChildScrollView(
@@ -247,75 +247,74 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             // BillReceiptQrBlock breathing room above the pinned actions.
             padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 12.h),
             child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _buildSuccessIcon(),
-            SizedBox(height: 8.h),
-            Text(
-              _heroTitle(),
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            SizedBox(height: 2.h),
-            Text(
-              _statusMessage(),
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF),
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-            if (_isPrepaid) ...[
-              SizedBox(height: 8.h),
-              const PrepaidBadge(),
-            ],
-            SizedBox(height: 12.h),
-            // Redemption code + PIN — equivalent of the electricity
-            // token card, styled the same way (purple gradient instead
-            // of orange so it doesn't impersonate an electricity token).
-            // EITHER credential is enough: PIN-only products (Reloadly PIN
-            // gift cards) leave redemption_code empty, and gating the whole
-            // card on the code hid the credentials entirely — the receipt
-            // opened from history showed transaction details and no PIN.
-            if (_hasCredentials) _buildCodeCard(),
-            if (_hasCredentials) SizedBox(height: 10.h),
-            // Async-buy in-flight banner — only when the row is in
-            // processing/pending and the redemption code hasn't landed
-            // yet. Tells the user we'll notify them so they don't have
-            // to camp on this screen, with a manual pull-to-refresh
-            // hint. Mirrors the electricity bill awaiting-token card.
-            if (_isAsyncAwaitingPin())
-              _buildAwaitingPinCard(),
-            if (_isAsyncAwaitingPin()) SizedBox(height: 10.h),
-            // How a prepaid card differs from a store voucher — shown on the
-            // receipt too, since that's what the buyer keeps and re-opens.
-            if (_isPrepaid) ...[
-              const PrepaidExplainer(),
-              SizedBox(height: 10.h),
-            ],
-            _buildTransactionDetails(),
-            SizedBox(height: 14.h),
-            BillReceiptQrBlock(
-              type: 'gift_card',
-              reference: giftCard.providerTransactionId ?? giftCard.id,
-              amount: giftCard.originalAmount,
-              currency: giftCard.currency,
-              status: giftCard.status,
-              timestamp: _resolveTimestamp(),
-              showDivider: false,
-              extraPayload: {
-                if (giftCard.brandName.isNotEmpty)
-                  'brand': receiptLine(giftCard.brandName),
-                if ((giftCard.redemptionCode ?? '').isNotEmpty)
-                  'code': giftCard.redemptionCode!,
-                if ((giftCard.redemptionPin ?? '').isNotEmpty)
-                  'pin': giftCard.redemptionPin!,
-              },
-            ),
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _buildSuccessIcon(),
+                SizedBox(height: 8.h),
+                Text(
+                  _heroTitle(),
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  _statusMessage(),
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                if (_isPrepaid) ...[
+                  SizedBox(height: 8.h),
+                  const PrepaidBadge(),
+                ],
+                SizedBox(height: 12.h),
+                // Redemption code + PIN — equivalent of the electricity
+                // token card, styled the same way (purple gradient instead
+                // of orange so it doesn't impersonate an electricity token).
+                // EITHER credential is enough: PIN-only products (Reloadly PIN
+                // gift cards) leave redemption_code empty, and gating the whole
+                // card on the code hid the credentials entirely — the receipt
+                // opened from history showed transaction details and no PIN.
+                if (_hasCredentials) _buildCodeCard(),
+                if (_hasCredentials) SizedBox(height: 10.h),
+                // Async-buy in-flight banner — only when the row is in
+                // processing/pending and the redemption code hasn't landed
+                // yet. Tells the user we'll notify them so they don't have
+                // to camp on this screen, with a manual pull-to-refresh
+                // hint. Mirrors the electricity bill awaiting-token card.
+                if (_isAsyncAwaitingPin()) _buildAwaitingPinCard(),
+                if (_isAsyncAwaitingPin()) SizedBox(height: 10.h),
+                // How a prepaid card differs from a store voucher — shown on the
+                // receipt too, since that's what the buyer keeps and re-opens.
+                if (_isPrepaid) ...[
+                  const PrepaidExplainer(),
+                  SizedBox(height: 10.h),
+                ],
+                _buildTransactionDetails(),
+                SizedBox(height: 14.h),
+                BillReceiptQrBlock(
+                  type: 'gift_card',
+                  reference: giftCard.providerTransactionId ?? giftCard.id,
+                  amount: giftCard.originalAmount,
+                  currency: giftCard.currency,
+                  status: giftCard.status,
+                  timestamp: _resolveTimestamp(),
+                  showDivider: false,
+                  extraPayload: {
+                    if (giftCard.brandName.isNotEmpty)
+                      'brand': receiptLine(giftCard.brandName),
+                    if ((giftCard.redemptionCode ?? '').isNotEmpty)
+                      'code': giftCard.redemptionCode!,
+                    if ((giftCard.redemptionPin ?? '').isNotEmpty)
+                      'pin': giftCard.redemptionPin!,
+                  },
+                ),
               ],
             ),
           ),
@@ -355,14 +354,16 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.4)),
+        border:
+            Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.hourglass_top, size: 18.sp, color: const Color(0xFFFB923C)),
+              Icon(Icons.hourglass_top,
+                  size: 18.sp, color: const Color(0xFFFB923C)),
               SizedBox(width: 8.w),
               Text(
                 'Generating your code',
@@ -490,8 +491,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
                 giftCard.logoUrl,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Icon(Icons.card_giftcard,
-                    size: 40.sp,
-                    color: const Color(0xFF6B7280)),
+                    size: 40.sp, color: const Color(0xFF6B7280)),
               ),
             ),
           )
@@ -532,8 +532,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
                             width: 2.5,
                           ),
                         ),
-                        child:
-                            Icon(icon, color: Colors.white, size: 16.sp),
+                        child: Icon(icon, color: Colors.white, size: 16.sp),
                       ),
                     ),
                   ],
@@ -665,8 +664,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
         child: Row(
           children: [
             Container(
-              padding:
-                  EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
               decoration: BoxDecoration(
                 color: const Color(0xFFE9D5FF).withValues(alpha: 0.18),
                 borderRadius: BorderRadius.circular(6.r),
@@ -951,7 +949,8 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             ),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.white,
-              side: const BorderSide(color: InvoiceThemeColors.primaryPurpleLight),
+              side: const BorderSide(
+                  color: InvoiceThemeColors.primaryPurpleLight),
               padding: EdgeInsets.symmetric(vertical: 12.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.r),
@@ -975,7 +974,8 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             ),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.white,
-              side: const BorderSide(color: InvoiceThemeColors.primaryPurpleLight),
+              side: const BorderSide(
+                  color: InvoiceThemeColors.primaryPurpleLight),
               padding: EdgeInsets.symmetric(vertical: 12.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.r),

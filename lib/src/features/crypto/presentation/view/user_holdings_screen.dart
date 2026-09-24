@@ -189,8 +189,8 @@ class _UserHoldingsScreenState extends State<UserHoldingsScreen> {
                   final supportedSymbols = state.supportedAssets
                       .map((a) => a.symbol.toLowerCase())
                       .toSet();
-                  final holdings =
-                      _filteredHoldings(state, state.holdings, supportedSymbols);
+                  final holdings = _filteredHoldings(
+                      state, state.holdings, supportedSymbols);
 
                   if (holdings.isEmpty) {
                     return _buildEmptyState();
@@ -365,126 +365,126 @@ class _UserHoldingsScreenState extends State<UserHoldingsScreen> {
       child: Opacity(
         opacity: hasBalance ? 1.0 : 0.55,
         child: Container(
-        margin: EdgeInsets.only(bottom: 10.h),
-        padding: EdgeInsets.all(14.w),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(14.r),
-        ),
-        child: Row(
-          children: [
-            // Icon
-            Container(
-              width: 42.w,
-              height: 42.w,
-              decoration: BoxDecoration(
-                color: Colors.grey[900],
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Center(
-                child: Text(
-                  holding.cryptoSymbol.length >= 2
-                      ? holding.cryptoSymbol.substring(0, 2).toUpperCase()
-                      : holding.cryptoSymbol.toUpperCase(),
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.bold,
+          margin: EdgeInsets.only(bottom: 10.h),
+          padding: EdgeInsets.all(14.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(14.r),
+          ),
+          child: Row(
+            children: [
+              // Icon
+              Container(
+                width: 42.w,
+                height: 42.w,
+                decoration: BoxDecoration(
+                  color: Colors.grey[900],
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Center(
+                  child: Text(
+                    holding.cryptoSymbol.length >= 2
+                        ? holding.cryptoSymbol.substring(0, 2).toUpperCase()
+                        : holding.cryptoSymbol.toUpperCase(),
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
-            ),
-            SizedBox(width: 12.w),
+              SizedBox(width: 12.w),
 
-            // Name + quantity
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    holding.cryptoName,
-                    style: GoogleFonts.inter(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+              // Name + quantity
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      holding.cryptoName,
+                      style: GoogleFonts.inter(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      '${holding.quantity.toStringAsFixed(6)} ${holding.cryptoSymbol.toUpperCase()}',
+                      style: GoogleFonts.inter(
+                        fontSize: 13.sp,
+                        color: Colors.white.withValues(alpha: 0.5),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Value + P&L. While the lazy fiat fetch is in-flight, render
+              // a thin skeleton bar in place of "₦0.00" so users don't
+              // misread a missing rate as a zero balance.
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if (holding.priceLoading)
+                    Container(
+                      width: 64.w,
+                      height: 14.h,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(4.r),
+                      ),
+                    )
+                  else
+                    Text(
+                      '${CurrencySymbols.currentSymbol}${holding.totalValue.toStringAsFixed(2)}',
+                      style: GoogleFonts.inter(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
                   SizedBox(height: 2.h),
-                  Text(
-                    '${holding.quantity.toStringAsFixed(6)} ${holding.cryptoSymbol.toUpperCase()}',
-                    style: GoogleFonts.inter(
-                      fontSize: 13.sp,
-                      color: Colors.white.withValues(alpha: 0.5),
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                    decoration: BoxDecoration(
+                      color: pnlColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          holding.totalGainLossPercentage >= 0
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          color: pnlColor,
+                          size: 10.sp,
+                        ),
+                        SizedBox(width: 2.w),
+                        Text(
+                          '${holding.totalGainLossPercentage.abs().toStringAsFixed(2)}%',
+                          style: GoogleFonts.inter(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w600,
+                            color: pnlColor,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-            ),
 
-            // Value + P&L. While the lazy fiat fetch is in-flight, render
-            // a thin skeleton bar in place of "₦0.00" so users don't
-            // misread a missing rate as a zero balance.
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                if (holding.priceLoading)
-                  Container(
-                    width: 64.w,
-                    height: 14.h,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(4.r),
-                    ),
-                  )
-                else
-                  Text(
-                    '${CurrencySymbols.currentSymbol}${holding.totalValue.toStringAsFixed(2)}',
-                    style: GoogleFonts.inter(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                SizedBox(height: 2.h),
-                Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                  decoration: BoxDecoration(
-                    color: pnlColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(4.r),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        holding.totalGainLossPercentage >= 0
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
-                        color: pnlColor,
-                        size: 10.sp,
-                      ),
-                      SizedBox(width: 2.w),
-                      Text(
-                        '${holding.totalGainLossPercentage.abs().toStringAsFixed(2)}%',
-                        style: GoogleFonts.inter(
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w600,
-                          color: pnlColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-
-            SizedBox(width: 8.w),
-            Icon(Icons.chevron_right,
-                color: Colors.white.withValues(alpha: 0.4), size: 20.sp),
-          ],
-        ),
+              SizedBox(width: 8.w),
+              Icon(Icons.chevron_right,
+                  color: Colors.white.withValues(alpha: 0.4), size: 20.sp),
+            ],
+          ),
         ),
       ),
     );

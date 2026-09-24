@@ -11,23 +11,28 @@ class GrpcException implements Exception {
 }
 
 class NotFoundException extends GrpcException {
-  NotFoundException(String message) : super(message, 5); // StatusCode.notFound = 5
+  NotFoundException(String message)
+      : super(message, 5); // StatusCode.notFound = 5
 }
 
 class UnauthorizedException extends GrpcException {
-  UnauthorizedException() : super('Unauthorized', 16); // StatusCode.unauthenticated = 16
+  UnauthorizedException()
+      : super('Unauthorized', 16); // StatusCode.unauthenticated = 16
 }
 
 class InsufficientFundsException extends GrpcException {
-  InsufficientFundsException(String message) : super(message, 9); // StatusCode.failedPrecondition = 9
+  InsufficientFundsException(String message)
+      : super(message, 9); // StatusCode.failedPrecondition = 9
 }
 
 class NetworkException extends GrpcException {
-  NetworkException(String message) : super(message, 14); // StatusCode.unavailable = 14
+  NetworkException(String message)
+      : super(message, 14); // StatusCode.unavailable = 14
 }
 
 class ServerException extends GrpcException {
-  ServerException(String message) : super(message, 13); // StatusCode.internal = 13
+  ServerException(String message)
+      : super(message, 13); // StatusCode.internal = 13
 }
 
 Exception mapGrpcError(GrpcError error) {
@@ -44,7 +49,8 @@ Exception mapGrpcError(GrpcError error) {
       }
       return GrpcException(error.message ?? 'Precondition failed', error.code);
     case 14: // StatusCode.unavailable
-      return NetworkException('Service unavailable. Please check your connection.');
+      return NetworkException(
+          'Service unavailable. Please check your connection.');
     case 4: // StatusCode.deadlineExceeded
       return NetworkException('Request timed out');
     default:

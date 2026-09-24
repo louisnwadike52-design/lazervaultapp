@@ -29,12 +29,15 @@ class GiftCard extends Equatable {
   /// there.
   final String providerName;
   final double discountPercentage;
+
   /// Amount charged in sender/payment currency (what the user actually paid)
   final double senderAmount;
+
   /// Sender/payment currency code (e.g., "NGN")
   final String senderCurrency;
   final String createdAt;
   final String updatedAt;
+
   /// Stable internal reference (e.g. "GC-{uuid}") populated by the
   /// backend at create-pending-card time. Drives the balance-WS
   /// terminal-event match on the processing screen — the WS event's
@@ -85,24 +88,60 @@ class GiftCard extends Equatable {
 
   @override
   List<Object?> get props => [
-    id, userId, accountId, brandId, brandName, logoUrl,
-    originalAmount, currency, status, purchaseDate, expiryDate,
-    recipientEmail, recipientName, message, providerTransactionId,
-    redemptionCode, redemptionPin, redemptionInstructions, countryCode,
-    providerProductId, discountPercentage, senderAmount, senderCurrency,
-    createdAt, updatedAt, reference,
-  ];
+        id,
+        userId,
+        accountId,
+        brandId,
+        brandName,
+        logoUrl,
+        originalAmount,
+        currency,
+        status,
+        purchaseDate,
+        expiryDate,
+        recipientEmail,
+        recipientName,
+        message,
+        providerTransactionId,
+        redemptionCode,
+        redemptionPin,
+        redemptionInstructions,
+        countryCode,
+        providerProductId,
+        discountPercentage,
+        senderAmount,
+        senderCurrency,
+        createdAt,
+        updatedAt,
+        reference,
+      ];
 
   GiftCard copyWith({
-    String? id, String? userId, String? accountId, String? brandId,
-    String? brandName, String? logoUrl,
-    double? originalAmount, String? currency,
-    String? status, String? purchaseDate, String? expiryDate,
-    String? recipientEmail, String? recipientName, String? message,
-    String? providerTransactionId, String? redemptionCode,
-    String? redemptionPin, String? redemptionInstructions, String? countryCode,
-    int? providerProductId, double? discountPercentage, double? senderAmount,
-    String? senderCurrency, String? createdAt, String? updatedAt,
+    String? id,
+    String? userId,
+    String? accountId,
+    String? brandId,
+    String? brandName,
+    String? logoUrl,
+    double? originalAmount,
+    String? currency,
+    String? status,
+    String? purchaseDate,
+    String? expiryDate,
+    String? recipientEmail,
+    String? recipientName,
+    String? message,
+    String? providerTransactionId,
+    String? redemptionCode,
+    String? redemptionPin,
+    String? redemptionInstructions,
+    String? countryCode,
+    int? providerProductId,
+    double? discountPercentage,
+    double? senderAmount,
+    String? senderCurrency,
+    String? createdAt,
+    String? updatedAt,
   }) {
     return GiftCard(
       id: id ?? this.id,
@@ -119,10 +158,12 @@ class GiftCard extends Equatable {
       recipientEmail: recipientEmail ?? this.recipientEmail,
       recipientName: recipientName ?? this.recipientName,
       message: message ?? this.message,
-      providerTransactionId: providerTransactionId ?? this.providerTransactionId,
+      providerTransactionId:
+          providerTransactionId ?? this.providerTransactionId,
       redemptionCode: redemptionCode ?? this.redemptionCode,
       redemptionPin: redemptionPin ?? this.redemptionPin,
-      redemptionInstructions: redemptionInstructions ?? this.redemptionInstructions,
+      redemptionInstructions:
+          redemptionInstructions ?? this.redemptionInstructions,
       countryCode: countryCode ?? this.countryCode,
       providerProductId: providerProductId ?? this.providerProductId,
       discountPercentage: discountPercentage ?? this.discountPercentage,
@@ -135,20 +176,31 @@ class GiftCard extends Equatable {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id, 'userId': userId, 'accountId': accountId, 'brandId': brandId,
-      'brandName': brandName, 'logoUrl': logoUrl,
+      'id': id,
+      'userId': userId,
+      'accountId': accountId,
+      'brandId': brandId,
+      'brandName': brandName,
+      'logoUrl': logoUrl,
       'originalAmount': originalAmount,
-      'currency': currency, 'status': status,
-      'purchaseDate': purchaseDate, 'expiryDate': expiryDate,
-      'recipientEmail': recipientEmail, 'recipientName': recipientName,
+      'currency': currency,
+      'status': status,
+      'purchaseDate': purchaseDate,
+      'expiryDate': expiryDate,
+      'recipientEmail': recipientEmail,
+      'recipientName': recipientName,
       'message': message,
       'providerTransactionId': providerTransactionId,
-      'redemptionCode': redemptionCode, 'redemptionPin': redemptionPin,
+      'redemptionCode': redemptionCode,
+      'redemptionPin': redemptionPin,
       'redemptionInstructions': redemptionInstructions,
-      'countryCode': countryCode, 'providerProductId': providerProductId,
+      'countryCode': countryCode,
+      'providerProductId': providerProductId,
       'discountPercentage': discountPercentage,
-      'senderAmount': senderAmount, 'senderCurrency': senderCurrency,
-      'createdAt': createdAt, 'updatedAt': updatedAt,
+      'senderAmount': senderAmount,
+      'senderCurrency': senderCurrency,
+      'createdAt': createdAt,
+      'updatedAt': updatedAt,
     };
   }
 
@@ -174,7 +226,8 @@ class GiftCard extends Equatable {
       redemptionInstructions: json['redemptionInstructions'] as String?,
       countryCode: json['countryCode'] as String?,
       providerProductId: json['providerProductId'] as int? ?? 0,
-      discountPercentage: (json['discountPercentage'] as num?)?.toDouble() ?? 0.0,
+      discountPercentage:
+          (json['discountPercentage'] as num?)?.toDouble() ?? 0.0,
       senderAmount: (json['senderAmount'] as num?)?.toDouble() ?? 0.0,
       senderCurrency: json['senderCurrency'] as String? ?? '',
       createdAt: json['createdAt'] as String? ?? '',
@@ -195,7 +248,8 @@ class GiftCardDenomination extends Equatable {
   @override
   List<Object?> get props => [price, currencyCode];
 
-  Map<String, dynamic> toJson() => {'price': price, 'currencyCode': currencyCode};
+  Map<String, dynamic> toJson() =>
+      {'price': price, 'currencyCode': currencyCode};
 
   factory GiftCardDenomination.fromJson(Map<String, dynamic> json) {
     return GiftCardDenomination(
@@ -234,18 +288,18 @@ class GiftCardTransaction extends Equatable {
 
   @override
   List<Object?> get props => [
-    id,
-    giftCardId,
-    userId,
-    transactionType,
-    amount,
-    balanceBefore,
-    balanceAfter,
-    description,
-    createdAt,
-    providerTransactionId,
-    reference,
-  ];
+        id,
+        giftCardId,
+        userId,
+        transactionType,
+        amount,
+        balanceBefore,
+        balanceAfter,
+        description,
+        createdAt,
+        providerTransactionId,
+        reference,
+      ];
 
   Map<String, dynamic> toJson() {
     return {
@@ -290,6 +344,7 @@ class SellableCard extends Equatable {
   final List<String> currencies;
   final double minDenomination;
   final double maxDenomination;
+
   /// Provider that handles this card type (e.g., "prestmit")
   /// Used to ensure provider consistency between listing and sell.
   final String providerName;
@@ -345,10 +400,20 @@ class SellableCard extends Equatable {
 
   @override
   List<Object?> get props => [
-    cardType, displayName, logoUrl, category,
-    denominations, currencies, minDenomination, maxDenomination,
-    providerName, form, subcategoryId, country, payoutRatePerUnit,
-  ];
+        cardType,
+        displayName,
+        logoUrl,
+        category,
+        denominations,
+        currencies,
+        minDenomination,
+        maxDenomination,
+        providerName,
+        form,
+        subcategoryId,
+        country,
+        payoutRatePerUnit,
+      ];
 }
 
 /// A payout method available for the user to pick on the sell flow.
@@ -394,6 +459,7 @@ class SellRate extends Equatable {
   final double payoutLowerBound;
   final double payoutUpperBound;
   final bool isManualMode;
+
   /// How to READ [ratePercentage]. "per_unit" means it is payout currency per
   /// ONE face unit (Prestmit quotes 1165 NGN per USD 1); anything else — including
   /// the empty string from a server that predates the field — means a true
@@ -442,9 +508,17 @@ class SellRate extends Equatable {
 
   @override
   List<Object?> get props => [
-    cardType, denomination, ratePercentage, payoutAmount, currency, expiresAt,
-    payoutLowerBound, payoutUpperBound, isManualMode, rateModel,
-  ];
+        cardType,
+        denomination,
+        ratePercentage,
+        payoutAmount,
+        currency,
+        expiresAt,
+        payoutLowerBound,
+        payoutUpperBound,
+        isManualMode,
+        rateModel,
+      ];
 }
 
 /// A gift card sale transaction
@@ -601,11 +675,29 @@ class GiftCardSale extends Equatable {
 
   @override
   List<Object?> get props => [
-    id, userId, accountId, cardType, cardNumber, denomination, currency,
-    ratePercentage, expectedPayout, actualPayout, status, providerSaleId,
-    providerName, reference, submittedAt, reviewedAt, paidAt, createdAt, updatedAt,
-    rejectionReason, displayStatus, settlementStatus,
-  ];
+        id,
+        userId,
+        accountId,
+        cardType,
+        cardNumber,
+        denomination,
+        currency,
+        ratePercentage,
+        expectedPayout,
+        actualPayout,
+        status,
+        providerSaleId,
+        providerName,
+        reference,
+        submittedAt,
+        reviewedAt,
+        paidAt,
+        createdAt,
+        updatedAt,
+        rejectionReason,
+        displayStatus,
+        settlementStatus,
+      ];
 
   Map<String, dynamic> toJson() {
     return {
@@ -655,9 +747,15 @@ class GiftCardSale extends Equatable {
       paidAt: json['paidAt'] as String? ?? '',
       createdAt: json['createdAt'] as String? ?? '',
       updatedAt: json['updatedAt'] as String? ?? '',
-      rejectionReason: json['rejectionReason'] as String? ?? json['rejection_reason'] as String? ?? '',
-      displayStatus: json['displayStatus'] as String? ?? json['display_status'] as String? ?? '',
-      settlementStatus: json['settlementStatus'] as String? ?? json['settlement_status'] as String? ?? '',
+      rejectionReason: json['rejectionReason'] as String? ??
+          json['rejection_reason'] as String? ??
+          '',
+      displayStatus: json['displayStatus'] as String? ??
+          json['display_status'] as String? ??
+          '',
+      settlementStatus: json['settlementStatus'] as String? ??
+          json['settlement_status'] as String? ??
+          '',
     );
   }
 }
@@ -704,15 +802,16 @@ class GiftCardCountry extends Equatable {
   }
 
   @override
-  List<Object?> get props => [isoCode, name, flagUrl, currencyCode, currencyName];
+  List<Object?> get props =>
+      [isoCode, name, flagUrl, currencyCode, currencyName];
 
   Map<String, dynamic> toJson() => {
-    'isoCode': isoCode,
-    'name': name,
-    'flagUrl': flagUrl,
-    'currencyCode': currencyCode,
-    'currencyName': currencyName,
-  };
+        'isoCode': isoCode,
+        'name': name,
+        'flagUrl': flagUrl,
+        'currencyCode': currencyCode,
+        'currencyName': currencyName,
+      };
 
   factory GiftCardCountry.fromJson(Map<String, dynamic> json) {
     return GiftCardCountry(
@@ -728,15 +827,15 @@ class GiftCardCountry extends Equatable {
 /// Arguments passed from PurchaseGiftCardScreen to GiftCardPurchaseProcessingScreen
 class GiftCardPurchaseArgs {
   final GiftCardBrand brand;
-  final double amount;           // Recipient denomination (card face value)
+  final double amount; // Recipient denomination (card face value)
   final String transactionId;
   final String verificationToken;
   final int? productId;
   final String? countryCode;
   final String? providerName;
-  final double? senderAmount;    // Amount in sender/payment currency
-  final String? senderCurrency;  // Sender currency code (e.g., "NGN")
-  final double userBalance;      // User's available balance at time of purchase
+  final double? senderAmount; // Amount in sender/payment currency
+  final String? senderCurrency; // Sender currency code (e.g., "NGN")
+  final double userBalance; // User's available balance at time of purchase
 
   /// Execute on [providerName] rather than the active buy provider. Set only
   /// for a repeat, whose product ref belongs to the issuing provider.

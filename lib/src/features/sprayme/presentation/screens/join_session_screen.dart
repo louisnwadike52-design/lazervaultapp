@@ -14,7 +14,6 @@ import 'package:lazervault/src/features/sprayme/presentation/screens/spray_room_
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'join_session_screen_widgets.dart';
 
-
 class JoinSessionScreen extends StatefulWidget {
   const JoinSessionScreen({super.key});
 
@@ -412,7 +411,8 @@ class _JoinSessionScreenState extends State<JoinSessionScreen> {
 
   Widget _buildRecentSessionTile(SpraySession session) {
     final isEnded = session.isEnded;
-    final statusColor = isEnded ? const Color(0xFF9CA3AF) : const Color(0xFF10B981);
+    final statusColor =
+        isEnded ? const Color(0xFF9CA3AF) : const Color(0xFF10B981);
 
     return GestureDetector(
       onTap: () {
@@ -447,12 +447,16 @@ class _JoinSessionScreenState extends State<JoinSessionScreen> {
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: (isEnded ? const Color(0xFF9CA3AF) : const Color(0xFF7C3AED)).withOpacity(0.12),
+                color: (isEnded
+                        ? const Color(0xFF9CA3AF)
+                        : const Color(0xFF7C3AED))
+                    .withOpacity(0.12),
                 borderRadius: BorderRadius.circular(10.r),
               ),
               child: Icon(
                 isEnded ? Icons.event_busy : Icons.celebration,
-                color: isEnded ? const Color(0xFF9CA3AF) : const Color(0xFF7C3AED),
+                color:
+                    isEnded ? const Color(0xFF9CA3AF) : const Color(0xFF7C3AED),
                 size: 20.sp,
               ),
             ),
@@ -483,7 +487,8 @@ class _JoinSessionScreenState extends State<JoinSessionScreen> {
                       ),
                       SizedBox(width: 8.w),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 6.w, vertical: 1.h),
                         decoration: BoxDecoration(
                           color: statusColor.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(8.r),

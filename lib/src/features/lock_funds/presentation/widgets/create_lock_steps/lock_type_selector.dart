@@ -140,7 +140,10 @@ class LockTypeSelector extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: isSelected
-                ? [const Color(0xFF6366F1), const Color.fromARGB(255, 78, 3, 208)]
+                ? [
+                    const Color(0xFF6366F1),
+                    const Color.fromARGB(255, 78, 3, 208)
+                  ]
                 : [const Color(0xFF2A2A3E), const Color(0xFF1F1F35)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -199,8 +202,10 @@ class LockTypeSelector extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: isPremium
-                                ? const Color(0xFFF59E0B).withValues(alpha: isSelected ? 0.3 : 0.2)
-                                : const Color(0xFF10B981).withValues(alpha: isSelected ? 0.3 : 0.2),
+                                ? const Color(0xFFF59E0B)
+                                    .withValues(alpha: isSelected ? 0.3 : 0.2)
+                                : const Color(0xFF10B981)
+                                    .withValues(alpha: isSelected ? 0.3 : 0.2),
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Text(
@@ -304,7 +309,9 @@ class LockTypeSelector extends StatelessWidget {
             : 'Accrues and pays at maturity',
       ),
       (
-        config.allowsEarlyWithdrawal ? Icons.lock_open_rounded : Icons.lock_rounded,
+        config.allowsEarlyWithdrawal
+            ? Icons.lock_open_rounded
+            : Icons.lock_rounded,
         'Early withdrawal',
         config.allowsEarlyWithdrawal
             ? (config.penaltyPercent > 0
@@ -399,7 +406,8 @@ class LockTypeSelector extends StatelessWidget {
                           padding: EdgeInsets.symmetric(
                               horizontal: 12.w, vertical: 6.h),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                            color:
+                                const Color(0xFF10B981).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Text(

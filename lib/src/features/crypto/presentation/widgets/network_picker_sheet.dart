@@ -26,7 +26,8 @@ Future<String?> showNetworkPickerForAsset(
   String? active = selectedNetwork;
   try {
     final res = await client.getAssetNetworkStatus(currency: sym);
-    if (active == null && res.activeNetwork.isNotEmpty) active = res.activeNetwork;
+    if (active == null && res.activeNetwork.isNotEmpty)
+      active = res.activeNetwork;
     nets = res.networks
         .where((e) =>
             (!depositOnly || e.network.depositEnabled) &&
@@ -170,8 +171,7 @@ class _NetworkPickerSheet extends StatelessWidget {
                 itemBuilder: (_, i) {
                   final n = networks[i];
                   final selected = selectedNetwork != null &&
-                      n.network.toLowerCase() ==
-                          selectedNetwork!.toLowerCase();
+                      n.network.toLowerCase() == selectedNetwork!.toLowerCase();
                   return _NetworkRow(
                     label: _label(n),
                     slug: n.network.toUpperCase(),

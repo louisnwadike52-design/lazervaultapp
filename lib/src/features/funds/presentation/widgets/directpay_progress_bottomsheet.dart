@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 part 'directpay_progress_bottomsheet_widgets.dart';
 
-
 /// Animated DirectPay Progress Bottomsheet
 class DirectPayProgressBottomsheet extends StatefulWidget {
   final DirectPayProgressController controller;
@@ -39,8 +38,7 @@ class DirectPayProgressBottomsheet extends StatefulWidget {
 }
 
 class _DirectPayProgressBottomsheetState
-    extends State<DirectPayProgressBottomsheet>
-    with TickerProviderStateMixin {
+    extends State<DirectPayProgressBottomsheet> with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late AnimationController _slideController;
   late Animation<double> _pulseAnimation;
@@ -180,7 +178,9 @@ class _DirectPayProgressBottomsheetState
                 padding: EdgeInsets.only(top: 8.h, left: 8.w, right: 4.w),
                 child: Row(
                   children: [
-                    SizedBox(width: 40.w), // balances the X so the handle stays centered
+                    SizedBox(
+                        width: 40
+                            .w), // balances the X so the handle stays centered
                     Expanded(
                       child: Center(
                         child: Container(
@@ -286,7 +286,8 @@ class _DirectPayProgressBottomsheetState
               // Amount display
               if (widget.controller.amount != null)
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12.r),
@@ -345,8 +346,8 @@ class _DirectPayProgressBottomsheetState
                 _buildPrimaryButton(
                   label: 'Verify Now',
                   color: const Color.fromARGB(255, 78, 3, 208),
-                  onPressed: () => _dismiss(
-                      context, widget.onKycVerify ?? widget.onDismiss),
+                  onPressed: () =>
+                      _dismiss(context, widget.onKycVerify ?? widget.onDismiss),
                 ),
                 SizedBox(height: 8.h),
                 Padding(

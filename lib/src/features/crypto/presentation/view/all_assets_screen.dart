@@ -13,7 +13,6 @@ import 'buy_crypto_sheet.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 part 'all_assets_screen_widgets.dart';
 
-
 class AllAssetsScreen extends StatefulWidget {
   final AssetSelectionMode mode;
 
@@ -53,7 +52,8 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
     final s = context.read<CryptoCubit>().state;
     if (s is! CryptosLoaded) return false;
     final sym = symbol.toLowerCase();
-    return s.holdings.any((h) => h.cryptoSymbol.toLowerCase() == sym && h.quantity > 0);
+    return s.holdings
+        .any((h) => h.cryptoSymbol.toLowerCase() == sym && h.quantity > 0);
   }
 
   List<Crypto> _filteredAssets(List<Crypto> assets) {
@@ -62,20 +62,25 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
     // Apply search filter
     if (_searchQuery.isNotEmpty) {
       final query = _searchQuery.toLowerCase();
-      filtered = filtered.where((c) =>
-        c.name.toLowerCase().contains(query) ||
-        c.symbol.toLowerCase().contains(query)
-      ).toList();
+      filtered = filtered
+          .where((c) =>
+              c.name.toLowerCase().contains(query) ||
+              c.symbol.toLowerCase().contains(query))
+          .toList();
     }
 
     // Apply category filter
     switch (_selectedFilter) {
       case 'Gainers':
-        filtered = filtered.where((c) => c.priceChangePercentage24h > 0).toList();
-        filtered.sort((a, b) => b.priceChangePercentage24h.compareTo(a.priceChangePercentage24h));
+        filtered =
+            filtered.where((c) => c.priceChangePercentage24h > 0).toList();
+        filtered.sort((a, b) =>
+            b.priceChangePercentage24h.compareTo(a.priceChangePercentage24h));
       case 'Losers':
-        filtered = filtered.where((c) => c.priceChangePercentage24h < 0).toList();
-        filtered.sort((a, b) => a.priceChangePercentage24h.compareTo(b.priceChangePercentage24h));
+        filtered =
+            filtered.where((c) => c.priceChangePercentage24h < 0).toList();
+        filtered.sort((a, b) =>
+            a.priceChangePercentage24h.compareTo(b.priceChangePercentage24h));
     }
 
     return filtered;
@@ -183,7 +188,9 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
                 ),
                 BlocBuilder<CryptoCubit, CryptoState>(
                   builder: (context, state) {
-                    final count = state is CryptosLoaded ? state.supportedAssets.length : 0;
+                    final count = state is CryptosLoaded
+                        ? state.supportedAssets.length
+                        : 0;
                     return Text(
                       _headerSubtitle(count),
                       style: GoogleFonts.inter(
@@ -209,8 +216,10 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
         style: GoogleFonts.inter(color: Colors.white),
         decoration: InputDecoration(
           hintText: 'Search assets...',
-          hintStyle: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.5)),
-          prefixIcon: Icon(Icons.search, color: Colors.white.withValues(alpha: 0.5)),
+          hintStyle:
+              GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.5)),
+          prefixIcon:
+              Icon(Icons.search, color: Colors.white.withValues(alpha: 0.5)),
           suffixIcon: _searchQuery.isNotEmpty
               ? GestureDetector(
                   onTap: () {
@@ -220,7 +229,8 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
                       _expandedSymbol = null;
                     });
                   },
-                  child: Icon(Icons.close, color: Colors.white.withValues(alpha: 0.5), size: 18.sp),
+                  child: Icon(Icons.close,
+                      color: Colors.white.withValues(alpha: 0.5), size: 18.sp),
                 )
               : null,
           filled: true,
@@ -229,7 +239,8 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
             borderRadius: BorderRadius.circular(12.r),
             borderSide: BorderSide.none,
           ),
-          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+          contentPadding:
+              EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         ),
         onChanged: (value) => setState(() {
           _searchQuery = value;
@@ -275,7 +286,9 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
                 style: GoogleFonts.inter(
                   fontSize: 13.sp,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.7),
+                  color: isSelected
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.7),
                 ),
               ),
             ),
@@ -343,167 +356,173 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
             color: Colors.transparent,
             child: InkWell(
               onTap: () {
-          switch (widget.mode) {
-            case AssetSelectionMode.browse:
-              setState(() {
-                _expandedSymbol = isExpanded ? null : crypto.symbol;
-              });
-              return;
-            case AssetSelectionMode.buy:
-              // Direct integration of the canonical buy surface: open the
-              // streamlined buy bottom sheet pre-locked to this asset (live
-              // rate → runSwapFlow → PIN → async receipt), instead of routing
-              // through the detail screen. The shared CryptoCubit is in scope
-              // (passed via BlocProvider.value by the caller); the sheet reads
-              // the app-global AccountCardsSummaryCubit + GetIt CryptoConfigCubit.
-              showBuyCryptoSheet(
-                context,
-                crypto: crypto,
-                cubit: context.read<CryptoCubit>(),
-              );
-              return;
-            case AssetSelectionMode.receive:
-              // Open the receive/deposit address sheet for the picked asset
-              // (network picker + QR + copy). Provisions the address on demand.
-              _openWalletSheet(crypto);
-              return;
-            case AssetSelectionMode.sell:
-              // Sell selection goes to the asset detail screen (sell entry).
-              Get.toNamed(
-                AppRoutes.cryptoDetails,
-                arguments: crypto,
-              );
-              return;
-          }
-        },
-        borderRadius: BorderRadius.circular(14.r),
-        child: Container(
-          padding: EdgeInsets.all(14.w),
-          child: Row(
-            children: [
-            // Crypto icon
-            Container(
-              width: 42.w,
-              height: 42.w,
-              decoration: BoxDecoration(
-                color: Colors.grey[900],
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: crypto.image.isNotEmpty
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(12.r),
-                      child: Image.network(
-                        crypto.image,
-                        width: 42.w,
-                        height: 42.w,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildSymbolFallback(crypto.symbol),
+                switch (widget.mode) {
+                  case AssetSelectionMode.browse:
+                    setState(() {
+                      _expandedSymbol = isExpanded ? null : crypto.symbol;
+                    });
+                    return;
+                  case AssetSelectionMode.buy:
+                    // Direct integration of the canonical buy surface: open the
+                    // streamlined buy bottom sheet pre-locked to this asset (live
+                    // rate → runSwapFlow → PIN → async receipt), instead of routing
+                    // through the detail screen. The shared CryptoCubit is in scope
+                    // (passed via BlocProvider.value by the caller); the sheet reads
+                    // the app-global AccountCardsSummaryCubit + GetIt CryptoConfigCubit.
+                    showBuyCryptoSheet(
+                      context,
+                      crypto: crypto,
+                      cubit: context.read<CryptoCubit>(),
+                    );
+                    return;
+                  case AssetSelectionMode.receive:
+                    // Open the receive/deposit address sheet for the picked asset
+                    // (network picker + QR + copy). Provisions the address on demand.
+                    _openWalletSheet(crypto);
+                    return;
+                  case AssetSelectionMode.sell:
+                    // Sell selection goes to the asset detail screen (sell entry).
+                    Get.toNamed(
+                      AppRoutes.cryptoDetails,
+                      arguments: crypto,
+                    );
+                    return;
+                }
+              },
+              borderRadius: BorderRadius.circular(14.r),
+              child: Container(
+                padding: EdgeInsets.all(14.w),
+                child: Row(
+                  children: [
+                    // Crypto icon
+                    Container(
+                      width: 42.w,
+                      height: 42.w,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[900],
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
-                    )
-                  : _buildSymbolFallback(crypto.symbol),
-            ),
-            SizedBox(width: 12.w),
-
-            // Name and symbol
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    crypto.name,
-                    style: GoogleFonts.inter(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      child: crypto.image.isNotEmpty
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(12.r),
+                              child: Image.network(
+                                crypto.image,
+                                width: 42.w,
+                                height: 42.w,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) =>
+                                    _buildSymbolFallback(crypto.symbol),
+                              ),
+                            )
+                          : _buildSymbolFallback(crypto.symbol),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 2.h),
-                  Row(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 1.h),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(4.r),
-                        ),
-                        child: Text(
-                          '#${crypto.marketCapRank}',
+                    SizedBox(width: 12.w),
+
+                    // Name and symbol
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            crypto.name,
+                            style: GoogleFonts.inter(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          SizedBox(height: 2.h),
+                          Row(
+                            children: [
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 5.w, vertical: 1.h),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(4.r),
+                                ),
+                                child: Text(
+                                  '#${crypto.marketCapRank}',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.sp,
+                                    color: Colors.white.withValues(alpha: 0.5),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 6.w),
+                              Text(
+                                crypto.symbol,
+                                style: GoogleFonts.inter(
+                                  fontSize: 13.sp,
+                                  color: Colors.white.withValues(alpha: 0.5),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Price and change
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '${CurrencySymbols.currentSymbol}${_formatPrice(crypto.currentPrice)}',
                           style: GoogleFonts.inter(
-                            fontSize: 11.sp,
-                            color: Colors.white.withValues(alpha: 0.5),
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
                           ),
                         ),
-                      ),
-                      SizedBox(width: 6.w),
-                      Text(
-                        crypto.symbol,
-                        style: GoogleFonts.inter(
-                          fontSize: 13.sp,
-                          color: Colors.white.withValues(alpha: 0.5),
+                        SizedBox(height: 2.h),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 6.w, vertical: 2.h),
+                          decoration: BoxDecoration(
+                            color: (isPositive ? Colors.green : Colors.red)
+                                .withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(4.r),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isPositive
+                                    ? Icons.arrow_upward
+                                    : Icons.arrow_downward,
+                                color: isPositive ? Colors.green : Colors.red,
+                                size: 10.sp,
+                              ),
+                              SizedBox(width: 2.w),
+                              Text(
+                                '${change.abs().toStringAsFixed(2)}%',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12.sp,
+                                  color: isPositive ? Colors.green : Colors.red,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        if (widget.mode == AssetSelectionMode.browse) ...[
+                          SizedBox(height: 4.h),
+                          Icon(
+                            isExpanded
+                                ? Icons.keyboard_arrow_up_rounded
+                                : Icons.keyboard_arrow_down_rounded,
+                            color: Colors.white.withValues(alpha: 0.5),
+                            size: 18.sp,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-
-            // Price and change
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  '${CurrencySymbols.currentSymbol}${_formatPrice(crypto.currentPrice)}',
-                  style: GoogleFonts.inter(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(height: 2.h),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                  decoration: BoxDecoration(
-                    color: (isPositive ? Colors.green : Colors.red).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(4.r),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        isPositive ? Icons.arrow_upward : Icons.arrow_downward,
-                        color: isPositive ? Colors.green : Colors.red,
-                        size: 10.sp,
-                      ),
-                      SizedBox(width: 2.w),
-                      Text(
-                        '${change.abs().toStringAsFixed(2)}%',
-                        style: GoogleFonts.inter(
-                          fontSize: 12.sp,
-                          color: isPositive ? Colors.green : Colors.red,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (widget.mode == AssetSelectionMode.browse) ...[
-                  SizedBox(height: 4.h),
-                  Icon(
-                    isExpanded
-                        ? Icons.keyboard_arrow_up_rounded
-                        : Icons.keyboard_arrow_down_rounded,
-                    color: Colors.white.withValues(alpha: 0.5),
-                    size: 18.sp,
-                  ),
-                ],
-              ],
-            ),
-          ],
-        ),
-      ),
             ),
           ),
           // Inline accordion drawer. AnimatedSize keeps the toggle gentle.
@@ -534,13 +553,15 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
                         ),
                         SizedBox(height: 10.h),
                         Row(children: [
-                          Expanded(child: _accordionCta(
+                          Expanded(
+                              child: _accordionCta(
                             label: 'Show wallet',
                             icon: Icons.account_balance_wallet_outlined,
                             onTap: () => _openWalletSheet(crypto),
                           )),
                           SizedBox(width: 10.w),
-                          Expanded(child: _accordionCta(
+                          Expanded(
+                              child: _accordionCta(
                             label: 'View details',
                             icon: Icons.bar_chart_rounded,
                             primary: true,
@@ -584,12 +605,9 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
     // softer tint so the two read as a hierarchy.
     const accent = Color(0xFFFB923C);
     final bg = primary ? accent : accent.withValues(alpha: 0.18);
-    final fg = primary
-        ? Colors.white.withValues(alpha: 0.98)
-        : accent;
-    final border = primary
-        ? null
-        : Border.all(color: accent.withValues(alpha: 0.45));
+    final fg = primary ? Colors.white.withValues(alpha: 0.98) : accent;
+    final border =
+        primary ? null : Border.all(color: accent.withValues(alpha: 0.45));
     return Material(
       color: bg,
       borderRadius: BorderRadius.circular(10.r),
@@ -655,7 +673,8 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.search_off, size: 48.sp, color: Colors.white.withValues(alpha: 0.3)),
+          Icon(Icons.search_off,
+              size: 48.sp, color: Colors.white.withValues(alpha: 0.3)),
           SizedBox(height: 12.h),
           Text(
             'No assets found',

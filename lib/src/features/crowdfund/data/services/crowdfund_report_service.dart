@@ -110,8 +110,10 @@ class CrowdfundReportService {
   }
 
   /// Share report to WhatsApp
-  Future<void> shareToWhatsApp(CrowdfundReport report, String? campaignUrl) async {
-    final text = _buildShareText(report.sharingText.whatsapp, report, campaignUrl);
+  Future<void> shareToWhatsApp(
+      CrowdfundReport report, String? campaignUrl) async {
+    final text =
+        _buildShareText(report.sharingText.whatsapp, report, campaignUrl);
     final whatsappUrl = Uri.parse(
       'whatsapp://send?text=${Uri.encodeComponent(text)}',
     );
@@ -145,7 +147,8 @@ class CrowdfundReportService {
   /// Share report to Telegram
   Future<void> shareToTelegram(CrowdfundReport report, String? campaignUrl,
       {Rect? sharePositionOrigin}) async {
-    final text = _buildShareText(report.sharingText.telegram, report, campaignUrl);
+    final text =
+        _buildShareText(report.sharingText.telegram, report, campaignUrl);
     final telegramUrl = Uri.parse(
       'https://t.me/share/url?url=${Uri.encodeComponent(campaignUrl ?? '')}&text=${Uri.encodeComponent(text)}',
     );
@@ -159,8 +162,10 @@ class CrowdfundReportService {
   }
 
   /// Share report to Twitter/X
-  Future<void> shareToTwitter(CrowdfundReport report, String? campaignUrl) async {
-    final text = _buildShareText(report.sharingText.twitter, report, campaignUrl);
+  Future<void> shareToTwitter(
+      CrowdfundReport report, String? campaignUrl) async {
+    final text =
+        _buildShareText(report.sharingText.twitter, report, campaignUrl);
     final hashtags = report.hashtags.join(',');
     final twitterUrl = Uri.parse(
       'https://twitter.com/intent/tweet?text=${Uri.encodeComponent(text)}&hashtags=$hashtags',
@@ -181,7 +186,8 @@ class CrowdfundReportService {
     String? campaignUrl, {
     Rect? sharePositionOrigin,
   }) async {
-    final text = _buildShareText(report.sharingText.general, report, campaignUrl);
+    final text =
+        _buildShareText(report.sharingText.general, report, campaignUrl);
 
     await SharePlus.instance.share(ShareParams(
       text: text,
@@ -211,9 +217,8 @@ class CrowdfundReportService {
       body = parts.join('\n\n');
     }
     if (report.hashtags.isNotEmpty) {
-      final tags = report.hashtags
-          .map((t) => t.startsWith('#') ? t : '#$t')
-          .join(' ');
+      final tags =
+          report.hashtags.map((t) => t.startsWith('#') ? t : '#$t').join(' ');
       body = body.isEmpty ? tags : '$body\n\n$tags';
     }
     if (campaignUrl != null && campaignUrl.isNotEmpty) {

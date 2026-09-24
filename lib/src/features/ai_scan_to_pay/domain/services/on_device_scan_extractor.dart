@@ -33,7 +33,14 @@ class OnDeviceScanExtractor {
 
   /// Bank-name noise words stripped before matching a scanned name to the list.
   static const _bankNoise = <String>{
-    'bank', 'plc', 'mfb', 'microfinance', 'limited', 'ltd', 'nigeria', 'ng',
+    'bank',
+    'plc',
+    'mfb',
+    'microfinance',
+    'limited',
+    'ltd',
+    'nigeria',
+    'ng',
   };
 
   /// Parse [rawText] (ML Kit OCR of the captured still) into a routable

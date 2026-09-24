@@ -61,8 +61,8 @@ class _CountryPickerDialogState extends State<CountryPickerDialog> {
     final lowerQuery = _searchQuery.toLowerCase();
     return CountryLocales.all.where((country) {
       return country.countryName.toLowerCase().contains(lowerQuery) ||
-             country.countryCode.toLowerCase().contains(lowerQuery) ||
-             country.currency.toLowerCase().contains(lowerQuery);
+          country.countryCode.toLowerCase().contains(lowerQuery) ||
+          country.currency.toLowerCase().contains(lowerQuery);
     }).toList();
   }
 
@@ -192,9 +192,11 @@ class _CountryPickerDialogState extends State<CountryPickerDialog> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
-                  borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
+                  borderSide:
+                      const BorderSide(color: Color(0xFF4E03D0), width: 2),
                 ),
-                contentPadding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+                contentPadding:
+                    EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
               ),
             ),
 
@@ -210,7 +212,8 @@ class _CountryPickerDialogState extends State<CountryPickerDialog> {
                   // Region is fixed to the one chosen at registration: only that
                   // country is enabled/selectable; every other is shown but
                   // disabled (for transparency).
-                  final isSignup = country.countryName == _registeredCountryName;
+                  final isSignup =
+                      country.countryName == _registeredCountryName;
                   final enabled = isSignup;
                   final isSelected = _selectedCountry == country.countryName;
 
@@ -226,8 +229,8 @@ class _CountryPickerDialogState extends State<CountryPickerDialog> {
                             }
                           : null,
                       child: Container(
-                        padding:
-                            EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+                        padding: EdgeInsets.symmetric(
+                            vertical: 12.h, horizontal: 16.w),
                         margin: EdgeInsets.only(bottom: 8.h),
                         decoration: BoxDecoration(
                           color: isSelected

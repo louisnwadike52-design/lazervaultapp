@@ -44,8 +44,8 @@ void main() {
     test('a paragraph break sent as an entity survives', () {
       // Prestmit's newline is "&10;", so a real paragraph gap arrives as text
       // rather than as markup — and must not be flattened away with it.
-      expect(receiptProse('Para one.&10;&10;Para two.'),
-          'Para one.\n\nPara two.');
+      expect(
+          receiptProse('Para one.&10;&10;Para two.'), 'Para one.\n\nPara two.');
     });
 
     test('leaves clean text exactly as it is', () {
@@ -66,8 +66,7 @@ void main() {
 
   group('pdfSafe — the net under a missing font', () {
     test('substitutes the punctuation providers actually write', () {
-      expect(pdfSafe('Don’t — see “terms”…'),
-          "Don't - see \"terms\"...");
+      expect(pdfSafe('Don’t — see “terms”…'), "Don't - see \"terms\"...");
     });
 
     test('spells out a currency sign that Helvetica cannot draw', () {

@@ -243,8 +243,7 @@ class ElectricityHistoryActionsSheet {
                     beneficiaryId: beneficiary.id,
                     amount: amount,
                     currency: 'NGN',
-                    frequency:
-                        RechargeFrequencyExtension.fromString(frequency),
+                    frequency: RechargeFrequencyExtension.fromString(frequency),
                     dayOfWeek: frequency == 'weekly' ? dayOfWeek : null,
                     dayOfMonth: frequency == 'monthly' ? dayOfMonth : null,
                     executionHour: executionHour,

@@ -76,7 +76,8 @@ class _ExpandableLessonCardState extends State<_ExpandableLessonCard>
                         _cleanLessonMarkdown(lesson.summary),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(fontSize: 12.sp, color: _kTextSecondary),
+                        style: GoogleFonts.inter(
+                            fontSize: 12.sp, color: _kTextSecondary),
                       ),
                     ],
                   ),
@@ -85,7 +86,8 @@ class _ExpandableLessonCardState extends State<_ExpandableLessonCard>
                 AnimatedRotation(
                   turns: _expanded ? 0.5 : 0,
                   duration: const Duration(milliseconds: 250),
-                  child: Icon(Icons.keyboard_arrow_down, color: _kTextSecondary, size: 20.sp),
+                  child: Icon(Icons.keyboard_arrow_down,
+                      color: _kTextSecondary, size: 20.sp),
                 ),
               ],
             ),
@@ -101,7 +103,9 @@ class _ExpandableLessonCardState extends State<_ExpandableLessonCard>
                   styleSheet: _lessonMarkdownStyle(),
                 ),
               ),
-              crossFadeState: _expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+              crossFadeState: _expanded
+                  ? CrossFadeState.showSecond
+                  : CrossFadeState.showFirst,
               duration: const Duration(milliseconds: 250),
             ),
           ],

@@ -17,7 +17,8 @@ class InvoiceStatisticsCard extends StatelessWidget {
   String _currencySymbolFrom(BuildContext context) {
     try {
       final state = context.read<AccountCardsSummaryCubit>().state;
-      if (state is AccountCardsSummaryLoaded && state.accountSummaries.isNotEmpty) {
+      if (state is AccountCardsSummaryLoaded &&
+          state.accountSummaries.isNotEmpty) {
         return _getCurrencySymbol(state.accountSummaries.first.currency);
       }
     } catch (_) {}
@@ -26,16 +27,26 @@ class InvoiceStatisticsCard extends StatelessWidget {
 
   String _getCurrencySymbol(String currency) {
     switch (currency.toUpperCase()) {
-      case 'NGN': return '₦';
-      case 'GBP': return '£';
-      case 'EUR': return '€';
-      case 'ZAR': return 'R';
-      case 'CAD': return 'C\$';
-      case 'AUD': return 'A\$';
-      case 'INR': return '₹';
-      case 'JPY': return '¥';
-      case 'USD': return '\$';
-      default: return '₦';
+      case 'NGN':
+        return '₦';
+      case 'GBP':
+        return '£';
+      case 'EUR':
+        return '€';
+      case 'ZAR':
+        return 'R';
+      case 'CAD':
+        return 'C\$';
+      case 'AUD':
+        return 'A\$';
+      case 'INR':
+        return '₹';
+      case 'JPY':
+        return '¥';
+      case 'USD':
+        return '\$';
+      default:
+        return '₦';
     }
   }
 
@@ -176,7 +187,8 @@ class InvoiceStatisticsCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
+  Widget _buildStatItem(
+      String label, String value, IconData icon, Color color) {
     return Container(
       padding: EdgeInsets.all(8.w),
       decoration: BoxDecoration(
@@ -213,4 +225,4 @@ class InvoiceStatisticsCard extends StatelessWidget {
       ),
     );
   }
-} 
+}

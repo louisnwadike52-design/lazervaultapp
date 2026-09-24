@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -46,14 +45,12 @@ class _EPinHomeScreenState extends State<EPinHomeScreen>
     _recentFuture = context.read<EPinCubit>().repository.listOrders();
   }
 
-
-
-
   Future<void> _openOrder(EPinOrder order) async {
     if (_openingOrderId != null) return;
     setState(() => _openingOrderId = order.id);
     try {
-      final full = await context.read<EPinCubit>().repository.getOrder(order.id);
+      final full =
+          await context.read<EPinCubit>().repository.getOrder(order.id);
       if (!mounted) return;
       setState(() => _openingOrderId = null);
       Get.toNamed(AppRoutes.epinReceipt, arguments: {
@@ -91,7 +88,8 @@ class _EPinHomeScreenState extends State<EPinHomeScreen>
                 builder: (context, state) {
                   if (state is EPinNetworksLoading) {
                     return const Center(
-                      child: CircularProgressIndicator(color: EpinTheme.primary),
+                      child:
+                          CircularProgressIndicator(color: EpinTheme.primary),
                     );
                   }
                   if (state is EPinNetworksError) {
@@ -153,14 +151,8 @@ class _EPinHomeScreenState extends State<EPinHomeScreen>
         ],
       );
 
-
-
-
   /// Quick-pick quantities — each fills whole printout rows so the sheet has no
   /// ragged last row. Tapping a pill sets the quantity.
-
-
-
 
   /// Recent recharge-card orders — first 3, with a "View all" into full history.
   Widget _buildRecentSection() {
@@ -294,7 +286,6 @@ class _EPinHomeScreenState extends State<EPinHomeScreen>
       ),
     );
   }
-
 
   Widget _buildError(String message) {
     return Center(

@@ -48,8 +48,8 @@ class _BettingReceiptScreenState extends State<BettingReceiptScreen> {
   /// carousel / active account / locale that sit below it are untouched. Falls
   /// back to the root if the Bills Hub isn't in the stack.
   void _exitToBillsHub() {
-    Get.until((route) =>
-        route.settings.name == AppRoutes.billsHub || route.isFirst);
+    Get.until(
+        (route) => route.settings.name == AppRoutes.billsHub || route.isFirst);
   }
 
   /// Single-shot status refresh — re-fetches betting history and swaps in the
@@ -129,175 +129,181 @@ class _BettingReceiptScreenState extends State<BettingReceiptScreen> {
         if (!didPop) _exitToBillsHub();
       },
       child: Scaffold(
-      backgroundColor: _bg,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Column(
-                  children: [
-                    SizedBox(height: 40.h),
-                    Container(
-                      width: 88.w,
-                      height: 88.w,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: succeeded ? BettingTheme.heroGradient : null,
-                        color:
-                            succeeded ? null : color.withValues(alpha: 0.15),
+        backgroundColor: _bg,
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 40.h),
+                      Container(
+                        width: 88.w,
+                        height: 88.w,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient:
+                              succeeded ? BettingTheme.heroGradient : null,
+                          color:
+                              succeeded ? null : color.withValues(alpha: 0.15),
+                        ),
+                        child: Icon(
+                          payment.isFailed
+                              ? Icons.close
+                              : refunded
+                                  ? Icons.undo_rounded
+                                  : (pending
+                                      ? Icons.hourglass_bottom
+                                      : Icons.check),
+                          color: succeeded ? Colors.white : color,
+                          size: 44.sp,
+                        ),
                       ),
-                      child: Icon(
-                        payment.isFailed
-                            ? Icons.close
-                            : refunded
-                                ? Icons.undo_rounded
-                                : (pending
-                                    ? Icons.hourglass_bottom
-                                    : Icons.check),
-                        color: succeeded ? Colors.white : color,
-                        size: 44.sp,
+                      SizedBox(height: 20.h),
+                      Text(
+                        title,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22.sp,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 20.h),
-                    Text(
-                      title,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22.sp,
-                        fontWeight: FontWeight.w800,
+                      SizedBox(height: 6.h),
+                      Text(
+                        result.message.isNotEmpty
+                            ? result.message
+                            : (pending
+                                ? 'Your funding is being processed'
+                                : 'Funds sent to your betting wallet'),
+                        textAlign: TextAlign.center,
+                        style:
+                            TextStyle(color: _textSecondary, fontSize: 13.sp),
                       ),
-                    ),
-                    SizedBox(height: 6.h),
-                    Text(
-                      result.message.isNotEmpty
-                          ? result.message
-                          : (pending
-                              ? 'Your funding is being processed'
-                              : 'Funds sent to your betting wallet'),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: _textSecondary, fontSize: 13.sp),
-                    ),
-                    if (pending) ...[
+                      if (pending) ...[
+                        SizedBox(height: 12.h),
+                        TextButton.icon(
+                          onPressed: _refreshing ? null : _refreshStatus,
+                          icon:
+                              Icon(Icons.refresh, color: _primary, size: 18.sp),
+                          label: Text('Refresh status',
+                              style: TextStyle(
+                                  color: _primary,
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w600)),
+                        ),
+                      ],
+                      SizedBox(height: 28.h),
+                      Container(
+                        padding: EdgeInsets.all(16.w),
+                        decoration: BoxDecoration(
+                          color: _card,
+                          borderRadius: BorderRadius.circular(14.r),
+                        ),
+                        child: Column(
+                          children: [
+                            _row(
+                                'Platform',
+                                _platformName.isNotEmpty
+                                    ? _platformName
+                                    : payment.platform),
+                            SizedBox(height: 10.h),
+                            if (_accountName.isNotEmpty) ...[
+                              _row('Account name', _accountName),
+                              SizedBox(height: 10.h),
+                            ],
+                            _row('Account', payment.customerNumber),
+                            SizedBox(height: 10.h),
+                            _row('Reference', payment.reference),
+                            if (result.providerReference.isNotEmpty) ...[
+                              SizedBox(height: 10.h),
+                              _row('Provider ref', result.providerReference),
+                            ],
+                            SizedBox(height: 10.h),
+                            _row('Status', payment.status),
+                          ],
+                        ),
+                      ),
                       SizedBox(height: 12.h),
-                      TextButton.icon(
-                        onPressed: _refreshing ? null : _refreshStatus,
-                        icon: Icon(Icons.refresh, color: _primary, size: 18.sp),
-                        label: Text('Refresh status',
-                            style: TextStyle(
-                                color: _primary,
+                      BettingGradientCard(
+                        padding: EdgeInsets.all(18.w),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Amount funded',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.85),
                                 fontSize: 14.sp,
-                                fontWeight: FontWeight.w600)),
+                              ),
+                            ),
+                            Text(
+                              '₦${payment.amount.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20.sp,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
-                    SizedBox(height: 28.h),
-                    Container(
-                      padding: EdgeInsets.all(16.w),
-                      decoration: BoxDecoration(
-                        color: _card,
-                        borderRadius: BorderRadius.circular(14.r),
-                      ),
-                      child: Column(
-                        children: [
-                          _row('Platform',
-                              _platformName.isNotEmpty ? _platformName : payment.platform),
-                          SizedBox(height: 10.h),
-                          if (_accountName.isNotEmpty) ...[
-                            _row('Account name', _accountName),
-                            SizedBox(height: 10.h),
-                          ],
-                          _row('Account', payment.customerNumber),
-                          SizedBox(height: 10.h),
-                          _row('Reference', payment.reference),
-                          if (result.providerReference.isNotEmpty) ...[
-                            SizedBox(height: 10.h),
-                            _row('Provider ref', result.providerReference),
-                          ],
-                          SizedBox(height: 10.h),
-                          _row('Status', payment.status),
-                        ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(20.w),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _shareReceipt(
+                            context, result, _platformName, _accountName),
+                        icon: Icon(Icons.receipt_long_outlined,
+                            color: _primary, size: 18.sp),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: _primary),
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14.r),
+                          ),
+                        ),
+                        // Labelled "Share" while it actually opens the full
+                        // UnifiedTransactionReceipt — the same screen Send Funds
+                        // uses, carrying BOTH Download (PNG to
+                        // .../Lazervault/Receipts/) and Share. Users who wanted
+                        // to save a betting receipt had no reason to press a
+                        // button that said Share.
+                        label: Text('View receipt',
+                            style: TextStyle(color: _primary, fontSize: 14.sp)),
                       ),
                     ),
-                    SizedBox(height: 12.h),
-                    BettingGradientCard(
-                      padding: EdgeInsets.all(18.w),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Amount funded',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.85),
-                              fontSize: 14.sp,
-                            ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _exitToBillsHub,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _primary,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14.r),
                           ),
-                          Text(
-                            '₦${payment.amount.toStringAsFixed(2)}',
+                        ),
+                        child: Text('Done',
                             style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20.sp,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ],
+                                fontSize: 14.sp, fontWeight: FontWeight.w700)),
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(20.w),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => _shareReceipt(
-                          context, result, _platformName, _accountName),
-                      icon: Icon(Icons.receipt_long_outlined,
-                          color: _primary, size: 18.sp),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: _primary),
-                        padding: EdgeInsets.symmetric(vertical: 14.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14.r),
-                        ),
-                      ),
-                      // Labelled "Share" while it actually opens the full
-                      // UnifiedTransactionReceipt — the same screen Send Funds
-                      // uses, carrying BOTH Download (PNG to
-                      // .../Lazervault/Receipts/) and Share. Users who wanted
-                      // to save a betting receipt had no reason to press a
-                      // button that said Share.
-                      label: Text('View receipt',
-                          style: TextStyle(color: _primary, fontSize: 14.sp)),
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _exitToBillsHub,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _primary,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        padding: EdgeInsets.symmetric(vertical: 14.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14.r),
-                        ),
-                      ),
-                      child: Text('Done',
-                          style: TextStyle(
-                              fontSize: 14.sp, fontWeight: FontWeight.w700)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }

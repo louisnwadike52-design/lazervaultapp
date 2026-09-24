@@ -95,8 +95,7 @@ class _ExchangeReceiptByRefScreenState
                     SizedBox(height: 16.h),
                     Text(
                       'Loading receipt…',
-                      style: TextStyle(
-                          color: _textSecondary, fontSize: 14.sp),
+                      style: TextStyle(color: _textSecondary, fontSize: 14.sp),
                     ),
                   ],
                 )
@@ -111,8 +110,7 @@ class _ExchangeReceiptByRefScreenState
                       Text(
                         _error!,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Colors.white, fontSize: 15.sp),
+                        style: TextStyle(color: Colors.white, fontSize: 15.sp),
                       ),
                       SizedBox(height: 24.h),
                       Row(

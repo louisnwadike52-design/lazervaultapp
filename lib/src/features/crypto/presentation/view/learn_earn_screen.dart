@@ -14,7 +14,6 @@ import '../../data/models/crypto_model.dart';
 import 'crypto_detail_screen.dart';
 part 'learn_earn_screen_widgets.dart';
 
-
 // ---------------------------------------------------------------------------
 // Colors
 // ---------------------------------------------------------------------------
@@ -41,9 +40,12 @@ MarkdownStyleSheet _lessonMarkdownStyle() {
     p: body,
     strong: body.copyWith(color: Colors.white, fontWeight: FontWeight.w700),
     em: body.copyWith(fontStyle: FontStyle.italic),
-    h1: GoogleFonts.inter(fontSize: 18.sp, color: Colors.white, fontWeight: FontWeight.w700),
-    h2: GoogleFonts.inter(fontSize: 16.sp, color: Colors.white, fontWeight: FontWeight.w700),
-    h3: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white, fontWeight: FontWeight.w600),
+    h1: GoogleFonts.inter(
+        fontSize: 18.sp, color: Colors.white, fontWeight: FontWeight.w700),
+    h2: GoogleFonts.inter(
+        fontSize: 16.sp, color: Colors.white, fontWeight: FontWeight.w700),
+    h3: GoogleFonts.inter(
+        fontSize: 14.sp, color: Colors.white, fontWeight: FontWeight.w600),
     listBullet: body,
     blockquote: body.copyWith(color: Colors.white.withValues(alpha: 0.6)),
     a: body.copyWith(color: const Color(0xFF3B82F6)),
@@ -208,7 +210,9 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
       // Reload whenever Discover is opened with nothing to show — the old
       // guard (_isLoadingDiscover && no error) fired exactly once, so a failed
       // first load left a sticky error with no retry on re-entering the tab.
-      if (_tabController.index == 1 && _topCryptos.isEmpty && !_isDiscoverFetching) {
+      if (_tabController.index == 1 &&
+          _topCryptos.isEmpty &&
+          !_isDiscoverFetching) {
         _loadDiscoverData();
       }
     });
@@ -413,7 +417,8 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
         ),
         indicatorSize: TabBarIndicatorSize.tab,
         dividerHeight: 0,
-        labelStyle: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
+        labelStyle:
+            GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
         unselectedLabelStyle: GoogleFonts.inter(fontSize: 14.sp),
         labelColor: Colors.white,
         unselectedLabelColor: _kTextSecondary,
@@ -540,7 +545,8 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
                   Text(
                     _discoverError!,
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(fontSize: 14.sp, color: _kTextSecondary),
+                    style: GoogleFonts.inter(
+                        fontSize: 14.sp, color: _kTextSecondary),
                   ),
                 ],
               ),
@@ -557,7 +563,10 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
         children: [
           _sectionTitle('Top Cryptocurrencies', Icons.emoji_events),
           SizedBox(height: 12.h),
-          ..._topCryptos.asMap().entries.map((e) => _buildCryptoRow(e.key + 1, e.value)),
+          ..._topCryptos
+              .asMap()
+              .entries
+              .map((e) => _buildCryptoRow(e.key + 1, e.value)),
           SizedBox(height: 28.h),
           _sectionTitle('Trending News', Icons.newspaper),
           SizedBox(height: 12.h),
@@ -567,7 +576,8 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
               child: Center(
                 child: Text(
                   'No news articles available right now.',
-                  style: GoogleFonts.inter(fontSize: 13.sp, color: _kTextSecondary),
+                  style: GoogleFonts.inter(
+                      fontSize: 13.sp, color: _kTextSecondary),
                 ),
               ),
             )
@@ -581,7 +591,8 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
 
   Widget _buildCryptoRow(int rank, CryptoMessage crypto) {
     final priceFmt = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
-    final mcapFmt = NumberFormat.compactCurrency(symbol: '\$', decimalDigits: 1);
+    final mcapFmt =
+        NumberFormat.compactCurrency(symbol: '\$', decimalDigits: 1);
     final pctChange = crypto.priceChangePercentage24h;
     final isPositive = pctChange >= 0;
 
@@ -592,84 +603,87 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
       onTap: () => Get.to(() =>
           CryptoDetailScreen(crypto: CryptoModel.fromProto(crypto).toEntity())),
       child: Container(
-      margin: EdgeInsets.only(bottom: 8.h),
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        color: _kCard,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: _kDivider, width: 0.5),
-      ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 24.w,
-            child: Text(
-              '#$rank',
-              style: GoogleFonts.inter(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
-                color: _kTextSecondary,
+        margin: EdgeInsets.only(bottom: 8.h),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: _kCard,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: _kDivider, width: 0.5),
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 24.w,
+              child: Text(
+                '#$rank',
+                style: GoogleFonts.inter(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                  color: _kTextSecondary,
+                ),
               ),
             ),
-          ),
-          if (crypto.image.isNotEmpty)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16.r),
-              child: Image.network(
-                crypto.image,
-                width: 32.w,
-                height: 32.w,
-                errorBuilder: (_, __, ___) => _placeholderIcon(crypto.symbol),
+            if (crypto.image.isNotEmpty)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16.r),
+                child: Image.network(
+                  crypto.image,
+                  width: 32.w,
+                  height: 32.w,
+                  errorBuilder: (_, __, ___) => _placeholderIcon(crypto.symbol),
+                ),
+              )
+            else
+              _placeholderIcon(crypto.symbol),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    crypto.name,
+                    style: GoogleFonts.inter(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    '${crypto.symbol.toUpperCase()}  |  MCap ${mcapFmt.format(crypto.marketCap)}',
+                    style: GoogleFonts.inter(
+                        fontSize: 11.sp, color: _kTextSecondary),
+                  ),
+                ],
               ),
-            )
-          else
-            _placeholderIcon(crypto.symbol),
-          SizedBox(width: 10.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  crypto.name,
+                  priceFmt.format(crypto.currentPrice),
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  '${crypto.symbol.toUpperCase()}  |  MCap ${mcapFmt.format(crypto.marketCap)}',
-                  style: GoogleFonts.inter(fontSize: 11.sp, color: _kTextSecondary),
+                  '${isPositive ? '+' : ''}${pctChange.toStringAsFixed(2)}%',
+                  style: GoogleFonts.inter(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w500,
+                    color: isPositive
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFFEF4444),
+                  ),
                 ),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                priceFmt.format(crypto.currentPrice),
-                style: GoogleFonts.inter(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(height: 2.h),
-              Text(
-                '${isPositive ? '+' : ''}${pctChange.toStringAsFixed(2)}%',
-                style: GoogleFonts.inter(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w500,
-                  color: isPositive ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
@@ -685,13 +699,16 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
       alignment: Alignment.center,
       child: Text(
         symbol.substring(0, symbol.length.clamp(0, 2)).toUpperCase(),
-        style: GoogleFonts.inter(fontSize: 11.sp, fontWeight: FontWeight.w700, color: _kAccent),
+        style: GoogleFonts.inter(
+            fontSize: 11.sp, fontWeight: FontWeight.w700, color: _kAccent),
       ),
     );
   }
 
   Widget _buildNewsCard(CryptoNewsItem news) {
-    final timeAgo = news.hasPublishedAt() ? _formatTimeAgo(news.publishedAt.toDateTime()) : '';
+    final timeAgo = news.hasPublishedAt()
+        ? _formatTimeAgo(news.publishedAt.toDateTime())
+        : '';
     final sentiment = news.sentiment.isNotEmpty ? news.sentiment : null;
 
     // Tappable → open the article (news.url was silently discarded before —
@@ -702,53 +719,56 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
           : () => launchUrl(Uri.parse(news.url),
               mode: LaunchMode.externalApplication),
       child: Container(
-      margin: EdgeInsets.only(bottom: 10.h),
-      padding: EdgeInsets.all(14.w),
-      decoration: BoxDecoration(
-        color: _kCard,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: _kDivider, width: 0.5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            news.title,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-              height: 1.4,
+        margin: EdgeInsets.only(bottom: 10.h),
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: _kCard,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: _kDivider, width: 0.5),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              news.title,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                height: 1.4,
+              ),
             ),
-          ),
-          SizedBox(height: 10.h),
-          Row(
-            children: [
-              if (news.source.isNotEmpty) ...[
-                Icon(Icons.language, size: 13.sp, color: _kTextSecondary),
-                SizedBox(width: 4.w),
-                Flexible(
-                  child: Text(
-                    news.source,
-                    style: GoogleFonts.inter(fontSize: 11.sp, color: _kTextSecondary),
-                    overflow: TextOverflow.ellipsis,
+            SizedBox(height: 10.h),
+            Row(
+              children: [
+                if (news.source.isNotEmpty) ...[
+                  Icon(Icons.language, size: 13.sp, color: _kTextSecondary),
+                  SizedBox(width: 4.w),
+                  Flexible(
+                    child: Text(
+                      news.source,
+                      style: GoogleFonts.inter(
+                          fontSize: 11.sp, color: _kTextSecondary),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-                SizedBox(width: 10.w),
+                  SizedBox(width: 10.w),
+                ],
+                if (timeAgo.isNotEmpty) ...[
+                  Icon(Icons.access_time, size: 13.sp, color: _kTextSecondary),
+                  SizedBox(width: 4.w),
+                  Text(timeAgo,
+                      style: GoogleFonts.inter(
+                          fontSize: 11.sp, color: _kTextSecondary)),
+                ],
+                const Spacer(),
+                if (sentiment != null) _sentimentBadge(sentiment),
               ],
-              if (timeAgo.isNotEmpty) ...[
-                Icon(Icons.access_time, size: 13.sp, color: _kTextSecondary),
-                SizedBox(width: 4.w),
-                Text(timeAgo, style: GoogleFonts.inter(fontSize: 11.sp, color: _kTextSecondary)),
-              ],
-              const Spacer(),
-              if (sentiment != null) _sentimentBadge(sentiment),
-            ],
-          ),
-        ],
-      ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -769,10 +789,12 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
     }
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(6.r)),
+      decoration:
+          BoxDecoration(color: bg, borderRadius: BorderRadius.circular(6.r)),
       child: Text(
         sentiment[0].toUpperCase() + sentiment.substring(1),
-        style: GoogleFonts.inter(fontSize: 10.sp, fontWeight: FontWeight.w600, color: fg),
+        style: GoogleFonts.inter(
+            fontSize: 10.sp, fontWeight: FontWeight.w600, color: fg),
       ),
     );
   }

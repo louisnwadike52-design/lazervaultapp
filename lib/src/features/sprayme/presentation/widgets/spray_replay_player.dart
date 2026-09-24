@@ -12,9 +12,11 @@ class SprayReplayPlayer extends StatefulWidget {
 
   const SprayReplayPlayer({super.key, required this.url, required this.title});
 
-  static Future<void> open(BuildContext context, {required String url, required String title}) {
+  static Future<void> open(BuildContext context,
+      {required String url, required String title}) {
     return Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => SprayReplayPlayer(url: url, title: title)),
+      MaterialPageRoute(
+          builder: (_) => SprayReplayPlayer(url: url, title: title)),
     );
   }
 
@@ -100,15 +102,23 @@ class _SprayReplayPlayerState extends State<SprayReplayPlayer> {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.error_outline, size: 44.sp, color: const Color(0xFF9CA3AF)),
+          Icon(Icons.error_outline,
+              size: 44.sp, color: const Color(0xFF9CA3AF)),
           SizedBox(height: 12.h),
           Text('Replay unavailable',
-              style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w600)),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600)),
           SizedBox(height: 4.h),
           Text("We couldn't load this recording",
-              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+              style:
+                  TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
           SizedBox(height: 12.h),
-          TextButton(onPressed: _retry, child: const Text('Retry', style: TextStyle(color: Color(0xFF3B82F6)))),
+          TextButton(
+              onPressed: _retry,
+              child: const Text('Retry',
+                  style: TextStyle(color: Color(0xFF3B82F6)))),
         ],
       );
     }
@@ -134,8 +144,12 @@ class _SprayReplayPlayerState extends State<SprayReplayPlayer> {
                 ),
                 Expanded(
                   child: Text(widget.title,
-                      style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w600),
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
                 ),
               ],
             ),
@@ -144,7 +158,10 @@ class _SprayReplayPlayerState extends State<SprayReplayPlayer> {
           if (c != null && c.value.isInitialized) ...[
             IconButton(
               iconSize: 56.sp,
-              icon: Icon(c.value.isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+              icon: Icon(
+                  c.value.isPlaying
+                      ? Icons.pause_circle_filled
+                      : Icons.play_circle_filled,
                   color: Colors.white),
               onPressed: _togglePlay,
             ),

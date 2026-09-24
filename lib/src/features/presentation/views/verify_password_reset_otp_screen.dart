@@ -8,10 +8,12 @@ class VerifyPasswordResetOTPScreen extends StatefulWidget {
   const VerifyPasswordResetOTPScreen({super.key});
 
   @override
-  State<VerifyPasswordResetOTPScreen> createState() => _VerifyPasswordResetOTPScreenState();
+  State<VerifyPasswordResetOTPScreen> createState() =>
+      _VerifyPasswordResetOTPScreenState();
 }
 
-class _VerifyPasswordResetOTPScreenState extends State<VerifyPasswordResetOTPScreen> {
+class _VerifyPasswordResetOTPScreenState
+    extends State<VerifyPasswordResetOTPScreen> {
   @override
   void initState() {
     super.initState();

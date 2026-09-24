@@ -278,16 +278,14 @@ class _StocksVoiceAgentControlState extends State<StocksVoiceAgentControl> {
                   icon: Icon(_isConnected ? Icons.call_end : Icons.call),
                   label: Text(_isConnected ? 'Disconnect' : 'Connect'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        _isConnected ? Colors.red : Colors.green,
+                    backgroundColor: _isConnected ? Colors.red : Colors.green,
                     foregroundColor: Colors.white,
                   ),
                 ),
                 // Speaker button
                 IconButton(
                   onPressed: _isConnected ? _toggleSpeaker : null,
-                  icon: Icon(
-                      _isSpeakerOn ? Icons.volume_up : Icons.volume_off),
+                  icon: Icon(_isSpeakerOn ? Icons.volume_up : Icons.volume_off),
                   color: Colors.blue,
                 ),
               ],

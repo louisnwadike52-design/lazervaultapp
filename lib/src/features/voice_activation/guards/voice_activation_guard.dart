@@ -63,7 +63,8 @@ class VoiceActivationGuard {
       return await _showMandatoryActivationDialog(context, userId, featureName);
     } else {
       // Show optional activation prompt
-      return await _showOptionalActivationDialog(context, userId, featureName, skips);
+      return await _showOptionalActivationDialog(
+          context, userId, featureName, skips);
     }
   }
 
@@ -88,7 +89,8 @@ class VoiceActivationGuard {
                 color: Colors.orange[50],
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.mic_rounded, color: Colors.orange[700], size: 24),
+              child:
+                  Icon(Icons.mic_rounded, color: Colors.orange[700], size: 24),
             ),
             const SizedBox(width: 12),
             const Expanded(
@@ -149,7 +151,8 @@ class VoiceActivationGuard {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Activate Now', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text('Activate Now',
+                style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -208,12 +211,14 @@ class VoiceActivationGuard {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, color: Colors.orange[700], size: 20),
+                    Icon(Icons.info_outline,
+                        color: Colors.orange[700], size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'You can skip $remainingSkips more time${remainingSkips == 1 ? '' : 's'} before voice activation becomes mandatory.',
-                        style: TextStyle(fontSize: 12, color: Colors.orange[900]),
+                        style:
+                            TextStyle(fontSize: 12, color: Colors.orange[900]),
                       ),
                     ),
                   ],
@@ -251,7 +256,8 @@ class VoiceActivationGuard {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Activate', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text('Activate',
+                style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -366,7 +372,7 @@ class VoiceProtectedFeatures {
   static bool requiresEnrollment(String featureName) {
     final level = getLevel(featureName);
     return level == VoiceFeatureLevel.enrollmentRequired ||
-           level == VoiceFeatureLevel.verificationRequired;
+        level == VoiceFeatureLevel.verificationRequired;
   }
 }
 

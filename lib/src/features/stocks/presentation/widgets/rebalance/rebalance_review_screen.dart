@@ -20,7 +20,8 @@ class RebalanceReviewScreen extends StatelessWidget {
 
   double get _estimatedFees {
     // $0.01 per share commission
-    final totalShares = trades.fold(0, (sum, trade) => sum + trade.sharesToTrade);
+    final totalShares =
+        trades.fold(0, (sum, trade) => sum + trade.sharesToTrade);
     return totalShares * 0.01;
   }
 
@@ -108,9 +109,11 @@ class RebalanceReviewScreen extends StatelessWidget {
             _buildDivider(),
             _buildDetailRow('Total Trades', '${trades.length}'),
             _buildDivider(),
-            _buildDetailRow('Portfolio Value', CurrencySymbols.formatAmountWithCurrency(totalValue, 'USD')),
+            _buildDetailRow('Portfolio Value',
+                CurrencySymbols.formatAmountWithCurrency(totalValue, 'USD')),
             _buildDivider(),
-            _buildDetailRow('Estimated Fees', CurrencySymbols.formatAmountWithCurrency(_estimatedFees, 'USD'),
+            _buildDetailRow('Estimated Fees',
+                CurrencySymbols.formatAmountWithCurrency(_estimatedFees, 'USD'),
                 valueColor: Colors.orange),
           ]),
 
@@ -176,9 +179,7 @@ class RebalanceReviewScreen extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: _netCashFlow >= 0
-                        ? Colors.green
-                        : Colors.red,
+                    color: _netCashFlow >= 0 ? Colors.green : Colors.red,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -383,7 +384,8 @@ class RebalanceReviewScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoBox(IconData icon, String title, String message, Color color) {
+  Widget _buildInfoBox(
+      IconData icon, String title, String message, Color color) {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(

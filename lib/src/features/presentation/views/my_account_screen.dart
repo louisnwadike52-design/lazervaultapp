@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lazervault/src/features/widgets/my_account.dart';
 
-
 class MyAccountScreen extends StatefulWidget {
   const MyAccountScreen({super.key});
 
@@ -10,7 +9,6 @@ class MyAccountScreen extends StatefulWidget {
 }
 
 class _MyAccountScreenState extends State<MyAccountScreen> {
-
   @override
   void initState() {
     super.initState();
@@ -28,4 +26,3 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     );
   }
 }
-

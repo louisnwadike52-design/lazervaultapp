@@ -96,17 +96,17 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
     if (_isPickingImage) return;
     _isPickingImage = true;
     try {
-    final XFile? image = await _imagePicker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 1024,
-      maxHeight: 1024,
-      imageQuality: 85,
-    );
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
 
-    if (image != null && mounted) {
-      final cubit = context.read<CreateInvoiceCubit>();
-      cubit.updatePayerImage(File(image.path));
-    }
+      if (image != null && mounted) {
+        final cubit = context.read<CreateInvoiceCubit>();
+        cubit.updatePayerImage(File(image.path));
+      }
     } finally {
       _isPickingImage = false;
     }
@@ -255,7 +255,9 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
           icon: Icon(Icons.add, size: 18.sp, color: _accent),
           label: Text('Add person',
               style: GoogleFonts.inter(
-                  color: _accent, fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                  color: _accent,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600)),
           style: OutlinedButton.styleFrom(
             side: BorderSide(color: _accent.withValues(alpha: 0.5)),
             padding: EdgeInsets.symmetric(vertical: 12.h),
@@ -269,7 +271,8 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
               padding: EdgeInsets.only(bottom: 10.h),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, size: 14.sp, color: Colors.grey[500]),
+                  Icon(Icons.info_outline,
+                      size: 14.sp, color: Colors.grey[500]),
                   SizedBox(width: 6.w),
                   Expanded(
                     child: Text(
@@ -303,10 +306,10 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
           CircleAvatar(
             radius: 18.r,
             backgroundColor: _accent.withValues(alpha: 0.15),
-            backgroundImage: (p.profilePicture != null &&
-                    p.profilePicture!.isNotEmpty)
-                ? NetworkImage(p.profilePicture!)
-                : null,
+            backgroundImage:
+                (p.profilePicture != null && p.profilePicture!.isNotEmpty)
+                    ? NetworkImage(p.profilePicture!)
+                    : null,
             child: (p.profilePicture == null || p.profilePicture!.isEmpty)
                 ? Text(
                     name.isNotEmpty ? name[0].toUpperCase() : '?',
@@ -377,18 +380,17 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
             .withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-            color: (balanced
-                    ? const Color(0xFF10B981)
-                    : const Color(0xFFFB923C))
-                .withValues(alpha: 0.35)),
+            color:
+                (balanced ? const Color(0xFF10B981) : const Color(0xFFFB923C))
+                    .withValues(alpha: 0.35)),
       ),
       child: Column(
         children: [
-          _summaryRow('Assigned',
-              '$symbol${assigned.toStringAsFixed(2)}', Colors.white),
+          _summaryRow('Assigned', '$symbol${assigned.toStringAsFixed(2)}',
+              Colors.white),
           SizedBox(height: 4.h),
-          _summaryRow('Invoice total',
-              '$symbol${total.toStringAsFixed(2)}', Colors.grey[400]!),
+          _summaryRow('Invoice total', '$symbol${total.toStringAsFixed(2)}',
+              Colors.grey[400]!),
           if (!balanced) ...[
             SizedBox(height: 6.h),
             _summaryRow(
@@ -399,7 +401,8 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
           ] else if (cubit.splitCustom) ...[
             SizedBox(height: 6.h),
             Row(children: [
-              Icon(Icons.check_circle, size: 14.sp, color: const Color(0xFF10B981)),
+              Icon(Icons.check_circle,
+                  size: 14.sp, color: const Color(0xFF10B981)),
               SizedBox(width: 6.w),
               Text('Amounts add up to the total',
                   style: GoogleFonts.inter(
@@ -434,7 +437,8 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
       username: user.username,
       firstName: user.firstName,
       lastName: user.lastName,
-      profilePicture: user.profilePicture.isNotEmpty ? user.profilePicture : null,
+      profilePicture:
+          user.profilePicture.isNotEmpty ? user.profilePicture : null,
     ));
   }
 
@@ -475,8 +479,7 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
               FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
             ],
             style: const TextStyle(color: Colors.white),
-            onSubmitted: (v) =>
-                closeWith(ctx, double.tryParse(v.trim()) ?? 0),
+            onSubmitted: (v) => closeWith(ctx, double.tryParse(v.trim()) ?? 0),
             decoration: InputDecoration(
               prefixText: symbol,
               prefixStyle: const TextStyle(color: Colors.white),

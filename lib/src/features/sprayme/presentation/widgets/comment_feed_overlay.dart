@@ -11,7 +11,8 @@ final RegExp mentionRegExp = RegExp(r'@[A-Za-z0-9_.]+');
 /// True if [text] @mentions [userName] (case-insensitive), e.g. "@louis".
 bool commentMentions(String text, String userName) {
   if (userName.trim().isEmpty) return false;
-  final handle = '@${userName.trim().split(RegExp(r"\s+")).first}'.toLowerCase();
+  final handle =
+      '@${userName.trim().split(RegExp(r"\s+")).first}'.toLowerCase();
   for (final m in mentionRegExp.allMatches(text)) {
     if (m.group(0)!.toLowerCase() == handle) return true;
   }
@@ -73,7 +74,9 @@ class CommentFeedOverlay extends StatelessWidget {
               key: ValueKey('comment_${visible[i].id}_$i'),
               comment: visible[i],
               // Fade older comments: only show full opacity for newest (bottom) comments
-              opacity: i >= visible.length - 2 ? 1.0 : (i >= visible.length - 4 ? 0.7 : 0.4),
+              opacity: i >= visible.length - 2
+                  ? 1.0
+                  : (i >= visible.length - 4 ? 0.7 : 0.4),
             ),
         ],
       ),
@@ -286,8 +289,7 @@ class _CommentInputBarState extends State<CommentInputBar> {
     final after = text.substring(sel.start);
     final inserted = '$before@$handle ';
     _controller.text = '$inserted$after';
-    _controller.selection =
-        TextSelection.collapsed(offset: inserted.length);
+    _controller.selection = TextSelection.collapsed(offset: inserted.length);
     setState(() {
       _suggestions = const [];
       _hasText = _controller.text.trim().isNotEmpty;

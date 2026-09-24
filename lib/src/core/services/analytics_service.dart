@@ -410,7 +410,8 @@ class AnalyticsService {
   void _requeue(List<AnalyticsEvent> events) {
     final room = _maxQueueSize - _eventQueue.length;
     if (room <= 0) return;
-    final take = events.length > room ? events.sublist(events.length - room) : events;
+    final take =
+        events.length > room ? events.sublist(events.length - room) : events;
     _eventQueue.insertAll(0, take);
   }
 
@@ -434,7 +435,8 @@ class AnalyticsService {
 
   Future<void> setEnabled(bool enabled) async {
     _isEnabled = enabled;
-    await _secureStorage.write(key: _enabledKey, value: enabled ? 'true' : 'false');
+    await _secureStorage.write(
+        key: _enabledKey, value: enabled ? 'true' : 'false');
   }
 
   void clearQueue() {

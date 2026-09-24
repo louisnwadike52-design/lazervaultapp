@@ -84,13 +84,10 @@ class AutoSaveProgressIndicator extends StatelessWidget {
           height: 8.h,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: reached
-                ? const Color(0xFF10B981)
-                : const Color(0xFF2D2D2D),
+            color: reached ? const Color(0xFF10B981) : const Color(0xFF2D2D2D),
             border: Border.all(
-              color: reached
-                  ? const Color(0xFF10B981)
-                  : const Color(0xFF4E03D0),
+              color:
+                  reached ? const Color(0xFF10B981) : const Color(0xFF4E03D0),
               width: 1.5,
             ),
           ),

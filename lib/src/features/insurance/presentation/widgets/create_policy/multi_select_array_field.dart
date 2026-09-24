@@ -127,7 +127,8 @@ class _MultiSelectArrayFieldState extends State<MultiSelectArrayField> {
                 onTap: () => _toggle(opt),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 120),
-                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
                   decoration: BoxDecoration(
                     color: isSel
                         ? const Color(0xFF6366F1).withValues(alpha: 0.2)
@@ -151,13 +152,11 @@ class _MultiSelectArrayFieldState extends State<MultiSelectArrayField> {
                     SizedBox(width: 6.w),
                     Text(_display(opt),
                         style: GoogleFonts.inter(
-                            color: isSel
-                                ? Colors.white
-                                : const Color(0xFFD1D5DB),
+                            color:
+                                isSel ? Colors.white : const Color(0xFFD1D5DB),
                             fontSize: 13.sp,
-                            fontWeight: isSel
-                                ? FontWeight.w600
-                                : FontWeight.w400)),
+                            fontWeight:
+                                isSel ? FontWeight.w600 : FontWeight.w400)),
                   ]),
                 ),
               );

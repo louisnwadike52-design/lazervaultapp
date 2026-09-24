@@ -130,8 +130,7 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen> {
     Get.snackbar(
       title,
       body,
-      backgroundColor:
-          ok ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+      backgroundColor: ok ? const Color(0xFF10B981) : const Color(0xFFEF4444),
       colorText: Colors.white,
       snackPosition: SnackPosition.BOTTOM,
       margin: EdgeInsets.all(16.w),

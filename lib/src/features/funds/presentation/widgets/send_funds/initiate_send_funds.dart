@@ -65,7 +65,6 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   // Recipient handling variables
   RecipientModel? _recipient;
 
-
   String amount =
       ''; // Stores amount as string of MINOR units (e.g., "2000" for £20.00)
   // final double maxAmount = 15358.00; // TODO: Get max from selected card/account later
@@ -87,7 +86,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   /// would be friction for the many to close a hole that only affects the few
   /// who opted into blocking, so the requirement is scoped to exactly them.
   bool _hasStrictBudget = false;
-  List<ServiceCategory> _availableCategories = ServiceCategory.commonTransferCategories;
+  List<ServiceCategory> _availableCategories =
+      ServiceCategory.commonTransferCategories;
   final TextEditingController _referenceController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   bool _isConfirmingTransfer = false; // State for dialog loading
@@ -300,19 +300,23 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       late final void Function(RecurringTransferState) listener;
       listener = (state) {
         if (state is RecurringTransferListLoaded) {
-          final activeTransfers = state.transfers.where((t) => t.isActive).toList();
+          final activeTransfers =
+              state.transfers.where((t) => t.isActive).toList();
           if (activeTransfers.isNotEmpty && mounted) {
             setState(() {
               _isRecurringEnabled = true;
-              _recurringConfig = RecurringTransferConfig.fromEntity(activeTransfers.first);
+              _recurringConfig =
+                  RecurringTransferConfig.fromEntity(activeTransfers.first);
             });
           }
         }
       };
       // Listen once via stream
-      recurringCubit.stream.firstWhere(
+      recurringCubit.stream
+          .firstWhere(
         (s) => s is RecurringTransferListLoaded || s is RecurringTransferError,
-      ).then((state) {
+      )
+          .then((state) {
         if (state is RecurringTransferListLoaded) {
           listener(state);
         }
@@ -447,8 +451,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   Widget _buildCardSelector(AccountCardsSummaryState accountState) {
     if (accountState is AccountCardsSummaryLoading ||
         accountState is AccountCardsSummaryInitial) {
-      return const Center(
-          child: LazerVaultLoader.small());
+      return const Center(child: LazerVaultLoader.small());
     }
     if (accountState is AccountCardsSummaryError) {
       return Center(
@@ -478,8 +481,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
         }
       });
       // Show a loading state temporarily while index resets
-      return const Center(
-          child: LazerVaultLoader.small());
+      return const Center(child: LazerVaultLoader.small());
     }
 
     // LOCK the source to the active dashboard account: on the first build with
@@ -536,152 +538,158 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
         children: [
           for (final index in displayOrder)
             Builder(builder: (context) {
-          final account = summaries[index];
-            final isSelected = selectedCardIndex == index;
-            // Disabled = not the active dashboard account. You send from the
-            // wallet you're in; switch accounts on the dashboard to change it.
-            final isLocked = activeId != null &&
-                activeId.isNotEmpty &&
-                account.spendingAccountId != activeId &&
-                account.id != activeId;
-            // A frozen/suspended account can't be a transfer source — reflect
-            // it and refuse selection (accounts-service would reject the debit).
-            final isFrozen = account.isFrozen;
+              final account = summaries[index];
+              final isSelected = selectedCardIndex == index;
+              // Disabled = not the active dashboard account. You send from the
+              // wallet you're in; switch accounts on the dashboard to change it.
+              final isLocked = activeId != null &&
+                  activeId.isNotEmpty &&
+                  account.spendingAccountId != activeId &&
+                  account.id != activeId;
+              // A frozen/suspended account can't be a transfer source — reflect
+              // it and refuse selection (accounts-service would reject the debit).
+              final isFrozen = account.isFrozen;
 
-            // Determine account type display
-            String accountTypeDisplay = 'Personal';
-            Color accountTypeColor = Colors.blue;
-            IconData accountIcon = Icons.account_balance_wallet;
+              // Determine account type display
+              String accountTypeDisplay = 'Personal';
+              Color accountTypeColor = Colors.blue;
+              IconData accountIcon = Icons.account_balance_wallet;
 
-            final accountTypeLower = account.accountType.toLowerCase();
-            if (accountTypeLower.contains('saving')) {
-              accountTypeDisplay = 'Savings';
-              accountTypeColor = Colors.green;
-              accountIcon = Icons.savings;
-            } else if (accountTypeLower.contains('investment')) {
-              accountTypeDisplay = 'Investment';
-              accountTypeColor = Colors.orange;
-              accountIcon = Icons.trending_up;
-            } else if (accountTypeLower.contains('family')) {
-              accountTypeDisplay = 'Family & Friends';
-              accountTypeColor = const Color(0xFF7C6BF0);
-              accountIcon = Icons.family_restroom;
-            } else if (accountTypeLower.contains('business')) {
-              accountTypeDisplay = 'Business';
-              accountTypeColor = const Color(0xFFFB923C);
-              accountIcon = Icons.business_center;
-            } else if (accountTypeLower.contains('personal')) {
-              accountTypeDisplay = 'Personal';
-              accountTypeColor = Colors.blue;
-              accountIcon = Icons.account_balance_wallet;
-            }
+              final accountTypeLower = account.accountType.toLowerCase();
+              if (accountTypeLower.contains('saving')) {
+                accountTypeDisplay = 'Savings';
+                accountTypeColor = Colors.green;
+                accountIcon = Icons.savings;
+              } else if (accountTypeLower.contains('investment')) {
+                accountTypeDisplay = 'Investment';
+                accountTypeColor = Colors.orange;
+                accountIcon = Icons.trending_up;
+              } else if (accountTypeLower.contains('family')) {
+                accountTypeDisplay = 'Family & Friends';
+                accountTypeColor = const Color(0xFF7C6BF0);
+                accountIcon = Icons.family_restroom;
+              } else if (accountTypeLower.contains('business')) {
+                accountTypeDisplay = 'Business';
+                accountTypeColor = const Color(0xFFFB923C);
+                accountIcon = Icons.business_center;
+              } else if (accountTypeLower.contains('personal')) {
+                accountTypeDisplay = 'Personal';
+                accountTypeColor = Colors.blue;
+                accountIcon = Icons.account_balance_wallet;
+              }
 
-            String last4 = account.accountNumberLast4;
+              String last4 = account.accountNumberLast4;
 
-            return GestureDetector(
-              onTap: isFrozen
-                  ? () => Get.snackbar(
-                        'Account frozen',
-                        'This account is frozen. Unfreeze it in Account settings to send money.',
-                        snackPosition: SnackPosition.BOTTOM,
-                        backgroundColor: const Color(0xFFEF4444),
-                        colorText: Colors.white,
-                        margin: EdgeInsets.all(12.w),
-                        duration: const Duration(seconds: 3),
-                      )
-                  : isLocked
-                      ? () => Get.snackbar(
-                            'Locked to current account',
-                            'Switch accounts on the dashboard to send from a different wallet.',
-                            snackPosition: SnackPosition.BOTTOM,
-                            backgroundColor: Colors.black87,
-                            colorText: Colors.white,
-                            margin: EdgeInsets.all(12.w),
-                            duration: const Duration(seconds: 2),
-                          )
-                      : () => setState(() => selectedCardIndex = index),
-              child: Opacity(
-                opacity: (isLocked || isFrozen) ? 0.4 : 1.0,
-                child: Container(
-                margin: EdgeInsets.only(right: 12.w),
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
-                width: 160.w,
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? Colors.white.withValues(alpha: 0.15)
-                      : Colors.white.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(12),
-                  border: isSelected
-                      ? Border.all(color: accountTypeColor.withValues(alpha: 0.5), width: 1.5)
-                      : null,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 6,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  // Size to content (no fixed parent height anymore), so the
-                  // balance line is always laid out fully instead of clipped.
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Icon(
-                          accountIcon,
-                          color: accountTypeColor,
-                          size: 20,
+              return GestureDetector(
+                onTap: isFrozen
+                    ? () => Get.snackbar(
+                          'Account frozen',
+                          'This account is frozen. Unfreeze it in Account settings to send money.',
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: const Color(0xFFEF4444),
+                          colorText: Colors.white,
+                          margin: EdgeInsets.all(12.w),
+                          duration: const Duration(seconds: 3),
+                        )
+                    : isLocked
+                        ? () => Get.snackbar(
+                              'Locked to current account',
+                              'Switch accounts on the dashboard to send from a different wallet.',
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Colors.black87,
+                              colorText: Colors.white,
+                              margin: EdgeInsets.all(12.w),
+                              duration: const Duration(seconds: 2),
+                            )
+                        : () => setState(() => selectedCardIndex = index),
+                child: Opacity(
+                  opacity: (isLocked || isFrozen) ? 0.4 : 1.0,
+                  child: Container(
+                    margin: EdgeInsets.only(right: 12.w),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+                    width: 160.w,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? Colors.white.withValues(alpha: 0.15)
+                          : Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(12),
+                      border: isSelected
+                          ? Border.all(
+                              color: accountTypeColor.withValues(alpha: 0.5),
+                              width: 1.5)
+                          : null,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
                         ),
-                        Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                          decoration: BoxDecoration(
-                            color: isFrozen
-                                ? const Color(0xFFEF4444).withValues(alpha: 0.2)
-                                : accountTypeColor.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            isFrozen ? 'Frozen' : accountTypeDisplay,
-                            style: TextStyle(
-                              color: isFrozen
-                                  ? const Color(0xFFEF4444)
-                                  : accountTypeColor,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      // Size to content (no fixed parent height anymore), so the
+                      // balance line is always laid out fully instead of clipped.
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Icon(
+                              accountIcon,
+                              color: accountTypeColor,
+                              size: 20,
                             ),
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 8.w, vertical: 4.h),
+                              decoration: BoxDecoration(
+                                color: isFrozen
+                                    ? const Color(0xFFEF4444)
+                                        .withValues(alpha: 0.2)
+                                    : accountTypeColor.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                isFrozen ? 'Frozen' : accountTypeDisplay,
+                                style: TextStyle(
+                                  color: isFrozen
+                                      ? const Color(0xFFEF4444)
+                                      : accountTypeColor,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          '•••• $last4',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                          ),
+                        ),
+                        Text(
+                          NumberFormat.currency(
+                                  symbol: _getCurrencySymbol(account.currency),
+                                  decimalDigits: 2)
+                              .format(account.availableBalance),
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      '•••• $last4',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: isSelected
-                            ? FontWeight.w600
-                            : FontWeight.normal,
-                      ),
-                    ),
-                    Text(
-                      NumberFormat.currency(
-                              symbol: _getCurrencySymbol(account.currency), decimalDigits: 2)
-                          .format(account.availableBalance),
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-              ),
-            );
+              );
             }),
         ],
       ),
@@ -707,7 +715,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       decoration: BoxDecoration(
         color: const Color(0xFFEF4444).withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+        border:
+            Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
       ),
       child: Row(
         children: [
@@ -739,7 +748,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     };
 
     if (summaries.isNotEmpty && selectedCardIndex < summaries.length) {
-      currencySymbol = _getCurrencySymbol(summaries[selectedCardIndex].currency);
+      currencySymbol =
+          _getCurrencySymbol(summaries[selectedCardIndex].currency);
     }
 
     return SizedBox(
@@ -980,7 +990,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   }
 
   // Updated to use AccountSummaryEntity from AccountCardsSummaryCubit state
-  Future<void> _showTransferConfirmation(AccountCardsSummaryState accountState) async {
+  Future<void> _showTransferConfirmation(
+      AccountCardsSummaryState accountState) async {
     // COMPREHENSIVE EDGE CASE VALIDATION
 
     // 1. Validate amount is not empty and parseable
@@ -1096,21 +1107,25 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
 
     // For external transfers, estimate fee for pre-validation
     // The exact fee will be fetched later, but we use a cached/estimated fee here
-    final bool isExternalTransfer = _recipient != null && _recipient!.bankName != 'LazerVault';
+    final bool isExternalTransfer =
+        _recipient != null && _recipient!.bankName != 'LazerVault';
     final transferCubitState = context.read<TransferCubit>().state;
     double estimatedFee = 0.0;
     if (isExternalTransfer && transferCubitState is TransferFeeLoaded) {
       estimatedFee = transferCubitState.fee / 100.0;
     }
 
-    final double totalRequired = transferAmountMajor + (isExternalTransfer ? estimatedFee : 0.0);
+    final double totalRequired =
+        transferAmountMajor + (isExternalTransfer ? estimatedFee : 0.0);
 
     if (totalRequired > availableBalance) {
       final String message;
       if (isExternalTransfer && estimatedFee > 0) {
-        message = 'Insufficient balance. Amount ($currencySymbol${NumberFormat('#,###.00').format(transferAmountMajor)}) + Fee ($currencySymbol${NumberFormat('#,###.00').format(estimatedFee)}) = $currencySymbol${NumberFormat('#,###.00').format(totalRequired)} exceeds your balance of $currencySymbol${NumberFormat('#,###.00').format(availableBalance)}';
+        message =
+            'Insufficient balance. Amount ($currencySymbol${NumberFormat('#,###.00').format(transferAmountMajor)}) + Fee ($currencySymbol${NumberFormat('#,###.00').format(estimatedFee)}) = $currencySymbol${NumberFormat('#,###.00').format(totalRequired)} exceeds your balance of $currencySymbol${NumberFormat('#,###.00').format(availableBalance)}';
       } else {
-        message = 'Your balance ($currencySymbol${NumberFormat('#,###.00').format(availableBalance)}) is insufficient for this transfer of $currencySymbol${NumberFormat('#,###.00').format(transferAmountMajor)}. Please top up your account or use a different account.';
+        message =
+            'Your balance ($currencySymbol${NumberFormat('#,###.00').format(availableBalance)}) is insufficient for this transfer of $currencySymbol${NumberFormat('#,###.00').format(transferAmountMajor)}. Please top up your account or use a different account.';
       }
       Get.snackbar(
         'Insufficient Funds',
@@ -1140,7 +1155,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
 
     // Additional validation for external transfers
     if (_recipient!.bankName != 'LazerVault' &&
-        (_recipient!.sortCode.trim().isEmpty || _recipient!.bankName.trim().isEmpty)) {
+        (_recipient!.sortCode.trim().isEmpty ||
+            _recipient!.bankName.trim().isEmpty)) {
       Get.snackbar(
         'Invalid Recipient',
         'Bank details are incomplete. Please verify the recipient\'s bank information.',
@@ -1221,10 +1237,14 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
             return; // User cancelled
           }
 
-          if (action == BudgetOverrideAction.increaseBudget && budgetId.isNotEmpty) {
+          if (action == BudgetOverrideAction.increaseBudget &&
+              budgetId.isNotEmpty) {
             // Calculate suggested increase (amount that would cover the transaction)
-            final overage = budgetResult.currentSpent + transferAmountMajor - budgetResult.budgetLimit;
-            final increaseAmount = overage > 0 ? overage * 1.2 : transferAmountMajor; // 20% buffer
+            final overage = budgetResult.currentSpent +
+                transferAmountMajor -
+                budgetResult.budgetLimit;
+            final increaseAmount =
+                overage > 0 ? overage * 1.2 : transferAmountMajor; // 20% buffer
             final newLimit = budgetResult.budgetLimit + increaseAmount;
             await budgetCubit.updateBudget(
               budgetId: budgetId,
@@ -1304,529 +1324,606 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
           BlocProvider<TransferPredictionCubit>.value(value: _predictionCubit),
         ],
         child: Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: EdgeInsets.symmetric(horizontal: 16.w),
-        child: SingleChildScrollView(
-          child: Container(
-            width: double.infinity,
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(dialogContext).size.height * 0.78,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.95),
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  blurRadius: 24,
-                  spreadRadius: 3,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: EdgeInsets.symmetric(vertical: 16.h),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 44.w,
-                        height: 44.w,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Colors.white.withValues(alpha: 0.2),
-                              Colors.white.withValues(alpha: 0.05),
-                            ],
-                          ),
-                          border:
-                              Border.all(color: Colors.white.withValues(alpha: 0.2)),
-                        ),
-                        child: const Icon(Icons.send_rounded,
-                            color: Colors.white, size: 22),
-                      ),
-                      SizedBox(height: 10.h),
-                      const Text(
-                        'Transfer Confirmation',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+          backgroundColor: Colors.transparent,
+          insetPadding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: SingleChildScrollView(
+            child: Container(
+              width: double.infinity,
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(dialogContext).size.height * 0.78,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.95),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    blurRadius: 24,
+                    spreadRadius: 3,
+                    offset: const Offset(0, 8),
                   ),
-                ),
-                Flexible(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
                     child: Column(
                       children: [
                         Container(
+                          width: 44.w,
+                          height: 44.w,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.05),
-                            borderRadius: BorderRadius.circular(14),
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.white.withValues(alpha: 0.2),
+                                Colors.white.withValues(alpha: 0.05),
+                              ],
+                            ),
+                            border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.2)),
                           ),
-                          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-                          child: Column(
-                            children: [
-                              _buildConfirmationRow(
-                                'From',
-                                sourceAccountInfo, // Use fetched data
-                                '',
-                              ),
-                              _buildConfirmationRow(
-                                'To',
-                                _recipient!.name,
-                                // Empty for internal user recipients (no real
-                                // account number → don't mask the user-id UUID).
-                                _recipient!.maskedAccount,
-                              ),
-                              if (selectedCategory != null)
-                                _buildConfirmationRow(
-                                  'Category',
-                                  selectedCategory!.displayName,
-                                  '',
-                                ),
-                              _buildConfirmationRow(
-                                'Amount',
-                                '',
-                                NumberFormat.currency(
-                                        symbol: currencySymbol, decimalDigits: 2)
-                                    .format(transferAmountMajor),
-                              ),
-                              // Fee row - uses BlocConsumer to show real fee
-                              BlocConsumer<TransferCubit, TransferState>(
-                                listener: (context, feeState) {
-                                  // Check if amount + fee exceeds balance for external transfers
-                                  if (feeState is TransferFeeLoaded && isExternalTransfer) {
-                                    final feeMajor = feeState.fee / 100.0;
-                                    final totalRequired = transferAmountMajor + feeMajor;
-                                    if (totalRequired > availableBalance) {
-                                      Get.snackbar(
-                                        'Insufficient Funds',
-                                        'Amount ($currencySymbol${NumberFormat('#,###.00').format(transferAmountMajor)}) + Fee ($currencySymbol${NumberFormat('#,###.00').format(feeMajor)}) = $currencySymbol${NumberFormat('#,###.00').format(totalRequired)} exceeds your balance of $currencySymbol${NumberFormat('#,###.00').format(availableBalance)}',
-                                        snackPosition: SnackPosition.BOTTOM,
-                                        backgroundColor: Colors.red.withValues(alpha: 0.7),
-                                        colorText: Colors.white,
-                                        duration: const Duration(seconds: 5),
-                                      );
-                                    }
-                                  }
-                                },
-                                builder: (context, feeState) {
-                                  if (feeState is TransferFeeLoading) {
-                                    return Padding(
-                                      padding: EdgeInsets.symmetric(vertical: 4.h),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text('Transfer Fee',
-                                              style: TextStyle(color: Colors.white70, fontSize: 12.sp)),
-                                          LazerVaultLoader.tiny(),
-                                        ],
-                                      ),
-                                    );
-                                  }
-                                  final int feeMinor;
-                                  final int totalMinor;
-                                  if (feeState is TransferFeeLoaded) {
-                                    feeMinor = feeState.fee;
-                                    totalMinor = feeState.totalAmount;
-                                  } else {
-                                    // Fallback: 0 fee
-                                    feeMinor = 0;
-                                    totalMinor = int.tryParse(amount) ?? 0;
-                                  }
-                                  final feeMajor = feeMinor / 100.0;
-                                  final totalMajor = totalMinor / 100.0;
-                                  final bool isFree = feeMinor == 0;
-                                  return Column(
-                                    children: [
-                                      _buildConfirmationRow(
-                                        'Transfer Fee',
-                                        '',
-                                        isFree
-                                            ? 'Free'
-                                            : NumberFormat.currency(
-                                                    symbol: currencySymbol, decimalDigits: 2)
-                                                .format(feeMajor),
-                                      ),
-                                      _buildConfirmationRow(
-                                        'Total',
-                                        '',
-                                        NumberFormat.currency(
-                                                symbol: currencySymbol, decimalDigits: 2)
-                                            .format(totalMajor),
-                                        isTotal: true,
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
-                            ],
+                          child: const Icon(Icons.send_rounded,
+                              color: Colors.white, size: 22),
+                        ),
+                        SizedBox(height: 10.h),
+                        const Text(
+                          'Transfer Confirmation',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        // Informational, READ-ONLY transfer success prediction
-                        // (bank network + recipient trust). Shown AFTER the
-                        // recipient/amount/fee rows and BEFORE the PIN/Send
-                        // action. EXTERNAL transfers only; never blocks money.
-                        if (isExternalTransfer)
-                          const TransferPredictionAlert(),
-                        // Budget warning (flexible mode exceeded or near limit)
-                        if (_lastBudgetResult != null && _lastBudgetResult!.shouldShowWarning)
-                          Padding(
-                            padding: EdgeInsets.only(top: 8.h),
-                            child: CompactBudgetWarning(
-                              percentageUsed: _lastBudgetResult!.percentageUsed,
-                              status: _lastBudgetResult!.status,
-                              validationResult: _lastBudgetResult,
-                            ),
-                          ),
-                        if (scheduledDate != null)
-                          Padding(
-                            padding: EdgeInsets.symmetric(vertical: 10.h),
-                            child: Container(
-                              padding: EdgeInsets.all(10.w),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF2962FF).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(
-                                    Icons.schedule,
-                                    color: Color(0xFF2962FF),
-                                    size: 20,
-                                  ),
-                                  SizedBox(width: 8.w),
-                                  Text(
-                                    'Scheduled for ${DateFormat('MMM d, HH:mm').format(scheduledDate!)}',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14.sp,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        // Recurring payment toggle
-                        if (scheduledDate == null)
-                          StatefulBuilder(
-                            builder: (context, setRecurringState) {
-                              return Padding(
-                                padding: EdgeInsets.symmetric(vertical: 4.h),
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.05),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.repeat,
-                                        color: _isRecurringEnabled
-                                            ? const Color(0xFF3B82F6)
-                                            : const Color(0xFF9CA3AF),
-                                        size: 20.sp,
-                                      ),
-                                      SizedBox(width: 10.w),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Make Recurring',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 14.sp,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                            if (_isRecurringEnabled && _recurringConfig != null)
-                                              Text(
-                                                _recurringConfig!.summary,
-                                                style: TextStyle(
-                                                  color: const Color(0xFF3B82F6),
-                                                  fontSize: 12.sp,
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                      ),
-                                      Switch(
-                                        value: _isRecurringEnabled,
-                                        activeColor: const Color(0xFF3B82F6),
-                                        onChanged: (value) {
-                                          if (value) {
-                                            showModalBottomSheet(
-                                              context: dialogContext,
-                                              isScrollControlled: true,
-                                              backgroundColor: Colors.transparent,
-                                              builder: (_) => RecurringTransferModal(
-                                                initialConfig: _recurringConfig,
-                                                onConfigured: (config) {
-                                                  setRecurringState(() {
-                                                    _isRecurringEnabled = true;
-                                                    _recurringConfig = config;
-                                                  });
-                                                },
-                                              ),
-                                            );
-                                          } else {
-                                            setRecurringState(() {
-                                              _isRecurringEnabled = false;
-                                              _recurringConfig = null;
-                                            });
-                                          }
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        // Save Recipient is handled in the user confirmation bottom sheet
                       ],
                     ),
                   ),
-                ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 16.h),
-                  child: Column(
-                    children: [
-                      // Use StatefulBuilder to manage the button loading state locally
-                      StatefulBuilder(
-                        builder:
-                            (BuildContext dialogCtx, StateSetter setDialogState) {
-                          bool isDialogLoading =
-                              _isConfirmingTransfer; // Use the main state or a local one if preferred
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      child: Column(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 14.w, vertical: 10.h),
+                            child: Column(
+                              children: [
+                                _buildConfirmationRow(
+                                  'From',
+                                  sourceAccountInfo, // Use fetched data
+                                  '',
+                                ),
+                                _buildConfirmationRow(
+                                  'To',
+                                  _recipient!.name,
+                                  // Empty for internal user recipients (no real
+                                  // account number → don't mask the user-id UUID).
+                                  _recipient!.maskedAccount,
+                                ),
+                                if (selectedCategory != null)
+                                  _buildConfirmationRow(
+                                    'Category',
+                                    selectedCategory!.displayName,
+                                    '',
+                                  ),
+                                _buildConfirmationRow(
+                                  'Amount',
+                                  '',
+                                  NumberFormat.currency(
+                                          symbol: currencySymbol,
+                                          decimalDigits: 2)
+                                      .format(transferAmountMajor),
+                                ),
+                                // Fee row - uses BlocConsumer to show real fee
+                                BlocConsumer<TransferCubit, TransferState>(
+                                  listener: (context, feeState) {
+                                    // Check if amount + fee exceeds balance for external transfers
+                                    if (feeState is TransferFeeLoaded &&
+                                        isExternalTransfer) {
+                                      final feeMajor = feeState.fee / 100.0;
+                                      final totalRequired =
+                                          transferAmountMajor + feeMajor;
+                                      if (totalRequired > availableBalance) {
+                                        Get.snackbar(
+                                          'Insufficient Funds',
+                                          'Amount ($currencySymbol${NumberFormat('#,###.00').format(transferAmountMajor)}) + Fee ($currencySymbol${NumberFormat('#,###.00').format(feeMajor)}) = $currencySymbol${NumberFormat('#,###.00').format(totalRequired)} exceeds your balance of $currencySymbol${NumberFormat('#,###.00').format(availableBalance)}',
+                                          snackPosition: SnackPosition.BOTTOM,
+                                          backgroundColor:
+                                              Colors.red.withValues(alpha: 0.7),
+                                          colorText: Colors.white,
+                                          duration: const Duration(seconds: 5),
+                                        );
+                                      }
+                                    }
+                                  },
+                                  builder: (context, feeState) {
+                                    if (feeState is TransferFeeLoading) {
+                                      return Padding(
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 4.h),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text('Transfer Fee',
+                                                style: TextStyle(
+                                                    color: Colors.white70,
+                                                    fontSize: 12.sp)),
+                                            LazerVaultLoader.tiny(),
+                                          ],
+                                        ),
+                                      );
+                                    }
+                                    final int feeMinor;
+                                    final int totalMinor;
+                                    if (feeState is TransferFeeLoaded) {
+                                      feeMinor = feeState.fee;
+                                      totalMinor = feeState.totalAmount;
+                                    } else {
+                                      // Fallback: 0 fee
+                                      feeMinor = 0;
+                                      totalMinor = int.tryParse(amount) ?? 0;
+                                    }
+                                    final feeMajor = feeMinor / 100.0;
+                                    final totalMajor = totalMinor / 100.0;
+                                    final bool isFree = feeMinor == 0;
+                                    return Column(
+                                      children: [
+                                        _buildConfirmationRow(
+                                          'Transfer Fee',
+                                          '',
+                                          isFree
+                                              ? 'Free'
+                                              : NumberFormat.currency(
+                                                      symbol: currencySymbol,
+                                                      decimalDigits: 2)
+                                                  .format(feeMajor),
+                                        ),
+                                        _buildConfirmationRow(
+                                          'Total',
+                                          '',
+                                          NumberFormat.currency(
+                                                  symbol: currencySymbol,
+                                                  decimalDigits: 2)
+                                              .format(totalMajor),
+                                          isTotal: true,
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Informational, READ-ONLY transfer success prediction
+                          // (bank network + recipient trust). Shown AFTER the
+                          // recipient/amount/fee rows and BEFORE the PIN/Send
+                          // action. EXTERNAL transfers only; never blocks money.
+                          if (isExternalTransfer)
+                            const TransferPredictionAlert(),
+                          // Budget warning (flexible mode exceeded or near limit)
+                          if (_lastBudgetResult != null &&
+                              _lastBudgetResult!.shouldShowWarning)
+                            Padding(
+                              padding: EdgeInsets.only(top: 8.h),
+                              child: CompactBudgetWarning(
+                                percentageUsed:
+                                    _lastBudgetResult!.percentageUsed,
+                                status: _lastBudgetResult!.status,
+                                validationResult: _lastBudgetResult,
+                              ),
+                            ),
+                          if (scheduledDate != null)
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 10.h),
+                              child: Container(
+                                padding: EdgeInsets.all(10.w),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF2962FF)
+                                      .withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.schedule,
+                                      color: Color(0xFF2962FF),
+                                      size: 20,
+                                    ),
+                                    SizedBox(width: 8.w),
+                                    Text(
+                                      'Scheduled for ${DateFormat('MMM d, HH:mm').format(scheduledDate!)}',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14.sp,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          // Recurring payment toggle
+                          if (scheduledDate == null)
+                            StatefulBuilder(
+                              builder: (context, setRecurringState) {
+                                return Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 4.h),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 10.w, vertical: 6.h),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.05),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.repeat,
+                                          color: _isRecurringEnabled
+                                              ? const Color(0xFF3B82F6)
+                                              : const Color(0xFF9CA3AF),
+                                          size: 20.sp,
+                                        ),
+                                        SizedBox(width: 10.w),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Make Recurring',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 14.sp,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                              if (_isRecurringEnabled &&
+                                                  _recurringConfig != null)
+                                                Text(
+                                                  _recurringConfig!.summary,
+                                                  style: TextStyle(
+                                                    color:
+                                                        const Color(0xFF3B82F6),
+                                                    fontSize: 12.sp,
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                                        Switch(
+                                          value: _isRecurringEnabled,
+                                          activeColor: const Color(0xFF3B82F6),
+                                          onChanged: (value) {
+                                            if (value) {
+                                              showModalBottomSheet(
+                                                context: dialogContext,
+                                                isScrollControlled: true,
+                                                backgroundColor:
+                                                    Colors.transparent,
+                                                builder: (_) =>
+                                                    RecurringTransferModal(
+                                                  initialConfig:
+                                                      _recurringConfig,
+                                                  onConfigured: (config) {
+                                                    setRecurringState(() {
+                                                      _isRecurringEnabled =
+                                                          true;
+                                                      _recurringConfig = config;
+                                                    });
+                                                  },
+                                                ),
+                                              );
+                                            } else {
+                                              setRecurringState(() {
+                                                _isRecurringEnabled = false;
+                                                _recurringConfig = null;
+                                              });
+                                            }
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          // Save Recipient is handled in the user confirmation bottom sheet
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 16.h),
+                    child: Column(
+                      children: [
+                        // Use StatefulBuilder to manage the button loading state locally
+                        StatefulBuilder(
+                          builder: (BuildContext dialogCtx,
+                              StateSetter setDialogState) {
+                            bool isDialogLoading =
+                                _isConfirmingTransfer; // Use the main state or a local one if preferred
 
-                          return SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: isDialogLoading
-                                  ? null
-                                  : () async {
-                                      // Guard against double-tap: disable button immediately
-                                      if (_isConfirmingTransfer) return;
-                                      setState(() {
-                                        _isConfirmingTransfer = true;
-                                      });
+                            return SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: isDialogLoading
+                                    ? null
+                                    : () async {
+                                        // Guard against double-tap: disable button immediately
+                                        if (_isConfirmingTransfer) return;
+                                        setState(() {
+                                          _isConfirmingTransfer = true;
+                                        });
 
-                                      print("Dialog Button: Pressed!");
-                                      // Generate unique transaction ID
-                                      final transactionId = 'transfer_${const Uuid().v4()}';
+                                        print("Dialog Button: Pressed!");
+                                        // Generate unique transaction ID
+                                        final transactionId =
+                                            'transfer_${const Uuid().v4()}';
 
-                                      // Calculate amounts for PIN validation
-                                      double transferAmountMajor = double.parse(amount) / 100.0;
+                                        // Calculate amounts for PIN validation
+                                        double transferAmountMajor =
+                                            double.parse(amount) / 100.0;
 
-                                      // Close the confirmation dialog before showing PIN modal
-                                      // to avoid using the dialog's deactivated context
-                                      Navigator.of(dialogCtx).pop();
+                                        // Close the confirmation dialog before showing PIN modal
+                                        // to avoid using the dialog's deactivated context
+                                        Navigator.of(dialogCtx).pop();
 
-                                      if (!mounted) return;
-
-                                      // Validate PIN using the widget's context (not the dialog's)
-                                      final summaries = switch (accountState) {
-                                        AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
-                                        AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
-                                        _ => <AccountSummaryEntity>[],
-                                      };
-                                      final accountCurrency = summaries.isNotEmpty && selectedCardIndex < summaries.length
-                                          ? summaries[selectedCardIndex].currency
-                                          : 'NGN';
-
-                                      if (FeatureFlags.sendFundsPinIsRequired) {
-                                        AnalyticsService.instance.trackSendFundsScreen('pin', 'long');
-                                        // Revalidate the fee against the CONFIRMED amount before
-                                        // showing it on the PIN sheet. The quote fired when the
-                                        // dialog opened is fire-and-forget, so it may be in-flight
-                                        // or errored here; fees are amount-dependent, so we reuse
-                                        // the cache only when it matches this amount+type and
-                                        // otherwise re-quote. Internal transfers resolve to free.
-                                        final bool longIsInternal =
-                                            _recipient!.bankName == 'LazerVault';
-                                        final longFeeQuote = await context
-                                            .read<TransferCubit>()
-                                            .ensureFeeForAmount(
-                                              amountMinorUnits: int.parse(amount),
-                                              currency: accountCurrency,
-                                              transferType:
-                                                  longIsInternal ? 'internal' : 'domestic',
-                                              destinationBankCode: longIsInternal
-                                                  ? null
-                                                  : _recipient!.sortCode,
-                                            );
                                         if (!mounted) return;
-                                        final longFeeMajor = (longFeeQuote?.fee ?? 0) / 100.0;
-                                        final pinSuccess = await validateTransactionPin(
-                                          context: context,
-                                          transactionId: transactionId,
-                                          transactionType: 'transfer',
-                                          amount: transferAmountMajor,
-                                          currency: accountCurrency,
-                                          fee: longFeeMajor > 0 ? longFeeMajor : null,
-                                          title: 'Confirm Transfer',
-                                          message: 'Confirm transfer of $accountCurrency ${transferAmountMajor.toStringAsFixed(2)}',
-                                          // Outcome confirmed on the receipt (external transfers
-                                          // return `pending`), so don't claim success here.
-                                          successMessage: 'Transfer Initiated',
-                                          onPinValidated: (verificationToken) async {
-                                            // Execute transfer inside callback — PIN modal stays open
-                                            // showing processing phase while backend works
+
+                                        // Validate PIN using the widget's context (not the dialog's)
+                                        final summaries =
+                                            switch (accountState) {
+                                          AccountCardsSummaryLoaded(
+                                            :final accountSummaries
+                                          ) =>
+                                            accountSummaries,
+                                          AccountBalanceUpdated(
+                                            :final accountSummaries
+                                          ) =>
+                                            accountSummaries,
+                                          _ => <AccountSummaryEntity>[],
+                                        };
+                                        final accountCurrency =
+                                            summaries.isNotEmpty &&
+                                                    selectedCardIndex <
+                                                        summaries.length
+                                                ? summaries[selectedCardIndex]
+                                                    .currency
+                                                : 'NGN';
+
+                                        if (FeatureFlags
+                                            .sendFundsPinIsRequired) {
+                                          AnalyticsService.instance
+                                              .trackSendFundsScreen(
+                                                  'pin', 'long');
+                                          // Revalidate the fee against the CONFIRMED amount before
+                                          // showing it on the PIN sheet. The quote fired when the
+                                          // dialog opened is fire-and-forget, so it may be in-flight
+                                          // or errored here; fees are amount-dependent, so we reuse
+                                          // the cache only when it matches this amount+type and
+                                          // otherwise re-quote. Internal transfers resolve to free.
+                                          final bool longIsInternal =
+                                              _recipient!.bankName ==
+                                                  'LazerVault';
+                                          final longFeeQuote = await context
+                                              .read<TransferCubit>()
+                                              .ensureFeeForAmount(
+                                                amountMinorUnits:
+                                                    int.parse(amount),
+                                                currency: accountCurrency,
+                                                transferType: longIsInternal
+                                                    ? 'internal'
+                                                    : 'domestic',
+                                                destinationBankCode:
+                                                    longIsInternal
+                                                        ? null
+                                                        : _recipient!.sortCode,
+                                              );
+                                          if (!mounted) return;
+                                          final longFeeMajor =
+                                              (longFeeQuote?.fee ?? 0) / 100.0;
+                                          final pinSuccess =
+                                              await validateTransactionPin(
+                                            context: context,
+                                            transactionId: transactionId,
+                                            transactionType: 'transfer',
+                                            amount: transferAmountMajor,
+                                            currency: accountCurrency,
+                                            fee: longFeeMajor > 0
+                                                ? longFeeMajor
+                                                : null,
+                                            title: 'Confirm Transfer',
+                                            message:
+                                                'Confirm transfer of $accountCurrency ${transferAmountMajor.toStringAsFixed(2)}',
+                                            // Outcome confirmed on the receipt (external transfers
+                                            // return `pending`), so don't claim success here.
+                                            successMessage:
+                                                'Transfer Initiated',
+                                            onPinValidated:
+                                                (verificationToken) async {
+                                              // Execute transfer inside callback — PIN modal stays open
+                                              // showing processing phase while backend works
+                                              await _executeTransferWithPin(
+                                                accountState: accountState,
+                                                transactionId: transactionId,
+                                                verificationToken:
+                                                    verificationToken,
+                                              );
+
+                                              // Wait for TransferSuccess state from cubit
+                                              final transferCubit =
+                                                  context.read<TransferCubit>();
+                                              await transferCubit.stream
+                                                  .firstWhere(
+                                                    (s) =>
+                                                        s is TransferSuccess ||
+                                                        s is TransferFailure ||
+                                                        s is TransferPinFailure,
+                                                  )
+                                                  .timeout(
+                                                    const Duration(seconds: 30),
+                                                    onTimeout: () =>
+                                                        transferCubit.state,
+                                                  );
+
+                                              // If transfer failed, throw to show error in PIN modal
+                                              final finalState =
+                                                  transferCubit.state;
+                                              if (finalState
+                                                  is TransferFailure) {
+                                                throw Exception(
+                                                    finalState.message);
+                                              } else if (finalState
+                                                  is TransferPinFailure) {
+                                                throw Exception('Invalid PIN');
+                                              }
+                                              // TransferSuccess — mixin will show success, then dismiss
+                                            },
+                                          );
+
+                                          if (!pinSuccess) {
+                                            if (mounted) {
+                                              setState(() {
+                                                _isConfirmingTransfer = false;
+                                              });
+                                            }
+                                            return;
+                                          }
+                                        } else {
+                                          // Transaction PIN disabled by admin
+                                          // (send_funds_pin_required=false). Execute the
+                                          // transfer directly with an empty token — the
+                                          // backend independently enforces the same setting
+                                          // and skips token validation; all other
+                                          // money-safety (holds, idempotency, limits) still
+                                          // applies.
+                                          try {
                                             await _executeTransferWithPin(
                                               accountState: accountState,
                                               transactionId: transactionId,
-                                              verificationToken: verificationToken,
+                                              verificationToken: '',
                                             );
-
-                                            // Wait for TransferSuccess state from cubit
-                                            final transferCubit = context.read<TransferCubit>();
-                                            await transferCubit.stream.firstWhere(
-                                              (s) => s is TransferSuccess || s is TransferFailure || s is TransferPinFailure,
-                                            ).timeout(
-                                              const Duration(seconds: 30),
-                                              onTimeout: () => transferCubit.state,
-                                            );
-
-                                            // If transfer failed, throw to show error in PIN modal
-                                            final finalState = transferCubit.state;
+                                            final transferCubit =
+                                                context.read<TransferCubit>();
+                                            await transferCubit.stream
+                                                .firstWhere(
+                                                  (s) =>
+                                                      s is TransferSuccess ||
+                                                      s is TransferFailure ||
+                                                      s is TransferPinFailure,
+                                                )
+                                                .timeout(
+                                                  const Duration(seconds: 30),
+                                                  onTimeout: () =>
+                                                      transferCubit.state,
+                                                );
+                                            final finalState =
+                                                transferCubit.state;
                                             if (finalState is TransferFailure) {
-                                              throw Exception(finalState.message);
-                                            } else if (finalState is TransferPinFailure) {
-                                              throw Exception('Invalid PIN');
+                                              throw Exception(
+                                                  finalState.message);
+                                            } else if (finalState
+                                                is TransferPinFailure) {
+                                              throw Exception(
+                                                  'Transfer could not be completed');
                                             }
-                                            // TransferSuccess — mixin will show success, then dismiss
-                                          },
-                                        );
-
-                                        if (!pinSuccess) {
-                                          if (mounted) {
-                                            setState(() {
-                                              _isConfirmingTransfer = false;
-                                            });
+                                          } catch (e) {
+                                            if (mounted) {
+                                              setState(() {
+                                                _isConfirmingTransfer = false;
+                                              });
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(e
+                                                      .toString()
+                                                      .replaceAll(
+                                                          'Exception:', '')
+                                                      .trim()),
+                                                ),
+                                              );
+                                            }
+                                            return;
                                           }
-                                          return;
                                         }
-                                      } else {
-                                        // Transaction PIN disabled by admin
-                                        // (send_funds_pin_required=false). Execute the
-                                        // transfer directly with an empty token — the
-                                        // backend independently enforces the same setting
-                                        // and skips token validation; all other
-                                        // money-safety (holds, idempotency, limits) still
-                                        // applies.
-                                        try {
-                                          await _executeTransferWithPin(
-                                            accountState: accountState,
-                                            transactionId: transactionId,
-                                            verificationToken: '',
-                                          );
-                                          final transferCubit = context.read<TransferCubit>();
-                                          await transferCubit.stream.firstWhere(
-                                            (s) => s is TransferSuccess || s is TransferFailure || s is TransferPinFailure,
-                                          ).timeout(
-                                            const Duration(seconds: 30),
-                                            onTimeout: () => transferCubit.state,
-                                          );
-                                          final finalState = transferCubit.state;
-                                          if (finalState is TransferFailure) {
-                                            throw Exception(finalState.message);
-                                          } else if (finalState is TransferPinFailure) {
-                                            throw Exception('Transfer could not be completed');
-                                          }
-                                        } catch (e) {
-                                          if (mounted) {
-                                            setState(() {
-                                              _isConfirmingTransfer = false;
-                                            });
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(
-                                                content: Text(e
-                                                    .toString()
-                                                    .replaceAll('Exception:', '')
-                                                    .trim()),
-                                              ),
-                                            );
-                                          }
-                                          return;
-                                        }
-                                      }
 
-                                      // Transfer completed and PIN modal dismissed — navigate to receipt
-                                      if (_lastTransferDetails != null && mounted) {
-                                        Get.offAllNamed(AppRoutes.transferProof,
-                                            arguments: _lastTransferDetails);
-                                      }
-                                    },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    const Color(0xFF2962FF).withValues(alpha: 0.9),
-                                padding: EdgeInsets.symmetric(vertical: 16.h),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                        // Transfer completed and PIN modal dismissed — navigate to receipt
+                                        if (_lastTransferDetails != null &&
+                                            mounted) {
+                                          Get.offAllNamed(
+                                              AppRoutes.transferProof,
+                                              arguments: _lastTransferDetails);
+                                        }
+                                      },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF2962FF)
+                                      .withValues(alpha: 0.9),
+                                  padding: EdgeInsets.symmetric(vertical: 16.h),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  disabledBackgroundColor:
+                                      Colors.grey.withValues(alpha: 0.5),
+                                  elevation: 8,
                                 ),
-                                disabledBackgroundColor:
-                                    Colors.grey.withValues(alpha: 0.5),
-                                elevation: 8,
-                              ),
-                              child: isDialogLoading
-                                  ? LazerVaultLoader.small()
-                                  : Text(
-                                      _isRecurringEnabled
-                                          ? 'Set Up Recurring'
-                                          : scheduledDate != null
-                                              ? 'Schedule Transfer'
-                                              : 'Send Now',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16.sp,
-                                        fontWeight: FontWeight.w600,
+                                child: isDialogLoading
+                                    ? LazerVaultLoader.small()
+                                    : Text(
+                                        _isRecurringEnabled
+                                            ? 'Set Up Recurring'
+                                            : scheduledDate != null
+                                                ? 'Schedule Transfer'
+                                                : 'Send Now',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16.sp,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
-                                    ),
+                              ),
+                            );
+                          },
+                        ),
+                        SizedBox(height: 12.h),
+                        TextButton(
+                          // Disable cancel button while confirming? Yes, currently disabled.
+                          onPressed: _isConfirmingTransfer
+                              ? null // Button is disabled if _isConfirmingTransfer is true
+                              : () {
+                                  setState(() {
+                                    _isConfirmingTransfer = false;
+                                  });
+                                  print("TextButton: Pressed!");
+                                  Navigator.pop(dialogContext);
+                                }, // Closes the dialog if not confirming
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              color: _isConfirmingTransfer
+                                  ? Colors.grey // Greyed out when disabled
+                                  : Colors.white70,
+                              fontSize: 14.sp,
                             ),
-                          );
-                        },
-                      ),
-                      SizedBox(height: 12.h),
-                      TextButton(
-                        // Disable cancel button while confirming? Yes, currently disabled.
-                        onPressed: _isConfirmingTransfer
-                            ? null // Button is disabled if _isConfirmingTransfer is true
-                            : () {
-                                setState(() {
-                                  _isConfirmingTransfer = false;
-                                });
-                                print("TextButton: Pressed!");
-                                Navigator.pop(dialogContext);
-                              }, // Closes the dialog if not confirming
-                        child: Text(
-                          'Cancel',
-                          style: TextStyle(
-                            color: _isConfirmingTransfer
-                                ? Colors.grey // Greyed out when disabled
-                                : Colors.white70,
-                            fontSize: 14.sp,
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -1882,7 +1979,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
         throw Exception('Amount must be greater than zero.');
       }
     } catch (e) {
-      if (e is Exception && e.toString().contains('Amount must be greater than zero')) {
+      if (e is Exception &&
+          e.toString().contains('Amount must be greater than zero')) {
         rethrow;
       }
       throw Exception('Invalid amount entered.');
@@ -1899,7 +1997,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     // instead of the vague "Transfer from LazerVault".
     final senderProfile = context.read<AuthenticationCubit>().currentProfile;
     final String senderFullName = senderProfile != null
-        ? '${senderProfile.user.firstName} ${senderProfile.user.lastName}'.trim()
+        ? '${senderProfile.user.firstName} ${senderProfile.user.lastName}'
+            .trim()
         : '';
     final String defaultNarration = senderFullName.isNotEmpty
         ? 'Transfer from $senderFullName'
@@ -1925,31 +2024,35 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
 
     // Execute the immediate transfer first
     if (!mounted) {
-      print("_executeTransferWithPin: Widget unmounted before transfer, aborting.");
+      print(
+          "_executeTransferWithPin: Widget unmounted before transfer, aborting.");
       return;
     }
     print("_executeTransferWithPin: Calling TransferCubit.sendFunds...");
-    print("_executeTransferWithPin: fromAccountId=$fromAccountId, toAccountNumber=$toAccountNumber, amount=$amountMajor");
-    final transferType = (_recipient!.type == 'internal' || _recipient!.bankName.toLowerCase() == 'lazervault')
+    print(
+        "_executeTransferWithPin: fromAccountId=$fromAccountId, toAccountNumber=$toAccountNumber, amount=$amountMajor");
+    final transferType = (_recipient!.type == 'internal' ||
+            _recipient!.bankName.toLowerCase() == 'lazervault')
         ? 'internal'
         : 'external';
     context.read<TransferCubit>().sendFunds(
-      fromAccountId: fromAccountId,
-      toAccountNumber: toAccountNumber,
-      toAccountId: transferType == 'internal'
-          ? (_recipient!.internalUserId ?? toAccountNumber)
-          : null,
-      type: transferType,
-      amount: amountMajor,
-      description: narration,
-      transactionId: transactionId,
-      verificationToken: verificationToken,
-      destinationBankCode: transferType == 'external' ? _recipient!.sortCode : null,
-      beneficiaryName: transferType == 'external' ? _recipient!.name : null,
-      scheduledAt: scheduledDate,
-      expenseCategory: selectedCategory?.budgetCategory,
-      flow: 'long',
-    );
+          fromAccountId: fromAccountId,
+          toAccountNumber: toAccountNumber,
+          toAccountId: transferType == 'internal'
+              ? (_recipient!.internalUserId ?? toAccountNumber)
+              : null,
+          type: transferType,
+          amount: amountMajor,
+          description: narration,
+          transactionId: transactionId,
+          verificationToken: verificationToken,
+          destinationBankCode:
+              transferType == 'external' ? _recipient!.sortCode : null,
+          beneficiaryName: transferType == 'external' ? _recipient!.name : null,
+          scheduledAt: scheduledDate,
+          expenseCategory: selectedCategory?.budgetCategory,
+          flow: 'long',
+        );
     print("_executeTransferWithPin: Transfer initiated.");
 
     // If recurring is enabled, store params for deferred setup after transfer succeeds
@@ -1963,7 +2066,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       _recurringSetupInitiated = false;
       _createdRecurringTransferId = null;
       _recurringRetryCount = 0;
-      print("_executeTransferWithPin: Recurring setup deferred until transfer succeeds.");
+      print(
+          "_executeTransferWithPin: Recurring setup deferred until transfer succeeds.");
     }
   }
 
@@ -2002,11 +2106,13 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     // label like "personal").
     final senderProfile = context.read<AuthenticationCubit>().currentProfile;
     String sourceAccountName = senderProfile != null
-        ? '${senderProfile.user.firstName} ${senderProfile.user.lastName}'.trim()
+        ? '${senderProfile.user.firstName} ${senderProfile.user.lastName}'
+            .trim()
         : '';
     if (summaries.isNotEmpty && selectedCardIndex < summaries.length) {
       final selectedAccount = summaries[selectedCardIndex];
-      sourceAccountInfo = '${selectedAccount.accountType} •••• ${selectedAccount.accountNumberLast4}';
+      sourceAccountInfo =
+          '${selectedAccount.accountType} •••• ${selectedAccount.accountNumberLast4}';
       senderCurrency = selectedAccount.currency;
       if (sourceAccountName.isEmpty) {
         sourceAccountName = selectedAccount.accountName ?? '';
@@ -2121,14 +2227,16 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       _ => <AccountSummaryEntity>[],
     };
 
-    if (recurringSummaries.isEmpty || selectedCardIndex >= recurringSummaries.length) {
+    if (recurringSummaries.isEmpty ||
+        selectedCardIndex >= recurringSummaries.length) {
       print("_fireRecurringSetup: No valid account data, skipping.");
       _recurringSetupPending = false;
       return;
     }
 
     final recurringAccount = recurringSummaries[selectedCardIndex];
-    final recurringAmountMajor = int.tryParse(amount) != null ? int.parse(amount) / 100.0 : 0.0;
+    final recurringAmountMajor =
+        int.tryParse(amount) != null ? int.parse(amount) / 100.0 : 0.0;
     final recurringReference = _referenceController.text.trim();
     // Same builder as the immediate send: stamps the analytics-label prefix (NOT
     // displayName) so the recurring rule's executions are attributed to the right
@@ -2143,21 +2251,22 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     _recurringSetupInitiated = true;
 
     context.read<RecurringTransferCubit>().createRecurringTransfer(
-      fromAccountId: recurringAccount.id,
-      toAccountNumber: _recipient!.accountNumber,
-      recipientName: _recipient!.name,
-      recipientBankCode: _recipient!.sortCode,
-      recipientBankName: _recipient!.bankName,
-      amount: recurringAmountMajor,
-      description: recurringNarration,
-      frequency: _recurringConfig!.frequency,
-      scheduleDay: _recurringConfig!.scheduleDay,
-      scheduleTime: _recurringConfig!.scheduleTimeString,
-      endDate: _recurringConfig!.endDate?.toIso8601String(),
-      transactionId: _pendingRecurringTransactionId!,
-      verificationToken: _pendingRecurringVerificationToken!,
-    );
-    print("_fireRecurringSetup: Recurring transfer setup initiated (attempt ${_recurringRetryCount + 1}).");
+          fromAccountId: recurringAccount.id,
+          toAccountNumber: _recipient!.accountNumber,
+          recipientName: _recipient!.name,
+          recipientBankCode: _recipient!.sortCode,
+          recipientBankName: _recipient!.bankName,
+          amount: recurringAmountMajor,
+          description: recurringNarration,
+          frequency: _recurringConfig!.frequency,
+          scheduleDay: _recurringConfig!.scheduleDay,
+          scheduleTime: _recurringConfig!.scheduleTimeString,
+          endDate: _recurringConfig!.endDate?.toIso8601String(),
+          transactionId: _pendingRecurringTransactionId!,
+          verificationToken: _pendingRecurringVerificationToken!,
+        );
+    print(
+        "_fireRecurringSetup: Recurring transfer setup initiated (attempt ${_recurringRetryCount + 1}).");
   }
 
   /// Show retry dialog when recurring setup fails but transfer succeeded.
@@ -2176,10 +2285,14 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       builder: (dialogContext) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        icon: Icon(Icons.warning_amber_rounded, color: const Color(0xFFFB923C), size: 48.sp),
+        icon: Icon(Icons.warning_amber_rounded,
+            color: const Color(0xFFFB923C), size: 48.sp),
         title: Text(
           'Recurring Setup Failed',
-          style: TextStyle(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w600),
+          style: TextStyle(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -2197,7 +2310,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               ),
               child: Text(
                 errorMessage,
-                style: TextStyle(color: const Color(0xFFEF4444), fontSize: 12.sp),
+                style:
+                    TextStyle(color: const Color(0xFFEF4444), fontSize: 12.sp),
               ),
             ),
             if (_recurringRetryCount >= _maxRecurringRetries)
@@ -2205,7 +2319,10 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                 padding: EdgeInsets.only(top: 8.h),
                 child: Text(
                   'You can set up recurring payments later from the transfer history.',
-                  style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp, fontStyle: FontStyle.italic),
+                  style: TextStyle(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 12.sp,
+                      fontStyle: FontStyle.italic),
                 ),
               ),
           ],
@@ -2233,7 +2350,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF3B82F6),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
               ),
               child: Text(
                 'Retry Setup',
@@ -2274,8 +2392,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
         SizedBox(height: 4.h),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (name.isNotEmpty)
               Expanded(
@@ -2290,12 +2407,10 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                   maxLines: 2,
                 ),
               ),
-            if (name.isNotEmpty && detail.isNotEmpty)
-              SizedBox(width: 8.w),
+            if (name.isNotEmpty && detail.isNotEmpty) SizedBox(width: 8.w),
             if (detail.isNotEmpty)
               Expanded(
-                flex:
-                    name.isNotEmpty ? 1 : 2,
+                flex: name.isNotEmpty ? 1 : 2,
                 child: Text(
                   detail,
                   style: TextStyle(
@@ -2325,7 +2440,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     // Clean up recurring state — backend operations may still complete
     // but BlocListener is gone. Get.snackbar works without mounted context.
     if (_recurringSetupPending) {
-      print("dispose: Recurring setup still pending — backend will complete independently.");
+      print(
+          "dispose: Recurring setup still pending — backend will complete independently.");
     }
     _resetRecurringState();
     _predictionCubit.close();
@@ -2370,858 +2486,959 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
         }
       },
       child: BlocConsumer<TransferCubit, TransferState>(
-      // Only fire listener on actual state transitions (prevents re-firing on rebuild)
-      listenWhen: (previous, current) => previous != current,
-      listener: (context, transferState) {
-        // Access AccountCardsSummaryCubit state inside the listener
-        // AccountCardsSummaryCubit is still provided higher up (likely main.dart or AppRouter itself)
-        // or needs to be accessed differently if not.
-        // Let's assume it's available via context.read for now.
-        final accountState = context.read<AccountCardsSummaryCubit>().state;
-        print("Listener: TransferState: $transferState");
-        if (transferState is TransferSuccess) {
-          print(
-              'Listener: Transfer Success received. State: $transferState');
-          if (_isConfirmingTransfer) {
-            setState(() {
-              _isConfirmingTransfer = false;
-            });
-          }
-
-          // PIN modal handles success animation — don't call setSuccess here
-
-          // --- Fire deferred recurring setup after transfer succeeds ---
-          // Guard: only fire once, and only if recurring was enabled
-          if (_isRecurringEnabled && _recurringConfig != null
-              && _pendingRecurringTransactionId != null
-              && !_recurringSetupInitiated) {
-            print("TransferSuccess: Firing deferred recurring transfer setup...");
-            _fireRecurringSetup(context);
-          }
-
-          // --- Save Recipient After Successful Transfer ---
-          // Only save if the recipient is marked for saving (isSaved=true)
-          // and is not already persisted in the backend.
-          // Backend handles dedup via unique constraint on (user_id, account_number, bank_name),
-          // so even if this fires for an existing recipient, it will update rather than duplicate.
-          if (_recipient != null && _recipient!.isSaved) {
-            final recipientId = _recipient!.id;
-            final parsedId = int.tryParse(recipientId);
-            // Backend IDs are small auto-increment integers.
-            // Temporary IDs use DateTime.now().millisecondsSinceEpoch (very large).
-            // UUIDs won't parse as int (parsedId == null).
-            final isAlreadySaved = parsedId != null && parsedId < 1000000000;
-            if (!isAlreadySaved) {
-              print("Listener: Saving new recipient to database (id: $recipientId)...");
-              final authStateForSave = context.read<AuthenticationCubit>().state;
-              if (authStateForSave is AuthenticationSuccess) {
-                final accessToken = authStateForSave.profile.session.accessToken;
-                // Use selected account's currency, falling back to locale
-                final activeAccountSummaries = switch (accountState) {
-                  AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
-                  AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
-                  _ => <AccountSummaryEntity>[],
-                };
-                final activeAccountCurrency = activeAccountSummaries.isNotEmpty && selectedCardIndex < activeAccountSummaries.length
-                    ? activeAccountSummaries[selectedCardIndex].currency
-                    : serviceLocator<LocaleManager>().currentCurrency;
-                final recipientToSave = _recipient!.copyWith(
-                  id: '0',
-                  isSaved: true,
-                  countryCode: _recipient!.countryCode ?? serviceLocator<LocaleManager>().currentCountry,
-                  currency: _recipient!.currency ?? activeAccountCurrency,
-                );
-                final addRecipientUseCase = serviceLocator<AddRecipientUseCase>();
-                _pendingRecipientSave = addRecipientUseCase(
-                  recipient: recipientToSave,
-                  accessToken: accessToken,
-                ).then((result) {
-                  result.fold(
-                    (failure) => print("Warning: Failed to save recipient: ${failure.message}"),
-                    (saved) {
-                      print("Listener: Recipient saved with id: ${saved.id}");
-                      // Update local reference so subsequent transfers
-                      // recognize this recipient as already saved.
-                      _recipient = saved;
-
-                      // Refresh recipient list so the new recipient shows up
-                      // when navigating back to select recipients screen.
-                      try {
-                        final recipientCubit = context.read<RecipientCubit>();
-                        recipientCubit.getRecipients(
-                          accessToken: accessToken,
-                          countryCode: serviceLocator<LocaleManager>().currentCountry,
-                          currency: activeAccountCurrency,
-                        );
-                      } catch (_) {
-                        // RecipientCubit may not be in tree — safe to ignore
-                      }
-                    },
-                  );
-                });
-              }
-            }
-          }
-          // --- End Save Recipient ---
-
-          // --- Non-blocking: Ensure P2P financial connection for internal recipients ---
-          if (_recipient != null &&
-              _recipient!.internalUserId != null &&
-              _recipient!.internalUserId!.isNotEmpty &&
-              _recipient!.bankName == 'LazerVault') {
-            // Sender's own real name seeds the RECEIVER's view of us so their
-            // connection isn't left as "Unknown User" (same source the receipt
-            // uses at line ~1815).
-            final senderProfile =
-                context.read<AuthenticationCubit>().currentProfile;
-            final senderName = senderProfile != null
-                ? '${senderProfile.user.firstName} ${senderProfile.user.lastName}'
-                    .trim()
-                : '';
-            _ensureFinancialConnection(
-              otherUserId: _recipient!.internalUserId!,
-              otherUserName: _recipient!.name,
-              myName: senderName.isNotEmpty ? senderName : null,
-            );
-          }
-          // --- End P2P Connection ---
-
-          // --- Refresh Account Summaries ---
-          // Refresh immediately (no delay) since this widget will be disposed
-          // when navigating to the receipt. The cubit persists across navigation.
-          final refreshAuthState = context.read<AuthenticationCubit>().state;
-          if (refreshAuthState is AuthenticationSuccess) {
-            context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
-              userId: refreshAuthState.profile.user.id,
-              accessToken: refreshAuthState.profile.session.accessToken,
-            );
-            print("Balance refresh triggered after successful transfer");
-          }
-          // --- End Refresh ---
-
-          try {
-            // Prepare data for the proof screen
-            double transferAmount = 0.0;
-            try {
-              transferAmount =
-                  (transferState.response.amount)
-                          .toDouble() /
-                      100.0;
-            } catch (_) {
-              print("Warning: Could not parse amount for proof screen.");
-            }
-            double transferFee =
-                (transferState.response.fee).toDouble() / 100.0;
-            double totalAmount =
-                (transferState.response.totalAmount).toDouble() /
-                    100.0;
-            if (transferFee == 0.0) {
-              final lastFeeState = context.read<TransferCubit>().lastFeeLoaded;
-              if (lastFeeState != null) {
-                transferFee = lastFeeState.fee / 100.0;
-              }
-            }
-            if (totalAmount == 0 && transferAmount > 0) {
-              totalAmount = transferAmount + transferFee;
-            }
-
-            String sourceAccountInfo = 'Unknown Card';
-            String senderCurrency = 'NGN';
-            String sourceAccountName = '';
-            final summaries = switch (accountState) {
-              AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
-              AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
-              _ => <AccountSummaryEntity>[],
-            };
-            if (summaries.isNotEmpty &&
-                selectedCardIndex < summaries.length) {
-              final selectedAccount =
-                  summaries[selectedCardIndex];
-              String sourceCardType = selectedAccount.accountType;
-              String sourceLast4 = selectedAccount.accountNumberLast4;
-              sourceAccountInfo = '$sourceCardType •••• $sourceLast4';
-              senderCurrency = selectedAccount.currency;
-              sourceAccountName = selectedAccount.accountName ?? '';
-            }
-
-            // Empty for internal user recipients (no real account number) → the
-            // receipt hides the Account row instead of masking the user-id UUID.
-            String recipientAccountMasked = _recipient!.maskedAccount;
-
-            final transferDetails = {
-              'amount': transferAmount,
-              'fee': transferFee,
-              'totalAmount': totalAmount,
-              'recipientName': _recipient!.name,
-              'recipientAccountMasked': recipientAccountMasked,
-              'recipientBankName': _recipient!.displayBankName,
-              'recipientBankCode': _recipient!.sortCode,
-              'sourceAccountInfo': sourceAccountInfo,
-              'sourceAccountName': sourceAccountName,
-              'currency': senderCurrency,
-              'transferId':
-                  transferState.response.transferId.toString(),
-              'timestamp': transferState.response.createdAt,
-              'category': selectedCategory?.displayName,
-              // Carry the send-funds flow (long|short) so the processing &
-              // receipt screens emit real telemetry instead of 'unknown'.
-              'flow': AnalyticsService.instance.currentSendFlow,
-              'reference': _referenceController.text.trim().isNotEmpty
-                  ? _referenceController.text.trim()
-                  : null,
-              'providerReference': transferState.response.providerReference,
-              'internalReference': transferState.response.internalReference,
-              'status': transferState.response.status,
-              'network': _recipient!.bankName == 'LazerVault'
-                  ? 'Lazervault Internal Transfer'
-                  : 'External Bank Transfer',
-              'transferType': _recipient!.bankName == 'LazerVault'
-                  ? 'Internal Transfer'
-                  : 'Domestic Transfer',
-              if (scheduledDate != null) 'scheduledAt': scheduledDate,
-              // Recurring payment context for receipt display
-              if (_isRecurringEnabled && _recurringConfig != null) ...{
-                'isRecurring': true,
-                'recurringFrequency': _recurringConfig!.frequency.name,
-                'recurringSchedule': _recurringConfig!.summary,
-                if (_createdRecurringTransferId != null)
-                  'recurringTransferId': _createdRecurringTransferId,
-              },
-            };
-            print(
-                'Listener: Transfer details prepared: $transferDetails');
-
-            // Store transfer details — navigation happens after PIN modal dismisses
-            _lastTransferDetails = transferDetails;
-
-            if (_recurringSetupPending) {
-              _transferSucceeded = true;
-              _pendingTransferSuccess = transferState;
-            }
-          } catch (e, stackTrace) {
-            print("Error inside TransferSuccess listener: $e\n$stackTrace");
+        // Only fire listener on actual state transitions (prevents re-firing on rebuild)
+        listenWhen: (previous, current) => previous != current,
+        listener: (context, transferState) {
+          // Access AccountCardsSummaryCubit state inside the listener
+          // AccountCardsSummaryCubit is still provided higher up (likely main.dart or AppRouter itself)
+          // or needs to be accessed differently if not.
+          // Let's assume it's available via context.read for now.
+          final accountState = context.read<AccountCardsSummaryCubit>().state;
+          print("Listener: TransferState: $transferState");
+          if (transferState is TransferSuccess) {
+            print('Listener: Transfer Success received. State: $transferState');
             if (_isConfirmingTransfer) {
               setState(() {
                 _isConfirmingTransfer = false;
               });
             }
-            // Close pin sheet if open
-            if (mounted) {
-              try { Navigator.of(context).pop(); } catch (_) {}
+
+            // PIN modal handles success animation — don't call setSuccess here
+
+            // --- Fire deferred recurring setup after transfer succeeds ---
+            // Guard: only fire once, and only if recurring was enabled
+            if (_isRecurringEnabled &&
+                _recurringConfig != null &&
+                _pendingRecurringTransactionId != null &&
+                !_recurringSetupInitiated) {
+              print(
+                  "TransferSuccess: Firing deferred recurring transfer setup...");
+              _fireRecurringSetup(context);
             }
-            Get.snackbar(
-              'Error',
-              'An internal error occurred while processing the transfer success.',
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.orange.withValues(alpha: 0.8),
-              colorText: Colors.white,
-            );
-          }
-        } else if (transferState is TransferFailure) {
-          print(
-              'Listener: Transfer Failure received: ${transferState.message}');
-          if (_isConfirmingTransfer) {
-            setState(() {
-              _isConfirmingTransfer = false;
-            });
-          }
 
-          // Reset all recurring state to prevent stale flags
-          _resetRecurringState();
+            // --- Save Recipient After Successful Transfer ---
+            // Only save if the recipient is marked for saving (isSaved=true)
+            // and is not already persisted in the backend.
+            // Backend handles dedup via unique constraint on (user_id, account_number, bank_name),
+            // so even if this fires for an existing recipient, it will update rather than duplicate.
+            if (_recipient != null && _recipient!.isSaved) {
+              final recipientId = _recipient!.id;
+              final parsedId = int.tryParse(recipientId);
+              // Backend IDs are small auto-increment integers.
+              // Temporary IDs use DateTime.now().millisecondsSinceEpoch (very large).
+              // UUIDs won't parse as int (parsedId == null).
+              final isAlreadySaved = parsedId != null && parsedId < 1000000000;
+              if (!isAlreadySaved) {
+                print(
+                    "Listener: Saving new recipient to database (id: $recipientId)...");
+                final authStateForSave =
+                    context.read<AuthenticationCubit>().state;
+                if (authStateForSave is AuthenticationSuccess) {
+                  final accessToken =
+                      authStateForSave.profile.session.accessToken;
+                  // Use selected account's currency, falling back to locale
+                  final activeAccountSummaries = switch (accountState) {
+                    AccountCardsSummaryLoaded(:final accountSummaries) =>
+                      accountSummaries,
+                    AccountBalanceUpdated(:final accountSummaries) =>
+                      accountSummaries,
+                    _ => <AccountSummaryEntity>[],
+                  };
+                  final activeAccountCurrency =
+                      activeAccountSummaries.isNotEmpty &&
+                              selectedCardIndex < activeAccountSummaries.length
+                          ? activeAccountSummaries[selectedCardIndex].currency
+                          : serviceLocator<LocaleManager>().currentCurrency;
+                  final recipientToSave = _recipient!.copyWith(
+                    id: '0',
+                    isSaved: true,
+                    countryCode: _recipient!.countryCode ??
+                        serviceLocator<LocaleManager>().currentCountry,
+                    currency: _recipient!.currency ?? activeAccountCurrency,
+                  );
+                  final addRecipientUseCase =
+                      serviceLocator<AddRecipientUseCase>();
+                  _pendingRecipientSave = addRecipientUseCase(
+                    recipient: recipientToSave,
+                    accessToken: accessToken,
+                  ).then((result) {
+                    result.fold(
+                      (failure) => print(
+                          "Warning: Failed to save recipient: ${failure.message}"),
+                      (saved) {
+                        print("Listener: Recipient saved with id: ${saved.id}");
+                        // Update local reference so subsequent transfers
+                        // recognize this recipient as already saved.
+                        _recipient = saved;
 
-          // Show failure in PIN modal if open, otherwise show snackbar
-          final modalState = pinModalKey.currentState;
-          if (modalState != null) {
-            modalState.setFailed(transferState.message);
-            // Auto-close after showing failure
-            Future.delayed(const Duration(seconds: 2), () {
-              if (mounted) {
-                try { Navigator.of(context).pop(); } catch (_) {}
+                        // Refresh recipient list so the new recipient shows up
+                        // when navigating back to select recipients screen.
+                        try {
+                          final recipientCubit = context.read<RecipientCubit>();
+                          recipientCubit.getRecipients(
+                            accessToken: accessToken,
+                            countryCode:
+                                serviceLocator<LocaleManager>().currentCountry,
+                            currency: activeAccountCurrency,
+                          );
+                        } catch (_) {
+                          // RecipientCubit may not be in tree — safe to ignore
+                        }
+                      },
+                    );
+                  });
+                }
               }
-            });
-          } else {
-            // Fallback: close any open dialog
-            if (Get.isDialogOpen ?? false) {
-              Get.back();
             }
-          }
+            // --- End Save Recipient ---
 
-          // KYC UPGRADE MODAL — show before generic error handling
-          if (transferState.isKYCError && mounted) {
-            handleKYCError(transferState.message, context, 'send money');
-            return; // Don't show snackbar — modal is shown
-          }
-
-          // Show error bottom sheet for financial errors that need user attention,
-          // fall back to snackbar for minor/informational errors.
-          final lowerMessage = transferState.message.toLowerCase();
-          final isFinancialError = lowerMessage.contains('insufficient') ||
-              lowerMessage.contains('balance') ||
-              lowerMessage.contains('daily') ||
-              lowerMessage.contains('limit') ||
-              lowerMessage.contains('exceeded') ||
-              lowerMessage.contains('frozen') ||
-              lowerMessage.contains('locked') ||
-              lowerMessage.contains('suspended') ||
-              lowerMessage.contains('restricted') ||
-              lowerMessage.contains('another transfer') ||
-              lowerMessage.contains('in progress') ||
-              lowerMessage.contains('resource busy') ||
-              lowerMessage.contains('rate limit') ||
-              lowerMessage.contains('too many');
-
-          if (isFinancialError && mounted) {
-            showTransferErrorBottomSheet(
-              context,
-              transferState.message,
-              onRetry: transferState.isRetryable ? () {
-                // User can retry from the current screen
-              } : null,
-            );
-          } else {
-            // Lightweight snackbar for network, session, provider, and generic errors
-            String errorTitle = 'Transfer Failed';
-            String errorMessage = transferState.message;
-            Color errorColor = Colors.red.withValues(alpha: 0.7);
-            Duration errorDuration = const Duration(seconds: 4);
-
-            if (lowerMessage.contains('network') || lowerMessage.contains('connection') || lowerMessage.contains('timeout')) {
-              errorTitle = 'Network Error';
-              errorMessage = 'Unable to connect to server. Please check your internet connection and try again.';
-              errorColor = Colors.orange.withValues(alpha: 0.7);
-              errorDuration = const Duration(seconds: 5);
-            } else if ((lowerMessage.contains('auth') || lowerMessage.contains('token') || lowerMessage.contains('unauthorized')) && !lowerMessage.contains('authorization key') && !lowerMessage.contains('provider') && !lowerMessage.contains('flutterwave')) {
-              errorTitle = 'Session Expired';
-              errorMessage = 'Your session has expired. Please log in again.';
-              errorDuration = const Duration(seconds: 6);
-            } else if (lowerMessage.contains('authorization key') || lowerMessage.contains('provider') || lowerMessage.contains('flutterwave error')) {
-              errorTitle = 'Transfer Failed';
-              errorMessage = 'The payment provider encountered an error. Please try again later or contact support.';
-              errorDuration = const Duration(seconds: 5);
-            } else if (lowerMessage.contains('recipient') || lowerMessage.contains('not found')) {
-              errorTitle = 'Recipient Not Found';
-              errorMessage = 'The recipient could not be found. Please verify the recipient details.';
-            } else if (lowerMessage.contains('account') && lowerMessage.contains('not found')) {
-              errorTitle = 'Account Error';
-              errorMessage = 'Source account not found or invalid. Please select another account.';
-            } else if (lowerMessage.contains('invalid') && lowerMessage.contains('amount')) {
-              errorTitle = 'Invalid Amount';
-              errorMessage = 'The transfer amount is invalid. Please enter a valid amount.';
-            } else if (lowerMessage.contains('grpc') || lowerMessage.contains('unavailable')) {
-              errorTitle = 'Service Unavailable';
-              errorMessage = 'The service is temporarily unavailable. Please try again in a few moments.';
-              errorColor = Colors.orange.withValues(alpha: 0.7);
-              errorDuration = const Duration(seconds: 5);
+            // --- Non-blocking: Ensure P2P financial connection for internal recipients ---
+            if (_recipient != null &&
+                _recipient!.internalUserId != null &&
+                _recipient!.internalUserId!.isNotEmpty &&
+                _recipient!.bankName == 'LazerVault') {
+              // Sender's own real name seeds the RECEIVER's view of us so their
+              // connection isn't left as "Unknown User" (same source the receipt
+              // uses at line ~1815).
+              final senderProfile =
+                  context.read<AuthenticationCubit>().currentProfile;
+              final senderName = senderProfile != null
+                  ? '${senderProfile.user.firstName} ${senderProfile.user.lastName}'
+                      .trim()
+                  : '';
+              _ensureFinancialConnection(
+                otherUserId: _recipient!.internalUserId!,
+                otherUserName: _recipient!.name,
+                myName: senderName.isNotEmpty ? senderName : null,
+              );
             }
+            // --- End P2P Connection ---
 
-            Get.snackbar(
-              errorTitle,
-              errorMessage,
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: errorColor,
-              colorText: Colors.white,
-              duration: errorDuration,
-              icon: Icon(
-                Icons.error_outline,
-                color: Colors.white,
-              ),
-            );
-          }
-        }
-      },
-      builder: (context, transferState) {
-        final isTransferLoading = transferState is TransferLoading;
-        if (transferState is TransferSuccess) {
-          print("TransferSuccess: $transferState");
-        }
+            // --- Refresh Account Summaries ---
+            // Refresh immediately (no delay) since this widget will be disposed
+            // when navigating to the receipt. The cubit persists across navigation.
+            final refreshAuthState = context.read<AuthenticationCubit>().state;
+            if (refreshAuthState is AuthenticationSuccess) {
+              context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
+                    userId: refreshAuthState.profile.user.id,
+                    accessToken: refreshAuthState.profile.session.accessToken,
+                  );
+              print("Balance refresh triggered after successful transfer");
+            }
+            // --- End Refresh ---
 
-        // Use BlocConsumer for AccountCardsSummaryCubit to rebuild UI parts when accounts load
-        return BlocConsumer<AccountCardsSummaryCubit, AccountCardsSummaryState>(
-          listener: (context, accountState) {
-            // Add listener to observe state changes for AccountCardsSummaryCubit
+            try {
+              // Prepare data for the proof screen
+              double transferAmount = 0.0;
+              try {
+                transferAmount =
+                    (transferState.response.amount).toDouble() / 100.0;
+              } catch (_) {
+                print("Warning: Could not parse amount for proof screen.");
+              }
+              double transferFee =
+                  (transferState.response.fee).toDouble() / 100.0;
+              double totalAmount =
+                  (transferState.response.totalAmount).toDouble() / 100.0;
+              if (transferFee == 0.0) {
+                final lastFeeState =
+                    context.read<TransferCubit>().lastFeeLoaded;
+                if (lastFeeState != null) {
+                  transferFee = lastFeeState.fee / 100.0;
+                }
+              }
+              if (totalAmount == 0 && transferAmount > 0) {
+                totalAmount = transferAmount + transferFee;
+              }
+
+              String sourceAccountInfo = 'Unknown Card';
+              String senderCurrency = 'NGN';
+              String sourceAccountName = '';
+              final summaries = switch (accountState) {
+                AccountCardsSummaryLoaded(:final accountSummaries) =>
+                  accountSummaries,
+                AccountBalanceUpdated(:final accountSummaries) =>
+                  accountSummaries,
+                _ => <AccountSummaryEntity>[],
+              };
+              if (summaries.isNotEmpty &&
+                  selectedCardIndex < summaries.length) {
+                final selectedAccount = summaries[selectedCardIndex];
+                String sourceCardType = selectedAccount.accountType;
+                String sourceLast4 = selectedAccount.accountNumberLast4;
+                sourceAccountInfo = '$sourceCardType •••• $sourceLast4';
+                senderCurrency = selectedAccount.currency;
+                sourceAccountName = selectedAccount.accountName ?? '';
+              }
+
+              // Empty for internal user recipients (no real account number) → the
+              // receipt hides the Account row instead of masking the user-id UUID.
+              String recipientAccountMasked = _recipient!.maskedAccount;
+
+              final transferDetails = {
+                'amount': transferAmount,
+                'fee': transferFee,
+                'totalAmount': totalAmount,
+                'recipientName': _recipient!.name,
+                'recipientAccountMasked': recipientAccountMasked,
+                'recipientBankName': _recipient!.displayBankName,
+                'recipientBankCode': _recipient!.sortCode,
+                'sourceAccountInfo': sourceAccountInfo,
+                'sourceAccountName': sourceAccountName,
+                'currency': senderCurrency,
+                'transferId': transferState.response.transferId.toString(),
+                'timestamp': transferState.response.createdAt,
+                'category': selectedCategory?.displayName,
+                // Carry the send-funds flow (long|short) so the processing &
+                // receipt screens emit real telemetry instead of 'unknown'.
+                'flow': AnalyticsService.instance.currentSendFlow,
+                'reference': _referenceController.text.trim().isNotEmpty
+                    ? _referenceController.text.trim()
+                    : null,
+                'providerReference': transferState.response.providerReference,
+                'internalReference': transferState.response.internalReference,
+                'status': transferState.response.status,
+                'network': _recipient!.bankName == 'LazerVault'
+                    ? 'Lazervault Internal Transfer'
+                    : 'External Bank Transfer',
+                'transferType': _recipient!.bankName == 'LazerVault'
+                    ? 'Internal Transfer'
+                    : 'Domestic Transfer',
+                if (scheduledDate != null) 'scheduledAt': scheduledDate,
+                // Recurring payment context for receipt display
+                if (_isRecurringEnabled && _recurringConfig != null) ...{
+                  'isRecurring': true,
+                  'recurringFrequency': _recurringConfig!.frequency.name,
+                  'recurringSchedule': _recurringConfig!.summary,
+                  if (_createdRecurringTransferId != null)
+                    'recurringTransferId': _createdRecurringTransferId,
+                },
+              };
+              print('Listener: Transfer details prepared: $transferDetails');
+
+              // Store transfer details — navigation happens after PIN modal dismisses
+              _lastTransferDetails = transferDetails;
+
+              if (_recurringSetupPending) {
+                _transferSucceeded = true;
+                _pendingTransferSuccess = transferState;
+              }
+            } catch (e, stackTrace) {
+              print("Error inside TransferSuccess listener: $e\n$stackTrace");
+              if (_isConfirmingTransfer) {
+                setState(() {
+                  _isConfirmingTransfer = false;
+                });
+              }
+              // Close pin sheet if open
+              if (mounted) {
+                try {
+                  Navigator.of(context).pop();
+                } catch (_) {}
+              }
+              Get.snackbar(
+                'Error',
+                'An internal error occurred while processing the transfer success.',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: Colors.orange.withValues(alpha: 0.8),
+                colorText: Colors.white,
+              );
+            }
+          } else if (transferState is TransferFailure) {
             print(
-                "InitiateSendFunds AccountSummary Listener: Received state -> $accountState");
-
-            // Auto-show confirm when prefilled from transaction history
-            if (_autoShowConfirm &&
-                !_autoConfirmTriggered &&
-                amount.isNotEmpty &&
-                _recipient != null &&
-                (accountState is AccountCardsSummaryLoaded ||
-                    accountState is AccountBalanceUpdated)) {
-              _autoConfirmTriggered = true;
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (mounted) _showTransferConfirmation(accountState);
+                'Listener: Transfer Failure received: ${transferState.message}');
+            if (_isConfirmingTransfer) {
+              setState(() {
+                _isConfirmingTransfer = false;
               });
             }
-          },
-          builder: (context, accountState) {
-            final isAccountLoading =
-                accountState is AccountCardsSummaryLoading ||
-                    accountState is AccountCardsSummaryInitial;
-            // AccountBalanceUpdated means we have data (from WebSocket), so don't treat as loading
-            final isLoading =
-                isTransferLoading || isAccountLoading; // Combined loading state
 
-            // Determine max amount (example logic, adjust as needed)
-            double maxAmount = 0.0;
-            final summaries = switch (accountState) {
-              AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
-              AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
-              _ => <AccountSummaryEntity>[],
-            };
-            if (summaries.isNotEmpty &&
-                selectedCardIndex < summaries.length) {
-              maxAmount =
-                  summaries[selectedCardIndex].availableBalance; // Example: use available balance as max
+            // Reset all recurring state to prevent stale flags
+            _resetRecurringState();
+
+            // Show failure in PIN modal if open, otherwise show snackbar
+            final modalState = pinModalKey.currentState;
+            if (modalState != null) {
+              modalState.setFailed(transferState.message);
+              // Auto-close after showing failure
+              Future.delayed(const Duration(seconds: 2), () {
+                if (mounted) {
+                  try {
+                    Navigator.of(context).pop();
+                  } catch (_) {}
+                }
+              });
+            } else {
+              // Fallback: close any open dialog
+              if (Get.isDialogOpen ?? false) {
+                Get.back();
+              }
             }
 
-            return Scaffold(
-              backgroundColor: const Color(0xFF121212),
-              // Tap anywhere outside the inputs to dismiss the system keyboard.
-              body: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-                child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 4.0),
-                  // AbsorbPointer disables interaction during loading
-                  child: AbsorbPointer(
-                    absorbing: isLoading,
-                    child: Stack(
-                      children: [
-                        Column(
+            // KYC UPGRADE MODAL — show before generic error handling
+            if (transferState.isKYCError && mounted) {
+              handleKYCError(transferState.message, context, 'send money');
+              return; // Don't show snackbar — modal is shown
+            }
+
+            // Show error bottom sheet for financial errors that need user attention,
+            // fall back to snackbar for minor/informational errors.
+            final lowerMessage = transferState.message.toLowerCase();
+            final isFinancialError = lowerMessage.contains('insufficient') ||
+                lowerMessage.contains('balance') ||
+                lowerMessage.contains('daily') ||
+                lowerMessage.contains('limit') ||
+                lowerMessage.contains('exceeded') ||
+                lowerMessage.contains('frozen') ||
+                lowerMessage.contains('locked') ||
+                lowerMessage.contains('suspended') ||
+                lowerMessage.contains('restricted') ||
+                lowerMessage.contains('another transfer') ||
+                lowerMessage.contains('in progress') ||
+                lowerMessage.contains('resource busy') ||
+                lowerMessage.contains('rate limit') ||
+                lowerMessage.contains('too many');
+
+            if (isFinancialError && mounted) {
+              showTransferErrorBottomSheet(
+                context,
+                transferState.message,
+                onRetry: transferState.isRetryable
+                    ? () {
+                        // User can retry from the current screen
+                      }
+                    : null,
+              );
+            } else {
+              // Lightweight snackbar for network, session, provider, and generic errors
+              String errorTitle = 'Transfer Failed';
+              String errorMessage = transferState.message;
+              Color errorColor = Colors.red.withValues(alpha: 0.7);
+              Duration errorDuration = const Duration(seconds: 4);
+
+              if (lowerMessage.contains('network') ||
+                  lowerMessage.contains('connection') ||
+                  lowerMessage.contains('timeout')) {
+                errorTitle = 'Network Error';
+                errorMessage =
+                    'Unable to connect to server. Please check your internet connection and try again.';
+                errorColor = Colors.orange.withValues(alpha: 0.7);
+                errorDuration = const Duration(seconds: 5);
+              } else if ((lowerMessage.contains('auth') ||
+                      lowerMessage.contains('token') ||
+                      lowerMessage.contains('unauthorized')) &&
+                  !lowerMessage.contains('authorization key') &&
+                  !lowerMessage.contains('provider') &&
+                  !lowerMessage.contains('flutterwave')) {
+                errorTitle = 'Session Expired';
+                errorMessage = 'Your session has expired. Please log in again.';
+                errorDuration = const Duration(seconds: 6);
+              } else if (lowerMessage.contains('authorization key') ||
+                  lowerMessage.contains('provider') ||
+                  lowerMessage.contains('flutterwave error')) {
+                errorTitle = 'Transfer Failed';
+                errorMessage =
+                    'The payment provider encountered an error. Please try again later or contact support.';
+                errorDuration = const Duration(seconds: 5);
+              } else if (lowerMessage.contains('recipient') ||
+                  lowerMessage.contains('not found')) {
+                errorTitle = 'Recipient Not Found';
+                errorMessage =
+                    'The recipient could not be found. Please verify the recipient details.';
+              } else if (lowerMessage.contains('account') &&
+                  lowerMessage.contains('not found')) {
+                errorTitle = 'Account Error';
+                errorMessage =
+                    'Source account not found or invalid. Please select another account.';
+              } else if (lowerMessage.contains('invalid') &&
+                  lowerMessage.contains('amount')) {
+                errorTitle = 'Invalid Amount';
+                errorMessage =
+                    'The transfer amount is invalid. Please enter a valid amount.';
+              } else if (lowerMessage.contains('grpc') ||
+                  lowerMessage.contains('unavailable')) {
+                errorTitle = 'Service Unavailable';
+                errorMessage =
+                    'The service is temporarily unavailable. Please try again in a few moments.';
+                errorColor = Colors.orange.withValues(alpha: 0.7);
+                errorDuration = const Duration(seconds: 5);
+              }
+
+              Get.snackbar(
+                errorTitle,
+                errorMessage,
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: errorColor,
+                colorText: Colors.white,
+                duration: errorDuration,
+                icon: Icon(
+                  Icons.error_outline,
+                  color: Colors.white,
+                ),
+              );
+            }
+          }
+        },
+        builder: (context, transferState) {
+          final isTransferLoading = transferState is TransferLoading;
+          if (transferState is TransferSuccess) {
+            print("TransferSuccess: $transferState");
+          }
+
+          // Use BlocConsumer for AccountCardsSummaryCubit to rebuild UI parts when accounts load
+          return BlocConsumer<AccountCardsSummaryCubit,
+              AccountCardsSummaryState>(
+            listener: (context, accountState) {
+              // Add listener to observe state changes for AccountCardsSummaryCubit
+              print(
+                  "InitiateSendFunds AccountSummary Listener: Received state -> $accountState");
+
+              // Auto-show confirm when prefilled from transaction history
+              if (_autoShowConfirm &&
+                  !_autoConfirmTriggered &&
+                  amount.isNotEmpty &&
+                  _recipient != null &&
+                  (accountState is AccountCardsSummaryLoaded ||
+                      accountState is AccountBalanceUpdated)) {
+                _autoConfirmTriggered = true;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) _showTransferConfirmation(accountState);
+                });
+              }
+            },
+            builder: (context, accountState) {
+              final isAccountLoading =
+                  accountState is AccountCardsSummaryLoading ||
+                      accountState is AccountCardsSummaryInitial;
+              // AccountBalanceUpdated means we have data (from WebSocket), so don't treat as loading
+              final isLoading = isTransferLoading ||
+                  isAccountLoading; // Combined loading state
+
+              // Determine max amount (example logic, adjust as needed)
+              double maxAmount = 0.0;
+              final summaries = switch (accountState) {
+                AccountCardsSummaryLoaded(:final accountSummaries) =>
+                  accountSummaries,
+                AccountBalanceUpdated(:final accountSummaries) =>
+                  accountSummaries,
+                _ => <AccountSummaryEntity>[],
+              };
+              if (summaries.isNotEmpty &&
+                  selectedCardIndex < summaries.length) {
+                maxAmount = summaries[selectedCardIndex]
+                    .availableBalance; // Example: use available balance as max
+              }
+
+              return Scaffold(
+                backgroundColor: const Color(0xFF121212),
+                // Tap anywhere outside the inputs to dismiss the system keyboard.
+                body: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                  child: SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 4.0),
+                      // AbsorbPointer disables interaction during loading
+                      child: AbsorbPointer(
+                        absorbing: isLoading,
+                        child: Stack(
                           children: [
-                            // Top Row (Recipient Info)
-                            Row(
+                            Column(
                               children: [
-                                // Themed back button — a translucent-white
-                                // surface (alpha 0.08) that reads as a tappable
-                                // chip against the 0xFF121212 page background,
-                                // matching the page's other cards/inputs. The
-                                // padded InkWell gives a ~42px hit target (wider
-                                // than the bare icon) plus a ripple on tap.
-                                Material(
-                                  color: Colors.white.withValues(alpha: 0.08),
-                                  borderRadius: BorderRadius.circular(12),
-                                  clipBehavior: Clip.antiAlias,
-                                  child: InkWell(
-                                    onTap: () => Get.back(),
-                                    child: Padding(
-                                      padding: EdgeInsets.all(12.w),
-                                      child: const Icon(
-                                        Icons.arrow_back_ios_new,
-                                        color: Colors.white,
-                                        size: 18,
+                                // Top Row (Recipient Info)
+                                Row(
+                                  children: [
+                                    // Themed back button — a translucent-white
+                                    // surface (alpha 0.08) that reads as a tappable
+                                    // chip against the 0xFF121212 page background,
+                                    // matching the page's other cards/inputs. The
+                                    // padded InkWell gives a ~42px hit target (wider
+                                    // than the bare icon) plus a ripple on tap.
+                                    Material(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.08),
+                                      borderRadius: BorderRadius.circular(12),
+                                      clipBehavior: Clip.antiAlias,
+                                      child: InkWell(
+                                        onTap: () => Get.back(),
+                                        child: Padding(
+                                          padding: EdgeInsets.all(12.w),
+                                          child: const Icon(
+                                            Icons.arrow_back_ios_new,
+                                            color: Colors.white,
+                                            size: 18,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Center(
-                                    child: Column(
+                                    Expanded(
+                                        child: Center(
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            _recipient!.name,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          SizedBox(height: 4.h),
+                                          // Show recipient account number and bank
+                                          Text(
+                                            _recipient!.accountNumber,
+                                            style: TextStyle(
+                                              color: Colors.white
+                                                  .withValues(alpha: 0.7),
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          if (_recipient!.bankName.isNotEmpty)
+                                            Padding(
+                                              padding:
+                                                  EdgeInsets.only(top: 2.h),
+                                              child: Text(
+                                                _recipient!.bankName,
+                                                style: TextStyle(
+                                                  color: Colors.white
+                                                      .withValues(alpha: 0.5),
+                                                  fontSize: 11,
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    )),
+                                    Column(
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Text(
-                                          _recipient!.name,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.w600,
+                                        Container(
+                                          width: 40.w,
+                                          height: 40.h,
+                                          padding: const EdgeInsets.all(2.0),
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black
+                                                    .withValues(alpha: 0.08),
+                                                blurRadius: 6,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ],
                                           ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        SizedBox(height: 4.h),
-                                        // Show recipient account number and bank
-                                        Text(
-                                          _recipient!.accountNumber,
-                                          style: TextStyle(
-                                            color: Colors.white.withValues(alpha: 0.7),
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                        if (_recipient!.bankName.isNotEmpty)
-                                          Padding(
-                                            padding: EdgeInsets.only(top: 2.h),
+                                          child: CircleAvatar(
+                                            backgroundColor:
+                                                Colors.blueGrey[700],
                                             child: Text(
-                                              _recipient!.bankName,
-                                              style: TextStyle(
-                                                color: Colors.white.withValues(alpha: 0.5),
-                                                fontSize: 11,
+                                              _recipient!.name.isNotEmpty
+                                                  ? _recipient!.name[0]
+                                                      .toUpperCase()
+                                                  : '?',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
                                               ),
                                             ),
                                           ),
+                                        ),
                                       ],
-                                  ),
-                                )),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 16.h),
+
+                                // Pay with Card Selector
                                 Column(
-                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Container(
-                                      width: 40.w,
-                                      height: 40.h,
-                                      padding: const EdgeInsets.all(2.0),
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withValues(alpha: 0.08),
-                                            blurRadius: 6,
-                                            offset: const Offset(0, 2),
+                                    const Text(
+                                      'Pay with',
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    SizedBox(height: 8.h),
+                                    _buildCardSelector(accountState),
+                                    _buildFrozenSourceBanner(accountState),
+                                  ],
+                                ),
+                                SizedBox(height: 16.h),
+
+                                // Amount Entry Box
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0, vertical: 10.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.05),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Enter amount:',
+                                        style: TextStyle(color: Colors.white70),
+                                      ),
+                                      SizedBox(height: 4.0.h),
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 6),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white
+                                                  .withValues(alpha: 0.05),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            // Get currency from selected account or default
+                                            child: Builder(
+                                              builder: (context) {
+                                                final summaries =
+                                                    switch (accountState) {
+                                                  AccountCardsSummaryLoaded(
+                                                    :final accountSummaries
+                                                  ) =>
+                                                    accountSummaries,
+                                                  AccountBalanceUpdated(
+                                                    :final accountSummaries
+                                                  ) =>
+                                                    accountSummaries,
+                                                  _ => <AccountSummaryEntity>[],
+                                                };
+                                                final currency = summaries
+                                                            .isNotEmpty &&
+                                                        selectedCardIndex <
+                                                            summaries.length
+                                                    ? summaries[
+                                                            selectedCardIndex]
+                                                        .currency
+                                                    : 'NGN';
+                                                return Text(
+                                                  currency,
+                                                  style: TextStyle(
+                                                      color: Colors.white),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          // Editable amount field — supports both keyboard and number pad input
+                                          Expanded(
+                                            child: TextField(
+                                              controller: _amountController,
+                                              keyboardType: const TextInputType
+                                                  .numberWithOptions(
+                                                  decimal: true),
+                                              inputFormatters: [
+                                                FilteringTextInputFormatter
+                                                    .allow(RegExp(
+                                                        r'^\d*\.?\d{0,2}')),
+                                              ],
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              decoration: InputDecoration(
+                                                border: InputBorder.none,
+                                                hintText: '0.00',
+                                                hintStyle: TextStyle(
+                                                  color: Colors.white
+                                                      .withValues(alpha: 0.5),
+                                                  fontSize: 24,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                contentPadding: EdgeInsets.zero,
+                                              ),
+                                              onChanged: _onAmountFieldChanged,
+                                            ),
                                           ),
                                         ],
                                       ),
-                                      child: CircleAvatar(
-                                        backgroundColor: Colors.blueGrey[700],
-                                        child: Text(
-                                          _recipient!.name.isNotEmpty
-                                              ? _recipient!.name[0].toUpperCase()
-                                              : '?',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Builder(
+                                          builder: (context) {
+                                            // Get currency symbol from selected account
+                                            final summaries =
+                                                switch (accountState) {
+                                              AccountCardsSummaryLoaded(
+                                                :final accountSummaries
+                                              ) =>
+                                                accountSummaries,
+                                              AccountBalanceUpdated(
+                                                :final accountSummaries
+                                              ) =>
+                                                accountSummaries,
+                                              _ => <AccountSummaryEntity>[],
+                                            };
+                                            String currencySymbol = '₦';
+                                            if (summaries.isNotEmpty &&
+                                                selectedCardIndex <
+                                                    summaries.length) {
+                                              currencySymbol =
+                                                  _getCurrencySymbol(summaries[
+                                                          selectedCardIndex]
+                                                      .currency);
+                                            }
+                                            return Text(
+                                              'Max $currencySymbol${NumberFormat('#,##0.00', 'en_US').format(maxAmount)}',
+                                              style: const TextStyle(
+                                                  color: Colors.white70),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      SizedBox(height: 16.h),
+                                      // Category Dropdown
+                                      GestureDetector(
+                                        onTap: _showCategoryPicker,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 12),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white
+                                                .withValues(alpha: 0.05),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                           ),
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                selectedCategory?.iconData ??
+                                                    Icons.category_outlined,
+                                                color: selectedCategory != null
+                                                    ? selectedCategory!.color
+                                                    : Colors.white70,
+                                                size: 20,
+                                              ),
+                                              SizedBox(width: 8.w),
+                                              Expanded(
+                                                child: Text(
+                                                  selectedCategory
+                                                          ?.displayName ??
+                                                      'Select Category',
+                                                  style: TextStyle(
+                                                    color:
+                                                        selectedCategory != null
+                                                            ? Colors.white
+                                                            : Colors.white70,
+                                                    fontSize: 14,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              const Icon(
+                                                Icons.arrow_drop_down,
+                                                color: Colors.white70,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(height: 8.h),
+                                      // Reference Field
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 0),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white
+                                              .withValues(alpha: 0.05),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.note_outlined,
+                                              color: Colors.white70,
+                                              size: 20,
+                                            ),
+                                            SizedBox(width: 8.w),
+                                            Expanded(
+                                              child: TextField(
+                                                controller:
+                                                    _referenceController,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 14,
+                                                ),
+                                                decoration:
+                                                    const InputDecoration(
+                                                  border: InputBorder.none,
+                                                  hintText:
+                                                      'Add narration (optional)',
+                                                  hintStyle: TextStyle(
+                                                    color: Colors.white70,
+                                                    fontSize: 14,
+                                                  ),
+                                                  contentPadding:
+                                                      EdgeInsets.symmetric(
+                                                          vertical: 14),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: 16.h),
+
+                                // Quick amounts section
+                                _buildQuickAmounts(accountState),
+                                SizedBox(height: 16.h),
+
+                                // Send/Schedule Button Row
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Builder(
+                                        builder: (context) {
+                                          final summaries =
+                                              switch (accountState) {
+                                            AccountCardsSummaryLoaded(
+                                              :final accountSummaries
+                                            ) =>
+                                              accountSummaries,
+                                            AccountBalanceUpdated(
+                                              :final accountSummaries
+                                            ) =>
+                                              accountSummaries,
+                                            _ => <AccountSummaryEntity>[],
+                                          };
+                                          final canProceed = !isLoading &&
+                                              amount.isNotEmpty &&
+                                              (int.tryParse(amount) ?? 0) !=
+                                                  0 &&
+                                              summaries.isNotEmpty;
+                                          return ElevatedButton(
+                                            onPressed: canProceed
+                                                ? () =>
+                                                    _showTransferConfirmation(
+                                                        accountState)
+                                                : null,
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  const Color(0xFF2962FF)
+                                                      .withValues(alpha: 0.8),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 12.0),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                              disabledBackgroundColor: Colors
+                                                  .grey
+                                                  .withValues(alpha: 0.3),
+                                              disabledForegroundColor: Colors
+                                                  .white
+                                                  .withValues(alpha: 0.5),
+                                            ),
+                                            child: const Text(
+                                              'Confirm Transfer',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    SizedBox(width: 12.w),
+                                    // Schedule Button
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white
+                                            .withValues(alpha: 0.05),
+                                        borderRadius: BorderRadius.circular(12),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black
+                                                .withValues(alpha: 0.08),
+                                            blurRadius: 6,
+                                            offset: Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: IconButton(
+                                        tooltip: scheduledDate == null
+                                            ? 'Schedule Transfer'
+                                            : 'Scheduled: ${DateFormat('MMM d, HH:mm').format(scheduledDate!)}',
+                                        onPressed: isLoading
+                                            ? null
+                                            : _showScheduleOptions,
+                                        icon: Icon(
+                                          Icons.schedule,
+                                          color: scheduledDate != null
+                                              ? const Color(0xFF2962FF)
+                                                  .withValues(alpha: 0.8)
+                                              : Colors.white70,
                                         ),
                                       ),
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
-                            SizedBox(height: 16.h),
+                                SizedBox(height: 12.h),
 
-                            // Pay with Card Selector
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Pay with',
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                SizedBox(height: 8.h),
-                                _buildCardSelector(accountState),
-                                _buildFrozenSourceBanner(accountState),
-                              ],
-                            ),
-                            SizedBox(height: 16.h),
-
-                            // Amount Entry Box
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16.0, vertical: 10.0),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.05),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Enter amount:',
-                                    style: TextStyle(color: Colors.white70),
-                                  ),
-                                  SizedBox(height: 4.0.h),
-                                  Row(
+                                // Number pad
+                                Expanded(
+                                  child: GridView.count(
+                                    crossAxisCount: 3,
+                                    mainAxisSpacing: 12.h,
+                                    crossAxisSpacing: 16.w,
+                                    childAspectRatio:
+                                        2.5, // Adjust aspect ratio for better spacing
+                                    // Extra bottom padding lifts the last row (0 / ⌫)
+                                    // clear of the device nav bar / home indicator so
+                                    // it isn't hidden below the screen edge.
+                                    padding: EdgeInsets.only(bottom: 32.h),
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
                                     children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 6),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withValues(alpha: 0.05),
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
-                                        // Get currency from selected account or default
-                                        child: Builder(
-                                          builder: (context) {
-                                            final summaries = switch (accountState) {
-                                              AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
-                                              AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
-                                              _ => <AccountSummaryEntity>[],
-                                            };
-                                            final currency = summaries.isNotEmpty &&
-                                                    selectedCardIndex < summaries.length
-                                                ? summaries[selectedCardIndex].currency
-                                                : 'NGN';
-                                            return Text(
-                                              currency,
-                                              style: TextStyle(color: Colors.white),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      // Editable amount field — supports both keyboard and number pad input
-                                      Expanded(
-                                        child: TextField(
-                                          controller: _amountController,
-                                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                          inputFormatters: [
-                                            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
-                                          ],
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          decoration: InputDecoration(
-                                            border: InputBorder.none,
-                                            hintText: '0.00',
-                                            hintStyle: TextStyle(
-                                              color: Colors.white.withValues(alpha: 0.5),
-                                              fontSize: 24,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                            contentPadding: EdgeInsets.zero,
-                                          ),
-                                          onChanged: _onAmountFieldChanged,
-                                        ),
-                                      ),
+                                      for (var i = 1; i <= 9; i++)
+                                        _buildNumberButton(i.toString()),
+                                      // Use Icon for clear/placeholder if needed
+                                      Container(), // Placeholder
+                                      _buildNumberButton('0'),
+                                      _buildNumberButton('<'), // Backspace
                                     ],
                                   ),
-                                  Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Builder(
-                                      builder: (context) {
-                                        // Get currency symbol from selected account
-                                        final summaries = switch (accountState) {
-                                          AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
-                                          AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
-                                          _ => <AccountSummaryEntity>[],
-                                        };
-                                        String currencySymbol = '₦';
-                                        if (summaries.isNotEmpty &&
-                                            selectedCardIndex < summaries.length) {
-                                          currencySymbol = _getCurrencySymbol(
-                                              summaries[selectedCardIndex].currency);
-                                        }
-                                        return Text(
-                                          'Max $currencySymbol${NumberFormat('#,##0.00', 'en_US').format(maxAmount)}',
-                                          style: const TextStyle(color: Colors.white70),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                  SizedBox(height: 16.h),
-                                  // Category Dropdown
-                                  GestureDetector(
-                                    onTap: _showCategoryPicker,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.05),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            selectedCategory?.iconData ?? Icons.category_outlined,
-                                            color: selectedCategory != null
-                                                ? selectedCategory!.color
-                                                : Colors.white70,
-                                            size: 20,
-                                          ),
-                                          SizedBox(width: 8.w),
-                                          Expanded(
-                                            child: Text(
-                                              selectedCategory?.displayName ??
-                                                  'Select Category',
-                                              style: TextStyle(
-                                                color: selectedCategory != null
-                                                    ? Colors.white
-                                                    : Colors.white70,
-                                                fontSize: 14,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          const Icon(
-                                            Icons.arrow_drop_down,
-                                            color: Colors.white70,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 8.h),
-                                  // Reference Field
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 0),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.05),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.note_outlined,
-                                          color: Colors.white70,
-                                          size: 20,
-                                        ),
-                                        SizedBox(width: 8.w),
-                                        Expanded(
-                                          child: TextField(
-                                            controller: _referenceController,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 14,
-                                            ),
-                                            decoration: const InputDecoration(
-                                              border: InputBorder.none,
-                                              hintText:
-                                                  'Add narration (optional)',
-                                              hintStyle: TextStyle(
-                                                color: Colors.white70,
-                                                fontSize: 14,
-                                              ),
-                                              contentPadding:
-                                                  EdgeInsets.symmetric(
-                                                      vertical: 14),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(height: 16.h),
-
-                            // Quick amounts section
-                            _buildQuickAmounts(accountState),
-                            SizedBox(height: 16.h),
-
-                            // Send/Schedule Button Row
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Builder(
-                                    builder: (context) {
-                                      final summaries = switch (accountState) {
-                                        AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
-                                        AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
-                                        _ => <AccountSummaryEntity>[],
-                                      };
-                                      final canProceed = !isLoading &&
-                                          amount.isNotEmpty &&
-                                          (int.tryParse(amount) ?? 0) != 0 &&
-                                          summaries.isNotEmpty;
-                                      return ElevatedButton(
-                                        onPressed: canProceed
-                                            ? () => _showTransferConfirmation(
-                                                accountState)
-                                            : null,
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFF2962FF)
-                                              .withValues(alpha: 0.8),
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 12.0),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          disabledBackgroundColor:
-                                              Colors.grey.withValues(alpha: 0.3),
-                                          disabledForegroundColor:
-                                              Colors.white.withValues(alpha: 0.5),
-                                        ),
-                                        child: const Text(
-                                          'Confirm Transfer',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                                SizedBox(width: 12.w),
-                                // Schedule Button
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.05),
-                                    borderRadius: BorderRadius.circular(12),
-                                    boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-                                  ),
-                                  child: IconButton(
-                                    tooltip: scheduledDate == null
-                                        ? 'Schedule Transfer'
-                                        : 'Scheduled: ${DateFormat('MMM d, HH:mm').format(scheduledDate!)}',
-                                    onPressed:
-                                        isLoading ? null : _showScheduleOptions,
-                                    icon: Icon(
-                                      Icons.schedule,
-                                      color: scheduledDate != null
-                                          ? const Color(0xFF2962FF)
-                                              .withValues(alpha: 0.8)
-                                          : Colors.white70,
-                                    ),
-                                  ),
                                 ),
                               ],
                             ),
-                            SizedBox(height: 12.h),
-
-                            // Number pad
-                            Expanded(
-                              child: GridView.count(
-                                crossAxisCount: 3,
-                                mainAxisSpacing: 12.h,
-                                crossAxisSpacing: 16.w,
-                                childAspectRatio:
-                                    2.5, // Adjust aspect ratio for better spacing
-                                // Extra bottom padding lifts the last row (0 / ⌫)
-                                // clear of the device nav bar / home indicator so
-                                // it isn't hidden below the screen edge.
-                                padding: EdgeInsets.only(bottom: 32.h),
-                                physics: const NeverScrollableScrollPhysics(),
-                                children: [
-                                  for (var i = 1; i <= 9; i++)
-                                    _buildNumberButton(i.toString()),
-                                  // Use Icon for clear/placeholder if needed
-                                  Container(), // Placeholder
-                                  _buildNumberButton('0'),
-                                  _buildNumberButton('<'), // Backspace
-                                ],
+                            // Loading Overlay
+                            if (isLoading)
+                              Positioned.fill(
+                                child: Container(
+                                  color: Colors.black.withValues(alpha: 0.5),
+                                  child: const Center(
+                                    child: LazerVaultLoader.small(),
+                                  ),
+                                ),
                               ),
-                            ),
                           ],
                         ),
-                        // Loading Overlay
-                        if (isLoading)
-                          Positioned.fill(
-                            child: Container(
-                              color: Colors.black.withValues(alpha: 0.5),
-                              child: const Center(
-                                child: LazerVaultLoader.small(),
-                              ),
-                            ),
-                          ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              ),
-            );
-          },
-        );
-      },
-    ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 

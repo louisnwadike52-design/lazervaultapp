@@ -14,12 +14,16 @@ class CableTVRepositoryImpl implements CableTVRepository {
   CableTVRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, List<CableTVProviderEntity>>> getProviders({bool activeOnly = true}) async {
+  Future<Either<Failure, List<CableTVProviderEntity>>> getProviders(
+      {bool activeOnly = true}) async {
     try {
-      final result = await remoteDataSource.getProviders(activeOnly: activeOnly);
+      final result =
+          await remoteDataSource.getProviders(activeOnly: activeOnly);
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to get cable TV providers', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to get cable TV providers',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
@@ -37,19 +41,24 @@ class CableTVRepositoryImpl implements CableTVRepository {
       );
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to validate smart card', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to validate smart card',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
   @override
-  Future<Either<Failure, List<TVPackageEntity>>> getPackages({required String providerId}) async {
+  Future<Either<Failure, List<TVPackageEntity>>> getPackages(
+      {required String providerId}) async {
     try {
       final result = await remoteDataSource.getPackages(providerId: providerId);
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to get TV packages', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to get TV packages',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
@@ -79,7 +88,9 @@ class CableTVRepositoryImpl implements CableTVRepository {
       );
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to pay cable TV subscription', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to pay cable TV subscription',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
@@ -97,7 +108,9 @@ class CableTVRepositoryImpl implements CableTVRepository {
       );
       return Right(result);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(message: e.message ?? 'Failed to get cable TV payment history', statusCode: e.codeName));
+      return Left(ServerFailure(
+          message: e.message ?? 'Failed to get cable TV payment history',
+          statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }

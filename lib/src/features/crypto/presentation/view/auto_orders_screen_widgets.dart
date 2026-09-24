@@ -30,8 +30,19 @@ class _AutoOrdersScreenState extends State<AutoOrdersScreen> {
       final res = await _client.listAutoOrders();
       final all = res.orders.toList();
       setState(() {
-        _active = all.where((o) => o.status == 'active' || o.status == 'triggered' || o.status == 'executing').toList();
-        _past = all.where((o) => o.status == 'completed' || o.status == 'failed' || o.status == 'cancelled' || o.status == 'expired').toList();
+        _active = all
+            .where((o) =>
+                o.status == 'active' ||
+                o.status == 'triggered' ||
+                o.status == 'executing')
+            .toList();
+        _past = all
+            .where((o) =>
+                o.status == 'completed' ||
+                o.status == 'failed' ||
+                o.status == 'cancelled' ||
+                o.status == 'expired')
+            .toList();
         _loading = false;
       });
     } catch (_) {
@@ -46,14 +57,19 @@ class _AutoOrdersScreenState extends State<AutoOrdersScreen> {
     try {
       await _client.cancelAutoOrder(id);
       await _load();
-      Get.snackbar('Cancelled', 'Auto order cancelled and any reserved funds released',
-          backgroundColor: _card, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+          'Cancelled', 'Auto order cancelled and any reserved funds released',
+          backgroundColor: _card,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
       // The swipe already dismissed the tile optimistically — reload so it
       // reappears (the hold is still live) and say WHY the cancel failed.
       await _load();
       Get.snackbar('Error', 'Could not cancel auto order: ${friendlyError(e)}',
-          backgroundColor: _red.withValues(alpha: 0.9), colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+          backgroundColor: _red.withValues(alpha: 0.9),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
     }
   }
 
@@ -83,7 +99,8 @@ class _AutoOrdersScreenState extends State<AutoOrdersScreen> {
               onTap: () => Get.back(),
               child: Container(
                 padding: EdgeInsets.all(8.w),
-                decoration: BoxDecoration(color: _card, borderRadius: BorderRadius.circular(12.r)),
+                decoration: BoxDecoration(
+                    color: _card, borderRadius: BorderRadius.circular(12.r)),
                 child: Icon(Icons.arrow_back, color: Colors.white, size: 20.sp),
               ),
             ),
@@ -96,7 +113,13 @@ class _AutoOrdersScreenState extends State<AutoOrdersScreen> {
           color: _accent,
           backgroundColor: _card,
           onRefresh: _load,
-          child: _loading ? _shimmer() : _error != null ? _errView() : empty ? _emptyView() : _list(),
+          child: _loading
+              ? _shimmer()
+              : _error != null
+                  ? _errView()
+                  : empty
+                      ? _emptyView()
+                      : _list(),
         )),
       ])),
     );
@@ -111,7 +134,8 @@ class _AutoOrdersScreenState extends State<AutoOrdersScreen> {
           itemBuilder: (_, __) => Container(
             height: 76.h,
             margin: EdgeInsets.only(bottom: 12.h),
-            decoration: BoxDecoration(color: _card, borderRadius: BorderRadius.circular(14.r)),
+            decoration: BoxDecoration(
+                color: _card, borderRadius: BorderRadius.circular(14.r)),
           ),
         ),
       );
@@ -124,7 +148,9 @@ class _AutoOrdersScreenState extends State<AutoOrdersScreen> {
           SizedBox(height: 16.h),
           Text(_error!, style: _inter(16, c: _sub)),
           SizedBox(height: 16.h),
-          TextButton(onPressed: _load, child: Text('Retry', style: _inter(14, c: _accent))),
+          TextButton(
+              onPressed: _load,
+              child: Text('Retry', style: _inter(14, c: _accent))),
         ])),
       ]);
 
@@ -135,11 +161,13 @@ class _AutoOrdersScreenState extends State<AutoOrdersScreen> {
           Container(
             width: 80.w,
             height: 80.w,
-            decoration: BoxDecoration(color: _accent.withValues(alpha: 0.15), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+                color: _accent.withValues(alpha: 0.15), shape: BoxShape.circle),
             child: Icon(Icons.bolt, color: _accent, size: 40.sp),
           ),
           SizedBox(height: 24.h),
-          Text('Set your first auto order', style: _inter(20, w: FontWeight.w600)),
+          Text('Set your first auto order',
+              style: _inter(20, w: FontWeight.w600)),
           SizedBox(height: 8.h),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 40.w),
@@ -156,12 +184,14 @@ class _AutoOrdersScreenState extends State<AutoOrdersScreen> {
         SizedBox(width: 6.w),
         Container(
           padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-          decoration: BoxDecoration(color: _divider, borderRadius: BorderRadius.circular(10.r)),
+          decoration: BoxDecoration(
+              color: _divider, borderRadius: BorderRadius.circular(10.r)),
           child: Text('$count', style: _inter(12, w: FontWeight.w500, c: _sub)),
         ),
       ]);
 
-  Widget _list() => ListView(padding: EdgeInsets.symmetric(horizontal: 20.w), children: [
+  Widget _list() =>
+      ListView(padding: EdgeInsets.symmetric(horizontal: 20.w), children: [
         if (_active.isNotEmpty) ...[
           _sectionLabel('Active', _active.length),
           SizedBox(height: 8.h),
@@ -219,45 +249,68 @@ class _Tile extends StatelessWidget {
             width: 40.w,
             height: 40.w,
             alignment: Alignment.center,
-            decoration: BoxDecoration(color: (isBuy ? _green : _red).withValues(alpha: 0.15), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+                color: (isBuy ? _green : _red).withValues(alpha: 0.15),
+                shape: BoxShape.circle),
             child: Text(
-              order.cryptoSymbol.toUpperCase().substring(0, order.cryptoSymbol.length > 2 ? 2 : order.cryptoSymbol.length),
+              order.cryptoSymbol.toUpperCase().substring(
+                  0,
+                  order.cryptoSymbol.length > 2
+                      ? 2
+                      : order.cryptoSymbol.length),
               style: _inter(13, w: FontWeight.w700, c: isBuy ? _green : _red),
             ),
           ),
           SizedBox(width: 12.w),
           Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Text('${isBuy ? 'Buy' : 'Sell'} ${order.cryptoSymbol.toUpperCase()}', style: _inter(15, w: FontWeight.w600)),
-              SizedBox(width: 6.w),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
-                decoration: BoxDecoration(color: _statusColor.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6.r)),
-                child: Text(order.status.toUpperCase(), style: _inter(9, w: FontWeight.w700, c: _statusColor)),
-              ),
-            ]),
-            SizedBox(height: 2.h),
-            Text('$sym${(order.amountMinor.toInt() / 100).toStringAsFixed(2)}', style: _inter(12, c: _sub)),
-          ])),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                Row(children: [
+                  Text(
+                      '${isBuy ? 'Buy' : 'Sell'} ${order.cryptoSymbol.toUpperCase()}',
+                      style: _inter(15, w: FontWeight.w600)),
+                  SizedBox(width: 6.w),
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
+                    decoration: BoxDecoration(
+                        color: _statusColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6.r)),
+                    child: Text(order.status.toUpperCase(),
+                        style: _inter(9, w: FontWeight.w700, c: _statusColor)),
+                  ),
+                ]),
+                SizedBox(height: 2.h),
+                Text(
+                    '$sym${(order.amountMinor.toInt() / 100).toStringAsFixed(2)}',
+                    style: _inter(12, c: _sub)),
+              ])),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-            Text('$sym${_fmtPrice(order.targetPrice)}', style: _inter(15, w: FontWeight.w600)),
+            Text('$sym${_fmtPrice(order.targetPrice)}',
+                style: _inter(15, w: FontWeight.w600)),
             SizedBox(height: 2.h),
             Row(mainAxisSize: MainAxisSize.min, children: [
-              Icon(above ? Icons.arrow_upward : Icons.arrow_downward, color: above ? _green : _red, size: 14.sp),
+              Icon(above ? Icons.arrow_upward : Icons.arrow_downward,
+                  color: above ? _green : _red, size: 14.sp),
               SizedBox(width: 2.w),
-              Text(above ? 'Above' : 'Below', style: _inter(12, w: FontWeight.w500, c: above ? _green : _red)),
+              Text(above ? 'Above' : 'Below',
+                  style:
+                      _inter(12, w: FontWeight.w500, c: above ? _green : _red)),
             ]),
           ]),
         ]),
         if (order.lastError.isNotEmpty) ...[
           SizedBox(height: 8.h),
-          Align(alignment: Alignment.centerLeft, child: Text(order.lastError, style: _inter(11, c: _red))),
+          Align(
+              alignment: Alignment.centerLeft,
+              child: Text(order.lastError, style: _inter(11, c: _red))),
         ],
       ]),
     );
 
-    if (past || onCancel == null) return Opacity(opacity: past ? 0.6 : 1.0, child: tile);
+    if (past || onCancel == null)
+      return Opacity(opacity: past ? 0.6 : 1.0, child: tile);
 
     return Dismissible(
       key: Key(order.id),
@@ -266,11 +319,18 @@ class _Tile extends StatelessWidget {
           context: context,
           builder: (ctx) => AlertDialog(
                 backgroundColor: _card,
-                title: Text('Cancel Auto Order', style: _inter(16, w: FontWeight.w600)),
-                content: Text('Cancel this order? Any reserved funds are released.', style: _inter(14, c: _sub)),
+                title: Text('Cancel Auto Order',
+                    style: _inter(16, w: FontWeight.w600)),
+                content: Text(
+                    'Cancel this order? Any reserved funds are released.',
+                    style: _inter(14, c: _sub)),
                 actions: [
-                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('Keep', style: _inter(14, c: _sub))),
-                  TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('Cancel order', style: _inter(14, c: _red))),
+                  TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: Text('Keep', style: _inter(14, c: _sub))),
+                  TextButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: Text('Cancel order', style: _inter(14, c: _red))),
                 ],
               )),
       onDismissed: (_) => onCancel!(),
@@ -278,7 +338,9 @@ class _Tile extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: EdgeInsets.only(right: 20.w),
         margin: EdgeInsets.only(bottom: 10.h),
-        decoration: BoxDecoration(color: _red.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(14.r)),
+        decoration: BoxDecoration(
+            color: _red.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(14.r)),
         child: Icon(Icons.delete_outline, color: _red, size: 24.sp),
       ),
       child: tile,

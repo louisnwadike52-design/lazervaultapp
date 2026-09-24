@@ -18,8 +18,8 @@ void main() {
         'Gift card sale payout - Turkey iTunes SELL-93b5d3e4-6e73-4097-8ea7-569c5e288cc2',
         'IDEM-CR-SELL-93b5d3e4-6e73-4097-8ea7-569c5e288cc2-PAYOUT',
       ]) {
-        expect(giftCardReferenceIn(s),
-            'SELL-93b5d3e4-6e73-4097-8ea7-569c5e288cc2',
+        expect(
+            giftCardReferenceIn(s), 'SELL-93b5d3e4-6e73-4097-8ea7-569c5e288cc2',
             reason: s);
       }
     });
@@ -33,7 +33,12 @@ void main() {
     });
 
     test('returns null rather than a false match on unrelated text', () {
-      for (final s in [null, '', 'Transfer to POS Transfer-BLESSING', 'Airtime']) {
+      for (final s in [
+        null,
+        '',
+        'Transfer to POS Transfer-BLESSING',
+        'Airtime'
+      ]) {
         expect(giftCardReferenceIn(s), isNull, reason: '$s');
       }
     });
@@ -84,7 +89,8 @@ void main() {
 
     test('face value always carries its currency', () {
       // A bare "100" does not say 100 of what.
-      expect(GiftCardTxnDetails.fromSale(sale(), const []).faceValue, 'USD 100');
+      expect(
+          GiftCardTxnDetails.fromSale(sale(), const []).faceValue, 'USD 100');
     });
 
     test('an unknown currency degrades to the bare amount, not a guess', () {

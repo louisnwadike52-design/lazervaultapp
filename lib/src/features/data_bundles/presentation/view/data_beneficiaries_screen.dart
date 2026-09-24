@@ -53,8 +53,7 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
   }
 
   String _displayNetworkName(DataBeneficiary b) {
-    if (b.networkName.isNotEmpty &&
-        b.networkName.toLowerCase() != 'unknown') {
+    if (b.networkName.isNotEmpty && b.networkName.toLowerCase() != 'unknown') {
       return b.networkName;
     }
     final code = b.networkCode.toUpperCase().replaceAll('-DATA', '');
@@ -91,8 +90,8 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
         elevation: 0,
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: Icon(Icons.arrow_back_ios_new,
-              color: Colors.white, size: 20.sp),
+          icon:
+              Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20.sp),
         ),
         title: Text('Saved Data Contacts',
             style: TextStyle(
@@ -204,8 +203,7 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
             Text(
               'After buying data, tap "Save Contact" on the receipt to add the recipient here for one-tap repeat purchases.',
               textAlign: TextAlign.center,
-              style:
-                  TextStyle(fontSize: 14.sp, color: const Color(0xFF9CA3AF)),
+              style: TextStyle(fontSize: 14.sp, color: const Color(0xFF9CA3AF)),
             ),
           ],
         ),
@@ -227,10 +225,9 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
       identifier: b.phoneNumber,
       providerName: providerForBadge,
       providerColor: _networkColor(b.networkCode),
-      lastPlanOrAmount:
-          (b.lastPlanName != null && b.lastPlanName!.isNotEmpty)
-              ? b.lastPlanName
-              : null,
+      lastPlanOrAmount: (b.lastPlanName != null && b.lastPlanName!.isNotEmpty)
+          ? b.lastPlanName
+          : null,
       usageCount: b.topupCount,
       savedOn: created.isEmpty ? null : 'Saved $created',
       trailing: autos.isNotEmpty
@@ -346,15 +343,11 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
   /// beats any paused, which beats everything else).
   Widget _autosBadge(List<DataAutoRecharge> autos) {
     if (autos.length == 1) return _autoBadge(autos.first);
-    final anyActive =
-        autos.any((ar) => ar.status.toLowerCase() == 'active');
-    final anyPaused =
-        autos.any((ar) => ar.status.toLowerCase() == 'paused');
+    final anyActive = autos.any((ar) => ar.status.toLowerCase() == 'active');
+    final anyPaused = autos.any((ar) => ar.status.toLowerCase() == 'paused');
     final color = anyActive
         ? const Color(0xFF10B981)
-        : (anyPaused
-            ? const Color(0xFFFB923C)
-            : const Color(0xFF9CA3AF));
+        : (anyPaused ? const Color(0xFFFB923C) : const Color(0xFF9CA3AF));
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
@@ -369,9 +362,7 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
           SizedBox(width: 4.w),
           Text('Roll \u00D7${autos.length}',
               style: TextStyle(
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w600,
-                  color: color)),
+                  fontSize: 11.sp, fontWeight: FontWeight.w600, color: color)),
         ],
       ),
     );
@@ -485,8 +476,7 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
                 ),
               ),
               Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8.r),
@@ -593,8 +583,18 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
     if (dt == null) return '';
     final local = dt.toLocal();
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     final m = months[local.month - 1];
     return '$m ${local.day}, ${local.year}';
@@ -602,8 +602,7 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
 
   Widget _autoBadge(DataAutoRecharge ar) {
     final isActive = ar.status.toLowerCase() == 'active';
-    final color =
-        isActive ? const Color(0xFF10B981) : const Color(0xFFFB923C);
+    final color = isActive ? const Color(0xFF10B981) : const Color(0xFFFB923C);
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
@@ -618,9 +617,7 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
           SizedBox(width: 4.w),
           Text('Roll',
               style: TextStyle(
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w600,
-                  color: color)),
+                  fontSize: 11.sp, fontWeight: FontWeight.w600, color: color)),
         ],
       ),
     );
@@ -646,8 +643,7 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
             ),
             SizedBox(height: 16.h),
             ListTile(
-              leading: Icon(Icons.info_outline,
-                  color: const Color(0xFF4E03D0)),
+              leading: Icon(Icons.info_outline, color: const Color(0xFF4E03D0)),
               title: Text('View Details',
                   style: TextStyle(color: Colors.white, fontSize: 15.sp)),
               onTap: () {
@@ -694,8 +690,7 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
                   arguments: {
                     'network': b.networkCode,
                     'networkName': _displayNetworkName(b),
-                    'networkColor':
-                        _networkColor(b.networkCode).toARGB32(),
+                    'networkColor': _networkColor(b.networkCode).toARGB32(),
                     'phoneNumber': b.phoneNumber,
                   },
                 );
@@ -706,10 +701,8 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
               final autos = _autosFor(b);
               final hasRollover = autos.isNotEmpty;
               return ListTile(
-                leading:
-                    Icon(Icons.autorenew, color: const Color(0xFF10B981)),
-                title: Text(
-                    hasRollover ? 'Edit Rollover' : 'Set Rollover',
+                leading: Icon(Icons.autorenew, color: const Color(0xFF10B981)),
+                title: Text(hasRollover ? 'Edit Rollover' : 'Set Rollover',
                     style: TextStyle(color: Colors.white, fontSize: 15.sp)),
                 subtitle: hasRollover
                     ? Text(
@@ -717,8 +710,7 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
                             ? 'Active schedule for this contact'
                             : '${autos.length} schedules · tap to pick one',
                         style: TextStyle(
-                            color: const Color(0xFF9CA3AF),
-                            fontSize: 12.sp),
+                            color: const Color(0xFF9CA3AF), fontSize: 12.sp),
                       )
                     : null,
                 onTap: () {
@@ -729,8 +721,8 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
             }),
             const Divider(color: Color(0xFF2D2D2D), height: 1),
             ListTile(
-              leading: Icon(Icons.edit_outlined,
-                  color: const Color(0xFF9CA3AF)),
+              leading:
+                  Icon(Icons.edit_outlined, color: const Color(0xFF9CA3AF)),
               title: Text('Edit Nickname',
                   style: TextStyle(color: Colors.white, fontSize: 15.sp)),
               // Right-aligned badge shows the current nickname at a
@@ -745,12 +737,12 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
                         padding: EdgeInsets.symmetric(
                             horizontal: 10.w, vertical: 4.h),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF4E03D0)
-                              .withValues(alpha: 0.15),
+                          color:
+                              const Color(0xFF4E03D0).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12.r),
                           border: Border.all(
-                            color: const Color(0xFF4E03D0)
-                                .withValues(alpha: 0.4),
+                            color:
+                                const Color(0xFF4E03D0).withValues(alpha: 0.4),
                           ),
                         ),
                         child: Text(
@@ -773,8 +765,8 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
             ),
             const Divider(color: Color(0xFF2D2D2D), height: 1),
             ListTile(
-              leading: Icon(Icons.delete_outline,
-                  color: const Color(0xFFEF4444)),
+              leading:
+                  Icon(Icons.delete_outline, color: const Color(0xFFEF4444)),
               title: Text('Delete Contact',
                   style: TextStyle(
                       color: const Color(0xFFEF4444), fontSize: 15.sp)),
@@ -797,8 +789,8 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) => AlertDialog(
           backgroundColor: const Color(0xFF1F1F1F),
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
           title: Text('Edit Nickname',
               style: TextStyle(color: Colors.white, fontSize: 17.sp)),
           content: Column(
@@ -821,16 +813,13 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
                   fillColor: const Color(0xFF0A0A0A),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.r),
-                      borderSide:
-                          const BorderSide(color: Color(0xFF2D2D2D))),
+                      borderSide: const BorderSide(color: Color(0xFF2D2D2D))),
                   enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.r),
-                      borderSide:
-                          const BorderSide(color: Color(0xFF2D2D2D))),
+                      borderSide: const BorderSide(color: Color(0xFF2D2D2D))),
                   focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.r),
-                      borderSide:
-                          const BorderSide(color: Color(0xFF4E03D0))),
+                      borderSide: const BorderSide(color: Color(0xFF4E03D0))),
                   contentPadding:
                       EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
                 ),
@@ -882,16 +871,15 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text(hasAuto ? 'Delete Contact & Rollover' : 'Delete Contact',
             style: TextStyle(color: Colors.white, fontSize: 17.sp)),
         content: Text(
           hasAuto
               ? 'This contact has an active rollover. Deleting will also remove the linked schedule.\n\nDelete $name?'
               : 'Delete $name? This cannot be undone.',
-          style:
-              TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+          style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
         ),
         actions: [
           TextButton(

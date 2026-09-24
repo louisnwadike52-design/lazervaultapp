@@ -10,14 +10,14 @@ import '../../domain/entities/mycover_management_entities.dart';
 import '../../domain/entities/insurance_document_upload_url.dart';
 part 'insurance_remote_datasource_widgets.dart';
 
-
 class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
   final GrpcClient grpcClient;
 
   InsuranceRemoteDataSourceImpl({required this.grpcClient});
 
   pb.InsuranceServiceClient get _client => grpcClient.insuranceClient;
-  fppb.FinancialProductsServiceClient get _fpClient => grpcClient.financialProductsClient;
+  fppb.FinancialProductsServiceClient get _fpClient =>
+      grpcClient.financialProductsClient;
 
   /// Retries [op] on TRANSIENT gRPC connection failures only — the
   /// HTTP/2 "connection is being forcefully terminated" / UNAVAILABLE
@@ -71,15 +71,16 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     final options = await grpcClient.callOptions;
     // 12s cap so a wedged backend doesn't leave the My Insurances list
     // stuck on a spinner forever.
-    final response = await _client
-        .getUserInsurances(request, options: options)
-        .timeout(
-          const Duration(seconds: 12),
-          onTimeout: () => throw Exception(
-              'Timed out loading policies. Pull to refresh and try again.'),
-        );
+    final response =
+        await _client.getUserInsurances(request, options: options).timeout(
+              const Duration(seconds: 12),
+              onTimeout: () => throw Exception(
+                  'Timed out loading policies. Pull to refresh and try again.'),
+            );
 
-    return response.insurances.map((proto) => _insuranceFromProto(proto)).toList();
+    return response.insurances
+        .map((proto) => _insuranceFromProto(proto))
+        .toList();
   }
 
   @override
@@ -95,17 +96,17 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       ..page = page
       ..limit = limit;
     final options = await grpcClient.callOptions;
-    final response = await _client
-        .getUserInsurances(request, options: options)
-        .timeout(
-          const Duration(seconds: 12),
-          onTimeout: () => throw Exception(
-              'Timed out loading policies. Pull to refresh and try again.'),
-        );
+    final response =
+        await _client.getUserInsurances(request, options: options).timeout(
+              const Duration(seconds: 12),
+              onTimeout: () => throw Exception(
+                  'Timed out loading policies. Pull to refresh and try again.'),
+            );
     final pagination = response.pagination;
     return UserInsurancesPage(
-      insurances:
-          response.insurances.map((proto) => _insuranceFromProto(proto)).toList(),
+      insurances: response.insurances
+          .map((proto) => _insuranceFromProto(proto))
+          .toList(),
       totalItems: pagination.totalItems,
       currentPage: pagination.currentPage > 0 ? pagination.currentPage : page,
       totalPages: pagination.totalPages,
@@ -122,13 +123,12 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
 
     final options = await grpcClient.callOptions;
     // Policy detail load — 12s cap so detail screen doesn't spin forever.
-    final response = await _client
-        .getInsuranceById(request, options: options)
-        .timeout(
-          const Duration(seconds: 12),
-          onTimeout: () => throw Exception(
-              'Timed out loading policy details. Please try again.'),
-        );
+    final response =
+        await _client.getInsuranceById(request, options: options).timeout(
+              const Duration(seconds: 12),
+              onTimeout: () => throw Exception(
+                  'Timed out loading policy details. Please try again.'),
+            );
 
     return _insuranceFromProto(response.insurance);
   }
@@ -187,7 +187,9 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     final options = await grpcClient.callOptions;
     final response = await _client.searchInsurances(request, options: options);
 
-    return response.insurances.map((proto) => _insuranceFromProto(proto)).toList();
+    return response.insurances
+        .map((proto) => _insuranceFromProto(proto))
+        .toList();
   }
 
   @override
@@ -203,7 +205,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       ..limit = limit;
 
     final options = await grpcClient.callOptions;
-    final response = await _client.getInsurancePayments(request, options: options);
+    final response =
+        await _client.getInsurancePayments(request, options: options);
 
     return response.payments.map((proto) => _paymentFromProto(proto)).toList();
   }
@@ -249,13 +252,12 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     // 20s cap. Premium charges round-trip through the provider so this
     // is the longest user-facing call in the insurance flow; bound it
     // so the Pay button doesn't appear stuck on a wedged backend.
-    final response = await _client
-        .createPayment(request, options: options)
-        .timeout(
-          const Duration(seconds: 20),
-          onTimeout: () => throw Exception(
-              'Payment took too long. Please check your balance and try again.'),
-        );
+    final response =
+        await _client.createPayment(request, options: options).timeout(
+              const Duration(seconds: 20),
+              onTimeout: () => throw Exception(
+                  'Payment took too long. Please check your balance and try again.'),
+            );
 
     return _paymentFromProto(response.payment);
   }
@@ -267,7 +269,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     final request = pb.GetOverduePaymentsRequest();
 
     final options = await grpcClient.callOptions;
-    final response = await _client.getOverduePayments(request, options: options);
+    final response =
+        await _client.getOverduePayments(request, options: options);
 
     return response.payments.map((proto) => _paymentFromProto(proto)).toList();
   }
@@ -285,7 +288,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       ..limit = limit;
 
     final options = await grpcClient.callOptions;
-    final response = await _client.getInsuranceClaims(request, options: options);
+    final response =
+        await _client.getInsuranceClaims(request, options: options);
 
     return response.claims.map((proto) => _claimFromProto(proto)).toList();
   }
@@ -353,7 +357,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     final request = pb.GeneratePaymentReceiptRequest()..paymentId = paymentId;
 
     final options = await grpcClient.callOptions;
-    final response = await _client.generatePaymentReceipt(request, options: options);
+    final response =
+        await _client.generatePaymentReceipt(request, options: options);
 
     return response.receiptUrl;
   }
@@ -381,7 +386,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     final request = pb.GetInsuranceStatisticsRequest();
 
     final options = await grpcClient.callOptions;
-    final response = await _client.getInsuranceStatistics(request, options: options);
+    final response =
+        await _client.getInsuranceStatistics(request, options: options);
 
     return {
       'total_policies': response.totalPolicies,
@@ -404,7 +410,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       ..endDate = endDate?.toIso8601String() ?? '';
 
     final options = await grpcClient.callOptions;
-    final response = await _client.getPaymentStatistics(request, options: options);
+    final response =
+        await _client.getPaymentStatistics(request, options: options);
 
     return {
       'total_payments': response.totalPayments,
@@ -425,8 +432,7 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     required String locale,
     String? category,
   }) async {
-    final request = pb.GetInsuranceProductsRequest()
-      ..locale = locale;
+    final request = pb.GetInsuranceProductsRequest()..locale = locale;
     if (category != null && category.isNotEmpty) {
       request.category = category;
     }
@@ -461,9 +467,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     final response = await _withTransientRetry(
         () => _client.getInsuranceProducts(request, options: options));
     return InsuranceProductPage(
-      products: response.products
-          .map((p) => _insuranceProductFromProto(p))
-          .toList(),
+      products:
+          response.products.map((p) => _insuranceProductFromProto(p)).toList(),
       total: response.total,
       page: page,
       limit: limit,
@@ -478,15 +483,18 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     final request = pb.GetInsuranceCategoriesRequest()..locale = locale;
 
     final options = await grpcClient.callOptions;
-    final response = await _client.getInsuranceCategories(request, options: options);
+    final response =
+        await _client.getInsuranceCategories(request, options: options);
 
-    return response.categories.map((c) => InsuranceCategoryInfo(
-      id: c.id,
-      name: c.name,
-      icon: c.icon,
-      description: c.description,
-      productCount: c.productCount,
-    )).toList();
+    return response.categories
+        .map((c) => InsuranceCategoryInfo(
+              id: c.id,
+              name: c.name,
+              icon: c.icon,
+              description: c.description,
+              productCount: c.productCount,
+            ))
+        .toList();
   }
 
   @override
@@ -496,7 +504,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
   }) async {
     final request = pb.GetInsuranceCategoriesRequest()..locale = locale;
     final options = await grpcClient.callOptions;
-    final response = await _client.getInsuranceCategories(request, options: options);
+    final response =
+        await _client.getInsuranceCategories(request, options: options);
     return response.termsLink.trim();
   }
 
@@ -519,13 +528,12 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     // cap surfaced a false "took too long" on those before the user could
     // even pay. 60s sits under the backend's 75s MYCOVER_TIMEOUT so a
     // genuinely-wedged backend still can't hang the CTA indefinitely.
-    final response = await _withTransientRetry(() => _client
-        .getInsuranceQuote(request, options: options)
-        .timeout(
-          const Duration(seconds: 60),
-          onTimeout: () => throw Exception(
-              'Quote took too long. Please try again.'),
-        ));
+    final response = await _withTransientRetry(
+        () => _client.getInsuranceQuote(request, options: options).timeout(
+              const Duration(seconds: 60),
+              onTimeout: () =>
+                  throw Exception('Quote took too long. Please try again.'),
+            ));
 
     return _quoteFromProto(response.quote);
   }
@@ -583,10 +591,12 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     required String accessToken,
     required String reference,
   }) async {
-    final request = pb.GetInsurancePurchaseStatusRequest()..reference = reference;
+    final request = pb.GetInsurancePurchaseStatusRequest()
+      ..reference = reference;
 
     final options = await grpcClient.callOptions;
-    final response = await _client.getInsurancePurchaseStatus(request, options: options);
+    final response =
+        await _client.getInsurancePurchaseStatus(request, options: options);
 
     return _purchaseResultFromProto(response.result);
   }
@@ -604,7 +614,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       ..documentType = documentType;
 
     final options = await grpcClient.callOptions;
-    final response = await _client.uploadInsuranceDocument(request, options: options);
+    final response =
+        await _client.uploadInsuranceDocument(request, options: options);
 
     return response.uploadId;
   }
@@ -621,7 +632,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       ..contentType = contentType
       ..documentType = documentType;
     final options = await grpcClient.callOptions;
-    final response = await _fpClient.getInsuranceDocumentUploadURL(request, options: options);
+    final response = await _fpClient.getInsuranceDocumentUploadURL(request,
+        options: options);
     return InsuranceDocumentUploadURL(
       uploadUrl: response.uploadUrl,
       publicUrl: response.publicUrl,
@@ -650,14 +662,16 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
         .getInsuranceAuxiliaryData(request, options: options)
         .timeout(
           const Duration(seconds: 12),
-          onTimeout: () => throw Exception(
-              'Timed out loading options. Please retry.'),
+          onTimeout: () =>
+              throw Exception('Timed out loading options. Please retry.'),
         );
 
-    return response.items.map((item) => AuxiliaryItem(
-      label: item.label,
-      value: item.value,
-    )).toList();
+    return response.items
+        .map((item) => AuxiliaryItem(
+              label: item.label,
+              value: item.value,
+            ))
+        .toList();
   }
 
   // MyCover.ai Proto Conversion Helpers
@@ -676,29 +690,31 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       benefits: proto.benefits.toList(),
       termsUrl: proto.termsUrl,
       metadata: Map<String, String>.from(proto.metadata),
-      formFields: proto.formFields.map((f) => InsuranceProductFormField(
-        name: f.name,
-        label: f.label,
-        type: f.type,
-        required: f.required,
-        options: f.options.toList(),
-        defaultValue: f.defaultValue,
-        validationRegex: f.validationRegex,
-        placeholder: f.placeholder,
-        description: f.description,
-        utilityId: f.utilityId,
-        dependsOn: f.dependsOn,
-        itemFields: f.itemFields
-            .map((sf) => InsuranceProductFormItemField(
-                  name: sf.name,
-                  label: sf.label,
-                  type: sf.type,
-                  required: sf.required,
-                  options: sf.options.toList(),
-                  placeholder: sf.placeholder,
-                ))
-            .toList(),
-      )).toList(),
+      formFields: proto.formFields
+          .map((f) => InsuranceProductFormField(
+                name: f.name,
+                label: f.label,
+                type: f.type,
+                required: f.required,
+                options: f.options.toList(),
+                defaultValue: f.defaultValue,
+                validationRegex: f.validationRegex,
+                placeholder: f.placeholder,
+                description: f.description,
+                utilityId: f.utilityId,
+                dependsOn: f.dependsOn,
+                itemFields: f.itemFields
+                    .map((sf) => InsuranceProductFormItemField(
+                          name: sf.name,
+                          label: sf.label,
+                          type: sf.type,
+                          required: sf.required,
+                          options: sf.options.toList(),
+                          placeholder: sf.placeholder,
+                        ))
+                    .toList(),
+              ))
+          .toList(),
       isActive: proto.isActive,
       purchaseRoute: proto.purchaseRoute,
       providerId: proto.providerId,
@@ -718,12 +734,15 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       currency: proto.currency,
       coverageSummary: proto.coverageSummary,
       coverageItems: proto.coverageItems.toList(),
-      validUntil: proto.validUntil.isNotEmpty ? DateTime.tryParse(proto.validUntil) : null,
+      validUntil: proto.validUntil.isNotEmpty
+          ? DateTime.tryParse(proto.validUntil)
+          : null,
       quoteDetails: Map<String, String>.from(proto.quoteDetails),
     );
   }
 
-  InsurancePurchaseResult _purchaseResultFromProto(pb.InsurancePurchaseResult proto) {
+  InsurancePurchaseResult _purchaseResultFromProto(
+      pb.InsurancePurchaseResult proto) {
     // Legacy proto only carries the 5 core fields. The richer policy
     // detail (certificate, premium, dates) flows through the marketplace
     // path below.
@@ -736,7 +755,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     );
   }
 
-  InsurancePurchaseResult _marketplacePurchaseResultFromProto(fppb.MarketplaceInsurancePurchaseResult proto) {
+  InsurancePurchaseResult _marketplacePurchaseResultFromProto(
+      fppb.MarketplaceInsurancePurchaseResult proto) {
     return InsurancePurchaseResult(
       policyId: proto.policyId,
       policyNumber: proto.policyNumber,
@@ -750,9 +770,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       startDate: proto.startDate.isNotEmpty
           ? DateTime.tryParse(proto.startDate)
           : null,
-      endDate: proto.endDate.isNotEmpty
-          ? DateTime.tryParse(proto.endDate)
-          : null,
+      endDate:
+          proto.endDate.isNotEmpty ? DateTime.tryParse(proto.endDate) : null,
     );
   }
 
@@ -811,7 +830,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       ..nextPaymentDate = insurance.nextPaymentDate.toIso8601String()
       ..status = insurance.status.name
       ..beneficiaries.addAll(insurance.beneficiaries)
-      ..coverageDetails.addAll(insurance.coverageDetails.map((k, v) => MapEntry(k, v.toString())))
+      ..coverageDetails.addAll(
+          insurance.coverageDetails.map((k, v) => MapEntry(k, v.toString())))
       ..description = insurance.description ?? ''
       ..userId = insurance.userId
       ..createdAt = insurance.createdAt.toIso8601String()
@@ -828,11 +848,15 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       paymentMethod: _parsePaymentMethod(proto.paymentMethod),
       status: _parsePaymentStatus(proto.status),
       transactionId: proto.transactionId.isEmpty ? null : proto.transactionId,
-      referenceNumber: proto.referenceNumber.isEmpty ? null : proto.referenceNumber,
+      referenceNumber:
+          proto.referenceNumber.isEmpty ? null : proto.referenceNumber,
       paymentDate: _safeParseDate(proto.paymentDate),
       dueDate: _safeParseDate(proto.dueDate),
-      processedAt: proto.processedAt.isEmpty ? null : _safeParseDate(proto.processedAt),
-      paymentDetails: proto.paymentDetails.isEmpty ? {} : Map<String, dynamic>.from(proto.paymentDetails),
+      processedAt:
+          proto.processedAt.isEmpty ? null : _safeParseDate(proto.processedAt),
+      paymentDetails: proto.paymentDetails.isEmpty
+          ? {}
+          : Map<String, dynamic>.from(proto.paymentDetails),
       failureReason: proto.failureReason.isEmpty ? null : proto.failureReason,
       receiptUrl: proto.receiptUrl.isEmpty ? null : proto.receiptUrl,
       userId: proto.userId,
@@ -855,7 +879,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       ..paymentDate = payment.paymentDate.toIso8601String()
       ..dueDate = payment.dueDate.toIso8601String()
       ..processedAt = payment.processedAt?.toIso8601String() ?? ''
-      ..paymentDetails.addAll((payment.paymentDetails ?? {}).map((k, v) => MapEntry(k, v.toString())))
+      ..paymentDetails.addAll((payment.paymentDetails ?? {})
+          .map((k, v) => MapEntry(k, v.toString())))
       ..failureReason = payment.failureReason ?? ''
       ..receiptUrl = payment.receiptUrl ?? ''
       ..userId = payment.userId
@@ -881,9 +906,13 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       attachments: proto.attachments.toList(),
       documents: proto.documents.toList(),
       additionalInfo: Map<String, dynamic>.from(proto.additionalInfo),
-      rejectionReason: proto.rejectionReason.isEmpty ? null : proto.rejectionReason,
-      settlementDate: proto.settlementDate.isEmpty ? null : _safeParseDate(proto.settlementDate),
-      settlementDetails: proto.settlementDetails.isEmpty ? null : proto.settlementDetails,
+      rejectionReason:
+          proto.rejectionReason.isEmpty ? null : proto.rejectionReason,
+      settlementDate: proto.settlementDate.isEmpty
+          ? null
+          : _safeParseDate(proto.settlementDate),
+      settlementDetails:
+          proto.settlementDetails.isEmpty ? null : proto.settlementDetails,
       userId: proto.userId,
       createdAt: _safeParseDate(proto.createdAt),
       updatedAt: _safeParseDate(proto.updatedAt),
@@ -907,7 +936,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       ..incidentLocation = claim.incidentLocation
       ..attachments.addAll(claim.attachments)
       ..documents.addAll(claim.documents)
-      ..additionalInfo.addAll(claim.additionalInfo.map((k, v) => MapEntry(k, v.toString())))
+      ..additionalInfo
+          .addAll(claim.additionalInfo.map((k, v) => MapEntry(k, v.toString())))
       ..rejectionReason = claim.rejectionReason ?? ''
       ..settlementDate = claim.settlementDate?.toIso8601String() ?? ''
       ..settlementDetails = claim.settlementDetails ?? ''
@@ -925,7 +955,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     // category name from local-table rows.
     if (type.isEmpty) return InsuranceType.other;
     try {
-      return InsuranceType.values.firstWhere((e) => e.name == type.toLowerCase());
+      return InsuranceType.values
+          .firstWhere((e) => e.name == type.toLowerCase());
     } catch (_) {
       return InsuranceType.other;
     }
@@ -964,7 +995,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
   }
 
   @override
-  Future<({List<MyCoverPolicyDetail> policies, int total})> getMyCoverCustomerPolicies({
+  Future<({List<MyCoverPolicyDetail> policies, int total})>
+      getMyCoverCustomerPolicies({
     required String accessToken,
     required String customerId,
     int page = 1,
@@ -972,7 +1004,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
   }) async {
     final options = await grpcClient.callOptions;
     final response = await _client.getMyCoverCustomerPolicies(
-      pb.GetMyCoverCustomerPoliciesRequest(customerId: customerId, page: page, limit: limit),
+      pb.GetMyCoverCustomerPoliciesRequest(
+          customerId: customerId, page: page, limit: limit),
       options: options,
     );
     return (
@@ -982,7 +1015,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
   }
 
   @override
-  Future<({List<MyCoverPurchase> purchases, int total})> getMyCoverCustomerPurchases({
+  Future<({List<MyCoverPurchase> purchases, int total})>
+      getMyCoverCustomerPurchases({
     required String accessToken,
     required String customerId,
     int page = 1,
@@ -990,7 +1024,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
   }) async {
     final options = await grpcClient.callOptions;
     final response = await _client.getMyCoverCustomerPurchases(
-      pb.GetMyCoverCustomerPurchasesRequest(customerId: customerId, page: page, limit: limit),
+      pb.GetMyCoverCustomerPurchasesRequest(
+          customerId: customerId, page: page, limit: limit),
       options: options,
     );
     return (
@@ -1038,7 +1073,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
   }) async {
     final options = await grpcClient.callOptions;
     final response = await _client.getMyCoverClaims(
-      pb.GetMyCoverClaimsRequest(status: status ?? '', page: page, limit: limit),
+      pb.GetMyCoverClaimsRequest(
+          status: status ?? '', page: page, limit: limit),
       options: options,
     );
     return (
@@ -1061,7 +1097,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
   }
 
   @override
-  Future<({String claimId, String claimNumber, String status})> fileCreditLifeClaim({
+  Future<({String claimId, String claimNumber, String status})>
+      fileCreditLifeClaim({
     required String accessToken,
     required String policyId,
     required String claimType,
@@ -1164,7 +1201,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     );
   }
 
-  MyCoverPolicyDetail _protoToMyCoverPolicyDetail(pb.MyCoverPolicyDetailInfo p) {
+  MyCoverPolicyDetail _protoToMyCoverPolicyDetail(
+      pb.MyCoverPolicyDetailInfo p) {
     return MyCoverPolicyDetail(
       id: p.id,
       appMode: p.appMode,
@@ -1267,7 +1305,8 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
 
   PaymentStatus _parsePaymentStatus(String status) {
     try {
-      return PaymentStatus.values.firstWhere((e) => e.name == status.toLowerCase());
+      return PaymentStatus.values
+          .firstWhere((e) => e.name == status.toLowerCase());
     } catch (e) {
       return PaymentStatus.pending; // Default fallback
     }

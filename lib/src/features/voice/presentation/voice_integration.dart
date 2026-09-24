@@ -9,7 +9,6 @@ import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'voice_integration_widgets.dart';
 
-
 // ============================================================================
 // VOICE ASSISTANT SCREEN
 // ============================================================================
@@ -176,7 +175,8 @@ class _VoiceAssistantScreenState extends State<VoiceAssistantScreen> {
         return Card(
           margin: EdgeInsets.only(bottom: 12),
           child: ListTile(
-            leading: Icon(Icons.chat_bubble, color: Theme.of(context).primaryColor),
+            leading:
+                Icon(Icons.chat_bubble, color: Theme.of(context).primaryColor),
             title: Text(response.text),
             subtitle: Text(
               '${response.service?.toUpperCase() ?? "Gateway"} • ${_formatTime(response.timestamp)}',

@@ -102,41 +102,42 @@ class _PurchaseHistoryScreenState extends State<PurchaseHistoryScreen> {
           }
         },
         child: BlocBuilder<PurchaseHistoryCubit, PurchaseHistoryState>(
-        builder: (context, state) {
-          if (state is PurchaseHistoryLoading) {
-            return const Center(
-              child: LazerVaultLoader.small(),
-            );
-          }
-          if (state is PurchaseHistoryError) {
-            return _buildErrorState(state.message);
-          }
-          if (state is PurchaseHistoryEmpty) {
+          builder: (context, state) {
+            if (state is PurchaseHistoryLoading) {
+              return const Center(
+                child: LazerVaultLoader.small(),
+              );
+            }
+            if (state is PurchaseHistoryError) {
+              return _buildErrorState(state.message);
+            }
+            if (state is PurchaseHistoryEmpty) {
+              return _buildEmpty();
+            }
+            if (state is PurchaseHistoryLoaded) {
+              return RefreshIndicator(
+                onRefresh: () async =>
+                    context.read<PurchaseHistoryCubit>().load(),
+                color: const Color(0xFF6366F1),
+                backgroundColor: const Color(0xFF1F1F1F),
+                child: ListView.separated(
+                  controller: _scrollController,
+                  padding: EdgeInsets.all(16.w),
+                  itemCount: state.purchases.length +
+                      (state.isLoadingMore || !state.hasMore ? 1 : 0),
+                  separatorBuilder: (_, __) => SizedBox(height: 10.h),
+                  itemBuilder: (_, i) {
+                    if (i >= state.purchases.length) {
+                      return _buildFooter(state);
+                    }
+                    return _buildPurchaseTile(state.purchases[i]);
+                  },
+                ),
+              );
+            }
             return _buildEmpty();
-          }
-          if (state is PurchaseHistoryLoaded) {
-            return RefreshIndicator(
-              onRefresh: () async => context.read<PurchaseHistoryCubit>().load(),
-              color: const Color(0xFF6366F1),
-              backgroundColor: const Color(0xFF1F1F1F),
-              child: ListView.separated(
-                controller: _scrollController,
-                padding: EdgeInsets.all(16.w),
-                itemCount: state.purchases.length +
-                    (state.isLoadingMore || !state.hasMore ? 1 : 0),
-                separatorBuilder: (_, __) => SizedBox(height: 10.h),
-                itemBuilder: (_, i) {
-                  if (i >= state.purchases.length) {
-                    return _buildFooter(state);
-                  }
-                  return _buildPurchaseTile(state.purchases[i]);
-                },
-              ),
-            );
-          }
-          return _buildEmpty();
-        },
-      ),
+          },
+        ),
       ),
     );
   }
@@ -148,10 +149,13 @@ class _PurchaseHistoryScreenState extends State<PurchaseHistoryScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_off_outlined, size: 48.sp, color: const Color(0xFFEF4444)),
+            Icon(Icons.cloud_off_outlined,
+                size: 48.sp, color: const Color(0xFFEF4444)),
             SizedBox(height: 12.h),
-            Text(msg, textAlign: TextAlign.center,
-                style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
+            Text(msg,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                    fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
             SizedBox(height: 16.h),
             GestureDetector(
               onTap: () => context.read<PurchaseHistoryCubit>().load(),
@@ -162,7 +166,10 @@ class _PurchaseHistoryScreenState extends State<PurchaseHistoryScreen> {
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text('Try Again',
-                    style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.white)),
+                    style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white)),
               ),
             ),
           ],
@@ -178,7 +185,8 @@ class _PurchaseHistoryScreenState extends State<PurchaseHistoryScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.receipt_long_outlined, size: 48.sp, color: const Color(0xFF9CA3AF)),
+            Icon(Icons.receipt_long_outlined,
+                size: 48.sp, color: const Color(0xFF9CA3AF)),
             SizedBox(height: 12.h),
             Text("You haven't purchased any insurance yet",
                 style: GoogleFonts.inter(
@@ -229,14 +237,16 @@ class _PurchaseHistoryScreenState extends State<PurchaseHistoryScreen> {
       padding: EdgeInsets.symmetric(vertical: 12.h),
       child: Center(
         child: Text("You've reached the end",
-            style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF6B7280))),
+            style: GoogleFonts.inter(
+                fontSize: 12.sp, color: const Color(0xFF6B7280))),
       ),
     );
   }
 
   Widget _buildPurchaseTile(Insurance insurance) {
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.insuranceDetails, arguments: insurance),
+      onTap: () =>
+          Get.toNamed(AppRoutes.insuranceDetails, arguments: insurance),
       child: Container(
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
@@ -247,7 +257,8 @@ class _PurchaseHistoryScreenState extends State<PurchaseHistoryScreen> {
         child: Row(
           children: [
             Container(
-              width: 42.w, height: 42.w,
+              width: 42.w,
+              height: 42.w,
               decoration: BoxDecoration(
                 color: const Color(0xFF10B981).withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10.r),
@@ -269,7 +280,8 @@ class _PurchaseHistoryScreenState extends State<PurchaseHistoryScreen> {
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
                     ),
-                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: 4.h),
                   Text(
@@ -278,7 +290,8 @@ class _PurchaseHistoryScreenState extends State<PurchaseHistoryScreen> {
                       fontSize: 11.sp,
                       color: const Color(0xFF9CA3AF),
                     ),
-                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: 4.h),
                   Text(

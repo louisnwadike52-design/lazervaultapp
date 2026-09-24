@@ -64,7 +64,8 @@ class ProfileCubit extends Cubit<ProfileState> {
               (_) {},
               (updatedPrefs) {
                 if (!isClosed && state is ProfileLoaded) {
-                  emit((state as ProfileLoaded).copyWith(preferences: updatedPrefs));
+                  emit((state as ProfileLoaded)
+                      .copyWith(preferences: updatedPrefs));
                 }
               },
             );
@@ -328,7 +329,8 @@ class ProfileCubit extends Cubit<ProfileState> {
         emit(ProfileError(failure.message));
         emit(ProfileLoaded(user: user, preferences: current));
       },
-      (preferences) => emit(ProfileLoaded(user: user, preferences: preferences)),
+      (preferences) =>
+          emit(ProfileLoaded(user: user, preferences: preferences)),
     );
   }
 
@@ -336,7 +338,8 @@ class ProfileCubit extends Cubit<ProfileState> {
     if (state is! ProfileLoaded) return;
     final currentState = state as ProfileLoaded;
 
-    final updatedCountries = List<String>.from(currentState.preferences.preferredCountries);
+    final updatedCountries =
+        List<String>.from(currentState.preferences.preferredCountries);
     if (!updatedCountries.contains(countryCode)) {
       updatedCountries.add(countryCode);
       await updatePreferences(
@@ -350,13 +353,15 @@ class ProfileCubit extends Cubit<ProfileState> {
     if (state is! ProfileLoaded) return;
     final currentState = state as ProfileLoaded;
 
-    final updatedCountries = List<String>.from(currentState.preferences.preferredCountries);
+    final updatedCountries =
+        List<String>.from(currentState.preferences.preferredCountries);
     updatedCountries.remove(countryCode);
 
     // If removing active country, set first country as active
     String newActiveCountry = currentState.preferences.activeCountry;
     if (newActiveCountry == countryCode) {
-      newActiveCountry = updatedCountries.isNotEmpty ? updatedCountries.first : '';
+      newActiveCountry =
+          updatedCountries.isNotEmpty ? updatedCountries.first : '';
     }
 
     await updatePreferences(

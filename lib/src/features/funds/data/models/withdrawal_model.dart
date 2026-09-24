@@ -23,7 +23,7 @@ class WithdrawalModel extends WithdrawalDetails {
       withdrawalId: json['withdrawal_id'] as String,
       status: json['status'] as String,
       message: json['message'] as String,
-      completedAt: json['completed_at'] != null 
+      completedAt: json['completed_at'] != null
           ? DateTime.parse(json['completed_at'] as String)
           : null,
     );
@@ -51,4 +51,4 @@ class WithdrawalModel extends WithdrawalDetails {
       completedAt: completedAt ?? this.completedAt,
     );
   }
-} 
+}

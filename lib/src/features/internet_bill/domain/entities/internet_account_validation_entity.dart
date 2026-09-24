@@ -16,5 +16,6 @@ class InternetAccountValidationEntity extends Equatable {
   });
 
   @override
-  List<Object?> get props => [isValid, customerName, accountNumber, status, dueAmount];
+  List<Object?> get props =>
+      [isValid, customerName, accountNumber, status, dueAmount];
 }

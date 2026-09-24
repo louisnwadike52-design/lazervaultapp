@@ -87,8 +87,8 @@ class _NicknameDialogState extends State<_NicknameDialog> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10.r),
-                borderSide: const BorderSide(
-                    color: InvoiceThemeColors.primaryPurple),
+                borderSide:
+                    const BorderSide(color: InvoiceThemeColors.primaryPurple),
               ),
             ),
             onChanged: (_) {

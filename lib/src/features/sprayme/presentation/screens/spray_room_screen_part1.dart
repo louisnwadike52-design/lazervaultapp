@@ -109,11 +109,15 @@ class _LiveEventItemState extends State<_LiveEventItem>
                 radius: 12.r,
                 backgroundColor: nameColor.withValues(alpha: 0.3),
                 child: Icon(
-                  event.type == 'gift_sent' ? Icons.card_giftcard :
-                  event.type == 'money_sprayed' ? Icons.monetization_on :
-                  event.type == 'participant_joined' ? Icons.person_add :
-                  Icons.info_outline,
-                  size: 12.sp, color: Colors.white,
+                  event.type == 'gift_sent'
+                      ? Icons.card_giftcard
+                      : event.type == 'money_sprayed'
+                          ? Icons.monetization_on
+                          : event.type == 'participant_joined'
+                              ? Icons.person_add
+                              : Icons.info_outline,
+                  size: 12.sp,
+                  color: Colors.white,
                 ),
               ),
               SizedBox(width: 6.w),
@@ -156,7 +160,8 @@ class _LiveEventItemState extends State<_LiveEventItem>
     );
   }
 
-  (String message, String emoji, Color nameColor) _parseEvent(SprayRoomEvent event) {
+  (String message, String emoji, Color nameColor) _parseEvent(
+      SprayRoomEvent event) {
     switch (event.type) {
       case 'gift_sent':
         final giftEmoji = event.data['gift_emoji'] as String? ?? '';
@@ -241,7 +246,8 @@ class _SprayNoteAnimationState extends State<_SprayNoteAnimation>
         final x = screenSize.width * widget.startX + _driftX * progress;
         final opacity = progress < 0.7 ? 1.0 : (1.0 - (progress - 0.7) / 0.3);
         final rotate = _rotateEnd * progress;
-        final scale = progress < 0.15 ? progress / 0.15 : 1.0 - (progress - 0.15) * 0.3;
+        final scale =
+            progress < 0.15 ? progress / 0.15 : 1.0 - (progress - 0.15) * 0.3;
 
         return Positioned(
           left: x,
@@ -327,7 +333,8 @@ class _StatsSheet extends StatelessWidget {
                   colors: [Color(0xFF1A1A3E), Color(0xFF0D1B2A)],
                 ),
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
+                border: Border.all(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
               ),
               child: Column(
                 children: [
@@ -408,7 +415,8 @@ class _StatsSheet extends StatelessWidget {
                 SizedBox(width: 8.w),
                 _buildStatCard(
                   icon: Icons.account_balance_wallet,
-                  value: '$currency ${state.walletBalanceMajor.toStringAsFixed(0)}',
+                  value:
+                      '$currency ${state.walletBalanceMajor.toStringAsFixed(0)}',
                   label: 'Your Wallet',
                   color: const Color(0xFF10B981),
                 ),
@@ -432,11 +440,15 @@ class _StatsSheet extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(Icons.emoji_events, color: const Color(0xFFFFD700), size: 16.sp),
+            Icon(Icons.emoji_events,
+                color: const Color(0xFFFFD700), size: 16.sp),
             SizedBox(width: 6.w),
             Text(
               'Top Sprayers',
-              style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w700),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700),
             ),
           ],
         ),
@@ -448,7 +460,8 @@ class _StatsSheet extends StatelessWidget {
 
   Widget _leaderboardRow(dynamic s, String currency) {
     final rank = s.rank as int;
-    final name = (s.userName as String).isNotEmpty ? s.userName as String : 'Guest';
+    final name =
+        (s.userName as String).isNotEmpty ? s.userName as String : 'Guest';
     final amountMajor = (s.totalAmount as int) / 100;
     Color rankColor;
     switch (rank) {
@@ -470,7 +483,9 @@ class _StatsSheet extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF2D2D2D),
         borderRadius: BorderRadius.circular(10.r),
-        border: rank <= 3 ? Border.all(color: rankColor.withValues(alpha: 0.5)) : null,
+        border: rank <= 3
+            ? Border.all(color: rankColor.withValues(alpha: 0.5))
+            : null,
       ),
       child: Row(
         children: [
@@ -483,7 +498,10 @@ class _StatsSheet extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: Text('$rank',
-                style: TextStyle(color: rankColor, fontSize: 12.sp, fontWeight: FontWeight.bold)),
+                style: TextStyle(
+                    color: rankColor,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.bold)),
           ),
           SizedBox(width: 10.w),
           CircleAvatar(
@@ -491,21 +509,30 @@ class _StatsSheet extends StatelessWidget {
             backgroundColor: const Color(0xFF3B82F6),
             child: Text(
               name.isNotEmpty ? name[0].toUpperCase() : '?',
-              style: TextStyle(color: Colors.white, fontSize: 11.sp, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.bold),
             ),
           ),
           SizedBox(width: 10.w),
           Expanded(
             child: Text(
               name,
-              style: TextStyle(color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w500),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ),
           Text(
             '$currency ${_formatAmount(amountMajor)}',
-            style: TextStyle(color: const Color(0xFFFFD700), fontSize: 13.sp, fontWeight: FontWeight.w700),
+            style: TextStyle(
+                color: const Color(0xFFFFD700),
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w700),
           ),
         ],
       ),
@@ -556,7 +583,8 @@ class _StatsSheet extends StatelessWidget {
 
   String _formatAmount(double amount) {
     if (amount >= 1000000) return '${(amount / 1000000).toStringAsFixed(1)}M';
-    if (amount >= 1000) return '${(amount / 1000).toStringAsFixed(amount % 1000 == 0 ? 0 : 1)}K';
+    if (amount >= 1000)
+      return '${(amount / 1000).toStringAsFixed(amount % 1000 == 0 ? 0 : 1)}K';
     return amount.toStringAsFixed(0);
   }
 
@@ -578,14 +606,14 @@ class _ViewersSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final currency = state.session?.currency ?? 'NGN';
     // Host first, then by amount sprayed.
-    final viewers = [...state.participants]
-      ..sort((a, b) {
+    final viewers = [...state.participants]..sort((a, b) {
         if (a.isHost != b.isHost) return a.isHost ? -1 : 1;
         return b.totalSprayed.compareTo(a.totalSprayed);
       });
     return SafeArea(
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
+        constraints:
+            BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -606,7 +634,10 @@ class _ViewersSheet extends StatelessWidget {
                 SizedBox(width: 6.w),
                 Text(
                   'Viewers (${state.participantCount})',
-                  style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -615,7 +646,8 @@ class _ViewersSheet extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 24.h),
                 child: Text('No viewers yet',
-                    style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
+                    style: TextStyle(
+                        color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
               )
             else
               Flexible(
@@ -634,7 +666,8 @@ class _ViewersSheet extends StatelessWidget {
   }
 
   Widget _viewerRow(dynamic p, String currency) {
-    final name = (p.userName as String).isNotEmpty ? p.userName as String : 'Guest';
+    final name =
+        (p.userName as String).isNotEmpty ? p.userName as String : 'Guest';
     final isHost = p.isHost as bool;
     final sprayedMajor = (p.totalSprayed as int) / 100;
     return Container(
@@ -649,7 +682,8 @@ class _ViewersSheet extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 16.r,
-                backgroundColor: isHost ? const Color(0xFFFFD700) : const Color(0xFF3B82F6),
+                backgroundColor:
+                    isHost ? const Color(0xFFFFD700) : const Color(0xFF3B82F6),
                 child: Text(
                   name.isNotEmpty ? name[0].toUpperCase() : '?',
                   style: TextStyle(
@@ -668,7 +702,8 @@ class _ViewersSheet extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: const Color(0xFF10B981),
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFF2D2D2D), width: 1.5),
+                      border: Border.all(
+                          color: const Color(0xFF2D2D2D), width: 1.5),
                     ),
                   ),
                 ),
@@ -681,7 +716,10 @@ class _ViewersSheet extends StatelessWidget {
                 Flexible(
                   child: Text(
                     name,
-                    style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -689,14 +727,17 @@ class _ViewersSheet extends StatelessWidget {
                 if (isHost) ...[
                   SizedBox(width: 6.w),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFD700).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(6.r),
                     ),
                     child: Text('HOST',
                         style: TextStyle(
-                            color: const Color(0xFFFFD700), fontSize: 9.sp, fontWeight: FontWeight.bold)),
+                            color: const Color(0xFFFFD700),
+                            fontSize: 9.sp,
+                            fontWeight: FontWeight.bold)),
                   ),
                 ],
               ],
@@ -705,7 +746,10 @@ class _ViewersSheet extends StatelessWidget {
           if ((p.totalSprayed as int) > 0)
             Text(
               '$currency ${sprayedMajor >= 1000 ? '${(sprayedMajor / 1000).toStringAsFixed(1)}K' : sprayedMajor.toStringAsFixed(0)}',
-              style: TextStyle(color: const Color(0xFF10B981), fontSize: 12.sp, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                  color: const Color(0xFF10B981),
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600),
             ),
         ],
       ),

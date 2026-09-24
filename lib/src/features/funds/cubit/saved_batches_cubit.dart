@@ -32,8 +32,7 @@ class SavedBatchesCubit extends Cubit<SavedBatchesState> {
   Future<void> refresh() async {
     if (isClosed) return;
     final previous = state;
-    final result =
-        await repository.listSavedBatches(limit: 50, offset: 0);
+    final result = await repository.listSavedBatches(limit: 50, offset: 0);
     if (isClosed) return;
     result.fold(
       (failure) {

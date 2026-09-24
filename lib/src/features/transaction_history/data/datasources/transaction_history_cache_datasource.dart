@@ -86,8 +86,10 @@ class TransactionHistoryCacheDataSource {
   ) async {
     if (oldVersion < 2) {
       // Add counterparty columns for recipient transaction matching
-      await db.execute('ALTER TABLE $_tableTransactions ADD COLUMN counterparty_name TEXT');
-      await db.execute('ALTER TABLE $_tableTransactions ADD COLUMN counterparty_account TEXT');
+      await db.execute(
+          'ALTER TABLE $_tableTransactions ADD COLUMN counterparty_name TEXT');
+      await db.execute(
+          'ALTER TABLE $_tableTransactions ADD COLUMN counterparty_account TEXT');
     }
   }
 
@@ -246,7 +248,8 @@ class TransactionHistoryCacheDataSource {
 
   /// Convert Map to UnifiedTransaction
   UnifiedTransaction _mapToTransaction(Map<String, dynamic> map) {
-    final serviceType = TransactionServiceType.values[map['service_type'] as int];
+    final serviceType =
+        TransactionServiceType.values[map['service_type'] as int];
     final status = UnifiedTransactionStatus.values[map['status'] as int];
     final flow = TransactionFlow.values[map['flow'] as int];
 

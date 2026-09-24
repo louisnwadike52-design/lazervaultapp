@@ -336,9 +336,8 @@ class AiScanHistoryEntry extends Equatable {
           : double.tryParse('${j['amount']}') ?? 0,
       currency: (j['currency'] ?? 'NGN').toString(),
       status: (j['status'] ?? 'incomplete').toString(),
-      receipt: rcpt is Map
-          ? receiptFromJson(Map<String, dynamic>.from(rcpt))
-          : null,
+      receipt:
+          rcpt is Map ? receiptFromJson(Map<String, dynamic>.from(rcpt)) : null,
     );
   }
 
@@ -357,7 +356,8 @@ class AiScanHistoryEntry extends Equatable {
         'isExternal': r.isExternal,
       };
 
-  static PaymentReceipt receiptFromJson(Map<String, dynamic> j) => PaymentReceipt(
+  static PaymentReceipt receiptFromJson(Map<String, dynamic> j) =>
+      PaymentReceipt(
         id: (j['id'] ?? '').toString(),
         reference: (j['reference'] ?? '').toString(),
         recipientName: (j['recipientName'] ?? '').toString(),
@@ -377,8 +377,17 @@ class AiScanHistoryEntry extends Equatable {
       );
 
   @override
-  List<Object?> get props =>
-      [id, createdAt, title, subtitle, typeName, amount, currency, status, receipt];
+  List<Object?> get props => [
+        id,
+        createdAt,
+        title,
+        subtitle,
+        typeName,
+        amount,
+        currency,
+        status,
+        receipt
+      ];
 }
 
 // Scan session entity
@@ -600,7 +609,8 @@ class BankDetails extends Equatable {
   });
 
   bool get isHighConfidence => confidenceScore >= 0.8;
-  bool get isMediumConfidence => confidenceScore >= 0.6 && confidenceScore < 0.8;
+  bool get isMediumConfidence =>
+      confidenceScore >= 0.6 && confidenceScore < 0.8;
   bool get isLowConfidence => confidenceScore < 0.6;
   bool get requiresReview => confidenceScore < 0.6;
   bool get isInternal => accountType == 'internal';

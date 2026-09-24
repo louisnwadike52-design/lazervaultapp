@@ -43,9 +43,7 @@ class _InternetRemindersScreenState extends State<InternetRemindersScreen>
   }
 
   bool _isActive(InternetReminder r) =>
-      r.status == 'pending' ||
-      r.status == 'notified' ||
-      r.status == 'paused';
+      r.status == 'pending' || r.status == 'notified' || r.status == 'paused';
 
   bool _isCompleted(InternetReminder r) =>
       r.status == 'completed' || r.status == 'cancelled';
@@ -58,8 +56,8 @@ class _InternetRemindersScreenState extends State<InternetRemindersScreen>
     Get.dialog(
       AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Text('Delete Reminder',
             style: GoogleFonts.inter(
                 color: Colors.white,
@@ -67,8 +65,7 @@ class _InternetRemindersScreenState extends State<InternetRemindersScreen>
                 fontWeight: FontWeight.w700)),
         content: Text('Are you sure you want to delete this reminder?',
             style: GoogleFonts.inter(
-                color: Colors.white.withValues(alpha: 0.8),
-                fontSize: 14.sp)),
+                color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp)),
         actions: [
           TextButton(
               onPressed: () => Get.back(),
@@ -138,8 +135,7 @@ class _InternetRemindersScreenState extends State<InternetRemindersScreen>
           children: [
             _buildHeader(),
             Expanded(
-              child:
-                  BlocConsumer<InternetReminderCubit, InternetReminderState>(
+              child: BlocConsumer<InternetReminderCubit, InternetReminderState>(
                 // Transient mutation messages (Completed / Updated /
                 // Deleted / Created / Error) drive the snackbar only —
                 // the cubit follows each with a fresh Loaded carrying
@@ -153,8 +149,7 @@ class _InternetRemindersScreenState extends State<InternetRemindersScreen>
                 listener: (context, state) {
                   if (state is InternetReminderError) {
                     Get.snackbar('Error', state.message,
-                        backgroundColor:
-                            Colors.red.withValues(alpha: 0.9),
+                        backgroundColor: Colors.red.withValues(alpha: 0.9),
                         colorText: Colors.white);
                   } else if (state is InternetReminderDeleted) {
                     Get.snackbar('Success', state.message,
@@ -264,8 +259,8 @@ class _InternetRemindersScreenState extends State<InternetRemindersScreen>
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(22.r),
-                  border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.15)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.15)),
                 ),
                 child: Icon(Icons.arrow_back_ios_new,
                     color: Colors.white, size: 18.sp),
@@ -325,8 +320,7 @@ class _InternetRemindersScreenState extends State<InternetRemindersScreen>
                       color: Colors.white.withValues(alpha: 0.1), width: 2),
                 ),
                 child: Icon(Icons.notifications_none,
-                    color: Colors.white.withValues(alpha: 0.3),
-                    size: 56.sp),
+                    color: Colors.white.withValues(alpha: 0.3), size: 56.sp),
               ),
               SizedBox(height: 24.h),
               Text('No Reminders',

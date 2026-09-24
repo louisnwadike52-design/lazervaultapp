@@ -22,7 +22,8 @@ class AutoRenewCubit extends Cubit<AutoRenewState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(AutoRenewError(message: 'Failed to load subscriptions. Please try again.'));
+      emit(AutoRenewError(
+          message: 'Failed to load subscriptions. Please try again.'));
     }
   }
 
@@ -66,7 +67,8 @@ class AutoRenewCubit extends Cubit<AutoRenewState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(AutoRenewError(message: 'Failed to enable auto-renewal. Please try again.'));
+      emit(AutoRenewError(
+          message: 'Failed to enable auto-renewal. Please try again.'));
     } finally {
       _isOperating = false;
     }
@@ -98,7 +100,8 @@ class AutoRenewCubit extends Cubit<AutoRenewState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(AutoRenewError(message: 'Failed to disable auto-renewal. Please try again.'));
+      emit(AutoRenewError(
+          message: 'Failed to disable auto-renewal. Please try again.'));
     } finally {
       _isOperating = false;
     }

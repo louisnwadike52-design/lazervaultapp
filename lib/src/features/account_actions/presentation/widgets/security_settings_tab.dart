@@ -73,7 +73,8 @@ class SecuritySettingsTab extends StatelessWidget {
             title: '3D Secure',
             subtitle: 'Extra verification for online payments',
             value: details?.enable3DSecure ?? false,
-            onChanged: (value) => _onToggleChanged(context, '3DSecure', value, details),
+            onChanged: (value) =>
+                _onToggleChanged(context, '3DSecure', value, details),
           ),
           SizedBox(height: 12.h),
 
@@ -83,7 +84,8 @@ class SecuritySettingsTab extends StatelessWidget {
             title: 'Contactless Payments',
             subtitle: 'Tap to pay at checkout',
             value: details?.enableContactless ?? false,
-            onChanged: (value) => _onToggleChanged(context, 'Contactless', value, details),
+            onChanged: (value) =>
+                _onToggleChanged(context, 'Contactless', value, details),
           ),
           SizedBox(height: 12.h),
 
@@ -93,7 +95,8 @@ class SecuritySettingsTab extends StatelessWidget {
             title: 'ATM Withdrawals',
             subtitle: 'Cash withdrawals at ATMs',
             value: details?.enableATMWithdrawals ?? false,
-            onChanged: (value) => _onToggleChanged(context, 'ATMWithdrawals', value, details),
+            onChanged: (value) =>
+                _onToggleChanged(context, 'ATMWithdrawals', value, details),
           ),
           SizedBox(height: 12.h),
 
@@ -103,7 +106,8 @@ class SecuritySettingsTab extends StatelessWidget {
             title: 'Online Payments',
             subtitle: 'E-commerce and in-app purchases',
             value: details?.enableOnlinePayments ?? false,
-            onChanged: (value) => _onToggleChanged(context, 'OnlinePayments', value, details),
+            onChanged: (value) =>
+                _onToggleChanged(context, 'OnlinePayments', value, details),
           ),
           SizedBox(height: 12.h),
 
@@ -113,7 +117,8 @@ class SecuritySettingsTab extends StatelessWidget {
             title: 'International Payments',
             subtitle: 'Transactions outside your country',
             value: details?.enableInternationalPayments ?? false,
-            onChanged: (value) => _onToggleChanged(context, 'InternationalPayments', value, details),
+            onChanged: (value) => _onToggleChanged(
+                context, 'InternationalPayments', value, details),
           ),
           SizedBox(height: 32.h),
 
@@ -244,10 +249,15 @@ class SecuritySettingsTab extends StatelessWidget {
     }
 
     final new3DSecure = setting == '3DSecure' ? value : details.enable3DSecure;
-    final newContactless = setting == 'Contactless' ? value : details.enableContactless;
-    final newOnlinePayments = setting == 'OnlinePayments' ? value : details.enableOnlinePayments;
-    final newATMWithdrawals = setting == 'ATMWithdrawals' ? value : details.enableATMWithdrawals;
-    final newInternationalPayments = setting == 'InternationalPayments' ? value : details.enableInternationalPayments;
+    final newContactless =
+        setting == 'Contactless' ? value : details.enableContactless;
+    final newOnlinePayments =
+        setting == 'OnlinePayments' ? value : details.enableOnlinePayments;
+    final newATMWithdrawals =
+        setting == 'ATMWithdrawals' ? value : details.enableATMWithdrawals;
+    final newInternationalPayments = setting == 'InternationalPayments'
+        ? value
+        : details.enableInternationalPayments;
 
     final validation = SecuritySettingsValidator.validateSettings(
       enable3DSecure: new3DSecure,
@@ -260,18 +270,19 @@ class SecuritySettingsTab extends StatelessWidget {
       ValidationDialog.show(
         context,
         title: 'Cannot Disable',
-        message: validation.errorMessage ?? 'At least one payment method must remain enabled.',
+        message: validation.errorMessage ??
+            'At least one payment method must remain enabled.',
       );
       return;
     }
 
     context.read<AccountActionsCubit>().updateSecuritySettings(
-      accountId: accountId,
-      enable3DSecure: new3DSecure,
-      enableContactless: newContactless,
-      enableOnlinePayments: newOnlinePayments,
-      enableATMWithdrawals: newATMWithdrawals,
-      enableInternationalPayments: newInternationalPayments,
-    );
+          accountId: accountId,
+          enable3DSecure: new3DSecure,
+          enableContactless: newContactless,
+          enableOnlinePayments: newOnlinePayments,
+          enableATMWithdrawals: newATMWithdrawals,
+          enableInternationalPayments: newInternationalPayments,
+        );
   }
 }

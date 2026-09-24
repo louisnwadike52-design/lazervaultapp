@@ -11,4 +11,4 @@ class GetStockAnalysisUseCase {
   Future<Either<Failure, StockAnalysis>> call(String symbol) async {
     return await repository.getStockAnalysis(symbol);
   }
-} 
+}

@@ -17,7 +17,6 @@ import 'package:lazervault/src/features/plan_my_day/domain/entities/reminder.dar
 import 'package:lazervault/src/features/plan_my_day/domain/repositories/i_plan_my_day_repository.dart';
 part 'plan_my_day_repository_impl_widgets.dart';
 
-
 class PlanMyDayRepository implements IPlanMyDayRepository {
   final String _baseUrl;
   final GrpcCallOptionsHelper _callOptionsHelper;
@@ -174,10 +173,12 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
   @override
   Future<Event> getEventById(String id) async {
     final headers = await _getAuthHeaders();
-    final response = await _client.get(
-      Uri.parse('$_baseUrl/api/v1/planning/events/$id'),
-      headers: headers,
-    ).timeout(_connectTimeout);
+    final response = await _client
+        .get(
+          Uri.parse('$_baseUrl/api/v1/planning/events/$id'),
+          headers: headers,
+        )
+        .timeout(_connectTimeout);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -206,20 +207,22 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
     }
 
     final headers = await _getAuthHeaders();
-    final response = await _client.post(
-      Uri.parse('$_baseUrl/api/v1/planning/events'),
-      headers: headers,
-      body: jsonEncode({
-        'title': title.trim(),
-        'description': description?.trim(),
-        'start_time': startTime.toIso8601String(),
-        // Omit end_time entirely when there's none — never send a fabricated end.
-        if (endTime != null) 'end_time': endTime.toIso8601String(),
-        'location': location?.trim(),
-        'category_ids': categoryIds,
-        'is_all_day': isAllDay,
-      }),
-    ).timeout(_receiveTimeout);
+    final response = await _client
+        .post(
+          Uri.parse('$_baseUrl/api/v1/planning/events'),
+          headers: headers,
+          body: jsonEncode({
+            'title': title.trim(),
+            'description': description?.trim(),
+            'start_time': startTime.toIso8601String(),
+            // Omit end_time entirely when there's none — never send a fabricated end.
+            if (endTime != null) 'end_time': endTime.toIso8601String(),
+            'location': location?.trim(),
+            'category_ids': categoryIds,
+            'is_all_day': isAllDay,
+          }),
+        )
+        .timeout(_receiveTimeout);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       final data = jsonDecode(response.body);
@@ -261,11 +264,13 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
       throw PlanMyDayValidationException('End time must be after start time');
     }
 
-    final response = await _client.put(
-      Uri.parse('$_baseUrl/api/v1/planning/events/$id'),
-      headers: headers,
-      body: jsonEncode(body),
-    ).timeout(_receiveTimeout);
+    final response = await _client
+        .put(
+          Uri.parse('$_baseUrl/api/v1/planning/events/$id'),
+          headers: headers,
+          body: jsonEncode(body),
+        )
+        .timeout(_receiveTimeout);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -279,10 +284,12 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
   @override
   Future<void> deleteEvent(String id) async {
     final headers = await _getAuthHeaders();
-    final response = await _client.delete(
-      Uri.parse('$_baseUrl/api/v1/planning/events/$id'),
-      headers: headers,
-    ).timeout(_connectTimeout);
+    final response = await _client
+        .delete(
+          Uri.parse('$_baseUrl/api/v1/planning/events/$id'),
+          headers: headers,
+        )
+        .timeout(_connectTimeout);
 
     if (response.statusCode != 200 && response.statusCode != 204) {
       throw PlanMyDayException('Failed to delete event');
@@ -305,14 +312,16 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
     final queryParams = <String, String>{};
 
     if (status.isNotEmpty) queryParams['status'] = status;
-    if (priority != null && priority > 0) queryParams['priority'] = priority.toString();
+    if (priority != null && priority > 0)
+      queryParams['priority'] = priority.toString();
     if (parentTaskId != null) queryParams['parent_task_id'] = parentTaskId;
     if (includeSubtasks) queryParams['include_subtasks'] = 'true';
 
     final uri = Uri.parse('$_baseUrl/api/v1/planning/tasks')
         .replace(queryParameters: queryParams);
 
-    final response = await _client.get(uri, headers: headers).timeout(_connectTimeout);
+    final response =
+        await _client.get(uri, headers: headers).timeout(_connectTimeout);
 
     if (response.statusCode == 200) {
       try {
@@ -332,10 +341,12 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
   @override
   Future<Task> getTaskById(String id) async {
     final headers = await _getAuthHeaders();
-    final response = await _client.get(
-      Uri.parse('$_baseUrl/api/v1/planning/tasks/$id'),
-      headers: headers,
-    ).timeout(_connectTimeout);
+    final response = await _client
+        .get(
+          Uri.parse('$_baseUrl/api/v1/planning/tasks/$id'),
+          headers: headers,
+        )
+        .timeout(_connectTimeout);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -376,14 +387,17 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
     if (dueDate != null) body['due_date'] = dueDate.toIso8601String();
     if (parentTaskId != null) body['parent_task_id'] = parentTaskId;
     if (recurringRule != null) body['recurring_rule'] = recurringRule;
-    if (estimatedDuration != null) body['estimated_duration'] = estimatedDuration;
+    if (estimatedDuration != null)
+      body['estimated_duration'] = estimatedDuration;
     if (reminderIds.isNotEmpty) body['reminder_ids'] = reminderIds;
 
-    final response = await _client.post(
-      Uri.parse('$_baseUrl/api/v1/planning/tasks'),
-      headers: headers,
-      body: jsonEncode(body),
-    ).timeout(_receiveTimeout);
+    final response = await _client
+        .post(
+          Uri.parse('$_baseUrl/api/v1/planning/tasks'),
+          headers: headers,
+          body: jsonEncode(body),
+        )
+        .timeout(_receiveTimeout);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       final data = jsonDecode(response.body);
@@ -433,17 +447,20 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
       body['status'] = status;
     }
     if (categoryIds != null) body['category_ids'] = categoryIds;
-    if (estimatedDuration != null) body['estimated_duration'] = estimatedDuration;
+    if (estimatedDuration != null)
+      body['estimated_duration'] = estimatedDuration;
 
     if (body.isEmpty) {
       throw PlanMyDayValidationException('No fields to update');
     }
 
-    final response = await _client.put(
-      Uri.parse('$_baseUrl/api/v1/planning/tasks/$id'),
-      headers: headers,
-      body: jsonEncode(body),
-    ).timeout(_receiveTimeout);
+    final response = await _client
+        .put(
+          Uri.parse('$_baseUrl/api/v1/planning/tasks/$id'),
+          headers: headers,
+          body: jsonEncode(body),
+        )
+        .timeout(_receiveTimeout);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -457,10 +474,12 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
   @override
   Future<void> deleteTask(String id) async {
     final headers = await _getAuthHeaders();
-    final response = await _client.delete(
-      Uri.parse('$_baseUrl/api/v1/planning/tasks/$id'),
-      headers: headers,
-    ).timeout(_connectTimeout);
+    final response = await _client
+        .delete(
+          Uri.parse('$_baseUrl/api/v1/planning/tasks/$id'),
+          headers: headers,
+        )
+        .timeout(_connectTimeout);
 
     if (response.statusCode != 200 && response.statusCode != 204) {
       throw PlanMyDayException('Failed to delete task');
@@ -470,11 +489,13 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
   @override
   Future<Task> completeTask(String id) async {
     final headers = await _getAuthHeaders();
-    final response = await _client.post(
-      Uri.parse('$_baseUrl/api/v1/planning/tasks/$id/complete'),
-      headers: headers,
-      body: jsonEncode({'completed_at': DateTime.now().toIso8601String()}),
-    ).timeout(_receiveTimeout);
+    final response = await _client
+        .post(
+          Uri.parse('$_baseUrl/api/v1/planning/tasks/$id/complete'),
+          headers: headers,
+          body: jsonEncode({'completed_at': DateTime.now().toIso8601String()}),
+        )
+        .timeout(_receiveTimeout);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -493,11 +514,13 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
     final headers = await _getAuthHeaders();
     final body = <String, dynamic>{'status': status};
     if (boardOrder != null) body['board_order'] = boardOrder;
-    final response = await _client.post(
-      Uri.parse('$_baseUrl/api/v1/planning/tasks/$id/move'),
-      headers: headers,
-      body: jsonEncode(body),
-    ).timeout(_receiveTimeout);
+    final response = await _client
+        .post(
+          Uri.parse('$_baseUrl/api/v1/planning/tasks/$id/move'),
+          headers: headers,
+          body: jsonEncode(body),
+        )
+        .timeout(_receiveTimeout);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -512,11 +535,13 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
   Future<void> reorderTasks(String status, List<String> taskIds) async {
     if (taskIds.isEmpty) return;
     final headers = await _getAuthHeaders();
-    final response = await _client.post(
-      Uri.parse('$_baseUrl/api/v1/planning/tasks/reorder'),
-      headers: headers,
-      body: jsonEncode({'status': status, 'task_ids': taskIds}),
-    ).timeout(_receiveTimeout);
+    final response = await _client
+        .post(
+          Uri.parse('$_baseUrl/api/v1/planning/tasks/reorder'),
+          headers: headers,
+          body: jsonEncode({'status': status, 'task_ids': taskIds}),
+        )
+        .timeout(_receiveTimeout);
 
     if (response.statusCode != 200) {
       throw PlanMyDayException('Failed to reorder tasks');
@@ -541,7 +566,8 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
     final uri = Uri.parse('$_baseUrl/api/v1/planning/time-blocks')
         .replace(queryParameters: queryParams);
 
-    final response = await _client.get(uri, headers: headers).timeout(_connectTimeout);
+    final response =
+        await _client.get(uri, headers: headers).timeout(_connectTimeout);
 
     if (response.statusCode == 200) {
       try {
@@ -589,22 +615,24 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
     }
 
     final headers = await _getAuthHeaders();
-    final response = await _client.post(
-      Uri.parse('$_baseUrl/api/v1/planning/time-blocks'),
-      headers: headers,
-      body: jsonEncode({
-        'date': date,
-        'start_time': startTime,
-        'end_time': endTime,
-        'title': title.trim(),
-        'description': description?.trim(),
-        'type': type,
-        'task_ids': taskIds,
-        'event_ids': eventIds,
-        'color': color,
-        'is_locked': isLocked,
-      }),
-    ).timeout(_receiveTimeout);
+    final response = await _client
+        .post(
+          Uri.parse('$_baseUrl/api/v1/planning/time-blocks'),
+          headers: headers,
+          body: jsonEncode({
+            'date': date,
+            'start_time': startTime,
+            'end_time': endTime,
+            'title': title.trim(),
+            'description': description?.trim(),
+            'type': type,
+            'task_ids': taskIds,
+            'event_ids': eventIds,
+            'color': color,
+            'is_locked': isLocked,
+          }),
+        )
+        .timeout(_receiveTimeout);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       final data = jsonDecode(response.body);
@@ -660,11 +688,13 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
       }
     }
 
-    final response = await _client.put(
-      Uri.parse('$_baseUrl/api/v1/planning/time-blocks/$id'),
-      headers: headers,
-      body: jsonEncode(body),
-    ).timeout(_receiveTimeout);
+    final response = await _client
+        .put(
+          Uri.parse('$_baseUrl/api/v1/planning/time-blocks/$id'),
+          headers: headers,
+          body: jsonEncode(body),
+        )
+        .timeout(_receiveTimeout);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -678,10 +708,12 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
   @override
   Future<void> deleteTimeBlock(String id) async {
     final headers = await _getAuthHeaders();
-    final response = await _client.delete(
-      Uri.parse('$_baseUrl/api/v1/planning/time-blocks/$id'),
-      headers: headers,
-    ).timeout(_connectTimeout);
+    final response = await _client
+        .delete(
+          Uri.parse('$_baseUrl/api/v1/planning/time-blocks/$id'),
+          headers: headers,
+        )
+        .timeout(_connectTimeout);
 
     if (response.statusCode != 200 && response.statusCode != 204) {
       throw PlanMyDayException('Failed to delete time block');
@@ -699,7 +731,8 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
     final uri = Uri.parse('$_baseUrl/api/v1/planning/categories')
         .replace(queryParameters: queryParams);
 
-    final response = await _client.get(uri, headers: headers).timeout(_connectTimeout);
+    final response =
+        await _client.get(uri, headers: headers).timeout(_connectTimeout);
 
     if (response.statusCode == 200) {
       try {
@@ -728,16 +761,18 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
     }
 
     final headers = await _getAuthHeaders();
-    final response = await _client.post(
-      Uri.parse('$_baseUrl/api/v1/planning/categories'),
-      headers: headers,
-      body: jsonEncode({
-        'name': name.trim(),
-        'icon': icon,
-        'color': color,
-        'type': type,
-      }),
-    ).timeout(_receiveTimeout);
+    final response = await _client
+        .post(
+          Uri.parse('$_baseUrl/api/v1/planning/categories'),
+          headers: headers,
+          body: jsonEncode({
+            'name': name.trim(),
+            'icon': icon,
+            'color': color,
+            'type': type,
+          }),
+        )
+        .timeout(_receiveTimeout);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       final data = jsonDecode(response.body);
@@ -766,11 +801,13 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
       throw PlanMyDayValidationException('No fields to update');
     }
 
-    final response = await _client.put(
-      Uri.parse('$_baseUrl/api/v1/planning/categories/$id'),
-      headers: headers,
-      body: jsonEncode(body),
-    ).timeout(_receiveTimeout);
+    final response = await _client
+        .put(
+          Uri.parse('$_baseUrl/api/v1/planning/categories/$id'),
+          headers: headers,
+          body: jsonEncode(body),
+        )
+        .timeout(_receiveTimeout);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -784,10 +821,12 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
   @override
   Future<void> deleteCategory(String id) async {
     final headers = await _getAuthHeaders();
-    final response = await _client.delete(
-      Uri.parse('$_baseUrl/api/v1/planning/categories/$id'),
-      headers: headers,
-    ).timeout(_connectTimeout);
+    final response = await _client
+        .delete(
+          Uri.parse('$_baseUrl/api/v1/planning/categories/$id'),
+          headers: headers,
+        )
+        .timeout(_connectTimeout);
 
     if (response.statusCode != 200 && response.statusCode != 204) {
       throw PlanMyDayException('Failed to delete category');
@@ -797,10 +836,12 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
   @override
   Future<DailySummary> getDailySummary(String date) async {
     final headers = await _getAuthHeaders();
-    final response = await _client.get(
-      Uri.parse('$_baseUrl/api/v1/planning/summary/daily?date=$date'),
-      headers: headers,
-    ).timeout(_connectTimeout);
+    final response = await _client
+        .get(
+          Uri.parse('$_baseUrl/api/v1/planning/summary/daily?date=$date'),
+          headers: headers,
+        )
+        .timeout(_connectTimeout);
 
     if (response.statusCode == 200) {
       try {
@@ -847,7 +888,8 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
     };
     final uri = Uri.parse('$_baseUrl/api/v1/planning/reminders')
         .replace(queryParameters: qp.isEmpty ? null : qp);
-    final response = await _client.get(uri, headers: headers).timeout(_connectTimeout);
+    final response =
+        await _client.get(uri, headers: headers).timeout(_connectTimeout);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       if (data['reminders'] != null) {
@@ -869,7 +911,8 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
     if (response.statusCode == 200 || response.statusCode == 201) {
       final data = jsonDecode(response.body);
       if (data['reminder'] != null) {
-        return Reminder.fromBackendJson(data['reminder'] as Map<String, dynamic>);
+        return Reminder.fromBackendJson(
+            data['reminder'] as Map<String, dynamic>);
       }
     }
     throw PlanMyDayException('Failed to create reminder');
@@ -885,7 +928,8 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       if (data['reminder'] != null) {
-        return Reminder.fromBackendJson(data['reminder'] as Map<String, dynamic>);
+        return Reminder.fromBackendJson(
+            data['reminder'] as Map<String, dynamic>);
       }
     }
     throw PlanMyDayException('Failed to update reminder');
@@ -895,7 +939,8 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
   Future<void> deleteReminder(String id) async {
     final headers = await _getAuthHeaders();
     final response = await _client
-        .delete(Uri.parse('$_baseUrl/api/v1/planning/reminders/$id'), headers: headers)
+        .delete(Uri.parse('$_baseUrl/api/v1/planning/reminders/$id'),
+            headers: headers)
         .timeout(_connectTimeout);
     if (response.statusCode != 200 && response.statusCode != 204) {
       throw PlanMyDayException('Failed to delete reminder');
@@ -907,9 +952,10 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
   @override
   Future<Map<String, dynamic>> getWeeklySummary({String? startDate}) async {
     final headers = await _getAuthHeaders();
-    final uri = Uri.parse('$_baseUrl/api/v1/planning/summary/weekly')
-        .replace(queryParameters: startDate != null ? {'start_date': startDate} : null);
-    final response = await _client.get(uri, headers: headers).timeout(_connectTimeout);
+    final uri = Uri.parse('$_baseUrl/api/v1/planning/summary/weekly').replace(
+        queryParameters: startDate != null ? {'start_date': startDate} : null);
+    final response =
+        await _client.get(uri, headers: headers).timeout(_connectTimeout);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return (data['summary'] as Map<String, dynamic>?) ?? {};
@@ -918,11 +964,13 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
   }
 
   @override
-  Future<Map<String, dynamic>> getProductivityInsights({String period = 'week'}) async {
+  Future<Map<String, dynamic>> getProductivityInsights(
+      {String period = 'week'}) async {
     final headers = await _getAuthHeaders();
     final uri = Uri.parse('$_baseUrl/api/v1/planning/insights')
         .replace(queryParameters: {'period': period});
-    final response = await _client.get(uri, headers: headers).timeout(_connectTimeout);
+    final response =
+        await _client.get(uri, headers: headers).timeout(_connectTimeout);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return (data['insights'] as Map<String, dynamic>?) ?? {};

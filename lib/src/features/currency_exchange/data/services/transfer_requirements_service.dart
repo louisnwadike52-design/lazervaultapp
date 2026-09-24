@@ -16,6 +16,7 @@ class ExchangeRequirements {
   final String provider;
   final String currency;
   final String? countryCode;
+
   /// Human-readable destination, e.g. "Philippines". Shown in the form header and
   /// used when synthesising a rule for a corridor the bundled map does not cover.
   final String? countryName;

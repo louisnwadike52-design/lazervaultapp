@@ -30,7 +30,8 @@ class InsuranceListScreen extends StatefulWidget {
   State<InsuranceListScreen> createState() => _InsuranceListScreenState();
 }
 
-class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerProviderStateMixin {
+class _InsuranceListScreenState extends State<InsuranceListScreen>
+    with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late AnimationController _slideController;
   late Animation<double> _fadeAnimation;
@@ -47,7 +48,7 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _fadeController, curve: Curves.easeOut),
     );
@@ -122,14 +123,18 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
                           // The builder below will show the error state inline
                           // No need for a duplicate snackbar
                         }
-                        if (state is InsuranceCreated || state is InsuranceUpdated || state is InsuranceDeleted) {
+                        if (state is InsuranceCreated ||
+                            state is InsuranceUpdated ||
+                            state is InsuranceDeleted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text('Operation successful',
-                                style: GoogleFonts.inter(color: Colors.white)),
+                                  style:
+                                      GoogleFonts.inter(color: Colors.white)),
                               backgroundColor: const Color(0xFF10B981),
                               behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r)),
                             ),
                           );
                         }
@@ -156,7 +161,7 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
             ],
           ),
         ),
-      ),  // SafeArea
+      ), // SafeArea
       // FAB voice button removed — the appbar already exposes a mic
       // (ServiceVoiceButton) at top-right, so the floating mic was a
       // duplicate. Keeping only the primary "New Insurance" CTA.
@@ -178,7 +183,8 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
                 color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(18.r),
               ),
-              child: Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 16.sp),
+              child: Icon(Icons.arrow_back_ios_new,
+                  color: Colors.white, size: 16.sp),
             ),
           ),
           SizedBox(width: 10.w),
@@ -261,8 +267,7 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
           value: 'faq',
           child: Row(
             children: [
-              Icon(Icons.help_outline,
-                  color: Colors.white70, size: 16.sp),
+              Icon(Icons.help_outline, color: Colors.white70, size: 16.sp),
               SizedBox(width: 10.w),
               Text(
                 'FAQ',
@@ -298,9 +303,15 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
   }
 
   Widget _buildInsurancesView(InsurancesLoaded state) {
-    final activePolicies = state.insurances.where((i) => i.status == InsuranceStatus.active).toList();
-    final pendingPolicies = state.insurances.where((i) => i.status == InsuranceStatus.pending).toList();
-    final expiredPolicies = state.insurances.where((i) => i.status == InsuranceStatus.expired).toList();
+    final activePolicies = state.insurances
+        .where((i) => i.status == InsuranceStatus.active)
+        .toList();
+    final pendingPolicies = state.insurances
+        .where((i) => i.status == InsuranceStatus.pending)
+        .toList();
+    final expiredPolicies = state.insurances
+        .where((i) => i.status == InsuranceStatus.expired)
+        .toList();
 
     return RefreshIndicator(
       // Wrap so an underlying RPC failure doesn't leave the
@@ -324,7 +335,8 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
             SizedBox(height: 16.h),
 
             // Quick status filters
-            _buildStatusChips(activePolicies.length, pendingPolicies.length, expiredPolicies.length),
+            _buildStatusChips(activePolicies.length, pendingPolicies.length,
+                expiredPolicies.length),
             SizedBox(height: 20.h),
 
             // Policies preview (max 3) with View All — surfaced for any
@@ -395,7 +407,8 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
   // Hero stats card — matches Group Funds (#4E03D0 purple gradient with
   // soft shadow). Three columns split by faint white dividers, icons
   // tinted white-on-purple so it reads as a single coloured block.
-  Widget _buildCompactStats(Map<String, dynamic> statistics, int totalPolicies) {
+  Widget _buildCompactStats(
+      Map<String, dynamic> statistics, int totalPolicies) {
     final activePolicies = statistics['activePolicies'] ?? 0;
     final totalCoverage = (statistics['totalCoverageAmount'] ?? 0.0) as double;
     // Render the coverage total in the user's current locale currency
@@ -430,11 +443,17 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
       ),
       child: Row(
         children: [
-          Expanded(child: _buildCompactStatItem(Icons.shield_outlined, '$activePolicies', 'Active')),
+          Expanded(
+              child: _buildCompactStatItem(
+                  Icons.shield_outlined, '$activePolicies', 'Active')),
           _buildStatDivider(),
-          Expanded(child: _buildCompactStatItem(Icons.policy_outlined, '$totalPolicies', 'Total')),
+          Expanded(
+              child: _buildCompactStatItem(
+                  Icons.policy_outlined, '$totalPolicies', 'Total')),
           _buildStatDivider(),
-          Expanded(child: _buildCompactStatItem(Icons.account_balance_outlined, coverageStr, 'Coverage')),
+          Expanded(
+              child: _buildCompactStatItem(
+                  Icons.account_balance_outlined, coverageStr, 'Coverage')),
         ],
       ),
     );
@@ -446,14 +465,21 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
       children: [
         Icon(icon, color: Colors.white, size: 18.sp),
         SizedBox(height: 4.h),
-        Text(value, style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.w700, color: Colors.white)),
-        Text(label, style: GoogleFonts.inter(fontSize: 10.sp, color: Colors.white.withValues(alpha: 0.85))),
+        Text(value,
+            style: GoogleFonts.inter(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w700,
+                color: Colors.white)),
+        Text(label,
+            style: GoogleFonts.inter(
+                fontSize: 10.sp, color: Colors.white.withValues(alpha: 0.85))),
       ],
     );
   }
 
   Widget _buildStatDivider() {
-    return Container(width: 1, height: 36.h, color: Colors.white.withValues(alpha: 0.2));
+    return Container(
+        width: 1, height: 36.h, color: Colors.white.withValues(alpha: 0.2));
   }
 
   Widget _buildStatusChips(int active, int pending, int expired) {
@@ -462,9 +488,14 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
-          if (active > 0) _buildChip('Active ($active)', const Color(0xFF10B981), 'active'),
-          if (pending > 0) _buildChip('Pending ($pending)', const Color(0xFFF59E0B), 'pending'),
-          if (expired > 0) _buildChip('Expired ($expired)', const Color(0xFFEF4444), 'expired'),
+          if (active > 0)
+            _buildChip('Active ($active)', const Color(0xFF10B981), 'active'),
+          if (pending > 0)
+            _buildChip(
+                'Pending ($pending)', const Color(0xFFF59E0B), 'pending'),
+          if (expired > 0)
+            _buildChip(
+                'Expired ($expired)', const Color(0xFFEF4444), 'expired'),
           // "View All" was removed here. The "Your Policies" section
           // header below already exposes a View All affordance for the
           // full paginated list — duplicating it inside the status
@@ -476,7 +507,8 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
 
   Widget _buildChip(String label, Color color, String? filterStatus) {
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.insuranceAllPolicies, arguments: filterStatus),
+      onTap: () =>
+          Get.toNamed(AppRoutes.insuranceAllPolicies, arguments: filterStatus),
       child: Container(
         margin: EdgeInsets.only(right: 8.w),
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
@@ -484,7 +516,9 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
           color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16.r),
         ),
-        child: Text(label, style: GoogleFonts.inter(fontSize: 12.sp, fontWeight: FontWeight.w600, color: color)),
+        child: Text(label,
+            style: GoogleFonts.inter(
+                fontSize: 12.sp, fontWeight: FontWeight.w600, color: color)),
       ),
     );
   }
@@ -508,7 +542,8 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
         child: Row(
           children: [
             Container(
-              width: 40.w, height: 40.w,
+              width: 40.w,
+              height: 40.w,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10.r),
@@ -539,7 +574,8 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: const Color(0xFF6B7280), size: 20.sp),
+            Icon(Icons.chevron_right,
+                color: const Color(0xFF6B7280), size: 20.sp),
           ],
         ),
       ),
@@ -624,7 +660,8 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.12),
+                color: const Color.fromARGB(255, 78, 3, 208)
+                    .withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(20.r),
               ),
               child: Text(
@@ -650,7 +687,8 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
                       color: const Color(0xFF9CA3AF),
                       fontWeight: FontWeight.w400,
                       decoration: TextDecoration.underline,
-                      decorationColor: const Color(0xFF9CA3AF).withValues(alpha: 0.4),
+                      decorationColor:
+                          const Color(0xFF9CA3AF).withValues(alpha: 0.4),
                     ),
                   ),
                 ),
@@ -701,7 +739,9 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
                 ),
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Center(child: Text(insurance.type.icon, style: TextStyle(fontSize: 18.sp))),
+              child: Center(
+                  child: Text(insurance.type.icon,
+                      style: TextStyle(fontSize: 18.sp))),
             ),
             SizedBox(width: 12.w),
             Expanded(
@@ -712,16 +752,22 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
                     children: [
                       Expanded(
                         child: Text(insurance.type.displayName,
-                          style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.white),
-                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                            style: GoogleFonts.inter(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
                       ),
                       _buildStatusBadge(insurance.status),
                     ],
                   ),
                   SizedBox(height: 3.h),
                   Text('${insurance.provider} \u2022 ${insurance.policyNumber}',
-                    style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFF9CA3AF)),
-                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                      style: GoogleFonts.inter(
+                          fontSize: 11.sp, color: const Color(0xFF9CA3AF)),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
                   SizedBox(height: 4.h),
                   Row(
                     children: [
@@ -738,18 +784,24 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
                           insurance.premiumAmount,
                           insurance.currency,
                         ),
-                        style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w700, color: const Color(0xFF10B981)),
+                        style: GoogleFonts.inter(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF10B981)),
                       ),
                       const Spacer(),
-                      Text('Exp: ${insurance.endDate.day}/${insurance.endDate.month}/${insurance.endDate.year}',
-                        style: GoogleFonts.inter(fontSize: 10.sp, color: const Color(0xFF9CA3AF))),
+                      Text(
+                          'Exp: ${insurance.endDate.day}/${insurance.endDate.month}/${insurance.endDate.year}',
+                          style: GoogleFonts.inter(
+                              fontSize: 10.sp, color: const Color(0xFF9CA3AF))),
                     ],
                   ),
                 ],
               ),
             ),
             SizedBox(width: 4.w),
-            Icon(Icons.chevron_right, color: const Color(0xFF9CA3AF), size: 18.sp),
+            Icon(Icons.chevron_right,
+                color: const Color(0xFF9CA3AF), size: 18.sp),
           ],
         ),
       ),
@@ -953,7 +1005,8 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
                 color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(36.r),
               ),
-              child: Icon(Icons.cloud_off_outlined, size: 36.sp, color: const Color(0xFFEF4444)),
+              child: Icon(Icons.cloud_off_outlined,
+                  size: 36.sp, color: const Color(0xFFEF4444)),
             ),
             SizedBox(height: 20.h),
             Text(
@@ -995,8 +1048,11 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
                   children: [
                     Icon(Icons.refresh, color: Colors.white, size: 18.sp),
                     SizedBox(width: 8.w),
-                    Text('Try Again', style: GoogleFonts.inter(
-                      fontSize: 15.sp, fontWeight: FontWeight.w600, color: Colors.white)),
+                    Text('Try Again',
+                        style: GoogleFonts.inter(
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white)),
                   ],
                 ),
               ),
@@ -1105,7 +1161,8 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
   /// null when the link isn't configured (sheet shows an unavailable state).
   Future<String?> _resolveHostedUrl() async {
     final authState = context.read<AuthenticationCubit>().state;
-    final user = authState is AuthenticationSuccess ? authState.profile.user : null;
+    final user =
+        authState is AuthenticationSuccess ? authState.profile.user : null;
     return MyCoverHostedUrl.compose(
       base: FeatureFlags.insuranceHostedBaseLink,
       email: user?.email ?? '',
@@ -1138,11 +1195,12 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
           providers: [
             BlocProvider.value(value: insuranceCubit),
             BlocProvider.value(value: authCubit),
-            BlocProvider(create: (context) => CreatePolicyCubit(
-              repository: serviceLocator<InsuranceRepository>(),
-              cacheManager: serviceLocator<SWRCacheManager>(),
-              localeManager: serviceLocator<LocaleManager>(),
-            )),
+            BlocProvider(
+                create: (context) => CreatePolicyCubit(
+                      repository: serviceLocator<InsuranceRepository>(),
+                      cacheManager: serviceLocator<SWRCacheManager>(),
+                      localeManager: serviceLocator<LocaleManager>(),
+                    )),
           ],
           child: const CreateInsurancePolicyCarousel(),
         ),

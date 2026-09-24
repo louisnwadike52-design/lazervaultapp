@@ -11,7 +11,6 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 part 'directpay_authorization_sheet_widgets.dart';
 
-
 /// DirectPay Authorization Bottom Sheet
 ///
 /// Opens the Mono DirectPay authorization URL in an in-app WebView.
@@ -128,8 +127,8 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
       // crash ("client-side exception") when they see a bare WebView agent.
       // Present as Chrome-on-Android so feature detection succeeds.
       ..setUserAgent(
-        'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 '
-        '(KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36')
+          'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 '
+          '(KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36')
       // Surface the real JS error instead of the generic Next.js boundary text.
       ..setOnConsoleMessage((msg) {
         debugPrint('[DirectPay][JS:${msg.level.name}] ${msg.message}');
@@ -331,7 +330,8 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
       barrierDismissible: true,
       builder: (ctx) => AlertDialog(
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Row(
           children: [
             Icon(Icons.assignment_late_outlined,
@@ -471,12 +471,14 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
       // Ambiguous close — wait briefly for a success/failure callback to follow.
       // Do NOT set _redirectHandled, so the follow-up can still be processed; if
       // nothing arrives within the window it was a genuine user cancel.
-      debugPrint('[DirectPay] Close callback — debouncing for a follow-up: $url');
+      debugPrint(
+          '[DirectPay] Close callback — debouncing for a follow-up: $url');
       _closeDebounce?.cancel();
       _closeDebounce = Timer(const Duration(milliseconds: 2000), () {
         if (!mounted || _redirectHandled) return;
         _redirectHandled = true;
-        debugPrint('[DirectPay] No success/failure after close — treating as cancelled');
+        debugPrint(
+            '[DirectPay] No success/failure after close — treating as cancelled');
         Navigator.of(context).pop(DirectPayAuthResult.cancelled());
       });
       return;
@@ -487,7 +489,8 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
     _closeDebounce?.cancel();
     _redirectHandled = true;
     HapticFeedback.mediumImpact();
-    debugPrint('[DirectPay] Redirect (no explicit status) — default success: $url');
+    debugPrint(
+        '[DirectPay] Redirect (no explicit status) — default success: $url');
     Navigator.of(context).pop(DirectPayAuthResult.success(
       paymentId: widget.paymentId,
       reference: widget.reference,

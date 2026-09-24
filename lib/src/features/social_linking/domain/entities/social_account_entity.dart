@@ -184,7 +184,8 @@ class LinkedSocialAccountEntity extends Equatable {
       displayName: json['display_name'] as String?,
       profilePictureUrl: json['profile_picture_url'] as String?,
       profileUrl: json['profile_url'] as String?,
-      status: SocialAccountStatus.fromString(json['status'] as String? ?? 'active'),
+      status:
+          SocialAccountStatus.fromString(json['status'] as String? ?? 'active'),
       isPrimary: json['is_primary'] as bool? ?? false,
       linkedAt: json['linked_at'] != null
           ? DateTime.parse(json['linked_at'] as String)
@@ -288,7 +289,8 @@ class SocialAccountStats extends Equatable {
     );
   }
 
-  factory SocialAccountStats.fromAccounts(List<LinkedSocialAccountEntity> accounts) {
+  factory SocialAccountStats.fromAccounts(
+      List<LinkedSocialAccountEntity> accounts) {
     final providerBreakdown = <String, int>{};
     int active = 0;
     int reauth = 0;
@@ -373,7 +375,8 @@ class SocialAccountStats extends Equatable {
     }
 
     if (lastLinkedAt != null) {
-      buffer.writeln('- Last account linked: ${lastLinkedAt!.toIso8601String().split('T')[0]}');
+      buffer.writeln(
+          '- Last account linked: ${lastLinkedAt!.toIso8601String().split('T')[0]}');
     }
 
     return buffer.toString();

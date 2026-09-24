@@ -211,9 +211,8 @@ class PayrollRepositoryGrpcImpl implements PayrollRepository {
         );
 
         return EmployeesPageResult(
-          employees: response.employees
-              .map((e) => _employeeFromProto(e))
-              .toList(),
+          employees:
+              response.employees.map((e) => _employeeFromProto(e)).toList(),
           totalItems: response.pagination.totalItems,
           currentPage: response.pagination.currentPage,
           totalPages: response.pagination.totalPages,
@@ -243,7 +242,9 @@ class PayrollRepositoryGrpcImpl implements PayrollRepository {
           ..payPeriodEnd = payPeriodEnd
           ..name = name
           ..isRecurring = isRecurring
-          ..recurrenceFrequency = payroll_pb.RecurrenceFrequency.valueOf(recurrenceFrequency) ?? payroll_pb.RecurrenceFrequency.RECURRENCE_FREQUENCY_NONE
+          ..recurrenceFrequency =
+              payroll_pb.RecurrenceFrequency.valueOf(recurrenceFrequency) ??
+                  payroll_pb.RecurrenceFrequency.RECURRENCE_FREQUENCY_NONE
           ..autoApprove = autoApprove;
         if (employeeIds.isNotEmpty) {
           request.employeeIds.addAll(employeeIds);
@@ -290,8 +291,7 @@ class PayrollRepositoryGrpcImpl implements PayrollRepository {
   Future<PayRunEntity> approvePayRun(String payRunId) async {
     return retryWithBackoff(
       operation: () async {
-        final request = payroll_pb.ApprovePayRunRequest()
-          ..payRunId = payRunId;
+        final request = payroll_pb.ApprovePayRunRequest()..payRunId = payRunId;
 
         final options = await _callOptionsHelper.withAuth();
         final response = await _client.approvePayRun(
@@ -340,8 +340,7 @@ class PayrollRepositoryGrpcImpl implements PayrollRepository {
   Future<PayRunEntity> getPayRun(String payRunId) async {
     return retryWithBackoff(
       operation: () async {
-        final request = payroll_pb.GetPayRunRequest()
-          ..payRunId = payRunId;
+        final request = payroll_pb.GetPayRunRequest()..payRunId = payRunId;
 
         final options = await _callOptionsHelper.withAuth();
         final response = await _client.getPayRun(
@@ -373,9 +372,7 @@ class PayrollRepositoryGrpcImpl implements PayrollRepository {
         );
 
         return PayRunsPageResult(
-          payRuns: response.payRuns
-              .map((pr) => _payRunFromProto(pr))
-              .toList(),
+          payRuns: response.payRuns.map((pr) => _payRunFromProto(pr)).toList(),
           totalItems: response.pagination.totalItems,
           currentPage: response.pagination.currentPage,
           totalPages: response.pagination.totalPages,
@@ -392,8 +389,7 @@ class PayrollRepositoryGrpcImpl implements PayrollRepository {
   Future<PaySlipEntity> getPaySlip(String paySlipId) async {
     return retryWithBackoff(
       operation: () async {
-        final request = payroll_pb.GetPaySlipRequest()
-          ..paySlipId = paySlipId;
+        final request = payroll_pb.GetPaySlipRequest()..paySlipId = paySlipId;
 
         final options = await _callOptionsHelper.withAuth();
         final response = await _client.getPaySlip(
@@ -432,9 +428,8 @@ class PayrollRepositoryGrpcImpl implements PayrollRepository {
         );
 
         return PaySlipsPageResult(
-          paySlips: response.paySlips
-              .map((ps) => _paySlipFromProto(ps))
-              .toList(),
+          paySlips:
+              response.paySlips.map((ps) => _paySlipFromProto(ps)).toList(),
           totalItems: response.pagination.totalItems,
           currentPage: response.pagination.currentPage,
           totalPages: response.pagination.totalPages,
@@ -566,8 +561,10 @@ class PayrollRepositoryGrpcImpl implements PayrollRepository {
           proto.totalEmployerContributions.toInt() / 100.0,
       employeeCount: proto.employeeCount,
       isRecurring: proto.isRecurring,
-      recurrenceFrequency: _recurrenceFrequencyFromProto(proto.recurrenceFrequency),
-      nextScheduledDate: proto.nextScheduledDate.isNotEmpty ? proto.nextScheduledDate : null,
+      recurrenceFrequency:
+          _recurrenceFrequencyFromProto(proto.recurrenceFrequency),
+      nextScheduledDate:
+          proto.nextScheduledDate.isNotEmpty ? proto.nextScheduledDate : null,
       autoApprove: proto.autoApprove,
       employeeIds: proto.employeeIds.toList(),
       createdBy: proto.createdBy,
@@ -578,7 +575,8 @@ class PayrollRepositoryGrpcImpl implements PayrollRepository {
     );
   }
 
-  RecurrenceFrequency _recurrenceFrequencyFromProto(payroll_pb.RecurrenceFrequency proto) {
+  RecurrenceFrequency _recurrenceFrequencyFromProto(
+      payroll_pb.RecurrenceFrequency proto) {
     switch (proto) {
       case payroll_pb.RecurrenceFrequency.RECURRENCE_FREQUENCY_WEEKLY:
         return RecurrenceFrequency.weekly;

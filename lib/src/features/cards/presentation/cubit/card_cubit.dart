@@ -83,7 +83,8 @@ class CardCubit extends Cubit<CardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(CardError(message: 'Failed to create virtual card: ${e.toString()}'));
+      emit(
+          CardError(message: 'Failed to create virtual card: ${e.toString()}'));
     }
   }
 
@@ -120,7 +121,8 @@ class CardCubit extends Cubit<CardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(CardError(message: 'Failed to create disposable card: ${e.toString()}'));
+      emit(CardError(
+          message: 'Failed to create disposable card: ${e.toString()}'));
     }
   }
 
@@ -200,7 +202,8 @@ class CardCubit extends Cubit<CardState> {
       if (isClosed) return;
       result.fold(
         (failure) => emit(CardError(message: failure.message)),
-        (card) => emit(CardUpdated(card: card, message: 'Card frozen successfully')),
+        (card) =>
+            emit(CardUpdated(card: card, message: 'Card frozen successfully')),
       );
     } catch (e) {
       if (isClosed) return;
@@ -219,7 +222,8 @@ class CardCubit extends Cubit<CardState> {
       if (isClosed) return;
       result.fold(
         (failure) => emit(CardError(message: failure.message)),
-        (card) => emit(CardUpdated(card: card, message: 'Card unfrozen successfully')),
+        (card) => emit(
+            CardUpdated(card: card, message: 'Card unfrozen successfully')),
       );
     } catch (e) {
       if (isClosed) return;
@@ -294,11 +298,13 @@ class CardCubit extends Cubit<CardState> {
       if (isClosed) return;
       result.fold(
         (failure) => emit(CardError(message: failure.message)),
-        (card) => emit(CardUpdated(card: card, message: 'Spending limit updated')),
+        (card) =>
+            emit(CardUpdated(card: card, message: 'Spending limit updated')),
       );
     } catch (e) {
       if (isClosed) return;
-      emit(CardError(message: 'Failed to update spending limit: ${e.toString()}'));
+      emit(CardError(
+          message: 'Failed to update spending limit: ${e.toString()}'));
     }
   }
 
@@ -313,7 +319,8 @@ class CardCubit extends Cubit<CardState> {
       if (isClosed) return;
       result.fold(
         (failure) => emit(CardError(message: failure.message)),
-        (card) => emit(CardUpdated(card: card, message: 'Default card updated')),
+        (card) =>
+            emit(CardUpdated(card: card, message: 'Default card updated')),
       );
     } catch (e) {
       if (isClosed) return;
@@ -351,7 +358,8 @@ class CardCubit extends Cubit<CardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(CardError(message: 'Failed to request physical card: ${e.toString()}'));
+      emit(CardError(
+          message: 'Failed to request physical card: ${e.toString()}'));
     }
   }
 
@@ -414,7 +422,8 @@ class CardCubit extends Cubit<CardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(CardError(message: 'Failed to reveal card details: ${e.toString()}'));
+      emit(
+          CardError(message: 'Failed to reveal card details: ${e.toString()}'));
     }
   }
 

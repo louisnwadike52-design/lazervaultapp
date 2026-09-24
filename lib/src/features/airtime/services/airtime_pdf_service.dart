@@ -18,8 +18,7 @@ class AirtimePdfService {
   static pw.Font? _regularFont;
   static pw.Font? _boldFont;
 
-  static String _currencySymbolFor(String code) =>
-      receiptCurrencySymbol(code);
+  static String _currencySymbolFor(String code) => receiptCurrencySymbol(code);
 
   static Future<pw.MemoryImage?> _loadLogo() async {
     try {
@@ -166,14 +165,19 @@ class AirtimePdfService {
               pw.SizedBox(height: 8),
 
               _buildDetailRow('Reference', transaction.transactionReference),
-              _buildDetailRow('Network Provider', transaction.networkProvider.displayName),
-              _buildDetailRow('Phone Number', transaction.displayRecipientNumber),
-              if (transaction.recipientName != null && transaction.recipientName!.isNotEmpty)
+              _buildDetailRow(
+                  'Network Provider', transaction.networkProvider.displayName),
+              _buildDetailRow(
+                  'Phone Number', transaction.displayRecipientNumber),
+              if (transaction.recipientName != null &&
+                  transaction.recipientName!.isNotEmpty)
                 _buildDetailRow('Recipient', transaction.recipientName!),
               _buildDetailRow('Status', transaction.status.displayName),
-              _buildDetailRow('Date', _fullDateTimeFormat.format(transaction.createdAt)),
+              _buildDetailRow(
+                  'Date', _fullDateTimeFormat.format(transaction.createdAt)),
               if (transaction.completedAt != null)
-                _buildDetailRow('Completed', _fullDateTimeFormat.format(transaction.completedAt!)),
+                _buildDetailRow('Completed',
+                    _fullDateTimeFormat.format(transaction.completedAt!)),
 
               pw.SizedBox(height: 16),
 
@@ -186,12 +190,13 @@ class AirtimePdfService {
                 pw.SizedBox(height: 12),
                 pw.Divider(color: const PdfColor.fromInt(0xFFE2E8F0)),
                 pw.SizedBox(height: 8),
-
                 _buildDetailRow('Airtime Amount', '$currencySymbol$amount'),
                 if (transaction.fee != null)
-                  _buildDetailRow('Service Fee', '$currencySymbol${transaction.fee!.toStringAsFixed(2)}'),
+                  _buildDetailRow('Service Fee',
+                      '$currencySymbol${transaction.fee!.toStringAsFixed(2)}'),
                 if (transaction.discount != null && transaction.discount! > 0)
-                  _buildDetailRow('Discount', '-$currencySymbol${transaction.discount!.toStringAsFixed(2)}'),
+                  _buildDetailRow('Discount',
+                      '-$currencySymbol${transaction.discount!.toStringAsFixed(2)}'),
                 pw.Divider(color: const PdfColor.fromInt(0xFFE2E8F0)),
                 _buildDetailRow(
                   'Total Paid',
@@ -243,7 +248,8 @@ class AirtimePdfService {
     );
 
     final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/airtime_receipt_${transaction.transactionReference.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}.pdf');
+    final file = File(
+        '${dir.path}/airtime_receipt_${transaction.transactionReference.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}.pdf');
     await file.writeAsBytes(await pdf.save());
     return file;
   }
@@ -300,7 +306,8 @@ class AirtimePdfService {
     );
   }
 
-  static pw.Widget _buildDetailRow(String label, String value, {bool isBold = false}) {
+  static pw.Widget _buildDetailRow(String label, String value,
+      {bool isBold = false}) {
     return pw.Padding(
       padding: const pw.EdgeInsets.symmetric(vertical: 4),
       child: pw.Row(

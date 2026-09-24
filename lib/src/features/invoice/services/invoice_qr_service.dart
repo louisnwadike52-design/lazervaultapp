@@ -40,4 +40,4 @@ class InvoiceQrService {
     // This would typically point to your web app or payment portal
     return 'https://lazervault.app/invoice/${invoice.id}';
   }
-} 
+}

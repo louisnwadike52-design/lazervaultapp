@@ -143,9 +143,7 @@ class InventoryEnhancedRepositoryGrpcImpl
           options: options,
         );
 
-        return response.suppliers
-            .map((s) => _supplierFromProto(s))
-            .toList();
+        return response.suppliers.map((s) => _supplierFromProto(s)).toList();
       },
     );
   }
@@ -397,12 +395,10 @@ class InventoryEnhancedRepositoryGrpcImpl
       totalAmount: proto.totalAmount.toInt() / 100.0,
       notes: proto.notes,
       reference: proto.reference,
-      expectedDate: proto.hasExpectedDate()
-          ? proto.expectedDate.toDateTime()
-          : null,
-      receivedDate: proto.hasReceivedDate()
-          ? proto.receivedDate.toDateTime()
-          : null,
+      expectedDate:
+          proto.hasExpectedDate() ? proto.expectedDate.toDateTime() : null,
+      receivedDate:
+          proto.hasReceivedDate() ? proto.receivedDate.toDateTime() : null,
       createdAt: proto.createdAt.toDateTime(),
       updatedAt: proto.updatedAt.toDateTime(),
     );

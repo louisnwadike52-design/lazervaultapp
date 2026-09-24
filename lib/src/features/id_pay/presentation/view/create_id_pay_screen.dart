@@ -145,7 +145,8 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
     String? recipientAccountId;
     final manager = serviceLocator<AccountManager>();
     final active = manager.activeAccountDetails;
-    if (active != null && active.currency.toUpperCase() == _selectedCurrency.toUpperCase()) {
+    if (active != null &&
+        active.currency.toUpperCase() == _selectedCurrency.toUpperCase()) {
       recipientAccountId = manager.activeAccountId;
     }
     cubit.createIDPay(

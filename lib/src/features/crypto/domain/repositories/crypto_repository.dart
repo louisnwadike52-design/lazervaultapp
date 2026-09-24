@@ -18,6 +18,7 @@ abstract class CryptoRepository {
   Future<void> addToWatchlist(String watchlistId, String cryptoId);
   Future<void> removeFromWatchlist(String watchlistId, String cryptoId);
   Future<void> deleteWatchlist(String watchlistId);
+
   /// When [unitsOnly] is true, the backend skips per-asset CoinGecko/Quidax
   /// price lookups and returns balances only. Callers should then fan out
   /// parallel [getCryptoFiatRate] calls per held asset to fill in fiat
@@ -45,7 +46,8 @@ abstract class CryptoRepository {
     required String transactionPin,
     String? fiatCurrency,
   });
-  Future<List<CryptoTransaction>> getTransactions({int limit = 50, int offset = 0});
+  Future<List<CryptoTransaction>> getTransactions(
+      {int limit = 50, int offset = 0});
   Future<GlobalMarketData> getGlobalMarketData();
   Future<List<CryptoNews>> getCryptoNews(String cryptoSymbol);
 

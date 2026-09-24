@@ -22,8 +22,7 @@ class _VATScheduleScreenState extends State<VATScheduleScreen> {
   void initState() {
     super.initState();
     final now = DateTime.now();
-    _currentPeriod =
-        '${now.year}-${now.month.toString().padLeft(2, '0')}';
+    _currentPeriod = '${now.year}-${now.month.toString().padLeft(2, '0')}';
     _periodController.text = _currentPeriod;
     _loadSchedule();
   }
@@ -198,7 +197,8 @@ class _VATScheduleScreenState extends State<VATScheduleScreen> {
           SizedBox(height: 24.h),
           _buildSectionHeader('VAT Entries'),
           SizedBox(height: 12.h),
-          ...entries.map((entry) => _buildEntryCard(entry as Map<String, dynamic>)),
+          ...entries
+              .map((entry) => _buildEntryCard(entry as Map<String, dynamic>)),
           SizedBox(height: 20.h),
         ],
       ),

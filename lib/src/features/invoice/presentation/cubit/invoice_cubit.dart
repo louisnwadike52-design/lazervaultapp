@@ -66,7 +66,8 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       // Check if user is authenticated
       if (currentUserId == null) {
         if (isClosed) return;
-        emit(const InvoiceError(message: 'User not authenticated. Please log in.'));
+        emit(const InvoiceError(
+            message: 'User not authenticated. Please log in.'));
         return;
       }
 
@@ -132,7 +133,8 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     try {
       if (currentUserId == null) {
         if (isClosed) return;
-        emit(const InvoiceError(message: 'User not authenticated. Please log in.'));
+        emit(const InvoiceError(
+            message: 'User not authenticated. Please log in.'));
         return;
       }
 
@@ -213,7 +215,8 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       currentFilter = loaded.currentFilter;
       currentPageSize = loaded.pageSize;
     }
-    await loadInvoicesPage(page: page, pageSize: currentPageSize, statusFilter: currentFilter);
+    await loadInvoicesPage(
+        page: page, pageSize: currentPageSize, statusFilter: currentFilter);
   }
 
   /// Navigate to next page
@@ -310,13 +313,17 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(InvoiceError(message: 'Failed to load invoice details: ${e.toString()}'));
+      emit(InvoiceError(
+          message: 'Failed to load invoice details: ${e.toString()}'));
     }
   }
 
   // Pay invoice service fee (required before creating an invoice)
   // NOTE: This method is stubbed out as the backend proto doesn't support this endpoint
-  Future<void> payServiceFee({String? accountId, String? verificationToken, String? transactionId}) async {
+  Future<void> payServiceFee(
+      {String? accountId,
+      String? verificationToken,
+      String? transactionId}) async {
     try {
       if (isClosed) return;
       emit(const InvoiceServiceFeeProcessing());
@@ -382,20 +389,23 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     bool customSplit = false,
   }) async {
     // Store current form state to restore if error occurs
-    final previousFormState = state is InvoiceFormState ? state as InvoiceFormState : null;
+    final previousFormState =
+        state is InvoiceFormState ? state as InvoiceFormState : null;
 
     try {
       // Check if user is authenticated
       if (currentUserId == null) {
         if (isClosed) return;
-        emit(const InvoiceError(message: 'User not authenticated. Please log in.'));
+        emit(const InvoiceError(
+            message: 'User not authenticated. Please log in.'));
         return;
       }
 
       if (isClosed) return;
       emit(InvoiceLoading());
 
-      final subtotal = items.fold<double>(0, (sum, item) => sum + item.totalPrice);
+      final subtotal =
+          items.fold<double>(0, (sum, item) => sum + item.totalPrice);
       final finalTaxAmount = taxAmount ?? 0;
       final finalDiscountAmount = discountAmount ?? 0;
       final totalAmount = subtotal + finalTaxAmount - finalDiscountAmount;
@@ -434,14 +444,17 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         taggedUsers: taggedForCreate,
       );
 
-      final createdInvoice = await repository.createInvoice(invoice, serviceFeeRef: serviceFeeRef);
+      final createdInvoice =
+          await repository.createInvoice(invoice, serviceFeeRef: serviceFeeRef);
       if (isClosed) return;
 
       // Invalidate cache after successful creation
       cacheManager?.invalidatePattern('invoices:');
 
       emit(InvoiceOperationSuccess(
-        message: sendImmediately ? 'Invoice created and sent successfully' : 'Invoice created as draft',
+        message: sendImmediately
+            ? 'Invoice created and sent successfully'
+            : 'Invoice created as draft',
         invoice: createdInvoice,
       ));
       // Reload the list so a new invoice appears without relying on the screen
@@ -452,20 +465,24 @@ class InvoiceCubit extends Cubit<InvoiceState> {
 
       // Check if this is a network error and we can queue for offline retry
       if (_isNetworkError(e) && mutationQueue != null) {
-        print('📴 [InvoiceCubit] Network error detected, queuing invoice creation for offline retry');
+        print(
+            '📴 [InvoiceCubit] Network error detected, queuing invoice creation for offline retry');
         try {
-          final subtotal = items.fold<double>(0, (sum, item) => sum + item.totalPrice);
+          final subtotal =
+              items.fold<double>(0, (sum, item) => sum + item.totalPrice);
           final finalTaxAmount = taxAmount ?? 0;
           final finalDiscountAmount = discountAmount ?? 0;
           final totalAmount = subtotal + finalTaxAmount - finalDiscountAmount;
 
           // Serialize items manually since InvoiceItem may not have toJson
-          final itemsList = items.map((i) => {
-            'description': i.description,
-            'quantity': i.quantity,
-            'unitPrice': i.unitPrice,
-            'totalPrice': i.totalPrice,
-          }).toList();
+          final itemsList = items
+              .map((i) => {
+                    'description': i.description,
+                    'quantity': i.quantity,
+                    'unitPrice': i.unitPrice,
+                    'totalPrice': i.totalPrice,
+                  })
+              .toList();
 
           final mutation = await mutationQueue!.enqueue(QueuedMutation.create(
             type: MutationType.invoiceCreation,
@@ -489,12 +506,14 @@ class InvoiceCubit extends Cubit<InvoiceState> {
             title: title,
             totalAmount: totalAmount,
             currency: currency,
-            message: 'Invoice creation queued. Will retry when you\'re back online.',
+            message:
+                'Invoice creation queued. Will retry when you\'re back online.',
             mutationId: mutation?.id,
           ));
           return;
         } catch (queueError) {
-          print('❌ [InvoiceCubit] Failed to queue invoice creation: $queueError');
+          print(
+              '❌ [InvoiceCubit] Failed to queue invoice creation: $queueError');
           // Fall through to emit regular error
         }
       }
@@ -510,7 +529,8 @@ class InvoiceCubit extends Cubit<InvoiceState> {
   // Update existing invoice
   Future<void> updateInvoice(Invoice invoice) async {
     // Store current form state to restore if error occurs
-    final previousFormState = state is InvoiceFormState ? state as InvoiceFormState : null;
+    final previousFormState =
+        state is InvoiceFormState ? state as InvoiceFormState : null;
 
     try {
       if (isClosed) return;
@@ -544,7 +564,8 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     try {
       await repository.sendInvoiceReminder(invoiceId);
       if (isClosed) return;
-      emit(const InvoiceOperationSuccess(message: 'Reminder sent to unpaid payers'));
+      emit(const InvoiceOperationSuccess(
+          message: 'Reminder sent to unpaid payers'));
     } catch (e) {
       if (isClosed) return;
       emit(InvoiceError(message: 'Failed to send reminder: ${e.toString()}'));
@@ -570,7 +591,8 @@ class InvoiceCubit extends Cubit<InvoiceState> {
   }
 
   // Mark invoice as paid (with offline queue support)
-  Future<void> markAsPaid(String invoiceId, PaymentMethod paymentMethod, [String? reference, String? pin, String? verificationToken]) async {
+  Future<void> markAsPaid(String invoiceId, PaymentMethod paymentMethod,
+      [String? reference, String? pin, String? verificationToken]) async {
     try {
       if (isClosed) return;
       emit(InvoicePaymentProcessing(invoiceId: invoiceId));
@@ -601,21 +623,27 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       // NEVER queue payments offline - security tokens expire, balances change
       if (_isNetworkError(e)) {
         emit(const InvoiceError(
-          message: 'No internet connection. Please check your network and try again.',
+          message:
+              'No internet connection. Please check your network and try again.',
         ));
       } else {
-        emit(InvoiceError(message: 'Failed to mark invoice as paid: ${e.toString()}'));
+        emit(InvoiceError(
+            message: 'Failed to mark invoice as paid: ${e.toString()}'));
       }
     }
   }
 
   // Unlock invoice (pay service fee)
-  Future<void> unlockInvoice(String invoiceId, {String? accountId, String? verificationToken, String? transactionId}) async {
+  Future<void> unlockInvoice(String invoiceId,
+      {String? accountId,
+      String? verificationToken,
+      String? transactionId}) async {
     try {
       if (isClosed) return;
       emit(InvoiceUnlockProcessing(invoiceId: invoiceId));
 
-      final idempotencyKey = 'unlock-$invoiceId-${const Uuid().v4().substring(0, 8)}';
+      final idempotencyKey =
+          'unlock-$invoiceId-${const Uuid().v4().substring(0, 8)}';
       final invoice = await repository.unlockInvoice(
         invoiceId,
         accountId: accountId,
@@ -682,7 +710,8 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(InvoiceError(message: 'Failed to generate QR code: ${e.toString()}'));
+      emit(
+          InvoiceError(message: 'Failed to generate QR code: ${e.toString()}'));
     }
   }
 
@@ -727,7 +756,8 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       emit(InvoicesLoaded(invoices: invoices));
     } catch (e) {
       if (isClosed) return;
-      emit(InvoiceError(message: 'Failed to load overdue invoices: ${e.toString()}'));
+      emit(InvoiceError(
+          message: 'Failed to load overdue invoices: ${e.toString()}'));
     }
   }
 
@@ -737,7 +767,8 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       if (isClosed) return;
       emit(InvoiceLoading());
 
-      final result = await repository.tagUsersToInvoice(invoiceId, userIds, [], []);
+      final result =
+          await repository.tagUsersToInvoice(invoiceId, userIds, [], []);
       if (isClosed) return;
 
       emit(InvoiceOperationSuccess(
@@ -799,14 +830,16 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     try {
       if (currentUserId == null) {
         if (isClosed) return;
-        emit(const InvoiceError(message: 'User not authenticated. Please log in.'));
+        emit(const InvoiceError(
+            message: 'User not authenticated. Please log in.'));
         return;
       }
 
       if (isClosed) return;
       emit(InvoiceLoading());
 
-      final subtotal = items.fold<double>(0, (sum, item) => sum + item.totalPrice);
+      final subtotal =
+          items.fold<double>(0, (sum, item) => sum + item.totalPrice);
       final finalTaxAmount = taxAmount ?? 0;
       final finalDiscountAmount = discountAmount ?? 0;
       final totalAmount = subtotal + finalTaxAmount - finalDiscountAmount;
@@ -852,7 +885,8 @@ class InvoiceCubit extends Cubit<InvoiceState> {
           taggedUserIds.isNotEmpty &&
           createdInvoice.id.isNotEmpty) {
         try {
-          await repository.tagUsersToInvoice(createdInvoice.id, taggedUserIds, [], []);
+          await repository
+              .tagUsersToInvoice(createdInvoice.id, taggedUserIds, [], []);
         } catch (e) {
           // Tagging failed but invoice was created - notify but don't fail
           print('Warning: Failed to tag users: $e');
@@ -861,7 +895,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
 
       if (isClosed) return;
       emit(InvoiceOperationSuccess(
-        message: sendImmediately ? 'Invoice created and sent successfully' : 'Invoice created as draft',
+        message: sendImmediately
+            ? 'Invoice created and sent successfully'
+            : 'Invoice created as draft',
         invoice: createdInvoice,
       ));
     } catch (e) {
@@ -924,7 +960,8 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     if (isClosed) return;
     if (state is InvoiceFormState) {
       final currentState = state as InvoiceFormState;
-      final updatedItems = currentState.items.where((item) => item.id != itemId).toList();
+      final updatedItems =
+          currentState.items.where((item) => item.id != itemId).toList();
       emit(currentState.copyWith(
         items: updatedItems,
         isValid: updatedItems.isNotEmpty,
@@ -972,4 +1009,4 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       isValid: false,
     ));
   }
-} 
+}

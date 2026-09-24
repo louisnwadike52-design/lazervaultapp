@@ -18,7 +18,8 @@ class EmailVerificationInProgress extends EmailVerificationState {
   final bool isResending;
   final String errorMessage;
   final String successMessage;
-  final int? cooldownSeconds;  // Seconds to wait before next resend (from backend)
+  final int?
+      cooldownSeconds; // Seconds to wait before next resend (from backend)
 
   const EmailVerificationInProgress({
     this.verificationCode = '',

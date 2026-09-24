@@ -54,10 +54,9 @@ class _AutoSaveSearchBarState extends State<AutoSaveSearchBar> {
         style: TextStyle(color: Colors.white, fontSize: 14.sp),
         decoration: InputDecoration(
           hintText: 'Search rules...',
-          hintStyle:
-              TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
-          prefixIcon: Icon(Icons.search,
-              color: const Color(0xFF9CA3AF), size: 20.sp),
+          hintStyle: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+          prefixIcon:
+              Icon(Icons.search, color: const Color(0xFF9CA3AF), size: 20.sp),
           suffixIcon: _controller.text.isNotEmpty
               ? IconButton(
                   icon: Icon(Icons.clear,

@@ -12,7 +12,8 @@ class ManageTradingSessionsUseCase {
     return await repository.getCurrentTradingSession();
   }
 
-  Future<Either<Failure, TradingSession>> startSession(double startingBalance) async {
+  Future<Either<Failure, TradingSession>> startSession(
+      double startingBalance) async {
     return await repository.startTradingSession(startingBalance);
   }
 
@@ -23,4 +24,4 @@ class ManageTradingSessionsUseCase {
   Future<Either<Failure, List<TradingSession>>> getSessionHistory() async {
     return await repository.getTradingSessionHistory();
   }
-} 
+}

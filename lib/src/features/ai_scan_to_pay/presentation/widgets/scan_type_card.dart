@@ -61,8 +61,10 @@ class _ScanTypeCardState extends State<ScanTypeCard> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
-                    const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                    const Color.fromARGB(255, 78, 3, 208)
+                        .withValues(alpha: 0.2),
+                    const Color.fromARGB(255, 78, 3, 208)
+                        .withValues(alpha: 0.1),
                   ],
                 ),
                 shape: BoxShape.circle,
@@ -127,4 +129,4 @@ class _ScanTypeCardState extends State<ScanTypeCard> {
         return Icons.account_balance_wallet;
     }
   }
-} 
+}

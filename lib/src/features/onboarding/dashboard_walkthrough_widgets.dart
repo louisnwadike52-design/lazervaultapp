@@ -20,7 +20,8 @@ class _CoachCard extends StatelessWidget {
 
   // Purplish theme.
   static const _card = Color(0xFF1E1533); // dark purple-tinted card
-  static const _accent = Color(0xFF8B5CF6); // vivid purple — pointer/border/step
+  static const _accent =
+      Color(0xFF8B5CF6); // vivid purple — pointer/border/step
   static const _button = Color(0xFF6F42C1); // Next button
   static const _textSecondary = Color(0xFFB8A9DC); // soft lavender-grey
 
@@ -49,17 +50,22 @@ class _CoachCard extends StatelessWidget {
     // Arrange [beak · card] so the beak sits on the target-facing edge.
     switch (_pointDirection) {
       case AxisDirection.up:
-        return _wrap(Column(mainAxisSize: MainAxisSize.min, children: [beak, card]));
+        return _wrap(
+            Column(mainAxisSize: MainAxisSize.min, children: [beak, card]));
       case AxisDirection.down:
-        return _wrap(Column(mainAxisSize: MainAxisSize.min, children: [card, beak]));
+        return _wrap(
+            Column(mainAxisSize: MainAxisSize.min, children: [card, beak]));
       case AxisDirection.left:
-        return _wrap(Row(mainAxisSize: MainAxisSize.min, children: [beak, card]));
+        return _wrap(
+            Row(mainAxisSize: MainAxisSize.min, children: [beak, card]));
       case AxisDirection.right:
-        return _wrap(Row(mainAxisSize: MainAxisSize.min, children: [card, beak]));
+        return _wrap(
+            Row(mainAxisSize: MainAxisSize.min, children: [card, beak]));
     }
   }
 
-  Widget _wrap(Widget child) => Material(color: Colors.transparent, child: child);
+  Widget _wrap(Widget child) =>
+      Material(color: Colors.transparent, child: child);
 
   Widget _buildCard() {
     return Container(

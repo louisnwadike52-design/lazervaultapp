@@ -115,8 +115,7 @@ class _MyClaimsScreenState extends State<MyClaimsScreen>
       case 3: // Settled (or paid — providers use both terms)
         return all
             .where((c) =>
-                c.status == ClaimStatus.settled ||
-                c.status == ClaimStatus.paid)
+                c.status == ClaimStatus.settled || c.status == ClaimStatus.paid)
             .toList();
       case 4: // Rejected (or offer rejected)
         return all
@@ -155,7 +154,8 @@ class _MyClaimsScreenState extends State<MyClaimsScreen>
           indicatorWeight: 3,
           labelColor: Colors.white,
           unselectedLabelColor: const Color(0xFF9CA3AF),
-          labelStyle: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600),
+          labelStyle:
+              GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600),
           unselectedLabelStyle:
               GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w500),
           tabAlignment: TabAlignment.start,
@@ -175,53 +175,53 @@ class _MyClaimsScreenState extends State<MyClaimsScreen>
           }
         },
         child: BlocBuilder<MyClaimsCubit, MyClaimsState>(
-        builder: (context, state) {
-          if (state is MyClaimsLoading) {
-            return const Center(
-              child: LazerVaultLoader.small(),
-            );
-          }
-          if (state is MyClaimsError) {
-            return _buildErrorState(state.message);
-          }
-          if (state is MyClaimsLoaded) {
-            return TabBarView(
-              controller: _tabController,
-              children: List.generate(_tabs.length, (idx) {
-                final filtered = _filterByTab(state.claims, idx);
-                if (filtered.isEmpty) return _buildEmptyTab(_tabs[idx]);
-                // Show a footer spinner row when another page is in
-                // flight or when there's more to fetch. The cubit
-                // emits isLoadingMore=true synchronously inside
-                // loadMore(), so the spinner appears the moment the
-                // scroll handler fires.
-                final showFooter = state.hasMore || state.isLoadingMore;
-                final itemCount = filtered.length + (showFooter ? 1 : 0);
-                return RefreshIndicator(
-                  onRefresh: () async => context.read<MyClaimsCubit>().load(
-                        status: state.statusFilter,
-                      ),
-                  color: const Color(0xFF6366F1),
-                  backgroundColor: const Color(0xFF1F1F1F),
-                  child: ListView.separated(
-                    controller: _scrollControllers[idx],
-                    padding: EdgeInsets.all(16.w),
-                    itemCount: itemCount,
-                    separatorBuilder: (_, __) => SizedBox(height: 10.h),
-                    itemBuilder: (_, i) {
-                      if (i >= filtered.length) {
-                        return _buildLoadMoreFooter(state.isLoadingMore);
-                      }
-                      return _buildClaimTile(filtered[i]);
-                    },
-                  ),
-                );
-              }),
-            );
-          }
-          return _buildEmptyTab('All');
-        },
-      ),
+          builder: (context, state) {
+            if (state is MyClaimsLoading) {
+              return const Center(
+                child: LazerVaultLoader.small(),
+              );
+            }
+            if (state is MyClaimsError) {
+              return _buildErrorState(state.message);
+            }
+            if (state is MyClaimsLoaded) {
+              return TabBarView(
+                controller: _tabController,
+                children: List.generate(_tabs.length, (idx) {
+                  final filtered = _filterByTab(state.claims, idx);
+                  if (filtered.isEmpty) return _buildEmptyTab(_tabs[idx]);
+                  // Show a footer spinner row when another page is in
+                  // flight or when there's more to fetch. The cubit
+                  // emits isLoadingMore=true synchronously inside
+                  // loadMore(), so the spinner appears the moment the
+                  // scroll handler fires.
+                  final showFooter = state.hasMore || state.isLoadingMore;
+                  final itemCount = filtered.length + (showFooter ? 1 : 0);
+                  return RefreshIndicator(
+                    onRefresh: () async => context.read<MyClaimsCubit>().load(
+                          status: state.statusFilter,
+                        ),
+                    color: const Color(0xFF6366F1),
+                    backgroundColor: const Color(0xFF1F1F1F),
+                    child: ListView.separated(
+                      controller: _scrollControllers[idx],
+                      padding: EdgeInsets.all(16.w),
+                      itemCount: itemCount,
+                      separatorBuilder: (_, __) => SizedBox(height: 10.h),
+                      itemBuilder: (_, i) {
+                        if (i >= filtered.length) {
+                          return _buildLoadMoreFooter(state.isLoadingMore);
+                        }
+                        return _buildClaimTile(filtered[i]);
+                      },
+                    ),
+                  );
+                }),
+              );
+            }
+            return _buildEmptyTab('All');
+          },
+        ),
       ),
     );
   }
@@ -233,10 +233,13 @@ class _MyClaimsScreenState extends State<MyClaimsScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_off_outlined, size: 48.sp, color: const Color(0xFFEF4444)),
+            Icon(Icons.cloud_off_outlined,
+                size: 48.sp, color: const Color(0xFFEF4444)),
             SizedBox(height: 12.h),
-            Text(msg, textAlign: TextAlign.center,
-                style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
+            Text(msg,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                    fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
             SizedBox(height: 16.h),
             GestureDetector(
               onTap: () => context.read<MyClaimsCubit>().load(),
@@ -285,7 +288,9 @@ class _MyClaimsScreenState extends State<MyClaimsScreen>
                 size: 48.sp, color: const Color(0xFF9CA3AF)),
             SizedBox(height: 12.h),
             Text(
-              tabName == 'All' ? "You haven't filed any claims yet" : 'No ${tabName.toLowerCase()} claims',
+              tabName == 'All'
+                  ? "You haven't filed any claims yet"
+                  : 'No ${tabName.toLowerCase()} claims',
               style: GoogleFonts.inter(
                 fontSize: 15.sp,
                 fontWeight: FontWeight.w600,
@@ -332,7 +337,8 @@ class _MyClaimsScreenState extends State<MyClaimsScreen>
         child: Row(
           children: [
             Container(
-              width: 42.w, height: 42.w,
+              width: 42.w,
+              height: 42.w,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10.r),
@@ -344,13 +350,17 @@ class _MyClaimsScreenState extends State<MyClaimsScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(claim.title.isNotEmpty ? claim.title : 'Claim #${claim.claimNumber}',
+                  Text(
+                      claim.title.isNotEmpty
+                          ? claim.title
+                          : 'Claim #${claim.claimNumber}',
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
                   SizedBox(height: 4.h),
                   Text(
                     'Policy ${claim.policyNumber} • ${DateFormat('dd MMM yyyy').format(claim.incidentDate)}',
@@ -361,7 +371,9 @@ class _MyClaimsScreenState extends State<MyClaimsScreen>
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    NumberFormat.currency(locale: 'en_NG', symbol: '₦', decimalDigits: 2).format(claim.claimAmount),
+                    NumberFormat.currency(
+                            locale: 'en_NG', symbol: '₦', decimalDigits: 2)
+                        .format(claim.claimAmount),
                     style: GoogleFonts.inter(
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w600,

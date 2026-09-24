@@ -29,13 +29,15 @@ class TransferProof extends StatelessWidget {
     final metadata = <String, dynamic>{};
 
     // Transfer-specific fields
-    if (fee > 0) metadata['Fee'] = '${_currencySymbol(currency)}${fee.toStringAsFixed(2)}';
+    if (fee > 0)
+      metadata['Fee'] = '${_currencySymbol(currency)}${fee.toStringAsFixed(2)}';
 
     // Beneficiary details - separate rows
     if (recipientName.isNotEmpty) {
       metadata['Beneficiary Name'] = recipientName;
     }
-    final recipientAccount = transferDetails['recipientAccountMasked']?.toString();
+    final recipientAccount =
+        transferDetails['recipientAccountMasked']?.toString();
     if (recipientAccount != null && recipientAccount.isNotEmpty) {
       metadata['Beneficiary Account'] = recipientAccount;
     }
@@ -45,9 +47,11 @@ class TransferProof extends StatelessWidget {
     }
 
     // Source account (from account) - combine info and name if available
-    final sourceAccountInfo = transferDetails['sourceAccountInfo']?.toString() ?? '';
+    final sourceAccountInfo =
+        transferDetails['sourceAccountInfo']?.toString() ?? '';
     if (sourceAccountInfo.isNotEmpty) {
-      final sourceAccountName = transferDetails['sourceAccountName']?.toString();
+      final sourceAccountName =
+          transferDetails['sourceAccountName']?.toString();
       if (sourceAccountName != null && sourceAccountName.isNotEmpty) {
         metadata['From'] = '$sourceAccountName ($sourceAccountInfo)';
       } else {
@@ -96,11 +100,16 @@ class TransferProof extends StatelessWidget {
 
   String _currencySymbol(String currency) {
     switch (currency.toUpperCase()) {
-      case 'NGN': return '\u20a6';
-      case 'GBP': return '\u00a3';
-      case 'EUR': return '\u20ac';
-      case 'USD': return '\$';
-      default: return '\u20a6';
+      case 'NGN':
+        return '\u20a6';
+      case 'GBP':
+        return '\u00a3';
+      case 'EUR':
+        return '\u20ac';
+      case 'USD':
+        return '\$';
+      default:
+        return '\u20a6';
     }
   }
 }

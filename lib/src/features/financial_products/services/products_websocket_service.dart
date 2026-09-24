@@ -62,7 +62,8 @@ class ProductsWebSocketService {
   http.Client? _httpClient;
   StreamSubscription? _sseSubscription;
   final _eventController = StreamController<ProductsStatusEvent>.broadcast();
-  final _connectionController = StreamController<ProductsWebSocketConnectionState>.broadcast();
+  final _connectionController =
+      StreamController<ProductsWebSocketConnectionState>.broadcast();
   Timer? _pingTimer;
   bool _isConnected = false;
   bool _useSSE = false;
@@ -76,7 +77,8 @@ class ProductsWebSocketService {
   Stream<ProductsStatusEvent> get productsUpdates => _eventController.stream;
 
   /// Stream of connection state changes
-  Stream<ProductsWebSocketConnectionState> get connectionState => _connectionController.stream;
+  Stream<ProductsWebSocketConnectionState> get connectionState =>
+      _connectionController.stream;
 
   /// Check if currently connected
   bool get isConnected => _isConnected;
@@ -207,7 +209,8 @@ class ProductsWebSocketService {
     final response = await _httpClient!.send(request);
 
     if (response.statusCode != 200) {
-      throw Exception('SSE connection failed with status ${response.statusCode}');
+      throw Exception(
+          'SSE connection failed with status ${response.statusCode}');
     }
 
     _isConnected = true;
@@ -217,11 +220,11 @@ class ProductsWebSocketService {
         .transform(utf8.decoder)
         .transform(const LineSplitter())
         .listen(
-      _handleSSELine,
-      onError: _handleError,
-      onDone: _handleDone,
-      cancelOnError: false,
-    );
+          _handleSSELine,
+          onError: _handleError,
+          onDone: _handleDone,
+          cancelOnError: false,
+        );
 
     print('ProductsWebSocketService: SSE connected successfully');
   }
@@ -313,7 +316,8 @@ class ProductsWebSocketService {
       final eventType = data['event_type'] as String?;
       if (eventType != null) {
         final event = ProductsStatusEvent.fromJson(data);
-        print('ProductsWebSocketService: Received products update (legacy) - $event');
+        print(
+            'ProductsWebSocketService: Received products update (legacy) - $event');
         _eventController.add(event);
       }
     } catch (e) {

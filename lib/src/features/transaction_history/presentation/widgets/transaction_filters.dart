@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
 part 'transaction_filters_widgets.dart';
 
-
 /// Horizontal filter bar with individual per-category chips.
 /// Each chip (Date, Status, Category, Type) opens its own bottom sheet.
 class TransactionFilterBar extends StatelessWidget {
@@ -26,13 +25,17 @@ class TransactionFilterBar extends StatelessWidget {
       activeFilters?.statuses != null && activeFilters!.statuses!.isNotEmpty;
 
   bool get _hasCategoryFilter =>
-      activeFilters?.serviceTypes != null && activeFilters!.serviceTypes!.isNotEmpty;
+      activeFilters?.serviceTypes != null &&
+      activeFilters!.serviceTypes!.isNotEmpty;
 
   bool get _hasTypeFilter =>
       activeFilters?.flows != null && activeFilters!.flows!.isNotEmpty;
 
   bool get _hasAnyFilter =>
-      _hasDateFilter || _hasStatusFilter || _hasCategoryFilter || _hasTypeFilter;
+      _hasDateFilter ||
+      _hasStatusFilter ||
+      _hasCategoryFilter ||
+      _hasTypeFilter;
 
   String _dateLabel() {
     if (!_hasDateFilter) return 'Date';
@@ -257,7 +260,8 @@ class TransactionFilterBar extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isActive ? const Color(0xFF581CD9) : const Color(0xFF8E8E93),
+              color:
+                  isActive ? const Color(0xFF581CD9) : const Color(0xFF8E8E93),
               size: icon == Icons.circle ? 8.sp : 14.sp,
             ),
             SizedBox(width: 6.w),

@@ -123,7 +123,8 @@ class _ContactDetailScreenState extends State<ContactDetailScreen> {
                     cubit: context.read<ContactCubit>(), existing: c),
               ),
               IconButton(
-                icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
+                icon:
+                    const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
                 onPressed: () => _confirmDelete(c),
               ),
             ],
@@ -197,8 +198,8 @@ class _ContactDetailScreenState extends State<ContactDetailScreen> {
     if (rows.isEmpty) return const SizedBox.shrink();
     return Container(
       padding: EdgeInsets.all(14.w),
-      decoration:
-          BoxDecoration(color: _card, borderRadius: BorderRadius.circular(12.r)),
+      decoration: BoxDecoration(
+          color: _card, borderRadius: BorderRadius.circular(12.r)),
       child: Column(
         children: [
           for (final (icon, text) in rows)
@@ -251,8 +252,7 @@ class _ContactDetailScreenState extends State<ContactDetailScreen> {
                 style: GoogleFonts.inter(
                   color: t.isCompleted ? _muted : Colors.white,
                   fontSize: 13.5.sp,
-                  decoration:
-                      t.isCompleted ? TextDecoration.lineThrough : null,
+                  decoration: t.isCompleted ? TextDecoration.lineThrough : null,
                 ),
               ),
             ),
@@ -330,7 +330,8 @@ class _ContactDetailScreenState extends State<ContactDetailScreen> {
       isScrollControlled: true,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheet) => Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          padding:
+              EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
           child: Container(
             decoration: BoxDecoration(
               color: _card,
@@ -357,8 +358,8 @@ class _ContactDetailScreenState extends State<ContactDetailScreen> {
                         onSelected: (_) => setSheet(() => type = t),
                         selectedColor: _purple,
                         backgroundColor: const Color(0xFF2D2D2D),
-                        labelStyle: TextStyle(
-                            color: type == t ? Colors.white : _muted),
+                        labelStyle:
+                            TextStyle(color: type == t ? Colors.white : _muted),
                       ),
                   ],
                 ),
@@ -382,8 +383,7 @@ class _ContactDetailScreenState extends State<ContactDetailScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    style:
-                        ElevatedButton.styleFrom(backgroundColor: _purple),
+                    style: ElevatedButton.styleFrom(backgroundColor: _purple),
                     onPressed: () {
                       context.read<ContactCubit>().logInteraction(
                             c.id,
@@ -411,8 +411,8 @@ class _ContactDetailScreenState extends State<ContactDetailScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: _card,
-        title: const Text('Delete contact',
-            style: TextStyle(color: Colors.white)),
+        title:
+            const Text('Delete contact', style: TextStyle(color: Colors.white)),
         content: Text('Delete "${c.name}"?',
             style: const TextStyle(color: Color(0xFFD1D5DB))),
         actions: [
@@ -427,8 +427,7 @@ class _ContactDetailScreenState extends State<ContactDetailScreen> {
               context.read<ContactCubit>().deleteContact(c.id);
               Navigator.pop(ctx);
             },
-            child:
-                const Text('Delete', style: TextStyle(color: Colors.white)),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

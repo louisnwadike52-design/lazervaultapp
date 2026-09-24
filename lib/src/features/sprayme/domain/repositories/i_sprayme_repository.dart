@@ -22,7 +22,8 @@ abstract class ISprayMeRepository {
   Future<SpraySession> joinSession(String sessionCode);
   Future<void> leaveSession(String sessionId);
   Future<SpraySession> endSession(String sessionId);
-  Future<List<SpraySession>> getMySessions({String filter = 'all', int page = 1, int pageSize = 20});
+  Future<List<SpraySession>> getMySessions(
+      {String filter = 'all', int page = 1, int pageSize = 20});
 
   // ─── Session invites (tagging people in) ─────────────────────
 
@@ -43,7 +44,10 @@ abstract class ISprayMeRepository {
 
   // Wallet
   Future<SprayWallet> getWallet();
-  Future<SprayWallet> fundWallet({required int amount, required String sourceAccountId, required String verificationToken});
+  Future<SprayWallet> fundWallet(
+      {required int amount,
+      required String sourceAccountId,
+      required String verificationToken});
   Future<SprayWallet> buyGiftCredit({
     required List<Map<String, dynamic>> items,
     required String sourceAccountId,
@@ -52,11 +56,18 @@ abstract class ISprayMeRepository {
     String sessionId,
     String currency,
   });
-  Future<SprayWallet> withdrawFromWallet({required int amount, required String destinationAccountId, required String verificationToken});
+  Future<SprayWallet> withdrawFromWallet(
+      {required int amount,
+      required String destinationAccountId,
+      required String verificationToken});
 
   // Actions
-  Future<SprayActionResult> sendGift({required String sessionId, required String giftId, int quantity = 1});
-  Future<SprayActionResult> sprayMoney({required String sessionId, required int denomination, required int tapCount});
+  Future<SprayActionResult> sendGift(
+      {required String sessionId, required String giftId, int quantity = 1});
+  Future<SprayActionResult> sprayMoney(
+      {required String sessionId,
+      required int denomination,
+      required int tapCount});
   Future<({int totalLikes, int totalLikeTaps, int liveLikeTaps})> sendLike(
       String sessionId,
       {int count});
@@ -69,27 +80,34 @@ abstract class ISprayMeRepository {
   Future<MySprayStats> getMySprayStats({String period = 'all'});
 
   // History
-  Future<List<SprayTransaction>> getSessionTransactions(String sessionId, {int page = 1, int pageSize = 20});
-  Future<List<SprayTransaction>> getMyTransactions({String type = 'all', int page = 1, int pageSize = 20});
+  Future<List<SprayTransaction>> getSessionTransactions(String sessionId,
+      {int page = 1, int pageSize = 20});
+  Future<List<SprayTransaction>> getMyTransactions(
+      {String type = 'all', int page = 1, int pageSize = 20});
 
   // Participants
   Future<List<SessionParticipant>> getSessionParticipants(String sessionId);
 
   // Comments
-  Future<SprayComment> addComment({required String sessionId, required String text});
-  Future<List<SprayComment>> getComments(String sessionId, {int page = 1, int pageSize = 50});
+  Future<SprayComment> addComment(
+      {required String sessionId, required String text});
+  Future<List<SprayComment>> getComments(String sessionId,
+      {int page = 1, int pageSize = 50});
 
   // Live video streaming
-  Future<Map<String, dynamic>> startStream(String sessionId, {bool recordingEnabled = false});
+  Future<Map<String, dynamic>> startStream(String sessionId,
+      {bool recordingEnabled = false});
   Future<SpraySession> stopStream(String sessionId);
   Future<void> pauseStream(String sessionId);
   Future<void> resumeStream(String sessionId);
   Future<Map<String, dynamic>> getStreamToken(String sessionId);
-  Future<void> inviteCoHost(String sessionId, {required String userId, String userName = ''});
+  Future<void> inviteCoHost(String sessionId,
+      {required String userId, String userName = ''});
   Future<void> revokeCoHost(String sessionId, {required String userId});
   // Guest "boxes"
   Future<void> requestSeat(String sessionId);
-  Future<void> approveSeat(String sessionId, {required String userId, String userName});
+  Future<void> approveSeat(String sessionId,
+      {required String userId, String userName});
   Future<void> declineSeat(String sessionId, {required String userId});
   Future<void> leaveSeat(String sessionId);
   Future<void> removeFromSeat(String sessionId, {required String userId});

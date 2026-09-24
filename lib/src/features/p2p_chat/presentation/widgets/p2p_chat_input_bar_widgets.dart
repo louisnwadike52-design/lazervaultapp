@@ -64,8 +64,8 @@ class _ImageCaptionPreviewState extends State<_ImageCaptionPreview> {
                             color: const Color(0xFF9CA3AF), fontSize: 14.sp),
                         filled: true,
                         fillColor: const Color(0xFF1F1F1F),
-                        contentPadding:
-                            EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                        contentPadding: EdgeInsets.symmetric(
+                            horizontal: 14.w, vertical: 10.h),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(24.r),
                           borderSide: BorderSide.none,

@@ -8,4 +8,4 @@ class PricePoint {
     required this.price,
     this.volume,
   });
-} 
+}

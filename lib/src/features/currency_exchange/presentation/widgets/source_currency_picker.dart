@@ -261,8 +261,7 @@ class _SourceCurrencyPickerSheetState
     final flag = _flagFor(w.country);
     final isSelected = w.code == widget.currentCode.toUpperCase();
     final symbol = CurrencySymbols.getSymbol(w.code);
-    final balanceText =
-        '$symbol${w.balanceMajor.toStringAsFixed(2)} ${w.code}';
+    final balanceText = '$symbol${w.balanceMajor.toStringAsFixed(2)} ${w.code}';
 
     if (!w.hasBalance) {
       return ListTile(
@@ -325,8 +324,7 @@ class _SourceCurrencyPickerSheetState
           if (isSelected)
             const Padding(
               padding: EdgeInsets.only(top: 2),
-              child:
-                  Icon(Icons.check_circle, color: _primary, size: 16),
+              child: Icon(Icons.check_circle, color: _primary, size: 16),
             ),
         ],
       ),
@@ -426,8 +424,6 @@ class _SourceCurrencyPickerSheetState
   String _flagFor(String countryCode) {
     final code = countryCode.toUpperCase();
     if (code.length != 2) return '';
-    return code.codeUnits
-        .map((c) => String.fromCharCode(c + 127397))
-        .join();
+    return code.codeUnits.map((c) => String.fromCharCode(c + 127397)).join();
   }
 }

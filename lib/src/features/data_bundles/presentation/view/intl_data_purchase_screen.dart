@@ -11,7 +11,6 @@ import '../cubit/intl_data_cubit.dart';
 import 'intl_data_checkout_screen.dart';
 part 'intl_data_purchase_screen_widgets.dart';
 
-
 /// Screen 1 of the international data purchase flow.
 /// Country picker -> Operator picker -> Bundle grid.
 /// When a bundle is tapped, navigates to [IntlDataCheckoutScreen].
@@ -223,9 +222,7 @@ class IntlDataPurchaseScreen extends StatelessWidget {
           color: _card,
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: selected
-                ? _primary
-                : Colors.white.withValues(alpha: 0.05),
+            color: selected ? _primary : Colors.white.withValues(alpha: 0.05),
             width: selected ? 1.5 : 1,
           ),
         ),
@@ -238,8 +235,8 @@ class IntlDataPurchaseScreen extends StatelessWidget {
                 color: _primary.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10.r),
               ),
-              child: Icon(Icons.signal_cellular_alt,
-                  color: _primary, size: 18.sp),
+              child:
+                  Icon(Icons.signal_cellular_alt, color: _primary, size: 18.sp),
             ),
             SizedBox(width: 12.w),
             Expanded(
@@ -253,7 +250,8 @@ class IntlDataPurchaseScreen extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       )),
                   SizedBox(height: 2.h),
-                  Text('${op.bundleCount} bundles \u2022 ${op.destCurrencyCode}',
+                  Text(
+                      '${op.bundleCount} bundles \u2022 ${op.destCurrencyCode}',
                       style: TextStyle(color: _text2, fontSize: 11.sp)),
                 ],
               ),
@@ -272,8 +270,7 @@ class IntlDataPurchaseScreen extends StatelessWidget {
     if (state.bundles.isEmpty) return _pill('No bundles available.');
 
     // Resolve the country spec for navigation args.
-    final country =
-        IntlDataCountry.byCode(state.selectedCountryCode);
+    final country = IntlDataCountry.byCode(state.selectedCountryCode);
 
     return GridView.builder(
       shrinkWrap: true,
@@ -354,8 +351,8 @@ class IntlDataPurchaseScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFFEF4444).withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10.r),
-          border: Border.all(
-              color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+          border:
+              Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
         ),
         child: Text(s,
             style: TextStyle(color: const Color(0xFFEF4444), fontSize: 12.sp)),

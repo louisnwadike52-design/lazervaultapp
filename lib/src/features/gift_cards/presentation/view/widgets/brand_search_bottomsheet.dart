@@ -66,8 +66,7 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet> {
         final lowercaseQuery = query.toLowerCase();
         setState(() {
           _filteredBrands = _allBrands.where((brand) {
-            final nameMatch =
-                brand.name.toLowerCase().contains(lowercaseQuery);
+            final nameMatch = brand.name.toLowerCase().contains(lowercaseQuery);
             final descMatch =
                 brand.description.toLowerCase().contains(lowercaseQuery);
             final categoryMatch = _selectedCategory == null ||
@@ -92,64 +91,64 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet> {
     // keyboard — the global dismiss in main.dart can't reach inside a modal
     // sheet's opaque surface.
     return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Container(
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-      child: BlocListener<GiftCardCubit, GiftCardState>(
-        listener: (context, state) {
-          if (state is GiftCardBrandsLoaded) {
-            setState(() {
-              _allBrands = state.brands;
-              // Now that the chips are derived from the catalogue, a country
-              // change can retire the selected one. Holding on to it would
-              // filter the new country's brands by a category it does not
-              // have — an empty grid under a chip that is no longer on screen,
-              // with nothing to tap to escape it.
-              if (_selectedCategory != null &&
-                  !state.brands.any((b) =>
-                      b.category.trim().toLowerCase() ==
-                      _selectedCategory!.trim().toLowerCase())) {
-                _selectedCategory = null;
-              }
-              _filteredBrands = _selectedCategory == null
-                  ? state.brands
-                  : state.brands
-                      .where((b) => b.category == _selectedCategory)
-                      .toList();
-            });
-          } else if (state is GiftCardBrandsSearched) {
-            setState(() {
-              _filteredBrands = state.brands;
-            });
-          }
-        },
-        child: Column(
-          children: [
-            _buildHandle(),
-            _buildHeader(),
-            _buildSearchBar(),
-            _buildCategoryFilters(),
-            Expanded(
-              child: BlocBuilder<GiftCardCubit, GiftCardState>(
-                builder: (context, state) {
-                  if (state is GiftCardBrandsLoading) {
-                    return _buildLoadingState();
-                  } else if (state is GiftCardNetworkError) {
-                    return _buildErrorState(state.message);
+        behavior: HitTestBehavior.opaque,
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.85,
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+          ),
+          child: BlocListener<GiftCardCubit, GiftCardState>(
+            listener: (context, state) {
+              if (state is GiftCardBrandsLoaded) {
+                setState(() {
+                  _allBrands = state.brands;
+                  // Now that the chips are derived from the catalogue, a country
+                  // change can retire the selected one. Holding on to it would
+                  // filter the new country's brands by a category it does not
+                  // have — an empty grid under a chip that is no longer on screen,
+                  // with nothing to tap to escape it.
+                  if (_selectedCategory != null &&
+                      !state.brands.any((b) =>
+                          b.category.trim().toLowerCase() ==
+                          _selectedCategory!.trim().toLowerCase())) {
+                    _selectedCategory = null;
                   }
-                  return _buildBrandsList();
-                },
-              ),
+                  _filteredBrands = _selectedCategory == null
+                      ? state.brands
+                      : state.brands
+                          .where((b) => b.category == _selectedCategory)
+                          .toList();
+                });
+              } else if (state is GiftCardBrandsSearched) {
+                setState(() {
+                  _filteredBrands = state.brands;
+                });
+              }
+            },
+            child: Column(
+              children: [
+                _buildHandle(),
+                _buildHeader(),
+                _buildSearchBar(),
+                _buildCategoryFilters(),
+                Expanded(
+                  child: BlocBuilder<GiftCardCubit, GiftCardState>(
+                    builder: (context, state) {
+                      if (state is GiftCardBrandsLoading) {
+                        return _buildLoadingState();
+                      } else if (state is GiftCardNetworkError) {
+                        return _buildErrorState(state.message);
+                      }
+                      return _buildBrandsList();
+                    },
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    ));
+          ),
+        ));
   }
 
   Widget _buildHandle() {
@@ -317,8 +316,7 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet> {
             margin: EdgeInsets.only(right: 8.w),
             child: GestureDetector(
               onTap: () {
-                _onCategorySelected(
-                    isSelected ? null : category['value']);
+                _onCategorySelected(isSelected ? null : category['value']);
               },
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
@@ -442,8 +440,8 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet> {
                           padding: EdgeInsets.symmetric(
                               horizontal: 8.w, vertical: 3.h),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981)
-                                .withValues(alpha: 0.15),
+                            color:
+                                const Color(0xFF10B981).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(6.r),
                           ),
                           child: Text(
@@ -539,8 +537,7 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: InvoiceThemeColors.primaryPurple,
-                padding:
-                    EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
                 ),
@@ -638,8 +635,7 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet> {
             style: ElevatedButton.styleFrom(
               backgroundColor: InvoiceThemeColors.primaryPurple,
               foregroundColor: Colors.white,
-              padding:
-                  EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
               ),

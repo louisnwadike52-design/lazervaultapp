@@ -63,8 +63,8 @@ class _CableTVBeneficiariesScreenState
         elevation: 0,
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: Icon(Icons.arrow_back_ios_new,
-              color: Colors.white, size: 20.sp),
+          icon:
+              Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20.sp),
         ),
         title: Text('Saved Smart Cards',
             style: TextStyle(
@@ -119,8 +119,7 @@ class _CableTVBeneficiariesScreenState
   }
 
   Widget _buildBody() {
-    if (_error != null &&
-        (_beneficiaries == null || _beneficiaries!.isEmpty)) {
+    if (_error != null && (_beneficiaries == null || _beneficiaries!.isEmpty)) {
       // Was printing the raw thrown string, which put
       // "SocketException: Failed host lookup: 'api.lazervault.app' (OS Error:
       // nodename nor servname provided, errno = 8)" in front of the user.
@@ -180,8 +179,7 @@ class _CableTVBeneficiariesScreenState
             Text(
               'After paying a cable TV subscription, tap "Save Smart Card" on the receipt to add it here for one-tap renewals.',
               textAlign: TextAlign.center,
-              style:
-                  TextStyle(fontSize: 14.sp, color: const Color(0xFF9CA3AF)),
+              style: TextStyle(fontSize: 14.sp, color: const Color(0xFF9CA3AF)),
             ),
           ],
         ),
@@ -211,8 +209,7 @@ class _CableTVBeneficiariesScreenState
 
   Widget _autoBadge(CableTVAutoRecharge ar) {
     final isActive = ar.status.toLowerCase() == 'active';
-    final color =
-        isActive ? const Color(0xFF10B981) : const Color(0xFFFB923C);
+    final color = isActive ? const Color(0xFF10B981) : const Color(0xFFFB923C);
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
@@ -227,9 +224,7 @@ class _CableTVBeneficiariesScreenState
           SizedBox(width: 4.w),
           Text('Auto',
               style: TextStyle(
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w600,
-                  color: color)),
+                  fontSize: 11.sp, fontWeight: FontWeight.w600, color: color)),
         ],
       ),
     );
@@ -407,8 +402,7 @@ class _CableTVBeneficiariesScreenState
             ),
             SizedBox(height: 16.h),
             ListTile(
-              leading: Icon(Icons.info_outline,
-                  color: const Color(0xFF4E03D0)),
+              leading: Icon(Icons.info_outline, color: const Color(0xFF4E03D0)),
               title: Text('View Details',
                   style: TextStyle(color: Colors.white, fontSize: 15.sp)),
               onTap: () {
@@ -423,8 +417,8 @@ class _CableTVBeneficiariesScreenState
                   style: TextStyle(color: Colors.white, fontSize: 15.sp)),
               subtitle: Text(
                 b.smartCardNumber,
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
               ),
               onTap: () {
                 Navigator.of(ctx).pop();
@@ -515,8 +509,8 @@ class _CableTVBeneficiariesScreenState
             }),
             const Divider(color: Color(0xFF2D2D2D), height: 1),
             ListTile(
-              leading: Icon(Icons.edit_outlined,
-                  color: const Color(0xFF9CA3AF)),
+              leading:
+                  Icon(Icons.edit_outlined, color: const Color(0xFF9CA3AF)),
               title: Text('Edit Nickname',
                   style: TextStyle(color: Colors.white, fontSize: 15.sp)),
               onTap: () {
@@ -526,8 +520,8 @@ class _CableTVBeneficiariesScreenState
             ),
             const Divider(color: Color(0xFF2D2D2D), height: 1),
             ListTile(
-              leading: Icon(Icons.delete_outline,
-                  color: const Color(0xFFEF4444)),
+              leading:
+                  Icon(Icons.delete_outline, color: const Color(0xFFEF4444)),
               title: Text('Delete Smart Card',
                   style: TextStyle(
                       color: const Color(0xFFEF4444), fontSize: 15.sp)),
@@ -550,8 +544,8 @@ class _CableTVBeneficiariesScreenState
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) => AlertDialog(
           backgroundColor: const Color(0xFF1F1F1F),
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
           title: Text('Edit Nickname',
               style: TextStyle(color: Colors.white, fontSize: 17.sp)),
           content: Column(
@@ -574,16 +568,13 @@ class _CableTVBeneficiariesScreenState
                   fillColor: const Color(0xFF0A0A0A),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.r),
-                      borderSide:
-                          const BorderSide(color: Color(0xFF2D2D2D))),
+                      borderSide: const BorderSide(color: Color(0xFF2D2D2D))),
                   enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.r),
-                      borderSide:
-                          const BorderSide(color: Color(0xFF2D2D2D))),
+                      borderSide: const BorderSide(color: Color(0xFF2D2D2D))),
                   focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.r),
-                      borderSide:
-                          const BorderSide(color: Color(0xFF4E03D0))),
+                      borderSide: const BorderSide(color: Color(0xFF4E03D0))),
                   contentPadding:
                       EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
                 ),
@@ -602,9 +593,7 @@ class _CableTVBeneficiariesScreenState
                   : () async {
                       setLocal(() => loading = true);
                       try {
-                        await context
-                            .read<CableTVBeneficiaryCubit>()
-                            .update(
+                        await context.read<CableTVBeneficiaryCubit>().update(
                               beneficiaryId: b.id,
                               nickname: controller.text.trim().isEmpty
                                   ? null
@@ -638,19 +627,16 @@ class _CableTVBeneficiariesScreenState
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text(
-            hasAuto
-                ? 'Delete Smart Card & Auto-Renew'
-                : 'Delete Smart Card',
+            hasAuto ? 'Delete Smart Card & Auto-Renew' : 'Delete Smart Card',
             style: TextStyle(color: Colors.white, fontSize: 17.sp)),
         content: Text(
           hasAuto
               ? 'This smart card has an active auto-renew. Deleting will also remove the linked schedule.\n\nDelete $name?'
               : 'Delete $name? This cannot be undone.',
-          style:
-              TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+          style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
         ),
         actions: [
           TextButton(

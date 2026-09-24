@@ -69,42 +69,42 @@ class _BankDetailsReceiptScreenState extends State<BankDetailsReceiptScreen>
         if (!didPop) _handleClose(context);
       },
       child: Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
-      appBar: _buildAppBar(),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(height: 16.h),
+        backgroundColor: const Color(0xFFF9FAFB),
+        appBar: _buildAppBar(),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              SizedBox(height: 16.h),
 
-            // Success Animation
-            _buildSuccessAnimation(),
+              // Success Animation
+              _buildSuccessAnimation(),
 
-            SizedBox(height: 16.h),
+              SizedBox(height: 16.h),
 
-            // Success Message
-            _buildSuccessMessage(),
+              // Success Message
+              _buildSuccessMessage(),
 
-            if (widget.receipt.isExternal) _buildExternalTransferNote(),
+              if (widget.receipt.isExternal) _buildExternalTransferNote(),
 
-            SizedBox(height: 32.h),
+              SizedBox(height: 32.h),
 
-            // Amount Card
-            _buildAmountCard(),
+              // Amount Card
+              _buildAmountCard(),
 
-            SizedBox(height: 24.h),
+              SizedBox(height: 24.h),
 
-            // Details Card
-            _buildDetailsCard(),
+              // Details Card
+              _buildDetailsCard(),
 
-            SizedBox(height: 24.h),
+              SizedBox(height: 24.h),
 
-            // Action Buttons
-            _buildActionButtons(),
+              // Action Buttons
+              _buildActionButtons(),
 
-            SizedBox(height: 40.h),
-          ],
+              SizedBox(height: 40.h),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -307,7 +307,6 @@ class _BankDetailsReceiptScreenState extends State<BankDetailsReceiptScreen>
             ],
           ),
           SizedBox(height: 16.h),
-
           _buildDetailRow('Recipient', widget.receipt.recipientName),
           _buildDetailRow(
             'Account Number',
@@ -327,11 +326,9 @@ class _BankDetailsReceiptScreenState extends State<BankDetailsReceiptScreen>
             widget.receipt.statusDisplayText,
             isStatus: true,
           ),
-
           if (widget.receipt.description != null &&
               widget.receipt.description!.isNotEmpty)
             _buildDetailRow('Description', widget.receipt.description!),
-
           if (widget.receipt.transferReference != null)
             _buildDetailRow(
               'Transfer Reference',
@@ -526,9 +523,9 @@ Powered by LazerVault
     ''';
 
     SharePlus.instance.share(ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+      // iOS: a non-zero popover anchor is required — CGRectZero throws
+      // PlatformException and the share silently fails on iPhone/iPad.
+      sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       text: shareText,
       subject: 'Lazervault Payment Receipt',
     ));

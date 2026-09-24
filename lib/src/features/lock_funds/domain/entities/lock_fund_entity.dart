@@ -1,8 +1,8 @@
 // PiggyVault (Lock Funds) entity with locale-aware currency formatting.
 import 'dart:convert';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 part 'lock_fund_entity_widgets.dart';
-
 
 dynamic _safeDecode(String raw) {
   // Hoisted decoder for the JSONB-backed PiggyVaultConfig string
@@ -125,7 +125,8 @@ class LockFund {
       autoRenew: autoRenew ?? this.autoRenew,
       goalName: goalName ?? this.goalName,
       goalDescription: goalDescription ?? this.goalDescription,
-      earlyUnlockPenaltyPercent: earlyUnlockPenaltyPercent ?? this.earlyUnlockPenaltyPercent,
+      earlyUnlockPenaltyPercent:
+          earlyUnlockPenaltyPercent ?? this.earlyUnlockPenaltyPercent,
       accruedInterest: accruedInterest ?? this.accruedInterest,
       paymentMethod: paymentMethod ?? this.paymentMethod,
       transactionId: transactionId ?? this.transactionId,
@@ -142,24 +143,33 @@ class LockFund {
   }
 
   bool get isActive => status == LockStatus.active;
-  bool get isMatured => status == LockStatus.matured || (status == LockStatus.active && daysRemaining <= 0);
+  bool get isMatured =>
+      status == LockStatus.matured ||
+      (status == LockStatus.active && daysRemaining <= 0);
   bool get canRenew => status == LockStatus.matured || isMatured;
   bool get isTerminal => status.isTerminal;
 
   /// Formatted amount with currency symbol
-  String get formattedAmount => currency_formatter.CurrencySymbols.formatAmountWithCurrency(amount, currency);
+  String get formattedAmount =>
+      currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+          amount, currency);
 
   /// Formatted total value (principal + interest) with currency symbol
-  String get formattedTotalValue => currency_formatter.CurrencySymbols.formatAmountWithCurrency(totalValue, currency);
+  String get formattedTotalValue =>
+      currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+          totalValue, currency);
 
   /// Formatted interest earned with currency symbol
-  String get formattedInterest => '+${currency_formatter.CurrencySymbols.formatAmountWithCurrency(accruedInterest, currency)}';
+  String get formattedInterest =>
+      '+${currency_formatter.CurrencySymbols.formatAmountWithCurrency(accruedInterest, currency)}';
 
   /// Formatted interest rate
-  String get formattedInterestRate => '${interestRate.toStringAsFixed(1)}% p.a.';
+  String get formattedInterestRate =>
+      '${interestRate.toStringAsFixed(1)}% p.a.';
 
   /// Display name for the lock (goal name or lock type)
-  String get displayName => goalName?.isNotEmpty == true ? goalName! : lockType.displayName;
+  String get displayName =>
+      goalName?.isNotEmpty == true ? goalName! : lockType.displayName;
 
   /// Days until maturity formatted
   String get daysRemainingText {
@@ -194,7 +204,8 @@ class LockFund {
 
   /// Early withdrawal penalty amount. Matches the backend formula
   /// (accounts_lockfunds_cancel.go: amount * penalty_rate / 100).
-  double get earlyWithdrawalPenalty => amount * (earlyUnlockPenaltyPercent / 100);
+  double get earlyWithdrawalPenalty =>
+      amount * (earlyUnlockPenaltyPercent / 100);
 
   /// Interest actually PAYABLE if the lock is unlocked right now.
   ///

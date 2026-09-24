@@ -114,9 +114,7 @@ class ContactRepository {
         .timeout(_timeout);
     final data = _ok(res, 'Failed to load linked tasks');
     final list = (data['tasks'] as List<dynamic>?) ?? const [];
-    return list
-        .map((e) => Task.fromJson(e as Map<String, dynamic>))
-        .toList();
+    return list.map((e) => Task.fromJson(e as Map<String, dynamic>)).toList();
   }
 
   Future<List<ContactInteraction>> getInteractions(String contactId) async {

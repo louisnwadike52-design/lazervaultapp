@@ -112,7 +112,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
-                  color: AppData.onboardingSlides[currentPage].textColor.withValues(alpha: 0.7),
+                  color: AppData.onboardingSlides[currentPage].textColor
+                      .withValues(alpha: 0.7),
                 ),
               ),
             ),

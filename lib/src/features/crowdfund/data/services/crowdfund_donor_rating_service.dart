@@ -71,14 +71,16 @@ class CrowdfundDonorRatingService {
     return DonorRating(
       overallScore: overall.clamp(1.0, 5.0),
       starCount: star.clamp(1, 5),
-      generosityScore:
-          ((json['generosity_score'] as num?)?.toDouble() ?? 0.0).clamp(0.0, 1.0),
-      repeatSupportScore: ((json['repeat_support_score'] as num?)?.toDouble() ?? 0.0)
+      generosityScore: ((json['generosity_score'] as num?)?.toDouble() ?? 0.0)
           .clamp(0.0, 1.0),
-      engagementScore:
-          ((json['engagement_score'] as num?)?.toDouble() ?? 0.0).clamp(0.0, 1.0),
-      earlySupportScore: ((json['early_support_score'] as num?)?.toDouble() ?? 0.0)
+      repeatSupportScore:
+          ((json['repeat_support_score'] as num?)?.toDouble() ?? 0.0)
+              .clamp(0.0, 1.0),
+      engagementScore: ((json['engagement_score'] as num?)?.toDouble() ?? 0.0)
           .clamp(0.0, 1.0),
+      earlySupportScore:
+          ((json['early_support_score'] as num?)?.toDouble() ?? 0.0)
+              .clamp(0.0, 1.0),
       label: (json['label'] as String?)?.trim().isNotEmpty == true
           ? json['label'] as String
           : 'Supporter',

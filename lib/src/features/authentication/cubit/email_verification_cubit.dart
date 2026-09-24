@@ -124,7 +124,8 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
           ));
         },
         (cooldownSeconds) {
-          print('Verification email resent successfully, cooldown: ${cooldownSeconds}s');
+          print(
+              'Verification email resent successfully, cooldown: ${cooldownSeconds}s');
           emit(currentState.copyWith(
             isResending: false,
             successMessage: 'Verification code sent! Check your email.',
@@ -138,5 +139,4 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
       await resendVerificationEmail();
     }
   }
-
 }

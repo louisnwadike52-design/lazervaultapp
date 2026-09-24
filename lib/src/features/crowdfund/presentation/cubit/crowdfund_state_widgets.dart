@@ -60,7 +60,8 @@ class CrowdfundLoaded extends CrowdfundState {
   }
 
   @override
-  List<Object?> get props => [crowdfunds, totalCount, currentPage, isStale, hasMore, isLoadingMore];
+  List<Object?> get props =>
+      [crowdfunds, totalCount, currentPage, isStale, hasMore, isLoadingMore];
 }
 
 /// Crowdfund created successfully
@@ -118,8 +119,13 @@ class CancelInitiated extends CrowdfundState {
     required this.message,
   });
   @override
-  List<Object?> get props =>
-      [crowdfund, refundsQueued, totalContributions, totalRefundAmount, message];
+  List<Object?> get props => [
+        crowdfund,
+        refundsQueued,
+        totalContributions,
+        totalRefundAmount,
+        message
+      ];
 }
 
 /// Hard-delete succeeded; details screen should pop.
@@ -134,7 +140,8 @@ class CrowdfundDeleted extends CrowdfundState {
 class CrowdfundRefundsLoaded extends CrowdfundState {
   final String crowdfundId;
   final List<CrowdfundRefund> refunds;
-  const CrowdfundRefundsLoaded({required this.crowdfundId, required this.refunds});
+  const CrowdfundRefundsLoaded(
+      {required this.crowdfundId, required this.refunds});
   @override
   List<Object?> get props => [crowdfundId, refunds];
 }

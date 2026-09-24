@@ -31,7 +31,8 @@ class VoiceVisualFeedbackManager {
   bool requestDialog(_ActiveDialogType type, Map<String, dynamic> data) {
     // Edge case: Prevent multiple dialogs simultaneously
     if (_activeDialog != null) {
-      print('VoiceVisualFeedbackManager: Dialog request denied - ${_activeDialog!.type} is already active');
+      print(
+          'VoiceVisualFeedbackManager: Dialog request denied - ${_activeDialog!.type} is already active');
       return false;
     }
 
@@ -41,7 +42,8 @@ class VoiceVisualFeedbackManager {
       return false;
     }
 
-    _activeDialog = _ActiveDialog(type: type, data: data, shownAt: DateTime.now());
+    _activeDialog =
+        _ActiveDialog(type: type, data: data, shownAt: DateTime.now());
     _isVisualFeedbackActive = true;
 
     _recordStateTransition('dialog_shown', type.toString());
@@ -67,15 +69,18 @@ class VoiceVisualFeedbackManager {
 
       print('VoiceVisualFeedbackManager: Dialog dismissed - $type');
     } else {
-      print('VoiceVisualFeedbackManager: Cannot dismiss dialog $type - active dialog is ${_activeDialog?.type}');
+      print(
+          'VoiceVisualFeedbackManager: Cannot dismiss dialog $type - active dialog is ${_activeDialog?.type}');
     }
   }
 
   /// Dismiss any active dialog (emergency cleanup)
   void dismissAnyDialog() {
     if (_activeDialog != null) {
-      _recordStateTransition('dialog_dismissed_emergency', _activeDialog!.type.toString());
-      print('VoiceVisualFeedbackManager: Emergency dialog dismissal - ${_activeDialog!.type}');
+      _recordStateTransition(
+          'dialog_dismissed_emergency', _activeDialog!.type.toString());
+      print(
+          'VoiceVisualFeedbackManager: Emergency dialog dismissal - ${_activeDialog!.type}');
       _activeDialog = null;
       _isVisualFeedbackActive = false;
     }
@@ -99,14 +104,17 @@ class VoiceVisualFeedbackManager {
   bool isValidTransition(String fromState, String toState) {
     // Edge case: Define invalid transitions
     final invalidTransitions = {
-      'VoiceSessionPinRequired': ['VoiceSessionPinRequired'], // Can't transition to same state
+      'VoiceSessionPinRequired': [
+        'VoiceSessionPinRequired'
+      ], // Can't transition to same state
       'VoiceSessionUserSearchRequired': ['VoiceSessionUserSearchRequired'],
       'VoiceSessionTransferConfirmation': ['VoiceSessionTransferConfirmation'],
     };
 
     final invalidForFromState = invalidTransitions[fromState];
     if (invalidForFromState != null && invalidForFromState!.contains(toState)) {
-      print('VoiceVisualFeedbackManager: Invalid transition $fromState -> $toState');
+      print(
+          'VoiceVisualFeedbackManager: Invalid transition $fromState -> $toState');
       return false;
     }
 
@@ -116,7 +124,8 @@ class VoiceVisualFeedbackManager {
   bool _shouldDebounceStateChange() {
     if (_lastStateChangeTime == null) return false;
 
-    final timeSinceLastChange = DateTime.now().difference(_lastStateChangeTime!);
+    final timeSinceLastChange =
+        DateTime.now().difference(_lastStateChangeTime!);
     if (timeSinceLastChange < _stateChangeDebounce) {
       return true;
     }
@@ -200,7 +209,8 @@ class _StateTransition {
 
 /// Enhanced conversation state manager for handling complex state flows
 class VoiceConversationStateManager {
-  final VoiceVisualFeedbackManager _feedbackManager = VoiceVisualFeedbackManager();
+  final VoiceVisualFeedbackManager _feedbackManager =
+      VoiceVisualFeedbackManager();
 
   // Current conversation state
   String _currentState = 'initial';
@@ -215,7 +225,8 @@ class VoiceConversationStateManager {
   }
 
   /// Remove state listener
-  void removeStateListener(void Function(String, Map<String, dynamic>) listener) {
+  void removeStateListener(
+      void Function(String, Map<String, dynamic>) listener) {
     _stateListeners.remove(listener);
   }
 
@@ -223,7 +234,8 @@ class VoiceConversationStateManager {
   bool transitionTo(String newState, Map<String, dynamic> data) {
     // Edge case: Validate transition
     if (!_feedbackManager.isValidTransition(_currentState, newState)) {
-      print('VoiceConversationStateManager: Invalid transition $_currentState -> $newState blocked');
+      print(
+          'VoiceConversationStateManager: Invalid transition $_currentState -> $newState blocked');
       return false;
     }
 
@@ -231,7 +243,8 @@ class VoiceConversationStateManager {
     if (_isDialogState(newState)) {
       final dialogType = _getDialogTypeForState(newState);
       if (!_feedbackManager.requestDialog(dialogType, data)) {
-        print('VoiceConversationStateManager: Dialog $newState blocked - another dialog active');
+        print(
+            'VoiceConversationStateManager: Dialog $newState blocked - another dialog active');
         return false;
       }
     } else {
@@ -269,7 +282,8 @@ class VoiceConversationStateManager {
   String get currentState => _currentState;
 
   /// Get current state data
-  Map<String, dynamic> get currentStateData => Map.unmodifiable(_currentStateData);
+  Map<String, dynamic> get currentStateData =>
+      Map.unmodifiable(_currentStateData);
 
   /// Check if visual feedback is active
   bool get isVisualFeedbackActive => _feedbackManager.isVisualFeedbackActive;
@@ -290,11 +304,15 @@ class VoiceConversationStateManager {
   }
 
   _ActiveDialogType _getDialogTypeForState(String state) {
-    if (state.contains('UserSearchRequired')) return _ActiveDialogType.userSearch;
-    if (state.contains('TransferConfirmation')) return _ActiveDialogType.transferConfirmation;
+    if (state.contains('UserSearchRequired'))
+      return _ActiveDialogType.userSearch;
+    if (state.contains('TransferConfirmation'))
+      return _ActiveDialogType.transferConfirmation;
     if (state.contains('PinRequired')) return _ActiveDialogType.pinEntry;
-    if (state.contains('TransactionSuccess')) return _ActiveDialogType.transactionSuccess;
-    if (state.contains('TransactionError')) return _ActiveDialogType.transactionError;
+    if (state.contains('TransactionSuccess'))
+      return _ActiveDialogType.transactionSuccess;
+    if (state.contains('TransactionError'))
+      return _ActiveDialogType.transactionError;
     throw ArgumentError('Unknown dialog state: $state');
   }
 

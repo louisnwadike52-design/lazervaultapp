@@ -128,7 +128,8 @@ class RebalanceStrategyScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 4.h),
                       Text(
-                        CurrencySymbols.formatAmountWithCurrency(_totalBuyValue, 'USD'),
+                        CurrencySymbols.formatAmountWithCurrency(
+                            _totalBuyValue, 'USD'),
                         style: GoogleFonts.inter(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.w700,
@@ -163,7 +164,8 @@ class RebalanceStrategyScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 4.h),
                       Text(
-                        CurrencySymbols.formatAmountWithCurrency(_totalSellValue, 'USD'),
+                        CurrencySymbols.formatAmountWithCurrency(
+                            _totalSellValue, 'USD'),
                         style: GoogleFonts.inter(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.w700,
@@ -227,7 +229,9 @@ class RebalanceStrategyScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8.r),
                             ),
                             child: Icon(
-                              isBuy ? Icons.add_circle_outline : Icons.remove_circle_outline,
+                              isBuy
+                                  ? Icons.add_circle_outline
+                                  : Icons.remove_circle_outline,
                               color: isBuy ? Colors.green : Colors.red,
                               size: 20.sp,
                             ),
@@ -260,7 +264,8 @@ class RebalanceStrategyScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            CurrencySymbols.formatAmountWithCurrency(trade.estimatedTotal, 'USD'),
+                            CurrencySymbols.formatAmountWithCurrency(
+                                trade.estimatedTotal, 'USD'),
                             style: GoogleFonts.inter(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w700,

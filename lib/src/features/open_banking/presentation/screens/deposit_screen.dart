@@ -134,8 +134,7 @@ class _DepositScreenState extends State<DepositScreen> {
       return;
     }
 
-    final amount =
-        double.parse(_amountController.text.replaceAll(',', ''));
+    final amount = double.parse(_amountController.text.replaceAll(',', ''));
 
     setState(() => _isInitiatingDeposit = true);
 
@@ -323,7 +322,8 @@ class _DepositScreenState extends State<DepositScreen> {
                     width: double.infinity,
                     height: 56.h,
                     child: ElevatedButton(
-                      onPressed: _canDeposit(accounts) ? _initiateDeposit : null,
+                      onPressed:
+                          _canDeposit(accounts) ? _initiateDeposit : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                         disabledBackgroundColor: Colors.grey[300],

@@ -217,9 +217,7 @@ class _CurrencyPairSelectorState extends State<CurrencyPairSelector>
           color: ExchangeTheme.cardBackground,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: highlight
-                ? ExchangeTheme.primary
-                : ExchangeTheme.divider,
+            color: highlight ? ExchangeTheme.primary : ExchangeTheme.divider,
             width: highlight ? 1.5 : 1.0,
           ),
           boxShadow: highlight

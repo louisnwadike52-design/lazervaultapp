@@ -10,19 +10,26 @@ class PortfolioAddFundsScreen extends StatefulWidget {
   const PortfolioAddFundsScreen({super.key, this.currency = 'USD'});
 
   @override
-  State<PortfolioAddFundsScreen> createState() => _PortfolioAddFundsScreenState();
+  State<PortfolioAddFundsScreen> createState() =>
+      _PortfolioAddFundsScreenState();
 }
 
-class _PortfolioAddFundsScreenState extends State<PortfolioAddFundsScreen> with TickerProviderStateMixin {
+class _PortfolioAddFundsScreenState extends State<PortfolioAddFundsScreen>
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _slideAnimation;
-  
+
   final TextEditingController _amountController = TextEditingController();
   String _selectedPaymentMethod = 'Bank Transfer';
   double _selectedAmount = 0.0;
   final List<double> _quickAmounts = [100, 500, 1000, 2500, 5000, 10000];
-  final List<String> _paymentMethods = ['Bank Transfer', 'Debit Card', 'Credit Card', 'PayPal'];
+  final List<String> _paymentMethods = [
+    'Bank Transfer',
+    'Debit Card',
+    'Credit Card',
+    'PayPal'
+  ];
 
   @override
   void initState() {
@@ -35,15 +42,15 @@ class _PortfolioAddFundsScreenState extends State<PortfolioAddFundsScreen> with 
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _slideAnimation = Tween<double>(begin: 30.0, end: 0.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _animationController.forward();
   }
 
@@ -276,12 +283,12 @@ class _PortfolioAddFundsScreenState extends State<PortfolioAddFundsScreen> with 
             ),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -342,7 +349,9 @@ class _PortfolioAddFundsScreenState extends State<PortfolioAddFundsScreen> with 
         Wrap(
           spacing: 12.w,
           runSpacing: 12.h,
-          children: _quickAmounts.map((amount) => _buildQuickAmountButton(amount)).toList(),
+          children: _quickAmounts
+              .map((amount) => _buildQuickAmountButton(amount))
+              .toList(),
         ),
       ],
     );
@@ -368,13 +377,12 @@ class _PortfolioAddFundsScreenState extends State<PortfolioAddFundsScreen> with 
           color: isSelected ? null : Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
+          ],
         ),
         child: Text(
           '${CurrencySymbols.getSymbol(widget.currency)}${amount.toStringAsFixed(0)}',
@@ -410,7 +418,7 @@ class _PortfolioAddFundsScreenState extends State<PortfolioAddFundsScreen> with 
     final isSelected = _selectedPaymentMethod == method;
     IconData icon;
     Color color;
-    
+
     switch (method) {
       case 'Bank Transfer':
         icon = Icons.account_balance;
@@ -453,7 +461,6 @@ class _PortfolioAddFundsScreenState extends State<PortfolioAddFundsScreen> with 
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Material(
         color: Colors.transparent,
@@ -541,10 +548,16 @@ class _PortfolioAddFundsScreenState extends State<PortfolioAddFundsScreen> with 
             ),
           ),
           SizedBox(height: 16.h),
-          _buildSummaryRow('Amount', CurrencySymbols.formatAmountWithCurrency(_selectedAmount, widget.currency)),
-          _buildSummaryRow('Processing Fee', CurrencySymbols.formatAmountWithCurrency(fee, widget.currency)),
+          _buildSummaryRow(
+              'Amount',
+              CurrencySymbols.formatAmountWithCurrency(
+                  _selectedAmount, widget.currency)),
+          _buildSummaryRow('Processing Fee',
+              CurrencySymbols.formatAmountWithCurrency(fee, widget.currency)),
           Divider(color: Colors.white.withValues(alpha: 0.2)),
-          _buildSummaryRow('Total', CurrencySymbols.formatAmountWithCurrency(total, widget.currency), isTotal: true),
+          _buildSummaryRow('Total',
+              CurrencySymbols.formatAmountWithCurrency(total, widget.currency),
+              isTotal: true),
         ],
       ),
     );
@@ -579,7 +592,7 @@ class _PortfolioAddFundsScreenState extends State<PortfolioAddFundsScreen> with 
 
   Widget _buildContinueButton() {
     final isEnabled = _selectedAmount > 0;
-    
+
     return Container(
       width: double.infinity,
       height: 56.h,
@@ -625,7 +638,7 @@ class _PortfolioAddFundsScreenState extends State<PortfolioAddFundsScreen> with 
   void _proceedToPayment() {
     final fee = _selectedAmount * 0.001;
     final total = _selectedAmount + fee;
-    
+
     Get.toNamed(AppRoutes.stockTradePayment, arguments: {
       'type': 'add_funds',
       'amount': _selectedAmount,
@@ -635,4 +648,4 @@ class _PortfolioAddFundsScreenState extends State<PortfolioAddFundsScreen> with 
       'description': 'Add funds to portfolio',
     });
   }
-} 
+}

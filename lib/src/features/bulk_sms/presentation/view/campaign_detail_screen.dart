@@ -173,8 +173,8 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
                 icon: const Icon(Icons.cancel_outlined,
                     color: BulkSmsTheme.error),
                 label: Text('Cancel scheduled campaign',
-                    style: TextStyle(
-                        color: BulkSmsTheme.error, fontSize: 14.sp)),
+                    style:
+                        TextStyle(color: BulkSmsTheme.error, fontSize: 14.sp)),
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(
                       color: BulkSmsTheme.error.withValues(alpha: 0.5)),
@@ -213,9 +213,7 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
   Widget _reportHeader() {
     return Text('Delivery report',
         style: TextStyle(
-            color: Colors.white,
-            fontSize: 15.sp,
-            fontWeight: FontWeight.w700));
+            color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700));
   }
 
   List<Widget> _reportBody(BulkSmsState state) {

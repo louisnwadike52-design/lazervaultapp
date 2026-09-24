@@ -108,8 +108,8 @@ bool _isNumeric(String type) => type == 'number' || type == 'monetary';
 ///    when empty and not required.
 ///  - Local-only keys (anything not in [schema], e.g. `_image_filename`)
 ///    are never emitted.
-String encodeArrayItems(
-    List<InsuranceProductFormItemField> schema, List<Map<String, String>> rows) {
+String encodeArrayItems(List<InsuranceProductFormItemField> schema,
+    List<Map<String, String>> rows) {
   final cleaned = <Map<String, Object?>>[];
   for (final row in rows) {
     var keep = true;

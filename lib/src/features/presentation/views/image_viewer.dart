@@ -14,7 +14,8 @@ class CustomImageViewer {
         fit: fit ?? BoxFit.cover,
         imageBuilder: (context, imageProvider) => Container(
               decoration: BoxDecoration(
-                color: Theme.of(context).dialogTheme.backgroundColor ?? Colors.white,
+                color: Theme.of(context).dialogTheme.backgroundColor ??
+                    Colors.white,
                 borderRadius: BorderRadius.circular(
                   radius ?? 8,
                 ),

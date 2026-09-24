@@ -84,7 +84,8 @@ class _MonetaryFormFieldState extends State<MonetaryFormField> {
     // reflect it. We compare raw forms so re-formatting during typing
     // doesn't cause a reset loop.
     if (oldWidget.initialRawValue != widget.initialRawValue &&
-        widget.initialRawValue != _formatter.stripFormatting(_controller.text)) {
+        widget.initialRawValue !=
+            _formatter.stripFormatting(_controller.text)) {
       final newDisplay = _formatter.formatRaw(widget.initialRawValue);
       _controller.value = TextEditingValue(
         text: newDisplay,
@@ -280,9 +281,8 @@ class _ThousandsSeparatorTextInputFormatter extends TextInputFormatter {
     if (firstDot == -1) {
       return noCommas.replaceAll(RegExp(r'[^\d]'), '');
     }
-    final intPart = noCommas
-        .substring(0, firstDot)
-        .replaceAll(RegExp(r'[^\d]'), '');
+    final intPart =
+        noCommas.substring(0, firstDot).replaceAll(RegExp(r'[^\d]'), '');
     final decPart =
         noCommas.substring(firstDot + 1).replaceAll(RegExp(r'[^\d]'), '');
     return '$intPart.$decPart';

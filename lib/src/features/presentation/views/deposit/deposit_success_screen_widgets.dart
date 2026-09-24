@@ -15,7 +15,7 @@ class CheckmarkPainter extends CustomPainter {
 
     final center = Offset(size.width / 2, size.height / 2);
     final checkPath = Path();
-    
+
     // Define checkmark points
     final startPoint = Offset(center.dx - 15, center.dy);
     final middlePoint = Offset(center.dx - 5, center.dy + 10);
@@ -24,7 +24,8 @@ class CheckmarkPainter extends CustomPainter {
     if (progress <= 0.5) {
       // First half: draw line from start to middle
       final currentProgress = progress * 2;
-      final currentPoint = Offset.lerp(startPoint, middlePoint, currentProgress)!;
+      final currentPoint =
+          Offset.lerp(startPoint, middlePoint, currentProgress)!;
       checkPath.moveTo(startPoint.dx, startPoint.dy);
       checkPath.lineTo(currentPoint.dx, currentPoint.dy);
     } else {

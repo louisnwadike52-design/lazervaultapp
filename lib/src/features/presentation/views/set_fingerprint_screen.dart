@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:lazervault/core/types/screen.dart';
 import 'package:lazervault/src/features/widgets/set_fingerprint.dart';
 
-
 class SetFingerPrintScreen extends StatefulWidget {
   const SetFingerPrintScreen({super.key});
 
@@ -12,8 +11,6 @@ class SetFingerPrintScreen extends StatefulWidget {
 }
 
 class _SetFingerPrintScreenState extends State<SetFingerPrintScreen> {
-
-
   @override
   void initState() {
     super.initState();

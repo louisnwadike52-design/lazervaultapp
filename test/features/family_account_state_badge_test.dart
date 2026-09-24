@@ -18,10 +18,8 @@ final _src = File(
   'lib/src/features/family_account/presentation/views/family_account_detail_screen.dart',
 ).readAsStringSync();
 
-String get _code => _src
-    .split('\n')
-    .where((l) => !l.trimLeft().startsWith('//'))
-    .join('\n');
+String get _code =>
+    _src.split('\n').where((l) => !l.trimLeft().startsWith('//')).join('\n');
 
 void main() {
   test('every account state has a presentation, exhaustively', () {

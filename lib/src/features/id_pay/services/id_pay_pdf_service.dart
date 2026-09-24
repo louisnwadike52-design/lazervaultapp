@@ -20,8 +20,7 @@ class IDPayPdfService {
   static pw.Font? _regularFont;
   static pw.Font? _boldFont;
 
-  static String _currencySymbolFor(String code) =>
-      receiptCurrencySymbol(code);
+  static String _currencySymbolFor(String code) => receiptCurrencySymbol(code);
 
   static String _currencyNameFor(String code) {
     switch (code.toUpperCase()) {

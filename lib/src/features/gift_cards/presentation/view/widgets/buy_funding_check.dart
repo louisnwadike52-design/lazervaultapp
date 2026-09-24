@@ -111,8 +111,7 @@ class GiftCardFundingNotice extends StatelessWidget {
     if (!check.blocks) return const SizedBox.shrink();
 
     final isShort = check.isInsufficient;
-    final accent =
-        isShort ? const Color(0xFFF59E0B) : const Color(0xFFEF4444);
+    final accent = isShort ? const Color(0xFFF59E0B) : const Color(0xFFEF4444);
     final title =
         isShort ? 'Not enough in your account' : 'Account unavailable';
     final body = isShort

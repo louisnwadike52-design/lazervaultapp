@@ -14,11 +14,11 @@ class DepositMethodSelectionScreen extends StatefulWidget {
       _DepositMethodSelectionScreenState();
 }
 
-class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScreen>
-    with TickerProviderStateMixin {
+class _DepositMethodSelectionScreenState
+    extends State<DepositMethodSelectionScreen> with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  
+
   Map<String, dynamic> _currency = {};
   String _selectedMethod = '';
 
@@ -34,7 +34,7 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
       "id": "personal_gbp",
     },
     {
-      "accountType": "Savings Account", 
+      "accountType": "Savings Account",
       "currency": "GBP",
       "balance": 5430.00,
       "accountNumber": "•••• 5678",
@@ -44,7 +44,7 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
     },
     {
       "accountType": "Investment Account",
-      "currency": "GBP", 
+      "currency": "GBP",
       "balance": 8750.00,
       "accountNumber": "•••• 9012",
       "trend": "-0.8%",
@@ -225,12 +225,14 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
     final countryCode = _currency['country_code'] as String? ?? '';
     if (countryCode == 'NG' || countryCode.isEmpty) return; // NGN uses Mono
 
-    final List<Map<String, dynamic>> flutterwaveMethods = _getFlutterwaveMethodsForCountry(countryCode);
+    final List<Map<String, dynamic>> flutterwaveMethods =
+        _getFlutterwaveMethodsForCountry(countryCode);
     // Insert Flutterwave methods at the top of available methods
     _availableMethods.insertAll(0, flutterwaveMethods);
   }
 
-  List<Map<String, dynamic>> _getFlutterwaveMethodsForCountry(String countryCode) {
+  List<Map<String, dynamic>> _getFlutterwaveMethodsForCountry(
+      String countryCode) {
     switch (countryCode) {
       case 'GH':
         return [
@@ -378,11 +380,11 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _animationController.forward();
   }
 
@@ -400,29 +402,29 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
 
   void _proceedToAmount() {
     if (_selectedMethod.isEmpty) return;
-    
+
     Map<String, dynamic> selectedMethodData = {};
-    
+
     // Check in different method lists
     selectedMethodData = _availableMethods.firstWhere(
       (method) => method['id'] == _selectedMethod,
       orElse: () => {},
     );
-    
+
     if (selectedMethodData.isEmpty) {
       selectedMethodData = _cryptoMethods.firstWhere(
         (method) => method['id'] == _selectedMethod,
         orElse: () => {},
       );
     }
-    
+
     if (selectedMethodData.isEmpty) {
       selectedMethodData = _recentlyUsedMethods.firstWhere(
         (method) => method['id'] == _selectedMethod,
         orElse: () => {},
       );
     }
-    
+
     // Check if it's a local account transfer
     if (_selectedMethod.startsWith('local_transfer_')) {
       final accountId = _selectedMethod.replaceFirst('local_transfer_', '');
@@ -430,7 +432,7 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
         (acc) => acc['id'] == accountId,
         orElse: () => {},
       );
-      
+
       if (account.isNotEmpty) {
         selectedMethodData = {
           'id': _selectedMethod,
@@ -445,7 +447,7 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
         };
       }
     }
-    
+
     Get.toNamed(
       AppRoutes.depositAmount,
       arguments: {
@@ -782,10 +784,13 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
     );
   }
 
-  Widget _buildMethodCard(Map<String, dynamic> method, {bool isRecent = false, bool isUnavailable = false, bool isCrypto = false}) {
+  Widget _buildMethodCard(Map<String, dynamic> method,
+      {bool isRecent = false,
+      bool isUnavailable = false,
+      bool isCrypto = false}) {
     final isSelected = _selectedMethod == method['id'];
     final isAvailable = method['isAvailable'] ?? false;
-    
+
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       child: Material(
@@ -814,16 +819,19 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
                       : Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(16.r),
               border: isSelected && isAvailable
-                  ? Border.all(color: Colors.green.withValues(alpha: 0.5), width: 2)
+                  ? Border.all(
+                      color: Colors.green.withValues(alpha: 0.5), width: 2)
                   : null,
-              boxShadow: isSelected && isAvailable ? [
-                BoxShadow(
-                  color: Colors.green.withValues(alpha: 0.2),
-                  blurRadius: 12,
-                  offset: Offset(0, 4),
-                  spreadRadius: -1,
-                ),
-              ] : null,
+              boxShadow: isSelected && isAvailable
+                  ? [
+                      BoxShadow(
+                        color: Colors.green.withValues(alpha: 0.2),
+                        blurRadius: 12,
+                        offset: Offset(0, 4),
+                        spreadRadius: -1,
+                      ),
+                    ]
+                  : null,
             ),
             child: Row(
               children: [
@@ -856,7 +864,9 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
                             child: Text(
                               method['name'],
                               style: GoogleFonts.inter(
-                                color: isAvailable ? Colors.white : Colors.grey[500],
+                                color: isAvailable
+                                    ? Colors.white
+                                    : Colors.grey[500],
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -864,10 +874,14 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
                           ),
                           if (method['isRecommended'] == true)
                             Container(
-                              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 8.w, vertical: 4.h),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
-                                  colors: [Colors.orange[600]!, Colors.orange[400]!],
+                                  colors: [
+                                    Colors.orange[600]!,
+                                    Colors.orange[400]!
+                                  ],
                                 ),
                                 borderRadius: BorderRadius.circular(8.r),
                               ),
@@ -882,7 +896,8 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
                             ),
                           if (isRecent)
                             Container(
-                              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 8.w, vertical: 4.h),
                               decoration: BoxDecoration(
                                 color: Colors.blue.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(8.r),
@@ -902,7 +917,8 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
                       Text(
                         method['description'],
                         style: GoogleFonts.inter(
-                          color: isAvailable ? Colors.grey[400] : Colors.grey[600],
+                          color:
+                              isAvailable ? Colors.grey[400] : Colors.grey[600],
                           fontSize: 12.sp,
                         ),
                       ),
@@ -910,12 +926,14 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
                         SizedBox(height: 8.h),
                         Row(
                           children: [
-                            _buildInfoChip('${method['processingTime']}', Icons.access_time),
+                            _buildInfoChip('${method['processingTime']}',
+                                Icons.access_time),
                             SizedBox(width: 12.w),
                             _buildInfoChip('${method['fee']}', Icons.payment),
                             if (isRecent) ...[
                               SizedBox(width: 12.w),
-                              _buildInfoChip('${method['lastUsed']}', Icons.history),
+                              _buildInfoChip(
+                                  '${method['lastUsed']}', Icons.history),
                             ],
                           ],
                         ),
@@ -935,7 +953,9 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
                 ),
                 if (isAvailable)
                   Icon(
-                    isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+                    isSelected
+                        ? Icons.check_circle
+                        : Icons.radio_button_unchecked,
                     color: isSelected ? Colors.green : Colors.grey[400],
                     size: 24.sp,
                   )
@@ -956,7 +976,7 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
   Widget _buildLocalAccountCard(Map<String, dynamic> account) {
     final isSelected = _selectedMethod == 'local_transfer_${account['id']}';
     final isUp = account['isUp'] ?? true;
-    
+
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       child: Material(
@@ -981,16 +1001,19 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
               color: isSelected ? null : Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(16.r),
               border: isSelected
-                  ? Border.all(color: Colors.green.withValues(alpha: 0.5), width: 2)
+                  ? Border.all(
+                      color: Colors.green.withValues(alpha: 0.5), width: 2)
                   : null,
-              boxShadow: isSelected ? [
-                BoxShadow(
-                  color: Colors.green.withValues(alpha: 0.2),
-                  blurRadius: 12,
-                  offset: Offset(0, 4),
-                  spreadRadius: -1,
-                ),
-              ] : null,
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: Colors.green.withValues(alpha: 0.2),
+                        blurRadius: 12,
+                        offset: Offset(0, 4),
+                        spreadRadius: -1,
+                      ),
+                    ]
+                  : null,
             ),
             child: Row(
               children: [
@@ -1027,7 +1050,8 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
                             ),
                           ),
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8.w, vertical: 4.h),
                             decoration: BoxDecoration(
                               color: isUp
                                   ? Colors.green.withValues(alpha: 0.2)
@@ -1037,7 +1061,8 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
                             child: Text(
                               account['trend'],
                               style: GoogleFonts.inter(
-                                color: isUp ? Colors.green[300] : Colors.red[300],
+                                color:
+                                    isUp ? Colors.green[300] : Colors.red[300],
                                 fontSize: 10.sp,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -1067,7 +1092,9 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
                   ),
                 ),
                 Icon(
-                  isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+                  isSelected
+                      ? Icons.check_circle
+                      : Icons.radio_button_unchecked,
                   color: isSelected ? Colors.green : Colors.grey[400],
                   size: 24.sp,
                 ),
@@ -1106,7 +1133,7 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
 
   Widget _buildContinueButton() {
     final isEnabled = _selectedMethod.isNotEmpty;
-    
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Container(
@@ -1116,13 +1143,15 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
               : null,
           color: isEnabled ? null : Colors.grey[800],
           borderRadius: BorderRadius.circular(20.r),
-          boxShadow: isEnabled ? [
-            BoxShadow(
-              color: Colors.green.withValues(alpha: 0.3),
-              blurRadius: 12,
-              offset: Offset(0, 6),
-            ),
-          ] : null,
+          boxShadow: isEnabled
+              ? [
+                  BoxShadow(
+                    color: Colors.green.withValues(alpha: 0.3),
+                    blurRadius: 12,
+                    offset: Offset(0, 6),
+                  ),
+                ]
+              : null,
         ),
         child: SizedBox(
           width: double.infinity,
@@ -1174,7 +1203,7 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
       'CNY': 'https://flagcdn.com/w320/cn.png',
       'INR': 'https://flagcdn.com/w320/in.png',
     };
-    
+
     return Container(
       width: size,
       height: size * 0.7,
@@ -1205,4 +1234,4 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
       ),
     );
   }
-} 
+}

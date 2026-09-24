@@ -77,7 +77,8 @@ class _UpliftGuideSheet extends StatelessWidget {
         padding: EdgeInsets.fromLTRB(18.w, 0, 10.w, 12.h),
         child: Row(
           children: [
-            Icon(Icons.auto_stories_outlined, color: kUpPrimarySoft, size: 20.sp),
+            Icon(Icons.auto_stories_outlined,
+                color: kUpPrimarySoft, size: 20.sp),
             SizedBox(width: 10.w),
             Expanded(
               child: Text(
@@ -223,7 +224,10 @@ class _JourneyBlock extends StatelessWidget {
 
   static const _steps = <List<String>>[
     ['A fund opens', 'A funder puts up capital and says what they will back.'],
-    ['Businesses apply', 'Applications land with the funder, who can compare them side by side.'],
+    [
+      'Businesses apply',
+      'Applications land with the funder, who can compare them side by side.'
+    ],
     [
       'Offer and counter',
       'The funder can accept, decline, or counter with a different amount. The business can accept the counter or walk away.'

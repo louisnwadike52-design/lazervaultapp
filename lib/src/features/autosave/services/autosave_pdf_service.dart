@@ -61,8 +61,7 @@ class AutoSavePdfService {
     // locale's symbol data hasn't been loaded for this app build,
     // and we'd rather render in the fallback locale than fail the
     // whole export over a missing date dictionary.
-    final rawLocale =
-        ui.PlatformDispatcher.instance.locale.toLanguageTag();
+    final rawLocale = ui.PlatformDispatcher.instance.locale.toLanguageTag();
     DateFormat dateFormat;
     DateFormat dateTimeFormat;
     NumberFormat currencyFormat;
@@ -103,14 +102,11 @@ class AutoSavePdfService {
               // Hyphen instead of em-dash for empty-value rows so the
               // default Helvetica font renders cleanly (em-dash is
               // outside its glyph set and would show as a tofu box).
-              _row('Frequency',
-                  rule.frequency?.name.toUpperCase() ?? '-'),
-              _row('Schedule day',
-                  rule.scheduleDay?.toString() ?? '-'),
+              _row('Frequency', rule.frequency?.name.toUpperCase() ?? '-'),
+              _row('Schedule day', rule.scheduleDay?.toString() ?? '-'),
               _row('Schedule time', rule.scheduleTime ?? '-'),
               if (rule.roundUpTo != null)
-                _row('Round up to',
-                    currencyFormat.format(rule.roundUpTo)),
+                _row('Round up to', currencyFormat.format(rule.roundUpTo)),
             ],
           ),
           pw.SizedBox(height: 14),
@@ -126,8 +122,7 @@ class AutoSavePdfService {
             title: 'Limits & targets',
             rows: [
               if (rule.targetAmount != null)
-                _row('Target amount',
-                    currencyFormat.format(rule.targetAmount)),
+                _row('Target amount', currencyFormat.format(rule.targetAmount)),
               if (rule.minimumBalance != null)
                 _row('Minimum balance',
                     currencyFormat.format(rule.minimumBalance)),
@@ -144,8 +139,7 @@ class AutoSavePdfService {
           _section(
             title: 'Lifetime activity',
             rows: [
-              _row('Total saved',
-                  currencyFormat.format(rule.totalSaved)),
+              _row('Total saved', currencyFormat.format(rule.totalSaved)),
               _row('Times triggered', rule.triggerCount.toString()),
               _row(
                   'Last triggered',
@@ -153,8 +147,7 @@ class AutoSavePdfService {
                       ? dateTimeFormat.format(rule.lastTriggeredAt!)
                       : 'Never'),
               _row('Created on', dateFormat.format(rule.createdAt)),
-              _row('Last updated',
-                  dateTimeFormat.format(rule.updatedAt)),
+              _row('Last updated', dateTimeFormat.format(rule.updatedAt)),
             ],
           ),
           if (rule.description.isNotEmpty) ...[
@@ -262,14 +255,13 @@ class AutoSavePdfService {
       ShareParams(
         files: [XFile(file.path, mimeType: format.mime)],
         text: 'Auto-Save rule: ${rule.name}',
-        sharePositionOrigin: sharePositionOrigin ??
-            const Rect.fromLTWH(0, 0, 1, 1),
+        sharePositionOrigin:
+            sharePositionOrigin ?? const Rect.fromLTWH(0, 0, 1, 1),
       ),
     );
   }
 
-  static String _shortId(String id) =>
-      id.length >= 8 ? id.substring(0, 8) : id;
+  static String _shortId(String id) => id.length >= 8 ? id.substring(0, 8) : id;
 
   // ============= layout helpers =============
 
@@ -323,8 +315,7 @@ class AutoSavePdfService {
           ),
           pw.SizedBox(height: 6),
           pw.Container(
-            padding:
-                const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: pw.BoxDecoration(
               color: statusColor,
               borderRadius: pw.BorderRadius.circular(20),
@@ -498,13 +489,11 @@ class AutoSavePdfService {
                 children: [
                   pw.Padding(
                       padding: const pw.EdgeInsets.all(6),
-                      child: pw.Text(
-                          dateTimeFormat.format(t.createdAt),
+                      child: pw.Text(dateTimeFormat.format(t.createdAt),
                           style: cellStyle)),
                   pw.Padding(
                       padding: const pw.EdgeInsets.all(6),
-                      child: pw.Text(
-                          currencyFormat.format(t.amount),
+                      child: pw.Text(currencyFormat.format(t.amount),
                           style: cellStyle)),
                   pw.Padding(
                       padding: const pw.EdgeInsets.all(6),
@@ -514,8 +503,7 @@ class AutoSavePdfService {
                       padding: const pw.EdgeInsets.all(6),
                       child: pw.Text(t.success ? 'Success' : 'Failed',
                           style: cellStyle.copyWith(
-                            color:
-                                t.success ? _successColor : _warningColor,
+                            color: t.success ? _successColor : _warningColor,
                           ))),
                 ],
               ),

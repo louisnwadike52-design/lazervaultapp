@@ -24,7 +24,7 @@ class ManageCardTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final status = accountDetails?.status ?? accountArgs['status'] ?? 'active';
     final isFrozen = status.toLowerCase() == 'frozen' ||
-                     status.toString().contains('blocked');
+        status.toString().contains('blocked');
 
     return SingleChildScrollView(
       padding: EdgeInsets.all(20.w),
@@ -128,7 +128,8 @@ class ManageCardTab extends StatelessWidget {
             ),
             child: Icon(
               isFrozen ? Icons.lock_outlined : Icons.verified_outlined,
-              color: isFrozen ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+              color:
+                  isFrozen ? const Color(0xFFEF4444) : const Color(0xFF10B981),
               size: 24.sp,
             ),
           ),
@@ -414,9 +415,9 @@ class ManageCardTab extends StatelessWidget {
             onPressed: () {
               Get.back();
               context.read<AccountActionsCubit>().freezeAccount(
-                accountId: accountId,
-                reason: 'User requested freeze via app',
-              );
+                    accountId: accountId,
+                    reason: 'User requested freeze via app',
+                  );
             },
             child: Text(
               'Freeze',
@@ -458,8 +459,8 @@ class ManageCardTab extends StatelessWidget {
     }
 
     context.read<AccountActionsCubit>().unfreezeAccount(
-      accountId: accountId,
-    );
+          accountId: accountId,
+        );
   }
 
   void _onTemporarilyBlock(BuildContext context) {
@@ -523,8 +524,8 @@ class ManageCardTab extends StatelessWidget {
             onPressed: () {
               Get.back();
               context.read<AccountActionsCubit>().temporarilyBlockCard(
-                accountId: accountId,
-              );
+                    accountId: accountId,
+                  );
             },
             child: Text(
               'Block',
@@ -634,8 +635,8 @@ class ManageCardTab extends StatelessWidget {
             onPressed: () {
               Get.back();
               context.read<AccountActionsCubit>().permanentlyBlockCard(
-                accountId: accountId,
-              );
+                    accountId: accountId,
+                  );
             },
             child: Text(
               'Block',
@@ -731,8 +732,8 @@ class ManageCardTab extends StatelessWidget {
             onPressed: () {
               Get.back();
               context.read<AccountActionsCubit>().reportStolenCard(
-                accountId: accountId,
-              );
+                    accountId: accountId,
+                  );
             },
             child: Text(
               'Report Stolen',
@@ -895,9 +896,9 @@ class ManageCardTab extends StatelessWidget {
                     ? () {
                         Get.back();
                         context.read<AccountActionsCubit>().revealCardDetails(
-                          accountId: accountId,
-                          transactionPin: pinController.text,
-                        );
+                              accountId: accountId,
+                              transactionPin: pinController.text,
+                            );
                         pinController.dispose();
                         isValid.dispose();
                       }
@@ -1032,9 +1033,9 @@ class ManageCardTab extends StatelessWidget {
                     ? () {
                         Get.back();
                         context.read<AccountActionsCubit>().revealPIN(
-                          accountId: accountId,
-                          transactionPin: pinController.text,
-                        );
+                              accountId: accountId,
+                              transactionPin: pinController.text,
+                            );
                         pinController.dispose();
                         isValid.dispose();
                       }

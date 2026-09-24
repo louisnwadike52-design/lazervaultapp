@@ -280,7 +280,8 @@ class _RecurringTransferDetailScreenState
             _buildDetailRow(
               Icons.event,
               'Next Payment',
-              DateFormat('MMM d, yyyy \'at\' HH:mm').format(_transfer.nextRunAt!),
+              DateFormat('MMM d, yyyy \'at\' HH:mm')
+                  .format(_transfer.nextRunAt!),
             ),
           ],
           if (_transfer.endDate != null) ...[
@@ -305,16 +306,19 @@ class _RecurringTransferDetailScreenState
               decoration: BoxDecoration(
                 color: const Color(0xFFFB923C).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.3)),
+                border: Border.all(
+                    color: const Color(0xFFFB923C).withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.warning_amber_rounded, color: const Color(0xFFFB923C), size: 18.sp),
+                  Icon(Icons.warning_amber_rounded,
+                      color: const Color(0xFFFB923C), size: 18.sp),
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
                       '${_transfer.consecutiveFailures} consecutive failures. Will auto-pause after 3.',
-                      style: TextStyle(color: const Color(0xFFFB923C), fontSize: 12.sp),
+                      style: TextStyle(
+                          color: const Color(0xFFFB923C), fontSize: 12.sp),
                     ),
                   ),
                 ],
@@ -329,16 +333,19 @@ class _RecurringTransferDetailScreenState
               decoration: BoxDecoration(
                 color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+                border: Border.all(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 18.sp),
+                  Icon(Icons.error_outline,
+                      color: const Color(0xFFEF4444), size: 18.sp),
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
                       'Last failure: ${_transfer.lastFailureReason}',
-                      style: TextStyle(color: const Color(0xFFEF4444), fontSize: 12.sp),
+                      style: TextStyle(
+                          color: const Color(0xFFEF4444), fontSize: 12.sp),
                     ),
                   ),
                 ],
@@ -380,7 +387,10 @@ class _RecurringTransferDetailScreenState
     final (color, label) = switch (status) {
       RecurringTransferStatus.active => (const Color(0xFF10B981), 'Active'),
       RecurringTransferStatus.paused => (const Color(0xFFFB923C), 'Paused'),
-      RecurringTransferStatus.cancelled => (const Color(0xFFEF4444), 'Cancelled'),
+      RecurringTransferStatus.cancelled => (
+          const Color(0xFFEF4444),
+          'Cancelled'
+        ),
       RecurringTransferStatus.expired => (const Color(0xFF9CA3AF), 'Expired'),
     };
 
@@ -411,14 +421,20 @@ class _RecurringTransferDetailScreenState
               icon: _transfer.isActive ? Icons.pause : Icons.play_arrow,
               label: _transfer.isActive ? 'Pause' : 'Resume',
               color: const Color(0xFFFB923C),
-              onTap: _isActionLoading ? null : () {
-                setState(() => _isActionLoading = true);
-                if (_transfer.isActive) {
-                  context.read<RecurringTransferCubit>().pauseRecurringTransfer(_transfer.id);
-                } else {
-                  context.read<RecurringTransferCubit>().resumeRecurringTransfer(_transfer.id);
-                }
-              },
+              onTap: _isActionLoading
+                  ? null
+                  : () {
+                      setState(() => _isActionLoading = true);
+                      if (_transfer.isActive) {
+                        context
+                            .read<RecurringTransferCubit>()
+                            .pauseRecurringTransfer(_transfer.id);
+                      } else {
+                        context
+                            .read<RecurringTransferCubit>()
+                            .resumeRecurringTransfer(_transfer.id);
+                      }
+                    },
             ),
           ),
         if (_transfer.isActive || _transfer.isPaused) SizedBox(width: 12.w),
@@ -501,7 +517,9 @@ class _RecurringTransferDetailScreenState
             onPressed: () {
               Navigator.pop(ctx);
               setState(() => _isActionLoading = true);
-              context.read<RecurringTransferCubit>().cancelRecurringTransfer(_transfer.id);
+              context
+                  .read<RecurringTransferCubit>()
+                  .cancelRecurringTransfer(_transfer.id);
             },
             child: const Text(
               'Cancel Payment',
@@ -543,7 +561,8 @@ class _RecurringTransferDetailScreenState
     );
   }
 
-  Widget _buildExecutionsList(List<RecurringTransferExecutionEntity> executions) {
+  Widget _buildExecutionsList(
+      List<RecurringTransferExecutionEntity> executions) {
     if (executions.isEmpty) {
       return Container(
         padding: EdgeInsets.all(24.w),
@@ -599,7 +618,8 @@ class _RecurringTransferDetailScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      DateFormat('MMM d, yyyy HH:mm').format(execution.executedAt),
+                      DateFormat('MMM d, yyyy HH:mm')
+                          .format(execution.executedAt),
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 13.sp,

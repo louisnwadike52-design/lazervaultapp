@@ -27,7 +27,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
       // Check if user is authenticated
       if (currentUserId == null) {
         if (isClosed) return;
-        emit(const PayInvoiceError(message: 'User not authenticated. Please log in.'));
+        emit(const PayInvoiceError(
+            message: 'User not authenticated. Please log in.'));
         return;
       }
 
@@ -37,7 +38,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
       emit(PayInvoicesLoaded(invoices: invoices));
     } catch (e) {
       if (isClosed) return;
-      emit(PayInvoiceError(message: 'Failed to load invoices: ${e.toString()}'));
+      emit(
+          PayInvoiceError(message: 'Failed to load invoices: ${e.toString()}'));
     }
   }
 
@@ -47,17 +49,20 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
       if (isClosed) return;
       if (currentUserId == null) {
         if (isClosed) return;
-        emit(const PayInvoiceError(message: 'User not authenticated. Please log in.'));
+        emit(const PayInvoiceError(
+            message: 'User not authenticated. Please log in.'));
         return;
       }
 
       emit(PayInvoiceLoading());
-      final invoices = await repository.getTaggedInvoicesByStatus(currentUserId!, status);
+      final invoices =
+          await repository.getTaggedInvoicesByStatus(currentUserId!, status);
       if (isClosed) return;
       emit(PayInvoicesLoaded(invoices: invoices, statusFilter: status));
     } catch (e) {
       if (isClosed) return;
-      emit(PayInvoiceError(message: 'Failed to load invoices by status: ${e.toString()}'));
+      emit(PayInvoiceError(
+          message: 'Failed to load invoices by status: ${e.toString()}'));
     }
   }
 
@@ -67,7 +72,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
       if (isClosed) return;
       if (currentUserId == null) {
         if (isClosed) return;
-        emit(const PayInvoiceError(message: 'User not authenticated. Please log in.'));
+        emit(const PayInvoiceError(
+            message: 'User not authenticated. Please log in.'));
         return;
       }
 
@@ -80,7 +86,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(PayInvoiceError(message: 'Failed to load overdue invoices: ${e.toString()}'));
+      emit(PayInvoiceError(
+          message: 'Failed to load overdue invoices: ${e.toString()}'));
     }
   }
 
@@ -90,17 +97,20 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
       if (isClosed) return;
       if (currentUserId == null) {
         if (isClosed) return;
-        emit(const PayInvoiceError(message: 'User not authenticated. Please log in.'));
+        emit(const PayInvoiceError(
+            message: 'User not authenticated. Please log in.'));
         return;
       }
 
       emit(PayInvoiceLoading());
-      final invoices = await repository.getUpcomingInvoices(currentUserId!, days: days);
+      final invoices =
+          await repository.getUpcomingInvoices(currentUserId!, days: days);
       if (isClosed) return;
       emit(PayInvoicesLoaded(invoices: invoices));
     } catch (e) {
       if (isClosed) return;
-      emit(PayInvoiceError(message: 'Failed to load upcoming invoices: ${e.toString()}'));
+      emit(PayInvoiceError(
+          message: 'Failed to load upcoming invoices: ${e.toString()}'));
     }
   }
 
@@ -110,7 +120,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
       if (isClosed) return;
       if (currentUserId == null) {
         if (isClosed) return;
-        emit(const PayInvoiceError(message: 'User not authenticated. Please log in.'));
+        emit(const PayInvoiceError(
+            message: 'User not authenticated. Please log in.'));
         return;
       }
 
@@ -120,12 +131,14 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
         return;
       }
 
-      final invoices = await repository.searchTaggedInvoices(currentUserId!, query);
+      final invoices =
+          await repository.searchTaggedInvoices(currentUserId!, query);
       if (isClosed) return;
       emit(PayInvoicesLoaded(invoices: invoices, searchQuery: query));
     } catch (e) {
       if (isClosed) return;
-      emit(PayInvoiceError(message: 'Failed to search invoices: ${e.toString()}'));
+      emit(PayInvoiceError(
+          message: 'Failed to search invoices: ${e.toString()}'));
     }
   }
 
@@ -135,16 +148,19 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
       if (isClosed) return;
       if (currentUserId == null) {
         if (isClosed) return;
-        emit(const PayInvoiceError(message: 'User not authenticated. Please log in.'));
+        emit(const PayInvoiceError(
+            message: 'User not authenticated. Please log in.'));
         return;
       }
       emit(PayInvoiceLoading());
-      final invoices = await repository.filterInvoicesByPriority(currentUserId!, priority);
+      final invoices =
+          await repository.filterInvoicesByPriority(currentUserId!, priority);
       if (isClosed) return;
       emit(PayInvoicesLoaded(invoices: invoices));
     } catch (e) {
       if (isClosed) return;
-      emit(PayInvoiceError(message: 'Failed to filter invoices by priority: ${e.toString()}'));
+      emit(PayInvoiceError(
+          message: 'Failed to filter invoices by priority: ${e.toString()}'));
     }
   }
 
@@ -164,12 +180,14 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
       }
     } catch (e) {
       if (isClosed) return;
-      emit(PayInvoiceError(message: 'Failed to load invoice details: ${e.toString()}'));
+      emit(PayInvoiceError(
+          message: 'Failed to load invoice details: ${e.toString()}'));
     }
   }
 
   // Pay invoice
-  Future<void> payInvoice(String invoiceId, PaymentDetails paymentDetails) async {
+  Future<void> payInvoice(
+      String invoiceId, PaymentDetails paymentDetails) async {
     try {
       // First load the invoice to get details
       final invoice = await repository.getTaggedInvoiceById(invoiceId);
@@ -216,7 +234,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
   }
 
   // Process partial payment
-  Future<void> processPartialPayment(String invoiceId, PaymentDetails paymentDetails) async {
+  Future<void> processPartialPayment(
+      String invoiceId, PaymentDetails paymentDetails) async {
     try {
       if (isClosed) return;
       emit(PayInvoicePaymentProcessing(
@@ -225,7 +244,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
         amount: paymentDetails.amount,
       ));
 
-      final result = await repository.processPartialPayment(invoiceId, paymentDetails);
+      final result =
+          await repository.processPartialPayment(invoiceId, paymentDetails);
       if (isClosed) return;
 
       if (result.success) {
@@ -245,16 +265,19 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     } catch (e) {
       if (isClosed) return;
       emit(PayInvoicePaymentFailure(
-        errorMessage: 'An error occurred during partial payment: ${e.toString()}',
+        errorMessage:
+            'An error occurred during partial payment: ${e.toString()}',
         invoiceId: invoiceId,
       ));
     }
   }
 
   // Request payment extension
-  Future<void> requestPaymentExtension(String invoiceId, DateTime newDueDate, String? reason) async {
+  Future<void> requestPaymentExtension(
+      String invoiceId, DateTime newDueDate, String? reason) async {
     try {
-      final success = await repository.requestPaymentExtension(invoiceId, newDueDate, reason);
+      final success = await repository.requestPaymentExtension(
+          invoiceId, newDueDate, reason);
       if (isClosed) return;
       if (success) {
         emit(PayInvoiceOperationSuccess(
@@ -262,11 +285,13 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
           operationType: 'extension_request',
         ));
       } else {
-        emit(PayInvoiceError(message: 'Failed to submit payment extension request'));
+        emit(PayInvoiceError(
+            message: 'Failed to submit payment extension request'));
       }
     } catch (e) {
       if (isClosed) return;
-      emit(PayInvoiceError(message: 'Error submitting extension request: ${e.toString()}'));
+      emit(PayInvoiceError(
+          message: 'Error submitting extension request: ${e.toString()}'));
     }
   }
 
@@ -285,7 +310,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
       }
     } catch (e) {
       if (isClosed) return;
-      emit(PayInvoiceError(message: 'Error submitting dispute: ${e.toString()}'));
+      emit(PayInvoiceError(
+          message: 'Error submitting dispute: ${e.toString()}'));
     }
   }
 
@@ -294,7 +320,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     try {
       if (currentUserId == null) {
         if (isClosed) return;
-        emit(const PayInvoiceError(message: 'User not authenticated. Please log in.'));
+        emit(const PayInvoiceError(
+            message: 'User not authenticated. Please log in.'));
         return;
       }
       final statistics = await repository.getPaymentStatistics(currentUserId!);
@@ -302,7 +329,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
       emit(PayInvoiceStatisticsLoaded(statistics: statistics));
     } catch (e) {
       if (isClosed) return;
-      emit(PayInvoiceError(message: 'Failed to load payment statistics: ${e.toString()}'));
+      emit(PayInvoiceError(
+          message: 'Failed to load payment statistics: ${e.toString()}'));
     }
   }
 
@@ -311,15 +339,18 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     try {
       if (currentUserId == null) {
         if (isClosed) return;
-        emit(const PayInvoiceError(message: 'User not authenticated. Please log in.'));
+        emit(const PayInvoiceError(
+            message: 'User not authenticated. Please log in.'));
         return;
       }
-      final accountBalance = await repository.getUserAccountBalance(currentUserId!);
+      final accountBalance =
+          await repository.getUserAccountBalance(currentUserId!);
       if (isClosed) return;
       emit(PayInvoiceAccountBalanceLoaded(accountBalance: accountBalance));
     } catch (e) {
       if (isClosed) return;
-      emit(PayInvoiceError(message: 'Failed to load account balance: ${e.toString()}'));
+      emit(PayInvoiceError(
+          message: 'Failed to load account balance: ${e.toString()}'));
     }
   }
 
@@ -328,15 +359,18 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     try {
       if (currentUserId == null) {
         if (isClosed) return;
-        emit(const PayInvoiceError(message: 'User not authenticated. Please log in.'));
+        emit(const PayInvoiceError(
+            message: 'User not authenticated. Please log in.'));
         return;
       }
-      final paymentMethods = await repository.getUserPaymentMethods(currentUserId!);
+      final paymentMethods =
+          await repository.getUserPaymentMethods(currentUserId!);
       if (isClosed) return;
       emit(PayInvoicePaymentMethodsLoaded(paymentMethods: paymentMethods));
     } catch (e) {
       if (isClosed) return;
-      emit(PayInvoiceError(message: 'Failed to load payment methods: ${e.toString()}'));
+      emit(PayInvoiceError(
+          message: 'Failed to load payment methods: ${e.toString()}'));
     }
   }
 
@@ -345,22 +379,27 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     try {
       if (currentUserId == null) {
         if (isClosed) return;
-        emit(const PayInvoiceError(message: 'User not authenticated. Please log in.'));
+        emit(const PayInvoiceError(
+            message: 'User not authenticated. Please log in.'));
         return;
       }
-      final transactions = await repository.getRecentTransactions(currentUserId!, limit: limit);
+      final transactions =
+          await repository.getRecentTransactions(currentUserId!, limit: limit);
       if (isClosed) return;
       emit(PayInvoiceRecentTransactionsLoaded(transactions: transactions));
     } catch (e) {
       if (isClosed) return;
-      emit(PayInvoiceError(message: 'Failed to load recent transactions: ${e.toString()}'));
+      emit(PayInvoiceError(
+          message: 'Failed to load recent transactions: ${e.toString()}'));
     }
   }
 
   // Set payment reminder
-  Future<void> setPaymentReminder(String invoiceId, DateTime reminderDate) async {
+  Future<void> setPaymentReminder(
+      String invoiceId, DateTime reminderDate) async {
     try {
-      final success = await repository.setPaymentReminder(invoiceId, reminderDate);
+      final success =
+          await repository.setPaymentReminder(invoiceId, reminderDate);
       if (isClosed) return;
       if (success) {
         emit(PayInvoiceOperationSuccess(
@@ -391,7 +430,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
       }
     } catch (e) {
       if (isClosed) return;
-      emit(PayInvoiceError(message: 'Error requesting details: ${e.toString()}'));
+      emit(PayInvoiceError(
+          message: 'Error requesting details: ${e.toString()}'));
     }
   }
 
@@ -400,10 +440,12 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     try {
       if (currentUserId == null) {
         if (isClosed) return;
-        emit(const PayInvoiceError(message: 'User not authenticated. Please log in.'));
+        emit(const PayInvoiceError(
+            message: 'User not authenticated. Please log in.'));
         return;
       }
-      final success = await repository.addPaymentMethod(currentUserId!, paymentMethodData);
+      final success =
+          await repository.addPaymentMethod(currentUserId!, paymentMethodData);
       if (isClosed) return;
       if (success) {
         emit(PayInvoiceOperationSuccess(
@@ -417,7 +459,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
       }
     } catch (e) {
       if (isClosed) return;
-      emit(PayInvoiceError(message: 'Error adding payment method: ${e.toString()}'));
+      emit(PayInvoiceError(
+          message: 'Error adding payment method: ${e.toString()}'));
     }
   }
 
@@ -426,10 +469,12 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
     try {
       if (currentUserId == null) {
         if (isClosed) return;
-        emit(const PayInvoiceError(message: 'User not authenticated. Please log in.'));
+        emit(const PayInvoiceError(
+            message: 'User not authenticated. Please log in.'));
         return;
       }
-      final success = await repository.removePaymentMethod(currentUserId!, paymentMethodId);
+      final success =
+          await repository.removePaymentMethod(currentUserId!, paymentMethodId);
       if (isClosed) return;
       if (success) {
         emit(PayInvoiceOperationSuccess(
@@ -443,7 +488,8 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
       }
     } catch (e) {
       if (isClosed) return;
-      emit(PayInvoiceError(message: 'Error removing payment method: ${e.toString()}'));
+      emit(PayInvoiceError(
+          message: 'Error removing payment method: ${e.toString()}'));
     }
   }
 
@@ -464,4 +510,4 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
       loadTaggedInvoices();
     }
   }
-} 
+}

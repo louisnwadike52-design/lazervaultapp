@@ -44,11 +44,16 @@ void main() {
 
   SprayLiveCubit build() => SprayLiveCubit(repository: repo, wsService: ws);
 
-  test('cohost_invited addressed to me sets the pending banner; decline clears it', () async {
+  test(
+      'cohost_invited addressed to me sets the pending banner; decline clears it',
+      () async {
     final c = build();
     c.bind(_session(), 'ME'); // ME is a viewer, not the host
     events.add(const SprayRoomEvent(
-      type: 'cohost_invited', sessionId: 's1', data: {'user_id': 'ME'}, timestamp: 1,
+      type: 'cohost_invited',
+      sessionId: 's1',
+      data: {'user_id': 'ME'},
+      timestamp: 1,
     ));
     await Future<void>.delayed(const Duration(milliseconds: 30));
     expect(c.state.coHostInvitePending, isTrue);
@@ -62,34 +67,42 @@ void main() {
     final c = build();
     c.bind(_session(), 'ME');
     events.add(const SprayRoomEvent(
-      type: 'cohost_invited', sessionId: 's1', data: {'user_id': 'OTHER'}, timestamp: 1,
+      type: 'cohost_invited',
+      sessionId: 's1',
+      data: {'user_id': 'OTHER'},
+      timestamp: 1,
     ));
     await Future<void>.delayed(const Duration(milliseconds: 30));
     expect(c.state.coHostInvitePending, isFalse);
     await c.close();
   });
 
-  test('inviteCoHost as a non-host is rejected and never calls the repository', () async {
+  test('inviteCoHost as a non-host is rejected and never calls the repository',
+      () async {
     final c = build();
     c.bind(_session(host: 'HOST'), 'ME');
     final err = await c.inviteCoHost(userId: 'X');
     expect(err, isNotNull);
-    verifyNever(() => repo.inviteCoHost(any(), userId: any(named: 'userId'), userName: any(named: 'userName')));
+    verifyNever(() => repo.inviteCoHost(any(),
+        userId: any(named: 'userId'), userName: any(named: 'userName')));
     await c.close();
   });
 
   test('inviteCoHost as the host calls the repository', () async {
-    when(() => repo.inviteCoHost(any(), userId: any(named: 'userId'), userName: any(named: 'userName')))
-        .thenAnswer((_) async {});
+    when(() => repo.inviteCoHost(any(),
+        userId: any(named: 'userId'),
+        userName: any(named: 'userName'))).thenAnswer((_) async {});
     final c = build();
     c.bind(_session(host: 'ME'), 'ME');
     final err = await c.inviteCoHost(userId: 'X', userName: 'Bob');
     expect(err, isNull);
-    verify(() => repo.inviteCoHost('s1', userId: 'X', userName: 'Bob')).called(1);
+    verify(() => repo.inviteCoHost('s1', userId: 'X', userName: 'Bob'))
+        .called(1);
     await c.close();
   });
 
-  test('toggleRecording as a non-host returns the host-only guard message', () async {
+  test('toggleRecording as a non-host returns the host-only guard message',
+      () async {
     final c = build();
     c.bind(_session(host: 'HOST'), 'ME');
     final err = await c.toggleRecording();

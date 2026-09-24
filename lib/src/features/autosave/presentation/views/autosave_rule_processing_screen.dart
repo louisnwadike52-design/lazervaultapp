@@ -332,9 +332,8 @@ class _AutoSaveRuleProcessingScreenState
                         : Text(
                             '${index + 1}',
                             style: GoogleFonts.inter(
-                              color: isCurrent
-                                  ? Colors.white
-                                  : Colors.grey[600],
+                              color:
+                                  isCurrent ? Colors.white : Colors.grey[600],
                               fontSize: 14.sp,
                               fontWeight: FontWeight.bold,
                             ),
@@ -349,8 +348,7 @@ class _AutoSaveRuleProcessingScreenState
                         ? Colors.white
                         : Colors.grey[600],
                     fontSize: 11.sp,
-                    fontWeight:
-                        isCurrent ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
               ],

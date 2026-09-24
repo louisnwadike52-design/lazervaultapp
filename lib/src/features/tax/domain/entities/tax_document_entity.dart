@@ -1,6 +1,12 @@
 import 'package:equatable/equatable.dart';
 
-enum TaxDocumentType { tinCert, vatRegistration, taxClearance, whtReceipt, filingReceipt }
+enum TaxDocumentType {
+  tinCert,
+  vatRegistration,
+  taxClearance,
+  whtReceipt,
+  filingReceipt
+}
 
 class TaxDocumentEntity extends Equatable {
   final String id;
@@ -25,17 +31,26 @@ class TaxDocumentEntity extends Equatable {
 
   String get documentTypeDisplay {
     switch (documentType) {
-      case TaxDocumentType.tinCert: return 'TIN Certificate';
-      case TaxDocumentType.vatRegistration: return 'VAT Registration';
-      case TaxDocumentType.taxClearance: return 'Tax Clearance';
-      case TaxDocumentType.whtReceipt: return 'WHT Receipt';
-      case TaxDocumentType.filingReceipt: return 'Filing Receipt';
+      case TaxDocumentType.tinCert:
+        return 'TIN Certificate';
+      case TaxDocumentType.vatRegistration:
+        return 'VAT Registration';
+      case TaxDocumentType.taxClearance:
+        return 'Tax Clearance';
+      case TaxDocumentType.whtReceipt:
+        return 'WHT Receipt';
+      case TaxDocumentType.filingReceipt:
+        return 'Filing Receipt';
     }
   }
 
-  bool get isExpired => expiryDate != null && expiryDate!.isBefore(DateTime.now());
+  bool get isExpired =>
+      expiryDate != null && expiryDate!.isBefore(DateTime.now());
 
-  bool get isExpiringSoon => expiryDate != null && !isExpired && expiryDate!.difference(DateTime.now()).inDays <= 30;
+  bool get isExpiringSoon =>
+      expiryDate != null &&
+      !isExpired &&
+      expiryDate!.difference(DateTime.now()).inDays <= 30;
 
   @override
   List<Object?> get props => [id, documentType, name];

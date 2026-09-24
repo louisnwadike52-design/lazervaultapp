@@ -56,7 +56,8 @@ class TransactionHistoryLoaded extends TransactionHistoryState {
       hasMore: hasMore ?? this.hasMore,
       currentPage: currentPage ?? this.currentPage,
       totalPages: totalPages ?? this.totalPages,
-      activeFilters: clearFilters ? null : (activeFilters ?? this.activeFilters),
+      activeFilters:
+          clearFilters ? null : (activeFilters ?? this.activeFilters),
       statistics: statistics ?? this.statistics,
     );
   }

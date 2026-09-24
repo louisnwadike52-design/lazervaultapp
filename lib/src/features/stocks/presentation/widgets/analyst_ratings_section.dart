@@ -99,7 +99,7 @@ class AnalystRatingsSection extends StatelessWidget {
     final targetPrice = 299.38;
     final currentPrice = stock.currentPrice;
     final changePercent = ((targetPrice - currentPrice) / currentPrice) * 100;
-    
+
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -118,7 +118,8 @@ class AnalystRatingsSection extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            CurrencySymbols.formatAmountWithCurrency(targetPrice, stock.currency),
+            CurrencySymbols.formatAmountWithCurrency(
+                targetPrice, stock.currency),
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 20.sp,
@@ -185,4 +186,4 @@ class AnalystRatingsSection extends StatelessWidget {
       ],
     );
   }
-} 
+}

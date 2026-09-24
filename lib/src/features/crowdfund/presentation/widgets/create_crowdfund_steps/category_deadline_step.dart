@@ -80,7 +80,8 @@ class CategoryDeadlineStep extends StatelessWidget {
               return GestureDetector(
                 onTap: () => onCategoryChanged(category),
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                   decoration: BoxDecoration(
                     gradient: isSelected
                         ? const LinearGradient(
@@ -100,7 +101,8 @@ class CategoryDeadlineStep extends StatelessWidget {
                     style: GoogleFonts.inter(
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w500,
-                      color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
+                      color:
+                          isSelected ? Colors.white : const Color(0xFF9CA3AF),
                     ),
                   ),
                 ),

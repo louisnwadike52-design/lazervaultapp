@@ -39,8 +39,8 @@ class _WaterAutoRechargeScreenState extends State<WaterAutoRechargeScreen> {
         elevation: 0,
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: Icon(Icons.arrow_back_ios_new,
-              color: Colors.white, size: 20.sp),
+          icon:
+              Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20.sp),
         ),
         title: Text('Water Auto-Pay',
             style: TextStyle(
@@ -59,8 +59,7 @@ class _WaterAutoRechargeScreenState extends State<WaterAutoRechargeScreen> {
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
         label: Text('New Auto-Pay',
-            style: TextStyle(
-                fontSize: 13.sp, fontWeight: FontWeight.w600)),
+            style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600)),
       ),
       body: BlocConsumer<WaterAutoRechargeCubit, WaterAutoRechargeState>(
         listener: (context, state) {
@@ -271,8 +270,8 @@ class _WaterAutoRechargeScreenState extends State<WaterAutoRechargeScreen> {
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             child: Text('Close',
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
           ),
         ],
       ),
@@ -288,8 +287,8 @@ class _WaterAutoRechargeScreenState extends State<WaterAutoRechargeScreen> {
           SizedBox(
             width: 110.w,
             child: Text(label,
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
           ),
           Expanded(
             child: Text(value,
@@ -335,8 +334,8 @@ class _WaterAutoRechargeScreenState extends State<WaterAutoRechargeScreen> {
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             child: Text('Cancel',
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
           ),
           TextButton(
             onPressed: () {

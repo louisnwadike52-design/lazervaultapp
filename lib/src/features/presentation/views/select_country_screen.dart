@@ -10,8 +10,6 @@ class SelectCountryScreen extends StatefulWidget {
 }
 
 class _SelectCountryScreenState extends State<SelectCountryScreen> {
-  
-
   @override
   void initState() {
     super.initState();

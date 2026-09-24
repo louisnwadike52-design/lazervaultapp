@@ -13,7 +13,6 @@ import '../../../../../../core/services/locale_manager.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 part 'amount_duration_selector_widgets.dart';
 
-
 /// Amount and duration selection — bottom half of wizard step 1
 /// (Plan & Amount).
 ///
@@ -42,6 +41,7 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
     if (lockType == null) return const [];
     return cubit.getDurationOptions(lockType);
   }
+
   late String _userCurrency;
   StreamSubscription<String>? _currencySubscription;
 
@@ -263,9 +263,11 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
                 ),
                 child: TextField(
                   controller: _amountController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                    FilteringTextInputFormatter.allow(
+                        RegExp(r'^\d+\.?\d{0,2}')),
                   ],
                   style: GoogleFonts.inter(
                     fontSize: 24.sp,
@@ -372,58 +374,65 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
                     spacing: 12.w,
                     runSpacing: 12.h,
                     children: _durations.map((days) {
-                  final isSelected = selectedDuration == days;
-                  return GestureDetector(
-                    onTap: () => _onDurationTapped(days),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16.w,
-                        vertical: 12.h,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: isSelected
-                              ? [const Color(0xFF6366F1), const Color.fromARGB(255, 78, 3, 208)]
-                              : [const Color(0xFF2A2A3E), const Color(0xFF1F1F35)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                      final isSelected = selectedDuration == days;
+                      return GestureDetector(
+                        onTap: () => _onDurationTapped(days),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 12.h,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: isSelected
+                                  ? [
+                                      const Color(0xFF6366F1),
+                                      const Color.fromARGB(255, 78, 3, 208)
+                                    ]
+                                  : [
+                                      const Color(0xFF2A2A3E),
+                                      const Color(0xFF1F1F35)
+                                    ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(12.r),
+                            boxShadow: [
+                              BoxShadow(
+                                color: isSelected
+                                    ? const Color(0xFF6366F1)
+                                        .withValues(alpha: 0.3)
+                                    : Colors.black.withValues(alpha: 0.2),
+                                blurRadius: isSelected ? 12 : 8,
+                                offset: Offset(0, isSelected ? 6 : 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                '$days',
+                                style: GoogleFonts.inter(
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                days == 1 ? 'day' : 'days',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w500,
+                                  color: isSelected
+                                      ? Colors.white.withValues(alpha: 0.8)
+                                      : const Color(0xFF9CA3AF),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        borderRadius: BorderRadius.circular(12.r),
-                        boxShadow: [
-                          BoxShadow(
-                            color: isSelected
-                                ? const Color(0xFF6366F1).withValues(alpha: 0.3)
-                                : Colors.black.withValues(alpha: 0.2),
-                            blurRadius: isSelected ? 12 : 8,
-                            offset: Offset(0, isSelected ? 6 : 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            '$days',
-                            style: GoogleFonts.inter(
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                          ),
-                          Text(
-                            days == 1 ? 'day' : 'days',
-                            style: GoogleFonts.inter(
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w500,
-                              color: isSelected
-                                  ? Colors.white.withValues(alpha: 0.8)
-                                  : const Color(0xFF9CA3AF),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }).toList(),
+                      );
+                    }).toList(),
                   ),
               ],
               // Config-driven rate info
@@ -437,7 +446,8 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
                       ? '${baseRate.toStringAsFixed(0)}% base rate (up to ${maxRate.toStringAsFixed(0)}% with longer duration)'
                       : '${baseRate.toStringAsFixed(0)}% p.a.';
                   return Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFF10B981).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8.r),
@@ -445,12 +455,15 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.info_outline, color: const Color(0xFF10B981), size: 14.sp),
+                        Icon(Icons.info_outline,
+                            color: const Color(0xFF10B981), size: 14.sp),
                         SizedBox(width: 6.w),
                         Flexible(
                           child: Text(
                             rateInfo,
-                            style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF10B981)),
+                            style: GoogleFonts.inter(
+                                fontSize: 12.sp,
+                                color: const Color(0xFF10B981)),
                           ),
                         ),
                       ],
@@ -526,7 +539,8 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
                         borderRadius: BorderRadius.circular(16.r),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                            color:
+                                const Color(0xFF10B981).withValues(alpha: 0.2),
                             blurRadius: 16,
                             offset: const Offset(0, 8),
                           ),
@@ -573,9 +587,11 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
                           if (calc.qualifiesForUpfrontInterest) ...[
                             SizedBox(height: 12.h),
                             Container(
-                              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 12.w, vertical: 8.h),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                                color: const Color(0xFF6366F1)
+                                    .withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(8.r),
                               ),
                               child: Row(
@@ -649,7 +665,8 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
     );
   }
 
-  Widget _buildCalculationRow(String label, String value, {bool isTotal = false}) {
+  Widget _buildCalculationRow(String label, String value,
+      {bool isTotal = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

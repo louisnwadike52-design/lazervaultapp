@@ -38,7 +38,13 @@ void main() {
 
   test('the terminal states are mutually exclusive', () {
     // Overlap is what let a refunded payment also look pending.
-    for (final s in ['completed', 'failed', 'cancelled', 'refunded', 'reversed']) {
+    for (final s in [
+      'completed',
+      'failed',
+      'cancelled',
+      'refunded',
+      'reversed'
+    ]) {
       final p = payment(s);
       final flags = [p.isCompleted, p.isFailed, p.isRefunded, p.isPending]
           .where((f) => f)

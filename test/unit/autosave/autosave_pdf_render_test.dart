@@ -90,8 +90,8 @@ void main() {
       () async {
     // Rule names are free text. An em-dash / bullet / quotes reaching a font
     // without those glyphs is the same failure mode as ₦.
-    final file = await generate(
-        rule(name: 'Rent — “big” goal • 50% · café fund'));
+    final file =
+        await generate(rule(name: 'Rent — “big” goal • 50% · café fund'));
     expect(file.existsSync(), isTrue);
     expect(await file.length(), greaterThan(2000));
   });

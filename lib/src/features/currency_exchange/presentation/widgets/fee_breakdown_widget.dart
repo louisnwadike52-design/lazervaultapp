@@ -65,7 +65,8 @@ class FeeBreakdownWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildRow(String label, String value, {bool isBold = false, Color? valueColor}) {
+  Widget _buildRow(String label, String value,
+      {bool isBold = false, Color? valueColor}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

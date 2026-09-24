@@ -14,16 +14,16 @@ void main() {
       // Until this held, deposits could never match the PDF allowlist, so
       // Share/Download handed back a flat screenshot.
       expect(
-        inferServiceTypeFromCategory(
-            'deposit', 'credit', 'Deposit from Praiz Onah', '', 'banking-service'),
+        inferServiceTypeFromCategory('deposit', 'credit',
+            'Deposit from Praiz Onah', '', 'banking-service'),
         TransactionServiceType.deposit,
       );
     });
 
     test('a withdrawal keeps its own identity', () {
       expect(
-        inferServiceTypeFromCategory(
-            'withdrawal', 'debit', 'Withdrawal to GTBank', '', 'banking-service'),
+        inferServiceTypeFromCategory('withdrawal', 'debit',
+            'Withdrawal to GTBank', '', 'banking-service'),
         TransactionServiceType.withdrawal,
       );
     });

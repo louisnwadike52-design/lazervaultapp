@@ -353,10 +353,10 @@ class _RecipientDetailsScreenState extends State<RecipientDetailsScreen>
                   hint: 'USA',
                   icon: Icons.public,
                   onChanged: (value) => cubit.updateRecipientCountry(value),
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ],
       ],
     );

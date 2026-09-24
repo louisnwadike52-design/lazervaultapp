@@ -11,12 +11,12 @@ import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_
 import 'package:lazervault/src/features/voice_enrollment/presentation/voice_enrollment_carousel_screen.dart';
 part 'voice_activation_manager_widgets.dart';
 
-
 /// Voice Activation Manager
 /// Orchestrates voice enrollment flow.
 /// Verification happens automatically in the background during voice sessions.
 class VoiceActivationManager {
-  final VoiceBiometricsService _voiceService = GetIt.I<VoiceBiometricsService>();
+  final VoiceBiometricsService _voiceService =
+      GetIt.I<VoiceBiometricsService>();
 
   /// Short-lived enrollment-status cache, shared across instances (this
   /// manager is constructed fresh at each call site). Every voice button tap
@@ -69,6 +69,7 @@ class VoiceActivationManager {
       return false;
     }
   }
+
   /// DEFINITIVE tri-state enrollment check. This is the SINGLE classification
   /// point the mic entry points use so an outage is never mistaken for
   /// "not enrolled".
@@ -90,7 +91,8 @@ class VoiceActivationManager {
     }
     try {
       final status = await _voiceService.checkEnrollmentStatus(userId);
-      print('VoiceActivationManager: Enrollment status for $userId: ${status.isEnrolled}');
+      print(
+          'VoiceActivationManager: Enrollment status for $userId: ${status.isEnrolled}');
       _enrollmentCache[userId] = _EnrollmentCacheEntry(status.isEnrolled);
       return status.isEnrolled
           ? VoiceEnrollmentCheck.enrolled
@@ -98,7 +100,8 @@ class VoiceActivationManager {
     } catch (e) {
       // Transport error / 5xx / ambiguous — NOT a confirmed "not enrolled".
       // Report as temporarily unavailable and DO NOT cache.
-      print('VoiceActivationManager: Enrollment check unavailable (transient): $e');
+      print(
+          'VoiceActivationManager: Enrollment check unavailable (transient): $e');
       return VoiceEnrollmentCheck.unavailable;
     }
   }
@@ -173,7 +176,8 @@ class VoiceActivationManager {
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Row(
           children: [
             Container(
@@ -182,7 +186,8 @@ class VoiceActivationManager {
                 color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.mic_rounded, color: InvoiceThemeColors.primaryPurple, size: 24),
+              child: Icon(Icons.mic_rounded,
+                  color: InvoiceThemeColors.primaryPurple, size: 24),
             ),
             SizedBox(width: 12.w),
             Expanded(
@@ -210,24 +215,31 @@ class VoiceActivationManager {
               ),
             ),
             SizedBox(height: 16.h),
-            _buildFeatureRow(Icons.shield_rounded, 'Verify your identity by voice'),
+            _buildFeatureRow(
+                Icons.shield_rounded, 'Verify your identity by voice'),
             SizedBox(height: 10.h),
-            _buildFeatureRow(Icons.send_rounded, 'Send money with voice commands'),
+            _buildFeatureRow(
+                Icons.send_rounded, 'Send money with voice commands'),
             SizedBox(height: 10.h),
-            _buildFeatureRow(Icons.account_balance_wallet_rounded, 'Check balances hands-free'),
+            _buildFeatureRow(Icons.account_balance_wallet_rounded,
+                'Check balances hands-free'),
             SizedBox(height: 10.h),
-            _buildFeatureRow(Icons.receipt_long_rounded, 'Pay bills and manage investments'),
+            _buildFeatureRow(
+                Icons.receipt_long_rounded, 'Pay bills and manage investments'),
             SizedBox(height: 16.h),
             Container(
               padding: EdgeInsets.all(10.w),
               decoration: BoxDecoration(
                 color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15)),
+                border: Border.all(
+                    color: InvoiceThemeColors.primaryPurple
+                        .withValues(alpha: 0.15)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.timer_outlined, color: Color(0xFF9CA3AF), size: 16),
+                  const Icon(Icons.timer_outlined,
+                      color: Color(0xFF9CA3AF), size: 16),
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
@@ -262,7 +274,8 @@ class VoiceActivationManager {
               backgroundColor: InvoiceThemeColors.primaryPurple,
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r)),
             ),
           ),
         ],

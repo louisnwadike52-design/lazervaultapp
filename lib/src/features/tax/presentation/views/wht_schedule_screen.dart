@@ -48,7 +48,8 @@ class _WHTScheduleScreenState extends State<WHTScheduleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final money = NumberFormat.currency(locale: 'en_NG', symbol: '₦', decimalDigits: 2);
+    final money =
+        NumberFormat.currency(locale: 'en_NG', symbol: '₦', decimalDigits: 2);
     final dateFmt = DateFormat('dd MMM yyyy');
 
     return BlocProvider.value(
@@ -60,7 +61,9 @@ class _WHTScheduleScreenState extends State<WHTScheduleScreen> {
           elevation: 0,
           title: Text('WHT Schedule',
               style: GoogleFonts.inter(
-                  color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w600)),
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w600)),
           centerTitle: true,
           actions: [
             IconButton(
@@ -80,7 +83,8 @@ class _WHTScheduleScreenState extends State<WHTScheduleScreen> {
             }
             if (state is WHTScheduleLoaded) {
               final entries = (state.data['entries'] as List?) ?? const [];
-              final total = (state.data['totalWhtAmount'] as num?)?.toDouble() ?? 0;
+              final total =
+                  (state.data['totalWhtAmount'] as num?)?.toDouble() ?? 0;
               return RefreshIndicator(
                 onRefresh: () async => _cubit.getWHTSchedule(_period),
                 color: const Color(0xFF3B82F6),
@@ -107,10 +111,12 @@ class _WHTScheduleScreenState extends State<WHTScheduleScreen> {
     );
   }
 
-  Widget _totalCard(String period, double total, NumberFormat money) => Container(
+  Widget _totalCard(String period, double total, NumberFormat money) =>
+      Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F), borderRadius: BorderRadius.circular(14.r)),
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(14.r)),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -144,7 +150,8 @@ class _WHTScheduleScreenState extends State<WHTScheduleScreen> {
       margin: EdgeInsets.only(bottom: 10.h),
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F), borderRadius: BorderRadius.circular(12.r)),
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r)),
       child: Row(
         children: [
           Expanded(
@@ -152,7 +159,8 @@ class _WHTScheduleScreenState extends State<WHTScheduleScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text((e['vendorName'] as String?) ?? 'Vendor',
-                    style: GoogleFonts.inter(color: Colors.white, fontSize: 13.5.sp),
+                    style: GoogleFonts.inter(
+                        color: Colors.white, fontSize: 13.5.sp),
                     overflow: TextOverflow.ellipsis),
                 SizedBox(height: 2.h),
                 Text(
@@ -166,7 +174,9 @@ class _WHTScheduleScreenState extends State<WHTScheduleScreen> {
           SizedBox(width: 8.w),
           Text(money.format((e['whtAmount'] as num?)?.toDouble() ?? 0),
               style: GoogleFonts.inter(
-                  color: Colors.white, fontSize: 13.5.sp, fontWeight: FontWeight.w600)),
+                  color: Colors.white,
+                  fontSize: 13.5.sp,
+                  fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -188,7 +198,8 @@ class _WHTScheduleScreenState extends State<WHTScheduleScreen> {
               icon: const Icon(Icons.add, size: 18, color: Color(0xFF3B82F6)),
               label: Text('Record WHT',
                   style: GoogleFonts.inter(
-                      color: const Color(0xFF3B82F6), fontWeight: FontWeight.w600)),
+                      color: const Color(0xFF3B82F6),
+                      fontWeight: FontWeight.w600)),
             ),
           ],
         ),
@@ -210,10 +221,12 @@ class _WHTScheduleScreenState extends State<WHTScheduleScreen> {
               SizedBox(height: 12.h),
               TextButton.icon(
                 onPressed: () => _cubit.getWHTSchedule(_period),
-                icon: const Icon(Icons.refresh_rounded, size: 18, color: Color(0xFF3B82F6)),
+                icon: const Icon(Icons.refresh_rounded,
+                    size: 18, color: Color(0xFF3B82F6)),
                 label: Text('Retry',
                     style: GoogleFonts.inter(
-                        color: const Color(0xFF3B82F6), fontWeight: FontWeight.w600)),
+                        color: const Color(0xFF3B82F6),
+                        fontWeight: FontWeight.w600)),
               ),
             ],
           ),

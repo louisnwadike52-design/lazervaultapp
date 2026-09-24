@@ -1281,11 +1281,11 @@ class UtilityPaymentsServiceClient extends $grpc.Client {
           '/utilitypayments.UtilityPaymentsService/GetDataPlans',
           ($0.GetDataPlansRequest value) => value.writeToBuffer(),
           $0.GetDataPlansResponse.fromBuffer);
-  static final _$getBillServices = $grpc.ClientMethod<
-          $0.GetBillServicesRequest, $0.GetBillServicesResponse>(
-      '/utilitypayments.UtilityPaymentsService/GetBillServices',
-      ($0.GetBillServicesRequest value) => value.writeToBuffer(),
-      $0.GetBillServicesResponse.fromBuffer);
+  static final _$getBillServices =
+      $grpc.ClientMethod<$0.GetBillServicesRequest, $0.GetBillServicesResponse>(
+          '/utilitypayments.UtilityPaymentsService/GetBillServices',
+          ($0.GetBillServicesRequest value) => value.writeToBuffer(),
+          $0.GetBillServicesResponse.fromBuffer);
   static final _$barcodePay =
       $grpc.ClientMethod<$0.BarcodePayRequest, $0.BarcodePayResponse>(
           '/utilitypayments.UtilityPaymentsService/BarcodePay',

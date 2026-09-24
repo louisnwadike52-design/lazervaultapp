@@ -41,6 +41,7 @@ class _EditCrowdfundScreenState extends State<EditCrowdfundScreen> {
   late DateTime? _deadline;
   late String _category;
   bool _submitting = false;
+
   /// A locally picked replacement image, uploaded on save.
   ///
   /// Edit offered an "Image URL (optional)" text box only, while CREATE has
@@ -105,7 +106,8 @@ class _EditCrowdfundScreenState extends State<EditCrowdfundScreen> {
     if (_deadline == null) return 'Deadline is required';
     // 'now' minus a small slack so a user picking "today" doesn't
     // trip an immediate-expiry error.
-    if (_deadline!.isBefore(DateTime.now().subtract(const Duration(minutes: 5)))) {
+    if (_deadline!
+        .isBefore(DateTime.now().subtract(const Duration(minutes: 5)))) {
       return 'Deadline must be in the future';
     }
     return null;
@@ -230,7 +232,8 @@ class _EditCrowdfundScreenState extends State<EditCrowdfundScreen> {
       return;
     }
     final cf = widget.crowdfund;
-    final target = double.parse(_targetController.text.replaceAll(',', '').trim());
+    final target =
+        double.parse(_targetController.text.replaceAll(',', '').trim());
     setState(() => _submitting = true);
 
     // A picked file wins over whatever is in the URL box: it's the more recent
@@ -280,7 +283,8 @@ class _EditCrowdfundScreenState extends State<EditCrowdfundScreen> {
           imageUrl: resolvedImageUrl,
           category: _category != cf.category ? _category : null,
           targetAmount: target != cf.targetAmount ? target : null,
-          deadline: _deadline != null && _deadline != cf.deadline ? _deadline : null,
+          deadline:
+              _deadline != null && _deadline != cf.deadline ? _deadline : null,
         );
   }
 
@@ -435,16 +439,16 @@ class _EditCrowdfundScreenState extends State<EditCrowdfundScreen> {
                       setState(() => _pickedImageFile = null);
                     }
                   },
-                  style: GoogleFonts.inter(
-                      color: Colors.white, fontSize: 14.sp),
+                  style:
+                      GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
                   decoration: InputDecoration(
                     hintText: 'https://…',
                     hintStyle: GoogleFonts.inter(
                         color: const Color(0xFF6B7280), fontSize: 14.sp),
                     filled: true,
                     fillColor: const Color(0xFF1A1A1A),
-                    contentPadding: EdgeInsets.symmetric(
-                        horizontal: 14.w, vertical: 12.h),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r),
                       borderSide: BorderSide.none,
@@ -518,8 +522,7 @@ class _EditCrowdfundScreenState extends State<EditCrowdfundScreen> {
           borderRadius: BorderRadius.circular(12.r),
           borderSide: BorderSide.none,
         ),
-        contentPadding:
-            EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+        contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       ),
     );
   }

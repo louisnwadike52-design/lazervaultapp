@@ -9,6 +9,7 @@ abstract class TaggedInvoiceRepository {
     int limit = 20,
     InvoicePaymentStatus? statusFilter,
     String? currency,
+
     /// Server-side status filter that has no [InvoicePaymentStatus] equivalent.
     /// Takes precedence over [statusFilter].
     ///

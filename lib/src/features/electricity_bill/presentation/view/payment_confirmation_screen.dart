@@ -28,7 +28,6 @@ import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'payment_confirmation_screen_widgets.dart';
 
-
 class PaymentConfirmationScreen extends StatefulWidget {
   const PaymentConfirmationScreen({super.key});
 
@@ -51,6 +50,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
   bool _isProcessing = false;
   int? _selectedQuickAmount;
   bool _saveBeneficiary = false;
+
   /// Whether the logged-in user's profile carries a phone number. Drives
   /// the "Set it in Settings" CTA under the token-SMS phone field — same
   /// pattern as the airtime recipient screen.
@@ -168,7 +168,8 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     // user profile. Track `_hasProfilePhone` separately so the CTA under
     // the field correctly reflects the profile state even when the
     // current value came from a saved beneficiary.
-    final argsPhone = args is Map<String, dynamic> ? args['phoneNumber'] as String? : null;
+    final argsPhone =
+        args is Map<String, dynamic> ? args['phoneNumber'] as String? : null;
     String rawPhone = '';
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is AuthenticationSuccess) {
@@ -304,8 +305,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
   Future<String?> _promptForNickname() {
     return showDialog<String>(
       context: context,
-      builder: (_) =>
-          _NicknameDialog(initial: _nicknameController.text.trim()),
+      builder: (_) => _NicknameDialog(initial: _nicknameController.text.trim()),
     );
   }
 
@@ -419,7 +419,9 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     }
 
     // Only validate nickname for new beneficiary saves, not existing ones
-    if (!_isFromBeneficiary && _saveBeneficiary && _nicknameController.text.trim().isEmpty) {
+    if (!_isFromBeneficiary &&
+        _saveBeneficiary &&
+        _nicknameController.text.trim().isEmpty) {
       Get.snackbar(
         'Nickname Required',
         'Please enter a nickname for this beneficiary',
@@ -563,7 +565,8 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     }
 
     // C5: Check balance before proceeding
-    if (_selectedAccount != null && _selectedAccount!.availableBalance < _totalAmount) {
+    if (_selectedAccount != null &&
+        _selectedAccount!.availableBalance < _totalAmount) {
       Get.snackbar(
         'Insufficient Balance',
         'Your account balance (\u20A6${_selectedAccount!.availableBalance.toStringAsFixed(2)}) is less than the total amount (\u20A6${_totalAmount.toStringAsFixed(2)})',
@@ -588,7 +591,8 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     // the active account to the selected one keeps the token, the header and the
     // debit all bound to the same account (critical for a family pool source).
     if (_selectedAccount != null) {
-      GetIt.I<AccountManager>().setActiveAccount(_selectedAccount!.spendingAccountId);
+      GetIt.I<AccountManager>()
+          .setActiveAccount(_selectedAccount!.spendingAccountId);
     }
 
     // Validate PIN before processing payment
@@ -1013,7 +1017,8 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     // Meter is "already saved" if the probe found a match OR the user got
     // here via the pay-again-from-beneficiary flow (in which case _beneficiary
     // is the source of truth even if _existingBeneficiary failed to hydrate).
-    final savedBeneficiary = _existingBeneficiary ?? (_isFromBeneficiary ? _beneficiary : null);
+    final savedBeneficiary =
+        _existingBeneficiary ?? (_isFromBeneficiary ? _beneficiary : null);
     final Widget saveRow = savedBeneficiary != null
         ? _buildInfoRow(
             icon: Icons.bookmark,
@@ -1023,10 +1028,10 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
         : _buildToggleRow(
             icon: Icons.bookmark_outline,
             title: 'Save as beneficiary',
-            subtitle: _saveBeneficiary &&
-                    _nicknameController.text.trim().isNotEmpty
-                ? 'Nickname: ${_nicknameController.text.trim()}'
-                : 'Quick-buy this meter next time',
+            subtitle:
+                _saveBeneficiary && _nicknameController.text.trim().isNotEmpty
+                    ? 'Nickname: ${_nicknameController.text.trim()}'
+                    : 'Quick-buy this meter next time',
             value: _saveBeneficiary,
             onChanged: _onToggleSaveBeneficiary,
           );
@@ -1232,8 +1237,8 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                           width: 40.w,
                           height: 40.w,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF4E03D0)
-                                .withValues(alpha: 0.2),
+                            color:
+                                const Color(0xFF4E03D0).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20.r),
                           ),
                           child: Icon(
@@ -1298,9 +1303,8 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
   }
 
   void _showAccountSelector(List<AccountSummaryEntity> allAccounts) {
-    final ngnAccounts = allAccounts
-        .where((a) => a.currency.toUpperCase() == 'NGN')
-        .toList();
+    final ngnAccounts =
+        allAccounts.where((a) => a.currency.toUpperCase() == 'NGN').toList();
 
     showModalBottomSheet(
       context: context,
@@ -1365,8 +1369,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                         width: 36.w,
                         height: 36.w,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF4E03D0)
-                              .withValues(alpha: 0.2),
+                          color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(18.r),
                         ),
                         child: Icon(
@@ -1423,8 +1426,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
-        border: const Border(
-            top: BorderSide(color: Color(0xFF2D2D2D))),
+        border: const Border(top: BorderSide(color: Color(0xFF2D2D2D))),
       ),
       child: Row(
         children: [
@@ -1792,7 +1794,8 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                       ),
                       // Header
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 20.w, vertical: 12.h),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -1806,28 +1809,36 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                             ),
                             GestureDetector(
                               onTap: () => Navigator.pop(context),
-                              child: Icon(Icons.close, color: const Color(0xFF9CA3AF), size: 24.sp),
+                              child: Icon(Icons.close,
+                                  color: const Color(0xFF9CA3AF), size: 24.sp),
                             ),
                           ],
                         ),
                       ),
                       // Search
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 20.w, vertical: 8.h),
                         child: TextField(
-                          onChanged: (v) => setSheetState(() => searchQuery = v),
-                          style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                          onChanged: (v) =>
+                              setSheetState(() => searchQuery = v),
+                          style: GoogleFonts.inter(
+                              color: Colors.white, fontSize: 14.sp),
                           decoration: InputDecoration(
                             hintText: 'Search country...',
-                            hintStyle: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 14.sp),
-                            prefixIcon: Icon(Icons.search, color: const Color(0xFF6B7280), size: 20.sp),
+                            hintStyle: GoogleFonts.inter(
+                                color: const Color(0xFF6B7280),
+                                fontSize: 14.sp),
+                            prefixIcon: Icon(Icons.search,
+                                color: const Color(0xFF6B7280), size: 20.sp),
                             filled: true,
                             fillColor: const Color(0xFF0A0A0A),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12.r),
                               borderSide: BorderSide.none,
                             ),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16.w, vertical: 12.h),
                           ),
                         ),
                       ),
@@ -1839,7 +1850,8 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                           itemCount: filtered.length,
                           itemBuilder: (context, index) {
                             final country = filtered[index];
-                            final isSelected = country.countryCode == _selectedCountry.countryCode;
+                            final isSelected = country.countryCode ==
+                                _selectedCountry.countryCode;
                             return GestureDetector(
                               onTap: () {
                                 setState(() => _selectedCountry = country);
@@ -1847,19 +1859,24 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                               },
                               child: Container(
                                 margin: EdgeInsets.only(bottom: 8.h),
-                                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 14.w, vertical: 14.h),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? const Color(0xFF4E03D0).withValues(alpha: 0.1)
+                                      ? const Color(0xFF4E03D0)
+                                          .withValues(alpha: 0.1)
                                       : const Color(0xFF0A0A0A),
                                   borderRadius: BorderRadius.circular(12.r),
                                   border: isSelected
-                                      ? Border.all(color: const Color(0xFF4E03D0), width: 1.5)
+                                      ? Border.all(
+                                          color: const Color(0xFF4E03D0),
+                                          width: 1.5)
                                       : null,
                                 ),
                                 child: Row(
                                   children: [
-                                    Text(country.flag, style: TextStyle(fontSize: 24.sp)),
+                                    Text(country.flag,
+                                        style: TextStyle(fontSize: 24.sp)),
                                     SizedBox(width: 12.w),
                                     Expanded(
                                       child: Text(
@@ -1881,7 +1898,9 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                                     ),
                                     if (isSelected) ...[
                                       SizedBox(width: 8.w),
-                                      Icon(Icons.check_circle, color: const Color(0xFF4E03D0), size: 20.sp),
+                                      Icon(Icons.check_circle,
+                                          color: const Color(0xFF4E03D0),
+                                          size: 20.sp),
                                     ],
                                   ],
                                 ),
@@ -1938,7 +1957,8 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
               GestureDetector(
                 onTap: _showCountryCodePicker,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
                   decoration: BoxDecoration(
                     border: Border(
                       right: BorderSide(
@@ -1998,7 +2018,8 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                       fontSize: 16.sp,
                     ),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
                   ),
                 ),
               ),
@@ -2028,8 +2049,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline,
-              color: const Color(0xFFFB923C), size: 16.sp),
+          Icon(Icons.info_outline, color: const Color(0xFFFB923C), size: 16.sp),
           SizedBox(width: 8.w),
           Expanded(
             child: Text(
@@ -2059,5 +2079,4 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
       ),
     );
   }
-
 }

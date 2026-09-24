@@ -328,10 +328,10 @@ class PayrollCubit extends Cubit<PayrollState> {
 
       // Count results from pay slips
       final slipsResult = await _repository.listPaySlips(payRunId: id);
-      final successful =
-          slipsResult.paySlips.where((s) => s.isPaid).length;
-      final failed =
-          slipsResult.paySlips.where((s) => s.paymentStatus == PaymentStatus.failed).length;
+      final successful = slipsResult.paySlips.where((s) => s.isPaid).length;
+      final failed = slipsResult.paySlips
+          .where((s) => s.paymentStatus == PaymentStatus.failed)
+          .length;
 
       if (isClosed) return;
       emit(PayRunProcessed(

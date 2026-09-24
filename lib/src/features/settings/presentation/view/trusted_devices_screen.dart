@@ -67,7 +67,8 @@ class _TrustedDevicesScreenState extends State<TrustedDevicesScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: _card,
-        title: const Text('Revoke device?', style: TextStyle(color: Colors.white)),
+        title:
+            const Text('Revoke device?', style: TextStyle(color: Colors.white)),
         content: Text(
           'This signs out "${device.model.isEmpty ? device.platform : device.model}" '
           'and blocks it until it is verified again.',
@@ -76,7 +77,8 @@ class _TrustedDevicesScreenState extends State<TrustedDevicesScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel', style: TextStyle(color: _textSecondary)),
+            child:
+                const Text('Cancel', style: TextStyle(color: _textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -109,7 +111,8 @@ class _TrustedDevicesScreenState extends State<TrustedDevicesScreen> {
       appBar: AppBar(
         backgroundColor: _background,
         elevation: 0,
-        title: const Text('Trusted Devices', style: TextStyle(color: Colors.white)),
+        title: const Text('Trusted Devices',
+            style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: RefreshIndicator(
@@ -127,7 +130,9 @@ class _TrustedDevicesScreenState extends State<TrustedDevicesScreen> {
       return ListView(
         children: [
           const SizedBox(height: 120),
-          Center(child: Text(_error!, style: const TextStyle(color: _textSecondary))),
+          Center(
+              child:
+                  Text(_error!, style: const TextStyle(color: _textSecondary))),
         ],
       );
     }
@@ -135,7 +140,9 @@ class _TrustedDevicesScreenState extends State<TrustedDevicesScreen> {
       return ListView(
         children: const [
           SizedBox(height: 120),
-          Center(child: Text('No devices yet', style: TextStyle(color: _textSecondary))),
+          Center(
+              child: Text('No devices yet',
+                  style: TextStyle(color: _textSecondary))),
         ],
       );
     }
@@ -149,7 +156,9 @@ class _TrustedDevicesScreenState extends State<TrustedDevicesScreen> {
 
   Widget _deviceCard(TrustedDevice d) {
     final isIOS = d.platform.toLowerCase() == 'ios';
-    final title = d.model.isNotEmpty ? d.model : (isIOS ? 'iOS device' : 'Android device');
+    final title = d.model.isNotEmpty
+        ? d.model
+        : (isIOS ? 'iOS device' : 'Android device');
     return Container(
       decoration: BoxDecoration(
         color: _card,
@@ -162,7 +171,8 @@ class _TrustedDevicesScreenState extends State<TrustedDevicesScreen> {
         children: [
           Row(
             children: [
-              Icon(isIOS ? Icons.phone_iphone : Icons.phone_android, color: _primary),
+              Icon(isIOS ? Icons.phone_iphone : Icons.phone_android,
+                  color: _primary),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -173,7 +183,8 @@ class _TrustedDevicesScreenState extends State<TrustedDevicesScreen> {
                         Flexible(
                           child: Text(title,
                               style: const TextStyle(
-                                  color: Colors.white, fontWeight: FontWeight.w600)),
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600)),
                         ),
                         if (d.isCurrent) ...[
                           const SizedBox(width: 8),
@@ -183,7 +194,8 @@ class _TrustedDevicesScreenState extends State<TrustedDevicesScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(_statusLabel(d.trustStatus),
-                        style: TextStyle(color: _statusColor(d.trustStatus), fontSize: 12)),
+                        style: TextStyle(
+                            color: _statusColor(d.trustStatus), fontSize: 12)),
                   ],
                 ),
               ),
@@ -198,8 +210,10 @@ class _TrustedDevicesScreenState extends State<TrustedDevicesScreen> {
           const SizedBox(height: 10),
           if (d.lastIp.isNotEmpty) _detail('IP', d.lastIp),
           if (d.lastLocation.isNotEmpty) _detail('Location', d.lastLocation),
-          if (d.lastLoginAt != null) _detail('Last login', _fmt(d.lastLoginAt!)),
-          if (d.firstSeenAt != null) _detail('First seen', _fmt(d.firstSeenAt!)),
+          if (d.lastLoginAt != null)
+            _detail('Last login', _fmt(d.lastLoginAt!)),
+          if (d.firstSeenAt != null)
+            _detail('First seen', _fmt(d.firstSeenAt!)),
         ],
       ),
     );
@@ -211,10 +225,12 @@ class _TrustedDevicesScreenState extends State<TrustedDevicesScreen> {
           children: [
             SizedBox(
               width: 90,
-              child: Text(label, style: const TextStyle(color: _textSecondary, fontSize: 12)),
+              child: Text(label,
+                  style: const TextStyle(color: _textSecondary, fontSize: 12)),
             ),
             Expanded(
-              child: Text(value, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+              child: Text(value,
+                  style: const TextStyle(color: Colors.white70, fontSize: 12)),
             ),
           ],
         ),
@@ -226,7 +242,9 @@ class _TrustedDevicesScreenState extends State<TrustedDevicesScreen> {
           color: color.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Text(text, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w600)),
+        child: Text(text,
+            style: TextStyle(
+                color: color, fontSize: 10, fontWeight: FontWeight.w600)),
       );
 
   String _statusLabel(String s) {

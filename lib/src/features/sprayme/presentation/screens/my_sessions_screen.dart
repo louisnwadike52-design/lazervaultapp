@@ -12,7 +12,8 @@ import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_state
 import 'package:lazervault/src/features/sprayme/presentation/screens/spray_room_screen.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/spray_room_cubit.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/session_detail_screen.dart';
-import 'package:lazervault/src/features/sprayme/presentation/screens/create_session_screen.dart' show OccasionTheme, CreateSessionScreen;
+import 'package:lazervault/src/features/sprayme/presentation/screens/create_session_screen.dart'
+    show OccasionTheme, CreateSessionScreen;
 import 'package:lazervault/src/features/sprayme/presentation/screens/join_session_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -126,7 +127,9 @@ class _MySessionsScreenState extends State<MySessionsScreen>
     setState(() => _createdLoading = true);
     _loadingMore = true;
     _currentLoadFilter = 'created';
-    context.read<SprayMeCubit>().loadMySessions(filter: 'created', page: _createdPage + 1);
+    context
+        .read<SprayMeCubit>()
+        .loadMySessions(filter: 'created', page: _createdPage + 1);
   }
 
   Future<void> _loadMoreJoinedSessions() async {
@@ -134,7 +137,9 @@ class _MySessionsScreenState extends State<MySessionsScreen>
     setState(() => _joinedLoading = true);
     _loadingMore = true;
     _currentLoadFilter = 'joined';
-    context.read<SprayMeCubit>().loadMySessions(filter: 'joined', page: _joinedPage + 1);
+    context
+        .read<SprayMeCubit>()
+        .loadMySessions(filter: 'joined', page: _joinedPage + 1);
   }
 
   Future<void> _refresh() async {
@@ -162,113 +167,122 @@ class _MySessionsScreenState extends State<MySessionsScreen>
         }
       },
       child: Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-        ),
-        title: Text(
-          'My Sessions',
-          style: TextStyle(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
-      ),
-      body: Column(
-        children: [
-          // Tab Bar
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: TabBar(
-              controller: _tabController,
-              indicator: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF7C3AED), Color(0xFF9333EA)],
-                ),
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-              indicatorSize: TabBarIndicatorSize.tab,
-              labelColor: const Color(0xFF9CA3AF),
-              unselectedLabelColor: const Color(0xFF6B7280),
-              labelStyle: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
-              tabs: const [
-                Tab(text: 'Created'),
-                Tab(text: 'Joined'),
-              ],
-            ),
+        backgroundColor: const Color(0xFF0A0A0A),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
           ),
-          SizedBox(height: 16.h),
-
-          // Error message
-          if (_errorMessage != null)
+          title: Text(
+            'My Sessions',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600),
+          ),
+          centerTitle: true,
+        ),
+        body: Column(
+          children: [
+            // Tab Bar
             Container(
-              margin: EdgeInsets.symmetric(horizontal: 16.w),
-              padding: EdgeInsets.all(12.w),
+              margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               decoration: BoxDecoration(
-                color: const Color(0xFFEF4444).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(color: const Color(0xFFEF4444).withOpacity(0.3)),
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Row(
-                children: [
-                  Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 16.sp),
-                  SizedBox(width: 8.w),
-                  Expanded(
-                    child: Text(
-                      _errorMessage!,
-                      style: TextStyle(color: const Color(0xFFEF4444), fontSize: 13.sp),
-                    ),
+              child: TabBar(
+                controller: _tabController,
+                indicator: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF7C3AED), Color(0xFF9333EA)],
                   ),
-                  IconButton(
-                    icon: Icon(Icons.refresh, size: 16.sp),
-                    color: const Color(0xFFEF4444),
-                    onPressed: () {
-                      setState(() => _errorMessage = null);
-                      _refresh();
-                    },
-                  ),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                indicatorSize: TabBarIndicatorSize.tab,
+                labelColor: const Color(0xFF9CA3AF),
+                unselectedLabelColor: const Color(0xFF6B7280),
+                labelStyle:
+                    TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                tabs: const [
+                  Tab(text: 'Created'),
+                  Tab(text: 'Joined'),
                 ],
               ),
             ),
+            SizedBox(height: 16.h),
 
-          if (_errorMessage != null) SizedBox(height: 12.h),
+            // Error message
+            if (_errorMessage != null)
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 16.w),
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEF4444).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8.r),
+                  border: Border.all(
+                      color: const Color(0xFFEF4444).withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.error_outline,
+                        color: const Color(0xFFEF4444), size: 16.sp),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        _errorMessage!,
+                        style: TextStyle(
+                            color: const Color(0xFFEF4444), fontSize: 13.sp),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.refresh, size: 16.sp),
+                      color: const Color(0xFFEF4444),
+                      onPressed: () {
+                        setState(() => _errorMessage = null);
+                        _refresh();
+                      },
+                    ),
+                  ],
+                ),
+              ),
 
-          // Tab Content
-          Expanded(
-            child: _isLoadingInitial
-                ? _buildLoadingShimmer()
-                : TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildSessionsList(
-                        sessions: _createdSessions,
-                        isLoading: _createdLoading,
-                        // Gate the load-more sentinel on no-error: otherwise a
-                        // persistent 500 with zero cached rows makes the sentinel
-                        // rebuild → loadMore() → error → rebuild in a tight loop.
-                        hasMore: _createdHasMore && _errorMessage == null,
-                        loadMore: _loadMoreCreatedSessions,
-                        isEmpty: _createdSessions.isEmpty && _errorMessage == null,
-                      ),
-                      _buildSessionsList(
-                        sessions: _joinedSessions,
-                        isLoading: _joinedLoading,
-                        hasMore: _joinedHasMore && _errorMessage == null,
-                        loadMore: _loadMoreJoinedSessions,
-                        isEmpty: _joinedSessions.isEmpty && _errorMessage == null,
-                      ),
-                    ],
-                  ),
-          ),
-        ],
+            if (_errorMessage != null) SizedBox(height: 12.h),
+
+            // Tab Content
+            Expanded(
+              child: _isLoadingInitial
+                  ? _buildLoadingShimmer()
+                  : TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildSessionsList(
+                          sessions: _createdSessions,
+                          isLoading: _createdLoading,
+                          // Gate the load-more sentinel on no-error: otherwise a
+                          // persistent 500 with zero cached rows makes the sentinel
+                          // rebuild → loadMore() → error → rebuild in a tight loop.
+                          hasMore: _createdHasMore && _errorMessage == null,
+                          loadMore: _loadMoreCreatedSessions,
+                          isEmpty:
+                              _createdSessions.isEmpty && _errorMessage == null,
+                        ),
+                        _buildSessionsList(
+                          sessions: _joinedSessions,
+                          isLoading: _joinedLoading,
+                          hasMore: _joinedHasMore && _errorMessage == null,
+                          loadMore: _loadMoreJoinedSessions,
+                          isEmpty:
+                              _joinedSessions.isEmpty && _errorMessage == null,
+                        ),
+                      ],
+                    ),
+            ),
+          ],
+        ),
       ),
-    ),
     );
   }
 
@@ -364,7 +378,8 @@ class _MySessionsScreenState extends State<MySessionsScreen>
           // The old style outlined every card in #2D2D2D, which read as a seam
           // around each row and made the list look like a table of boxes.
           border: session.isActive
-              ? Border.all(color: occasionColors[0].withOpacity(0.45), width: 1.5)
+              ? Border.all(
+                  color: occasionColors[0].withOpacity(0.45), width: 1.5)
               : null,
         ),
         child: Column(
@@ -420,7 +435,8 @@ class _MySessionsScreenState extends State<MySessionsScreen>
                   ),
                 ),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: statusColor.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(20.r),
@@ -729,9 +745,11 @@ class _MySessionsScreenState extends State<MySessionsScreen>
                           ),
                         ),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8.w, vertical: 4.h),
                           decoration: BoxDecoration(
-                            color: _statusColor(session.status).withOpacity(0.15),
+                            color:
+                                _statusColor(session.status).withOpacity(0.15),
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                           child: Text(
@@ -768,7 +786,8 @@ class _MySessionsScreenState extends State<MySessionsScreen>
                         if (session.totalSprayed > 0)
                           _buildBottomSheetStat(
                             icon: Icons.monetization_on,
-                            value: '${(session.totalSprayed / 100).toStringAsFixed(0)}',
+                            value:
+                                '${(session.totalSprayed / 100).toStringAsFixed(0)}',
                             label: 'Sprayed',
                           ),
                       ],
@@ -796,8 +815,14 @@ class _MySessionsScreenState extends State<MySessionsScreen>
                               ? 'Re-enter session'
                               : 'Rejoin session',
                           gradient: _isOwn(session)
-                              ? [const Color(0xFF7C3AED), const Color(0xFF4834D4)]
-                              : [const Color(0xFF10B981), const Color(0xFF059669)],
+                              ? [
+                                  const Color(0xFF7C3AED),
+                                  const Color(0xFF4834D4)
+                                ]
+                              : [
+                                  const Color(0xFF10B981),
+                                  const Color(0xFF059669)
+                                ],
                           onTap: () async {
                             Navigator.pop(context);
                             await _joinSession(session);
@@ -812,7 +837,10 @@ class _MySessionsScreenState extends State<MySessionsScreen>
                       child: _buildBottomSheetButton(
                         icon: Icons.analytics_outlined,
                         label: 'View Stats & History',
-                        gradient: [const Color(0xFF3B82F6), const Color(0xFF7C3AED)],
+                        gradient: [
+                          const Color(0xFF3B82F6),
+                          const Color(0xFF7C3AED)
+                        ],
                         onTap: () {
                           Navigator.pop(context);
                           Navigator.push(
@@ -991,4 +1019,3 @@ class _MySessionsScreenState extends State<MySessionsScreen>
     }
   }
 }
-

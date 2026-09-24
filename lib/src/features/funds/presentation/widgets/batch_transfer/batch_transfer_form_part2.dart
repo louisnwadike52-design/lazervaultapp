@@ -1,6 +1,7 @@
 part of 'batch_transfer_form.dart';
 
-class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBottomSheet>
+class _MultiSelectRecipientBottomSheetState
+    extends State<MultiSelectRecipientBottomSheet>
     with SingleTickerProviderStateMixin {
   final List<RecipientModel> _tempSelectedRecipients = [];
   final TextEditingController _searchController = TextEditingController();
@@ -90,7 +91,8 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
 
   bool _isSelfTransfer(RecipientModel recipient) {
     if (_currentUserId != null && recipient.id == _currentUserId) return true;
-    if (_currentUsername != null && recipient.accountNumber == _currentUsername) return true;
+    if (_currentUsername != null && recipient.accountNumber == _currentUsername)
+      return true;
     return false;
   }
 
@@ -110,31 +112,39 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
         SnackBar(
           content: Text(
             'Cannot transfer to your own account',
-            style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: btTextPrimary),
+            style: GoogleFonts.inter(
+                fontWeight: FontWeight.w600, color: btTextPrimary),
           ),
           backgroundColor: btRed,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         ),
       );
       return;
     }
 
     setState(() {
-      if (_tempSelectedRecipients.any((r) => r.id == recipient.id || r.accountNumber == recipient.accountNumber)) {
-        _tempSelectedRecipients.removeWhere((r) => r.id == recipient.id || r.accountNumber == recipient.accountNumber);
+      if (_tempSelectedRecipients.any((r) =>
+          r.id == recipient.id || r.accountNumber == recipient.accountNumber)) {
+        _tempSelectedRecipients.removeWhere((r) =>
+            r.id == recipient.id || r.accountNumber == recipient.accountNumber);
       } else {
-        final totalAfterAdd = widget.alreadySelectedIds.length + _tempSelectedRecipients.length + 1;
+        final totalAfterAdd = widget.alreadySelectedIds.length +
+            _tempSelectedRecipients.length +
+            1;
         if (totalAfterAdd > 20) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
                 'Maximum 20 recipients allowed',
-                style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: btTextPrimary),
+                style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w600, color: btTextPrimary),
               ),
               backgroundColor: btOrange,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r)),
             ),
           );
           return;
@@ -145,7 +155,8 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
   }
 
   bool _isRecipientSelected(RecipientModel recipient) {
-    return _tempSelectedRecipients.any((r) => r.id == recipient.id || r.accountNumber == recipient.accountNumber);
+    return _tempSelectedRecipients.any((r) =>
+        r.id == recipient.id || r.accountNumber == recipient.accountNumber);
   }
 
   /// Persist any newly-entered recipient (one that isn't already a saved
@@ -210,7 +221,8 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                     color: btBlue.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(22.r),
                   ),
-                  child: Icon(Icons.group_add_outlined, color: btBlue, size: 22.sp),
+                  child: Icon(Icons.group_add_outlined,
+                      color: btBlue, size: 22.sp),
                 ),
                 SizedBox(width: 14.w),
                 Expanded(
@@ -237,7 +249,8 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                 ),
                 if (_tempSelectedRecipients.isNotEmpty)
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                     decoration: BoxDecoration(
                       color: btBlue,
                       borderRadius: BorderRadius.circular(16.r),
@@ -277,8 +290,10 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
               dividerColor: Colors.transparent,
               labelColor: Colors.white,
               unselectedLabelColor: const Color(0xFF9CA3AF),
-              labelStyle: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
-              unselectedLabelStyle: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w500),
+              labelStyle: GoogleFonts.inter(
+                  fontSize: 14.sp, fontWeight: FontWeight.w600),
+              unselectedLabelStyle: GoogleFonts.inter(
+                  fontSize: 14.sp, fontWeight: FontWeight.w500),
               labelPadding: EdgeInsets.zero,
               tabs: const [
                 Tab(text: 'Saved'),
@@ -341,53 +356,63 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                     ),
                   ),
                 Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: btTextSecondary,
-                      side: BorderSide(color: btBorderLight),
-                      padding: EdgeInsets.symmetric(vertical: 14.h),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: btTextSecondary,
+                          side: BorderSide(color: btBorderLight),
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r)),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: GoogleFonts.inter(
+                              fontSize: 14.sp, fontWeight: FontWeight.w600),
+                        ),
+                      ),
                     ),
-                    child: Text(
-                      'Cancel',
-                      style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton(
+                        onPressed: _tempSelectedRecipients.isEmpty
+                            ? null
+                            : () {
+                                if (_saveAsBeneficiaries)
+                                  _persistNewBeneficiaries();
+                                final selected = List<RecipientModel>.from(
+                                    _tempSelectedRecipients);
+                                // Close THIS sheet first. The callback may itself open a
+                                // dialog (e.g. bulk-amount when >1 recipient); if we popped
+                                // after, Navigator.pop would close that new dialog instead
+                                // and leave this sheet open.
+                                Navigator.pop(context);
+                                widget.onRecipientsSelected(selected);
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _tempSelectedRecipients.isEmpty
+                              ? btBorder
+                              : btBlue,
+                          foregroundColor: btTextPrimary,
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r)),
+                        ),
+                        child: Text(
+                          _tempSelectedRecipients.isEmpty
+                              ? 'Select Recipients'
+                              : 'Add ${_tempSelectedRecipients.length} Recipient${_tempSelectedRecipients.length == 1 ? '' : 's'}',
+                          style: GoogleFonts.inter(
+                              fontSize: 14.sp, fontWeight: FontWeight.w600),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  flex: 2,
-                  child: ElevatedButton(
-                    onPressed: _tempSelectedRecipients.isEmpty ? null : () {
-                      if (_saveAsBeneficiaries) _persistNewBeneficiaries();
-                      final selected = List<RecipientModel>.from(_tempSelectedRecipients);
-                      // Close THIS sheet first. The callback may itself open a
-                      // dialog (e.g. bulk-amount when >1 recipient); if we popped
-                      // after, Navigator.pop would close that new dialog instead
-                      // and leave this sheet open.
-                      Navigator.pop(context);
-                      widget.onRecipientsSelected(selected);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _tempSelectedRecipients.isEmpty ? btBorder : btBlue,
-                      foregroundColor: btTextPrimary,
-                      padding: EdgeInsets.symmetric(vertical: 14.h),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-                    ),
-                    child: Text(
-                      _tempSelectedRecipients.isEmpty
-                        ? 'Select Recipients'
-                        : 'Add ${_tempSelectedRecipients.length} Recipient${_tempSelectedRecipients.length == 1 ? '' : 's'}',
-                      style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ),
-              ],
-            ),
               ],
             ),
           ),
@@ -416,14 +441,17 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
               style: GoogleFonts.inter(color: btTextPrimary, fontSize: 14.sp),
               decoration: InputDecoration(
                 hintText: 'Filter saved recipients...',
-                hintStyle: GoogleFonts.inter(color: btTextTertiary, fontSize: 14.sp),
-                prefixIcon: Icon(Icons.search, color: btTextTertiary, size: 20.sp),
+                hintStyle:
+                    GoogleFonts.inter(color: btTextTertiary, fontSize: 14.sp),
+                prefixIcon:
+                    Icon(Icons.search, color: btTextTertiary, size: 20.sp),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? GestureDetector(
                         onTap: () {
                           _searchController.clear();
                         },
-                        child: Icon(Icons.clear, color: btTextTertiary, size: 18.sp),
+                        child: Icon(Icons.clear,
+                            color: btTextTertiary, size: 18.sp),
                       )
                     : null,
                 border: InputBorder.none,
@@ -440,19 +468,30 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                 return const Center(child: LazerVaultLoader.small());
               } else if (state is RecipientLoaded) {
                 final filteredRecipients = _searchQuery.isEmpty
-                  ? state.recipients
-                  : state.recipients.where((r) =>
-                      r.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                      r.accountNumber.contains(_searchQuery) ||
-                      (r.email?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
-                      (r.phoneNumber?.contains(_searchQuery) ?? false) ||
-                      (r.alias?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false)
-                    ).toList();
+                    ? state.recipients
+                    : state.recipients
+                        .where((r) =>
+                            r.name
+                                .toLowerCase()
+                                .contains(_searchQuery.toLowerCase()) ||
+                            r.accountNumber.contains(_searchQuery) ||
+                            (r.email
+                                    ?.toLowerCase()
+                                    .contains(_searchQuery.toLowerCase()) ??
+                                false) ||
+                            (r.phoneNumber?.contains(_searchQuery) ?? false) ||
+                            (r.alias
+                                    ?.toLowerCase()
+                                    .contains(_searchQuery.toLowerCase()) ??
+                                false))
+                        .toList();
 
                 if (filteredRecipients.isEmpty) {
                   return _buildEmptySearchState(
                     icon: Icons.people_outline,
-                    title: _searchQuery.isEmpty ? 'No saved recipients' : 'No matches found',
+                    title: _searchQuery.isEmpty
+                        ? 'No saved recipients'
+                        : 'No matches found',
                     subtitle: _searchQuery.isEmpty
                         ? 'Recipients you save will appear here'
                         : 'Try the "Search Users" tab to find new users',
@@ -471,7 +510,9 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                       recipient: recipient,
                       isSelected: isSelected,
                       isAlreadyAdded: isAlreadyAdded,
-                      onTap: isAlreadyAdded ? null : () => _toggleRecipientSelection(recipient),
+                      onTap: isAlreadyAdded
+                          ? null
+                          : () => _toggleRecipientSelection(recipient),
                     );
                   },
                 );
@@ -495,10 +536,10 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
       if (authState is AuthenticationSuccess) {
         final localeManager = serviceLocator<LocaleManager>();
         context.read<RecipientCubit>().getRecipients(
-          accessToken: authState.profile.session.accessToken,
-          countryCode: localeManager.currentCountry,
-          currency: localeManager.currentCurrency,
-        );
+              accessToken: authState.profile.session.accessToken,
+              countryCode: localeManager.currentCountry,
+              currency: localeManager.currentCurrency,
+            );
       }
     } catch (_) {}
   }
@@ -512,9 +553,8 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
     // Picked users are LISTED here too (field feedback: adds felt like they
     // vanished) — checked rows that accumulate and can be tapped off, and all
     // of them land in the batch when the Add Recipients CTA is pressed.
-    final pickedUsers = _tempSelectedRecipients
-        .where((r) => r.type != 'external')
-        .toList();
+    final pickedUsers =
+        _tempSelectedRecipients.where((r) => r.type != 'external').toList();
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Column(
@@ -577,12 +617,10 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
     );
   }
 
-
   // --- Bank Account Tab ---
   Widget _buildBankAccountTab() {
-    final addedBankRecipients = _tempSelectedRecipients
-        .where((r) => r.type == 'external')
-        .toList();
+    final addedBankRecipients =
+        _tempSelectedRecipients.where((r) => r.type == 'external').toList();
 
     return SingleChildScrollView(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -674,7 +712,8 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                       onTap: () {
                         setState(() {
                           _tempSelectedRecipients.removeWhere(
-                            (r) => r.id == recipient.id &&
+                            (r) =>
+                                r.id == recipient.id &&
                                 r.accountNumber == recipient.accountNumber,
                           );
                         });
@@ -723,8 +762,10 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
               style: GoogleFonts.inter(color: btTextPrimary, fontSize: 14.sp),
               decoration: InputDecoration(
                 hintText: 'Enter 10-digit account number',
-                hintStyle: GoogleFonts.inter(color: btTextTertiary, fontSize: 14.sp),
-                prefixIcon: Icon(Icons.numbers, color: btTextTertiary, size: 20.sp),
+                hintStyle:
+                    GoogleFonts.inter(color: btTextTertiary, fontSize: 14.sp),
+                prefixIcon:
+                    Icon(Icons.numbers, color: btTextTertiary, size: 20.sp),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(vertical: 14.h),
               ),
@@ -772,12 +813,15 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                 decoration: BoxDecoration(
                   color: btCardElevated,
                   borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(color: _isBankSelected ? btGreen : btBorder),
+                  border:
+                      Border.all(color: _isBankSelected ? btGreen : btBorder),
                 ),
                 child: Row(
                   children: [
                     Icon(
-                      _isBankSelected ? Icons.account_balance : Icons.account_balance_outlined,
+                      _isBankSelected
+                          ? Icons.account_balance
+                          : Icons.account_balance_outlined,
                       color: _isBankSelected ? btGreen : btTextTertiary,
                       size: 20.sp,
                     ),
@@ -786,13 +830,17 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                       child: Text(
                         _selectedBankName ?? 'Select Bank',
                         style: GoogleFonts.inter(
-                          color: _isBankSelected ? btTextPrimary : btTextTertiary,
+                          color:
+                              _isBankSelected ? btTextPrimary : btTextTertiary,
                           fontSize: 14.sp,
-                          fontWeight: _isBankSelected ? FontWeight.w600 : FontWeight.w400,
+                          fontWeight: _isBankSelected
+                              ? FontWeight.w600
+                              : FontWeight.w400,
                         ),
                       ),
                     ),
-                    Icon(Icons.keyboard_arrow_down, color: btTextTertiary, size: 20.sp),
+                    Icon(Icons.keyboard_arrow_down,
+                        color: btTextTertiary, size: 20.sp),
                   ],
                 ),
               ),
@@ -830,7 +878,8 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                   onTap: _dismissSuggestionsRevealBank,
                   borderRadius: BorderRadius.circular(8.r),
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                     child: Row(
                       children: [
                         Text('Enter bank manually',
@@ -902,12 +951,14 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                 onPressed: _verifyBankAccount,
                 icon: Icon(Icons.verified_user_outlined, size: 16.sp),
                 label: Text('Verify Account',
-                    style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                    style: GoogleFonts.inter(
+                        fontSize: 14.sp, fontWeight: FontWeight.w600)),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: btBlue,
                   side: const BorderSide(color: btBlue),
                   padding: EdgeInsets.symmetric(vertical: 12.h),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r)),
                 ),
               ),
             ),
@@ -929,7 +980,8 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                       LazerVaultLoader.tiny(),
                       SizedBox(width: 12.w),
                       Text('Verifying account...',
-                          style: GoogleFonts.inter(color: btTextSecondary, fontSize: 13.sp)),
+                          style: GoogleFonts.inter(
+                              color: btTextSecondary, fontSize: 13.sp)),
                     ],
                   ),
                 );
@@ -959,7 +1011,8 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                       SizedBox(width: 12.w),
                       Expanded(
                         child: Text(state.userMessage,
-                            style: GoogleFonts.inter(color: btRed, fontSize: 13.sp)),
+                            style: GoogleFonts.inter(
+                                color: btRed, fontSize: 13.sp)),
                       ),
                     ],
                   ),
@@ -986,7 +1039,8 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
             _buildEmptySearchState(
               icon: Icons.account_balance_outlined,
               title: 'Add Bank Account',
-              subtitle: 'Enter a 10-digit account number — we\'ll detect the bank\nand verify the account holder automatically',
+              subtitle:
+                  'Enter a 10-digit account number — we\'ll detect the bank\nand verify the account holder automatically',
             ),
         ],
       ),
@@ -1084,13 +1138,14 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
   }
 
   void _verifyBankAccount() {
-    if (_selectedBankCode == null || _bankAccountController.text.length != 10) return;
+    if (_selectedBankCode == null || _bankAccountController.text.length != 10)
+      return;
     try {
       context.read<AccountVerificationCubit>().verifyAccount(
-        bankCode: _selectedBankCode!,
-        accountNumber: _bankAccountController.text,
-        bankName: _selectedBankName ?? '',
-      );
+            bankCode: _selectedBankCode!,
+            accountNumber: _bankAccountController.text,
+            bankName: _selectedBankName ?? '',
+          );
     } catch (_) {}
   }
 
@@ -1100,12 +1155,14 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
     // Prefer the VERIFIED bank code/name (what Flutterwave's account_bank
     // expects); fall back to the locally-picked values only if verification
     // didn't return them.
-    final effectiveBankCode = (_verifiedBankCode != null && _verifiedBankCode!.isNotEmpty)
-        ? _verifiedBankCode!
-        : (_selectedBankCode ?? '');
-    final effectiveBankName = (_verifiedBankName != null && _verifiedBankName!.isNotEmpty)
-        ? _verifiedBankName!
-        : (_selectedBankName ?? '');
+    final effectiveBankCode =
+        (_verifiedBankCode != null && _verifiedBankCode!.isNotEmpty)
+            ? _verifiedBankCode!
+            : (_selectedBankCode ?? '');
+    final effectiveBankName =
+        (_verifiedBankName != null && _verifiedBankName!.isNotEmpty)
+            ? _verifiedBankName!
+            : (_selectedBankName ?? '');
 
     final recipient = RecipientModel(
       id: '${effectiveBankCode}_${_bankAccountController.text}',
@@ -1119,15 +1176,18 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
     );
 
     // Check if already selected
-    if (_tempSelectedRecipients.any((r) => r.accountNumber == recipient.accountNumber &&
+    if (_tempSelectedRecipients.any((r) =>
+        r.accountNumber == recipient.accountNumber &&
         r.sortCode == recipient.sortCode)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('This account is already added',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: btTextPrimary)),
+              style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w600, color: btTextPrimary)),
           backgroundColor: btOrange,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         ),
       );
       return;
@@ -1149,10 +1209,12 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${recipient.name} added',
-            style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: btTextPrimary)),
+            style: GoogleFonts.inter(
+                fontWeight: FontWeight.w600, color: btTextPrimary)),
         backgroundColor: btGreen,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
       ),
     );
   }
@@ -1178,7 +1240,10 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
           SizedBox(height: 16.h),
           Text(
             title,
-            style: GoogleFonts.inter(color: btTextSecondary, fontSize: 15.sp, fontWeight: FontWeight.w600),
+            style: GoogleFonts.inter(
+                color: btTextSecondary,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w600),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 6.h),
@@ -1212,7 +1277,10 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
           SizedBox(height: 16.h),
           Text(
             message,
-            style: GoogleFonts.inter(color: btTextSecondary, fontSize: 15.sp, fontWeight: FontWeight.w600),
+            style: GoogleFonts.inter(
+                color: btTextSecondary,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w600),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 12.h),
@@ -1323,10 +1391,10 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
             padding: EdgeInsets.all(14.w),
             decoration: BoxDecoration(
               color: isSelected
-                ? btBlue.withValues(alpha: 0.1)
-                : isAlreadyAdded
-                  ? btBorder.withValues(alpha: 0.3)
-                  : btBackground,
+                  ? btBlue.withValues(alpha: 0.1)
+                  : isAlreadyAdded
+                      ? btBorder.withValues(alpha: 0.3)
+                      : btBackground,
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
                 color: isSelected ? btBlue : btBorder,
@@ -1340,15 +1408,15 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                   height: 44.w,
                   decoration: BoxDecoration(
                     color: isAlreadyAdded
-                      ? btBorder
-                      : btBlue.withValues(alpha: 0.15),
+                        ? btBorder
+                        : btBlue.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(22.r),
                   ),
                   child: Center(
                     child: Text(
                       recipient.name.isNotEmpty
-                        ? recipient.name.substring(0, 1).toUpperCase()
-                        : '?',
+                          ? recipient.name.substring(0, 1).toUpperCase()
+                          : '?',
                       style: GoogleFonts.inter(
                         color: isAlreadyAdded ? btTextTertiary : btBlue,
                         fontSize: 17.sp,
@@ -1358,7 +1426,6 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                   ),
                 ),
                 SizedBox(width: 12.w),
-
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1366,7 +1433,8 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                       Text(
                         recipient.name,
                         style: GoogleFonts.inter(
-                          color: isAlreadyAdded ? btTextTertiary : btTextPrimary,
+                          color:
+                              isAlreadyAdded ? btTextTertiary : btTextPrimary,
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -1386,7 +1454,8 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                               '${recipient.displayBankName} \u2022 ${recipient.accountNumber.length > 4 ? '\u2022\u2022\u2022 ${recipient.accountNumber.substring(recipient.accountNumber.length - 4)}' : recipient.accountNumber}',
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.inter(
-                                color: isAlreadyAdded ? btBorder : btTextSecondary,
+                                color:
+                                    isAlreadyAdded ? btBorder : btTextSecondary,
                                 fontSize: 12.sp,
                               ),
                             ),
@@ -1396,7 +1465,6 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                     ],
                   ),
                 ),
-
                 _buildSelectionIndicator(isSelected, isAlreadyAdded),
               ],
             ),

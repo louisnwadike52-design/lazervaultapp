@@ -21,7 +21,6 @@ import 'package:lazervault/core/widgets/entity_create_sheet.dart';
 import 'package:lazervault/core/widgets/infinite_scroll_mixin.dart';
 part 'purchase_order_list_screen_widgets.dart';
 
-
 class PurchaseOrderListScreen extends StatefulWidget {
   const PurchaseOrderListScreen({super.key});
 
@@ -195,10 +194,13 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                       _buildDialogLabel('Supplier *'),
                       GestureDetector(
                         onTap: () async {
-                          final created = await showCreateSupplierSheet(context);
+                          final created =
+                              await showCreateSupplierSheet(context);
                           if (created == null || !mounted) return;
-                          setState(() =>
-                              _cachedSuppliers = [created, ..._cachedSuppliers]);
+                          setState(() => _cachedSuppliers = [
+                                created,
+                                ..._cachedSuppliers
+                              ]);
                           setDialogState(() => selectedSupplierId = created.id);
                         },
                         child: Text(
@@ -284,8 +286,7 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                         initialDate:
                             DateTime.now().add(const Duration(days: 7)),
                         firstDate: DateTime.now(),
-                        lastDate: DateTime.now()
-                            .add(const Duration(days: 365)),
+                        lastDate: DateTime.now().add(const Duration(days: 365)),
                         builder: (context, child) => Theme(
                           data: ThemeData.dark().copyWith(
                             colorScheme: const ColorScheme.dark(
@@ -350,8 +351,8 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                             vertical: 4.h,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF3B82F6)
-                                .withValues(alpha: 0.15),
+                            color:
+                                const Color(0xFF3B82F6).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(6.r),
                           ),
                           child: Text(
@@ -430,8 +431,7 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                           onPressed: () {
                             final supplierId = selectedSupplierId ?? '';
                             if (supplierId.isEmpty) {
-                              ScaffoldMessenger.of(dialogContext)
-                                  .showSnackBar(
+                              ScaffoldMessenger.of(dialogContext).showSnackBar(
                                 SnackBar(
                                   content: Text(
                                     'Supplier is required',
@@ -439,25 +439,22 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                                       color: Colors.white,
                                     ),
                                   ),
-                                  backgroundColor:
-                                      const Color(0xFFEF4444),
+                                  backgroundColor: const Color(0xFFEF4444),
                                 ),
                               );
                               return;
                             }
 
-                            final items =
-                                itemInputs.map((input) {
-                              final qty = int.tryParse(
-                                      input.quantityController.text) ??
-                                  0;
-                              final price = double.tryParse(
-                                      input.priceController.text) ??
-                                  0;
+                            final items = itemInputs.map((input) {
+                              final qty =
+                                  int.tryParse(input.quantityController.text) ??
+                                      0;
+                              final price =
+                                  double.tryParse(input.priceController.text) ??
+                                      0;
                               return PurchaseOrderItemEntity(
                                 itemId: input.itemIdController.text.trim(),
-                                itemName:
-                                    input.itemNameController.text.trim(),
+                                itemName: input.itemNameController.text.trim(),
                                 quantityOrdered: qty,
                                 quantityReceived: 0,
                                 unitPrice: price,
@@ -465,10 +462,8 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                               );
                             }).toList();
 
-                            if (items.isEmpty ||
-                                items.first.itemName.isEmpty) {
-                              ScaffoldMessenger.of(dialogContext)
-                                  .showSnackBar(
+                            if (items.isEmpty || items.first.itemName.isEmpty) {
+                              ScaffoldMessenger.of(dialogContext).showSnackBar(
                                 SnackBar(
                                   content: Text(
                                     'At least one item is required',
@@ -476,8 +471,7 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                                       color: Colors.white,
                                     ),
                                   ),
-                                  backgroundColor:
-                                      const Color(0xFFEF4444),
+                                  backgroundColor: const Color(0xFFEF4444),
                                 ),
                               );
                               return;
@@ -485,8 +479,7 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                             // Reject zero/negative quantity lines — an order for
                             // 0 units is meaningless and receives nothing.
                             if (items.any((it) => it.quantityOrdered <= 0)) {
-                              ScaffoldMessenger.of(dialogContext)
-                                  .showSnackBar(
+                              ScaffoldMessenger.of(dialogContext).showSnackBar(
                                 SnackBar(
                                   content: Text(
                                     'Every item needs a quantity greater than 0',
@@ -494,8 +487,7 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                                       color: Colors.white,
                                     ),
                                   ),
-                                  backgroundColor:
-                                      const Color(0xFFEF4444),
+                                  backgroundColor: const Color(0xFFEF4444),
                                 ),
                               );
                               return;
@@ -512,8 +504,7 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                                   supplierId: supplierId,
                                   items: items,
                                   notes: notesController.text.trim(),
-                                  expectedDate: selectedDate
-                                      ?.toIso8601String(),
+                                  expectedDate: selectedDate?.toIso8601String(),
                                 );
                           },
                           style: ElevatedButton.styleFrom(
@@ -521,8 +512,7 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.r),
                             ),
-                            padding:
-                                EdgeInsets.symmetric(vertical: 12.h),
+                            padding: EdgeInsets.symmetric(vertical: 12.h),
                           ),
                           child: Text(
                             'Create',
@@ -604,7 +594,9 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                   SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
-                      hasItem ? item.itemNameController.text : 'Select item from inventory',
+                      hasItem
+                          ? item.itemNameController.text
+                          : 'Select item from inventory',
                       style: GoogleFonts.inter(
                         color: hasItem ? Colors.white : const Color(0xFF6B7280),
                         fontSize: 13.sp,
@@ -698,7 +690,8 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                   child: GestureDetector(
                     onTap: () async {
                       Navigator.of(ctx).pop();
-                      final created = await showCreateInventoryItemSheet(context);
+                      final created =
+                          await showCreateInventoryItemSheet(context);
                       if (created == null || !mounted) return;
                       setState(() => _cachedItems = [created, ..._cachedItems]);
                       item.itemIdController.text = created.id;
@@ -711,8 +704,8 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                     },
                     child: Container(
                       margin: EdgeInsets.only(bottom: 10.h),
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 14.w, vertical: 12.h),
                       decoration: BoxDecoration(
                         color: const Color(0xFF3B82F6).withValues(alpha: 0.10),
                         borderRadius: BorderRadius.circular(12.r),
@@ -740,7 +733,8 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                       ? Center(
                           child: Text('No inventory items yet',
                               style: GoogleFonts.inter(
-                                  color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
+                                  color: const Color(0xFF9CA3AF),
+                                  fontSize: 13.sp)),
                         )
                       : ListView.builder(
                           controller: scrollCtrl,
@@ -748,7 +742,8 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                           itemCount: _cachedItems.length,
                           itemBuilder: (ctx, i) {
                             final it = _cachedItems[i];
-                            final selected = item.itemIdController.text == it.id;
+                            final selected =
+                                item.itemIdController.text == it.id;
                             return GestureDetector(
                               onTap: () {
                                 item.itemIdController.text = it.id;
@@ -769,7 +764,8 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                                   borderRadius: BorderRadius.circular(12.r),
                                   border: Border.all(
                                       color: selected
-                                          ? const Color.fromARGB(255, 78, 3, 208)
+                                          ? const Color.fromARGB(
+                                              255, 78, 3, 208)
                                           : const Color(0xFF2D2D2D)),
                                 ),
                                 child: Row(
@@ -792,15 +788,16 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                                           Text(
                                               '₦${it.unitPrice.toStringAsFixed(2)} · ${it.quantity} ${it.unit} in stock',
                                               style: GoogleFonts.inter(
-                                                  color: const Color(0xFF9CA3AF),
+                                                  color:
+                                                      const Color(0xFF9CA3AF),
                                                   fontSize: 11.5.sp)),
                                         ],
                                       ),
                                     ),
                                     if (selected)
                                       Icon(Icons.check_circle_rounded,
-                                          color:
-                                              const Color.fromARGB(255, 78, 3, 208),
+                                          color: const Color.fromARGB(
+                                              255, 78, 3, 208),
                                           size: 20.sp),
                                   ],
                                 ),
@@ -918,8 +915,7 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
           return GestureDetector(
             onTap: () => _onStatusSelected(filterStatus),
             child: Container(
-              padding:
-                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               decoration: BoxDecoration(
                 color: isSelected
                     ? const Color(0xFF3B82F6).withValues(alpha: 0.2)
@@ -939,8 +935,7 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                         ? const Color(0xFF3B82F6)
                         : const Color(0xFF9CA3AF),
                     fontSize: 13.sp,
-                    fontWeight:
-                        isSelected ? FontWeight.w600 : FontWeight.w400,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                   ),
                 ),
               ),
@@ -1057,112 +1052,112 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
     return GestureDetector(
       onTap: canReceive ? () => _openReceivePurchaseOrderSheet(order) : null,
       child: Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Reference + status
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  order.reference,
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Reference + status
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    order.reference,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                _buildOrderStatusBadge(order),
+              ],
+            ),
+            SizedBox(height: 8.h),
+
+            // Supplier
+            Row(
+              children: [
+                Icon(
+                  Icons.business,
+                  color: const Color(0xFF9CA3AF),
+                  size: 14.sp,
+                ),
+                SizedBox(width: 6.w),
+                Text(
+                  order.supplierName,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 13.sp,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 6.h),
+
+            // Amount + expected date
+            Row(
+              children: [
+                Text(
+                  order.formattedTotal,
                   style: GoogleFonts.inter(
                     color: Colors.white,
-                    fontSize: 15.sp,
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-              ),
-              _buildOrderStatusBadge(order),
-            ],
-          ),
-          SizedBox(height: 8.h),
+                const Spacer(),
+                if (order.expectedDate != null) ...[
+                  Icon(
+                    Icons.calendar_today,
+                    color: const Color(0xFF6B7280),
+                    size: 12.sp,
+                  ),
+                  SizedBox(width: 4.w),
+                  Text(
+                    dateFormat.format(order.expectedDate!),
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF6B7280),
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            SizedBox(height: 4.h),
 
-          // Supplier
-          Row(
-            children: [
-              Icon(
-                Icons.business,
-                color: const Color(0xFF9CA3AF),
-                size: 14.sp,
-              ),
-              SizedBox(width: 6.w),
-              Text(
-                order.supplierName,
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
-                  fontSize: 13.sp,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 6.h),
-
-          // Amount + expected date
-          Row(
-            children: [
-              Text(
-                order.formattedTotal,
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const Spacer(),
-              if (order.expectedDate != null) ...[
-                Icon(
-                  Icons.calendar_today,
-                  color: const Color(0xFF6B7280),
-                  size: 12.sp,
-                ),
-                SizedBox(width: 4.w),
+            // Item count + receive affordance
+            Row(
+              children: [
                 Text(
-                  dateFormat.format(order.expectedDate!),
+                  '${order.items.length} item${order.items.length != 1 ? 's' : ''}',
                   style: GoogleFonts.inter(
                     color: const Color(0xFF6B7280),
                     fontSize: 12.sp,
                   ),
                 ),
-              ],
-            ],
-          ),
-          SizedBox(height: 4.h),
-
-          // Item count + receive affordance
-          Row(
-            children: [
-              Text(
-                '${order.items.length} item${order.items.length != 1 ? 's' : ''}',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF6B7280),
-                  fontSize: 12.sp,
-                ),
-              ),
-              const Spacer(),
-              if (canReceive) ...[
-                Icon(Icons.inventory_2_outlined,
-                    color: const Color(0xFF10B981), size: 13.sp),
-                SizedBox(width: 4.w),
-                Text(
-                  'Tap to receive',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF10B981),
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
+                const Spacer(),
+                if (canReceive) ...[
+                  Icon(Icons.inventory_2_outlined,
+                      color: const Color(0xFF10B981), size: 13.sp),
+                  SizedBox(width: 4.w),
+                  Text(
+                    'Tap to receive',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF10B981),
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
+                ],
               ],
-            ],
-          ),
-        ],
-      ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1198,7 +1193,8 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
     // Per-item controllers, defaulted to the outstanding quantity.
     final controllers = <String, TextEditingController>{};
     for (final it in order.items) {
-      final outstanding = (it.quantityOrdered - it.quantityReceived).clamp(0, 1 << 30);
+      final outstanding =
+          (it.quantityOrdered - it.quantityReceived).clamp(0, 1 << 30);
       controllers[it.itemId] = TextEditingController(text: '$outstanding');
     }
 
@@ -1247,7 +1243,8 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                   child: Column(
                     children: order.items.map((it) {
                       final outstanding =
-                          (it.quantityOrdered - it.quantityReceived).clamp(0, 1 << 30);
+                          (it.quantityOrdered - it.quantityReceived)
+                              .clamp(0, 1 << 30);
                       return Padding(
                         padding: EdgeInsets.only(bottom: 12.h),
                         child: Row(
@@ -1258,7 +1255,8 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                                 children: [
                                   Text(it.itemName,
                                       style: GoogleFonts.inter(
-                                          color: Colors.white, fontSize: 13.5.sp)),
+                                          color: Colors.white,
+                                          fontSize: 13.5.sp)),
                                   Text(
                                       'Ordered ${it.quantityOrdered} • received ${it.quantityReceived} • outstanding $outstanding',
                                       style: GoogleFonts.inter(
@@ -1312,9 +1310,11 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                     final received = <PurchaseOrderItemEntity>[];
                     for (final it in order.items) {
                       final outstanding =
-                          (it.quantityOrdered - it.quantityReceived).clamp(0, 1 << 30);
-                      final entered =
-                          int.tryParse(controllers[it.itemId]?.text.trim() ?? '') ?? 0;
+                          (it.quantityOrdered - it.quantityReceived)
+                              .clamp(0, 1 << 30);
+                      final entered = int.tryParse(
+                              controllers[it.itemId]?.text.trim() ?? '') ??
+                          0;
                       final qty = entered.clamp(0, outstanding);
                       if (qty > 0) {
                         received.add(PurchaseOrderItemEntity(
@@ -1330,7 +1330,8 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
                     if (received.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Enter at least one quantity to receive',
+                          content: Text(
+                              'Enter at least one quantity to receive',
                               style: GoogleFonts.inter(color: Colors.white)),
                           backgroundColor: const Color(0xFFEF4444),
                         ),

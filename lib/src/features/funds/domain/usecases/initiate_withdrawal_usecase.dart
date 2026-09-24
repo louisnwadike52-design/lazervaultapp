@@ -9,13 +9,15 @@ abstract class UseCaseWithParams<T, Params> {
   Future<Either<Failure, T>> call(Params params);
 }
 
-class InitiateWithdrawalUseCase extends UseCaseWithParams<WithdrawalDetails, WithdrawalParams> {
+class InitiateWithdrawalUseCase
+    extends UseCaseWithParams<WithdrawalDetails, WithdrawalParams> {
   final IWithdrawalRepository _repository;
 
   const InitiateWithdrawalUseCase(this._repository);
 
   @override
-  Future<Either<Failure, WithdrawalDetails>> call(WithdrawalParams params) async {
+  Future<Either<Failure, WithdrawalDetails>> call(
+      WithdrawalParams params) async {
     return await _repository.initiateWithdrawal(
       sourceAccountId: params.sourceAccountId,
       amount: params.amount,
@@ -49,12 +51,12 @@ class WithdrawalParams extends Equatable {
 
   @override
   List<Object?> get props => [
-    sourceAccountId,
-    amount,
-    currency,
-    targetBankName,
-    targetAccountNumber,
-    targetSortCode,
-    accessToken,
-  ];
-} 
+        sourceAccountId,
+        amount,
+        currency,
+        targetBankName,
+        targetAccountNumber,
+        targetSortCode,
+        accessToken,
+      ];
+}

@@ -42,7 +42,8 @@ class CryptoRepositoryImpl implements CryptoRepository {
   }
 
   @override
-  Future<List<PricePoint>> getCryptoPriceHistory(String id, {String range = '7d'}) async {
+  Future<List<PricePoint>> getCryptoPriceHistory(String id,
+      {String range = '7d'}) async {
     return await remoteDataSource.getCryptoPriceHistory(id, range: range);
   }
 
@@ -57,7 +58,8 @@ class CryptoRepositoryImpl implements CryptoRepository {
   }
 
   @override
-  Future<List<Crypto>> getSupportedAssets({int page = 1, int perPage = 50}) async {
+  Future<List<Crypto>> getSupportedAssets(
+      {int page = 1, int perPage = 50}) async {
     try {
       final response = await grpcClient.getSupportedAssets(
         page: page,
@@ -100,7 +102,9 @@ class CryptoRepositoryImpl implements CryptoRepository {
       atl: proto.atl,
       atlChangePercentage: proto.atlChangePercentage,
       atlDate: proto.hasAtlDate() ? proto.atlDate.toDateTime() : null,
-      lastUpdated: proto.hasLastUpdated() ? proto.lastUpdated.toDateTime() : DateTime.now(),
+      lastUpdated: proto.hasLastUpdated()
+          ? proto.lastUpdated.toDateTime()
+          : DateTime.now(),
     );
   }
 
@@ -108,21 +112,28 @@ class CryptoRepositoryImpl implements CryptoRepository {
   Future<List<CryptoWatchlist>> getWatchlists() async {
     try {
       final response = await grpcClient.getWatchlists();
-      return response.watchlists.map((wl) => CryptoWatchlist(
-        id: wl.id,
-        name: wl.name,
-        description: wl.description,
-        cryptoIds: wl.cryptoIds.toList(),
-        createdAt: wl.hasCreatedAt() ? wl.createdAt.toDateTime() : DateTime.now(),
-        updatedAt: wl.hasUpdatedAt() ? wl.updatedAt.toDateTime() : DateTime.now(),
-      )).toList();
+      return response.watchlists
+          .map((wl) => CryptoWatchlist(
+                id: wl.id,
+                name: wl.name,
+                description: wl.description,
+                cryptoIds: wl.cryptoIds.toList(),
+                createdAt: wl.hasCreatedAt()
+                    ? wl.createdAt.toDateTime()
+                    : DateTime.now(),
+                updatedAt: wl.hasUpdatedAt()
+                    ? wl.updatedAt.toDateTime()
+                    : DateTime.now(),
+              ))
+          .toList();
     } catch (e) {
       return [];
     }
   }
 
   @override
-  Future<CryptoWatchlist> createWatchlist(String name, String description) async {
+  Future<CryptoWatchlist> createWatchlist(
+      String name, String description) async {
     final response = await grpcClient.createWatchlist(
       name: name,
       description: description,
@@ -179,7 +190,8 @@ class CryptoRepositoryImpl implements CryptoRepository {
           totalValue: h.fiatValue,
           totalGainLoss: 0,
           totalGainLossPercentage: 0.0,
-          purchaseDate: DateTime.fromMillisecondsSinceEpoch(h.acquiredAt.toDateTime().millisecondsSinceEpoch),
+          purchaseDate: DateTime.fromMillisecondsSinceEpoch(
+              h.acquiredAt.toDateTime().millisecondsSinceEpoch),
           lastUpdated: DateTime.now(),
           // When the backend skipped price lookups, the fiat fields are
           // not yet computed — mark each holding as awaiting price hydration.
@@ -221,7 +233,9 @@ class CryptoRepositoryImpl implements CryptoRepository {
       quantity: response.cryptoAmount,
       price: response.exchangeRate > 0
           ? response.exchangeRate
-          : (response.cryptoAmount > 0 ? response.fiatAmount / response.cryptoAmount : 0.0),
+          : (response.cryptoAmount > 0
+              ? response.fiatAmount / response.cryptoAmount
+              : 0.0),
       totalAmount: response.fiatAmount,
       fees: response.fee,
       timestamp: DateTime.now(),
@@ -258,7 +272,9 @@ class CryptoRepositoryImpl implements CryptoRepository {
       quantity: response.cryptoAmount,
       price: response.exchangeRate > 0
           ? response.exchangeRate
-          : (response.cryptoAmount > 0 ? response.fiatAmount / response.cryptoAmount : 0.0),
+          : (response.cryptoAmount > 0
+              ? response.fiatAmount / response.cryptoAmount
+              : 0.0),
       totalAmount: response.fiatAmount,
       fees: response.fee,
       timestamp: DateTime.now(),
@@ -293,7 +309,9 @@ class CryptoRepositoryImpl implements CryptoRepository {
       quantity: response.fromAmount,
       price: response.rate > 0
           ? response.rate
-          : (response.fromAmount > 0 ? response.toAmount / response.fromAmount : 0.0),
+          : (response.fromAmount > 0
+              ? response.toAmount / response.fromAmount
+              : 0.0),
       totalAmount: response.toAmount,
       fees: response.fee,
       timestamp: DateTime.now(),
@@ -302,23 +320,33 @@ class CryptoRepositoryImpl implements CryptoRepository {
   }
 
   @override
-  Future<List<CryptoTransaction>> getTransactions({int limit = 50, int offset = 0}) async {
+  Future<List<CryptoTransaction>> getTransactions(
+      {int limit = 50, int offset = 0}) async {
     // Fetch real transactions from backend via gRPC (limit/offset paginated).
     try {
-      final response = await grpcClient.getTransactions(limit: limit, offset: offset);
-      return response.transactions.map((t) => CryptoTransaction(
-        id: t.id,
-        cryptoId: t.cryptoId,
-        cryptoSymbol: t.cryptoSymbol,
-        cryptoName: '', // cryptoName not in proto, would need separate fetch
-        type: _mapBackendType(t.type),
-        quantity: t.amount, // proto uses 'amount' not 'quantity'
-        price: t.fiatValue > 0 && t.amount > 0 ? t.fiatValue / t.amount : 0, // calculate price
-        totalAmount: t.fiatValue, // proto uses 'fiatValue' not 'totalAmount'
-        fees: t.fee,
-        timestamp: t.timestamp.toDateTime().toLocal(), // proto Timestamp (UTC) → local for display
-        status: t.status,
-      )).toList();
+      final response =
+          await grpcClient.getTransactions(limit: limit, offset: offset);
+      return response.transactions
+          .map((t) => CryptoTransaction(
+                id: t.id,
+                cryptoId: t.cryptoId,
+                cryptoSymbol: t.cryptoSymbol,
+                cryptoName:
+                    '', // cryptoName not in proto, would need separate fetch
+                type: _mapBackendType(t.type),
+                quantity: t.amount, // proto uses 'amount' not 'quantity'
+                price: t.fiatValue > 0 && t.amount > 0
+                    ? t.fiatValue / t.amount
+                    : 0, // calculate price
+                totalAmount:
+                    t.fiatValue, // proto uses 'fiatValue' not 'totalAmount'
+                fees: t.fee,
+                timestamp: t.timestamp
+                    .toDateTime()
+                    .toLocal(), // proto Timestamp (UTC) → local for display
+                status: t.status,
+              ))
+          .toList();
     } catch (e) {
       // If backend not available, return empty list
       return [];
@@ -361,16 +389,20 @@ class CryptoRepositoryImpl implements CryptoRepository {
         currencies: [cryptoSymbol.toLowerCase()],
         limit: 20,
       );
-      return response.items.map((a) => CryptoNews(
-        id: a.id,
-        title: a.title,
-        url: a.url,
-        source: a.source,
-        sentiment: a.sentiment,
-        publishedAt: a.hasPublishedAt() ? a.publishedAt.toDateTime() : DateTime.now(),
-        votesPositive: a.votesPositive,
-        votesNegative: a.votesNegative,
-      )).toList();
+      return response.items
+          .map((a) => CryptoNews(
+                id: a.id,
+                title: a.title,
+                url: a.url,
+                source: a.source,
+                sentiment: a.sentiment,
+                publishedAt: a.hasPublishedAt()
+                    ? a.publishedAt.toDateTime()
+                    : DateTime.now(),
+                votesPositive: a.votesPositive,
+                votesNegative: a.votesNegative,
+              ))
+          .toList();
     } catch (e) {
       return [];
     }
@@ -418,7 +450,8 @@ class CryptoRepositoryImpl implements CryptoRepository {
       transactionId: resp.transactionId,
       reference: resp.reference,
       quoteId: resp.quoteId,
-      expiresAt: DateTime.tryParse(resp.expiresAt) ?? DateTime.now().toUtc().add(const Duration(seconds: 15)),
+      expiresAt: DateTime.tryParse(resp.expiresAt) ??
+          DateTime.now().toUtc().add(const Duration(seconds: 15)),
       fromCurrency: resp.fromCurrency,
       toCurrency: resp.toCurrency,
       fromAmount: resp.fromAmount,
@@ -437,7 +470,8 @@ class CryptoRepositoryImpl implements CryptoRepository {
       transactionId: transactionId,
       reference: '',
       quoteId: resp.quoteId,
-      expiresAt: DateTime.tryParse(resp.expiresAt) ?? DateTime.now().toUtc().add(const Duration(seconds: 15)),
+      expiresAt: DateTime.tryParse(resp.expiresAt) ??
+          DateTime.now().toUtc().add(const Duration(seconds: 15)),
       fromCurrency: '',
       toCurrency: '',
       fromAmount: resp.fromAmount,
@@ -452,8 +486,8 @@ class CryptoRepositoryImpl implements CryptoRepository {
   @override
   Future<SwapConfirmReceipt> confirmSwap(String transactionId,
       {String? transactionPin}) async {
-    final resp =
-        await grpcClient.confirmSwap(transactionId, transactionPin: transactionPin);
+    final resp = await grpcClient.confirmSwap(transactionId,
+        transactionPin: transactionPin);
     return SwapConfirmReceipt(
       transactionId: resp.transactionId,
       status: resp.status,

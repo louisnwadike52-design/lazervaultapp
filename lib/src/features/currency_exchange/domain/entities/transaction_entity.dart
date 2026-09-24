@@ -64,8 +64,11 @@ class CurrencyTransaction {
         (e) => e.toString() == 'TransactionStatus.${json['status']}',
         orElse: () => TransactionStatus.pending,
       ),
-      createdAt: DateTime.tryParse(json['createdAt'] ?? '')?.toLocal() ?? DateTime.now(),
-      completedAt: json['completedAt'] != null ? DateTime.tryParse(json['completedAt'])?.toLocal() : null,
+      createdAt: DateTime.tryParse(json['createdAt'] ?? '')?.toLocal() ??
+          DateTime.now(),
+      completedAt: json['completedAt'] != null
+          ? DateTime.tryParse(json['completedAt'])?.toLocal()
+          : null,
       transactionHash: json['transactionHash'],
       referenceNumber: json['referenceNumber'],
       notes: json['notes'],
@@ -145,10 +148,12 @@ class CurrencyTransaction {
     );
   }
 
-  String get formattedFromAmount => '${fromAmount.toStringAsFixed(2)} $fromCurrency';
+  String get formattedFromAmount =>
+      '${fromAmount.toStringAsFixed(2)} $fromCurrency';
   String get formattedToAmount => '${toAmount.toStringAsFixed(2)} $toCurrency';
   String get formattedFees => '${fees.toStringAsFixed(2)} $fromCurrency';
-  String get formattedTotalCost => '${totalCost.toStringAsFixed(2)} $fromCurrency';
+  String get formattedTotalCost =>
+      '${totalCost.toStringAsFixed(2)} $fromCurrency';
 
   // Convenience getters for UI
   String get transactionId => id;
@@ -226,6 +231,7 @@ extension TransactionTypeModeMatch on TransactionType {
       this == TransactionType.exchangeInternational ||
       this == TransactionType.send;
 }
+
 // Daily FX limits for the current user, resolved from GetExchangeLimits. All
 // amounts are in MAJOR units of [currency] (the source wallet currency the
 // limit is tracked against). dailyLimit == 0 means unlimited.

@@ -35,7 +35,6 @@ import 'package:lazervault/src/features/p2p_chat/services/p2p_chat_websocket_ser
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'p2p_chat_page_widgets.dart';
 
-
 class P2PChatPage extends StatefulWidget {
   const P2PChatPage({super.key});
 
@@ -116,6 +115,7 @@ class _P2PChatPageState extends State<P2PChatPage>
     WidgetsBinding.instance.addPostFrameCallback(
         (_) => _scrollToHighlighted(ids, attempt: attempt + 1));
   }
+
   Timer? _typingTimeout;
 
   // Ephemeral floating-emoji overlay (WhatsApp-style bursts over the chat).
@@ -442,7 +442,8 @@ class _P2PChatPageState extends State<P2PChatPage>
                 width: 1.5,
               ),
             ),
-            child: Icon(icon, color: const Color(0xFF7C3AED), size: iconSize.sp),
+            child:
+                Icon(icon, color: const Color(0xFF7C3AED), size: iconSize.sp),
           ),
         ),
       ),
@@ -543,7 +544,8 @@ class _P2PChatPageState extends State<P2PChatPage>
   void _onAvatarTap() {
     final url = _otherUserAvatar;
     if (url != null && url.isNotEmpty) {
-      FullScreenImageViewer.open(context, mediaUrl: url, heroTag: _avatarHeroTag);
+      FullScreenImageViewer.open(context,
+          mediaUrl: url, heroTag: _avatarHeroTag);
     } else {
       _openProfileModal();
     }
@@ -573,8 +575,8 @@ class _P2PChatPageState extends State<P2PChatPage>
             borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
             border: Border.all(color: const Color(0xFF262629)),
           ),
-          padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w,
-              MediaQuery.of(sheetCtx).padding.bottom + 24.h),
+          padding: EdgeInsets.fromLTRB(
+              24.w, 12.h, 24.w, MediaQuery.of(sheetCtx).padding.bottom + 24.h),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -593,7 +595,8 @@ class _P2PChatPageState extends State<P2PChatPage>
                   final url = _otherUserAvatar;
                   if (url != null && url.isNotEmpty) {
                     FullScreenImageViewer.open(sheetCtx,
-                        mediaUrl: url, heroTag: 'p2p-profile-modal-$_otherUserId');
+                        mediaUrl: url,
+                        heroTag: 'p2p-profile-modal-$_otherUserId');
                   }
                 },
                 child: Hero(
@@ -700,9 +703,7 @@ class _P2PChatPageState extends State<P2PChatPage>
           padding: EdgeInsets.symmetric(vertical: 12.h),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14.r),
-            border: filled
-                ? null
-                : Border.all(color: const Color(0xFF3A3A3C)),
+            border: filled ? null : Border.all(color: const Color(0xFF3A3A3C)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -750,7 +751,8 @@ class _P2PChatPageState extends State<P2PChatPage>
       // NEVER shown to the user: RecipientModel.hasRealAccountNumber is false for
       // this non-numeric value, so every masking site (confirm sheet, receipt)
       // renders the name + "Lazervault" and hides the account row.
-      name: _otherUserName.trim().isNotEmpty ? _otherUserName : 'Lazervault User',
+      name:
+          _otherUserName.trim().isNotEmpty ? _otherUserName : 'Lazervault User',
       accountNumber: _otherUserId,
       bankName: 'LazerVault',
       sortCode: '',
@@ -899,7 +901,8 @@ class _P2PChatPageState extends State<P2PChatPage>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.cloud_off, size: 14.w, color: const Color(0xFFEF4444)),
+                Icon(Icons.cloud_off,
+                    size: 14.w, color: const Color(0xFFEF4444)),
                 SizedBox(width: 6.w),
                 Text(
                   'Offline — messages sent via fallback',
@@ -933,13 +936,16 @@ class _P2PChatPageState extends State<P2PChatPage>
             _lastScrolledHighlight = const {};
           }
         }
-        if (state is P2PChatLoaded && state.messages.isNotEmpty && !_didInitialJump) {
+        if (state is P2PChatLoaded &&
+            state.messages.isNotEmpty &&
+            !_didInitialJump) {
           // First paint of a conversation → jump straight to the newest message
           // instantly (no animation), so opening a chat lands at the bottom.
           _didInitialJump = true;
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted && _scrollController.hasClients) {
-              _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+              _scrollController
+                  .jumpTo(_scrollController.position.maxScrollExtent);
             }
           });
         } else if (_pendingPrependRestore &&
@@ -1062,55 +1068,97 @@ class _P2PChatPageState extends State<P2PChatPage>
           onTap: () => FocusScope.of(context).unfocus(),
           behavior: HitTestBehavior.opaque,
           child: Stack(
-          children: [
-            ListView.builder(
-              controller: _scrollController,
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-              itemCount: state.messages.length +
-                  (state.isLoadingMore ? 1 : 0) +
-                  (_otherUserTyping ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (state.isLoadingMore && index == 0) {
-                  return Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8.h),
-                      child: LazerVaultLoader.small(),
-                    ),
-                  );
-                }
+            children: [
+              ListView.builder(
+                controller: _scrollController,
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                itemCount: state.messages.length +
+                    (state.isLoadingMore ? 1 : 0) +
+                    (_otherUserTyping ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (state.isLoadingMore && index == 0) {
+                    return Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.h),
+                        child: LazerVaultLoader.small(),
+                      ),
+                    );
+                  }
 
-                final leading = state.isLoadingMore ? 1 : 0;
-                // Trailing animated typing bubble (incoming side), like the
-                // chatbot — shown as the last row while the other user types.
-                if (_otherUserTyping &&
-                    index == state.messages.length + leading) {
-                  return const _TypingBubbles();
-                }
+                  final leading = state.isLoadingMore ? 1 : 0;
+                  // Trailing animated typing bubble (incoming side), like the
+                  // chatbot — shown as the last row while the other user types.
+                  if (_otherUserTyping &&
+                      index == state.messages.length + leading) {
+                    return const _TypingBubbles();
+                  }
 
-                final msgIndex = index - leading;
-                final message = state.messages[msgIndex];
-                final isMe = message.senderId == alignId;
+                  final msgIndex = index - leading;
+                  final message = state.messages[msgIndex];
+                  final isMe = message.senderId == alignId;
 
-                // Date separator
-                Widget? dateSeparator;
-                if (msgIndex == 0 ||
-                    !_isSameDay(message.createdAt,
-                        state.messages[msgIndex - 1].createdAt)) {
-                  dateSeparator = _buildDateSeparator(message.createdAt);
-                }
+                  // Date separator
+                  Widget? dateSeparator;
+                  if (msgIndex == 0 ||
+                      !_isSameDay(message.createdAt,
+                          state.messages[msgIndex - 1].createdAt)) {
+                    dateSeparator = _buildDateSeparator(message.createdAt);
+                  }
 
-                // System message
-                if (message.isSystem) {
-                  return Column(
-                    children: [
-                      if (dateSeparator != null) dateSeparator,
-                      _buildSystemMessage(message),
-                    ],
-                  );
-                }
+                  // System message
+                  if (message.isSystem) {
+                    return Column(
+                      children: [
+                        if (dateSeparator != null) dateSeparator,
+                        _buildSystemMessage(message),
+                      ],
+                    );
+                  }
 
-                // Transfer message — replyable (swipe or long-press), like text/media.
-                if (message.isTransfer) {
+                  // Transfer message — replyable (swipe or long-press), like text/media.
+                  if (message.isTransfer) {
+                    return _msgRow(
+                      message.id,
+                      state.highlightedMessageIds,
+                      Column(
+                        children: [
+                          if (dateSeparator != null) dateSeparator,
+                          _SwipeToReply(
+                            isMe: isMe,
+                            onReply: () => context
+                                .read<P2PChatCubit>()
+                                .startReply(message),
+                            child: GestureDetector(
+                              onLongPress: () =>
+                                  _showMessageActions(message, isMe),
+                              child: P2PTransferBubble(
+                                message: message,
+                                isMe: isMe,
+                                otherUserName: _otherUserName,
+                                otherUserId: _otherUserId,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  // Media message (image or voice note)
+                  if (message.isMedia) {
+                    return _msgRow(
+                      message.id,
+                      state.highlightedMessageIds,
+                      Column(
+                        children: [
+                          if (dateSeparator != null) dateSeparator,
+                          _buildMediaBubble(message, isMe),
+                        ],
+                      ),
+                    );
+                  }
+
+                  // Text message
                   return _msgRow(
                     message.id,
                     state.highlightedMessageIds,
@@ -1123,107 +1171,67 @@ class _P2PChatPageState extends State<P2PChatPage>
                               context.read<P2PChatCubit>().startReply(message),
                           child: GestureDetector(
                             onLongPress: () =>
-                                _showMessageActions(message, isMe),
-                            child: P2PTransferBubble(
+                                message.deliveryStatus == 'failed'
+                                    ? _showRetryDialog(message)
+                                    : _showMessageActions(message, isMe),
+                            child: P2PTextBubble(
                               message: message,
                               isMe: isMe,
-                              otherUserName: _otherUserName,
-                              otherUserId: _otherUserId,
+                              currentUserId: alignId,
+                              peerName: _otherUserName,
+                              onReactionPillTap: (emoji, mine) => mine
+                                  ? _showEditReactionSheet(message, emoji)
+                                  : _showReactorSheet(emoji),
+                              onRetry: message.deliveryStatus == 'failed' &&
+                                      message.clientMessageId != null
+                                  ? () => context
+                                      .read<P2PChatCubit>()
+                                      .retryMessage(message.clientMessageId!)
+                                  : null,
                             ),
                           ),
                         ),
                       ],
                     ),
                   );
-                }
-
-                // Media message (image or voice note)
-                if (message.isMedia) {
-                  return _msgRow(
-                    message.id,
-                    state.highlightedMessageIds,
-                    Column(
-                      children: [
-                        if (dateSeparator != null) dateSeparator,
-                        _buildMediaBubble(message, isMe),
-                      ],
-                    ),
-                  );
-                }
-
-                // Text message
-                return _msgRow(
-                  message.id,
-                  state.highlightedMessageIds,
-                  Column(
-                  children: [
-                    if (dateSeparator != null) dateSeparator,
-                    _SwipeToReply(
-                      isMe: isMe,
-                      onReply: () =>
-                          context.read<P2PChatCubit>().startReply(message),
-                      child: GestureDetector(
-                        onLongPress: () => message.deliveryStatus == 'failed'
-                            ? _showRetryDialog(message)
-                            : _showMessageActions(message, isMe),
-                        child: P2PTextBubble(
-                          message: message,
-                          isMe: isMe,
-                          currentUserId: alignId,
-                          peerName: _otherUserName,
-                          onReactionPillTap: (emoji, mine) => mine
-                              ? _showEditReactionSheet(message, emoji)
-                              : _showReactorSheet(emoji),
-                          onRetry: message.deliveryStatus == 'failed' &&
-                                  message.clientMessageId != null
-                              ? () => context
-                                  .read<P2PChatCubit>()
-                                  .retryMessage(message.clientMessageId!)
-                              : null,
-                        ),
+                },
+              ),
+              // Scroll to bottom button
+              if (_showScrollToBottom)
+                Positioned(
+                  right: 16.w,
+                  bottom: 8.h,
+                  child: GestureDetector(
+                    onTap: () => _scrollToBottom(force: true),
+                    child: Container(
+                      width: 40.w,
+                      height: 40.w,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: const Color(0xFF1F1F1F),
+                        border: Border.all(color: const Color(0xFF2D2D2D)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 8,
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                  ),
-                );
-              },
-            ),
-            // Scroll to bottom button
-            if (_showScrollToBottom)
-              Positioned(
-                right: 16.w,
-                bottom: 8.h,
-                child: GestureDetector(
-                  onTap: () => _scrollToBottom(force: true),
-                  child: Container(
-                    width: 40.w,
-                    height: 40.w,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFF1F1F1F),
-                      border: Border.all(color: const Color(0xFF2D2D2D)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.keyboard_arrow_down,
-                      color: Colors.white,
-                      size: 24.w,
+                      child: Icon(
+                        Icons.keyboard_arrow_down,
+                        color: Colors.white,
+                        size: 24.w,
+                      ),
                     ),
                   ),
                 ),
+              // Floating emoji-burst overlay (ignores touches; purely visual).
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: _EmojiStreamOverlay(key: _emojiOverlayKey),
+                ),
               ),
-            // Floating emoji-burst overlay (ignores touches; purely visual).
-            Positioned.fill(
-              child: IgnorePointer(
-                child: _EmojiStreamOverlay(key: _emojiOverlayKey),
-              ),
-            ),
-          ],
+            ],
           ),
         );
       },
@@ -1767,76 +1775,77 @@ class _P2PChatPageState extends State<P2PChatPage>
         isMe: isMe,
         onReply: () => context.read<P2PChatCubit>().startReply(message),
         child: GestureDetector(
-        onLongPress: () => message.deliveryStatus == 'failed' &&
-                message.clientMessageId != null
-            ? context
-                .read<P2PChatCubit>()
-                .retryMediaMessage(message.clientMessageId!)
-            : _showMessageActions(message, isMe),
-        onTap: message.isImage &&
-                (message.mediaUrl != null && message.mediaUrl!.isNotEmpty)
-            ? () => _openFullImage(message.mediaUrl!)
-            : null,
-        child: Container(
-          margin: EdgeInsets.symmetric(vertical: 4.h, horizontal: 4.w),
-          padding: EdgeInsets.all(6.w),
-          constraints: BoxConstraints(maxWidth: 260.w),
-          decoration: BoxDecoration(
-            color: isMe
-                ? const Color(0xFF3B82F6).withOpacity(0.18)
-                : const Color(0xFF1F1F1F),
-            borderRadius: BorderRadius.circular(14.r),
-            border: Border.all(color: const Color(0xFF2D2D2D), width: 0.5),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ChatMediaBubble(
-                mediaType: message.mediaType,
-                mediaUrl: message.mediaUrl,
-                localMediaPath: message.localMediaPath,
-                isUser: isMe,
-              ),
-              // Caption attached to an image before sending.
-              if (message.isImage && (message.content ?? '').trim().isNotEmpty)
-                Padding(
-                  padding: EdgeInsets.only(top: 6.h, left: 2.w, right: 2.w),
-                  child: Text(
-                    message.content!.trim(),
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      height: 1.35,
-                    ),
-                  ),
+          onLongPress: () => message.deliveryStatus == 'failed' &&
+                  message.clientMessageId != null
+              ? context
+                  .read<P2PChatCubit>()
+                  .retryMediaMessage(message.clientMessageId!)
+              : _showMessageActions(message, isMe),
+          onTap: message.isImage &&
+                  (message.mediaUrl != null && message.mediaUrl!.isNotEmpty)
+              ? () => _openFullImage(message.mediaUrl!)
+              : null,
+          child: Container(
+            margin: EdgeInsets.symmetric(vertical: 4.h, horizontal: 4.w),
+            padding: EdgeInsets.all(6.w),
+            constraints: BoxConstraints(maxWidth: 260.w),
+            decoration: BoxDecoration(
+              color: isMe
+                  ? const Color(0xFF3B82F6).withOpacity(0.18)
+                  : const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.circular(14.r),
+              border: Border.all(color: const Color(0xFF2D2D2D), width: 0.5),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ChatMediaBubble(
+                  mediaType: message.mediaType,
+                  mediaUrl: message.mediaUrl,
+                  localMediaPath: message.localMediaPath,
+                  isUser: isMe,
                 ),
-              if (message.deliveryStatus == 'sending')
-                Padding(
-                  padding: EdgeInsets.only(top: 4.h, left: 2.w),
-                  child: Text(
-                    'Uploading...',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 10.sp,
+                // Caption attached to an image before sending.
+                if (message.isImage &&
+                    (message.content ?? '').trim().isNotEmpty)
+                  Padding(
+                    padding: EdgeInsets.only(top: 6.h, left: 2.w, right: 2.w),
+                    child: Text(
+                      message.content!.trim(),
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 14.sp,
+                        height: 1.35,
+                      ),
                     ),
                   ),
-                )
-              else if (message.deliveryStatus == 'failed')
-                Padding(
-                  padding: EdgeInsets.only(top: 4.h, left: 2.w),
-                  child: Text(
-                    'Failed — long-press to retry',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFFEF4444),
-                      fontSize: 10.sp,
+                if (message.deliveryStatus == 'sending')
+                  Padding(
+                    padding: EdgeInsets.only(top: 4.h, left: 2.w),
+                    child: Text(
+                      'Uploading...',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF9CA3AF),
+                        fontSize: 10.sp,
+                      ),
+                    ),
+                  )
+                else if (message.deliveryStatus == 'failed')
+                  Padding(
+                    padding: EdgeInsets.only(top: 4.h, left: 2.w),
+                    child: Text(
+                      'Failed — long-press to retry',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFEF4444),
+                        fontSize: 10.sp,
+                      ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -1921,8 +1930,7 @@ class _P2PChatPageState extends State<P2PChatPage>
                   _scrollToBottom(force: true);
                 }
               },
-              onSendMedia: (mediaType, localFilePath, contentType,
-                  [caption]) {
+              onSendMedia: (mediaType, localFilePath, contentType, [caption]) {
                 cubit.sendMediaMessage(
                   mediaType: mediaType,
                   localFilePath: localFilePath,

@@ -116,17 +116,20 @@ class _VoiceEnrollmentCarouselScreenState
   void _resumeSessionIfPaused() {
     if (!_sessionPaused) return;
     _sessionPaused = false;
-    _voiceSession?.notifyCustomVoiceSetupFinished(succeeded: _enrollmentSucceeded);
+    _voiceSession?.notifyCustomVoiceSetupFinished(
+        succeeded: _enrollmentSucceeded);
   }
 
   /// Handle app lifecycle changes — stop recording if user backgrounds the app
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       // Stop any active recording when app goes to background
       final cubit = context.read<VoiceEnrollmentCubit>();
       final currentState = cubit.state;
-      if (currentState is VoiceEnrollmentCarouselState && currentState.isRecording) {
+      if (currentState is VoiceEnrollmentCarouselState &&
+          currentState.isRecording) {
         cubit.stopCarouselRecording(currentState.activePage);
       }
     }
@@ -159,7 +162,8 @@ class _VoiceEnrollmentCarouselScreenState
               _enrollmentSucceeded = true; // a voiceprint is now registered
               _showSuccessSheet(context, state);
             } else if (state is VoiceEnrollmentPoorQuality) {
-              _enrollmentSucceeded = true; // registered (low quality, still usable)
+              _enrollmentSucceeded =
+                  true; // registered (low quality, still usable)
               _showPoorQualitySheet(context, state);
             } else if (state is VoiceEnrollmentSkipped) {
               // SKIP is NOT completion. Firing onEnrollmentComplete here would
@@ -190,7 +194,9 @@ class _VoiceEnrollmentCarouselScreenState
               // restart in carousel mode automatically
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (mounted) {
-                  context.read<VoiceEnrollmentCubit>().startCarouselEnrollment();
+                  context
+                      .read<VoiceEnrollmentCubit>()
+                      .startCarouselEnrollment();
                 }
               });
               return _buildFinalizing(context);
@@ -204,7 +210,8 @@ class _VoiceEnrollmentCarouselScreenState
               return _buildPermissionDenied(context);
             }
             // Handle recording/processing states that may occur during mode transitions
-            if (state is VoiceEnrollmentRecording || state is VoiceEnrollmentProcessing) {
+            if (state is VoiceEnrollmentRecording ||
+                state is VoiceEnrollmentProcessing) {
               return _buildFinalizing(context);
             }
             return const SizedBox.shrink();
@@ -214,7 +221,8 @@ class _VoiceEnrollmentCarouselScreenState
     );
   }
 
-  Widget _buildCarousel(BuildContext context, VoiceEnrollmentCarouselState state) {
+  Widget _buildCarousel(
+      BuildContext context, VoiceEnrollmentCarouselState state) {
     return Column(
       children: [
         SizedBox(height: 16.h),
@@ -273,7 +281,8 @@ class _VoiceEnrollmentCarouselScreenState
         child: LinearProgressIndicator(
           value: state.completedCount / 3.0,
           backgroundColor: const Color(0xFF2D2D2D),
-          valueColor: const AlwaysStoppedAnimation(InvoiceThemeColors.primaryPurple),
+          valueColor:
+              const AlwaysStoppedAnimation(InvoiceThemeColors.primaryPurple),
           minHeight: 6.h,
         ),
       ),
@@ -449,7 +458,8 @@ class _VoiceEnrollmentCarouselScreenState
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
+                        color: InvoiceThemeColors.primaryPurple
+                            .withValues(alpha: 0.2),
                         width: 2,
                       ),
                     ),
@@ -524,9 +534,7 @@ class _VoiceEnrollmentCarouselScreenState
           width: 6.w,
           height: isActive ? 28.h : 12.h,
           decoration: BoxDecoration(
-            color: isActive
-                ? const Color(0xFFEF4444)
-                : const Color(0xFF2D2D2D),
+            color: isActive ? const Color(0xFFEF4444) : const Color(0xFF2D2D2D),
             borderRadius: BorderRadius.circular(3.r),
           ),
         );
@@ -689,7 +697,8 @@ class _VoiceEnrollmentCarouselScreenState
     );
   }
 
-  Widget _buildReplacingView(BuildContext context, VoiceEnrollmentReplacing state) {
+  Widget _buildReplacingView(
+      BuildContext context, VoiceEnrollmentReplacing state) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -783,7 +792,9 @@ class _VoiceEnrollmentCarouselScreenState
                     context.read<VoiceEnrollmentCubit>().reEnroll();
                   } else {
                     // Restart carousel enrollment from scratch
-                    context.read<VoiceEnrollmentCubit>().startCarouselEnrollment();
+                    context
+                        .read<VoiceEnrollmentCubit>()
+                        .startCarouselEnrollment();
                   }
                 },
                 icon: Icon(Icons.refresh_rounded, size: 20.sp),
@@ -827,7 +838,8 @@ class _VoiceEnrollmentCarouselScreenState
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.mic_off_rounded, size: 64.sp, color: const Color(0xFFFB923C)),
+            Icon(Icons.mic_off_rounded,
+                size: 64.sp, color: const Color(0xFFFB923C)),
             SizedBox(height: 24.h),
             Text(
               'Microphone Permission Required',
@@ -884,18 +896,21 @@ class _VoiceEnrollmentCarouselScreenState
       enableDrag: false,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (sheetContext) => _buildSuccessBottomSheet(context, sheetContext, state),
+      builder: (sheetContext) =>
+          _buildSuccessBottomSheet(context, sheetContext, state),
     );
   }
 
-  void _showPoorQualitySheet(BuildContext context, VoiceEnrollmentPoorQuality state) {
+  void _showPoorQualitySheet(
+      BuildContext context, VoiceEnrollmentPoorQuality state) {
     showModalBottomSheet(
       context: context,
       isDismissible: false,
       enableDrag: false,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (sheetContext) => _buildPoorQualityBottomSheet(context, sheetContext, state),
+      builder: (sheetContext) =>
+          _buildPoorQualityBottomSheet(context, sheetContext, state),
     );
   }
 
@@ -980,7 +995,8 @@ class _VoiceEnrollmentCarouselScreenState
 
                   // Quality score
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFFEF4444).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8.r),
@@ -1154,7 +1170,8 @@ class _VoiceEnrollmentCarouselScreenState
   Widget _buildTipItem(String text) {
     return Row(
       children: [
-        Icon(Icons.check_circle_outline, color: const Color(0xFFFB923C), size: 16),
+        Icon(Icons.check_circle_outline,
+            color: const Color(0xFFFB923C), size: 16),
         SizedBox(width: 8.w),
         Expanded(
           child: Text(
@@ -1249,7 +1266,8 @@ class _VoiceEnrollmentCarouselScreenState
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: InvoiceThemeColors.successGreen.withValues(alpha: 0.4),
+                          color: InvoiceThemeColors.successGreen
+                              .withValues(alpha: 0.4),
                           blurRadius: 24,
                           spreadRadius: 4,
                           offset: const Offset(0, 6),
@@ -1427,11 +1445,14 @@ class _VoiceEnrollmentCarouselScreenState
                           ],
                         ),
                         SizedBox(height: 16.h),
-                        _buildFeatureItem(Icons.send_rounded, 'Voice-activated transfers'),
+                        _buildFeatureItem(
+                            Icons.send_rounded, 'Voice-activated transfers'),
                         SizedBox(height: 12.h),
-                        _buildFeatureItem(Icons.lock_rounded, 'Secure voice authentication'),
+                        _buildFeatureItem(
+                            Icons.lock_rounded, 'Secure voice authentication'),
                         SizedBox(height: 12.h),
-                        _buildFeatureItem(Icons.mic_rounded, 'Hands-free banking commands'),
+                        _buildFeatureItem(
+                            Icons.mic_rounded, 'Hands-free banking commands'),
                       ],
                     ),
                   ),
@@ -1472,7 +1493,8 @@ class _VoiceEnrollmentCarouselScreenState
                     borderRadius: BorderRadius.circular(16.r),
                     boxShadow: [
                       BoxShadow(
-                        color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3),
+                        color: InvoiceThemeColors.primaryPurple
+                            .withValues(alpha: 0.3),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -1539,7 +1561,8 @@ class _VoiceEnrollmentCarouselScreenState
             color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
             shape: BoxShape.circle,
           ),
-          child: Icon(Icons.check, color: InvoiceThemeColors.primaryPurple, size: 16),
+          child: Icon(Icons.check,
+              color: InvoiceThemeColors.primaryPurple, size: 16),
         ),
         SizedBox(width: 12.w),
         Expanded(
@@ -1580,7 +1603,8 @@ class _VoiceEnrollmentCarouselScreenState
     // Don't show cancel dialog while recording — stop recording first
     final cubit = context.read<VoiceEnrollmentCubit>();
     final currentState = cubit.state;
-    if (currentState is VoiceEnrollmentCarouselState && currentState.isRecording) {
+    if (currentState is VoiceEnrollmentCarouselState &&
+        currentState.isRecording) {
       cubit.stopCarouselRecording(currentState.activePage);
     }
 
@@ -1588,7 +1612,8 @@ class _VoiceEnrollmentCarouselScreenState
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        title: const Text('Cancel Enrollment?', style: TextStyle(color: Colors.white)),
+        title: const Text('Cancel Enrollment?',
+            style: TextStyle(color: Colors.white)),
         content: const Text(
           'Your progress will be saved. You can resume later.',
           style: TextStyle(color: Color(0xFF9CA3AF)),
@@ -1603,7 +1628,8 @@ class _VoiceEnrollmentCarouselScreenState
               Navigator.of(dialogContext).pop();
               Navigator.of(context).pop();
             },
-            child: const Text('Yes, Cancel', style: TextStyle(color: Color(0xFFEF4444))),
+            child: const Text('Yes, Cancel',
+                style: TextStyle(color: Color(0xFFEF4444))),
           ),
         ],
       ),

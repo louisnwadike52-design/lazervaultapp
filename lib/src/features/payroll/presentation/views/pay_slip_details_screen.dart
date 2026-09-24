@@ -13,7 +13,6 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 part 'pay_slip_details_screen_widgets.dart';
 
-
 class PaySlipDetailsScreen extends StatefulWidget {
   final String paySlipId;
 
@@ -212,8 +211,8 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
       builder: (_) => Center(child: LazerVaultLoader.small()),
     );
     try {
-      final employee =
-          await serviceLocator<PayrollRepository>().getEmployee(slip.employeeId);
+      final employee = await serviceLocator<PayrollRepository>()
+          .getEmployee(slip.employeeId);
       if (!mounted) return;
       Navigator.of(context).pop(); // dismiss loader
       Navigator.of(context).push(
@@ -257,73 +256,73 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
     return GestureDetector(
       onTap: () => _openEmployee(slip),
       child: Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: InvoiceThemeColors.secondaryBackground,
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: InvoiceThemeColors.borderColor),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 26.r,
-            backgroundColor:
-                InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
-            child: Text(
-              slip.employeeName.isNotEmpty
-                  ? slip.employeeName[0].toUpperCase()
-                  : '?',
-              style: GoogleFonts.inter(
-                color: InvoiceThemeColors.primaryPurpleLight,
-                fontSize: 20.sp,
-                fontWeight: FontWeight.w700,
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: InvoiceThemeColors.secondaryBackground,
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: InvoiceThemeColors.borderColor),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 26.r,
+              backgroundColor:
+                  InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
+              child: Text(
+                slip.employeeName.isNotEmpty
+                    ? slip.employeeName[0].toUpperCase()
+                    : '?',
+                style: GoogleFonts.inter(
+                  color: InvoiceThemeColors.primaryPurpleLight,
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
-          ),
-          SizedBox(width: 14.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  slip.employeeName,
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    slip.employeeName,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'Pay Run: ${slip.payRunId.length > 8 ? slip.payRunId.substring(0, 8) : slip.payRunId}...',
-                  style: GoogleFonts.inter(
-                    color: InvoiceThemeColors.textGray500,
-                    fontSize: 13.sp,
+                  SizedBox(height: 4.h),
+                  Text(
+                    'Pay Run: ${slip.payRunId.length > 8 ? slip.payRunId.substring(0, 8) : slip.payRunId}...',
+                    style: GoogleFonts.inter(
+                      color: InvoiceThemeColors.textGray500,
+                      fontSize: 13.sp,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-            decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            child: Text(
-              statusLabel,
-              style: GoogleFonts.inter(
-                color: statusColor,
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
+                ],
               ),
             ),
-          ),
-          SizedBox(width: 6.w),
-          Icon(Icons.chevron_right_rounded,
-              color: InvoiceThemeColors.textGray500, size: 20.sp),
-        ],
-      ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Text(
+                statusLabel,
+                style: GoogleFonts.inter(
+                  color: statusColor,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            SizedBox(width: 6.w),
+            Icon(Icons.chevron_right_rounded,
+                color: InvoiceThemeColors.textGray500, size: 20.sp),
+          ],
+        ),
       ),
     );
   }
@@ -334,7 +333,10 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [InvoiceThemeColors.successGreenDark, InvoiceThemeColors.successGreen],
+          colors: [
+            InvoiceThemeColors.successGreenDark,
+            InvoiceThemeColors.successGreen
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -481,8 +483,7 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
               child: OutlinedButton.icon(
                 onPressed: () async {
                   try {
-                    final path =
-                        await PayrollPdfService.downloadPaySlip(slip);
+                    final path = await PayrollPdfService.downloadPaySlip(slip);
                     if (!mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -514,7 +515,8 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
                   ),
                 ),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: InvoiceThemeColors.primaryPurpleLight),
+                  side: const BorderSide(
+                      color: InvoiceThemeColors.primaryPurpleLight),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),
@@ -573,7 +575,8 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.error_outline, size: 48.sp, color: InvoiceThemeColors.errorRed),
+          Icon(Icons.error_outline,
+              size: 48.sp, color: InvoiceThemeColors.errorRed),
           SizedBox(height: 16.h),
           Text(
             message,

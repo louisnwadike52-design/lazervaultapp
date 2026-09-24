@@ -81,7 +81,9 @@ class _LockAccountSheetState extends State<LockAccountSheet> {
     });
   }
 
-  String _labelFor(int s) => _presets.firstWhere((p) => p.$2 == s, orElse: () => ('the selected time', s)).$1;
+  String _labelFor(int s) => _presets
+      .firstWhere((p) => p.$2 == s, orElse: () => ('the selected time', s))
+      .$1;
 
   Future<void> _lock() async {
     if (_selectedSeconds == null || _busy) return;
@@ -95,7 +97,9 @@ class _LockAccountSheetState extends State<LockAccountSheet> {
 
     result.fold(
       (failure) => Get.snackbar('Lock account', failure.message,
-          snackPosition: SnackPosition.BOTTOM, backgroundColor: _danger, colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: _danger,
+          colorText: Colors.white,
           margin: EdgeInsets.all(12.w)),
       (lockedUntil) async {
         // Session is revoked server-side — wipe local + return to the auth entry.
@@ -120,8 +124,11 @@ class _LockAccountSheetState extends State<LockAccountSheet> {
         Get.offAllNamed(AppRoutes.freshLoginEntry);
         Get.snackbar('Account locked',
             'You\'re locked out until ${_fmt(lockedUntil)}. There\'s no early unlock.',
-            snackPosition: SnackPosition.BOTTOM, backgroundColor: _card, colorText: Colors.white,
-            margin: EdgeInsets.all(12.w), duration: const Duration(seconds: 6));
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: _card,
+            colorText: Colors.white,
+            margin: EdgeInsets.all(12.w),
+            duration: const Duration(seconds: 6));
       },
     );
   }
@@ -138,7 +145,9 @@ class _LockAccountSheetState extends State<LockAccountSheet> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
-        left: 20.w, right: 20.w, top: 12.h,
+        left: 20.w,
+        right: 20.w,
+        top: 12.h,
         bottom: MediaQuery.of(context).viewInsets.bottom + 24.h,
       ),
       child: Column(
@@ -146,8 +155,12 @@ class _LockAccountSheetState extends State<LockAccountSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Center(
-            child: Container(width: 40, height: 4,
-              decoration: BoxDecoration(color: Colors.grey[700], borderRadius: BorderRadius.circular(2))),
+            child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                    color: Colors.grey[700],
+                    borderRadius: BorderRadius.circular(2))),
           ),
           SizedBox(height: 18.h),
           Row(children: [
@@ -155,7 +168,10 @@ class _LockAccountSheetState extends State<LockAccountSheet> {
                 color: _accent, size: 22.sp),
             SizedBox(width: 10.w),
             Text(_emergency ? 'Emergency lock' : 'Lock account',
-                style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700)),
           ]),
           SizedBox(height: 6.h),
           Text(
@@ -164,7 +180,8 @@ class _LockAccountSheetState extends State<LockAccountSheet> {
                 : _emergency
                     ? 'Immediately lock this account — sign-in and all transactions are blocked until the timer ends. Use this if your device or account may be compromised.'
                     : 'Temporarily lock yourself out of signing in and all transactions. Pick how long.',
-            style: GoogleFonts.inter(color: _textSecondary, fontSize: 13.sp, height: 1.4),
+            style: GoogleFonts.inter(
+                color: _textSecondary, fontSize: 13.sp, height: 1.4),
           ),
           SizedBox(height: 18.h),
           if (!_confirmStep) ...[
@@ -172,14 +189,19 @@ class _LockAccountSheetState extends State<LockAccountSheet> {
             // "my device/account may be compromised" lock.
             Row(
               children: [
-                Expanded(child: _modeChip('Scheduled', !_emergency, () => _setEmergency(false))),
+                Expanded(
+                    child: _modeChip(
+                        'Scheduled', !_emergency, () => _setEmergency(false))),
                 SizedBox(width: 10.w),
-                Expanded(child: _modeChip('Emergency', _emergency, () => _setEmergency(true))),
+                Expanded(
+                    child: _modeChip(
+                        'Emergency', _emergency, () => _setEmergency(true))),
               ],
             ),
             SizedBox(height: 16.h),
             Wrap(
-              spacing: 10.w, runSpacing: 10.h,
+              spacing: 10.w,
+              runSpacing: 10.h,
               children: _presets.map((p) {
                 final sel = _selectedSeconds == p.$2;
                 return ChoiceChip(
@@ -187,7 +209,9 @@ class _LockAccountSheetState extends State<LockAccountSheet> {
                   selected: sel,
                   onSelected: (_) => setState(() => _selectedSeconds = p.$2),
                   labelStyle: GoogleFonts.inter(
-                      color: sel ? Colors.white : _textSecondary, fontWeight: FontWeight.w600, fontSize: 13.sp),
+                      color: sel ? Colors.white : _textSecondary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13.sp),
                   backgroundColor: _card,
                   selectedColor: _accent,
                   shape: RoundedRectangleBorder(
@@ -198,8 +222,11 @@ class _LockAccountSheetState extends State<LockAccountSheet> {
               }).toList(),
             ),
             SizedBox(height: 22.h),
-            _primaryBtn('Continue',
-                _selectedSeconds == null ? null : () => setState(() => _confirmStep = true),
+            _primaryBtn(
+                'Continue',
+                _selectedSeconds == null
+                    ? null
+                    : () => setState(() => _confirmStep = true),
                 danger: _emergency),
           ] else ...[
             Container(
@@ -212,18 +239,37 @@ class _LockAccountSheetState extends State<LockAccountSheet> {
               child: Row(children: [
                 Icon(Icons.warning_amber_rounded, color: _danger, size: 20.sp),
                 SizedBox(width: 10.w),
-                Expanded(child: Text(
-                  'Lock for ${_labelFor(_selectedSeconds!)}. No one — including you — can sign in or transact until it ends.',
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 12.5.sp, height: 1.35, fontWeight: FontWeight.w600))),
+                Expanded(
+                    child: Text(
+                        'Lock for ${_labelFor(_selectedSeconds!)}. No one — including you — can sign in or transact until it ends.',
+                        style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 12.5.sp,
+                            height: 1.35,
+                            fontWeight: FontWeight.w600))),
               ]),
             ),
             SizedBox(height: 20.h),
             Row(children: [
-              Expanded(child: TextButton(
-                onPressed: _busy ? null : () => setState(() => _confirmStep = false),
-                child: Text('Back', style: GoogleFonts.inter(color: _textSecondary, fontWeight: FontWeight.w600)))),
+              Expanded(
+                  child: TextButton(
+                      onPressed: _busy
+                          ? null
+                          : () => setState(() => _confirmStep = false),
+                      child: Text('Back',
+                          style: GoogleFonts.inter(
+                              color: _textSecondary,
+                              fontWeight: FontWeight.w600)))),
               SizedBox(width: 12.w),
-              Expanded(flex: 2, child: _primaryBtn(_busy ? '' : (_emergency ? 'Lock now' : 'Lock my account'), _busy ? null : _lock, danger: true, busy: _busy)),
+              Expanded(
+                  flex: 2,
+                  child: _primaryBtn(
+                      _busy
+                          ? ''
+                          : (_emergency ? 'Lock now' : 'Lock my account'),
+                      _busy ? null : _lock,
+                      danger: true,
+                      busy: _busy)),
             ]),
           ],
         ],
@@ -255,20 +301,30 @@ class _LockAccountSheetState extends State<LockAccountSheet> {
     );
   }
 
-  Widget _primaryBtn(String label, VoidCallback? onTap, {bool danger = false, bool busy = false}) {
+  Widget _primaryBtn(String label, VoidCallback? onTap,
+      {bool danger = false, bool busy = false}) {
     return SizedBox(
-      width: double.infinity, height: 50.h,
+      width: double.infinity,
+      height: 50.h,
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
           backgroundColor: danger ? _danger : _brand,
-          disabledBackgroundColor: (danger ? _danger : _brand).withValues(alpha: 0.4),
+          disabledBackgroundColor:
+              (danger ? _danger : _brand).withValues(alpha: 0.4),
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         ),
         child: busy
-            ? SizedBox(width: 22.w, height: 22.w, child: const CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white))
-            : Text(label, style: GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.w700)),
+            ? SizedBox(
+                width: 22.w,
+                height: 22.w,
+                child: const CircularProgressIndicator(
+                    strokeWidth: 2.4, color: Colors.white))
+            : Text(label,
+                style: GoogleFonts.inter(
+                    fontSize: 15.sp, fontWeight: FontWeight.w700)),
       ),
     );
   }

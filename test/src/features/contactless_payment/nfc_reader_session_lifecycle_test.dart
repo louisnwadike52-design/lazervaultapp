@@ -45,7 +45,8 @@ void main() {
     });
 
     test('the cancel path releases the session', () {
-      expect(bodyOf('void _handleScanCancelled() {'), contains('_stopNfcScan()'),
+      expect(
+          bodyOf('void _handleScanCancelled() {'), contains('_stopNfcScan()'),
           reason: 'cancelling and retrying is the most common recovery — it '
               'must not leave a session behind');
     });
@@ -90,7 +91,8 @@ void main() {
     // hints card — visible as "Enter Session ID Manually" sitting on top of the
     // tips.
     test('the middle section scrolls rather than overflowing the hints', () {
-      final build = source.substring(source.indexOf('Widget build(BuildContext'));
+      final build =
+          source.substring(source.indexOf('Widget build(BuildContext'));
       final hintsAt = build.indexOf('_buildBottomHints()');
       expect(hintsAt, greaterThan(-1));
       final above = build.substring(0, hintsAt);

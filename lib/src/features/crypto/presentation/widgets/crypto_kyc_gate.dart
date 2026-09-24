@@ -101,7 +101,10 @@ class _CryptoVerifyBannerState extends State<CryptoVerifyBanner> {
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [accent.withValues(alpha: 0.18), accent.withValues(alpha: 0.06)],
+          colors: [
+            accent.withValues(alpha: 0.18),
+            accent.withValues(alpha: 0.06)
+          ],
         ),
         borderRadius: BorderRadius.circular(14.r),
         border: Border.all(color: accent.withValues(alpha: 0.45)),
@@ -180,7 +183,8 @@ class _CryptoVerifyBannerState extends State<CryptoVerifyBanner> {
                 onTap: _verify,
                 borderRadius: BorderRadius.circular(10.r),
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                   child: Text(
                     'Verify',
                     style: GoogleFonts.inter(

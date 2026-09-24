@@ -18,7 +18,8 @@ abstract class ScanException implements Exception {
   String getUserMessage() => userMessage ?? message;
 
   @override
-  String toString() => 'ScanException: $message${details != null ? ' - $details' : ''}';
+  String toString() =>
+      'ScanException: $message${details != null ? ' - $details' : ''}';
 }
 
 /// OCR-related exceptions
@@ -41,8 +42,10 @@ class OCRException extends ScanException {
   factory OCRException.lowConfidence({double? confidence}) {
     return OCRException(
       errorType: OCRErrorType.lowConfidence,
-      message: 'OCR confidence too low: ${confidence?.toStringAsFixed(2) ?? 'unknown'}',
-      userMessage: 'Image quality is too low. Please retake with better lighting and focus.',
+      message:
+          'OCR confidence too low: ${confidence?.toStringAsFixed(2) ?? 'unknown'}',
+      userMessage:
+          'Image quality is too low. Please retake with better lighting and focus.',
       canRetry: true,
     );
   }
@@ -51,7 +54,8 @@ class OCRException extends ScanException {
     return const OCRException(
       errorType: OCRErrorType.noTextDetected,
       message: 'No text detected in image',
-      userMessage: 'No bank details found. Please ensure the document is clearly visible.',
+      userMessage:
+          'No bank details found. Please ensure the document is clearly visible.',
       canRetry: true,
     );
   }
@@ -113,7 +117,8 @@ class NetworkException extends ScanException {
     return const NetworkException(
       errorType: NetworkErrorType.noConnection,
       message: 'No internet connection',
-      userMessage: 'No internet connection. Please check your network and try again.',
+      userMessage:
+          'No internet connection. Please check your network and try again.',
       canRetry: true,
     );
   }
@@ -122,7 +127,8 @@ class NetworkException extends ScanException {
     return const NetworkException(
       errorType: NetworkErrorType.timeout,
       message: 'Request timed out',
-      userMessage: 'Request took too long. Please check your connection and try again.',
+      userMessage:
+          'Request took too long. Please check your connection and try again.',
       canRetry: true,
     );
   }
@@ -176,8 +182,10 @@ class PaymentException extends ScanException {
   }) {
     return PaymentException(
       errorType: PaymentErrorType.insufficientFunds,
-      message: 'Insufficient funds: Available \$$availableBalance, Requested \$$requestedAmount',
-      userMessage: 'Insufficient balance. Available: \$${availableBalance.toStringAsFixed(2)}',
+      message:
+          'Insufficient funds: Available \$$availableBalance, Requested \$$requestedAmount',
+      userMessage:
+          'Insufficient balance. Available: \$${availableBalance.toStringAsFixed(2)}',
       canRetry: false,
     );
   }
@@ -223,7 +231,8 @@ class PaymentException extends ScanException {
     return PaymentException(
       errorType: PaymentErrorType.amountTooLarge,
       message: 'Amount exceeds maximum limit',
-      userMessage: 'Amount too large. Maximum: \$${maxAmount.toStringAsFixed(2)}',
+      userMessage:
+          'Amount too large. Maximum: \$${maxAmount.toStringAsFixed(2)}',
       canRetry: false,
     );
   }
@@ -232,7 +241,8 @@ class PaymentException extends ScanException {
     return PaymentException(
       errorType: PaymentErrorType.amountTooSmall,
       message: 'Amount below minimum limit',
-      userMessage: 'Amount too small. Minimum: \$${minAmount.toStringAsFixed(2)}',
+      userMessage:
+          'Amount too small. Minimum: \$${minAmount.toStringAsFixed(2)}',
       canRetry: false,
     );
   }

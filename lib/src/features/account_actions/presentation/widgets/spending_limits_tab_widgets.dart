@@ -71,9 +71,8 @@ class _LimitUsageSectionState extends State<_LimitUsageSection> {
               Text(
                 '$sym${usage.remainingDaily.toStringAsFixed(2)} left',
                 style: TextStyle(
-                  color: over
-                      ? const Color(0xFFEF4444)
-                      : const Color(0xFF10B981),
+                  color:
+                      over ? const Color(0xFFEF4444) : const Color(0xFF10B981),
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w600,
                 ),

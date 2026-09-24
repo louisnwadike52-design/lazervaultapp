@@ -80,9 +80,8 @@ class _BirthdayCelebrationCardState extends State<BirthdayCelebrationCard>
 
   @override
   Widget build(BuildContext context) {
-    final name = widget.firstName.trim().isEmpty
-        ? 'there'
-        : widget.firstName.trim();
+    final name =
+        widget.firstName.trim().isEmpty ? 'there' : widget.firstName.trim();
     return ScaleTransition(
       scale: CurvedAnimation(
         parent: _entranceController,

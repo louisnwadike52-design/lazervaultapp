@@ -73,7 +73,9 @@ class EPinPdfService {
       return const _NetStyle('Glo', PdfColor.fromInt(0xFF00A651),
           PdfColors.white, '*123*(PIN)#', '121');
     }
-    if (n.contains('9mobile') || n.contains('etisalat') || n.contains('9 mobile')) {
+    if (n.contains('9mobile') ||
+        n.contains('etisalat') ||
+        n.contains('9 mobile')) {
       return const _NetStyle('9mobile', PdfColor.fromInt(0xFF006F45),
           PdfColors.white, '*222*(PIN)#', '200');
     }
@@ -122,7 +124,8 @@ class EPinPdfService {
     final pdf = pw.Document();
 
     final parsed = DateTime.tryParse(order.createdAt);
-    final date = parsed != null ? _displayDateFormat.format(parsed.toLocal()) : '';
+    final date =
+        parsed != null ? _displayDateFormat.format(parsed.toLocal()) : '';
     final hasNetwork = order.network.trim().isNotEmpty;
     final net = _net(order.network);
     final denom = _denomLabel(order);
@@ -154,7 +157,8 @@ class EPinPdfService {
           if (cardWidgets.isEmpty)
             pw.Text(
               'PINs are being generated. Re-open this order shortly to print the cards.',
-              style: _style(fontSize: 11, color: const PdfColor.fromInt(0xFF64748B)),
+              style: _style(
+                  fontSize: 11, color: const PdfColor.fromInt(0xFF64748B)),
             )
           else
             // Equal-width cards in an adaptive column count (fewer columns →
@@ -232,7 +236,8 @@ class EPinPdfService {
       padding: const pw.EdgeInsets.all(10),
       decoration: pw.BoxDecoration(
         color: const PdfColor.fromInt(0xFFFCFCFC),
-        border: pw.Border.all(color: const PdfColor.fromInt(0xFF9AA0A6), width: 1),
+        border:
+            pw.Border.all(color: const PdfColor.fromInt(0xFF9AA0A6), width: 1),
         borderRadius: pw.BorderRadius.circular(4),
       ),
       child: pw.Column(
@@ -245,17 +250,20 @@ class EPinPdfService {
               crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
                 pw.Expanded(
-                  child: pw.Text(vendor, style: _style(fontSize: 9, isBold: true)),
+                  child:
+                      pw.Text(vendor, style: _style(fontSize: 9, isBold: true)),
                 ),
                 if (hasNetwork)
                   pw.Container(
-                    padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+                    padding: const pw.EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 2.5),
                     decoration: pw.BoxDecoration(
                       color: net.color,
                       borderRadius: pw.BorderRadius.circular(3),
                     ),
                     child: pw.Text(net.label,
-                        style: _style(fontSize: 7.5, isBold: true, color: net.onColor)),
+                        style: _style(
+                            fontSize: 7.5, isBold: true, color: net.onColor)),
                   ),
               ],
             ),
@@ -263,18 +271,22 @@ class EPinPdfService {
           ],
           if (metaLine.isNotEmpty) ...[
             pw.Text(metaLine,
-                style: _style(fontSize: 8, color: const PdfColor.fromInt(0xFF444444))),
+                style: _style(
+                    fontSize: 8, color: const PdfColor.fromInt(0xFF444444))),
             pw.SizedBox(height: 5),
           ],
-          pw.Text('PIN: ${card.pin}', style: _style(fontSize: 13, isBold: true)),
+          pw.Text('PIN: ${card.pin}',
+              style: _style(fontSize: 13, isBold: true)),
           if (serial.isNotEmpty) ...[
             pw.SizedBox(height: 3),
             pw.Text('S/N: $serial',
-                style: _style(fontSize: 8, color: const PdfColor.fromInt(0xFF444444))),
+                style: _style(
+                    fontSize: 8, color: const PdfColor.fromInt(0xFF444444))),
           ],
           if (date.isNotEmpty)
             pw.Text('Date: $date',
-                style: _style(fontSize: 8, color: const PdfColor.fromInt(0xFF444444))),
+                style: _style(
+                    fontSize: 8, color: const PdfColor.fromInt(0xFF444444))),
           pw.SizedBox(height: 6),
           pw.Divider(height: 0.5, color: const PdfColor.fromInt(0xFFD9D9D9)),
           pw.SizedBox(height: 3),
@@ -282,7 +294,8 @@ class EPinPdfService {
             net.care.isNotEmpty
                 ? 'Dial ${net.dial} | Customer care: ${net.care}'
                 : 'Dial ${net.dial}',
-            style: _style(fontSize: 7, color: const PdfColor.fromInt(0xFF8A8A8A)),
+            style:
+                _style(fontSize: 7, color: const PdfColor.fromInt(0xFF8A8A8A)),
           ),
         ],
       ),
@@ -315,8 +328,9 @@ class EPinPdfService {
                 pw.Text(vendor.isNotEmpty ? vendor : 'Recharge Cards',
                     style: _style(fontSize: 13, isBold: true)),
                 pw.Text(subtitle,
-                    style:
-                        _style(fontSize: 8, color: const PdfColor.fromInt(0xFF64748B))),
+                    style: _style(
+                        fontSize: 8,
+                        color: const PdfColor.fromInt(0xFF64748B))),
               ],
             ),
           ],
@@ -326,10 +340,12 @@ class EPinPdfService {
           children: [
             if (order.reference.trim().isNotEmpty)
               pw.Text('Ref: ${order.reference}',
-                  style: _style(fontSize: 8, color: const PdfColor.fromInt(0xFF64748B))),
+                  style: _style(
+                      fontSize: 8, color: const PdfColor.fromInt(0xFF64748B))),
             if (date.isNotEmpty)
               pw.Text(date,
-                  style: _style(fontSize: 8, color: const PdfColor.fromInt(0xFF94A3B8))),
+                  style: _style(
+                      fontSize: 8, color: const PdfColor.fromInt(0xFF94A3B8))),
           ],
         ),
       ],
@@ -383,9 +399,9 @@ class EPinPdfService {
     final file = await generateReceipt(order: order, vendorName: vendorName);
     final denom = _denomLabel(order);
     await SharePlus.instance.share(ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+      // iOS: a non-zero popover anchor is required — CGRectZero throws
+      // PlatformException and the share silently fails on iPhone/iPad.
+      sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       files: [XFile(file.path)],
       text:
           'Recharge cards ${order.reference} — ${order.quantity}${denom.isNotEmpty ? ' x $denom' : ''}${order.network.trim().isNotEmpty ? ' (${order.network})' : ''}',

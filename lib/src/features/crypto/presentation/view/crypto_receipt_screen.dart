@@ -90,7 +90,8 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
   void _slowDownPolling() {
     _pollTimer?.cancel();
     if (!mounted) return;
-    _pollTimer = Timer.periodic(const Duration(seconds: 20), (_) => _pollOnce());
+    _pollTimer =
+        Timer.periodic(const Duration(seconds: 20), (_) => _pollOnce());
     _refreshAfterTrade();
   }
 
@@ -204,10 +205,9 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
     final st = cubit.state;
     if (st is! CryptosLoaded) return '';
     // For a swap the hero represents the asset the user RECEIVES.
-    final wantId = (d.type == CryptoTransactionType.swap
-            ? d.toCryptoId
-            : d.cryptoId) ??
-        '';
+    final wantId =
+        (d.type == CryptoTransactionType.swap ? d.toCryptoId : d.cryptoId) ??
+            '';
     final wantSymbol = (d.type == CryptoTransactionType.swap
             ? (d.toCrypto ?? d.cryptoSymbol)
             : d.cryptoSymbol)
@@ -269,7 +269,8 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
 
     final metadata = <String, dynamic>{
       'Asset': d.cryptoName,
-      if (d.type == CryptoTransactionType.swap && (d.fromCrypto ?? '').isNotEmpty)
+      if (d.type == CryptoTransactionType.swap &&
+          (d.fromCrypto ?? '').isNotEmpty)
         'From asset': d.fromCrypto!,
       if (d.type == CryptoTransactionType.swap && (d.toCrypto ?? '').isNotEmpty)
         'To asset': d.toCrypto!,
@@ -317,8 +318,8 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
         return UnifiedTransactionStatus.completed;
       case CryptoTransactionStatus.pending:
       case CryptoTransactionStatus.verifying:
-      // Awaiting exchange settlement / reconciliation — "processing" reads
-      // more honestly to the user than "pending" for an in-flight trade.
+        // Awaiting exchange settlement / reconciliation — "processing" reads
+        // more honestly to the user than "pending" for an in-flight trade.
         return UnifiedTransactionStatus.processing;
       case CryptoTransactionStatus.failed:
         return UnifiedTransactionStatus.failed;

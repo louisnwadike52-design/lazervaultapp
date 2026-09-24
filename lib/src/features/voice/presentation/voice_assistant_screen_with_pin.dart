@@ -22,10 +22,12 @@ class VoiceAssistantScreenWithPIN extends StatefulWidget {
   });
 
   @override
-  State<VoiceAssistantScreenWithPIN> createState() => _VoiceAssistantScreenWithPINState();
+  State<VoiceAssistantScreenWithPIN> createState() =>
+      _VoiceAssistantScreenWithPINState();
 }
 
-class _VoiceAssistantScreenWithPINState extends State<VoiceAssistantScreenWithPIN> {
+class _VoiceAssistantScreenWithPINState
+    extends State<VoiceAssistantScreenWithPIN> {
   bool _isListening = false;
   bool _isProcessing = false;
 
@@ -115,7 +117,8 @@ class _VoiceAssistantScreenWithPINState extends State<VoiceAssistantScreenWithPI
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Too many invalid PIN attempts. Transaction cancelled.'),
+            content:
+                Text('Too many invalid PIN attempts. Transaction cancelled.'),
             backgroundColor: Colors.red,
             duration: Duration(seconds: 5),
           ),
@@ -246,7 +249,8 @@ class _VoiceAssistantScreenWithPINState extends State<VoiceAssistantScreenWithPI
                         Icon(
                           Icons.mic,
                           size: 80,
-                          color: theme.colorScheme.primary.withValues(alpha: 0.5),
+                          color:
+                              theme.colorScheme.primary.withValues(alpha: 0.5),
                         ),
                         const SizedBox(height: 16),
                         Text(

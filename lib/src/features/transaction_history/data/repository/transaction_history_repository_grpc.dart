@@ -51,7 +51,8 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     TransactionHistoryCacheDataSource? cacheDataSource,
     FlutterSecureStorage? storage,
     IPaymentsTransferDataSource? paymentsDataSource,
-  })  : cacheDataSource = cacheDataSource ?? TransactionHistoryCacheDataSource(),
+  })  : cacheDataSource =
+            cacheDataSource ?? TransactionHistoryCacheDataSource(),
         storage = storage ?? const FlutterSecureStorage(),
         _paymentsDataSource = paymentsDataSource;
 
@@ -88,8 +89,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
               metaRef.isNotEmpty)
           ? metaRef
           : selfRef;
-      final base =
-          ref.endsWith('-CR') ? ref.substring(0, ref.length - 3) : ref;
+      final base = ref.endsWith('-CR') ? ref.substring(0, ref.length - 3) : ref;
       return '${base}_${tx.flow.name}';
     }
 
@@ -122,7 +122,8 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       // card doesn't surface the personal account's cached transactions, and
       // vice-versa. The cache table keys on user_id, so we pass a composite key.
       final userId = await storage.read(key: 'user_id');
-      final scopedKey = userId != null ? _accountScopedKey(userId, accountId) : null;
+      final scopedKey =
+          userId != null ? _accountScopedKey(userId, accountId) : null;
       if (page == 1 && scopedKey != null && !_shouldBypassCache(filters)) {
         try {
           final cached = await cacheDataSource.getCachedTransactions(
@@ -135,13 +136,16 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
             var cachedResults = cached;
             if (filters?.searchQuery?.isNotEmpty == true) {
               final query = filters!.searchQuery!.toLowerCase();
-              cachedResults = cached.where((tx) =>
-                tx.title.toLowerCase().contains(query) ||
-                tx.description?.toLowerCase().contains(query) == true ||
-                tx.counterpartyName?.toLowerCase().contains(query) == true ||
-                tx.transactionReference?.toLowerCase().contains(query) == true ||
-                tx.formattedAmount.toLowerCase().contains(query)
-              ).toList();
+              cachedResults = cached
+                  .where((tx) =>
+                      tx.title.toLowerCase().contains(query) ||
+                      tx.description?.toLowerCase().contains(query) == true ||
+                      tx.counterpartyName?.toLowerCase().contains(query) ==
+                          true ||
+                      tx.transactionReference?.toLowerCase().contains(query) ==
+                          true ||
+                      tx.formattedAmount.toLowerCase().contains(query))
+                  .toList();
             }
             return TransactionListResponse(
               transactions: cachedResults,
@@ -213,10 +217,13 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       // is exact. Pages can come back thinner than `limit` (the offset still
       // walks the unfiltered set); a short page of correct rows beats a full
       // page of wrong ones, and paging still advances normally.
-      if (hasServiceFilter && categoryFilter == null && serviceNameFilter == null) {
+      if (hasServiceFilter &&
+          categoryFilter == null &&
+          serviceNameFilter == null) {
         final wanted = filters!.serviceTypes!.toSet();
-        transactions =
-            transactions.where((tx) => wanted.contains(tx.serviceType)).toList();
+        transactions = transactions
+            .where((tx) => wanted.contains(tx.serviceType))
+            .toList();
       }
 
       // MERGE core-payments EXTERNAL transfers (pending / processing / failed /
@@ -230,7 +237,8 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
           filters?.statuses ?? const <UnifiedTransactionStatus>[];
       final serviceFilters =
           filters?.serviceTypes ?? const <TransactionServiceType>[];
-      final hasCounterparty = (filters?.counterpartyAccount?.isNotEmpty) ?? false;
+      final hasCounterparty =
+          (filters?.counterpartyAccount?.isNotEmpty) ?? false;
       final unfiltered = statusFilters.isEmpty &&
           serviceFilters.isEmpty &&
           !hasCounterparty &&
@@ -271,8 +279,9 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
           // Post-filter the external rows to match the active status/service/
           // date filters (the backend filter only ran against ledger rows).
           if (statusFilters.isNotEmpty) {
-            external =
-                external.where((tx) => statusFilters.contains(tx.status)).toList();
+            external = external
+                .where((tx) => statusFilters.contains(tx.status))
+                .toList();
           }
           if (serviceFilters.isNotEmpty) {
             external = external
@@ -300,13 +309,15 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       // Apply local search filter if set
       if (filters?.searchQuery?.isNotEmpty == true) {
         final query = filters!.searchQuery!.toLowerCase();
-        transactions = transactions.where((tx) =>
-          tx.title.toLowerCase().contains(query) ||
-          tx.description?.toLowerCase().contains(query) == true ||
-          tx.counterpartyName?.toLowerCase().contains(query) == true ||
-          tx.transactionReference?.toLowerCase().contains(query) == true ||
-          tx.formattedAmount.toLowerCase().contains(query)
-        ).toList();
+        transactions = transactions
+            .where((tx) =>
+                tx.title.toLowerCase().contains(query) ||
+                tx.description?.toLowerCase().contains(query) == true ||
+                tx.counterpartyName?.toLowerCase().contains(query) == true ||
+                tx.transactionReference?.toLowerCase().contains(query) ==
+                    true ||
+                tx.formattedAmount.toLowerCase().contains(query))
+            .toList();
       }
 
       // Cache the results (scoped per account — see scopedKey above)
@@ -355,7 +366,8 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       // Try cache first for page 1 — scoped per (user, account) so the
       // service-filtered list also respects the selected account card.
       final userId = await storage.read(key: 'user_id');
-      final scopedKey = userId != null ? _accountScopedKey(userId, accountId) : null;
+      final scopedKey =
+          userId != null ? _accountScopedKey(userId, accountId) : null;
       if (page == 1 && scopedKey != null) {
         try {
           final cached = await cacheDataSource.getCachedTransactions(
@@ -393,7 +405,8 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
         offset: (page - 1) * limit,
       );
 
-      final transactions = response.transactions.map(_convertFromProto).toList();
+      final transactions =
+          response.transactions.map(_convertFromProto).toList();
 
       // Legacy invoice platform-fee rows were stamped core-payments-service,
       // so the backend returns them for the Transfers view. They are fees into
@@ -482,8 +495,12 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       return response.transactions
           .map(_convertFromProto)
           .where((tx) =>
-              tx.description?.toLowerCase().contains(query.toLowerCase()) == true ||
-              tx.transactionReference?.toLowerCase().contains(query.toLowerCase()) == true)
+              tx.description?.toLowerCase().contains(query.toLowerCase()) ==
+                  true ||
+              tx.transactionReference
+                      ?.toLowerCase()
+                      .contains(query.toLowerCase()) ==
+                  true)
           .toList();
     } catch (e) {
       throw Exception('Failed to search transactions: $e');
@@ -644,8 +661,12 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       serviceType = _mapServiceNameToServiceType(protoTx.serviceName);
     } else {
       // Infer service type from category when service_name is missing
-      serviceType = _inferServiceTypeFromCategory(protoTx.category,
-          protoTx.type, protoTx.description, protoTx.reference, protoTx.serviceName);
+      serviceType = _inferServiceTypeFromCategory(
+          protoTx.category,
+          protoTx.type,
+          protoTx.description,
+          protoTx.reference,
+          protoTx.serviceName);
     }
 
     // Correct the service type for the shared hold_capture bucket. Several
@@ -700,8 +721,8 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     // Disambiguate the specific bill type from the reference prefix / text.
     if (protoTx.serviceName == 'utility-payments-service' ||
         _looksLikeUtilityRef(protoTx.reference)) {
-      serviceType = _refineUtilityServiceType(
-          serviceType, protoTx.reference, protoTx.description, protoTx.category);
+      serviceType = _refineUtilityServiceType(serviceType, protoTx.reference,
+          protoTx.description, protoTx.category);
     }
 
     // Map status
@@ -813,17 +834,17 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     String? counterpartyName = protoTx.counterpartyName.isNotEmpty
         ? protoTx.counterpartyName
         : (isIncoming
-            ? (metadata['sender_name'] as String?
-                ?? metadata['payer_name'] as String?
-                ?? metadata['counterparty_name'] as String?)
-            : (metadata['recipient_name'] as String?
-                ?? metadata['beneficiary_name'] as String?
-                ?? metadata['destination_name'] as String?
-                ?? metadata['counterparty_name'] as String?));
+            ? (metadata['sender_name'] as String? ??
+                metadata['payer_name'] as String? ??
+                metadata['counterparty_name'] as String?)
+            : (metadata['recipient_name'] as String? ??
+                metadata['beneficiary_name'] as String? ??
+                metadata['destination_name'] as String? ??
+                metadata['counterparty_name'] as String?));
     String? counterpartyAccount = protoTx.counterpartyAccount.isNotEmpty
         ? protoTx.counterpartyAccount
-        : (metadata['recipient_account'] as String?
-            ?? metadata['counterparty_account'] as String?);
+        : (metadata['recipient_account'] as String? ??
+            metadata['counterparty_account'] as String?);
 
     // Deposits name the sender in the DESCRIPTION and nowhere else.
     //
@@ -838,7 +859,8 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
 
     // Crypto sends name their recipient in metadata (username or truncated
     // address) — surface it as the counterparty so the receipt shows "To".
-    if (isCryptoSend && (counterpartyName == null || counterpartyName.isEmpty)) {
+    if (isCryptoSend &&
+        (counterpartyName == null || counterpartyName.isEmpty)) {
       final recipient = metadata['recipient']?.toString();
       if (recipient != null && recipient.isNotEmpty) {
         counterpartyName = recipient;
@@ -866,8 +888,18 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     }
 
     // Don't use generic account names as counterparty display names
-    const genericAccountNames = {'Personal', 'Savings', 'Business', 'USD Wallet', 'GBP Wallet', 'GHS Wallet', 'KES Wallet', 'ZAR Wallet'};
-    if (counterpartyName != null && genericAccountNames.contains(counterpartyName)) {
+    const genericAccountNames = {
+      'Personal',
+      'Savings',
+      'Business',
+      'USD Wallet',
+      'GBP Wallet',
+      'GHS Wallet',
+      'KES Wallet',
+      'ZAR Wallet'
+    };
+    if (counterpartyName != null &&
+        genericAccountNames.contains(counterpartyName)) {
       counterpartyName = null;
     }
 
@@ -878,7 +910,8 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     // omits the row instead.
     final bareUuid = RegExp(
         r'^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$');
-    if (counterpartyName != null && bareUuid.hasMatch(counterpartyName.trim())) {
+    if (counterpartyName != null &&
+        bareUuid.hasMatch(counterpartyName.trim())) {
       counterpartyName = null;
     }
     if (counterpartyAccount != null &&
@@ -893,8 +926,8 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     // "Transfer to {Recipient Name}", so a simple prefix-strip yields the
     // name we want to show. We deliberately ignore "Lazervault" to avoid
     // the vague "Transfer from Lazervault" string surfacing as a name.
-    if ((counterpartyName == null || counterpartyName.isEmpty)
-        && protoTx.description.isNotEmpty) {
+    if ((counterpartyName == null || counterpartyName.isEmpty) &&
+        protoTx.description.isNotEmpty) {
       final desc = protoTx.description.trim();
       final lower = desc.toLowerCase();
       String? recovered;
@@ -908,17 +941,18 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       } else if (!isIncoming && lower.startsWith('transfer to ')) {
         recovered = desc.substring('transfer to '.length).trim();
       }
-      if (recovered != null
-          && recovered.isNotEmpty
-          && recovered.toLowerCase() != 'lazervault') {
+      if (recovered != null &&
+          recovered.isNotEmpty &&
+          recovered.toLowerCase() != 'lazervault') {
         counterpartyName = recovered;
       }
     }
 
     // Resolve bank name from bank_code if bank_name is not already set
-    if (metadata['bank_name'] == null || (metadata['bank_name'] as String).isEmpty) {
-      final bankCode = metadata['bank_code'] as String?
-          ?? metadata['destination_bank_code'] as String?;
+    if (metadata['bank_name'] == null ||
+        (metadata['bank_name'] as String).isEmpty) {
+      final bankCode = metadata['bank_code'] as String? ??
+          metadata['destination_bank_code'] as String?;
       if (bankCode != null && bankCode.isNotEmpty) {
         final resolvedName = BanksData.getBankNameByCode(bankCode);
         if (resolvedName != null) {
@@ -958,15 +992,22 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     // rendered through amountDisplayOverride/assetSymbol. Anything else falls
     // back to the active account, exactly as before.
     const supportedFiat = {
-      'NGN', 'GBP', 'USD', 'EUR', 'GHS', 'KES', 'ZAR', 'CAD', 'AUD',
+      'NGN',
+      'GBP',
+      'USD',
+      'EUR',
+      'GHS',
+      'KES',
+      'ZAR',
+      'CAD',
+      'AUD',
     };
     final metaCurrency =
         (metadata['currency']?.toString() ?? '').trim().toUpperCase();
-    final currency = (!isCryptoSwap &&
-            !isCryptoSend &&
-            supportedFiat.contains(metaCurrency))
-        ? metaCurrency
-        : (accountManager.activeAccountDetails?.currency ?? 'NGN');
+    final currency =
+        (!isCryptoSwap && !isCryptoSend && supportedFiat.contains(metaCurrency))
+            ? metaCurrency
+            : (accountManager.activeAccountDetails?.currency ?? 'NGN');
 
     // Prefer the ORIGINATING reference stashed in metadata (TRF-…, C2C-…,
     // DEP-…) over the ledger row's internal bookkeeping reference
@@ -1081,13 +1122,14 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       if (appService.backendServiceName == serviceName) {
         final txType = appService.toTransactionServiceType;
         return txType;
-            }
+      }
     }
 
     // Fallback for services not in AppServiceName enum
     final serviceLower = serviceName.toLowerCase();
     if (serviceLower.contains('deposit')) return TransactionServiceType.deposit;
-    if (serviceLower.contains('withdrawal')) return TransactionServiceType.withdrawal;
+    if (serviceLower.contains('withdrawal'))
+      return TransactionServiceType.withdrawal;
     // Lazerspray writes its ledger rows as `sprayme-service`, and there is no
     // AppServiceName entry for it, so wallet top-ups, sprays and gifts all fell
     // through to `unknown` and rendered the grey help-outline glyph.
@@ -1191,8 +1233,8 @@ String? _senderFromDepositDescription(String description) {
   final text = description.trim();
   if (text.isEmpty) return null;
 
-  final match = RegExp(r'^deposit\s+from\s+(.+)$', caseSensitive: false)
-      .firstMatch(text);
+  final match =
+      RegExp(r'^deposit\s+from\s+(.+)$', caseSensitive: false).firstMatch(text);
   if (match == null) return null;
 
   final name = match.group(1)?.trim() ?? '';

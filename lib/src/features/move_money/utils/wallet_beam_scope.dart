@@ -133,8 +133,6 @@ class WalletBeamScope {
     WalletBeamIdentities ids,
   ) {
     if (ids.isEmpty) return const [];
-    return transfers
-        .where((t) => isWalletMove(t, ids))
-        .toList(growable: false);
+    return transfers.where((t) => isWalletMove(t, ids)).toList(growable: false);
   }
 }

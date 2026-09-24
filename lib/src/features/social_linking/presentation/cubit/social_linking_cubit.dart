@@ -37,7 +37,8 @@ class SocialLinkingCubit extends Cubit<SocialLinkingState> {
   LinkedSocialAccountEntity? get primaryAccount => _primaryAccount;
 
   /// Get computed stats from current accounts
-  SocialAccountStats get stats => SocialAccountStats.fromAccounts(_linkedAccounts);
+  SocialAccountStats get stats =>
+      SocialAccountStats.fromAccounts(_linkedAccounts);
 
   /// Load linked social accounts
   Future<void> loadLinkedAccounts() async {
@@ -100,7 +101,8 @@ class SocialLinkingCubit extends Cubit<SocialLinkingState> {
       }
 
       // Get authorization tokens for the scopes we need
-      final authorization = await googleUser.authorizationClient.authorizeScopes(
+      final authorization =
+          await googleUser.authorizationClient.authorizeScopes(
         _googleScopes,
       );
       final accessToken = authorization.accessToken;
@@ -123,7 +125,8 @@ class SocialLinkingCubit extends Cubit<SocialLinkingState> {
       emit(SocialAccountLinked(account: account, isNewAccount: true));
     } on SocialLinkingException catch (e) {
       if (isClosed) return;
-      _emitError(e, operation: 'linkGoogleAccount', provider: SocialProvider.google);
+      _emitError(e,
+          operation: 'linkGoogleAccount', provider: SocialProvider.google);
     } catch (e) {
       if (isClosed) return;
       emit(SocialLinkingError(
@@ -163,7 +166,8 @@ class SocialLinkingCubit extends Cubit<SocialLinkingState> {
       String? displayName;
       if (credential.givenName != null || credential.familyName != null) {
         displayName =
-            '${credential.givenName ?? ''} ${credential.familyName ?? ''}'.trim();
+            '${credential.givenName ?? ''} ${credential.familyName ?? ''}'
+                .trim();
       }
 
       // Link account via backend
@@ -198,7 +202,8 @@ class SocialLinkingCubit extends Cubit<SocialLinkingState> {
       }
     } on SocialLinkingException catch (e) {
       if (isClosed) return;
-      _emitError(e, operation: 'linkAppleAccount', provider: SocialProvider.apple);
+      _emitError(e,
+          operation: 'linkAppleAccount', provider: SocialProvider.apple);
     } catch (e) {
       if (isClosed) return;
       emit(SocialLinkingError(
@@ -210,7 +215,8 @@ class SocialLinkingCubit extends Cubit<SocialLinkingState> {
   }
 
   /// Link a social account by provider
-  Future<void> linkAccount(SocialProvider provider, {bool setAsPrimary = false}) async {
+  Future<void> linkAccount(SocialProvider provider,
+      {bool setAsPrimary = false}) async {
     switch (provider) {
       case SocialProvider.google:
         await linkGoogleAccount(setAsPrimary: setAsPrimary);
@@ -318,7 +324,8 @@ class SocialLinkingCubit extends Cubit<SocialLinkingState> {
         break;
       default:
         emit(SocialLinkingError(
-          message: '${account.provider.displayName} reauthorization is not yet supported',
+          message:
+              '${account.provider.displayName} reauthorization is not yet supported',
           errorType: SocialLinkingErrorType.general,
           provider: account.provider,
         ));
@@ -361,7 +368,8 @@ class SocialLinkingCubit extends Cubit<SocialLinkingState> {
       }
 
       // Get authorization tokens
-      final authorization = await googleUser.authorizationClient.authorizeScopes(
+      final authorization =
+          await googleUser.authorizationClient.authorizeScopes(
         _googleScopes,
       );
       final accessToken = authorization.accessToken;
@@ -377,7 +385,9 @@ class SocialLinkingCubit extends Cubit<SocialLinkingState> {
       emit(SocialAccountReauthorized(account: updatedAccount));
     } on SocialLinkingException catch (e) {
       if (isClosed) return;
-      _emitError(e, operation: 'reauthorizeGoogleAccount', provider: SocialProvider.google);
+      _emitError(e,
+          operation: 'reauthorizeGoogleAccount',
+          provider: SocialProvider.google);
     } catch (e) {
       if (isClosed) return;
       emit(SocialLinkingError(
@@ -437,7 +447,8 @@ class SocialLinkingCubit extends Cubit<SocialLinkingState> {
       }
     } on SocialLinkingException catch (e) {
       if (isClosed) return;
-      _emitError(e, operation: 'reauthorizeAppleAccount', provider: SocialProvider.apple);
+      _emitError(e,
+          operation: 'reauthorizeAppleAccount', provider: SocialProvider.apple);
     } catch (e) {
       if (isClosed) return;
       emit(SocialLinkingError(

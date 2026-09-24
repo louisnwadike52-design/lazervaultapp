@@ -472,9 +472,7 @@ class _InsuranceContactScreenState extends State<InsuranceContactScreen> {
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w500,
-                  color: onTap != null
-                      ? const Color(0xFF6366F1)
-                      : Colors.white,
+                  color: onTap != null ? const Color(0xFF6366F1) : Colors.white,
                 ),
                 textAlign: TextAlign.right,
                 overflow: TextOverflow.ellipsis,

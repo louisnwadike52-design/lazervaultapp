@@ -17,19 +17,20 @@ class PaymentMethodSelectionScreen extends StatefulWidget {
   });
 
   @override
-  State<PaymentMethodSelectionScreen> createState() => _PaymentMethodSelectionScreenState();
+  State<PaymentMethodSelectionScreen> createState() =>
+      _PaymentMethodSelectionScreenState();
 }
 
-class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScreen> 
+class _PaymentMethodSelectionScreenState
+    extends State<PaymentMethodSelectionScreen>
     with SingleTickerProviderStateMixin {
-  
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  
+
   PaymentMethod? _selectedPaymentMethod;
   String? _selectedAccount;
   String? _selectedCrypto;
-  
+
   final List<Map<String, dynamic>> _accountOptions = [
     {
       'id': 'main_account',
@@ -260,7 +261,6 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -363,9 +363,9 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
   }
 
   Widget _buildAccountOption(Map<String, dynamic> account) {
-    final isSelected = _selectedPaymentMethod == PaymentMethod.accountBalance && 
-                      _selectedAccount == account['id'];
-    
+    final isSelected = _selectedPaymentMethod == PaymentMethod.accountBalance &&
+        _selectedAccount == account['id'];
+
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
@@ -394,8 +394,8 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
                 ),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: isSelected 
-                ? account['color'] 
+            color: isSelected
+                ? account['color']
                 : Colors.white.withValues(alpha: 0.1),
             width: isSelected ? 2 : 1,
           ),
@@ -471,16 +471,18 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
   }
 
   Widget _buildCryptoOption(Map<String, dynamic> crypto) {
-    final isSelected = _selectedPaymentMethod == PaymentMethod.bitcoin && 
-                      _selectedCrypto == crypto['id'];
-    
+    final isSelected = _selectedPaymentMethod == PaymentMethod.bitcoin &&
+        _selectedCrypto == crypto['id'];
+
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
         setState(() {
-          _selectedPaymentMethod = crypto['id'] == 'bitcoin' ? PaymentMethod.bitcoin :
-                                 crypto['id'] == 'ethereum' ? PaymentMethod.ethereum :
-                                 PaymentMethod.usdc;
+          _selectedPaymentMethod = crypto['id'] == 'bitcoin'
+              ? PaymentMethod.bitcoin
+              : crypto['id'] == 'ethereum'
+                  ? PaymentMethod.ethereum
+                  : PaymentMethod.usdc;
           _selectedCrypto = crypto['id'];
           _selectedAccount = null;
         });
@@ -504,8 +506,8 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
                 ),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: isSelected 
-                ? crypto['color'] 
+            color: isSelected
+                ? crypto['color']
                 : Colors.white.withValues(alpha: 0.1),
             width: isSelected ? 2 : 1,
           ),
@@ -585,7 +587,7 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
 
   Widget _buildOtherMethodOption(Map<String, dynamic> method) {
     final isSelected = _selectedPaymentMethod == method['method'];
-    
+
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
@@ -614,8 +616,8 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
                 ),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: isSelected 
-                ? method['color'] 
+            color: isSelected
+                ? method['color']
                 : Colors.white.withValues(alpha: 0.1),
             width: isSelected ? 2 : 1,
           ),
@@ -671,7 +673,7 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
 
   Widget _buildPayButton() {
     final canPay = _selectedPaymentMethod != null;
-    
+
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -692,7 +694,10 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
           decoration: BoxDecoration(
             gradient: canPay
                 ? const LinearGradient(
-                    colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
+                    colors: [
+                      Color(0xFF3B82F6),
+                      Color.fromARGB(255, 78, 3, 208)
+                    ],
                   )
                 : LinearGradient(
                     colors: [
@@ -718,7 +723,7 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
               borderRadius: BorderRadius.circular(16.r),
               child: Center(
                 child: Text(
-                  canPay 
+                  canPay
                       ? 'Pay £${widget.invoice.totalAmount.toStringAsFixed(2)}'
                       : 'Select Payment Method',
                   style: GoogleFonts.inter(
@@ -737,9 +742,9 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
 
   void _proceedToPayment() {
     if (_selectedPaymentMethod == null) return;
-    
+
     HapticFeedback.mediumImpact();
-    
+
     Get.to(
       () => PaymentProcessingScreen(
         invoice: widget.invoice,
@@ -751,4 +756,4 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
       duration: const Duration(milliseconds: 300),
     );
   }
-} 
+}

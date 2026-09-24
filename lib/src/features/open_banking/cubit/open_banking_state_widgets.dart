@@ -457,5 +457,6 @@ class AccountTransactionsLoaded extends OpenBankingState {
   });
 
   @override
-  List<Object?> get props => [accountId, transactions, totalTransactions, lastSyncAt];
+  List<Object?> get props =>
+      [accountId, transactions, totalTransactions, lastSyncAt];
 }

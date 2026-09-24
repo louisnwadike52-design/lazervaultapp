@@ -25,14 +25,12 @@ import '../../domain/entities/tv_package_entity.dart';
 import '../widgets/cable_tv_rollover_preference_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
-
 part 'cable_tv_payment_confirmation_screen_widgets.dart';
 
 /// Upper bound on the saved-state probe. The probe only decides whether to
 /// pre-tick / lock the save + auto-renew toggles, so it must never be able
 /// to block them from rendering. On timeout we fail open and show them.
 const Duration _probeTimeout = Duration(seconds: 8);
-
 
 /// Confirm-payment screen for cable TV subscriptions. Mirrors the data
 /// bundles + internet bill confirm screens — same save-as-beneficiary
@@ -52,8 +50,7 @@ class CableTVPaymentConfirmationScreen extends StatefulWidget {
 }
 
 class _CableTVPaymentConfirmationScreenState
-    extends State<CableTVPaymentConfirmationScreen>
-    with TransactionPinMixin {
+    extends State<CableTVPaymentConfirmationScreen> with TransactionPinMixin {
   final _currencyFormat = NumberFormat('#,##0', 'en_NG');
   bool _isProcessing = false;
 
@@ -143,8 +140,7 @@ class _CableTVPaymentConfirmationScreenState
       final ds = GetIt.I<CableTVBeneficiaryRemoteDataSource>();
       // Fail OPEN: a hung probe must never leave the toggles stuck behind
       // the 'Checking saved state…' spinner — that hides auto-renew entirely.
-      final beneficiaries =
-          await ds.getBeneficiaries().timeout(_probeTimeout);
+      final beneficiaries = await ds.getBeneficiaries().timeout(_probeTimeout);
       CableTVBeneficiary? match;
       for (final b in beneficiaries) {
         if (b.smartCardNumber == smartCardNumber &&
@@ -296,7 +292,8 @@ class _CableTVPaymentConfirmationScreenState
     // (the pool VA for a family card) BEFORE PIN verify so the token, the header
     // and the debit all target the same account even if the user changed the pick.
     if (_selectedAccount != null) {
-      GetIt.I<AccountManager>().setActiveAccount(_selectedAccount!.spendingAccountId);
+      GetIt.I<AccountManager>()
+          .setActiveAccount(_selectedAccount!.spendingAccountId);
     }
 
     String? verificationToken;
@@ -376,114 +373,113 @@ class _CableTVPaymentConfirmationScreenState
           }
         },
         child: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ── Summary card ──────────────────────────────────────
-                    Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1F1F1F),
-                        borderRadius: BorderRadius.circular(16.r),
-                        border: Border.all(
-                            color: const Color(0xFF2D2D2D), width: 1),
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── Summary card ──────────────────────────────────────
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1F1F1F),
+                          borderRadius: BorderRadius.circular(16.r),
+                          border: Border.all(
+                              color: const Color(0xFF2D2D2D), width: 1),
+                        ),
+                        child: Column(
+                          children: [
+                            _buildRow('Provider', provider.name),
+                            _buildDivider(),
+                            _buildRow('Smart Card', smartCardNumber),
+                            _buildDivider(),
+                            _buildRow('Customer', validation.customerName),
+                            _buildDivider(),
+                            _buildRow('Package', package.name),
+                            if (validation.currentPackage.isNotEmpty) ...[
+                              _buildDivider(),
+                              _buildRow('Current', validation.currentPackage),
+                            ],
+                            if (package.validity.isNotEmpty) ...[
+                              _buildDivider(),
+                              _buildRow('Validity', package.validity),
+                            ],
+                            _buildDivider(),
+                            // Total row — bigger, green
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 16.w, vertical: 14.h),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Total',
+                                    style: GoogleFonts.inter(
+                                      color: const Color(0xFF9CA3AF),
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    '₦${_currencyFormat.format(package.amount)}',
+                                    style: GoogleFonts.inter(
+                                      color: const Color(0xFF10B981),
+                                      fontSize: 18.sp,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      child: Column(
-                        children: [
-                          _buildRow('Provider', provider.name),
-                          _buildDivider(),
-                          _buildRow('Smart Card', smartCardNumber),
-                          _buildDivider(),
-                          _buildRow('Customer', validation.customerName),
-                          _buildDivider(),
-                          _buildRow('Package', package.name),
-                          if (validation.currentPackage.isNotEmpty) ...[
-                            _buildDivider(),
-                            _buildRow(
-                                'Current', validation.currentPackage),
-                          ],
-                          if (package.validity.isNotEmpty) ...[
-                            _buildDivider(),
-                            _buildRow('Validity', package.validity),
-                          ],
-                          _buildDivider(),
-                          // Total row — bigger, green
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 16.w, vertical: 14.h),
-                            child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Total',
-                                  style: GoogleFonts.inter(
-                                    color: const Color(0xFF9CA3AF),
-                                    fontSize: 13.sp,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                Text(
-                                  '₦${_currencyFormat.format(package.amount)}',
-                                  style: GoogleFonts.inter(
-                                    color: const Color(0xFF10B981),
-                                    fontSize: 18.sp,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
+                      SizedBox(height: 14.h),
+                      // ── Pay From ──────────────────────────────────────────
+                      _buildAccountCard(),
+                      SizedBox(height: 14.h),
+                      // ── Toggles card ──────────────────────────────────────
+                      _buildToggleCard(),
+                      SizedBox(height: 24.h),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 16.h),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 56.h,
+                  child: ElevatedButton(
+                    onPressed: _isProcessing ? null : _onPay,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4E03D0),
+                      disabledBackgroundColor:
+                          const Color(0xFF4E03D0).withValues(alpha: 0.4),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                    child: _isProcessing
+                        ? LazerVaultLoader.small()
+                        : Text(
+                            'Pay ₦${_currencyFormat.format(package.amount)}',
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 14.h),
-                    // ── Pay From ──────────────────────────────────────────
-                    _buildAccountCard(),
-                    SizedBox(height: 14.h),
-                    // ── Toggles card ──────────────────────────────────────
-                    _buildToggleCard(),
-                    SizedBox(height: 24.h),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 16.h),
-              child: SizedBox(
-                width: double.infinity,
-                height: 56.h,
-                child: ElevatedButton(
-                  onPressed: _isProcessing ? null : _onPay,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4E03D0),
-                    disabledBackgroundColor:
-                        const Color(0xFF4E03D0).withValues(alpha: 0.4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
                   ),
-                  child: _isProcessing
-                      ? LazerVaultLoader.small()
-                      : Text(
-                          'Pay ₦${_currencyFormat.format(package.amount)}',
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
                 ),
               ),
-            ),
-          ],
-        ),
-        ),  // SafeArea
-      ),    // BlocListener
+            ],
+          ),
+        ), // SafeArea
+      ), // BlocListener
     );
   }
 
@@ -559,8 +555,7 @@ class _CableTVPaymentConfirmationScreenState
                     ),
                   ),
                   GestureDetector(
-                    onTap: () =>
-                        _showAccountSelector(state.accountSummaries),
+                    onTap: () => _showAccountSelector(state.accountSummaries),
                     child: Text(
                       'Change',
                       style: GoogleFonts.inter(
@@ -670,8 +665,8 @@ class _CableTVPaymentConfirmationScreenState
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.only(topLeft: Radius.circular(20.r), topRight: Radius.circular(20.r)),
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20.r), topRight: Radius.circular(20.r)),
       ),
       builder: (sheetCtx) => Padding(
         padding: EdgeInsets.all(20.w),
@@ -836,9 +831,8 @@ class _CableTVPaymentConfirmationScreenState
                           : 'Keep this package alive automatically',
                   isLocked: _existingAutoRenew != null,
                   value: _existingAutoRenew != null || _autoRenewEnabled,
-                  onChanged: _existingAutoRenew != null
-                      ? null
-                      : _onToggleAutoRenew,
+                  onChanged:
+                      _existingAutoRenew != null ? null : _onToggleAutoRenew,
                 ),
               ],
             ),
@@ -853,9 +847,8 @@ class _CableTVPaymentConfirmationScreenState
     required bool value,
     required ValueChanged<bool>? onChanged,
   }) {
-    final iconColor = isLocked
-        ? const Color(0xFF10B981)
-        : const Color(0xFF4E03D0);
+    final iconColor =
+        isLocked ? const Color(0xFF10B981) : const Color(0xFF4E03D0);
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       child: Row(

@@ -19,8 +19,7 @@ class DataAutoRechargeScreen extends StatefulWidget {
   const DataAutoRechargeScreen({super.key});
 
   @override
-  State<DataAutoRechargeScreen> createState() =>
-      _DataAutoRechargeScreenState();
+  State<DataAutoRechargeScreen> createState() => _DataAutoRechargeScreenState();
 }
 
 class _DataAutoRechargeScreenState extends State<DataAutoRechargeScreen> {
@@ -39,8 +38,8 @@ class _DataAutoRechargeScreenState extends State<DataAutoRechargeScreen> {
         elevation: 0,
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: Icon(Icons.arrow_back_ios_new,
-              color: Colors.white, size: 20.sp),
+          icon:
+              Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20.sp),
         ),
         title: Text('Data Rollover',
             style: TextStyle(
@@ -170,8 +169,7 @@ class _DataAutoRechargeScreenState extends State<DataAutoRechargeScreen> {
               ElevatedButton.icon(
                 onPressed: () {
                   final cubit = context.read<DataAutoRechargeCubit>();
-                  Get.toNamed(
-                      AppRoutes.dataBundlesRolloverCreate)?.then((res) {
+                  Get.toNamed(AppRoutes.dataBundlesRolloverCreate)?.then((res) {
                     if (res == true && mounted) cubit.load();
                   });
                 },
@@ -205,8 +203,8 @@ class _DataAutoRechargeScreenState extends State<DataAutoRechargeScreen> {
       executionHour: ar.executionHour,
       executionMinute: ar.executionMinute,
       failureCount: ar.failureCount,
-      leadingIcon: Icon(Icons.wifi,
-          color: const Color(0xFF4E03D0), size: 20.sp),
+      leadingIcon:
+          Icon(Icons.wifi, color: const Color(0xFF4E03D0), size: 20.sp),
       onTap: () => _showDetailsDialog(ar),
       onPause: isActive
           ? () => context.read<DataAutoRechargeCubit>().pause(ar.id)
@@ -262,8 +260,7 @@ class _DataAutoRechargeScreenState extends State<DataAutoRechargeScreen> {
               ),
             ),
             Container(
-              padding:
-                  EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
               decoration: BoxDecoration(
                 color: statusColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10.r),
@@ -290,20 +287,16 @@ class _DataAutoRechargeScreenState extends State<DataAutoRechargeScreen> {
                   '\u20A6${ar.amount.toStringAsFixed(2)} ${ar.currency}'),
               _detailRow('Frequency', ar.frequency),
               if (ar.frequency.toLowerCase() == 'weekly')
-                _detailRow('Day of week',
-                    _weekdayLabel(ar.dayOfWeek)),
+                _detailRow('Day of week', _weekdayLabel(ar.dayOfWeek)),
               if (ar.frequency.toLowerCase() == 'monthly')
                 _detailRow('Day of month', ar.dayOfMonth.toString()),
               _detailRow('Execution time',
                   '${ar.executionHour.toString().padLeft(2, '0')}:${ar.executionMinute.toString().padLeft(2, '0')}'),
               if (next != null)
-                _detailRow('Next run',
-                    next.toString().split('.').first),
+                _detailRow('Next run', next.toString().split('.').first),
               if (last != null)
-                _detailRow('Last run',
-                    last.toString().split('.').first),
-              _detailRow('Failures',
-                  '${ar.failureCount} / ${ar.maxRetries}'),
+                _detailRow('Last run', last.toString().split('.').first),
+              _detailRow('Failures', '${ar.failureCount} / ${ar.maxRetries}'),
             ],
           ),
         ),
@@ -365,13 +358,12 @@ class _DataAutoRechargeScreenState extends State<DataAutoRechargeScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text('Delete Rollover',
             style: TextStyle(color: Colors.white, fontSize: 17.sp)),
         content: Text('Are you sure you want to delete this rollover?',
-            style: TextStyle(
-                color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
+            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
         actions: [
           TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
@@ -393,5 +385,4 @@ class _DataAutoRechargeScreenState extends State<DataAutoRechargeScreen> {
       ),
     );
   }
-
 }

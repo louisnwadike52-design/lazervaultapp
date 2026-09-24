@@ -31,7 +31,8 @@ class _TimePickerTile extends StatelessWidget {
                 color: _accent.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Icon(Icons.access_time_rounded, color: _accent, size: 22.sp),
+              child:
+                  Icon(Icons.access_time_rounded, color: _accent, size: 22.sp),
             ),
             SizedBox(width: 14.w),
             RichText(
@@ -498,8 +499,8 @@ class _LinkedBankRow extends StatelessWidget {
                 color: _inflowTint.withValues(alpha: selected ? 0.26 : 0.14),
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Icon(Icons.account_balance,
-                  color: _inflowTint, size: 22.sp),
+              child:
+                  Icon(Icons.account_balance, color: _inflowTint, size: 22.sp),
             ),
             SizedBox(width: 14.w),
             Expanded(
@@ -548,8 +549,7 @@ class _LinkedBankRow extends StatelessWidget {
               )
             else
               Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                 decoration: BoxDecoration(
                   color: _onDepositTint.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10.r),

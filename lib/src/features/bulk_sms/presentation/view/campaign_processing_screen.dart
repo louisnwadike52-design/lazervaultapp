@@ -73,8 +73,8 @@ class _CampaignProcessingScreenState extends State<CampaignProcessingScreen> {
               _scheduled
                   ? 'Queuing your message for later delivery…'
                   : 'Sending to $_recipientCount recipients…',
-              style: TextStyle(
-                  color: BulkSmsTheme.textSecondary, fontSize: 13.sp),
+              style:
+                  TextStyle(color: BulkSmsTheme.textSecondary, fontSize: 13.sp),
             ),
           ],
         ),

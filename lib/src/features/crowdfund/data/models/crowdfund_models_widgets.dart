@@ -22,7 +22,8 @@ class CrowdfundCreatorModel extends CrowdfundCreator {
       username: proto.username,
       firstName: proto.firstName,
       lastName: proto.lastName,
-      profilePicture: proto.profilePicture.isEmpty ? null : proto.profilePicture,
+      profilePicture:
+          proto.profilePicture.isEmpty ? null : proto.profilePicture,
       verified: proto.verified,
       verifiedAt: proto.hasVerifiedAt() ? proto.verifiedAt.toDateTime() : null,
       facialRecognitionEnabled: proto.facialRecognitionEnabled,
@@ -86,11 +87,9 @@ class CrowdfundModel extends Crowdfund {
       recentDonations: proto.recentDonations
           .map((d) => CrowdfundDonationModel.fromProto(d))
           .toList(),
-      cancelReason:
-          proto.cancelReason.isEmpty ? null : proto.cancelReason,
-      cancelInitiatedBy: proto.cancelInitiatedBy.isEmpty
-          ? null
-          : proto.cancelInitiatedBy,
+      cancelReason: proto.cancelReason.isEmpty ? null : proto.cancelReason,
+      cancelInitiatedBy:
+          proto.cancelInitiatedBy.isEmpty ? null : proto.cancelInitiatedBy,
       cancelInitiatorUserId: proto.cancelInitiatorUserId.isEmpty
           ? null
           : proto.cancelInitiatorUserId,
@@ -121,7 +120,6 @@ class CrowdfundModel extends Crowdfund {
         return CrowdfundStatus.active;
     }
   }
-
 }
 
 /// Maps the per-row refund proto onto the domain entity.
@@ -177,7 +175,8 @@ class CancelCrowdfundResultModel extends CancelCrowdfundResult {
     required super.message,
   });
 
-  factory CancelCrowdfundResultModel.fromProto(pb.CancelCrowdfundResponse proto) {
+  factory CancelCrowdfundResultModel.fromProto(
+      pb.CancelCrowdfundResponse proto) {
     return CancelCrowdfundResultModel(
       crowdfund: CrowdfundModel.fromProto(proto.crowdfund),
       totalContributions: proto.totalContributions,
@@ -237,8 +236,7 @@ class CrowdfundDonationModel extends CrowdfundDonation {
       currency: proto.currency,
       donationDate: proto.donationDate.toDateTime(),
       status: _donationStatusFromProto(proto.status),
-      transactionId:
-          proto.transactionId.isEmpty ? null : proto.transactionId,
+      transactionId: proto.transactionId.isEmpty ? null : proto.transactionId,
       receiptId: proto.receiptId.isEmpty ? null : proto.receiptId,
       message: proto.message.isEmpty ? null : proto.message,
       isAnonymous: proto.isAnonymous,

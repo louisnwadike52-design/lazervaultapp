@@ -30,10 +30,12 @@ class LockWithdrawalSuccessScreen extends StatefulWidget {
   });
 
   @override
-  State<LockWithdrawalSuccessScreen> createState() => _LockWithdrawalSuccessScreenState();
+  State<LockWithdrawalSuccessScreen> createState() =>
+      _LockWithdrawalSuccessScreenState();
 }
 
-class _LockWithdrawalSuccessScreenState extends State<LockWithdrawalSuccessScreen>
+class _LockWithdrawalSuccessScreenState
+    extends State<LockWithdrawalSuccessScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;

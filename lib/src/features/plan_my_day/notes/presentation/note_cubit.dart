@@ -32,9 +32,11 @@ class NoteCubit extends Cubit<NoteState> {
     }
   }
 
-  Future<void> saveNote({String? id, required String title, required String content}) async {
+  Future<void> saveNote(
+      {String? id, required String title, required String content}) async {
     try {
-      final note = Note(id: id ?? '', userId: '', title: title, content: content);
+      final note =
+          Note(id: id ?? '', userId: '', title: title, content: content);
       if (id != null && id.isNotEmpty) {
         await _repository.updateNote(id, note);
       } else {

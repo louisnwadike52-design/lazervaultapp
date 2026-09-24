@@ -1,7 +1,8 @@
 import '../../domain/entities/beneficiary_entity.dart';
 import '../../domain/entities/bill_payment_entity.dart';
 import 'package:lazervault/src/generated/electricity_bill.pb.dart' as pb;
-import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart' as $timestamp;
+import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart'
+    as $timestamp;
 
 class BillBeneficiaryModel extends BillBeneficiaryEntity {
   const BillBeneficiaryModel({
@@ -31,7 +32,8 @@ class BillBeneficiaryModel extends BillBeneficiaryEntity {
       providerName: proto.providerName,
       meterNumber: proto.meterNumber,
       customerName: proto.customerName,
-      customerAddress: proto.hasCustomerAddress() ? proto.customerAddress : null,
+      customerAddress:
+          proto.hasCustomerAddress() ? proto.customerAddress : null,
       phoneNumber: proto.hasPhoneNumber() ? proto.phoneNumber : null,
       meterType: MeterTypeExtension.fromString(proto.meterType),
       nickname: proto.nickname,

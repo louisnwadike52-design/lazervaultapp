@@ -37,8 +37,7 @@ class EducationBeneficiary extends Equatable {
 
   factory EducationBeneficiary.fromProto(pb.EducationBeneficiary proto) {
     String? tsToIso(bool has, dynamic ts) => has
-        ? DateTime.fromMillisecondsSinceEpoch(
-                ts.seconds.toInt() * 1000,
+        ? DateTime.fromMillisecondsSinceEpoch(ts.seconds.toInt() * 1000,
                 isUtc: true)
             .toIso8601String()
         : null;
@@ -60,6 +59,5 @@ class EducationBeneficiary extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [id, candidateNumber, providerCode, purchaseCount];
+  List<Object?> get props => [id, candidateNumber, providerCode, purchaseCount];
 }

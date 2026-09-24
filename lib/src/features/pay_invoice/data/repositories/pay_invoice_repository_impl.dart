@@ -16,26 +16,35 @@ class PayInvoiceRepositoryImpl implements PayInvoiceRepository {
   }
 
   @override
-  Future<List<TaggedInvoice>> getTaggedInvoicesByStatus(String userId, PaymentStatus status) async {
-    final models = await localDataSource.getTaggedInvoicesByStatus(userId, status);
+  Future<List<TaggedInvoice>> getTaggedInvoicesByStatus(
+      String userId, PaymentStatus status) async {
+    final models =
+        await localDataSource.getTaggedInvoicesByStatus(userId, status);
     return models.cast<TaggedInvoice>();
   }
 
   @override
   Future<List<TaggedInvoice>> getOverdueInvoices(String userId) async {
     final allInvoices = await getTaggedInvoices(userId);
-    return allInvoices.where((invoice) => invoice.isOverdue && invoice.paymentStatus != PaymentStatus.completed).toList();
+    return allInvoices
+        .where((invoice) =>
+            invoice.isOverdue &&
+            invoice.paymentStatus != PaymentStatus.completed)
+        .toList();
   }
 
   @override
-  Future<List<TaggedInvoice>> getUpcomingInvoices(String userId, {int days = 7}) async {
+  Future<List<TaggedInvoice>> getUpcomingInvoices(String userId,
+      {int days = 7}) async {
     final allInvoices = await getTaggedInvoices(userId);
     final now = DateTime.now();
     final futureDate = now.add(Duration(days: days));
-    
+
     return allInvoices.where((invoice) {
-      if (invoice.dueDate == null || invoice.paymentStatus == PaymentStatus.completed) return false;
-      return invoice.dueDate!.isAfter(now) && invoice.dueDate!.isBefore(futureDate);
+      if (invoice.dueDate == null ||
+          invoice.paymentStatus == PaymentStatus.completed) return false;
+      return invoice.dueDate!.isAfter(now) &&
+          invoice.dueDate!.isBefore(futureDate);
     }).toList();
   }
 
@@ -46,45 +55,53 @@ class PayInvoiceRepositoryImpl implements PayInvoiceRepository {
   }
 
   @override
-  Future<List<TaggedInvoice>> searchTaggedInvoices(String userId, String query) async {
+  Future<List<TaggedInvoice>> searchTaggedInvoices(
+      String userId, String query) async {
     final allInvoices = await getTaggedInvoices(userId);
     final lowerQuery = query.toLowerCase();
-    
+
     return allInvoices.where((invoice) {
       return invoice.title.toLowerCase().contains(lowerQuery) ||
-             invoice.description.toLowerCase().contains(lowerQuery) ||
-             invoice.fromUserName.toLowerCase().contains(lowerQuery) ||
-             invoice.fromCompanyName?.toLowerCase().contains(lowerQuery) == true ||
-             invoice.invoiceNumber.toLowerCase().contains(lowerQuery);
+          invoice.description.toLowerCase().contains(lowerQuery) ||
+          invoice.fromUserName.toLowerCase().contains(lowerQuery) ||
+          invoice.fromCompanyName?.toLowerCase().contains(lowerQuery) == true ||
+          invoice.invoiceNumber.toLowerCase().contains(lowerQuery);
     }).toList();
   }
 
   @override
-  Future<List<TaggedInvoice>> filterInvoicesByPriority(String userId, InvoicePriority priority) async {
+  Future<List<TaggedInvoice>> filterInvoicesByPriority(
+      String userId, InvoicePriority priority) async {
     final allInvoices = await getTaggedInvoices(userId);
-    return allInvoices.where((invoice) => invoice.priority == priority).toList();
+    return allInvoices
+        .where((invoice) => invoice.priority == priority)
+        .toList();
   }
 
   @override
-  Future<List<TaggedInvoice>> filterInvoicesByDateRange(String userId, DateTime start, DateTime end) async {
+  Future<List<TaggedInvoice>> filterInvoicesByDateRange(
+      String userId, DateTime start, DateTime end) async {
     final allInvoices = await getTaggedInvoices(userId);
     return allInvoices.where((invoice) {
-      return invoice.createdAt.isAfter(start) && invoice.createdAt.isBefore(end);
+      return invoice.createdAt.isAfter(start) &&
+          invoice.createdAt.isBefore(end);
     }).toList();
   }
 
   @override
-  Future<PaymentResult> payInvoice(String invoiceId, PaymentDetails paymentDetails) async {
+  Future<PaymentResult> payInvoice(
+      String invoiceId, PaymentDetails paymentDetails) async {
     await Future.delayed(Duration(seconds: 2)); // Simulate payment processing
-    
+
     try {
       // Simulate payment processing logic
       final success = _simulatePaymentProcessing(paymentDetails);
-      
+
       if (success) {
         // Update invoice status to completed
-        await localDataSource.updateInvoiceStatus(invoiceId, PaymentStatus.completed);
-        
+        await localDataSource.updateInvoiceStatus(
+            invoiceId, PaymentStatus.completed);
+
         return PaymentResult(
           success: true,
           transactionId: _generateTransactionId(),
@@ -103,7 +120,8 @@ class PayInvoiceRepositoryImpl implements PayInvoiceRepository {
     } catch (e) {
       return PaymentResult(
         success: false,
-        errorMessage: 'An error occurred during payment processing: ${e.toString()}',
+        errorMessage:
+            'An error occurred during payment processing: ${e.toString()}',
         status: PaymentStatus.failed,
         processedAt: DateTime.now(),
       );
@@ -111,9 +129,10 @@ class PayInvoiceRepositoryImpl implements PayInvoiceRepository {
   }
 
   @override
-  Future<PaymentResult> processPartialPayment(String invoiceId, PaymentDetails paymentDetails) async {
+  Future<PaymentResult> processPartialPayment(
+      String invoiceId, PaymentDetails paymentDetails) async {
     await Future.delayed(Duration(seconds: 1)); // Simulate processing
-    
+
     // For now, we don't support partial payments in the mock implementation
     return PaymentResult(
       success: false,
@@ -124,9 +143,10 @@ class PayInvoiceRepositoryImpl implements PayInvoiceRepository {
   }
 
   @override
-  Future<bool> requestPaymentExtension(String invoiceId, DateTime newDueDate, String? reason) async {
+  Future<bool> requestPaymentExtension(
+      String invoiceId, DateTime newDueDate, String? reason) async {
     await Future.delayed(Duration(milliseconds: 500));
-    
+
     // Simulate extension request processing
     // In a real app, this would send a request to the invoice sender
     final random = Random();
@@ -136,7 +156,7 @@ class PayInvoiceRepositoryImpl implements PayInvoiceRepository {
   @override
   Future<bool> disputeInvoice(String invoiceId, String reason) async {
     await Future.delayed(Duration(milliseconds: 800));
-    
+
     // Simulate dispute submission
     // In a real app, this would create a dispute record and notify relevant parties
     return true; // Always successful for simulation
@@ -150,13 +170,19 @@ class PayInvoiceRepositoryImpl implements PayInvoiceRepository {
   @override
   Future<Map<String, dynamic>> getPaymentStatistics(String userId) async {
     final invoices = await getTaggedInvoices(userId);
-    
+
     final totalInvoices = invoices.length;
-    final paidInvoices = invoices.where((i) => i.paymentStatus == PaymentStatus.completed).length;
-    final pendingInvoices = invoices.where((i) => i.paymentStatus == PaymentStatus.pending).length;
-    final overdueInvoices = invoices.where((i) => i.isOverdue && i.paymentStatus != PaymentStatus.completed).length;
-    
-    final totalAmount = invoices.fold<double>(0, (sum, invoice) => sum + invoice.totalAmount);
+    final paidInvoices = invoices
+        .where((i) => i.paymentStatus == PaymentStatus.completed)
+        .length;
+    final pendingInvoices =
+        invoices.where((i) => i.paymentStatus == PaymentStatus.pending).length;
+    final overdueInvoices = invoices
+        .where((i) => i.isOverdue && i.paymentStatus != PaymentStatus.completed)
+        .length;
+
+    final totalAmount =
+        invoices.fold<double>(0, (sum, invoice) => sum + invoice.totalAmount);
     final paidAmount = invoices
         .where((i) => i.paymentStatus == PaymentStatus.completed)
         .fold<double>(0, (sum, invoice) => sum + invoice.totalAmount);
@@ -172,19 +198,21 @@ class PayInvoiceRepositoryImpl implements PayInvoiceRepository {
       'total_amount': totalAmount,
       'paid_amount': paidAmount,
       'pending_amount': pendingAmount,
-      'payment_rate': totalInvoices > 0 ? (paidInvoices / totalInvoices) * 100 : 0,
+      'payment_rate':
+          totalInvoices > 0 ? (paidInvoices / totalInvoices) * 100 : 0,
       'average_payment_time': _calculateAveragePaymentTime(invoices),
     };
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getRecentTransactions(String userId, {int limit = 20}) async {
+  Future<List<Map<String, dynamic>>> getRecentTransactions(String userId,
+      {int limit = 20}) async {
     await Future.delayed(Duration(milliseconds: 300));
-    
+
     // Generate mock recent transactions
     final transactions = <Map<String, dynamic>>[];
     final random = Random();
-    
+
     for (int i = 0; i < min(limit, 10); i++) {
       transactions.add({
         'id': 'txn_${random.nextInt(999999)}',
@@ -192,12 +220,14 @@ class PayInvoiceRepositoryImpl implements PayInvoiceRepository {
         'amount': (random.nextDouble() * 2000 + 100).toDouble(),
         'currency': 'GBP',
         'status': 'completed',
-        'date': DateTime.now().subtract(Duration(days: random.nextInt(30))).toIso8601String(),
+        'date': DateTime.now()
+            .subtract(Duration(days: random.nextInt(30)))
+            .toIso8601String(),
         'description': 'Invoice payment',
         'reference': _generatePaymentReference(),
       });
     }
-    
+
     return transactions;
   }
 
@@ -209,7 +239,8 @@ class PayInvoiceRepositoryImpl implements PayInvoiceRepository {
   }
 
   @override
-  Future<bool> setPaymentReminder(String invoiceId, DateTime reminderDate) async {
+  Future<bool> setPaymentReminder(
+      String invoiceId, DateTime reminderDate) async {
     await Future.delayed(Duration(milliseconds: 300));
     // In a real app, this would schedule a notification
     return true;
@@ -228,19 +259,22 @@ class PayInvoiceRepositoryImpl implements PayInvoiceRepository {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getUserPaymentMethods(String userId) async {
+  Future<List<Map<String, dynamic>>> getUserPaymentMethods(
+      String userId) async {
     return await localDataSource.getUserPaymentMethods(userId);
   }
 
   @override
-  Future<bool> addPaymentMethod(String userId, Map<String, dynamic> paymentMethodData) async {
+  Future<bool> addPaymentMethod(
+      String userId, Map<String, dynamic> paymentMethodData) async {
     await Future.delayed(Duration(milliseconds: 800));
     // In a real app, this would add the payment method to the user's account
     return true;
   }
 
   @override
-  Future<bool> removePaymentMethod(String userId, String paymentMethodId) async {
+  Future<bool> removePaymentMethod(
+      String userId, String paymentMethodId) async {
     await Future.delayed(Duration(milliseconds: 500));
     // In a real app, this would remove the payment method from the user's account
     return true;
@@ -249,7 +283,7 @@ class PayInvoiceRepositoryImpl implements PayInvoiceRepository {
   // Private helper methods
   bool _simulatePaymentProcessing(PaymentDetails paymentDetails) {
     final random = Random();
-    
+
     // Simulate different success rates for different payment methods
     switch (paymentDetails.method) {
       case PaymentMethod.accountBalance:
@@ -284,15 +318,16 @@ class PayInvoiceRepositoryImpl implements PayInvoiceRepository {
   }
 
   double _calculateAveragePaymentTime(List<TaggedInvoice> invoices) {
-    final paidInvoices = invoices.where((i) => i.paymentStatus == PaymentStatus.completed && i.paidAt != null);
-    
+    final paidInvoices = invoices.where(
+        (i) => i.paymentStatus == PaymentStatus.completed && i.paidAt != null);
+
     if (paidInvoices.isEmpty) return 0.0;
-    
+
     final totalDays = paidInvoices.fold<int>(0, (sum, invoice) {
       final daysToPay = invoice.paidAt!.difference(invoice.createdAt).inDays;
       return sum + daysToPay;
     });
-    
+
     return totalDays / paidInvoices.length;
   }
-} 
+}

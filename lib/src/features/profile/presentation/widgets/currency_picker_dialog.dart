@@ -176,8 +176,8 @@ class _CurrencyPickerDialogState extends State<CurrencyPickerDialog> {
                             }
                           : null,
                       child: Container(
-                        padding:
-                            EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+                        padding: EdgeInsets.symmetric(
+                            vertical: 12.h, horizontal: 16.w),
                         margin: EdgeInsets.only(bottom: 8.h),
                         decoration: BoxDecoration(
                           color: isSelected

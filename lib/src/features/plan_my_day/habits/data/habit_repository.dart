@@ -20,9 +20,8 @@ class HabitRepository {
   static const Duration _timeout = Duration(seconds: 30);
   static const String _accessTokenKey = 'access_token';
 
-  static String _normalizeBase(String base) => base
-      .replaceAll(RegExp(r'/+$'), '')
-      .replaceAll(RegExp(r'/api/v1$'), '');
+  static String _normalizeBase(String base) =>
+      base.replaceAll(RegExp(r'/+$'), '').replaceAll(RegExp(r'/api/v1$'), '');
 
   HabitRepository({
     String? baseUrl,

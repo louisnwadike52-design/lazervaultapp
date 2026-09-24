@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -24,6 +25,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 class AutoSaveAnalyticsCard extends StatelessWidget {
   final AutoSaveStatisticsEntity? statistics;
   final List<AutoSaveRuleEntity> rules;
+
   /// True when the user has narrowed the rules list with a pill filter
   /// or search. We then derive every KPI from the filtered `rules`
   /// instead of the backend's lifetime aggregates so the user sees the
@@ -53,8 +55,7 @@ class AutoSaveAnalyticsCard extends StatelessWidget {
             rules.fold<double>(0, (sum, r) => sum + r.totalSaved));
     final activeCount = useLocal
         ? rules.where((r) => r.isActive).length
-        : (stats?.activeRulesCount ??
-            rules.where((r) => r.isActive).length);
+        : (stats?.activeRulesCount ?? rules.where((r) => r.isActive).length);
     // totalTransactions is not derivable client-side from the rules
     // array (we'd need each rule's full transaction history). When
     // filtering, fall back to summing each rule's trigger_count which
@@ -91,9 +92,9 @@ class AutoSaveAnalyticsCard extends StatelessWidget {
         : stats?.mostActiveRule ??
             rules.fold<AutoSaveRuleEntity?>(
               null,
-          (best, r) =>
-              best == null || r.totalSaved > best.totalSaved ? r : best,
-        );
+              (best, r) =>
+                  best == null || r.totalSaved > best.totalSaved ? r : best,
+            );
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
@@ -159,9 +160,8 @@ class AutoSaveAnalyticsCard extends StatelessWidget {
                       .formatAmountWithCurrency(
                           avgPerSave.toDouble(), currency),
                   icon: Icons.trending_up,
-                  subtitle: totalTransactions > 0
-                      ? '$totalTransactions saves'
-                      : null,
+                  subtitle:
+                      totalTransactions > 0 ? '$totalTransactions saves' : null,
                 ),
               ),
               Expanded(

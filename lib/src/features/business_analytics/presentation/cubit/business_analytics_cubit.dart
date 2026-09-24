@@ -35,7 +35,8 @@ class BusinessAnalyticsCubit extends Cubit<BusinessAnalyticsState> {
     _accountId = accountId;
   }
 
-  Future<void> loadAnalytics({String period = 'month', bool force = false}) async {
+  Future<void> loadAnalytics(
+      {String period = 'month', bool force = false}) async {
     if (_accountId == null) {
       emit(BusinessAnalyticsError(message: 'No business account selected'));
       return;
@@ -120,7 +121,8 @@ class BusinessAnalyticsCubit extends Cubit<BusinessAnalyticsState> {
       int salesReceivables = 0;
       String salesCurrency = 'NGN';
       try {
-        final overview = await BusinessOverviewService(endpoints: endpointRegistry)
+        final overview = await BusinessOverviewService(
+                endpoints: endpointRegistry)
             .getOverview(periodStart: dateRange.$1, periodEnd: dateRange.$2);
         salesRevenue = overview.revenue;
         salesReceivables = overview.receivables;
@@ -142,7 +144,8 @@ class BusinessAnalyticsCubit extends Cubit<BusinessAnalyticsState> {
         salesReceivables: salesReceivables,
         salesCurrency: salesCurrency,
       );
-      _cache[_cacheKey(period)] = loaded; // memo for instant period/tab switches
+      _cache[_cacheKey(period)] =
+          loaded; // memo for instant period/tab switches
       // Only surface if the user is still viewing this period (a background
       // revalidation must not clobber a period the user has since switched to).
       if (_currentPeriod == period) emit(loaded);
@@ -169,8 +172,9 @@ class BusinessAnalyticsCubit extends Cubit<BusinessAnalyticsState> {
   Future<void> refresh() async {
     // Explicit pull-to-refresh: revalidate in the background so the current
     // content stays on screen (the RefreshIndicator shows its own spinner).
-    _currentPeriod =
-        state is BusinessAnalyticsLoaded ? (state as BusinessAnalyticsLoaded).selectedPeriod : _currentPeriod;
+    _currentPeriod = state is BusinessAnalyticsLoaded
+        ? (state as BusinessAnalyticsLoaded).selectedPeriod
+        : _currentPeriod;
     await _fetchAndCache(_currentPeriod, background: true);
   }
 

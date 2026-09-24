@@ -10,8 +10,7 @@ import 'data_reminder_state.dart';
 class DataReminderCubit extends Cubit<DataReminderState> {
   final DataBeneficiaryRemoteDataSource datasource;
 
-  DataReminderCubit({required this.datasource})
-      : super(DataReminderInitial());
+  DataReminderCubit({required this.datasource}) : super(DataReminderInitial());
 
   Future<void> getReminders({String? status, bool includePast = false}) async {
     if (isClosed) return;

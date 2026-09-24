@@ -1,7 +1,8 @@
 import 'package:fixnum/fixnum.dart';
 import 'package:lazervault/src/features/identity/domain/entities/id_document.dart';
 import 'package:lazervault/src/generated/user.pb.dart' as pb;
-import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart' as timestamppb;
+import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart'
+    as timestamppb;
 
 class IDDocumentModel extends IDDocument {
   const IDDocumentModel({
@@ -27,17 +28,23 @@ class IDDocumentModel extends IDDocument {
       id: proto.id,
       userId: proto.userId.toInt(),
       documentType: _mapDocumentType(proto.documentType),
-      documentNumber: proto.documentNumber.isEmpty ? null : proto.documentNumber,
+      documentNumber:
+          proto.documentNumber.isEmpty ? null : proto.documentNumber,
       fullName: proto.fullName.isEmpty ? null : proto.fullName,
       dateOfBirth: proto.dateOfBirth.isEmpty ? null : proto.dateOfBirth,
       issueDate: proto.issueDate.isEmpty ? null : proto.issueDate,
       expiryDate: proto.expiryDate.isEmpty ? null : proto.expiryDate,
-      issuingCountry: proto.issuingCountry.isEmpty ? null : proto.issuingCountry,
-      documentFrontUrl: proto.documentFrontUrl.isEmpty ? null : proto.documentFrontUrl,
-      documentBackUrl: proto.documentBackUrl.isEmpty ? null : proto.documentBackUrl,
+      issuingCountry:
+          proto.issuingCountry.isEmpty ? null : proto.issuingCountry,
+      documentFrontUrl:
+          proto.documentFrontUrl.isEmpty ? null : proto.documentFrontUrl,
+      documentBackUrl:
+          proto.documentBackUrl.isEmpty ? null : proto.documentBackUrl,
       verificationStatus: _mapVerificationStatus(proto.verificationStatus),
-      rejectionReason: proto.rejectionReason.isEmpty ? null : proto.rejectionReason,
-      createdAt: proto.hasCreatedAt() ? proto.createdAt.toDateTime() : DateTime.now(),
+      rejectionReason:
+          proto.rejectionReason.isEmpty ? null : proto.rejectionReason,
+      createdAt:
+          proto.hasCreatedAt() ? proto.createdAt.toDateTime() : DateTime.now(),
       verifiedAt: proto.hasVerifiedAt() ? proto.verifiedAt.toDateTime() : null,
     );
   }
@@ -95,7 +102,8 @@ class IDDocumentModel extends IDDocument {
     }
   }
 
-  static VerificationStatus _mapVerificationStatus(pb.VerificationStatus protoStatus) {
+  static VerificationStatus _mapVerificationStatus(
+      pb.VerificationStatus protoStatus) {
     switch (protoStatus) {
       case pb.VerificationStatus.VERIFICATION_STATUS_PENDING:
         return VerificationStatus.pending;
@@ -112,7 +120,8 @@ class IDDocumentModel extends IDDocument {
     }
   }
 
-  static pb.VerificationStatus _mapVerificationStatusToProto(VerificationStatus status) {
+  static pb.VerificationStatus _mapVerificationStatusToProto(
+      VerificationStatus status) {
     switch (status) {
       case VerificationStatus.pending:
         return pb.VerificationStatus.VERIFICATION_STATUS_PENDING;

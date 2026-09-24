@@ -144,7 +144,8 @@ class GiftCardCubit extends Cubit<GiftCardState> {
           final msg = failure.message;
           if (msg.contains('timed out') || msg.contains('TimeoutException')) {
             emit(GiftCardTimeoutError(operation: 'Loading brands'));
-          } else if (msg.contains('unavailable') || msg.contains('UNAVAILABLE')) {
+          } else if (msg.contains('unavailable') ||
+              msg.contains('UNAVAILABLE')) {
             emit(GiftCardServerUnavailable(operation: 'Loading brands'));
           } else {
             emit(GiftCardNetworkError(
@@ -223,7 +224,8 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     if (query.trim().isEmpty) {
       return;
     }
-    _searchDebouncer.run(() => searchGiftCardBrands(query, countryCode: countryCode));
+    _searchDebouncer
+        .run(() => searchGiftCardBrands(query, countryCode: countryCode));
   }
 
   Future<void> searchGiftCardBrands(String query, {String? countryCode}) async {
@@ -339,7 +341,8 @@ class GiftCardCubit extends Cubit<GiftCardState> {
       }
 
       // Generate idempotency key if not provided
-      final effectiveIdempotencyKey = idempotencyKey ?? generateIdempotencyKey(brandId);
+      final effectiveIdempotencyKey =
+          idempotencyKey ?? generateIdempotencyKey(brandId);
 
       // Single honest "in-flight" state. The previous code emitted
       // four fake progress milestones (10%/30%/60%/90%) back-to-back
@@ -486,7 +489,8 @@ class GiftCardCubit extends Cubit<GiftCardState> {
           if (failure.message.contains('not found')) {
             emit(const GiftCardRedeemError('Gift card not found'));
           } else if (failure.message.contains('unauthorized')) {
-            emit(const GiftCardRedeemError('You can only view your own gift cards'));
+            emit(const GiftCardRedeemError(
+                'You can only view your own gift cards'));
           } else {
             emit(GiftCardRedeemError(failure.message));
           }
@@ -506,7 +510,6 @@ class GiftCardCubit extends Cubit<GiftCardState> {
       emit(GiftCardRedeemError(_giftCardFriendlyMessage(e)));
     }
   }
-
 
   void resetState() {
     if (isClosed) return;
@@ -544,11 +547,11 @@ class GiftCardCubit extends Cubit<GiftCardState> {
       // the wire, with offset/limit driven by the cubit.
       final cards = await _repository
           .getUserGiftCards(
-        status: status,
-        brandId: brandId,
-        limit: _myGiftCardsPageSize,
-        offset: 0,
-      )
+            status: status,
+            brandId: brandId,
+            limit: _myGiftCardsPageSize,
+            offset: 0,
+          )
           .then((r) => r.fold(
                 (failure) => throw Exception(failure.message),
                 (list) => list,
@@ -611,11 +614,11 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     try {
       final cards = await _repository
           .getUserGiftCards(
-        status: _lastMyGiftCardsStatus,
-        brandId: _lastMyGiftCardsBrandId,
-        limit: _myGiftCardsPageSize,
-        offset: _myGiftCardsPage * _myGiftCardsPageSize,
-      )
+            status: _lastMyGiftCardsStatus,
+            brandId: _lastMyGiftCardsBrandId,
+            limit: _myGiftCardsPageSize,
+            offset: _myGiftCardsPage * _myGiftCardsPageSize,
+          )
           .then((r) => r.fold(
                 (failure) => throw Exception(failure.message),
                 (list) => list,
@@ -628,8 +631,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
       // already exist in the accumulator (race with a refresh), drop
       // them. Keeps the list monotonic.
       final existingIds = _myGiftCardsAccumulated.map((c) => c.id).toSet();
-      final fresh =
-          cards.where((c) => !existingIds.contains(c.id)).toList();
+      final fresh = cards.where((c) => !existingIds.contains(c.id)).toList();
 
       _myGiftCardsAccumulated = [..._myGiftCardsAccumulated, ...fresh];
       _myGiftCardsPage++;
@@ -775,7 +777,8 @@ class GiftCardCubit extends Cubit<GiftCardState> {
 
       _lastSellCountryCode = countryCode;
 
-      final result = await _repository.getSellableCards(countryCode: countryCode);
+      final result =
+          await _repository.getSellableCards(countryCode: countryCode);
       if (isClosed) return;
 
       result.fold(
@@ -873,20 +876,26 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     required double denomination,
     required String transactionId,
     required String verificationToken,
+
     /// Doc-aligned Prestmit `payoutMethod` (e.g. "NAIRA"). When empty
     /// the backend resolves from system_settings.default_payout_method.
     String? payoutMethod,
+
     /// Doc-aligned Prestmit `form`: "Physical" or "Ecode". Drives the
     /// multipart shape backend-side.
     String? form,
+
     /// Doc-aligned Prestmit `giftcard_id` (subcategory). When empty
     /// the backend falls back to cardType.
     String? subcategoryId,
+
     /// Explicit Ecode value (replaces card_number when both are set).
     String? cardCode,
+
     /// MUST be true. The backend rejects with FailedPrecondition
     /// otherwise; the legal/UX safety net for the sell flow.
     bool disclaimerAccepted = false,
+
     /// MUST be true. The "Verify balance" step's attestation — the user
     /// declared the card's available balance and accepted the liability
     /// terms (no issuer/provider balance-check API exists, so the balance
@@ -926,7 +935,8 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     }
     try {
       // Generate idempotency key if not provided
-      final effectiveIdempotencyKey = idempotencyKey ?? generateSellIdempotencyKey(cardType);
+      final effectiveIdempotencyKey =
+          idempotencyKey ?? generateSellIdempotencyKey(cardType);
 
       if (isClosed) return;
       emit(SellProcessing(
@@ -979,7 +989,8 @@ class GiftCardCubit extends Cubit<GiftCardState> {
           if (failure.message.contains('Invalid transaction PIN')) {
             emit(const SellError('Invalid transaction PIN'));
           } else if (failure.message.contains('unavailable')) {
-            emit(const SellError('Sell service temporarily unavailable. Please try again later.'));
+            emit(const SellError(
+                'Sell service temporarily unavailable. Please try again later.'));
           } else {
             emit(SellError(failure.message));
           }
@@ -1047,7 +1058,8 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     } on GrpcError catch (e) {
       if (isClosed) return;
       // Queue sell submission for retry when offline
-      if (e.code == StatusCode.unavailable || e.code == StatusCode.deadlineExceeded) {
+      if (e.code == StatusCode.unavailable ||
+          e.code == StatusCode.deadlineExceeded) {
         await _mutationQueue.enqueueGiftCardSell(
           cardType: cardType,
           cardNumber: cardNumber,
@@ -1057,7 +1069,8 @@ class GiftCardCubit extends Cubit<GiftCardState> {
           images: images,
           idempotencyKey: idempotencyKey,
         );
-        emit(const SellQueued(message: 'Sell queued. Will submit when back online.'));
+        emit(const SellQueued(
+            message: 'Sell queued. Will submit when back online.'));
       } else {
         emit(SellError(_giftCardFriendlyMessage(e)));
       }
@@ -1135,8 +1148,8 @@ class GiftCardCubit extends Cubit<GiftCardState> {
               ));
               break;
             default:
-              // pending_review and other intermediate states stay on
-              // the same screen; nothing to do.
+            // pending_review and other intermediate states stay on
+            // the same screen; nothing to do.
           }
         },
       );
@@ -1172,10 +1185,13 @@ class GiftCardCubit extends Cubit<GiftCardState> {
           );
         },
         config: CacheConfig.giftCardSales,
-        serializer: (sales) => jsonEncode(sales.map((s) => s.toJson()).toList()),
+        serializer: (sales) =>
+            jsonEncode(sales.map((s) => s.toJson()).toList()),
         deserializer: (json) {
           final list = jsonDecode(json) as List;
-          return list.map((j) => GiftCardSale.fromJson(j as Map<String, dynamic>)).toList();
+          return list
+              .map((j) => GiftCardSale.fromJson(j as Map<String, dynamic>))
+              .toList();
         },
       )) {
         if (isClosed) return;
@@ -1188,9 +1204,11 @@ class GiftCardCubit extends Cubit<GiftCardState> {
           }
         } else if (result.error != null) {
           final errorMsg = result.error.toString();
-          if (errorMsg.contains('timed out') || errorMsg.contains('TimeoutException')) {
+          if (errorMsg.contains('timed out') ||
+              errorMsg.contains('TimeoutException')) {
             emit(GiftCardTimeoutError(operation: 'Loading your sales'));
-          } else if (errorMsg.contains('unavailable') || errorMsg.contains('UNAVAILABLE')) {
+          } else if (errorMsg.contains('unavailable') ||
+              errorMsg.contains('UNAVAILABLE')) {
             emit(GiftCardServerUnavailable(operation: 'Loading your sales'));
           } else {
             emit(GiftCardNetworkError(
@@ -1253,12 +1271,14 @@ class GiftCardCubit extends Cubit<GiftCardState> {
   // IMAGE UPLOAD & OCR METHODS
   // ============================================
 
-  Future<void> uploadSellImage({required Uint8List imageBytes, required String filename}) async {
+  Future<void> uploadSellImage(
+      {required Uint8List imageBytes, required String filename}) async {
     try {
       if (isClosed) return;
       emit(SellImageUploading());
       final base64Data = base64Encode(imageBytes);
-      final contentType = filename.endsWith('.png') ? 'image/png' : 'image/jpeg';
+      final contentType =
+          filename.endsWith('.png') ? 'image/png' : 'image/jpeg';
       final result = await _repository.uploadSellImage(
         imageData: base64Data,
         contentType: contentType,
@@ -1267,7 +1287,8 @@ class GiftCardCubit extends Cubit<GiftCardState> {
       if (isClosed) return;
       result.fold(
         (failure) => emit(SellImageError(failure.message)),
-        (data) => emit(SellImageUploaded(imageUrl: data['imageUrl']!, imageKey: data['imageKey']!)),
+        (data) => emit(SellImageUploaded(
+            imageUrl: data['imageUrl']!, imageKey: data['imageKey']!)),
       );
     } catch (e) {
       if (isClosed) return;

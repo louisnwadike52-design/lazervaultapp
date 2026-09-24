@@ -123,8 +123,7 @@ class _AddInventoryItemScreenState extends State<AddInventoryItemScreen> {
     final unitPriceNaira =
         double.tryParse(_unitPriceController.text.replaceAll(',', '')) ?? 0.0;
     final unitPriceKobo = (unitPriceNaira * 100).toInt();
-    final minimumStock =
-        int.tryParse(_minimumStockController.text.trim()) ?? 0;
+    final minimumStock = int.tryParse(_minimumStockController.text.trim()) ?? 0;
 
     context.read<InventoryCubit>().createItem(
           name: _nameController.text.trim(),
@@ -509,7 +508,6 @@ class _AddInventoryItemScreenState extends State<AddInventoryItemScreen> {
           icon: Icons.notes_outlined,
           maxLines: 3,
         ),
-
         SizedBox(height: 28.h),
         _buildSectionTitle('Review Summary'),
         SizedBox(height: 16.h),
@@ -641,8 +639,7 @@ class _AddInventoryItemScreenState extends State<AddInventoryItemScreen> {
               color: const Color(0xFF6B7280),
               fontSize: 15.sp,
             ),
-            prefixIcon:
-                Icon(icon, color: const Color(0xFF9CA3AF), size: 20.sp),
+            prefixIcon: Icon(icon, color: const Color(0xFF9CA3AF), size: 20.sp),
             filled: true,
             fillColor: const Color(0xFF1F1F1F),
             border: OutlineInputBorder(

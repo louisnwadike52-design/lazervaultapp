@@ -15,10 +15,12 @@ class WaterBillCustomerInputScreenNew extends StatefulWidget {
   const WaterBillCustomerInputScreenNew({super.key});
 
   @override
-  State<WaterBillCustomerInputScreenNew> createState() => _WaterBillCustomerInputScreenNewState();
+  State<WaterBillCustomerInputScreenNew> createState() =>
+      _WaterBillCustomerInputScreenNewState();
 }
 
-class _WaterBillCustomerInputScreenNewState extends State<WaterBillCustomerInputScreenNew> {
+class _WaterBillCustomerInputScreenNewState
+    extends State<WaterBillCustomerInputScreenNew> {
   final _formKey = GlobalKey<FormState>();
   final _customerNumberController = TextEditingController();
   final _amountController = TextEditingController();
@@ -361,7 +363,8 @@ class _WaterBillCustomerInputScreenNewState extends State<WaterBillCustomerInput
                   ),
 
                   // Outstanding Balance Indicator
-                  if (_outstandingBalance != null && _outstandingBalance!.isNotEmpty) ...[
+                  if (_outstandingBalance != null &&
+                      _outstandingBalance!.isNotEmpty) ...[
                     SizedBox(height: 12.h),
                     Container(
                       padding: EdgeInsets.all(12.w),
@@ -559,7 +562,8 @@ class _WaterBillCustomerInputScreenNewState extends State<WaterBillCustomerInput
               ],
             ),
           ],
-          if (_outstandingBalance != null && _outstandingBalance!.isNotEmpty) ...[
+          if (_outstandingBalance != null &&
+              _outstandingBalance!.isNotEmpty) ...[
             SizedBox(height: 8.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -651,7 +655,8 @@ class _WaterBillCustomerInputScreenNewState extends State<WaterBillCustomerInput
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor ?? const Color(0xFF4E03D0),
-          disabledBackgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.4),
+          disabledBackgroundColor:
+              const Color(0xFF4E03D0).withValues(alpha: 0.4),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),
           ),

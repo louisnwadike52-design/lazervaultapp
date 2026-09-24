@@ -48,7 +48,8 @@ class ScannedCodeClassifier {
         final amount = _asDouble(data['amount']);
         return ScanPaymentIntent(
           type: ScanIntentType.qrPay,
-          title: (data['name'] ?? data['business_name'] ?? 'QR Payment').toString(),
+          title: (data['name'] ?? data['business_name'] ?? 'QR Payment')
+              .toString(),
           subtitle: code,
           qrCode: code,
           amount: amount,
@@ -95,7 +96,8 @@ class ScannedCodeClassifier {
         }
         final payload = _decodeTokenPayload(data['token']?.toString());
         if (payload == null) return null;
-        if (_isExpired(payload['exp'])) return null; // surfaced as "unrecognized/expired"
+        if (_isExpired(payload['exp']))
+          return null; // surfaced as "unrecognized/expired"
         final userId = (payload['user_id'] ?? payload['userId'])?.toString();
         final username = payload['username']?.toString();
         if ((userId == null || userId.isEmpty) &&
@@ -117,7 +119,8 @@ class ScannedCodeClassifier {
 
       // ── Static recipient QR → C2C transfer ──
       case 'lazervault_recipient':
-        final userId = (data['recipientId'] ?? data['recipient_id'])?.toString();
+        final userId =
+            (data['recipientId'] ?? data['recipient_id'])?.toString();
         final username = data['username']?.toString();
         if ((userId == null || userId.isEmpty) &&
             (username == null || username.isEmpty)) {
@@ -169,6 +172,5 @@ class ScannedCodeClassifier {
     return double.tryParse(v.toString());
   }
 
-  String _shortId(String id) =>
-      id.length <= 8 ? id : '${id.substring(0, 8)}…';
+  String _shortId(String id) => id.length <= 8 ? id : '${id.substring(0, 8)}…';
 }

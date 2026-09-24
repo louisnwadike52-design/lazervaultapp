@@ -144,12 +144,14 @@ class _AppStartupGateState extends State<AppStartupGate>
       } else {
         final healthy = await _serverStatus.isBackendHealthy();
         if (!mounted) return;
-        final unhealthy = !healthy && await _deviceOnline() && _isPreLoginScreen();
+        final unhealthy =
+            !healthy && await _deviceOnline() && _isPreLoginScreen();
         if (!mounted) return;
         if (unhealthy != _backendUnhealthy) {
           setState(() => _backendUnhealthy = unhealthy);
         }
-        if (unhealthy) return; // edge down on an auth screen — skip update check
+        if (unhealthy)
+          return; // edge down on an auth screen — skip update check
       }
 
       // 2) Store-update check (background; reads cached config, offline-safe).

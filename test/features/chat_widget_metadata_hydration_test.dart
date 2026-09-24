@@ -97,11 +97,13 @@ void main() {
           'receipt_data': {'reference': 'REF-0'},
         },
       );
-      expect(out?.keys, containsAll([
-        kChatMetaPinPrompt,
-        kChatMetaReceiptCard,
-        kChatMetaReceiptData,
-      ]));
+      expect(
+          out?.keys,
+          containsAll([
+            kChatMetaPinPrompt,
+            kChatMetaReceiptCard,
+            kChatMetaReceiptData,
+          ]));
     });
   });
 
@@ -110,9 +112,13 @@ void main() {
       // The card is part of what happened. Deleting it left a completed transfer showing
       // only its receipt, with no record of what the user actually approved.
       final msgs = [
-        _Msg(false, {'pin_prompt': {'transaction_id': 'old'}}),
+        _Msg(false, {
+          'pin_prompt': {'transaction_id': 'old'}
+        }),
         _Msg(true, null),
-        _Msg(false, {'pin_prompt': {'transaction_id': 'latest'}}),
+        _Msg(false, {
+          'pin_prompt': {'transaction_id': 'latest'}
+        }),
       ];
       markSupersededPinPrompts<_Msg>(
         msgs,
@@ -120,18 +126,27 @@ void main() {
         metadataOf: (m) => m.metadata,
       );
       final old = msgs[0].metadata!['pin_prompt'] as Map;
-      expect(old['transaction_id'], 'old', reason: 'the card must not be removed');
+      expect(old['transaction_id'], 'old',
+          reason: 'the card must not be removed');
       expect(old[kPinPromptHistoryState], kPinPromptStateInactive);
       // The live one is untouched, so it stays interactive.
-      expect((msgs[2].metadata!['pin_prompt'] as Map)[kPinPromptHistoryState], isNull);
+      expect((msgs[2].metadata!['pin_prompt'] as Map)[kPinPromptHistoryState],
+          isNull);
     });
 
-    test('stamps completed only when a receipt references that transaction', () {
+    test('stamps completed only when a receipt references that transaction',
+        () {
       // Evidence, not position: the platform reference embeds the chat intent id.
       final msgs = [
-        _Msg(false, {'pin_prompt': {'transaction_id': 'transfer-abc123'}}),
-        _Msg(false, {'receipt_card': {'reference': 'TRF-CHAT-transfer-abc123'}}),
-        _Msg(false, {'pin_prompt': {'transaction_id': 'latest'}}),
+        _Msg(false, {
+          'pin_prompt': {'transaction_id': 'transfer-abc123'}
+        }),
+        _Msg(false, {
+          'receipt_card': {'reference': 'TRF-CHAT-transfer-abc123'}
+        }),
+        _Msg(false, {
+          'pin_prompt': {'transaction_id': 'latest'}
+        }),
       ];
       markSupersededPinPrompts<_Msg>(
         msgs,
@@ -148,9 +163,15 @@ void main() {
       // It may simply have been abandoned. Telling someone a transfer completed when it
       // did not is the one error worth avoiding on a money card.
       final msgs = [
-        _Msg(false, {'pin_prompt': {'transaction_id': 'transfer-abc123'}}),
-        _Msg(false, {'receipt_card': {'reference': 'TRF-CHAT-transfer-SOMETHINGELSE'}}),
-        _Msg(false, {'pin_prompt': {'transaction_id': 'latest'}}),
+        _Msg(false, {
+          'pin_prompt': {'transaction_id': 'transfer-abc123'}
+        }),
+        _Msg(false, {
+          'receipt_card': {'reference': 'TRF-CHAT-transfer-SOMETHINGELSE'}
+        }),
+        _Msg(false, {
+          'pin_prompt': {'transaction_id': 'latest'}
+        }),
       ];
       markSupersededPinPrompts<_Msg>(
         msgs,
@@ -165,14 +186,18 @@ void main() {
 
     test('matches a receipt delivered as a BATCH list', () {
       final msgs = [
-        _Msg(false, {'pin_prompt': {'transaction_id': 'transfer-xyz'}}),
+        _Msg(false, {
+          'pin_prompt': {'transaction_id': 'transfer-xyz'}
+        }),
         _Msg(false, {
           'receipt_card': [
             {'reference': 'TRF-CHAT-other'},
             {'reference': 'TRF-CHAT-transfer-xyz'},
           ]
         }),
-        _Msg(false, {'pin_prompt': {'transaction_id': 'latest'}}),
+        _Msg(false, {
+          'pin_prompt': {'transaction_id': 'latest'}
+        }),
       ];
       markSupersededPinPrompts<_Msg>(
         msgs,
@@ -188,7 +213,9 @@ void main() {
     test('a trailing user message does not supersede the prompt', () {
       // Typing after a prompt does not settle it — "latest ASSISTANT turn" is the rule.
       final msgs = [
-        _Msg(false, {'pin_prompt': {'transaction_id': 'live'}}),
+        _Msg(false, {
+          'pin_prompt': {'transaction_id': 'live'}
+        }),
         _Msg(true, null),
       ];
       markSupersededPinPrompts<_Msg>(
@@ -196,7 +223,8 @@ void main() {
         isUser: (m) => m.isUser,
         metadataOf: (m) => m.metadata,
       );
-      expect((msgs[0].metadata!['pin_prompt'] as Map)[kPinPromptHistoryState], isNull);
+      expect((msgs[0].metadata!['pin_prompt'] as Map)[kPinPromptHistoryState],
+          isNull);
     });
   });
 }

@@ -38,7 +38,8 @@ class ExchangeCountryRule {
   final String dialCode; // E.164 without the '+' (e.g. "234" for NG)
   final bool requiresBankCode;
   final bool requiresBranchCode;
-  final bool supportsPaystackNameResolve; // NG/GH/KE/ZA via /recipients/verify-account
+  final bool
+      supportsPaystackNameResolve; // NG/GH/KE/ZA via /recipients/verify-account
   final bool omitBeneficiaryName; // NG: resolved from bank+account
   // UK/EU/US banks run Confirmation-of-Payee and reject name-pattern
   // mismatches (individual name on a business account or vice versa).
@@ -217,8 +218,8 @@ class FlutterwaveCountryRules {
       requiresBankCode: true,
       supportsPaystackNameResolve: true,
       omitBeneficiaryName: true,
-      minAmount: 100,           // ₦100
-      maxAmount: 50000000,    // ₦50m per NIBSS cap
+      minAmount: 100, // ₦100
+      maxAmount: 50000000, // ₦50m per NIBSS cap
       fields: [
         ExchangeFieldSpec(
           name: 'bank_code',
@@ -300,7 +301,8 @@ class FlutterwaveCountryRules {
       minAmount: 100,
       maxAmount: 10000000,
       fields: [
-        ExchangeFieldSpec(name: 'bank_code', label: 'Bank', required: true, type: 'select'),
+        ExchangeFieldSpec(
+            name: 'bank_code', label: 'Bank', required: true, type: 'select'),
         ExchangeFieldSpec(
           name: 'account_number',
           label: 'Account Number',

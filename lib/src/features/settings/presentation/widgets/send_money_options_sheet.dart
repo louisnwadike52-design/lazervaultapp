@@ -52,7 +52,8 @@ Future<String?> showSendMoneySheet(
             _StyleOption(
               icon: Icons.bolt_rounded,
               title: 'Classic',
-              subtitle: 'Fast, streamlined send. Pick a recipient, enter the amount, done.',
+              subtitle:
+                  'Fast, streamlined send. Pick a recipient, enter the amount, done.',
               selected: current == FeatureFlags.transferStyleClassic,
               onTap: () =>
                   Navigator.of(sheetCtx).pop(FeatureFlags.transferStyleClassic),
@@ -61,10 +62,11 @@ Future<String?> showSendMoneySheet(
             _StyleOption(
               icon: Icons.list_alt_rounded,
               title: 'Standard',
-              subtitle: 'The full transfer form with categories, notes and scheduling.',
+              subtitle:
+                  'The full transfer form with categories, notes and scheduling.',
               selected: current == FeatureFlags.transferStyleStandard,
-              onTap: () =>
-                  Navigator.of(sheetCtx).pop(FeatureFlags.transferStyleStandard),
+              onTap: () => Navigator.of(sheetCtx)
+                  .pop(FeatureFlags.transferStyleStandard),
             ),
             SizedBox(height: 8.h),
           ],
@@ -172,7 +174,9 @@ class _StyleOption extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
-          color: selected ? accent.withValues(alpha: 0.10) : const Color(0xFF161616),
+          color: selected
+              ? accent.withValues(alpha: 0.10)
+              : const Color(0xFF161616),
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
             color: selected ? accent : const Color(0xFF2D2D2D),

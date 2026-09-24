@@ -69,8 +69,7 @@ class _InternetHistoryScreenState extends State<InternetHistoryScreen> {
     // for the admin-dashboard history list, so reusing it keeps both
     // surfaces consistent. Filter client-side after fetch; the RPC
     // takes only bill_type.
-    final grpcClient =
-        GetIt.I<GrpcClient>(instanceName: 'commerceGrpcClient');
+    final grpcClient = GetIt.I<GrpcClient>(instanceName: 'commerceGrpcClient');
     final req = pb.GetBillPaymentHistoryRequest()
       ..billType = 'internet'
       ..limit = 50;
@@ -144,7 +143,9 @@ class _InternetHistoryScreenState extends State<InternetHistoryScreen> {
         title: Text(
           filtered ? 'Filtered Internet History' : 'Internet History',
           style: GoogleFonts.inter(
-              color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w700),
+              color: Colors.white,
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w700),
         ),
         centerTitle: true,
         leading: IconButton(
@@ -162,8 +163,7 @@ class _InternetHistoryScreenState extends State<InternetHistoryScreen> {
                   _future = _fetch();
                 });
               },
-              icon: Icon(Icons.filter_alt_off,
-                  color: _accent, size: 22.sp),
+              icon: Icon(Icons.filter_alt_off, color: _accent, size: 22.sp),
             ),
         ],
       ),
@@ -203,8 +203,7 @@ class _InternetHistoryScreenState extends State<InternetHistoryScreen> {
   Widget _buildRow(pb.BillPayment p) {
     final plan = _planName(p);
     final provider = _providerDisplay(p);
-    final isFocused =
-        _focusPaymentId != null && p.id == _focusPaymentId;
+    final isFocused = _focusPaymentId != null && p.id == _focusPaymentId;
     final item = BillHistoryItem(
       leadingIcon: Container(
         decoration: BoxDecoration(
@@ -287,8 +286,8 @@ class _InternetHistoryScreenState extends State<InternetHistoryScreen> {
             ElevatedButton(
               onPressed: () => setState(() => _future = _fetch()),
               style: ElevatedButton.styleFrom(backgroundColor: _accent),
-              child: Text('Retry',
-                  style: GoogleFonts.inter(color: Colors.white)),
+              child:
+                  Text('Retry', style: GoogleFonts.inter(color: Colors.white)),
             ),
           ],
         ),

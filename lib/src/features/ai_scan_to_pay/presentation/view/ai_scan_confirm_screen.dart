@@ -241,30 +241,30 @@ class _AiScanConfirmScreenState extends State<AiScanConfirmScreen>
           }
         },
         child: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(20.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildBeneficiaryCard(),
-              SizedBox(height: 20.h),
-              if (_requiresBankReview) ...[
-                _buildBankReviewFields(),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(20.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildBeneficiaryCard(),
                 SizedBox(height: 20.h),
+                if (_requiresBankReview) ...[
+                  _buildBankReviewFields(),
+                  SizedBox(height: 20.h),
+                ],
+                if (_amountEditable)
+                  _buildAmountInput()
+                else
+                  _buildAmountDisplay(),
+                SizedBox(height: 20.h),
+                _buildNoteField(),
+                SizedBox(height: 20.h),
+                _buildAccountSelector(),
+                SizedBox(height: 28.h),
+                _buildPayButton(),
               ],
-              if (_amountEditable)
-                _buildAmountInput()
-              else
-                _buildAmountDisplay(),
-              SizedBox(height: 20.h),
-              _buildNoteField(),
-              SizedBox(height: 20.h),
-              _buildAccountSelector(),
-              SizedBox(height: 28.h),
-              _buildPayButton(),
-            ],
+            ),
           ),
-        ),
         ),
       ),
     );
@@ -592,8 +592,7 @@ class _AiScanConfirmScreenState extends State<AiScanConfirmScreen>
               ),
               SizedBox(height: 12.h),
               ...matching.map((account) {
-                final isSelected =
-                    _selectedAccountId == account.id.toString();
+                final isSelected = _selectedAccountId == account.id.toString();
                 final sufficient = account.availableBalance >= amount;
                 return GestureDetector(
                   onTap: sufficient
@@ -625,8 +624,8 @@ class _AiScanConfirmScreenState extends State<AiScanConfirmScreen>
                           width: 40.w,
                           height: 40.w,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF3B82F6)
-                                .withValues(alpha: 0.2),
+                            color:
+                                const Color(0xFF3B82F6).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20.r),
                           ),
                           child: const Icon(Icons.account_balance_wallet,

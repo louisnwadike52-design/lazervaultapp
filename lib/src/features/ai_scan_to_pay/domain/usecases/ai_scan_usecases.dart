@@ -29,8 +29,10 @@ class AiChatUseCase {
 
   AiChatUseCase(this.repository);
 
-  Future<AiChatMessage> call(String sessionId, String userMessage, {Map<String, dynamic>? extractedData}) async {
-    return await repository.processAiResponse(sessionId, userMessage, extractedData);
+  Future<AiChatMessage> call(String sessionId, String userMessage,
+      {Map<String, dynamic>? extractedData}) async {
+    return await repository.processAiResponse(
+        sessionId, userMessage, extractedData);
   }
 }
 
@@ -40,7 +42,8 @@ class GeneratePaymentUseCase {
 
   GeneratePaymentUseCase(this.repository);
 
-  Future<PaymentInstruction> call(Map<String, dynamic> extractedData, ScanType scanType) async {
+  Future<PaymentInstruction> call(
+      Map<String, dynamic> extractedData, ScanType scanType) async {
     return await repository.generatePaymentInstruction(extractedData, scanType);
   }
 }
@@ -99,4 +102,4 @@ class ProcessBankDetailsPaymentUseCase {
       transactionId: transactionId,
     );
   }
-} 
+}

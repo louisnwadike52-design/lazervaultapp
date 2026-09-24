@@ -27,7 +27,8 @@ class IDPayFeeRuleEntity extends Equatable {
     if (feeType == 'fixed') {
       return '$currencySymbol${(fixedKobo / 100).toStringAsFixed(2)} per payment';
     }
-    final pct = (percentBps / 100).toStringAsFixed(percentBps % 100 == 0 ? 0 : 2);
+    final pct =
+        (percentBps / 100).toStringAsFixed(percentBps % 100 == 0 ? 0 : 2);
     final cap = capKobo > 0
         ? ' (max $currencySymbol${(capKobo / 100).toStringAsFixed(2)})'
         : '';

@@ -175,7 +175,8 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
       for (final m in resp.losers) {
         out.add(_topMoverToStock(m));
       }
-      out.sort((a, b) => b.changePercent.abs().compareTo(a.changePercent.abs()));
+      out.sort(
+          (a, b) => b.changePercent.abs().compareTo(a.changePercent.abs()));
       return out;
     } on GrpcError catch (e) {
       throw Exception('gRPC Error: ${e.message}');
@@ -376,7 +377,9 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
     BuyStockResponse resp,
   ) {
     final inv = resp.investment;
-    final id = inv.id.isNotEmpty ? inv.id : 'buy-${DateTime.now().millisecondsSinceEpoch}';
+    final id = inv.id.isNotEmpty
+        ? inv.id
+        : 'buy-${DateTime.now().millisecondsSinceEpoch}';
     return StockOrderModel(
       id: id,
       symbol: symbol,
@@ -403,7 +406,9 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
     SellStockResponse resp,
   ) {
     final inv = resp.investment;
-    final id = inv.id.isNotEmpty ? inv.id : 'sell-${DateTime.now().millisecondsSinceEpoch}';
+    final id = inv.id.isNotEmpty
+        ? inv.id
+        : 'sell-${DateTime.now().millisecondsSinceEpoch}';
     return StockOrderModel(
       id: id,
       symbol: symbol,
@@ -428,7 +433,8 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
   }) async {
     try {
       String st = 'all';
-      if (status == OrderStatus.pending || status == OrderStatus.partiallyFilled) {
+      if (status == OrderStatus.pending ||
+          status == OrderStatus.partiallyFilled) {
         st = 'open';
       } else if (status == OrderStatus.executed ||
           status == OrderStatus.cancelled ||
@@ -456,7 +462,9 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
     return StockOrderModel(
       id: o.orderId,
       symbol: o.symbol,
-      orderType: o.orderType.toLowerCase() == 'limit' ? OrderType.limit : OrderType.market,
+      orderType: o.orderType.toLowerCase() == 'limit'
+          ? OrderType.limit
+          : OrderType.market,
       side: o.side.toLowerCase() == 'sell' ? OrderSide.sell : OrderSide.buy,
       quantity: o.quantity.round().clamp(0, 1000000),
       price: o.limitPrice > 0 ? o.limitPrice : null,
@@ -537,8 +545,10 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
       id: m['id'] as String? ?? '',
       name: m['name'] as String? ?? 'Watchlist',
       symbols: List<String>.from(m['symbols'] as List? ?? []),
-      createdAt: DateTime.tryParse(m['createdAt'] as String? ?? '') ?? DateTime.now(),
-      lastUpdated: DateTime.tryParse(m['lastUpdated'] as String? ?? '') ?? DateTime.now(),
+      createdAt:
+          DateTime.tryParse(m['createdAt'] as String? ?? '') ?? DateTime.now(),
+      lastUpdated: DateTime.tryParse(m['lastUpdated'] as String? ?? '') ??
+          DateTime.now(),
       isDefault: m['isDefault'] as bool? ?? false,
     );
   }
@@ -553,7 +563,8 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
   }
 
   @override
-  Future<WatchlistModel> createWatchlist(String name, List<String> symbols) async {
+  Future<WatchlistModel> createWatchlist(
+      String name, List<String> symbols) async {
     final maps = await _loadWatchlistMaps();
     final id = DateTime.now().microsecondsSinceEpoch.toString();
     final now = DateTime.now().toIso8601String();
@@ -571,7 +582,8 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
   }
 
   @override
-  Future<WatchlistModel> updateWatchlist(String watchlistId, String name, List<String> symbols) async {
+  Future<WatchlistModel> updateWatchlist(
+      String watchlistId, String name, List<String> symbols) async {
     final maps = await _loadWatchlistMaps();
     final now = DateTime.now().toIso8601String();
     for (var i = 0; i < maps.length; i++) {
@@ -590,7 +602,8 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
   }
 
   @override
-  Future<WatchlistModel> addToWatchlist(String watchlistId, String symbol) async {
+  Future<WatchlistModel> addToWatchlist(
+      String watchlistId, String symbol) async {
     final maps = await _loadWatchlistMaps();
     final sym = symbol.toUpperCase();
     for (var i = 0; i < maps.length; i++) {
@@ -610,7 +623,8 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
   }
 
   @override
-  Future<WatchlistModel> removeFromWatchlist(String watchlistId, String symbol) async {
+  Future<WatchlistModel> removeFromWatchlist(
+      String watchlistId, String symbol) async {
     final maps = await _loadWatchlistMaps();
     final sym = symbol.toUpperCase();
     for (var i = 0; i < maps.length; i++) {
@@ -631,7 +645,8 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
 
   @override
   Future<void> deleteWatchlist(String watchlistId) async {
-    final maps = await _loadWatchlistMaps()..removeWhere((m) => m['id'] == watchlistId);
+    final maps = await _loadWatchlistMaps()
+      ..removeWhere((m) => m['id'] == watchlistId);
     await _saveWatchlistMaps(maps);
   }
 
@@ -812,7 +827,9 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
       createdAt: alert.createdAt.isNotEmpty
           ? DateTime.tryParse(alert.createdAt) ?? DateTime.now()
           : DateTime.now(),
-      triggeredAt: alert.triggeredAt.isNotEmpty ? DateTime.tryParse(alert.triggeredAt) : null,
+      triggeredAt: alert.triggeredAt.isNotEmpty
+          ? DateTime.tryParse(alert.triggeredAt)
+          : null,
     );
   }
 
@@ -849,7 +866,8 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
           name: 'Dividend Yield',
           value: stock.dividendYield,
           unit: '%',
-          description: '${stock.dividendYield.toStringAsFixed(2)}% annual yield',
+          description:
+              '${stock.dividendYield.toStringAsFixed(2)}% annual yield',
         ));
       }
       if (stock.eps > 0) {
@@ -901,10 +919,12 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
               : position < 0.2
                   ? 'Near 52-week low'
                   : 'Mid-range',
-          description: 'Current price position within the 52-week trading range',
+          description:
+              'Current price position within the 52-week trading range',
         ));
       }
-      final sectorInfo = stock.sector.isNotEmpty ? ' in the ${stock.sector} sector' : '';
+      final sectorInfo =
+          stock.sector.isNotEmpty ? ' in the ${stock.sector} sector' : '';
       final industryInfo =
           stock.industry.isNotEmpty ? ' (${stock.industry})' : '';
       final summary =
@@ -941,7 +961,8 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
   }
 
   @override
-  Future<TradingSessionModel> startTradingSession(double startingBalance) async {
+  Future<TradingSessionModel> startTradingSession(
+      double startingBalance) async {
     throw Exception('Trading sessions are coming soon');
   }
 
@@ -989,9 +1010,8 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
       return {
         'marketOpen': resp.isOpen,
         'tradingSession': resp.isOpen ? 'regular' : 'closed',
-        'sessionStartTime': resp.nextOpen.isNotEmpty
-            ? DateTime.tryParse(resp.nextOpen)
-            : null,
+        'sessionStartTime':
+            resp.nextOpen.isNotEmpty ? DateTime.tryParse(resp.nextOpen) : null,
         'sessionEndTime': resp.nextClose.isNotEmpty
             ? DateTime.tryParse(resp.nextClose)
             : null,
@@ -1008,8 +1028,11 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
       final request = GetEarningsCalendarRequest();
       if (date != null) {
         request.startDate = date.toIso8601String().split('T').first;
-        request.endDate =
-            date.add(const Duration(days: 7)).toIso8601String().split('T').first;
+        request.endDate = date
+            .add(const Duration(days: 7))
+            .toIso8601String()
+            .split('T')
+            .first;
       }
       final response = await _client.getEarningsCalendar(
         request,
@@ -1056,8 +1079,11 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
       final request = GetDividendCalendarRequest();
       if (date != null) {
         request.startDate = date.toIso8601String().split('T').first;
-        request.endDate =
-            date.add(const Duration(days: 7)).toIso8601String().split('T').first;
+        request.endDate = date
+            .add(const Duration(days: 7))
+            .toIso8601String()
+            .split('T')
+            .first;
       }
       final response = await _client.getDividendCalendar(
         request,

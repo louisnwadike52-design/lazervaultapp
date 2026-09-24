@@ -192,8 +192,8 @@ class _CreateWaterAutoRechargeScreenState
                       borderRadius: BorderRadius.circular(12.r),
                       borderSide: const BorderSide(color: Color(0xFF4E03D0)),
                     ),
-                    contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16.w, vertical: 14.h),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                   ),
                 ),
                 SizedBox(height: 16.h),
@@ -232,8 +232,8 @@ class _CreateWaterAutoRechargeScreenState
                     if (picked != null) setState(() => _time = picked);
                   },
                   child: Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 16.w, vertical: 14.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFF0A0A0A),
                       borderRadius: BorderRadius.circular(12.r),
@@ -271,8 +271,7 @@ class _CreateWaterAutoRechargeScreenState
                                 ? 'Update Auto-Pay'
                                 : 'Schedule Auto-Pay',
                             style: TextStyle(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w600)),
+                                fontSize: 16.sp, fontWeight: FontWeight.w600)),
                   ),
                 ),
                 SizedBox(height: 24.h),
@@ -344,8 +343,7 @@ class _CreateWaterAutoRechargeScreenState
             ),
             child: Text(
               'No saved accounts. Pay a water bill first and save the account to auto-pay it.',
-              style: TextStyle(
-                  color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
             ),
           );
         }
@@ -395,9 +393,7 @@ class _CreateWaterAutoRechargeScreenState
           color: selected ? const Color(0xFF10B981) : const Color(0xFF0A0A0A),
           borderRadius: BorderRadius.circular(8.r),
           border: Border.all(
-            color: selected
-                ? const Color(0xFF10B981)
-                : const Color(0xFF2D2D2D),
+            color: selected ? const Color(0xFF10B981) : const Color(0xFF2D2D2D),
           ),
         ),
         child: Text(label,

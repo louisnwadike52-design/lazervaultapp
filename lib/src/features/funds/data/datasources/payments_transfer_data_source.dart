@@ -11,7 +11,6 @@ import 'package:lazervault/src/features/funds/domain/entities/transfer_success_p
 import 'package:lazervault/src/generated/payments.pbgrpc.dart' as payments;
 part 'payments_transfer_data_source_widgets.dart';
 
-
 /// GetPaymentHistory serves `created_at` as unix SECONDS (core-payments
 /// payment_handler writes `CreatedAt.Unix()`); interpreting the value as
 /// milliseconds rendered every transfer as January 1970. Robust to either
@@ -39,8 +38,8 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
   Future<PaymentsTransferResult> sendFunds({
     required String fromAccountId,
     required String toAccountNumber,
-    String? toAccountId,  // Account UUID for internal transfers (preferred)
-    required String type,  // "internal" or "external" - PRIMARY KEY
+    String? toAccountId, // Account UUID for internal transfers (preferred)
+    required String type, // "internal" or "external" - PRIMARY KEY
     required double amount,
     required String description,
     required String transactionId,
@@ -57,7 +56,7 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
           fromAccountId: fromAccountId,
           toAccountNumber: toAccountNumber,
           toAccountId: toAccountId ?? '',
-          type: type,  // "internal" or "external"
+          type: type, // "internal" or "external"
           amount: amount,
           description: description,
           transactionId: transactionId,
@@ -68,7 +67,8 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
         );
 
         try {
-          final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+          final response =
+              await _callOptionsHelper.executeWithTokenRotation(() async {
             final callOptions = await _callOptionsHelper.withAuth();
 
             // Add scheduled_at as gRPC metadata if present
@@ -87,7 +87,8 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
             // Backend bounds this to long|short|unknown.
             mergedOptions = mergedOptions.mergedWith(
               CallOptions(metadata: {
-                'x-flow': (flow == 'long' || flow == 'short') ? flow! : 'unknown',
+                'x-flow':
+                    (flow == 'long' || flow == 'short') ? flow! : 'unknown',
               }),
             );
 
@@ -109,7 +110,8 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
             createdAt: result.createdAt,
             newBalance: result.newBalance,
             recipientName: result.recipientName,
-            scheduledAt: result.status == 'scheduled' ? parsedScheduledAt : null,
+            scheduledAt:
+                result.status == 'scheduled' ? parsedScheduledAt : null,
           );
         } on GrpcError catch (e) {
           print('gRPC Error during sendFunds: ${e.code} - ${e.message}');
@@ -132,7 +134,8 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
   }
 
   @override
-  Future<({List<PaymentsTransferResult> transfers, int total})> getPaymentHistory({
+  Future<({List<PaymentsTransferResult> transfers, int total})>
+      getPaymentHistory({
     required String accountId,
     int? limit,
     int? offset,
@@ -144,7 +147,8 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
     );
 
     try {
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.getPaymentHistory(
           request,
@@ -160,7 +164,8 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
         // expression `(double.tryParse(p.amount) ?? 0.0 * 100).toInt()` had an
         // operator-precedence bug that stored truncated MAJOR units, rendering
         // wallet history amounts 100x too small.)
-        final major = p.amount.isNotEmpty ? (double.tryParse(p.amount) ?? 0.0) : 0.0;
+        final major =
+            p.amount.isNotEmpty ? (double.tryParse(p.amount) ?? 0.0) : 0.0;
         // Direction: the queried account is the SENDER when it is the source.
         final isIncoming = p.destinationAccountId.isNotEmpty &&
             p.destinationAccountId == accountId;
@@ -177,9 +182,12 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
           // Counterparty = the OTHER account. For an outgoing transfer that's
           // the destination; for an incoming one we only have the source
           // account number on the wire (no source name field).
-          recipientName: p.destinationName.isNotEmpty ? p.destinationName : null,
+          recipientName:
+              p.destinationName.isNotEmpty ? p.destinationName : null,
           counterpartyAccount: isIncoming
-              ? (p.sourceAccountNumber.isNotEmpty ? p.sourceAccountNumber : null)
+              ? (p.sourceAccountNumber.isNotEmpty
+                  ? p.sourceAccountNumber
+                  : null)
               : (p.destinationAccountNumber.isNotEmpty
                   ? p.destinationAccountNumber
                   : null),
@@ -211,7 +219,8 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
     } on GrpcError catch (e) {
       print('gRPC Error getting payment history: ${e.code} - ${e.message}');
       throw ServerException(
-        message: 'Failed to get payment history: ${e.message ?? "Unknown error"}',
+        message:
+            'Failed to get payment history: ${e.message ?? "Unknown error"}',
       );
     }
   }
@@ -235,7 +244,8 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
     );
 
     try {
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.getPaymentHistory(
           request,
@@ -275,7 +285,8 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
       return out;
     } on GrpcError catch (e) {
       // Best-effort supplement — never fail the recipient history because of it.
-      print('gRPC Error getting recipient external payments: ${e.code} - ${e.message}');
+      print(
+          'gRPC Error getting recipient external payments: ${e.code} - ${e.message}');
       return const [];
     } catch (e) {
       print('Error getting recipient external payments: $e');
@@ -295,7 +306,8 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
       offset: 0,
     );
     try {
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.getPaymentHistory(
           request,
@@ -339,7 +351,8 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
       }
       return out;
     } on GrpcError catch (e) {
-      print('gRPC Error getting external transfer history: ${e.code} - ${e.message}');
+      print(
+          'gRPC Error getting external transfer history: ${e.code} - ${e.message}');
       return const [];
     } catch (e) {
       print('Error getting external transfer history: $e');
@@ -388,7 +401,8 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
     );
 
     try {
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.getTransferSuccessPrediction(
           request,
@@ -413,7 +427,8 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
         blocklisted: response.blocklisted,
       );
     } on GrpcError catch (e) {
-      print('gRPC Error getting transfer success prediction: ${e.code} - ${e.message}');
+      print(
+          'gRPC Error getting transfer success prediction: ${e.code} - ${e.message}');
       return null;
     } catch (e) {
       print('Error getting transfer success prediction: $e');
@@ -433,7 +448,8 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
       amount: Int64(amountMinorUnits),
       currency: currency,
     );
-    final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+    final response =
+        await _callOptionsHelper.executeWithTokenRotation(() async {
       final callOptions = await _callOptionsHelper.withAuth();
       // The quote resolves the PROVIDER fee from the paying wallet's rail, and
       // the server reads that wallet from x-account-id (the proto carries no
@@ -465,7 +481,8 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
       {required String reference}) async {
     if (reference.isEmpty) return null;
     try {
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.getTransferStatus(
           payments.GetTransferStatusRequest(reference: reference),

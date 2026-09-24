@@ -82,80 +82,80 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
         _exitToDashboard();
       },
       child: Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      body: SafeArea(
-        child: BlocListener<AutoSaveCubit, AutoSaveState>(
-          listener: (context, state) {
-            if (state is AutoSaveDashboardLoaded) {
-              setState(() {
-                _statistics = state.statistics;
-                _rules = state.rules;
-                _isLoadingStatistics = false;
-                _isLoadingRules = false;
-              });
-            } else if (state is AutoSaveStatisticsLoaded) {
-              setState(() {
-                _statistics = state.statistics;
-                _isLoadingStatistics = false;
-              });
-            } else if (state is AutoSaveRulesLoaded) {
-              setState(() {
-                _rules = state.rules;
-                _isLoadingRules = false;
-              });
-            } else if (state is AutoSaveError) {
-              setState(() {
-                _isLoadingStatistics = false;
-                _isLoadingRules = false;
-              });
-              Get.snackbar(
-                'Error',
-                state.message,
-                backgroundColor: const Color(0xFFEF4444),
-                colorText: Colors.white,
-                snackPosition: SnackPosition.TOP,
-              );
-            } else if (state is AutoSaveRuleDeleted) {
-              Get.snackbar(
-                'Success',
-                'Rule deleted successfully',
-                backgroundColor: const Color(0xFF10B981),
-                colorText: Colors.white,
-                snackPosition: SnackPosition.TOP,
-              );
-              _loadDashboardData();
-            }
-          },
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(
-                child: ServiceEntranceAnimation(
-                  child: RefreshIndicator(
-                  onRefresh: _loadDashboardData,
-                  color: const Color(0xFF4E03D0),
-                  backgroundColor: const Color(0xFF1F1F1F),
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.all(20.w),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _buildMetricsCard(),
-                        SizedBox(height: 24.h),
-                        _buildActionButtons(),
-                        SizedBox(height: 32.h),
-                        _buildActiveRulesSection(),
-                      ],
+        backgroundColor: const Color(0xFF0A0A0A),
+        body: SafeArea(
+          child: BlocListener<AutoSaveCubit, AutoSaveState>(
+            listener: (context, state) {
+              if (state is AutoSaveDashboardLoaded) {
+                setState(() {
+                  _statistics = state.statistics;
+                  _rules = state.rules;
+                  _isLoadingStatistics = false;
+                  _isLoadingRules = false;
+                });
+              } else if (state is AutoSaveStatisticsLoaded) {
+                setState(() {
+                  _statistics = state.statistics;
+                  _isLoadingStatistics = false;
+                });
+              } else if (state is AutoSaveRulesLoaded) {
+                setState(() {
+                  _rules = state.rules;
+                  _isLoadingRules = false;
+                });
+              } else if (state is AutoSaveError) {
+                setState(() {
+                  _isLoadingStatistics = false;
+                  _isLoadingRules = false;
+                });
+                Get.snackbar(
+                  'Error',
+                  state.message,
+                  backgroundColor: const Color(0xFFEF4444),
+                  colorText: Colors.white,
+                  snackPosition: SnackPosition.TOP,
+                );
+              } else if (state is AutoSaveRuleDeleted) {
+                Get.snackbar(
+                  'Success',
+                  'Rule deleted successfully',
+                  backgroundColor: const Color(0xFF10B981),
+                  colorText: Colors.white,
+                  snackPosition: SnackPosition.TOP,
+                );
+                _loadDashboardData();
+              }
+            },
+            child: Column(
+              children: [
+                _buildHeader(),
+                Expanded(
+                  child: ServiceEntranceAnimation(
+                    child: RefreshIndicator(
+                      onRefresh: _loadDashboardData,
+                      color: const Color(0xFF4E03D0),
+                      backgroundColor: const Color(0xFF1F1F1F),
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: EdgeInsets.all(20.w),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _buildMetricsCard(),
+                            SizedBox(height: 24.h),
+                            _buildActionButtons(),
+                            SizedBox(height: 32.h),
+                            _buildActiveRulesSection(),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -591,8 +591,8 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
                   width: 40.w,
                   height: 40.w,
                   decoration: BoxDecoration(
-                    color: _triggerColor(rule.triggerType)
-                        .withValues(alpha: 0.15),
+                    color:
+                        _triggerColor(rule.triggerType).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(11.r),
                   ),
                   child: Icon(
@@ -616,8 +616,7 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
                 ),
                 SizedBox(width: 8.w),
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: _getStatusColor(rule.status).withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(6.r),

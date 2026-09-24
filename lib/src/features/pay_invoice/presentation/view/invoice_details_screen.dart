@@ -22,7 +22,6 @@ class InvoiceDetailsScreen extends StatefulWidget {
 
 class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
     with SingleTickerProviderStateMixin {
-  
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -38,16 +37,17 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    
+
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.2),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutBack));
-    
+    ).animate(CurvedAnimation(
+        parent: _animationController, curve: Curves.easeOutBack));
+
     _animationController.forward();
   }
 
@@ -96,7 +96,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
                           _buildAmountBreakdown(),
                           SizedBox(height: 24.h),
                           _buildPaymentStatus(),
-                          if (widget.invoice.paymentStatus == PaymentStatus.pending)
+                          if (widget.invoice.paymentStatus ==
+                              PaymentStatus.pending)
                             SizedBox(height: 100.h), // Space for payment button
                         ],
                       ),
@@ -127,12 +128,12 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
                 color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(22.r),
                 boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
               child: Icon(
                 Icons.arrow_back_ios_new,
@@ -241,7 +242,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
             const Color(0xFF1F1F35).withValues(alpha: 0.9),
           ],
         ),
-        borderRadius: BorderRadius.circular(16.r),        boxShadow: [
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 16,
@@ -266,13 +268,14 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
                   ),
                   borderRadius: BorderRadius.circular(25.r),
                 ),
-                child: widget.invoice.fromCompanyLogo != null 
+                child: widget.invoice.fromCompanyLogo != null
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(25.r),
                         child: Image.network(
                           widget.invoice.fromCompanyLogo!,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => _buildFallbackAvatar(),
+                          errorBuilder: (context, error, stackTrace) =>
+                              _buildFallbackAvatar(),
                         ),
                       )
                     : _buildFallbackAvatar(),
@@ -283,7 +286,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.invoice.fromCompanyName ?? widget.invoice.fromUserName,
+                      widget.invoice.fromCompanyName ??
+                          widget.invoice.fromUserName,
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 18.sp,
@@ -329,7 +333,9 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
   }
 
   Widget _buildFallbackAvatar() {
-    final firstLetter = (widget.invoice.fromCompanyName ?? widget.invoice.fromUserName)[0].toUpperCase();
+    final firstLetter =
+        (widget.invoice.fromCompanyName ?? widget.invoice.fromUserName)[0]
+            .toUpperCase();
     return Container(
       width: 50.w,
       height: 50.w,
@@ -368,7 +374,6 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -388,8 +393,11 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
           if (widget.invoice.paidAt != null)
             _buildDetailRow('Paid Date', _formatDate(widget.invoice.paidAt!)),
           _buildDetailRow('Currency', widget.invoice.currency),
-          if (widget.invoice.isOverdue && widget.invoice.paymentStatus != PaymentStatus.completed)
-            _buildDetailRow('Days Overdue', '${widget.invoice.daysUntilDue.abs()} days', isHighlight: true),
+          if (widget.invoice.isOverdue &&
+              widget.invoice.paymentStatus != PaymentStatus.completed)
+            _buildDetailRow(
+                'Days Overdue', '${widget.invoice.daysUntilDue.abs()} days',
+                isHighlight: true),
         ],
       ),
     );
@@ -408,7 +416,6 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -442,7 +449,6 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -518,7 +524,6 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -540,7 +545,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
           SizedBox(height: 12.h),
           Divider(color: Colors.white.withValues(alpha: 0.2)),
           SizedBox(height: 12.h),
-          _buildAmountRow('Total Amount', widget.invoice.totalAmount, isTotal: true),
+          _buildAmountRow('Total Amount', widget.invoice.totalAmount,
+              isTotal: true),
         ],
       ),
     );
@@ -559,7 +565,6 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -632,13 +637,12 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
                   color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12.r),
                   boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
@@ -701,7 +705,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
     );
   }
 
-  Widget _buildDetailRow(String label, String value, {bool isHighlight = false}) {
+  Widget _buildDetailRow(String label, String value,
+      {bool isHighlight = false}) {
     return Padding(
       padding: EdgeInsets.only(bottom: 12.h),
       child: Row(
@@ -764,7 +769,9 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
         icon = Icons.check_circle;
         break;
       case PaymentStatus.pending:
-        color = widget.invoice.isOverdue ? const Color(0xFFEF4444) : const Color(0xFFF59E0B);
+        color = widget.invoice.isOverdue
+            ? const Color(0xFFEF4444)
+            : const Color(0xFFF59E0B);
         icon = widget.invoice.isOverdue ? Icons.error : Icons.access_time;
         break;
       case PaymentStatus.processing:
@@ -816,7 +823,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
       case PaymentStatus.completed:
         return 'This invoice has been paid successfully';
       case PaymentStatus.pending:
-        return widget.invoice.isOverdue 
+        return widget.invoice.isOverdue
             ? 'Payment is overdue by ${widget.invoice.daysUntilDue.abs()} days'
             : 'Payment is due in ${widget.invoice.daysUntilDue} days';
       case PaymentStatus.processing:
@@ -835,11 +842,11 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
 
   void _proceedToPayment() {
     HapticFeedback.lightImpact();
-    
+
     Get.to(
       () => PaymentMethodSelectionScreen(invoice: widget.invoice),
       transition: Transition.rightToLeft,
       duration: const Duration(milliseconds: 300),
     );
   }
-} 
+}

@@ -18,16 +18,17 @@ class InsurancePaymentConfirmationScreen extends StatefulWidget {
   });
 
   @override
-  State<InsurancePaymentConfirmationScreen> createState() => _InsurancePaymentConfirmationScreenState();
+  State<InsurancePaymentConfirmationScreen> createState() =>
+      _InsurancePaymentConfirmationScreenState();
 }
 
-class _InsurancePaymentConfirmationScreenState extends State<InsurancePaymentConfirmationScreen>
+class _InsurancePaymentConfirmationScreenState
+    extends State<InsurancePaymentConfirmationScreen>
     with SingleTickerProviderStateMixin {
-  
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-  
+
   @override
   void initState() {
     super.initState();
@@ -39,16 +40,17 @@ class _InsurancePaymentConfirmationScreenState extends State<InsurancePaymentCon
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    
+
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutBack));
-    
+    ).animate(CurvedAnimation(
+        parent: _animationController, curve: Curves.easeOutBack));
+
     _animationController.forward();
   }
 
@@ -191,7 +193,8 @@ class _InsurancePaymentConfirmationScreenState extends State<InsurancePaymentCon
             const Color(0xFF1F1F35).withValues(alpha: 0.9),
           ],
         ),
-        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 20,
@@ -267,13 +270,12 @@ class _InsurancePaymentConfirmationScreenState extends State<InsurancePaymentCon
             color: const Color(0xFF10B981).withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Text(
             'PAID',
@@ -302,9 +304,12 @@ class _InsurancePaymentConfirmationScreenState extends State<InsurancePaymentCon
           ),
         ),
         SizedBox(height: 16.h),
-        _buildDetailRow('Transaction ID', widget.payment.transactionId ?? 'N/A'),
-        _buildDetailRow('Amount', '\$${widget.payment.amount.toStringAsFixed(2)}'),
-        _buildDetailRow('Date', '${widget.payment.paymentDate.day}/${widget.payment.paymentDate.month}/${widget.payment.paymentDate.year}'),
+        _buildDetailRow(
+            'Transaction ID', widget.payment.transactionId ?? 'N/A'),
+        _buildDetailRow(
+            'Amount', '\$${widget.payment.amount.toStringAsFixed(2)}'),
+        _buildDetailRow('Date',
+            '${widget.payment.paymentDate.day}/${widget.payment.paymentDate.month}/${widget.payment.paymentDate.year}'),
         _buildDetailRow('Status', 'Completed'),
       ],
     );
@@ -329,13 +334,12 @@ class _InsurancePaymentConfirmationScreenState extends State<InsurancePaymentCon
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -438,7 +442,6 @@ class _InsurancePaymentConfirmationScreenState extends State<InsurancePaymentCon
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Column(
         children: [
@@ -568,13 +571,12 @@ class _InsurancePaymentConfirmationScreenState extends State<InsurancePaymentCon
                 height: 56.h,
                 decoration: BoxDecoration(
                   boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                   borderRadius: BorderRadius.circular(16.r),
                 ),
                 child: Material(
@@ -613,7 +615,10 @@ class _InsurancePaymentConfirmationScreenState extends State<InsurancePaymentCon
                 height: 56.h,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                    colors: [
+                      Color(0xFF6366F1),
+                      Color.fromARGB(255, 78, 3, 208)
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
@@ -708,14 +713,16 @@ class _InsurancePaymentConfirmationScreenState extends State<InsurancePaymentCon
   }
 
   void _emailReceipt() {
-    final subject = Uri.encodeComponent('Insurance Payment Receipt - ${widget.payment.policyNumber}');
+    final subject = Uri.encodeComponent(
+        'Insurance Payment Receipt - ${widget.payment.policyNumber}');
     // Only include the URL when we have one — otherwise the user sees
     // "Your insurance payment receipt: " with nothing after.
     final bodyText = widget.receiptUrl.isNotEmpty
         ? 'Your insurance payment receipt: ${widget.receiptUrl}'
         : 'Your insurance payment for policy ${widget.payment.policyNumber} was successful.';
     launchUrl(
-      Uri.parse('mailto:?subject=$subject&body=${Uri.encodeComponent(bodyText)}'),
+      Uri.parse(
+          'mailto:?subject=$subject&body=${Uri.encodeComponent(bodyText)}'),
       mode: LaunchMode.externalApplication,
     );
   }
@@ -736,7 +743,8 @@ Thank you for your payment!
     SharePlus.instance.share(ShareParams(
         // iOS: a non-zero popover anchor is required — CGRectZero throws
         // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),text: text));
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+        text: text));
   }
 
   void _copyDetails() {
@@ -746,7 +754,7 @@ Amount: \$${widget.payment.amount.toStringAsFixed(2)}
 Policy: ${widget.payment.policyNumber}
 Date: ${widget.payment.paymentDate.day}/${widget.payment.paymentDate.month}/${widget.payment.paymentDate.year}
 ''';
-    
+
     Clipboard.setData(ClipboardData(text: details));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -762,4 +770,4 @@ Date: ${widget.payment.paymentDate.day}/${widget.payment.paymentDate.month}/${wi
       ),
     );
   }
-} 
+}

@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 part 'scan_entities_widgets.dart';
 
-
 // Payment Receipt entity
 class PaymentReceipt extends Equatable {
   final String id;
@@ -109,4 +108,4 @@ class PaymentReceipt extends Equatable {
       isExternal: isExternal ?? this.isExternal,
     );
   }
-} 
+}

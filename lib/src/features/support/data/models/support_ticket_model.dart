@@ -34,7 +34,8 @@ class SupportTicketModel extends SupportTicket {
     );
   }
 
-  static TicketCategory _mapProtoToCategory(support_pb.TicketCategory category) {
+  static TicketCategory _mapProtoToCategory(
+      support_pb.TicketCategory category) {
     switch (category) {
       case support_pb.TicketCategory.GENERAL_INQUIRY:
         return TicketCategory.generalInquiry;
@@ -52,7 +53,8 @@ class SupportTicketModel extends SupportTicket {
     }
   }
 
-  static support_pb.TicketCategory _mapCategoryToProto(TicketCategory category) {
+  static support_pb.TicketCategory _mapCategoryToProto(
+      TicketCategory category) {
     switch (category) {
       case TicketCategory.generalInquiry:
         return support_pb.TicketCategory.GENERAL_INQUIRY;
@@ -101,7 +103,8 @@ class SupportTicketModel extends SupportTicket {
     }
   }
 
-  static TicketPriority _mapProtoToPriority(support_pb.TicketPriority priority) {
+  static TicketPriority _mapProtoToPriority(
+      support_pb.TicketPriority priority) {
     switch (priority) {
       case support_pb.TicketPriority.LOW:
         return TicketPriority.low;
@@ -115,7 +118,6 @@ class SupportTicketModel extends SupportTicket {
         return TicketPriority.medium;
     }
   }
-
 }
 
 class TicketReplyModel extends TicketReply {

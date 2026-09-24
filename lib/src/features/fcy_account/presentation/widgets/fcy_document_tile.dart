@@ -122,8 +122,7 @@ class FcyDocumentTile extends StatelessWidget {
               height: 22.w,
               child: CircularProgressIndicator(
                 strokeWidth: 2.2,
-                valueColor:
-                    AlwaysStoppedAnimation(AppSurfaces.accentPurple),
+                valueColor: AlwaysStoppedAnimation(AppSurfaces.accentPurple),
               ),
             ),
             SizedBox(height: 10.h),
@@ -200,7 +199,8 @@ class FcyDocumentTile extends StatelessWidget {
                     // A thumbnail that fails to load must not read as "upload
                     // failed" — the file is on the server either way. It says the
                     // preview is unavailable, which is the truthful statement.
-                    errorBuilder: (_, __, ___) => _fileCard('Preview unavailable'),
+                    errorBuilder: (_, __, ___) =>
+                        _fileCard('Preview unavailable'),
                   )
                 : _fileCard('PDF document'),
           ),
@@ -214,8 +214,8 @@ class FcyDocumentTile extends StatelessWidget {
                   size: 16.sp, color: AppSurfaces.accentPurple),
               label: Text(
                 'Replace',
-                style: TextStyle(
-                    color: AppSurfaces.accentPurple, fontSize: 13.sp),
+                style:
+                    TextStyle(color: AppSurfaces.accentPurple, fontSize: 13.sp),
               ),
               style: TextButton.styleFrom(
                 padding: EdgeInsets.symmetric(horizontal: 8.w),

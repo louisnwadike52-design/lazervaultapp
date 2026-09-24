@@ -30,8 +30,7 @@ class InvestRevolutSegmentPills extends StatelessWidget {
         itemCount: labels.length,
         separatorBuilder: (_, __) => SizedBox(width: 8.w),
         itemBuilder: (context, i) {
-          final selected =
-              selectedIndex != null && i == selectedIndex;
+          final selected = selectedIndex != null && i == selectedIndex;
           return GestureDetector(
             onTap: () => onChanged(i),
             child: AnimatedContainer(

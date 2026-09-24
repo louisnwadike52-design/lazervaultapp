@@ -41,8 +41,7 @@ class CableTVReminder extends Equatable {
 
   factory CableTVReminder.fromProto(pb.CableTVReminder proto) {
     String? tsToIso(bool has, dynamic ts) => has
-        ? DateTime.fromMillisecondsSinceEpoch(
-                ts.seconds.toInt() * 1000,
+        ? DateTime.fromMillisecondsSinceEpoch(ts.seconds.toInt() * 1000,
                 isUtc: true)
             .toIso8601String()
         : null;
@@ -54,8 +53,7 @@ class CableTVReminder extends Equatable {
       description: proto.description.isEmpty ? null : proto.description,
       reminderDate: tsToIso(proto.hasReminderDate(), proto.reminderDate) ?? '',
       amount: proto.hasAmount() ? proto.amount : null,
-      variationCode:
-          proto.variationCode.isEmpty ? null : proto.variationCode,
+      variationCode: proto.variationCode.isEmpty ? null : proto.variationCode,
       currency: proto.currency.isEmpty ? null : proto.currency,
       isRecurring: proto.isRecurring,
       recurrenceType:

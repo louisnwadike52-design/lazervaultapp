@@ -46,16 +46,16 @@ class P2PTextBubble extends StatelessWidget {
   // '*'/'_'/'#' isn't mangled — rich rendering only kicks in for real markdown
   // (e.g. content authored by the AI assistant / pasted from the chatbot).
   static final RegExp _mdSignals = RegExp(
-    r'(```)'                       // fenced code block
-    r'|(^|\n)\s{0,3}#{1,6}\s'      // ATX heading
-    r'|\*\*[^*\n]+\*\*'            // **bold**
-    r'|__[^_\n]+__'               // __bold__
-    r'|(^|\n)\s*[-*+]\s+\S'        // bullet list item
-    r'|(^|\n)\s*\d+\.\s+\S'        // ordered list item
-    r'|(^|\n)\s*>\s+\S'            // blockquote
-    r'|`[^`\n]+`'                  // `inline code`
-    r'|\[[^\]\n]+\]\([^)\s]+\)'    // [link](url)
-    r'|(^|\n)\s*\|.*\|',           // table row
+    r'(```)' // fenced code block
+    r'|(^|\n)\s{0,3}#{1,6}\s' // ATX heading
+    r'|\*\*[^*\n]+\*\*' // **bold**
+    r'|__[^_\n]+__' // __bold__
+    r'|(^|\n)\s*[-*+]\s+\S' // bullet list item
+    r'|(^|\n)\s*\d+\.\s+\S' // ordered list item
+    r'|(^|\n)\s*>\s+\S' // blockquote
+    r'|`[^`\n]+`' // `inline code`
+    r'|\[[^\]\n]+\]\([^)\s]+\)' // [link](url)
+    r'|(^|\n)\s*\|.*\|', // table row
     multiLine: true,
   );
 
@@ -83,7 +83,8 @@ class P2PTextBubble extends StatelessWidget {
     if (!_looksLikeMarkdown(content)) {
       return _buildLinkifiedText(content);
     }
-    final base = GoogleFonts.inter(color: Colors.white, fontSize: 14.sp, height: 1.45);
+    final base =
+        GoogleFonts.inter(color: Colors.white, fontSize: 14.sp, height: 1.45);
     return MarkdownBody(
       data: content,
       selectable: false,
@@ -91,7 +92,9 @@ class P2PTextBubble extends StatelessWidget {
       styleSheet: MarkdownStyleSheet(
         p: base,
         strong: base.copyWith(fontWeight: FontWeight.w700),
-        em: base.copyWith(fontStyle: FontStyle.italic, color: Colors.white.withValues(alpha: 0.9)),
+        em: base.copyWith(
+            fontStyle: FontStyle.italic,
+            color: Colors.white.withValues(alpha: 0.9)),
         a: base.copyWith(
             color: const Color(0xFFB794F6),
             decoration: TextDecoration.underline),
@@ -201,8 +204,10 @@ class P2PTextBubble extends StatelessWidget {
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(16.r),
                   topRight: Radius.circular(16.r),
-                  bottomLeft: isMe ? Radius.circular(16.r) : Radius.circular(4.r),
-                  bottomRight: isMe ? Radius.circular(4.r) : Radius.circular(16.r),
+                  bottomLeft:
+                      isMe ? Radius.circular(16.r) : Radius.circular(4.r),
+                  bottomRight:
+                      isMe ? Radius.circular(4.r) : Radius.circular(16.r),
                 ),
               ),
               child: Column(
@@ -268,7 +273,8 @@ class P2PTextBubble extends StatelessWidget {
               right: isMe ? -6.w : null,
               left: isMe ? null : -6.w,
               child: CustomPaint(
-                painter: BubbleTailPainter(color: isMe ? _mine : _theirs, isUser: isMe),
+                painter: BubbleTailPainter(
+                    color: isMe ? _mine : _theirs, isUser: isMe),
                 size: Size(11.w, 14.h),
               ),
             ),
@@ -288,7 +294,8 @@ class P2PTextBubble extends StatelessWidget {
   Widget _buildReplyQuote() {
     final quotedIsMine =
         currentUserId.isNotEmpty && message.replyToSenderId == currentUserId;
-    final author = quotedIsMine ? 'You' : (peerName.isNotEmpty ? peerName : 'Them');
+    final author =
+        quotedIsMine ? 'You' : (peerName.isNotEmpty ? peerName : 'Them');
     return Container(
       margin: EdgeInsets.only(bottom: 6.h),
       padding: EdgeInsets.fromLTRB(8.w, 6.h, 10.w, 6.h),
@@ -330,7 +337,8 @@ class P2PTextBubble extends StatelessWidget {
   List<_ReactionGroup> _groupedReactions() {
     final map = <String, _ReactionGroup>{};
     for (final r in message.reactions) {
-      final g = map.putIfAbsent(r.emoji, () => _ReactionGroup(r.emoji, 0, false));
+      final g =
+          map.putIfAbsent(r.emoji, () => _ReactionGroup(r.emoji, 0, false));
       g.count++;
       if (r.userId == currentUserId) g.mine = true;
     }
@@ -351,9 +359,8 @@ class P2PTextBubble extends StatelessWidget {
               color: const Color(0xFF1A1A1C),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                color: g.mine
-                    ? const Color(0xFF7C3AED)
-                    : const Color(0xFF3A3A3D),
+                color:
+                    g.mine ? const Color(0xFF7C3AED) : const Color(0xFF3A3A3D),
                 width: g.mine ? 1.4 : 1,
               ),
             ),

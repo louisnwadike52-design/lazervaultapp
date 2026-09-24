@@ -203,7 +203,8 @@ class _AnimatedHeartState extends State<_AnimatedHeart>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final waveX = sin(_controller.value * pi * _waveFrequency) * _waveMagnitude;
+        final waveX =
+            sin(_controller.value * pi * _waveFrequency) * _waveMagnitude;
         return Positioned(
           bottom: 60.h - _translateY.value,
           left: 16.w + widget.heart.startX + waveX,

@@ -113,7 +113,8 @@ class _LoginActivityScreenState extends State<LoginActivityScreen> {
       appBar: AppBar(
         backgroundColor: _background,
         elevation: 0,
-        title: const Text('Login Activity', style: TextStyle(color: Colors.white)),
+        title:
+            const Text('Login Activity', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: RefreshIndicator(onRefresh: _load, child: _buildBody()),
@@ -127,13 +128,17 @@ class _LoginActivityScreenState extends State<LoginActivityScreen> {
     if (_error != null) {
       return ListView(children: [
         const SizedBox(height: 120),
-        Center(child: Text(_error!, style: const TextStyle(color: _textSecondary))),
+        Center(
+            child:
+                Text(_error!, style: const TextStyle(color: _textSecondary))),
       ]);
     }
     if (_items.isEmpty) {
       return ListView(children: const [
         SizedBox(height: 120),
-        Center(child: Text('No sign-in activity yet', style: TextStyle(color: _textSecondary))),
+        Center(
+            child: Text('No sign-in activity yet',
+                style: TextStyle(color: _textSecondary))),
       ]);
     }
     return ListView.separated(
@@ -195,7 +200,11 @@ class _LoginActivityScreenState extends State<LoginActivityScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 14)),
+                Text(title,
+                    style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14)),
                 const SizedBox(height: 4),
                 if (a.deviceName.isNotEmpty) _line('Device', a.deviceName),
                 if (a.ipAddress.isNotEmpty) _line('IP', a.ipAddress),
@@ -214,8 +223,15 @@ class _LoginActivityScreenState extends State<LoginActivityScreen> {
         padding: const EdgeInsets.only(top: 2),
         child: Row(
           children: [
-            SizedBox(width: 64, child: Text(label, style: const TextStyle(color: _textSecondary, fontSize: 12))),
-            Expanded(child: Text(value, style: const TextStyle(color: Colors.white70, fontSize: 12))),
+            SizedBox(
+                width: 64,
+                child: Text(label,
+                    style:
+                        const TextStyle(color: _textSecondary, fontSize: 12))),
+            Expanded(
+                child: Text(value,
+                    style:
+                        const TextStyle(color: Colors.white70, fontSize: 12))),
           ],
         ),
       );

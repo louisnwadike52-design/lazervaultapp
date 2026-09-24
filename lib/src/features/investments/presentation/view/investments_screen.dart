@@ -14,7 +14,6 @@ import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 part 'investments_screen_widgets.dart';
 
-
 class InvestmentsScreen extends StatefulWidget {
   const InvestmentsScreen({super.key});
 
@@ -33,7 +32,8 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
     InvestmentOption(
       title: 'Stocks',
       subtitle: 'US & Global stocks via DriveWealth',
-      description: 'Trade US stocks. Fractional shares from \$1. Apple, Tesla, NVIDIA & more.',
+      description:
+          'Trade US stocks. Fractional shares from \$1. Apple, Tesla, NVIDIA & more.',
       icon: Icons.trending_up,
       color: const Color(0xFF10B981),
       route: AppRoutes.stocks,
@@ -47,7 +47,8 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
     InvestmentOption(
       title: 'Treasury ETFs',
       subtitle: 'US Government bond ETFs',
-      description: 'Ultra-low risk. Backed by US Treasury bonds. Stable yield ~4-5% annually.',
+      description:
+          'Ultra-low risk. Backed by US Treasury bonds. Stable yield ~4-5% annually.',
       icon: Icons.shield,
       color: const Color(0xFF0EA5E9),
       route: AppRoutes.stocks,
@@ -59,7 +60,8 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
     InvestmentOption(
       title: 'ETFs',
       subtitle: 'Exchange-traded funds',
-      description: 'Broad market and theme exposure. Often used for diversified, long-term investing.',
+      description:
+          'Broad market and theme exposure. Often used for diversified, long-term investing.',
       icon: Icons.pie_chart,
       color: const Color(0xFF3B82F6),
       route: AppRoutes.stocks,
@@ -71,7 +73,8 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
     InvestmentOption(
       title: 'REITs',
       subtitle: 'Real estate investment trusts',
-      description: 'Income from property. REITs pay ~90% of income as dividends. ~3-4% yield.',
+      description:
+          'Income from property. REITs pay ~90% of income as dividends. ~3-4% yield.',
       icon: Icons.home_work,
       color: const Color(0xFF795548),
       route: AppRoutes.stocks,
@@ -83,7 +86,8 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
     InvestmentOption(
       title: 'Bond ETFs',
       subtitle: 'Fixed income funds',
-      description: 'Many “bond” exposures in-app are bond ETFs or funds, not primary T-bill auctions.',
+      description:
+          'Many “bond” exposures in-app are bond ETFs or funds, not primary T-bill auctions.',
       icon: Icons.security,
       color: const Color(0xFF607D8B),
       route: AppRoutes.stocks,
@@ -95,7 +99,8 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
     InvestmentOption(
       title: 'Nigerian T-Bills',
       subtitle: 'CBN Treasury Bills',
-      description: 'Government-backed. 91-364 day maturities. Historically ~10-18% yield.',
+      description:
+          'Government-backed. 91-364 day maturities. Historically ~10-18% yield.',
       icon: Icons.account_balance,
       color: const Color(0xFF059669),
       route: AppRoutes.stocks,
@@ -107,7 +112,8 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
     InvestmentOption(
       title: 'Mutual Funds',
       subtitle: 'Nigerian managed funds',
-      description: 'Money market, equity, and balanced funds via Cowrywise. Professional management.',
+      description:
+          'Money market, equity, and balanced funds via Cowrywise. Professional management.',
       icon: Icons.analytics,
       color: const Color(0xFF9C27B0),
       route: AppRoutes.stocks,
@@ -166,40 +172,41 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
       backgroundColor: InvestTradingUi.background,
       body: ServiceEntranceAnimation(
         child: AnimatedBuilder(
-        animation: _animationController,
-        builder: (context, child) {
-          return FadeTransition(
-            opacity: _fadeAnimation,
-            child: SlideTransition(
-              position: _slideAnimation,
-              child: DecoratedBox(
-                decoration: BoxDecoration(gradient: InvestTradingUi.scaffoldGradient),
-                child: CustomScrollView(
-                  slivers: [
-                  _buildSliverAppBar(),
-                  SliverPadding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    sliver: SliverList(
-                      delegate: SliverChildListDelegate([
-                        SizedBox(height: 16.h),
-                        _buildHeaderSection(),
-                        SizedBox(height: 20.h),
-                        _buildActivityShortcutStrip(),
-                        SizedBox(height: 24.h),
-                        _buildPopularSection(),
-                        SizedBox(height: 24.h),
-                        _buildAllInvestmentsSection(),
-                        SizedBox(height: 20.h), // Bottom padding
-                      ]),
-                    ),
+          animation: _animationController,
+          builder: (context, child) {
+            return FadeTransition(
+              opacity: _fadeAnimation,
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: DecoratedBox(
+                  decoration:
+                      BoxDecoration(gradient: InvestTradingUi.scaffoldGradient),
+                  child: CustomScrollView(
+                    slivers: [
+                      _buildSliverAppBar(),
+                      SliverPadding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        sliver: SliverList(
+                          delegate: SliverChildListDelegate([
+                            SizedBox(height: 16.h),
+                            _buildHeaderSection(),
+                            SizedBox(height: 20.h),
+                            _buildActivityShortcutStrip(),
+                            SizedBox(height: 24.h),
+                            _buildPopularSection(),
+                            SizedBox(height: 24.h),
+                            _buildAllInvestmentsSection(),
+                            SizedBox(height: 20.h), // Bottom padding
+                          ]),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
                 ),
               ),
-            ),
-          );
-        },
-      ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -327,9 +334,11 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
               }
               return Row(
                 children: [
-                  _buildStatCard('Portfolio Value', portfolioValue, Icons.account_balance_wallet),
+                  _buildStatCard('Portfolio Value', portfolioValue,
+                      Icons.account_balance_wallet),
                   SizedBox(width: 12.w),
-                  _buildStatCard('Total Return', totalReturn, Icons.trending_up),
+                  _buildStatCard(
+                      'Total Return', totalReturn, Icons.trending_up),
                 ],
               );
             },
@@ -512,7 +521,8 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
                   decoration: BoxDecoration(
                     color: option.color.withValues(alpha: 0.14),
                     borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(color: option.color.withValues(alpha: 0.35)),
+                    border:
+                        Border.all(color: option.color.withValues(alpha: 0.35)),
                   ),
                   child: Icon(
                     option.icon,
@@ -529,7 +539,8 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
                   ),
                   child: Text(
                     'POPULAR',
-                    style: InvestTradingUi.eyebrow(option.color).copyWith(fontSize: 9.sp),
+                    style: InvestTradingUi.eyebrow(option.color)
+                        .copyWith(fontSize: 9.sp),
                   ),
                 ),
               ],
@@ -557,7 +568,8 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
               runSpacing: 6.h,
               children: [
                 _buildMetricChip(option.complianceBadge, InvestTradingUi.buy),
-                _buildMetricChip(option.riskBadge, _getRiskColor(option.riskBadge)),
+                _buildMetricChip(
+                    option.riskBadge, _getRiskColor(option.riskBadge)),
               ],
             ),
           ],
@@ -648,12 +660,15 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
                       if (option.route == null) ...[
                         SizedBox(width: 8.w),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8.w, vertical: 3.h),
                           decoration: BoxDecoration(
-                            color: InvestTradingUi.accent.withValues(alpha: 0.12),
+                            color:
+                                InvestTradingUi.accent.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(8.r),
                             border: Border.all(
-                              color: InvestTradingUi.accent.withValues(alpha: 0.35),
+                              color: InvestTradingUi.accent
+                                  .withValues(alpha: 0.35),
                             ),
                           ),
                           child: Text(
@@ -670,7 +685,8 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
                   ),
                   Text(
                     option.subtitle,
-                    style: InvestTradingUi.labelMuted().copyWith(fontSize: 12.sp),
+                    style:
+                        InvestTradingUi.labelMuted().copyWith(fontSize: 12.sp),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -686,8 +702,10 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
                     spacing: 8.w,
                     runSpacing: 4.h,
                     children: [
-                      _buildMetricChip(option.complianceBadge, InvestTradingUi.buy),
-                      _buildMetricChip(option.riskBadge, _getRiskColor(option.riskBadge)),
+                      _buildMetricChip(
+                          option.complianceBadge, InvestTradingUi.buy),
+                      _buildMetricChip(
+                          option.riskBadge, _getRiskColor(option.riskBadge)),
                     ],
                   ),
                 ],
@@ -731,7 +749,8 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
     final r = riskBadge.toLowerCase();
     if (r.contains('high')) return InvestTradingUi.sell;
     if (r.contains('medium')) return const Color(0xFFFB923C);
-    if (r.contains('low') && r.contains('medium')) return InvestTradingUi.accent;
+    if (r.contains('low') && r.contains('medium'))
+      return InvestTradingUi.accent;
     if (r.contains('low')) return InvestTradingUi.buy;
     return InvestTradingUi.textSecondary;
   }
@@ -809,4 +828,4 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
       );
     }
   }
-} 
+}

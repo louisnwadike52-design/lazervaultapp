@@ -212,14 +212,42 @@ class ExchangeValidators {
       final tokens = v.split(RegExp(r'\s+'));
       if (tokens.length < 2) return null;
       const suffixes = {
-        'ltd', 'ltd.', 'limited', 'inc', 'inc.', 'incorporated',
-        'corp', 'corp.', 'corporation', 'llc', 'l.l.c.', 'llp',
-        'gmbh', 'sa', 's.a.', 'bv', 'b.v.', 'nv', 'n.v.', 'ag',
-        'plc', 'pty', 'oy', 'srl', 's.r.l.', 'sp', 'co', 'co.',
-        'company', 'group', 'holdings', 'enterprises', 'trust',
+        'ltd',
+        'ltd.',
+        'limited',
+        'inc',
+        'inc.',
+        'incorporated',
+        'corp',
+        'corp.',
+        'corporation',
+        'llc',
+        'l.l.c.',
+        'llp',
+        'gmbh',
+        'sa',
+        's.a.',
+        'bv',
+        'b.v.',
+        'nv',
+        'n.v.',
+        'ag',
+        'plc',
+        'pty',
+        'oy',
+        'srl',
+        's.r.l.',
+        'sp',
+        'co',
+        'co.',
+        'company',
+        'group',
+        'holdings',
+        'enterprises',
+        'trust',
       };
-      final hasSuffix = tokens.any(
-          (t) => suffixes.contains(t.toLowerCase().replaceAll(',', '')));
+      final hasSuffix = tokens
+          .any((t) => suffixes.contains(t.toLowerCase().replaceAll(',', '')));
       if (!hasSuffix) {
         return 'Enter the registered business name (e.g. Acme Ltd, Acme Inc).';
       }

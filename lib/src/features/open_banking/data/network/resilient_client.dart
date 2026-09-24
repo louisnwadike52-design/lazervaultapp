@@ -122,7 +122,8 @@ class RequestRetrying extends RequestEvent {
   final int maxAttempts;
   final Duration delay;
   final String reason;
-  RequestRetrying(this.url, this.attempt, this.maxAttempts, this.delay, this.reason);
+  RequestRetrying(
+      this.url, this.attempt, this.maxAttempts, this.delay, this.reason);
 }
 
 class RequestSucceeded extends RequestEvent {
@@ -197,9 +198,7 @@ class ResilientBankingClient {
     RetryConfig? retryConfig,
   }) async {
     return _executeWithRetry(
-      () => _client
-          .post(url, headers: headers, body: body)
-          .timeout(_timeout),
+      () => _client.post(url, headers: headers, body: body).timeout(_timeout),
       url.toString(),
       'POST',
       retryConfig ?? _defaultRetryConfig,
@@ -214,9 +213,7 @@ class ResilientBankingClient {
     RetryConfig? retryConfig,
   }) async {
     return _executeWithRetry(
-      () => _client
-          .put(url, headers: headers, body: body)
-          .timeout(_timeout),
+      () => _client.put(url, headers: headers, body: body).timeout(_timeout),
       url.toString(),
       'PUT',
       retryConfig ?? _defaultRetryConfig,
@@ -246,7 +243,8 @@ class ResilientBankingClient {
   ) async {
     // Check circuit breaker
     if (!_circuitBreaker.allowRequest()) {
-      _onEvent?.call(CircuitBreakerOpened('Service is temporarily unavailable'));
+      _onEvent
+          ?.call(CircuitBreakerOpened('Service is temporarily unavailable'));
       throw const ServiceUnavailableException(
         message: 'Service circuit breaker is open',
       );

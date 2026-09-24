@@ -37,7 +37,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../fcy_account/presentation/fcy_kyc_gate.dart';
 part 'exchange_home_screen_widgets.dart';
 
-
 class ExchangeHomeScreen extends StatefulWidget {
   const ExchangeHomeScreen({super.key});
 
@@ -88,10 +87,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
     if (args is Map) {
       final from = args['fromCurrency'] as String?;
       final to = args['toCurrency'] as String?;
-      if (from != null &&
-          to != null &&
-          from.isNotEmpty &&
-          to.isNotEmpty) {
+      if (from != null && to != null && from.isNotEmpty && to.isNotEmpty) {
         cubit.setCurrencyPair(from, to);
         hasExplicitPair = true;
       }
@@ -104,9 +100,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
       }
       final repeatPrefill = args['repeatPrefill'] == true;
       final amt = (args['amount'] as num?)?.toDouble();
-      if ((repeatPrefill || modeArg == 'convert') &&
-          amt != null &&
-          amt > 0) {
+      if ((repeatPrefill || modeArg == 'convert') && amt != null && amt > 0) {
         isRepeatPrefill = true;
         // Set the field BEFORE the listener is attached, and push the amount to
         // the cubit directly, so the "Convert Now" button enables once the rate
@@ -878,27 +872,26 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
         ),
         body: AppGradientBackground(
           child: BlocConsumer<ExchangeCubit, ExchangeState>(
-          listener: (context, state) {
-            // Rate staleness is enforced server-side now. ExchangeRateExpired
-            // events (if any older code paths still emit them) are ignored.
-          },
-          builder: (context, state) {
-            if (state is ExchangeLoading) {
-              return const Center(
-                  child: LazerVaultLoader.small());
-            }
+            listener: (context, state) {
+              // Rate staleness is enforced server-side now. ExchangeRateExpired
+              // events (if any older code paths still emit them) are ignored.
+            },
+            builder: (context, state) {
+              if (state is ExchangeLoading) {
+                return const Center(child: LazerVaultLoader.small());
+              }
 
-            if (state is ExchangeError) {
-              return _buildErrorState(state.message);
-            }
+              if (state is ExchangeError) {
+                return _buildErrorState(state.message);
+              }
 
-            if (state is ExchangeHomeWithRate) {
-              return _buildContent(state);
-            }
+              if (state is ExchangeHomeWithRate) {
+                return _buildContent(state);
+              }
 
-            return const SizedBox.shrink();
-          },
-        ),
+              return const SizedBox.shrink();
+            },
+          ),
         ),
       ),
     );
@@ -976,131 +969,132 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                 if (next != _mode) _onModeChanged(next);
               },
               child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Mode toggle
-                  ExchangeModeToggle(
-                    selectedMode: _mode,
-                    onModeChanged: _onModeChanged,
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Currency pair selector
-                  CurrencyPairSelector(
-                    fromCurrency: cubit.fromCurrency,
-                    toCurrency: cubit.toCurrency,
-                    onFromTap: () => _showCurrencyPicker(true),
-                    onToTap: () => _showCurrencyPicker(false),
-                    onSwap: _onSwapCurrencies,
-                  ),
-                  const SizedBox(height: 20),
-
-                  // You send — amount input
-                  _buildAmountCard(
-                    label: 'You send',
-                    currencyCode: cubit.fromCurrency,
-                    controller: _amountController,
-                    focusNode: _amountFocusNode,
-                    isEditable: true,
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Quick amount buttons
-                  QuickAmountButtons(
-                    currencyCode: cubit.fromCurrency,
-                    onAmountSelected: _onQuickAmount,
-                    selectedAmount: amount,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // They receive — read-only
-                  if (rate != null)
-                    _buildAmountCard(
-                      label: _mode == ExchangeMode.convert
-                          ? 'You receive'
-                          : 'They receive',
-                      currencyCode: cubit.toCurrency,
-                      displayAmount: convertedAmount,
-                      isEditable: false,
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Mode toggle
+                    ExchangeModeToggle(
+                      selectedMode: _mode,
+                      onModeChanged: _onModeChanged,
                     ),
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 20),
 
-                  // Indicative rate chip — no countdown, no expiry. The final
-                  // rate is captured server-side at transaction time.
-                  if (rate != null)
-                    _buildIndicativeRateChip(rate),
-                  if (rate == null && amount > 0)
-                    Center(
-                      child: TextButton.icon(
-                        onPressed: _fetchRate,
-                        icon: const Icon(Icons.refresh,
-                            color: ExchangeTheme.primary, size: 16),
-                        label: const Text(
-                          'Get exchange rate',
-                          style: TextStyle(
-                              color: ExchangeTheme.primary, fontSize: 13),
+                    // Currency pair selector
+                    CurrencyPairSelector(
+                      fromCurrency: cubit.fromCurrency,
+                      toCurrency: cubit.toCurrency,
+                      onFromTap: () => _showCurrencyPicker(true),
+                      onToTap: () => _showCurrencyPicker(false),
+                      onSwap: _onSwapCurrencies,
+                    ),
+                    const SizedBox(height: 20),
+
+                    // You send — amount input
+                    _buildAmountCard(
+                      label: 'You send',
+                      currencyCode: cubit.fromCurrency,
+                      controller: _amountController,
+                      focusNode: _amountFocusNode,
+                      isEditable: true,
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Quick amount buttons
+                    QuickAmountButtons(
+                      currencyCode: cubit.fromCurrency,
+                      onAmountSelected: _onQuickAmount,
+                      selectedAmount: amount,
+                    ),
+                    const SizedBox(height: 16),
+
+                    // They receive — read-only
+                    if (rate != null)
+                      _buildAmountCard(
+                        label: _mode == ExchangeMode.convert
+                            ? 'You receive'
+                            : 'They receive',
+                        currencyCode: cubit.toCurrency,
+                        displayAmount: convertedAmount,
+                        isEditable: false,
+                      ),
+                    const SizedBox(height: 16),
+
+                    // Indicative rate chip — no countdown, no expiry. The final
+                    // rate is captured server-side at transaction time.
+                    if (rate != null) _buildIndicativeRateChip(rate),
+                    if (rate == null && amount > 0)
+                      Center(
+                        child: TextButton.icon(
+                          onPressed: _fetchRate,
+                          icon: const Icon(Icons.refresh,
+                              color: ExchangeTheme.primary, size: 16),
+                          label: const Text(
+                            'Get exchange rate',
+                            style: TextStyle(
+                                color: ExchangeTheme.primary, fontSize: 13),
+                          ),
                         ),
                       ),
-                    ),
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                  // Fee breakdown
-                  if (rate != null && amount > 0)
-                    FeeBreakdownWidget(
-                      rate: rate,
-                      amount: amount,
-                      convertedAmount: convertedAmount,
-                    ),
-                  const SizedBox(height: 24),
+                    // Fee breakdown
+                    if (rate != null && amount > 0)
+                      FeeBreakdownWidget(
+                        rate: rate,
+                        amount: amount,
+                        convertedAmount: convertedAmount,
+                      ),
+                    const SizedBox(height: 24),
 
-                  // Fee-paid history preview — last 3 completed exchanges
-                  // of the active tab. Conversion tab shows only same-
-                  // user wallet conversions; Send Abroad tab shows only
-                  // cross-border Flutterwave transfers. Legacy
-                  // TransactionType.exchange rows (pre-dating the split)
-                  // surface on both tabs so nothing disappears.
-                  () {
-                    final isConversion = _mode == ExchangeMode.convert;
-                    final visibleRecent = state.recentTransactions
-                        .where((tx) => tx.type.matchesMode(isConversion: isConversion))
-                        .take(3)
-                        .toList();
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildSectionHeader(
-                          'Recent ${isConversion ? 'Conversions' : 'International Transfers'}',
-                          visibleRecent.isNotEmpty
-                              ? () => Get.toNamed(AppRoutes.exchangeHistory)
-                              : null,
-                        ),
-                        const SizedBox(height: 12),
-                        if (visibleRecent.isEmpty)
-                          _buildEmptyTransactions()
-                        else
-                          ...visibleRecent.map((tx) => Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
-                                child: ExchangeTransactionTile(
-                                  transaction: tx,
-                                  // Open the actions bottom sheet (View /
-                                  // Repeat / Share / Report) just like the
-                                  // history screen. Going straight to the
-                                  // detail page skipped those actions for
-                                  // no good reason.
-                                  onTap: () => ExchangeHistoryActionsSheet
-                                      .show(context, tx),
-                                ),
-                              )),
-                      ],
-                    );
-                  }(),
-                  // Bottom padding for scroll
-                  const SizedBox(height: 80),
-                ],
-              ),
+                    // Fee-paid history preview — last 3 completed exchanges
+                    // of the active tab. Conversion tab shows only same-
+                    // user wallet conversions; Send Abroad tab shows only
+                    // cross-border Flutterwave transfers. Legacy
+                    // TransactionType.exchange rows (pre-dating the split)
+                    // surface on both tabs so nothing disappears.
+                    () {
+                      final isConversion = _mode == ExchangeMode.convert;
+                      final visibleRecent = state.recentTransactions
+                          .where((tx) =>
+                              tx.type.matchesMode(isConversion: isConversion))
+                          .take(3)
+                          .toList();
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildSectionHeader(
+                            'Recent ${isConversion ? 'Conversions' : 'International Transfers'}',
+                            visibleRecent.isNotEmpty
+                                ? () => Get.toNamed(AppRoutes.exchangeHistory)
+                                : null,
+                          ),
+                          const SizedBox(height: 12),
+                          if (visibleRecent.isEmpty)
+                            _buildEmptyTransactions()
+                          else
+                            ...visibleRecent.map((tx) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: ExchangeTransactionTile(
+                                    transaction: tx,
+                                    // Open the actions bottom sheet (View /
+                                    // Repeat / Share / Report) just like the
+                                    // history screen. Going straight to the
+                                    // detail page skipped those actions for
+                                    // no good reason.
+                                    onTap: () =>
+                                        ExchangeHistoryActionsSheet.show(
+                                            context, tx),
+                                  ),
+                                )),
+                        ],
+                      );
+                    }(),
+                    // Bottom padding for scroll
+                    const SizedBox(height: 80),
+                  ],
+                ),
               ),
             ),
           ),
@@ -1174,8 +1168,8 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
             const SizedBox(width: 10),
             const Text(
               'Final rate locked at transfer',
-              style: TextStyle(
-                  color: ExchangeTheme.textSecondary, fontSize: 11),
+              style:
+                  TextStyle(color: ExchangeTheme.textSecondary, fontSize: 11),
             ),
             const SizedBox(width: 6),
             InkWell(

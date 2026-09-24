@@ -88,8 +88,8 @@ class PlanKanbanView extends StatelessWidget {
                 Container(
                   width: 10.w,
                   height: 10.w,
-                  decoration:
-                      BoxDecoration(color: status.color, shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                      color: status.color, shape: BoxShape.circle),
                 ),
                 SizedBox(width: 8.w),
                 Text(
@@ -243,8 +243,7 @@ class PlanKanbanView extends StatelessWidget {
                       SizedBox(width: 8.w),
                       Icon(Icons.event_rounded,
                           size: 12.sp,
-                          color:
-                              overdue ? const Color(0xFFEF4444) : _muted),
+                          color: overdue ? const Color(0xFFEF4444) : _muted),
                       SizedBox(width: 3.w),
                       Text(
                         DateFormat('MMM d').format(task.dueDate!),
@@ -269,8 +268,7 @@ class PlanKanbanView extends StatelessWidget {
                       if (_contactFor(task) != null)
                         TaskContactChip(
                           contact: _contactFor(task)!,
-                          onTap: () =>
-                              onOpenContact?.call(_contactFor(task)!),
+                          onTap: () => onOpenContact?.call(_contactFor(task)!),
                         ),
                     ],
                   ),

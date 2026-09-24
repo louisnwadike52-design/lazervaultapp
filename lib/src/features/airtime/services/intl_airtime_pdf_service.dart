@@ -154,7 +154,8 @@ class IntlAirtimePdfService {
                 if (logo != null)
                   pw.Image(logo, width: 120)
                 else
-                  pw.Text('LazerVault', style: _style(fontSize: 20, isBold: true)),
+                  pw.Text('LazerVault',
+                      style: _style(fontSize: 20, isBold: true)),
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.end,
                   children: [
@@ -201,7 +202,8 @@ class IntlAirtimePdfService {
               decoration: pw.BoxDecoration(
                 color: const PdfColor.fromInt(0xFFF8FAFC),
                 borderRadius: pw.BorderRadius.circular(8),
-                border: pw.Border.all(color: const PdfColor.fromInt(0xFFE2E8F0)),
+                border:
+                    pw.Border.all(color: const PdfColor.fromInt(0xFFE2E8F0)),
               ),
               child: pw.Column(
                 children: [
@@ -238,7 +240,8 @@ class IntlAirtimePdfService {
             pw.Divider(color: const PdfColor.fromInt(0xFFE2E8F0)),
             if (data.phoneNumber.isNotEmpty)
               _row('Recipient', data.phoneNumber, isBold: true),
-            if (data.operatorName.isNotEmpty) _row('Network', data.operatorName),
+            if (data.operatorName.isNotEmpty)
+              _row('Network', data.operatorName),
             if (data.countryName.isNotEmpty)
               _row('Destination', data.countryName),
             if (data.fxRateUsed > 0 && data.deliveredCurrency.isNotEmpty)
@@ -291,9 +294,8 @@ class IntlAirtimePdfService {
   /// so it survives SMS/WhatsApp transcoding intact.
   static Future<void> shareReceipt(IntlAirtimeReceiptData data) async {
     final file = await generateReceipt(data);
-    final destination = data.countryName.isNotEmpty
-        ? ' (${_ascii(data.countryName)})'
-        : '';
+    final destination =
+        data.countryName.isNotEmpty ? ' (${_ascii(data.countryName)})' : '';
     await SharePlus.instance.share(ShareParams(
       // iOS requires a non-zero popover anchor — CGRectZero throws.
       sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),

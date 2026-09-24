@@ -31,9 +31,8 @@ class LazerVaultUserMatchModel {
       userId: proto.userId,
       username: proto.username,
       name: proto.name,
-      profilePhotoUrl: proto.profilePhotoUrl.isNotEmpty
-          ? proto.profilePhotoUrl
-          : null,
+      profilePhotoUrl:
+          proto.profilePhotoUrl.isNotEmpty ? proto.profilePhotoUrl : null,
       isVerified: proto.isVerified,
       matchedBy: proto.matchedBy,
       matchedValue: proto.matchedValue,

@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:equatable/equatable.dart';
 part 'network_provider_widgets.dart';
 
-
 extension NetworkProviderTypeExtension on NetworkProviderType {
   String get displayName {
     switch (this) {
@@ -16,7 +15,7 @@ extension NetworkProviderTypeExtension on NetworkProviderType {
       case NetworkProviderType.etisalat:
       case NetworkProviderType.ninemobile:
         return '9mobile';
-        
+
       // US providers
       case NetworkProviderType.verizon:
         return 'Verizon';
@@ -26,7 +25,7 @@ extension NetworkProviderTypeExtension on NetworkProviderType {
         return 'T-Mobile';
       case NetworkProviderType.sprint:
         return 'Sprint';
-        
+
       // UK providers
       case NetworkProviderType.ee:
         return 'EE';
@@ -36,7 +35,7 @@ extension NetworkProviderTypeExtension on NetworkProviderType {
         return 'O2';
       case NetworkProviderType.three:
         return 'Three UK';
-        
+
       // Indian providers
       case NetworkProviderType.jio:
         return 'Jio';
@@ -46,7 +45,7 @@ extension NetworkProviderTypeExtension on NetworkProviderType {
         return 'Vi (Vodafone Idea)';
       case NetworkProviderType.bsnl:
         return 'BSNL';
-        
+
       // South African providers
       case NetworkProviderType.vodacomSa:
         return 'Vodacom';
@@ -56,7 +55,7 @@ extension NetworkProviderTypeExtension on NetworkProviderType {
         return 'Cell C';
       case NetworkProviderType.telkomMobile:
         return 'Telkom Mobile';
-        
+
       // Kenyan providers
       case NetworkProviderType.safaricom:
         return 'Safaricom';
@@ -64,7 +63,7 @@ extension NetworkProviderTypeExtension on NetworkProviderType {
         return 'Airtel Kenya';
       case NetworkProviderType.telkomKenya:
         return 'Telkom Kenya';
-        
+
       // Ghanaian providers
       case NetworkProviderType.mtnGhana:
         return 'MTN Ghana';
@@ -322,15 +321,39 @@ extension NetworkProviderTypeExtension on NetworkProviderType {
     switch (this) {
       // Nigerian providers
       case NetworkProviderType.mtn:
-        return ['0803', '0806', '0813', '0814', '0816', '0903', '0906', '0913', '0916', '0703', '0706', '0704'];
+        return [
+          '0803',
+          '0806',
+          '0813',
+          '0814',
+          '0816',
+          '0903',
+          '0906',
+          '0913',
+          '0916',
+          '0703',
+          '0706',
+          '0704'
+        ];
       case NetworkProviderType.airtel:
-        return ['0802', '0808', '0812', '0701', '0708', '0901', '0902', '0904', '0907', '0912'];
+        return [
+          '0802',
+          '0808',
+          '0812',
+          '0701',
+          '0708',
+          '0901',
+          '0902',
+          '0904',
+          '0907',
+          '0912'
+        ];
       case NetworkProviderType.glo:
         return ['0805', '0807', '0815', '0811', '0705', '0905', '0915'];
       case NetworkProviderType.etisalat:
       case NetworkProviderType.ninemobile:
         return ['0809', '0817', '0818', '0819', '0909', '0908'];
-        
+
       // US providers (area codes are different, using sample patterns)
       case NetworkProviderType.verizon:
         return ['212', '646', '917', '347', '718', '929', '332'];
@@ -340,7 +363,7 @@ extension NetworkProviderTypeExtension on NetworkProviderType {
         return ['206', '253', '360', '425', '564', '202', '771'];
       case NetworkProviderType.sprint:
         return ['316', '620', '785', '913', '785', '316', '620'];
-        
+
       // UK providers
       case NetworkProviderType.ee:
         return ['07700', '07701', '07702', '07703', '07704'];
@@ -350,7 +373,7 @@ extension NetworkProviderTypeExtension on NetworkProviderType {
         return ['07720', '07721', '07722', '07723', '07724'];
       case NetworkProviderType.three:
         return ['07730', '07731', '07732', '07733', '07734'];
-        
+
       // Indian providers
       case NetworkProviderType.jio:
         return ['8999', '8998', '8997', '7999', '7998', '6999'];
@@ -360,7 +383,7 @@ extension NetworkProviderTypeExtension on NetworkProviderType {
         return ['9899', '9898', '9897', '8899', '8898', '7899'];
       case NetworkProviderType.bsnl:
         return ['9799', '9798', '9797', '8799', '8798', '7799'];
-        
+
       // South African providers
       case NetworkProviderType.vodacomSa:
         return ['082', '083', '084', '060', '061', '062'];
@@ -370,7 +393,7 @@ extension NetworkProviderTypeExtension on NetworkProviderType {
         return ['084', '074', '076', '078', '079', '080'];
       case NetworkProviderType.telkomMobile:
         return ['081', '082', '083', '084', '085', '086'];
-        
+
       // Kenyan providers
       case NetworkProviderType.safaricom:
         return ['0722', '0721', '0720', '0799', '0798', '0797'];
@@ -378,7 +401,7 @@ extension NetworkProviderTypeExtension on NetworkProviderType {
         return ['0733', '0734', '0735', '0736', '0737', '0738'];
       case NetworkProviderType.telkomKenya:
         return ['0770', '0771', '0772', '0773', '0774', '0775'];
-        
+
       // Ghanaian providers
       case NetworkProviderType.mtnGhana:
         return ['0244', '0245', '0246', '0247', '0248', '0249'];
@@ -388,4 +411,4 @@ extension NetworkProviderTypeExtension on NetworkProviderType {
         return ['0277', '0278', '0279', '0270', '0271', '0272'];
     }
   }
-} 
+}

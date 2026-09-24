@@ -48,8 +48,18 @@ String linkedBalanceRefreshFailureMessage(Object error) {
 mixin LinkedBalanceRefreshMixin<T extends StatefulWidget>
     on State<T>, TransactionPinMixin<T> {
   static const List<String> _monthsShort = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec'
   ];
 
   /// Short, truncatable "last updated" label for a linked-bank card. Relative for
@@ -92,7 +102,8 @@ mixin LinkedBalanceRefreshMixin<T extends StatefulWidget>
     }
 
     final feeNaira = feeKobo / 100.0;
-    final txnId = 'refresh-${account.id}-${DateTime.now().millisecondsSinceEpoch}';
+    final txnId =
+        'refresh-${account.id}-${DateTime.now().millisecondsSinceEpoch}';
     await validateTransactionPin(
       context: context,
       transactionId: txnId,

@@ -1,6 +1,7 @@
 import '../../domain/entities/bill_payment_entity.dart';
 import 'package:lazervault/src/generated/electricity_bill.pb.dart' as pb;
-import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart' as $timestamp;
+import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart'
+    as $timestamp;
 
 class BillPaymentModel extends BillPaymentEntity {
   const BillPaymentModel({
@@ -40,7 +41,8 @@ class BillPaymentModel extends BillPaymentEntity {
       providerName: proto.providerName,
       meterNumber: proto.meterNumber,
       customerName: proto.customerName,
-      customerAddress: proto.hasCustomerAddress() ? proto.customerAddress : null,
+      customerAddress:
+          proto.hasCustomerAddress() ? proto.customerAddress : null,
       meterType: MeterTypeExtension.fromString(proto.meterType),
       amount: proto.amount,
       currency: proto.currency,
@@ -51,18 +53,19 @@ class BillPaymentModel extends BillPaymentEntity {
       units: proto.hasUnits() ? proto.units : null,
       paymentGateway: proto.paymentGateway,
       referenceNumber: proto.referenceNumber,
-      gatewayReference: proto.hasGatewayReference() ? proto.gatewayReference : null,
+      gatewayReference:
+          proto.hasGatewayReference() ? proto.gatewayReference : null,
       errorMessage: proto.hasErrorMessage() ? proto.errorMessage : null,
       createdAt: proto.createdAt.toDateTime(),
       updatedAt: proto.updatedAt.toDateTime(),
-      completedAt: proto.hasCompletedAt() ? proto.completedAt.toDateTime() : null,
+      completedAt:
+          proto.hasCompletedAt() ? proto.completedAt.toDateTime() : null,
       failedAt: proto.hasFailedAt() ? proto.failedAt.toDateTime() : null,
       // proto3 scalars are non-nullable; normalise the default "" back
       // to `null` so the entity's refund-aware getters read correctly.
-      refundSource:
-          proto.hasRefundSource() && proto.refundSource.isNotEmpty
-              ? proto.refundSource
-              : null,
+      refundSource: proto.hasRefundSource() && proto.refundSource.isNotEmpty
+          ? proto.refundSource
+          : null,
     );
   }
 

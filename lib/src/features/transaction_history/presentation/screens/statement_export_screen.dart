@@ -25,7 +25,6 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:url_launcher/url_launcher.dart';
 part 'statement_export_screen_widgets.dart';
 
-
 /// In-memory list of recently exported statements. Kept on the screen
 /// because the spec asks for a "Recent statements" surface in the
 /// Documents tab; persisting would require schema + sync, which is
@@ -35,7 +34,8 @@ final List<DocumentEntity> _recentStatements = <DocumentEntity>[];
 
 /// Read-only view of the in-memory recent statements list. Other widgets
 /// (DocumentsTab) read this to render the same list without re-fetching.
-List<DocumentEntity> getRecentStatements() => List.unmodifiable(_recentStatements);
+List<DocumentEntity> getRecentStatements() =>
+    List.unmodifiable(_recentStatements);
 
 class StatementExportScreen extends StatefulWidget {
   /// initialAccountId pre-selects the account when the screen is opened
@@ -78,7 +78,9 @@ class _StatementExportScreenState extends State<StatementExportScreen> {
       final auth = context.read<AuthenticationCubit>();
       final userId = auth.userId;
       if (userId != null && userId.isNotEmpty) {
-        context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(userId: userId);
+        context
+            .read<AccountCardsSummaryCubit>()
+            .fetchAccountSummaries(userId: userId);
       }
     });
   }
@@ -135,7 +137,8 @@ class _StatementExportScreenState extends State<StatementExportScreen> {
     }
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok) {
-      _snack('Could not open the statement. Copy the URL from the receipt.', isError: true);
+      _snack('Could not open the statement. Copy the URL from the receipt.',
+          isError: true);
     }
   }
 
@@ -143,7 +146,8 @@ class _StatementExportScreenState extends State<StatementExportScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(msg, style: TextStyle(fontSize: 13.sp)),
-      backgroundColor: isError ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+      backgroundColor:
+          isError ? const Color(0xFFEF4444) : const Color(0xFF10B981),
       behavior: SnackBarBehavior.floating,
     ));
   }
@@ -235,7 +239,8 @@ class _StatementExportScreenState extends State<StatementExportScreen> {
   Widget _buildAccountSelector() {
     return BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
       builder: (context, state) {
-        if (state is AccountCardsSummaryLoading || state is AccountCardsSummaryInitial) {
+        if (state is AccountCardsSummaryLoading ||
+            state is AccountCardsSummaryInitial) {
           return Container(
             padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
@@ -254,7 +259,9 @@ class _StatementExportScreenState extends State<StatementExportScreen> {
         }
         final accounts = state is AccountCardsSummaryLoaded
             ? state.accountSummaries
-            : (state is AccountBalanceUpdated ? state.accountSummaries : <AccountSummaryEntity>[]);
+            : (state is AccountBalanceUpdated
+                ? state.accountSummaries
+                : <AccountSummaryEntity>[]);
         // Default to the primary / first account if nothing pre-selected.
         if (_selectedAccountId == null && accounts.isNotEmpty) {
           final primary = accounts.firstWhere(
@@ -307,7 +314,9 @@ class _StatementExportScreenState extends State<StatementExportScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: selected ? const Color(0xFF3B82F6) : const Color(0xFF4B5563),
+                  color: selected
+                      ? const Color(0xFF3B82F6)
+                      : const Color(0xFF4B5563),
                   width: 2,
                 ),
                 color: selected ? const Color(0xFF3B82F6) : Colors.transparent,
@@ -371,7 +380,8 @@ class _StatementExportScreenState extends State<StatementExportScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20.r),
                 side: BorderSide(
-                  color: selected ? Colors.transparent : const Color(0xFF2D2D2D),
+                  color:
+                      selected ? Colors.transparent : const Color(0xFF2D2D2D),
                 ),
               ),
             );
@@ -381,9 +391,13 @@ class _StatementExportScreenState extends State<StatementExportScreen> {
           SizedBox(height: 14.h),
           Row(
             children: [
-              Expanded(child: _dateField('From', _customStart, (d) => setState(() => _customStart = d))),
+              Expanded(
+                  child: _dateField('From', _customStart,
+                      (d) => setState(() => _customStart = d))),
               SizedBox(width: 12.w),
-              Expanded(child: _dateField('To', _customEnd, (d) => setState(() => _customEnd = d))),
+              Expanded(
+                  child: _dateField(
+                      'To', _customEnd, (d) => setState(() => _customEnd = d))),
             ],
           ),
         ],
@@ -399,7 +413,8 @@ class _StatementExportScreenState extends State<StatementExportScreen> {
     );
   }
 
-  Widget _dateField(String label, DateTime value, ValueChanged<DateTime> onChange) {
+  Widget _dateField(
+      String label, DateTime value, ValueChanged<DateTime> onChange) {
     return InkWell(
       onTap: () async {
         final picked = await showDatePicker(
@@ -431,10 +446,15 @@ class _StatementExportScreenState extends State<StatementExportScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
+            Text(label,
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
             SizedBox(height: 4.h),
             Text(_fmtShortDate(value),
-                style: TextStyle(color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600)),
           ],
         ),
       ),
@@ -450,18 +470,27 @@ class _StatementExportScreenState extends State<StatementExportScreen> {
         SizedBox(height: 10.h),
         Row(
           children: [
-            Expanded(child: _formatTile(DocumentFormat.pdf, 'PDF', Icons.picture_as_pdf_outlined,
-                'Branded, printable receipt')),
+            Expanded(
+                child: _formatTile(
+                    DocumentFormat.pdf,
+                    'PDF',
+                    Icons.picture_as_pdf_outlined,
+                    'Branded, printable receipt')),
             SizedBox(width: 12.w),
-            Expanded(child: _formatTile(DocumentFormat.csv, 'CSV', Icons.table_chart_outlined,
-                'Spreadsheet-friendly, RFC-4180')),
+            Expanded(
+                child: _formatTile(
+                    DocumentFormat.csv,
+                    'CSV',
+                    Icons.table_chart_outlined,
+                    'Spreadsheet-friendly, RFC-4180')),
           ],
         ),
       ],
     );
   }
 
-  Widget _formatTile(DocumentFormat f, String label, IconData icon, String hint) {
+  Widget _formatTile(
+      DocumentFormat f, String label, IconData icon, String hint) {
     final selected = f == _format;
     return InkWell(
       onTap: () => setState(() => _format = f),
@@ -479,7 +508,11 @@ class _StatementExportScreenState extends State<StatementExportScreen> {
         ),
         child: Row(
           children: [
-            Icon(icon, color: selected ? const Color(0xFF3B82F6) : const Color(0xFF9CA3AF), size: 22.sp),
+            Icon(icon,
+                color: selected
+                    ? const Color(0xFF3B82F6)
+                    : const Color(0xFF9CA3AF),
+                size: 22.sp),
             SizedBox(width: 12.w),
             Expanded(
               child: Column(
@@ -487,10 +520,13 @@ class _StatementExportScreenState extends State<StatementExportScreen> {
                 children: [
                   Text(label,
                       style: TextStyle(
-                          color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                          color: Colors.white,
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600)),
                   SizedBox(height: 2.h),
                   Text(hint,
-                      style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
+                      style: TextStyle(
+                          color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
                 ],
               ),
             ),
@@ -510,7 +546,8 @@ class _StatementExportScreenState extends State<StatementExportScreen> {
           backgroundColor: const Color(0xFF3B82F6),
           foregroundColor: Colors.white,
           padding: EdgeInsets.symmetric(vertical: 14.h),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         ),
         child: isBusy
             ? const LazerVaultLoader.small()
@@ -527,12 +564,14 @@ class _StatementExportScreenState extends State<StatementExportScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFFEF4444).withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+        border:
+            Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 18.sp),
+          Icon(Icons.error_outline,
+              color: const Color(0xFFEF4444), size: 18.sp),
           SizedBox(width: 10.w),
           Expanded(
             child: Column(
@@ -540,10 +579,13 @@ class _StatementExportScreenState extends State<StatementExportScreen> {
               children: [
                 Text('Statement failed',
                     style: TextStyle(
-                        color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                        color: Colors.white,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600)),
                 SizedBox(height: 4.h),
                 Text(err.message,
-                    style: TextStyle(color: const Color(0xFFFCA5A5), fontSize: 12.sp)),
+                    style: TextStyle(
+                        color: const Color(0xFFFCA5A5), fontSize: 12.sp)),
                 SizedBox(height: 10.h),
                 Align(
                   alignment: Alignment.centerLeft,
@@ -551,7 +593,8 @@ class _StatementExportScreenState extends State<StatementExportScreen> {
                     style: TextButton.styleFrom(
                       backgroundColor: const Color(0xFFEF4444),
                       foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
                     ),
                     onPressed: _onGenerate,
                     icon: Icon(Icons.refresh, size: 16.sp),
@@ -614,12 +657,14 @@ class _StatementExportScreenState extends State<StatementExportScreen> {
                   Text(
                     '${doc.format.name.toUpperCase()} • ${doc.transactionCount ?? 0} txns'
                     '${doc.cached ? ' • cached' : ''}',
-                    style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 11.sp),
+                    style: TextStyle(
+                        color: const Color(0xFF9CA3AF), fontSize: 11.sp),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.open_in_new, size: 18.sp, color: const Color(0xFF9CA3AF)),
+            Icon(Icons.open_in_new,
+                size: 18.sp, color: const Color(0xFF9CA3AF)),
           ],
         ),
       ),
@@ -681,7 +726,8 @@ class _StatementExportScreenState extends State<StatementExportScreen> {
             if (doc.generatedAt != null)
               _kv('Generated', _fmtShortDateTime(doc.generatedAt!)),
             if (doc.sha256 != null && doc.sha256!.isNotEmpty)
-              _kv('Integrity (SHA-256)', _shortSha(doc.sha256!), copy: doc.sha256),
+              _kv('Integrity (SHA-256)', _shortSha(doc.sha256!),
+                  copy: doc.sha256),
             SizedBox(height: 18.h),
             SizedBox(
               width: double.infinity,
@@ -692,7 +738,8 @@ class _StatementExportScreenState extends State<StatementExportScreen> {
                 },
                 icon: const Icon(Icons.download_outlined),
                 label: Text('Open / Download',
-                    style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                    style: TextStyle(
+                        fontSize: 14.sp, fontWeight: FontWeight.w600)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF3B82F6),
                   foregroundColor: Colors.white,
@@ -717,7 +764,8 @@ class _StatementExportScreenState extends State<StatementExportScreen> {
           SizedBox(
             width: 130.w,
             child: Text(k,
-                style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
           ),
           Expanded(
             child: Text(

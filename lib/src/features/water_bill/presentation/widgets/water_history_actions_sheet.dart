@@ -55,8 +55,7 @@ class WaterHistoryActionsSheet {
         for (final b in list) {
           if (b.accountNumber == accountNumber &&
               (providerCode.isEmpty ||
-                  b.providerCode.toUpperCase() ==
-                      providerCode.toUpperCase())) {
+                  b.providerCode.toUpperCase() == providerCode.toUpperCase())) {
             existingId = b.id;
             existingNickname = b.nickname;
             existingBeneficiary = b;
@@ -75,8 +74,7 @@ class WaterHistoryActionsSheet {
     return BillHistoryActionsSheet.show(
       context,
       title: accountNumber.isEmpty ? 'Water payment' : accountNumber,
-      subtitle:
-          '₦${p.amount.toStringAsFixed(2)} · ${_statusLabel(p)}',
+      subtitle: '₦${p.amount.toStringAsFixed(2)} · ${_statusLabel(p)}',
       actions: [
         BillHistoryAction(
           icon: Icons.receipt_long,
@@ -110,9 +108,8 @@ class WaterHistoryActionsSheet {
             if (p.amount > 0) {
               final validation = CustomerValidationResult(
                 customerNumber: accountNumber,
-                customerName: p.customerName.isNotEmpty
-                    ? p.customerName
-                    : accountNumber,
+                customerName:
+                    p.customerName.isNotEmpty ? p.customerName : accountNumber,
                 isValid: true,
               );
               Get.toNamed(
@@ -213,8 +210,7 @@ class WaterHistoryActionsSheet {
                 ? Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle,
-                          color: _success, size: 16.sp),
+                      Icon(Icons.check_circle, color: _success, size: 16.sp),
                       SizedBox(width: 4.w),
                       Text(
                         'Saved',
@@ -253,7 +249,6 @@ class WaterHistoryActionsSheet {
   /// Save-gate for Reminder + Auto-Pay — both features require a
   /// persisted beneficiary. Returns true when already saved or saved
   /// inline; false when the user dismisses the sheet.
-
 
   /// Minimal `WaterProviderEntity` assembled from history-row data.
   /// The customer-input screen reads `providerCode` + `providerName`;

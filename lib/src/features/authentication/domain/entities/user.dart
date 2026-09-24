@@ -19,6 +19,7 @@ class User extends Equatable {
   final String? country;
   final String? profilePicture;
   final String? signupStatus;
+
   /// Server-tracked next step in the signup flow. Mirrors
   /// `users.current_signup_step` on the backend. Non-null + non-empty
   /// when the signup is INCOMPLETE — used by the post-login router to

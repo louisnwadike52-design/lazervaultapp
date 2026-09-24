@@ -174,7 +174,8 @@ class CryptoDetailsLoaded extends CryptoState {
   });
 
   @override
-  List<Object> get props => [crypto, priceHistory, selectedTimeframe, news, isLoadingNews];
+  List<Object> get props =>
+      [crypto, priceHistory, selectedTimeframe, news, isLoadingNews];
 
   CryptoDetailsLoaded copyWith({
     Crypto? crypto,
@@ -366,7 +367,8 @@ class SwapCompleted extends CryptoState {
 /// SwapFailed surfaces categorised failure reasons from the saga.
 class SwapFailed extends CryptoState {
   final String transactionId;
-  final String reason; // quote_expired | swap_failed | swap_reversed | provider_error | other
+  final String
+      reason; // quote_expired | swap_failed | swap_reversed | provider_error | other
   final String message;
 
   const SwapFailed({

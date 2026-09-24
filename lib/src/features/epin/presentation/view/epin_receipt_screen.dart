@@ -43,8 +43,8 @@ class _EPinReceiptScreenState extends State<EPinReceiptScreen> {
   /// carousel / active account / locale that sit below it are untouched. Falls
   /// back to the root if the Bills Hub isn't in the stack.
   void _exitToBillsHub() {
-    Get.until((route) =>
-        route.settings.name == AppRoutes.billsHub || route.isFirst);
+    Get.until(
+        (route) => route.settings.name == AppRoutes.billsHub || route.isFirst);
   }
 
   EPinOrder? _order;
@@ -111,8 +111,9 @@ class _EPinReceiptScreenState extends State<EPinReceiptScreen> {
 
   EPinOrder? get _current => _order;
 
-  String get _reference =>
-      (_current?.reference.isNotEmpty ?? false) ? _current!.reference : (_current?.id ?? '');
+  String get _reference => (_current?.reference.isNotEmpty ?? false)
+      ? _current!.reference
+      : (_current?.id ?? '');
 
   void _maybeStartPolling() {
     if (_pollTimer != null) return;
@@ -372,8 +373,7 @@ class _EPinReceiptScreenState extends State<EPinReceiptScreen> {
                 Text('·', style: TextStyle(color: _textSecondary)),
                 SizedBox(width: 8.w),
                 Text(created,
-                    style:
-                        TextStyle(color: _textSecondary, fontSize: 12.sp)),
+                    style: TextStyle(color: _textSecondary, fontSize: 12.sp)),
               ],
             ],
           ),
@@ -413,14 +413,12 @@ class _EPinReceiptScreenState extends State<EPinReceiptScreen> {
               'Denomination', '₦${order.denomination.toStringAsFixed(0)}'),
           _detailRow('Quantity', '${order.quantity}'),
           if (order.serviceFee > 0)
-            _detailRow('Service fee',
-                '₦${order.serviceFee.toStringAsFixed(2)}'),
-          if (_businessName.isNotEmpty)
-            _detailRow('Printed as', _businessName),
+            _detailRow(
+                'Service fee', '₦${order.serviceFee.toStringAsFixed(2)}'),
+          if (_businessName.isNotEmpty) _detailRow('Printed as', _businessName),
           if (_accountLabel != null) _detailRow('Paid from', _accountLabel!),
           _detailRow('Reference', _reference),
-          _detailRow(
-              'Total paid', '₦${order.totalAmount.toStringAsFixed(2)}',
+          _detailRow('Total paid', '₦${order.totalAmount.toStringAsFixed(2)}',
               emphasise: true),
           SizedBox(height: 6.h),
           Divider(color: _divider, height: 1),
@@ -578,7 +576,9 @@ class _EPinReceiptScreenState extends State<EPinReceiptScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  card.productName.isNotEmpty ? card.productName : 'Recharge PIN',
+                  card.productName.isNotEmpty
+                      ? card.productName
+                      : 'Recharge PIN',
                   style: TextStyle(
                     color: _textSecondary,
                     fontSize: 10.5.sp,
@@ -668,7 +668,8 @@ class _EPinReceiptScreenState extends State<EPinReceiptScreen> {
                           child: CircularProgressIndicator(
                               color: Colors.white, strokeWidth: 2),
                         )
-                      : Icon(Icons.print_rounded, size: 18.sp, color: Colors.white),
+                      : Icon(Icons.print_rounded,
+                          size: 18.sp, color: Colors.white),
                   label: Text('Print cards',
                       style: TextStyle(fontSize: 14.sp, color: Colors.white)),
                   style: ElevatedButton.styleFrom(

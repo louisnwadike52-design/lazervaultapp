@@ -28,9 +28,12 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
     // Determine initial tab from arguments
     final args = Get.arguments;
     final initialIndex =
-        (args is Map<String, dynamic> && args['tab'] == 'international') ? 1 : 0;
+        (args is Map<String, dynamic> && args['tab'] == 'international')
+            ? 1
+            : 0;
 
-    _tabController = TabController(length: 2, vsync: this, initialIndex: initialIndex);
+    _tabController =
+        TabController(length: 2, vsync: this, initialIndex: initialIndex);
     _tabController.addListener(_onTabChanged);
     context.read<ExchangeCubit>().loadHistory();
   }
@@ -87,7 +90,7 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
   @override
   Widget build(BuildContext context) {
     return AppGradientBackground(
-      child: Scaffold(
+        child: Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -111,8 +114,10 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
           indicatorWeight: 3,
           labelColor: Colors.white,
           unselectedLabelColor: const Color(0xFF9CA3AF),
-          labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-          unselectedLabelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+          labelStyle:
+              const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          unselectedLabelStyle:
+              const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
           tabs: const [
             Tab(text: 'Conversions'),
             Tab(text: 'International'),
@@ -134,9 +139,11 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
                     selected: isSelected,
                     label: Text(_statusLabel(filter)),
                     labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
+                      color:
+                          isSelected ? Colors.white : const Color(0xFF9CA3AF),
                       fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w400,
                     ),
                     backgroundColor: const Color(0xFF1F1F1F),
                     selectedColor: const Color(0xFF4E03D0),

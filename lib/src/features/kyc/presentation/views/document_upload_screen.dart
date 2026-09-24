@@ -11,7 +11,6 @@ import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'document_upload_screen_widgets.dart';
 
-
 /// Document upload screen for Tier 3 KYC verification.
 ///
 /// Guides the user through selecting, capturing, previewing, and uploading
@@ -245,7 +244,8 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
 
       return uploadURLResult.fold(
         (failure) {
-          debugPrint('[DocUpload] Failed to get upload URL: ${failure.message}');
+          debugPrint(
+              '[DocUpload] Failed to get upload URL: ${failure.message}');
           if (mounted) {
             setState(() {
               _uploadError = 'Failed to get upload URL: ${failure.message}';
@@ -300,7 +300,9 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
 
     setState(() {
       _isUploading = true;
-      _totalFilesToUpload = [_frontImage, _backImage, _proofOfAddress].where((f) => f != null).length;
+      _totalFilesToUpload = [_frontImage, _backImage, _proofOfAddress]
+          .where((f) => f != null)
+          .length;
       _filesUploaded = 0;
       _currentFileProgress = 0;
       _uploadError = null;
@@ -337,7 +339,10 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
             documentType: 'gov_id_front',
             contentType: mime,
           ));
-          setState(() { _filesUploaded++; _currentFileProgress = 0; });
+          setState(() {
+            _filesUploaded++;
+            _currentFileProgress = 0;
+          });
         }
       }
 
@@ -356,7 +361,10 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
             documentType: 'gov_id_back',
             contentType: mime,
           ));
-          setState(() { _filesUploaded++; _currentFileProgress = 0; });
+          setState(() {
+            _filesUploaded++;
+            _currentFileProgress = 0;
+          });
         }
       }
 
@@ -375,7 +383,10 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
             documentType: 'proof_of_address',
             contentType: mime,
           ));
-          setState(() { _filesUploaded++; _currentFileProgress = 0; });
+          setState(() {
+            _filesUploaded++;
+            _currentFileProgress = 0;
+          });
         }
       }
 
@@ -478,48 +489,49 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
           onPopInvokedWithResult: (didPop, result) {
             if (!didPop && _isUploading) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Upload in progress. Please wait.')),
+                const SnackBar(
+                    content: Text('Upload in progress. Please wait.')),
               );
             }
           },
           child: Scaffold(
-          backgroundColor: _background,
-          appBar: AppBar(
             backgroundColor: _background,
-            elevation: 0,
-            title: const Text(
-              'Document Verification',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+            appBar: AppBar(
+              backgroundColor: _background,
+              elevation: 0,
+              title: const Text(
+                'Document Verification',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios,
+                    color: Colors.white, size: 20),
+                onPressed: () {
+                  if (_currentStep > 0 && !_submitted) {
+                    _previousStep();
+                  } else {
+                    Navigator.of(context).pop();
+                  }
+                },
               ),
             ),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios, color: Colors.white,
-                  size: 20),
-              onPressed: () {
-                if (_currentStep > 0 && !_submitted) {
-                  _previousStep();
-                } else {
-                  Navigator.of(context).pop();
-                }
-              },
+            body: SafeArea(
+              child: _submitted
+                  ? _buildSubmittedView()
+                  : Column(
+                      children: [
+                        _buildStepIndicator(),
+                        Expanded(child: _buildStepContent()),
+                        if (!_isUploading && _currentStep < 3)
+                          _buildBottomBar(),
+                      ],
+                    ),
             ),
           ),
-          body: SafeArea(
-            child: _submitted
-                ? _buildSubmittedView()
-                : Column(
-                    children: [
-                      _buildStepIndicator(),
-                      Expanded(child: _buildStepContent()),
-                      if (!_isUploading && _currentStep < 3)
-                        _buildBottomBar(),
-                    ],
-                  ),
-          ),
-        ),
         );
       },
     );
@@ -556,9 +568,8 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                             ? _primary.withValues(alpha: 0.2)
                             : _cardBackground,
                     shape: BoxShape.circle,
-                    border: isActive
-                        ? Border.all(color: _primary, width: 2)
-                        : null,
+                    border:
+                        isActive ? Border.all(color: _primary, width: 2) : null,
                   ),
                   child: Center(
                     child: isCompleted
@@ -827,13 +838,12 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                 if (hasFile)
                   GestureDetector(
                     onTap: onClear,
-                    child: const Icon(Icons.close, color: _textSecondary,
-                        size: 18),
+                    child: const Icon(Icons.close,
+                        color: _textSecondary, size: 18),
                   ),
               ],
             ),
           ),
-
           if (hasFile) ...[
             const SizedBox(height: 10),
             ClipRRect(
@@ -940,7 +950,8 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
           Center(
             child: TextButton.icon(
               onPressed: _previousStep,
-              icon: const Icon(Icons.refresh_rounded, color: _primary, size: 18),
+              icon:
+                  const Icon(Icons.refresh_rounded, color: _primary, size: 18),
               label: const Text(
                 'Re-take a document',
                 style: TextStyle(color: _primary, fontSize: 14),
@@ -1078,8 +1089,8 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                   color: _error.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                    Icons.error_outline_rounded, color: _error, size: 36),
+                child: const Icon(Icons.error_outline_rounded,
+                    color: _error, size: 36),
               ),
               const SizedBox(height: 24),
               const Text(
@@ -1110,8 +1121,8 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                     ),
                   ),
                   child: const Text('Retry Upload',
-                      style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w600)),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),
             ],
@@ -1160,7 +1171,8 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
               'This usually takes 1-2 business days. '
               'We\'ll notify you once verification is complete.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: _textSecondary, fontSize: 14, height: 1.5),
+              style:
+                  TextStyle(color: _textSecondary, fontSize: 14, height: 1.5),
             ),
             const SizedBox(height: 12),
 

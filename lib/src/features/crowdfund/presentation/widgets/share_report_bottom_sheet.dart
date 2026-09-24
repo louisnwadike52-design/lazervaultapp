@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/crowdfund/services/crowdfund_report_pdf_
 class ShareReportBottomSheet extends StatelessWidget {
   final CrowdfundReport report;
   final String? campaignUrl;
+
   /// Campaign + stats are needed for the PDF: a shareable blurb only needs the
   /// narrative, but a report document has to state the actual figures.
   final Crowdfund? crowdfund;
@@ -89,7 +90,8 @@ class ShareReportBottomSheet extends StatelessWidget {
                       // box is gone once the sheet closes). Facebook falls back
                       // to the system share sheet when there's no campaign URL.
                       final origin =
-                          CrowdfundReportService.shareOriginFromContext(context);
+                          CrowdfundReportService.shareOriginFromContext(
+                              context);
                       Navigator.pop(context);
                       context.read<CrowdfundCubit>().shareReportToFacebook(
                             report,
@@ -104,7 +106,8 @@ class ShareReportBottomSheet extends StatelessWidget {
                     color: const Color(0xFF0088CC),
                     onTap: () {
                       final origin =
-                          CrowdfundReportService.shareOriginFromContext(context);
+                          CrowdfundReportService.shareOriginFromContext(
+                              context);
                       Navigator.pop(context);
                       context.read<CrowdfundCubit>().shareReportToTelegram(
                             report,
@@ -142,8 +145,9 @@ class ShareReportBottomSheet extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: () async {
-                      final origin = CrowdfundReportService
-                          .shareOriginFromContext(context);
+                      final origin =
+                          CrowdfundReportService.shareOriginFromContext(
+                              context);
                       final messenger = ScaffoldMessenger.of(context);
                       Navigator.pop(context);
                       try {
@@ -172,8 +176,8 @@ class ShareReportBottomSheet extends StatelessWidget {
                     icon: const Icon(Icons.picture_as_pdf_outlined),
                     label: const Text(
                       'Share report PDF',
-                      style: TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),

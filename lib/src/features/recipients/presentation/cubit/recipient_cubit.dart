@@ -179,7 +179,10 @@ class RecipientCubit extends Cubit<RecipientState> {
       _totalPages = result.totalPages;
 
       // Append new recipients to existing list
-      final updatedRecipients = [...currentState.recipients, ...result.recipients];
+      final updatedRecipients = [
+        ...currentState.recipients,
+        ...result.recipients
+      ];
       emit(RecipientLoaded(
         updatedRecipients,
         hasMore: _hasMore,
@@ -259,34 +262,36 @@ class RecipientCubit extends Cubit<RecipientState> {
   }) async {
     final previousState = state;
     if (previousState is RecipientLoaded) {
-       final updatedRecipients = previousState.recipients.map((r) {
-         if (r.id == recipientId) {
-           return r.copyWith(isFavorite: isFavorite);
-         }
-         return r;
-       }).toList();
-       if (isClosed) return;
-       emit(previousState.copyWith(recipients: updatedRecipients));
+      final updatedRecipients = previousState.recipients.map((r) {
+        if (r.id == recipientId) {
+          return r.copyWith(isFavorite: isFavorite);
+        }
+        return r;
+      }).toList();
+      if (isClosed) return;
+      emit(previousState.copyWith(recipients: updatedRecipients));
     }
 
     try {
       final result = await _toggleFavoriteUseCase(
-          recipientId: recipientId, isFavorite: isFavorite, accessToken: accessToken);
+          recipientId: recipientId,
+          isFavorite: isFavorite,
+          accessToken: accessToken);
       if (isClosed) return;
       result.fold(
         (failure) {
-            emit(previousState);
-            emit(RecipientError(failure.message));
-         },
+          emit(previousState);
+          emit(RecipientError(failure.message));
+        },
         (_) {
           // Invalidate cache after successful update
           _cacheManager?.invalidatePattern('recipients:');
         },
       );
     } catch (e) {
-       if (isClosed) return;
-       emit(previousState);
-       emit(RecipientError(e.toString()));
+      if (isClosed) return;
+      emit(previousState);
+      emit(RecipientError(e.toString()));
     }
   }
 
@@ -339,9 +344,8 @@ class RecipientCubit extends Cubit<RecipientState> {
     final previousState = state;
     // Optimistic removal
     if (previousState is RecipientLoaded) {
-      final updatedRecipients = previousState.recipients
-          .where((r) => r.id != recipientId)
-          .toList();
+      final updatedRecipients =
+          previousState.recipients.where((r) => r.id != recipientId).toList();
       if (isClosed) return;
       emit(previousState.copyWith(recipients: updatedRecipients));
     }

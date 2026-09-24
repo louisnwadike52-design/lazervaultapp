@@ -16,13 +16,13 @@ import '../../../../account_cards_summary/services/balance_websocket_service.dar
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'insurance_processing_screen_widgets.dart';
 
-
 /// Screen showing insurance purchase progress with animated steps
 class InsuranceProcessingScreen extends StatefulWidget {
   const InsuranceProcessingScreen({super.key});
 
   @override
-  State<InsuranceProcessingScreen> createState() => _InsuranceProcessingScreenState();
+  State<InsuranceProcessingScreen> createState() =>
+      _InsuranceProcessingScreenState();
 }
 
 class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
@@ -196,9 +196,7 @@ class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
                 child: Text(message,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
-                        fontSize: 14.sp,
-                        color: Colors.white,
-                        height: 1.45)),
+                        fontSize: 14.sp, color: Colors.white, height: 1.45)),
               ),
               SizedBox(height: 10.h),
               Text(
@@ -238,8 +236,7 @@ class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
     return BlocConsumer<CreatePolicyCubit, CreatePolicyState>(
       listener: (context, state) {
         // Any terminal state cancels the hang watchdog.
-        if (state is InsurancePurchaseSuccess
-            || state is CreatePolicyError) {
+        if (state is InsurancePurchaseSuccess || state is CreatePolicyError) {
           _hangTimer?.cancel();
         }
         if (state is InsurancePurchaseSuccess) {
@@ -248,7 +245,8 @@ class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (_) => InsurancePurchaseReceiptScreen(
-                purchaseResult: (state as InsurancePurchaseSuccess).purchaseResult,
+                purchaseResult:
+                    (state as InsurancePurchaseSuccess).purchaseResult,
                 product: (state as InsurancePurchaseSuccess).product,
                 quote: (state as InsurancePurchaseSuccess).quote,
               ),
@@ -295,7 +293,8 @@ class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                            color:
+                                const Color(0xFF6366F1).withValues(alpha: 0.3),
                           ),
                         ),
                         child: const Icon(
@@ -333,7 +332,8 @@ class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
 
                   // Product preview card
                   if (processingState?.product != null) ...[
-                    _buildProductCard(processingState!.product, processingState!.quote),
+                    _buildProductCard(
+                        processingState!.product, processingState!.quote),
                     SizedBox(height: 32.h),
                   ],
 
@@ -494,7 +494,8 @@ class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
             isCompleted: isCompleted,
             isCurrent: isCurrent,
             isPending: isPending,
-            progress: currentStep == InsuranceProcessingStep.completed ? 1.0 : null,
+            progress:
+                currentStep == InsuranceProcessingStep.completed ? 1.0 : null,
           );
         }),
       ],
@@ -521,7 +522,8 @@ class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
                 builder: (context, child) {
                   return Transform.scale(
                     scale: isCurrent ? _pulseAnimation.value : 1.0,
-                    child: _buildStepIcon(step, isCompleted, isCurrent, isPending),
+                    child:
+                        _buildStepIcon(step, isCompleted, isCurrent, isPending),
                   );
                 },
               ),
@@ -535,7 +537,8 @@ class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
                       step.title,
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
-                        fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
+                        fontWeight:
+                            isCurrent ? FontWeight.w700 : FontWeight.w500,
                         color: isCompleted || isCurrent
                             ? Colors.white
                             : const Color(0xFF9CA3AF),
@@ -562,7 +565,8 @@ class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
     );
   }
 
-  Widget _buildStepIcon(_ProgressStep step, bool isCompleted, bool isCurrent, bool isPending) {
+  Widget _buildStepIcon(
+      _ProgressStep step, bool isCompleted, bool isCurrent, bool isPending) {
     Color bgColor;
     Color iconColor;
     Widget? icon;

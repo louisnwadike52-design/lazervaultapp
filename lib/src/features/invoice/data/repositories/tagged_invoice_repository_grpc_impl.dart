@@ -45,7 +45,9 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
           options: options,
         );
 
-        return response.invoices.map((inv) => _invoiceToTaggedInvoice(inv, isIncoming: true)).toList();
+        return response.invoices
+            .map((inv) => _invoiceToTaggedInvoice(inv, isIncoming: true))
+            .toList();
       },
     );
   }
@@ -76,7 +78,9 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
           options: options,
         );
 
-        final invoices = response.invoices.map((inv) => _invoiceToTaggedInvoice(inv, isIncoming: true)).toList();
+        final invoices = response.invoices
+            .map((inv) => _invoiceToTaggedInvoice(inv, isIncoming: true))
+            .toList();
         final pagination = response.pagination;
 
         return TaggedInvoicePaginatedResult(
@@ -114,7 +118,9 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
           options: options,
         );
 
-        return response.invoices.map((inv) => _invoiceToTaggedInvoice(inv, isIncoming: false)).toList();
+        return response.invoices
+            .map((inv) => _invoiceToTaggedInvoice(inv, isIncoming: false))
+            .toList();
       },
     );
   }
@@ -188,8 +194,7 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
   Future<TaggedInvoice> getTaggedInvoiceById(String taggedInvoiceId) async {
     return retryWithBackoff(
       operation: () async {
-        final request = pb.GetInvoiceRequest()
-          ..invoiceId = taggedInvoiceId;
+        final request = pb.GetInvoiceRequest()..invoiceId = taggedInvoiceId;
 
         final options = await grpcClient.callOptions;
         final response = await grpcClient.invoiceClient.getInvoice(
@@ -289,7 +294,9 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
           options: options,
         );
 
-        return response.invoices.map((inv) => _invoiceToTaggedInvoice(inv, isIncoming: true)).toList();
+        return response.invoices
+            .map((inv) => _invoiceToTaggedInvoice(inv, isIncoming: true))
+            .toList();
       },
     );
   }
@@ -321,7 +328,8 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
             .where((inv) {
               if (inv.dueDate.isEmpty) return false;
               try {
-                final dueDate = DateTime.tryParse(inv.dueDate) ?? DateTime.now();
+                final dueDate =
+                    DateTime.tryParse(inv.dueDate) ?? DateTime.now();
                 return dueDate.isAfter(now) && dueDate.isBefore(cutoff);
               } catch (_) {
                 return false;
@@ -344,17 +352,21 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
     if (incoming) {
       final all = await getIncomingTaggedInvoices(page: page, limit: limit);
       final lowerQuery = query.toLowerCase();
-      return all.where((inv) =>
-          inv.title.toLowerCase().contains(lowerQuery) ||
-          inv.description.toLowerCase().contains(lowerQuery) ||
-          inv.displayName.toLowerCase().contains(lowerQuery)).toList();
+      return all
+          .where((inv) =>
+              inv.title.toLowerCase().contains(lowerQuery) ||
+              inv.description.toLowerCase().contains(lowerQuery) ||
+              inv.displayName.toLowerCase().contains(lowerQuery))
+          .toList();
     } else {
       final all = await getOutgoingTaggedInvoices(page: page, limit: limit);
       final lowerQuery = query.toLowerCase();
-      return all.where((inv) =>
-          inv.title.toLowerCase().contains(lowerQuery) ||
-          inv.description.toLowerCase().contains(lowerQuery) ||
-          inv.displayName.toLowerCase().contains(lowerQuery)).toList();
+      return all
+          .where((inv) =>
+              inv.title.toLowerCase().contains(lowerQuery) ||
+              inv.description.toLowerCase().contains(lowerQuery) ||
+              inv.displayName.toLowerCase().contains(lowerQuery))
+          .toList();
     }
   }
 
@@ -365,8 +377,7 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
   }) async {
     return retryWithBackoff(
       operation: () async {
-        final request = pb.SendInvoiceReminderRequest()
-          ..invoiceId = invoiceId;
+        final request = pb.SendInvoiceReminderRequest()..invoiceId = invoiceId;
 
         final options = await grpcClient.callOptions;
         await grpcClient.invoiceClient.sendInvoiceReminder(
@@ -394,7 +405,8 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
   }
 
   // Convert backend Invoice proto to TaggedInvoice entity
-  TaggedInvoice _invoiceToTaggedInvoice(pb.Invoice proto, {required bool isIncoming}) {
+  TaggedInvoice _invoiceToTaggedInvoice(pb.Invoice proto,
+      {required bool isIncoming}) {
     final statusStr = proto.status.toLowerCase();
     final InvoiceStatus invoiceStatus;
     if (statusStr == 'paid' || statusStr == 'completed') {
@@ -411,7 +423,8 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
       invoiceStatus = InvoiceStatus.pending;
     }
 
-    final totalAmount = proto.totalAmount > 0 ? proto.totalAmount : proto.amount;
+    final totalAmount =
+        proto.totalAmount > 0 ? proto.totalAmount : proto.amount;
 
     final invoice = Invoice(
       id: proto.id,
@@ -427,18 +440,29 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
       status: invoiceStatus,
       type: _invoiceTypeFromString(proto.invoiceType),
       quoteStatus: proto.quoteStatus,
-      quoteAcceptedAt: proto.quoteAcceptedAt.isNotEmpty ? DateTime.tryParse(proto.quoteAcceptedAt) : null,
-      quoteDeclinedAt: proto.quoteDeclinedAt.isNotEmpty ? DateTime.tryParse(proto.quoteDeclinedAt) : null,
-      convertedAt: proto.convertedAt.isNotEmpty ? DateTime.tryParse(proto.convertedAt) : null,
+      quoteAcceptedAt: proto.quoteAcceptedAt.isNotEmpty
+          ? DateTime.tryParse(proto.quoteAcceptedAt)
+          : null,
+      quoteDeclinedAt: proto.quoteDeclinedAt.isNotEmpty
+          ? DateTime.tryParse(proto.quoteDeclinedAt)
+          : null,
+      convertedAt: proto.convertedAt.isNotEmpty
+          ? DateTime.tryParse(proto.convertedAt)
+          : null,
       // tryParse: one malformed row must not blank the whole Received tab.
-      createdAt: (proto.createdAt.isNotEmpty ? DateTime.tryParse(proto.createdAt) : null) ?? DateTime.now(),
-      dueDate: proto.dueDate.isNotEmpty ? DateTime.tryParse(proto.dueDate) : null,
+      createdAt: (proto.createdAt.isNotEmpty
+              ? DateTime.tryParse(proto.createdAt)
+              : null) ??
+          DateTime.now(),
+      dueDate:
+          proto.dueDate.isNotEmpty ? DateTime.tryParse(proto.dueDate) : null,
       paidAt: proto.paidAt.isNotEmpty ? DateTime.tryParse(proto.paidAt) : null,
       fromUserId: proto.userId,
       toUserId: proto.accountId.isNotEmpty ? proto.accountId : null,
       toEmail: proto.recipientEmail.isNotEmpty ? proto.recipientEmail : null,
       toName: proto.recipientName.isNotEmpty ? proto.recipientName : null,
-      paymentReference: proto.paymentReference.isNotEmpty ? proto.paymentReference : null,
+      paymentReference:
+          proto.paymentReference.isNotEmpty ? proto.paymentReference : null,
       // One proto description string, encoded "name: description" at create —
       // split it back so payer surfaces never render the name twice.
       items: proto.items.isNotEmpty
@@ -455,14 +479,16 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
                 totalPrice: item.total,
               );
             }).toList()
-          : [InvoiceItem(
-              id: 'item_default',
-              name: 'Invoice Item',
-              description: proto.description,
-              quantity: 1,
-              unitPrice: proto.amount,
-              totalPrice: proto.amount,
-            )],
+          : [
+              InvoiceItem(
+                id: 'item_default',
+                name: 'Invoice Item',
+                description: proto.description,
+                quantity: 1,
+                unitPrice: proto.amount,
+                totalPrice: proto.amount,
+              )
+            ],
       notes: proto.notes.isNotEmpty ? proto.notes : null,
       taxAmount: proto.tax > 0 ? proto.tax : null,
       discountAmount: proto.discount > 0 ? proto.discount : null,
@@ -477,9 +503,8 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
                     username: tu.username,
                     firstName: tu.firstName,
                     lastName: tu.lastName,
-                    profilePicture: tu.profilePicture.isNotEmpty
-                        ? tu.profilePicture
-                        : null,
+                    profilePicture:
+                        tu.profilePicture.isNotEmpty ? tu.profilePicture : null,
                     status: tu.status.isNotEmpty ? tu.status : 'pending',
                     taggedAt: tu.taggedAt.isNotEmpty
                         ? DateTime.tryParse(tu.taggedAt)
@@ -516,7 +541,8 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
           try {
             final dueDate = DateTime.tryParse(proto.dueDate) ?? DateTime.now();
             if (dueDate.isBefore(DateTime.now())) {
-              paymentStatus = InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_OVERDUE;
+              paymentStatus =
+                  InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_OVERDUE;
               break;
             }
           } catch (_) {}
@@ -528,12 +554,14 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
     String? creatorName;
     String? creatorUsername;
     if (proto.hasCreatorFirstName() || proto.hasCreatorLastName()) {
-      final firstName = proto.hasCreatorFirstName() ? proto.creatorFirstName : '';
+      final firstName =
+          proto.hasCreatorFirstName() ? proto.creatorFirstName : '';
       final lastName = proto.hasCreatorLastName() ? proto.creatorLastName : '';
       creatorName = firstName.isNotEmpty || lastName.isNotEmpty
           ? '$firstName $lastName'.trim()
           : null;
-      creatorUsername = proto.hasCreatorUsername() ? proto.creatorUsername : null;
+      creatorUsername =
+          proto.hasCreatorUsername() ? proto.creatorUsername : null;
     }
 
     return TaggedInvoice(
@@ -543,7 +571,10 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
       paymentStatus: paymentStatus,
       priority: InvoicePriority.INVOICE_PRIORITY_MEDIUM,
       isViewed: true,
-      taggedAt: (proto.createdAt.isNotEmpty ? DateTime.tryParse(proto.createdAt) : null) ?? DateTime.now(),
+      taggedAt: (proto.createdAt.isNotEmpty
+              ? DateTime.tryParse(proto.createdAt)
+              : null) ??
+          DateTime.now(),
       invoice: invoice,
       taggerName: isIncoming ? creatorName : null,
       taggerUsername: isIncoming ? creatorUsername : null,

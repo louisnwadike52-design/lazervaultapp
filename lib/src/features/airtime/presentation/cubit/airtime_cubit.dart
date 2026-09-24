@@ -97,11 +97,13 @@ class AirtimeCubit extends Cubit<AirtimeState> {
   }
 
   // Validate phone number
-  Future<void> validatePhoneNumber(String phoneNumber, String countryCode) async {
+  Future<void> validatePhoneNumber(
+      String phoneNumber, String countryCode) async {
     try {
       if (isClosed) return;
       emit(AirtimePhoneNumberValidating());
-      final result = await repository.validatePhoneNumber(phoneNumber, countryCode);
+      final result =
+          await repository.validatePhoneNumber(phoneNumber, countryCode);
 
       if (isClosed) return;
       emit(AirtimePhoneNumberValidated(
@@ -126,7 +128,8 @@ class AirtimeCubit extends Cubit<AirtimeState> {
     required double amount,
   }) async {
     try {
-      final fee = await repository.calculateTransactionFee(amount, country.code);
+      final fee =
+          await repository.calculateTransactionFee(amount, country.code);
       final totalAmount = amount + fee;
 
       if (isClosed) return;
@@ -239,7 +242,8 @@ class AirtimeCubit extends Cubit<AirtimeState> {
       // Financial operations are NEVER queued offline - security tokens expire, balances change
       if (_isNetworkError(e)) {
         emit(const AirtimePaymentFailed(
-          message: 'No internet connection. Please check your network and try again.',
+          message:
+              'No internet connection. Please check your network and try again.',
         ));
       } else {
         emit(AirtimePaymentFailed(message: _friendlyErrorMessage(e)));
@@ -324,7 +328,8 @@ class AirtimeCubit extends Cubit<AirtimeState> {
       if (isClosed) return;
       if (_isNetworkError(e)) {
         emit(const AirtimeTransferFailed(
-          message: 'No internet connection. Please check your network and try again.',
+          message:
+              'No internet connection. Please check your network and try again.',
         ));
       } else {
         emit(AirtimeTransferFailed(message: _friendlyErrorMessage(e)));
@@ -371,16 +376,19 @@ class AirtimeCubit extends Cubit<AirtimeState> {
   }
 
   // Detect network from phone number
-  Future<NetworkProvider?> detectNetworkFromPhoneNumber(String phoneNumber, String countryCode) async {
+  Future<NetworkProvider?> detectNetworkFromPhoneNumber(
+      String phoneNumber, String countryCode) async {
     try {
-      return await repository.detectNetworkFromPhoneNumber(phoneNumber, countryCode);
+      return await repository.detectNetworkFromPhoneNumber(
+          phoneNumber, countryCode);
     } catch (e) {
       return null;
     }
   }
 
   // Calculate transaction fee
-  Future<double> calculateTransactionFee(double amount, String countryCode) async {
+  Future<double> calculateTransactionFee(
+      double amount, String countryCode) async {
     try {
       return await repository.calculateTransactionFee(amount, countryCode);
     } catch (e) {
@@ -483,8 +491,7 @@ class AirtimeCubit extends Cubit<AirtimeState> {
     if (isClosed) return;
     emit(AirtimeAutoRechargesLoading());
     try {
-      final list =
-          await repository.getAirtimeAutoRecharges(status: status);
+      final list = await repository.getAirtimeAutoRecharges(status: status);
       if (isClosed) return;
       emit(AirtimeAutoRechargesLoaded(autoRecharges: list));
     } catch (e) {

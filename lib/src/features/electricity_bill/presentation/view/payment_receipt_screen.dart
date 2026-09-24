@@ -200,8 +200,8 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
         final benType = (args['beneficiaryMeterType'] as String?) == 'postpaid'
             ? MeterType.postpaid
             : MeterType.prepaid;
-        final benCustomer =
-            (args['beneficiaryCustomerName'] as String?) ?? payment.customerName;
+        final benCustomer = (args['beneficiaryCustomerName'] as String?) ??
+            payment.customerName;
         final benNickname = (args['beneficiaryNickname'] as String?)?.trim();
         try {
           final saveRes = await repo.saveBeneficiary(
@@ -213,8 +213,8 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
             nickname: (benNickname != null && benNickname.isNotEmpty)
                 ? benNickname
                 : payment.meterNumber,
-            providerCode:
-                (args['beneficiaryProviderCode'] as String?) ?? payment.providerCode,
+            providerCode: (args['beneficiaryProviderCode'] as String?) ??
+                payment.providerCode,
             providerName: args['beneficiaryProviderName'] as String?,
           );
           beneficiaryId = saveRes.fold<String?>((_) => null, (b) => b.id);
@@ -291,10 +291,9 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
     Get.snackbar(
       title,
       message,
-      backgroundColor: (isSuccess
-              ? const Color(0xFF10B981)
-              : const Color(0xFFFB923C))
-          .withValues(alpha: 0.9),
+      backgroundColor:
+          (isSuccess ? const Color(0xFF10B981) : const Color(0xFFFB923C))
+              .withValues(alpha: 0.9),
       colorText: Colors.white,
       snackPosition: SnackPosition.TOP,
       duration: const Duration(seconds: 4),
@@ -456,8 +455,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
               backgroundColor: const Color(0xFF1F1F1F),
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding:
-                    EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -507,8 +505,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
                           'meter': payment.meterNumber,
                         if (payment.providerName.isNotEmpty)
                           'provider': payment.providerName,
-                        if (payment.token != null &&
-                            payment.token!.isNotEmpty)
+                        if (payment.token != null && payment.token!.isNotEmpty)
                           'token': payment.token!,
                       },
                     ),
@@ -833,9 +830,11 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
             ),
           ),
           SizedBox(height: 14.h),
-          _buildDetailRow('Amount', '$_currencySymbol${payment.amount.toStringAsFixed(2)}'),
+          _buildDetailRow(
+              'Amount', '$_currencySymbol${payment.amount.toStringAsFixed(2)}'),
           SizedBox(height: 10.h),
-          _buildDetailRow('Service Fee', '$_currencySymbol${payment.serviceFee.toStringAsFixed(2)}'),
+          _buildDetailRow('Service Fee',
+              '$_currencySymbol${payment.serviceFee.toStringAsFixed(2)}'),
           SizedBox(height: 10.h),
           _buildDetailRow(
             'Total',
@@ -860,14 +859,16 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
           ),
           _buildDetailRow('Reference', payment.referenceNumber),
           SizedBox(height: 10.h),
-          _buildDetailRow('Gateway', switch (payment.paymentGateway.toLowerCase()) {
-            'vtpass' => 'VTpass',
-            'vtuafrica' => 'VTU Africa',
-            'reloadly' => 'Reloadly',
-            'flutterwave' => 'Flutterwave',
-            'interswitch' => 'Interswitch',
-            _ => payment.paymentGateway.toUpperCase(),
-          }),
+          _buildDetailRow(
+              'Gateway',
+              switch (payment.paymentGateway.toLowerCase()) {
+                'vtpass' => 'VTpass',
+                'vtuafrica' => 'VTU Africa',
+                'reloadly' => 'Reloadly',
+                'flutterwave' => 'Flutterwave',
+                'interswitch' => 'Interswitch',
+                _ => payment.paymentGateway.toUpperCase(),
+              }),
           SizedBox(height: 10.h),
           _buildDetailRow('Date', dateFormat.format(displayDate)),
           SizedBox(height: 10.h),
@@ -889,7 +890,8 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
     );
   }
 
-  Widget _buildDetailRow(String label, String value, {Color? valueColor, bool isBold = false}) {
+  Widget _buildDetailRow(String label, String value,
+      {Color? valueColor, bool isBold = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,

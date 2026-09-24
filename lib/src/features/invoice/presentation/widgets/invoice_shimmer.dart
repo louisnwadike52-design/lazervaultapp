@@ -180,15 +180,17 @@ class InvoiceDetailShimmer extends StatelessWidget {
               ),
             ),
             SizedBox(height: 12.h),
-            ...List.generate(3, (index) => Container(
-              margin: EdgeInsets.only(bottom: 8.h),
-              width: double.infinity,
-              height: 48.h,
-              decoration: BoxDecoration(
-                color: const Color(0xFF1F1F1F),
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-            )),
+            ...List.generate(
+                3,
+                (index) => Container(
+                      margin: EdgeInsets.only(bottom: 8.h),
+                      width: double.infinity,
+                      height: 48.h,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1F1F1F),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                    )),
             SizedBox(height: 20.h),
             // Action buttons
             Container(

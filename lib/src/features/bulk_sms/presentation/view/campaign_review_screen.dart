@@ -347,8 +347,7 @@ class _CampaignReviewScreenState extends State<CampaignReviewScreen>
               onTap: _pickSchedule,
               child: Container(
                 width: double.infinity,
-                padding:
-                    EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
                 decoration: BoxDecoration(
                   color: BulkSmsTheme.bg,
                   borderRadius: BorderRadius.circular(10.r),
@@ -363,8 +362,7 @@ class _CampaignReviewScreenState extends State<CampaignReviewScreen>
                           ? 'Pick date & time'
                           : DateFormat('EEE, d MMM yyyy · h:mm a')
                               .format(_scheduledAt!),
-                      style:
-                          TextStyle(color: Colors.white, fontSize: 13.sp),
+                      style: TextStyle(color: Colors.white, fontSize: 13.sp),
                     ),
                   ],
                 ),

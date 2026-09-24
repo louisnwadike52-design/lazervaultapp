@@ -17,8 +17,7 @@ class CableTVRemindersScreen extends StatefulWidget {
   const CableTVRemindersScreen({super.key});
 
   @override
-  State<CableTVRemindersScreen> createState() =>
-      _CableTVRemindersScreenState();
+  State<CableTVRemindersScreen> createState() => _CableTVRemindersScreenState();
 }
 
 class _CableTVRemindersScreenState extends State<CableTVRemindersScreen>
@@ -46,22 +45,21 @@ class _CableTVRemindersScreenState extends State<CableTVRemindersScreen>
   }
 
   bool _isActive(CableTVReminder r) =>
-      r.status == 'pending' ||
-      r.status == 'notified' ||
-      r.status == 'paused';
+      r.status == 'pending' || r.status == 'notified' || r.status == 'paused';
 
   bool _isCompleted(CableTVReminder r) =>
       r.status == 'completed' || r.status == 'cancelled';
 
-  void _markComplete(CableTVReminder r) =>
-      context.read<CableTVReminderCubit>().markReminderComplete(reminderId: r.id);
+  void _markComplete(CableTVReminder r) => context
+      .read<CableTVReminderCubit>()
+      .markReminderComplete(reminderId: r.id);
 
   void _delete(CableTVReminder r) {
     Get.dialog(
       AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Text('Delete Reminder',
             style: GoogleFonts.inter(
                 color: Colors.white,
@@ -69,8 +67,7 @@ class _CableTVRemindersScreenState extends State<CableTVRemindersScreen>
                 fontWeight: FontWeight.w700)),
         content: Text('Are you sure you want to delete this reminder?',
             style: GoogleFonts.inter(
-                color: Colors.white.withValues(alpha: 0.8),
-                fontSize: 14.sp)),
+                color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp)),
         actions: [
           TextButton(
               onPressed: () => Get.back(),
@@ -139,13 +136,11 @@ class _CableTVRemindersScreenState extends State<CableTVRemindersScreen>
           children: [
             _buildHeader(),
             Expanded(
-              child:
-                  BlocConsumer<CableTVReminderCubit, CableTVReminderState>(
+              child: BlocConsumer<CableTVReminderCubit, CableTVReminderState>(
                 listener: (context, state) {
                   if (state is CableTVReminderError) {
                     Get.snackbar('Error', state.message,
-                        backgroundColor:
-                            Colors.red.withValues(alpha: 0.9),
+                        backgroundColor: Colors.red.withValues(alpha: 0.9),
                         colorText: Colors.white);
                   } else if (state is CableTVReminderDeleted ||
                       state is CableTVReminderCompleted) {
@@ -173,9 +168,8 @@ class _CableTVRemindersScreenState extends State<CableTVRemindersScreen>
                   }
                   if (list.isEmpty) return _buildEmpty();
                   final due = list.where(_isDue).toList();
-                  final active = list
-                      .where((r) => _isActive(r) && !_isDue(r))
-                      .toList();
+                  final active =
+                      list.where((r) => _isActive(r) && !_isDue(r)).toList();
                   final completed = list.where(_isCompleted).toList();
                   return RefreshIndicator(
                     color: const Color(0xFF4E03D0),
@@ -197,8 +191,7 @@ class _CableTVRemindersScreenState extends State<CableTVRemindersScreen>
                           SizedBox(height: 24.h),
                         ],
                         if (active.isNotEmpty) ...[
-                          _sectionHeader(
-                              'Upcoming', const Color(0xFF4E03D0)),
+                          _sectionHeader('Upcoming', const Color(0xFF4E03D0)),
                           SizedBox(height: 12.h),
                           ...active.map((r) => Padding(
                                 padding: EdgeInsets.only(bottom: 12.h),
@@ -239,8 +232,8 @@ class _CableTVRemindersScreenState extends State<CableTVRemindersScreen>
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(22.r),
-                  border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.15)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.15)),
                 ),
                 child: Icon(Icons.arrow_back_ios_new,
                     color: Colors.white, size: 18.sp),
@@ -300,8 +293,7 @@ class _CableTVRemindersScreenState extends State<CableTVRemindersScreen>
                       color: Colors.white.withValues(alpha: 0.1), width: 2),
                 ),
                 child: Icon(Icons.notifications_none,
-                    color: Colors.white.withValues(alpha: 0.3),
-                    size: 56.sp),
+                    color: Colors.white.withValues(alpha: 0.3), size: 56.sp),
               ),
               SizedBox(height: 24.h),
               Text('No Reminders',

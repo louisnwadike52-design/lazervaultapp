@@ -32,8 +32,7 @@ class DataPaymentConfirmationScreen extends StatefulWidget {
 }
 
 class _DataPaymentConfirmationScreenState
-    extends State<DataPaymentConfirmationScreen>
-    with TransactionPinMixin {
+    extends State<DataPaymentConfirmationScreen> with TransactionPinMixin {
   final _currencyFormat = NumberFormat('#,##0', 'en_NG');
   bool _isProcessing = false;
   bool _saveBeneficiary = false;
@@ -136,8 +135,7 @@ class _DataPaymentConfirmationScreenState
         // enableAutoRenew. True when the user picked the renew-on-expiry
         // rollover mode. The richer pref is also forwarded for the
         // recurring-schedule path.
-        'autoRenewEnabled':
-            _rolloverPref?.mode == RolloverMode.renewOnExpiry,
+        'autoRenewEnabled': _rolloverPref?.mode == RolloverMode.renewOnExpiry,
         'rolloverPreference': _rolloverPref,
         'saveBeneficiary': _saveBeneficiary,
       },
@@ -229,8 +227,7 @@ class _DataPaymentConfirmationScreenState
                   color: networkColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: Icon(Icons.cell_tower,
-                    color: networkColor, size: 22.sp),
+                child: Icon(Icons.cell_tower, color: networkColor, size: 22.sp),
               ),
               SizedBox(width: 12.w),
               Expanded(
@@ -317,9 +314,7 @@ class _DataPaymentConfirmationScreenState
         color: _card,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: _saveBeneficiary
-              ? _primary.withValues(alpha: 0.4)
-              : _border,
+          color: _saveBeneficiary ? _primary.withValues(alpha: 0.4) : _border,
         ),
       ),
       child: Row(

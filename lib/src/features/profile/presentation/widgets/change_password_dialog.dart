@@ -120,10 +120,13 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _showCurrentPassword ? Icons.visibility_off : Icons.visibility,
+                      _showCurrentPassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
                     ),
                     onPressed: () {
-                      setState(() => _showCurrentPassword = !_showCurrentPassword);
+                      setState(
+                          () => _showCurrentPassword = !_showCurrentPassword);
                     },
                   ),
                   border: OutlineInputBorder(
@@ -135,7 +138,8 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
-                    borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
+                    borderSide:
+                        const BorderSide(color: Color(0xFF4E03D0), width: 2),
                   ),
                 ),
                 validator: (value) {
@@ -157,7 +161,9 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _showNewPassword ? Icons.visibility_off : Icons.visibility,
+                      _showNewPassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
                     ),
                     onPressed: () {
                       setState(() => _showNewPassword = !_showNewPassword);
@@ -172,7 +178,8 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
-                    borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
+                    borderSide:
+                        const BorderSide(color: Color(0xFF4E03D0), width: 2),
                   ),
                 ),
                 validator: (value) {
@@ -197,10 +204,13 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _showConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                      _showConfirmPassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
                     ),
                     onPressed: () {
-                      setState(() => _showConfirmPassword = !_showConfirmPassword);
+                      setState(
+                          () => _showConfirmPassword = !_showConfirmPassword);
                     },
                   ),
                   border: OutlineInputBorder(
@@ -212,7 +222,8 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
-                    borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
+                    borderSide:
+                        const BorderSide(color: Color(0xFF4E03D0), width: 2),
                   ),
                 ),
                 validator: (value) {
@@ -233,7 +244,8 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+                      onPressed:
+                          _isLoading ? null : () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: 16.h),
                         shape: RoundedRectangleBorder(

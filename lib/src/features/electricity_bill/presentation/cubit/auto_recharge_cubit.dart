@@ -50,10 +50,10 @@ class AutoRechargeCubit extends Cubit<AutoRechargeState> {
     if (isClosed) return;
     result.fold(
       (failure) => emit(AutoRechargeError(message: failure.message)),
-      (autoRecharges) => emit(AutoRechargesLoaded(autoRecharges: autoRecharges)),
+      (autoRecharges) =>
+          emit(AutoRechargesLoaded(autoRecharges: autoRecharges)),
     );
   }
-
 
   Future<void> updateAutoRecharge({
     required String autoRechargeId,
@@ -90,7 +90,8 @@ class AutoRechargeCubit extends Cubit<AutoRechargeState> {
     if (isClosed) return;
     emit(AutoRechargePausing());
 
-    final result = await repository.pauseAutoRecharge(autoRechargeId: autoRechargeId);
+    final result =
+        await repository.pauseAutoRecharge(autoRechargeId: autoRechargeId);
 
     if (isClosed) return;
     result.fold(
@@ -103,7 +104,8 @@ class AutoRechargeCubit extends Cubit<AutoRechargeState> {
     if (isClosed) return;
     emit(AutoRechargeResuming());
 
-    final result = await repository.resumeAutoRecharge(autoRechargeId: autoRechargeId);
+    final result =
+        await repository.resumeAutoRecharge(autoRechargeId: autoRechargeId);
 
     if (isClosed) return;
     result.fold(
@@ -116,7 +118,8 @@ class AutoRechargeCubit extends Cubit<AutoRechargeState> {
     if (isClosed) return;
     emit(AutoRechargeDeleting());
 
-    final result = await repository.deleteAutoRecharge(autoRechargeId: autoRechargeId);
+    final result =
+        await repository.deleteAutoRecharge(autoRechargeId: autoRechargeId);
 
     if (isClosed) return;
     result.fold(

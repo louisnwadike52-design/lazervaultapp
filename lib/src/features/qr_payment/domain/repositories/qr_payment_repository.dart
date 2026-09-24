@@ -20,7 +20,8 @@ abstract class QRPaymentRepository {
   });
 
   /// Creator's payers view: (payments, total count, total collected).
-  Future<Either<Failure, (List<QRTransactionEntity>, int, double)>> getQRPayers({
+  Future<Either<Failure, (List<QRTransactionEntity>, int, double)>>
+      getQRPayers({
     required String qrId,
     int? limit,
     int? offset,

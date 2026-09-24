@@ -20,8 +20,7 @@ class ContactlessPdfService {
   static pw.Font? _boldFont;
 
   /// Get currency symbol - using ASCII-safe alternatives for PDF compatibility
-  static String _currencySymbolFor(String code) =>
-      receiptCurrencySymbol(code);
+  static String _currencySymbolFor(String code) => receiptCurrencySymbol(code);
 
   /// A human label for the other party in share text: prefer "@handle", fall
   /// back to their name, and only then to a generic phrase — never a bare "@"

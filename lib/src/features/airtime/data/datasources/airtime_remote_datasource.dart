@@ -102,7 +102,8 @@ class AirtimeRemoteDataSourceImpl implements AirtimeRemoteDataSource {
       final response = await grpcClient.utilityPaymentsClient
           .buyAirtime(request, options: options);
 
-      return AirtimeTransactionModel.fromBuyAirtimeResponse(response, currency: currency);
+      return AirtimeTransactionModel.fromBuyAirtimeResponse(response,
+          currency: currency);
     } on GrpcError catch (e) {
       throw Exception('Failed to purchase airtime: ${e.message}');
     }
@@ -196,7 +197,8 @@ class AirtimeRemoteDataSourceImpl implements AirtimeRemoteDataSource {
 
       return response.payments
           .map((payment) => AirtimeTransactionModel.fromBillPaymentProto(
-              payment, currency: 'NGN'))
+              payment,
+              currency: 'NGN'))
           .toList();
     } on GrpcError catch (e) {
       throw Exception('Failed to fetch airtime history: ${e.message}');

@@ -48,7 +48,6 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -61,28 +60,28 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
         if (!didPop) Get.offAllNamed(AppRoutes.billsHub);
       },
       child: Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Get.offAllNamed(AppRoutes.billsHub),
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-        ),
-        title: Text(
-          'Education PINs',
-          style: TextStyle(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
+        backgroundColor: const Color(0xFF0A0A0A),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            onPressed: () => Get.offAllNamed(AppRoutes.billsHub),
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
           ),
+          title: Text(
+            'Education PINs',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          centerTitle: true,
+          // Per-bill voice + chat icons removed — unified utility bills
+          // landing page hosts the single chat/mic entry point now.
         ),
-        centerTitle: true,
-        // Per-bill voice + chat icons removed — unified utility bills
-        // landing page hosts the single chat/mic entry point now.
-      ),
-      body: SafeArea(
-        child: RefreshIndicator(
+        body: SafeArea(
+          child: RefreshIndicator(
             color: _primary,
             backgroundColor: const Color(0xFF1F1F1F),
             onRefresh: () async {
@@ -108,11 +107,10 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
               ),
             ),
           ),
+        ),
       ),
-    ),
     );
   }
-
 
   Widget _buildQuickActions() {
     return Row(
@@ -156,8 +154,7 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
         decoration: BoxDecoration(
           color: _primary.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(14.r),
-          border:
-              Border.all(color: _primary.withValues(alpha: 0.25), width: 1),
+          border: Border.all(color: _primary.withValues(alpha: 0.25), width: 1),
         ),
         child: Column(
           children: [
@@ -229,7 +226,6 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
       ),
     );
   }
-
 
   Widget _buildRecentPurchases() {
     return BlocBuilder<EducationHistoryCubit, EducationHistoryState>(
@@ -306,9 +302,4 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
       ),
     );
   }
-
-
-
-
-
 }

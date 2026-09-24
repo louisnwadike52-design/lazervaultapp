@@ -146,77 +146,77 @@ class _BettingHistoryScreenState extends State<BettingHistoryScreen> {
     return GestureDetector(
       onTap: () => _openReceipt(r),
       child: Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: _card,
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: _divider),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 42.w,
-            height: 42.w,
-            decoration: BoxDecoration(
-              color: _primary.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(11.r),
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: _card,
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: _divider),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 42.w,
+              height: 42.w,
+              decoration: BoxDecoration(
+                color: _primary.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(11.r),
+              ),
+              child: Icon(Icons.sports_soccer, color: _primary, size: 20.sp),
             ),
-            child: Icon(Icons.sports_soccer, color: _primary, size: 20.sp),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${r.platform} · ${r.customerNumber}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(created,
+                      style: TextStyle(color: _textSecondary, fontSize: 11.sp)),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '${r.platform} · ${r.customerNumber}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  '₦${r.amount.toStringAsFixed(0)}',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(height: 2.h),
-                Text(created,
-                    style: TextStyle(color: _textSecondary, fontSize: 11.sp)),
+                SizedBox(height: 4.h),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                  child: Text(
+                    r.status,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '₦${r.amount.toStringAsFixed(0)}',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              SizedBox(height: 4.h),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(6.r),
-                ),
-                child: Text(
-                  r.status,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
     );
   }
 

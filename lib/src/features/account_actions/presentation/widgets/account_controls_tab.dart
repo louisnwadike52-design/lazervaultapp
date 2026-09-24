@@ -244,8 +244,8 @@ class AccountControlsTab extends StatelessWidget {
           TextButton(
             onPressed: () => Get.back(),
             child: Text('Cancel',
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
           ),
           TextButton(
             onPressed: () {

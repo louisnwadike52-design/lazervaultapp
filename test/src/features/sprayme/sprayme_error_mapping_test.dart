@@ -50,33 +50,43 @@ void main() {
     }
   }
 
-  test('503 live_video_disabled maps to a friendly message (NOT "server error")', () async {
+  test(
+      '503 live_video_disabled maps to a friendly message (NOT "server error")',
+      () async {
     final m = await viaPause(_err(503, data: {'error': 'live_video_disabled'}));
     expect(m, contains("Live video isn't available"));
     expect(m.toLowerCase(), isNot(contains('server error')));
   });
 
-  test('409 "session is not live" maps to a precondition message (NOT "already joined")', () async {
+  test(
+      '409 "session is not live" maps to a precondition message (NOT "already joined")',
+      () async {
     final m = await viaPause(_err(409, data: {'error': 'session is not live'}));
     expect(m, contains("stream isn't live"));
     expect(m.toLowerCase(), isNot(contains('already joined')));
   });
 
   test('403 recording_not_entitled maps to a plan message', () async {
-    final m = await viaPause(_err(403, data: {'error': 'recording_not_entitled'}));
+    final m =
+        await viaPause(_err(403, data: {'error': 'recording_not_entitled'}));
     expect(m, contains("isn't available on your plan"));
   });
 
-  test('cohost_disabled / recording_disabled map to friendly gate messages', () async {
-    expect(await viaPause(_err(503, data: {'error': 'cohost_disabled'})), contains('Co-hosting is turned off'));
-    expect(await viaPause(_err(503, data: {'error': 'recording_disabled'})), contains('Recording is turned off'));
+  test('cohost_disabled / recording_disabled map to friendly gate messages',
+      () async {
+    expect(await viaPause(_err(503, data: {'error': 'cohost_disabled'})),
+        contains('Co-hosting is turned off'));
+    expect(await viaPause(_err(503, data: {'error': 'recording_disabled'})),
+        contains('Recording is turned off'));
   });
 
   test('401 maps to session-expired', () async {
     expect(await viaPause(_err(401)), contains('Session expired'));
   });
 
-  test('409 "session is full" on join maps to full message (NOT "already joined")', () async {
+  test(
+      '409 "session is full" on join maps to full message (NOT "already joined")',
+      () async {
     final m = await viaJoin(_err(409, data: {'error': 'session is full'}));
     expect(m, contains('This session is full'));
     expect(m.toLowerCase(), isNot(contains('already joined')));

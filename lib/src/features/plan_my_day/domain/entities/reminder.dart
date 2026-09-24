@@ -96,9 +96,11 @@ class Reminder {
   factory Reminder.fromBackendJson(Map<String, dynamic> json) {
     DateTime ts(dynamic v) {
       if (v is Map && v['seconds'] != null) {
-        return DateTime.fromMillisecondsSinceEpoch((v['seconds'] as num).toInt() * 1000);
+        return DateTime.fromMillisecondsSinceEpoch(
+            (v['seconds'] as num).toInt() * 1000);
       }
-      if (v is String && v.isNotEmpty) return DateTime.tryParse(v) ?? DateTime.now();
+      if (v is String && v.isNotEmpty)
+        return DateTime.tryParse(v) ?? DateTime.now();
       return DateTime.now();
     }
 
@@ -112,11 +114,17 @@ class Reminder {
     final resolvedType = knownTypes.contains(repeatRule)
         ? repeatRule
         : (repeatType == 'once'
-            ? (minutesBefore != null && minutesBefore > 0 ? 'relative' : 'absolute')
+            ? (minutesBefore != null && minutesBefore > 0
+                ? 'relative'
+                : 'absolute')
             : 'recurring');
     List<String> csv(dynamic v) {
       if (v is String && v.trim().isNotEmpty) {
-        return v.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+        return v
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
       }
       return const [];
     }
@@ -135,7 +143,8 @@ class Reminder {
       createdAt: ts(json['created_at']),
       eventTime: json['event_time'] != null ? ts(json['event_time']) : null,
       allDay: json['all_day'] as bool? ?? false,
-      leadOffsets: offsets.isEmpty ? const ['day_before', 'hour_before'] : offsets,
+      leadOffsets:
+          offsets.isEmpty ? const ['day_before', 'hour_before'] : offsets,
       channels: chans.isEmpty ? null : chans,
       category: (json['category'] as String?)?.trim().isNotEmpty == true
           ? json['category'] as String
@@ -148,7 +157,8 @@ class Reminder {
     return {
       'title': title,
       'reminder_time': remindAt.toUtc().toIso8601String(),
-      'repeat_type': reminderType == 'recurring' ? (repeatPattern ?? 'daily') : 'once',
+      'repeat_type':
+          reminderType == 'recurring' ? (repeatPattern ?? 'daily') : 'once',
       'repeat_minutes_before': minutesBefore ?? 0,
       // Persist the canonical type so fromBackendJson restores it exactly. The
       // scheduling worker keys off repeat_type only, so repeat_rule is free here.

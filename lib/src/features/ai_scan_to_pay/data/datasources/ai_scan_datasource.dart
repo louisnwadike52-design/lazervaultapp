@@ -7,14 +7,19 @@ abstract class AiScanDataSource {
   Future<ScanSessionModel> updateScanSession(ScanSessionModel session);
   Future<List<ScanSessionModel>> getScanHistory(String userId);
   Future<void> deleteScanSession(String sessionId);
-  Future<Map<String, dynamic>> extractDataFromImage(String imagePath, ScanType scanType, String sessionId);
+  Future<Map<String, dynamic>> extractDataFromImage(
+      String imagePath, ScanType scanType, String sessionId);
   Future<List<AiChatMessageModel>> getChatHistory(String sessionId);
-  Future<AiChatMessageModel> processAiResponse(String sessionId, String userMessage, Map<String, dynamic>? extractedData);
-  Future<PaymentInstructionModel> generatePaymentInstruction(Map<String, dynamic> extractedData, ScanType scanType, String sessionId);
-  Future<bool> processPayment(PaymentInstructionModel instruction, String userId, String sessionId);
+  Future<AiChatMessageModel> processAiResponse(String sessionId,
+      String userMessage, Map<String, dynamic>? extractedData);
+  Future<PaymentInstructionModel> generatePaymentInstruction(
+      Map<String, dynamic> extractedData, ScanType scanType, String sessionId);
+  Future<bool> processPayment(
+      PaymentInstructionModel instruction, String userId, String sessionId);
 
   // Bank details scan methods
-  Future<BankDetailsModel> scanBankDetails(String imagePath, String userId, String sessionId, String accessToken);
+  Future<BankDetailsModel> scanBankDetails(
+      String imagePath, String userId, String sessionId, String accessToken);
   Future<PaymentReceiptModel> processBankDetailsPayment({
     required BankDetailsModel bankDetails,
     required double amount,
@@ -30,7 +35,8 @@ class AiScanDataSourceImpl implements AiScanDataSource {
   final Map<String, List<AiChatMessageModel>> _chatHistory = {};
 
   @override
-  Future<ScanSessionModel> createScanSession(ScanType scanType, String userId) async {
+  Future<ScanSessionModel> createScanSession(
+      ScanType scanType, String userId) async {
     final session = ScanSessionModel(
       id: 'scan_${DateTime.now().millisecondsSinceEpoch}_${math.Random().nextInt(1000)}',
       scanType: scanType,
@@ -69,7 +75,8 @@ class AiScanDataSourceImpl implements AiScanDataSource {
   }
 
   @override
-  Future<Map<String, dynamic>> extractDataFromImage(String imagePath, ScanType scanType, String sessionId) async {
+  Future<Map<String, dynamic>> extractDataFromImage(
+      String imagePath, ScanType scanType, String sessionId) async {
     // Simulate AI processing delay
     await Future.delayed(const Duration(seconds: 2));
 
@@ -83,7 +90,8 @@ class AiScanDataSourceImpl implements AiScanDataSource {
   }
 
   @override
-  Future<AiChatMessageModel> processAiResponse(String sessionId, String userMessage, Map<String, dynamic>? extractedData) async {
+  Future<AiChatMessageModel> processAiResponse(String sessionId,
+      String userMessage, Map<String, dynamic>? extractedData) async {
     // Add user message to history
     final userMsg = AiChatMessageModel(
       id: 'msg_${DateTime.now().millisecondsSinceEpoch}_user',
@@ -91,29 +99,32 @@ class AiScanDataSourceImpl implements AiScanDataSource {
       isUser: true,
       timestamp: DateTime.now(),
     );
-    
+
     _chatHistory[sessionId]?.add(userMsg);
-    
+
     // Simulate AI processing delay
     await Future.delayed(const Duration(milliseconds: 1500));
-    
+
     // Generate AI response based on context
     final aiResponse = _generateAiResponse(userMessage, extractedData);
-    
+
     final aiMsg = AiChatMessageModel(
       id: 'msg_${DateTime.now().millisecondsSinceEpoch}_ai',
       content: aiResponse,
       isUser: false,
       timestamp: DateTime.now(),
     );
-    
+
     _chatHistory[sessionId]?.add(aiMsg);
-    
+
     return aiMsg;
   }
 
   @override
-  Future<PaymentInstructionModel> generatePaymentInstruction(Map<String, dynamic> extractedData, ScanType scanType, String sessionId) async {
+  Future<PaymentInstructionModel> generatePaymentInstruction(
+      Map<String, dynamic> extractedData,
+      ScanType scanType,
+      String sessionId) async {
     return PaymentInstructionModel(
       id: 'payment_${DateTime.now().millisecondsSinceEpoch}',
       recipient: extractedData['recipient'] ?? 'Unknown Recipient',
@@ -126,7 +137,8 @@ class AiScanDataSourceImpl implements AiScanDataSource {
   }
 
   @override
-  Future<bool> processPayment(PaymentInstructionModel instruction, String userId, String sessionId) async {
+  Future<bool> processPayment(PaymentInstructionModel instruction,
+      String userId, String sessionId) async {
     // Simulate payment processing
     await Future.delayed(const Duration(seconds: 3));
 
@@ -143,7 +155,8 @@ class AiScanDataSourceImpl implements AiScanDataSource {
           'amount': 1250.00,
           'currency': 'USD',
           'reference': 'INV-2024-001',
-          'dueDate': DateTime.now().add(const Duration(days: 30)).toIso8601String(),
+          'dueDate':
+              DateTime.now().add(const Duration(days: 30)).toIso8601String(),
           'description': 'Professional services invoice',
         };
       case ScanType.utilityBill:
@@ -153,7 +166,8 @@ class AiScanDataSourceImpl implements AiScanDataSource {
           'currency': 'USD',
           'reference': 'UTIL-456789',
           'accountNumber': '1234567890',
-          'dueDate': DateTime.now().add(const Duration(days: 14)).toIso8601String(),
+          'dueDate':
+              DateTime.now().add(const Duration(days: 14)).toIso8601String(),
           'billPeriod': 'March 2024',
         };
       case ScanType.accountDetails:
@@ -194,19 +208,24 @@ class AiScanDataSourceImpl implements AiScanDataSource {
     String greeting;
     switch (scanType) {
       case ScanType.invoice:
-        greeting = "Hi! I'm here to help you pay your invoice. Please take a clear photo of your invoice, and I'll extract the payment details for you.";
+        greeting =
+            "Hi! I'm here to help you pay your invoice. Please take a clear photo of your invoice, and I'll extract the payment details for you.";
         break;
       case ScanType.utilityBill:
-        greeting = "Hello! I'll help you pay your utility bill. Scan or photograph your bill, and I'll guide you through the payment process.";
+        greeting =
+            "Hello! I'll help you pay your utility bill. Scan or photograph your bill, and I'll guide you through the payment process.";
         break;
       case ScanType.qrCode:
-        greeting = "Hi there! Ready to scan a QR code for payment? Point your camera at the QR code and I'll process the payment details.";
+        greeting =
+            "Hi there! Ready to scan a QR code for payment? Point your camera at the QR code and I'll process the payment details.";
         break;
       case ScanType.giftCard:
-        greeting = "Welcome! I'll help you redeem your gift card. Please scan the card or enter the details, and I'll process it for you.";
+        greeting =
+            "Welcome! I'll help you redeem your gift card. Please scan the card or enter the details, and I'll process it for you.";
         break;
       default:
-        greeting = "Hello! I'm your AI payment assistant. I'll help you scan and process your payment. What would you like to do?";
+        greeting =
+            "Hello! I'm your AI payment assistant. I'll help you scan and process your payment. What would you like to do?";
     }
 
     return AiChatMessageModel(
@@ -217,26 +236,29 @@ class AiScanDataSourceImpl implements AiScanDataSource {
     );
   }
 
-  String _generateAiResponse(String userMessage, Map<String, dynamic>? extractedData) {
+  String _generateAiResponse(
+      String userMessage, Map<String, dynamic>? extractedData) {
     final lowerMessage = userMessage.toLowerCase();
-    
+
     if (extractedData != null && extractedData.isNotEmpty) {
       // Response when data is extracted
       final amount = extractedData['amount'];
       final recipient = extractedData['recipient'];
-      
+
       return "Great! I've extracted the payment details:\n\n"
           "• Recipient: $recipient\n"
           "• Amount: \$${amount?.toStringAsFixed(2) ?? '0.00'}\n"
           "• Currency: ${extractedData['currency'] ?? 'USD'}\n\n"
           "Would you like me to proceed with this payment? I can walk you through the process step by step.";
     }
-    
-    if (lowerMessage.contains('yes') || lowerMessage.contains('proceed') || lowerMessage.contains('pay')) {
+
+    if (lowerMessage.contains('yes') ||
+        lowerMessage.contains('proceed') ||
+        lowerMessage.contains('pay')) {
       return "Perfect! I'll initiate the payment process for you. Please confirm your payment method and I'll handle the rest. "
           "Would you like to use your default payment method or select a different one?";
     }
-    
+
     if (lowerMessage.contains('help') || lowerMessage.contains('how')) {
       return "I'm here to help! Here's what I can do:\n\n"
           "1. Extract payment details from scanned documents\n"
@@ -245,20 +267,22 @@ class AiScanDataSourceImpl implements AiScanDataSource {
           "4. Provide payment confirmations\n\n"
           "Just tell me what you need assistance with!";
     }
-    
+
     if (lowerMessage.contains('cancel') || lowerMessage.contains('stop')) {
       return "No problem! I've cancelled the current process. If you need help with anything else, just let me know.";
     }
-    
+
     // Default response
     return "I understand. Could you please clarify what you'd like me to help you with? "
         "I can assist with payment processing, answer questions about the extracted details, or guide you through any step of the process.";
   }
 
   @override
-  Future<BankDetailsModel> scanBankDetails(String imagePath, String userId, String sessionId, String accessToken) async {
+  Future<BankDetailsModel> scanBankDetails(String imagePath, String userId,
+      String sessionId, String accessToken) async {
     // Stub implementation - actual implementation is in AiScanRemoteDataSource
-    throw UnimplementedError('scanBankDetails is not implemented in mock datasource');
+    throw UnimplementedError(
+        'scanBankDetails is not implemented in mock datasource');
   }
 
   @override
@@ -271,6 +295,7 @@ class AiScanDataSourceImpl implements AiScanDataSource {
     required String userId,
   }) async {
     // Stub implementation - actual implementation is in AiScanRemoteDataSource
-    throw UnimplementedError('processBankDetailsPayment is not implemented in mock datasource');
+    throw UnimplementedError(
+        'processBankDetailsPayment is not implemented in mock datasource');
   }
-} 
+}

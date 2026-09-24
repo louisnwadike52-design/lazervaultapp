@@ -130,7 +130,8 @@ class AirtimeRepositoryImpl implements AirtimeRepository {
 
     // No mock fallback — surface real errors
     if (remoteDataSource == null) {
-      throw Exception('Remote data source not available. Please check your connection.');
+      throw Exception(
+          'Remote data source not available. Please check your connection.');
     }
     throw Exception('Verification token is required for payment processing');
   }
@@ -176,7 +177,8 @@ class AirtimeRepositoryImpl implements AirtimeRepository {
     }
 
     if (remoteDataSource == null) {
-      throw Exception('Remote data source not available. Please check your connection.');
+      throw Exception(
+          'Remote data source not available. Please check your connection.');
     }
     throw Exception('Verification token is required for transfer processing');
   }
@@ -204,8 +206,7 @@ class AirtimeRepositoryImpl implements AirtimeRepository {
     }
 
     try {
-      final transactions =
-          await localDataSource.getTransactionHistory(userId);
+      final transactions = await localDataSource.getTransactionHistory(userId);
       return transactions;
     } catch (e) {
       throw Exception('Failed to fetch transaction history: $e');
@@ -250,8 +251,7 @@ class AirtimeRepositoryImpl implements AirtimeRepository {
           if (!isValid) error = 'US numbers must be 10 digits';
           break;
         case 'GB':
-          isValid =
-              cleanNumber.length == 11 && cleanNumber.startsWith('07');
+          isValid = cleanNumber.length == 11 && cleanNumber.startsWith('07');
           if (!isValid) {
             error = 'UK mobile numbers must be 11 digits starting with 07';
           }
@@ -270,8 +270,7 @@ class AirtimeRepositoryImpl implements AirtimeRepository {
           }
           break;
         case 'KE':
-          isValid =
-              cleanNumber.length == 10 && cleanNumber.startsWith('07');
+          isValid = cleanNumber.length == 10 && cleanNumber.startsWith('07');
           if (!isValid) {
             error = 'Kenyan numbers must be 10 digits starting with 07';
           }
@@ -344,8 +343,7 @@ class AirtimeRepositoryImpl implements AirtimeRepository {
       final Map<String, int> providerStats = {};
       for (final transaction in transactions) {
         final providerName = transaction.networkProvider.displayName;
-        providerStats[providerName] =
-            (providerStats[providerName] ?? 0) + 1;
+        providerStats[providerName] = (providerStats[providerName] ?? 0) + 1;
       }
 
       return {
@@ -358,9 +356,8 @@ class AirtimeRepositoryImpl implements AirtimeRepository {
             : 0,
         'totalAmount': totalAmount,
         'totalFees': totalFees,
-        'averageAmount': completedTransactions > 0
-            ? totalAmount / completedTransactions
-            : 0,
+        'averageAmount':
+            completedTransactions > 0 ? totalAmount / completedTransactions : 0,
         'providerBreakdown': providerStats,
         'lastTransactionDate':
             transactions.isNotEmpty ? transactions.first.createdAt : null,

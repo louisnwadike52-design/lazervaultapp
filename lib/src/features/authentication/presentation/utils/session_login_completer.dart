@@ -90,7 +90,8 @@ mixin SessionLoginCompleter<T extends StatefulWidget> on State<T> {
           refreshTokenExpiresAt: now.add(const Duration(days: 30)),
         ),
       );
-      AppLogger.event(flow, 'login_success', fields: {'user_id': profile.user.id});
+      AppLogger.event(flow, 'login_success',
+          fields: {'user_id': profile.user.id});
       if (!mounted) return SessionLoginOutcome.network;
       context.read<AuthenticationCubit>().hydrateProfile(profile);
       return SessionLoginOutcome.success;

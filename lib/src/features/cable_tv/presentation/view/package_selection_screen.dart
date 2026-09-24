@@ -144,7 +144,8 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
                     }
 
                     if (state is CableTVError) {
-                      return _buildErrorState(state.message, provider.serviceId);
+                      return _buildErrorState(
+                          state.message, provider.serviceId);
                     }
 
                     if (state is TVPackagesLoaded) {
@@ -282,8 +283,9 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
           ),
           SizedBox(height: 24.h),
           ElevatedButton(
-            onPressed: () =>
-                context.read<CableTVCubit>().getPackages(providerId: providerId),
+            onPressed: () => context
+                .read<CableTVCubit>()
+                .getPackages(providerId: providerId),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF3B82F6),
               shape: RoundedRectangleBorder(

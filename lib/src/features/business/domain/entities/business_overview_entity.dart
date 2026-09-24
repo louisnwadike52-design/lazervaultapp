@@ -70,9 +70,11 @@ class BusinessOverviewEntity {
     int i(dynamic v) => v is num ? v.toInt() : int.tryParse('${v ?? 0}') ?? 0;
     final payroll = (json['payroll'] as Map?)?.cast<String, dynamic>() ?? {};
     final expenses = (json['expenses'] as Map?)?.cast<String, dynamic>() ?? {};
-    final inventory = (json['inventory'] as Map?)?.cast<String, dynamic>() ?? {};
+    final inventory =
+        (json['inventory'] as Map?)?.cast<String, dynamic>() ?? {};
     final tax = (json['tax'] as Map?)?.cast<String, dynamic>() ?? {};
-    final customers = (json['customers'] as Map?)?.cast<String, dynamic>() ?? {};
+    final customers =
+        (json['customers'] as Map?)?.cast<String, dynamic>() ?? {};
     return BusinessOverviewEntity(
       currency: (json['currency'] as String?) ?? 'NGN',
       payrollNetPaid: i(payroll['net_paid']),

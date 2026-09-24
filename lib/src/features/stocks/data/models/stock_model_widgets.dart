@@ -12,7 +12,8 @@ class StockPriceModel extends StockPrice {
 
   factory StockPriceModel.fromJson(Map<String, dynamic> json) {
     return StockPriceModel(
-      timestamp: DateTime.parse(json['timestamp'] ?? DateTime.now().toIso8601String()),
+      timestamp:
+          DateTime.parse(json['timestamp'] ?? DateTime.now().toIso8601String()),
       open: (json['open'] ?? 0.0).toDouble(),
       high: (json['high'] ?? 0.0).toDouble(),
       low: (json['low'] ?? 0.0).toDouble(),
@@ -61,7 +62,8 @@ class PortfolioModel extends Portfolio {
               ?.map((e) => StockHoldingModel.fromJson(e))
               .toList() ??
           [],
-      lastUpdated: DateTime.parse(json['lastUpdated'] ?? DateTime.now().toIso8601String()),
+      lastUpdated: DateTime.parse(
+          json['lastUpdated'] ?? DateTime.now().toIso8601String()),
       availableCash: (json['availableCash'] ?? 0.0).toDouble(),
       totalInvested: (json['totalInvested'] ?? 0.0).toDouble(),
     );
@@ -76,7 +78,8 @@ class PortfolioModel extends Portfolio {
       'totalReturnPercent': totalReturnPercent,
       'dayChange': dayChange,
       'dayChangePercent': dayChangePercent,
-      'holdings': holdings.map((e) => (e as StockHoldingModel).toJson()).toList(),
+      'holdings':
+          holdings.map((e) => (e as StockHoldingModel).toJson()).toList(),
       'lastUpdated': lastUpdated.toIso8601String(),
       'availableCash': availableCash,
       'totalInvested': totalInvested,
@@ -112,7 +115,8 @@ class StockHoldingModel extends StockHolding {
       totalReturnPercent: (json['totalReturnPercent'] ?? 0.0).toDouble(),
       dayChange: (json['dayChange'] ?? 0.0).toDouble(),
       dayChangePercent: (json['dayChangePercent'] ?? 0.0).toDouble(),
-      purchaseDate: DateTime.parse(json['purchaseDate'] ?? DateTime.now().toIso8601String()),
+      purchaseDate: DateTime.parse(
+          json['purchaseDate'] ?? DateTime.now().toIso8601String()),
       logoUrl: json['logoUrl'] ?? '',
     );
   }
@@ -171,8 +175,11 @@ class StockOrderModel extends StockOrder {
         (e) => e.toString().split('.').last == json['status'],
         orElse: () => OrderStatus.pending,
       ),
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
-      executedAt: json['executedAt'] != null ? DateTime.parse(json['executedAt']) : null,
+      createdAt:
+          DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
+      executedAt: json['executedAt'] != null
+          ? DateTime.parse(json['executedAt'])
+          : null,
       executedPrice: json['executedPrice']?.toDouble(),
       executedQuantity: json['executedQuantity']?.toInt(),
       fees: json['fees']?.toDouble(),
@@ -223,7 +230,8 @@ class MarketNewsModel extends MarketNews {
       source: json['source'] ?? '',
       imageUrl: json['imageUrl'] ?? '',
       relatedSymbols: List<String>.from(json['relatedSymbols'] ?? []),
-      publishedAt: DateTime.parse(json['publishedAt'] ?? DateTime.now().toIso8601String()),
+      publishedAt: DateTime.parse(
+          json['publishedAt'] ?? DateTime.now().toIso8601String()),
       url: json['url'] ?? '',
       category: NewsCategory.values.firstWhere(
         (e) => e.toString().split('.').last == json['category'],
@@ -265,8 +273,10 @@ class WatchlistModel extends Watchlist {
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       symbols: List<String>.from(json['symbols'] ?? []),
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
-      lastUpdated: DateTime.parse(json['lastUpdated'] ?? DateTime.now().toIso8601String()),
+      createdAt:
+          DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
+      lastUpdated: DateTime.parse(
+          json['lastUpdated'] ?? DateTime.now().toIso8601String()),
       isDefault: json['isDefault'] ?? false,
     );
   }
@@ -300,7 +310,8 @@ class MarketIndexModel extends MarketIndex {
       value: (json['value'] ?? 0.0).toDouble(),
       change: (json['change'] ?? 0.0).toDouble(),
       changePercent: (json['changePercent'] ?? 0.0).toDouble(),
-      lastUpdated: DateTime.parse(json['lastUpdated'] ?? DateTime.now().toIso8601String()),
+      lastUpdated: DateTime.parse(
+          json['lastUpdated'] ?? DateTime.now().toIso8601String()),
     );
   }
 
@@ -344,8 +355,11 @@ class StockAlertModel extends StockAlert {
       targetValue: (json['targetValue'] ?? 0.0).toDouble(),
       message: json['message'],
       isActive: json['isActive'] ?? true,
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
-      triggeredAt: json['triggeredAt'] != null ? DateTime.parse(json['triggeredAt']) : null,
+      createdAt:
+          DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
+      triggeredAt: json['triggeredAt'] != null
+          ? DateTime.parse(json['triggeredAt'])
+          : null,
     );
   }
 
@@ -383,7 +397,8 @@ class TradingSessionModel extends TradingSession {
     return TradingSessionModel(
       id: json['id'] ?? '',
       userId: json['userId'] ?? '',
-      startTime: DateTime.parse(json['startTime'] ?? DateTime.now().toIso8601String()),
+      startTime:
+          DateTime.parse(json['startTime'] ?? DateTime.now().toIso8601String()),
       endTime: json['endTime'] != null ? DateTime.parse(json['endTime']) : null,
       startingBalance: (json['startingBalance'] ?? 0.0).toDouble(),
       currentBalance: (json['currentBalance'] ?? 0.0).toDouble(),
@@ -445,7 +460,8 @@ class StockAnalysisModel extends StockAnalysis {
               ?.map((e) => FundamentalMetricModel.fromJson(e))
               .toList() ??
           [],
-      lastUpdated: DateTime.parse(json['lastUpdated'] ?? DateTime.now().toIso8601String()),
+      lastUpdated: DateTime.parse(
+          json['lastUpdated'] ?? DateTime.now().toIso8601String()),
     );
   }
 
@@ -456,8 +472,12 @@ class StockAnalysisModel extends StockAnalysis {
       'targetPrice': targetPrice,
       'stopLoss': stopLoss,
       'summary': summary,
-      'technicalIndicators': technicalIndicators.map((e) => (e as TechnicalIndicatorModel).toJson()).toList(),
-      'fundamentalMetrics': fundamentalMetrics.map((e) => (e as FundamentalMetricModel).toJson()).toList(),
+      'technicalIndicators': technicalIndicators
+          .map((e) => (e as TechnicalIndicatorModel).toJson())
+          .toList(),
+      'fundamentalMetrics': fundamentalMetrics
+          .map((e) => (e as FundamentalMetricModel).toJson())
+          .toList(),
       'lastUpdated': lastUpdated.toIso8601String(),
     };
   }
@@ -573,7 +593,8 @@ class OptionContractModel extends OptionContract {
         orElse: () => OptionType.call,
       ),
       strikePrice: (json['strikePrice'] ?? 0.0).toDouble(),
-      expirationDate: DateTime.parse(json['expirationDate'] ?? DateTime.now().toIso8601String()),
+      expirationDate: DateTime.parse(
+          json['expirationDate'] ?? DateTime.now().toIso8601String()),
       premium: (json['premium'] ?? 0.0).toDouble(),
       impliedVolatility: (json['impliedVolatility'] ?? 0.0).toDouble(),
       delta: (json['delta'] ?? 0.0).toDouble(),

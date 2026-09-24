@@ -100,8 +100,8 @@ class IDPayCreatedScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF9B6DFF).withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-            color: const Color(0xFF9B6DFF).withValues(alpha: 0.35)),
+        border:
+            Border.all(color: const Color(0xFF9B6DFF).withValues(alpha: 0.35)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

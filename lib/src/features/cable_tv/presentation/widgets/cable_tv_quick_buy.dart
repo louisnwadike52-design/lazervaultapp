@@ -200,8 +200,8 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
 
   Future<void> _prefillPhone() async {
     try {
-      final raw =
-          await serviceLocator<FlutterSecureStorage>().read(key: 'stored_phone');
+      final raw = await serviceLocator<FlutterSecureStorage>()
+          .read(key: 'stored_phone');
       var d = (raw ?? '').replaceAll(RegExp(r'[^\d]'), '');
       if (d.startsWith('234')) d = d.substring(3);
       if (d.startsWith('0')) d = d.substring(1);
@@ -261,7 +261,10 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
   bool get _phoneValid =>
       RegExp(r'^0\d{10}$').hasMatch(_phoneController.text.trim());
   bool get _ready =>
-      _provider != null && _validation != null && _package != null && _phoneValid;
+      _provider != null &&
+      _validation != null &&
+      _package != null &&
+      _phoneValid;
 
   Future<void> _openPackageSheet() async {
     if (_provider == null) return;
@@ -302,8 +305,7 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
     final card = _cardController.text.trim();
     final phone = _phoneController.text.trim();
     serviceLocator<AccountManager>();
-    final txnId =
-        'cabletv_${DateTime.now().millisecondsSinceEpoch}_$card';
+    final txnId = 'cabletv_${DateTime.now().millisecondsSinceEpoch}_$card';
 
     CableTVPaymentEntity? result;
     setState(() => _submitting = true);
@@ -341,7 +343,8 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
               verificationToken: token,
               idempotencyKey: txnId,
             );
-            result = await completer.future.timeout(const Duration(seconds: 90));
+            result =
+                await completer.future.timeout(const Duration(seconds: 90));
           } finally {
             await sub.cancel();
           }
@@ -361,8 +364,8 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
           'smartCardNumber': card,
           // Auto-renew needs a saved beneficiary to attach to, so force the
           // save on when a schedule was requested and it isn't already saved.
-          'saveBeneficiary': (_saveBeneficiary && _existingBeneficiary == null) ||
-              wantsAuto,
+          'saveBeneficiary':
+              (_saveBeneficiary && _existingBeneficiary == null) || wantsAuto,
           if (_saveNickname != null) 'beneficiaryNickname': _saveNickname,
           // Already-saved card: hand the receipt the existing id so it skips
           // the duplicate save and still wires the auto-renew schedule.
@@ -609,7 +612,8 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
       context,
       accent: _accent,
       title: 'Save this smart card',
-      prompt: 'Give this smart card a nickname so you can find it fast next time.',
+      prompt:
+          'Give this smart card a nickname so you can find it fast next time.',
       hint: 'e.g. Home, Mum, Office',
       initial: _saveNickname ?? '',
     );
@@ -630,8 +634,7 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
   Widget _providerChips() {
     if (_providers.isEmpty && _providersError != null) {
       return Row(children: [
-        Icon(Icons.error_outline,
-            color: const Color(0xFFEF4444), size: 16.sp),
+        Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 16.sp),
         SizedBox(width: 8.w),
         Expanded(
           child: Text("Couldn't load providers",
@@ -646,7 +649,9 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
           ),
           child: Text('Retry',
               style: GoogleFonts.inter(
-                  color: _accent, fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                  color: _accent,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600)),
         ),
       ]);
     }
@@ -742,7 +747,8 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
       decoration: BoxDecoration(
         color: const Color(0xFF10B981).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
+        border:
+            Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
       ),
       child: Row(children: [
         Icon(Icons.verified, color: const Color(0xFF10B981), size: 16.sp),
@@ -777,9 +783,11 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
               _package?.name ??
                   (enabled ? 'Select a package' : 'Select a provider first'),
               style: GoogleFonts.inter(
-                color: _package != null ? Colors.white : const Color(0xFF6B7280),
+                color:
+                    _package != null ? Colors.white : const Color(0xFF6B7280),
                 fontSize: 15.sp,
-                fontWeight: _package != null ? FontWeight.w600 : FontWeight.w400,
+                fontWeight:
+                    _package != null ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
           ),
@@ -834,7 +842,8 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
           hintText: '0803 000 0000',
           hintStyle: GoogleFonts.inter(color: const Color(0xFF6B7280)),
           prefixIcon: _dialCodePrefix(),
-          prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+          prefixIconConstraints:
+              const BoxConstraints(minWidth: 0, minHeight: 0),
           border: InputBorder.none,
           contentPadding:
               EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
@@ -866,7 +875,8 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
     );
   }
 
-  Widget _row(String label, String value, {Color? valueColor, bool bold = false}) {
+  Widget _row(String label, String value,
+      {Color? valueColor, bool bold = false}) {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Text(label, style: GoogleFonts.inter(color: _muted, fontSize: 13.sp)),
       Flexible(
@@ -897,7 +907,8 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
         ),
         child: _submitting
-            ? SizedBox(width: 20.w, height: 20.w, child: LazerVaultLoader.small())
+            ? SizedBox(
+                width: 20.w, height: 20.w, child: LazerVaultLoader.small())
             : Text(
                 _package != null
                     ? 'Pay ₦${_package!.amount.toStringAsFixed(0)}'

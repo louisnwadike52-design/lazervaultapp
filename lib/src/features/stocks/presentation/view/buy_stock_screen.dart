@@ -20,7 +20,8 @@ class BuyStockScreen extends StatefulWidget {
 
 class _BuyStockScreenState extends State<BuyStockScreen>
     with SingleTickerProviderStateMixin {
-  static const double _kDisplayFeeRate = 0.0025; // ~25 bps; server applies tiers
+  static const double _kDisplayFeeRate =
+      0.0025; // ~25 bps; server applies tiers
 
   late TabController _tabController;
   final TextEditingController _amountController = TextEditingController();
@@ -109,10 +110,7 @@ class _BuyStockScreenState extends State<BuyStockScreen>
           child: Column(
             children: [
               _buildHeader(),
-              if (_currentStep == 0)
-                _buildAmountStep()
-              else
-                _buildReviewStep(),
+              if (_currentStep == 0) _buildAmountStep() else _buildReviewStep(),
             ],
           ),
         ),
@@ -293,7 +291,8 @@ class _BuyStockScreenState extends State<BuyStockScreen>
         ),
         labelColor: Colors.white.withValues(alpha: 0.7),
         unselectedLabelColor: Colors.white.withValues(alpha: 0.5),
-        labelStyle: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
+        labelStyle:
+            GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
         unselectedLabelStyle: GoogleFonts.inter(fontSize: 14.sp),
         indicatorPadding: EdgeInsets.all(4.w),
         dividerColor: Colors.transparent,
@@ -435,7 +434,9 @@ class _BuyStockScreenState extends State<BuyStockScreen>
               SizedBox(width: 8.w),
               Expanded(
                 child: TextField(
-                  controller: _tabController.index == 0 ? _amountController : _sharesController,
+                  controller: _tabController.index == 0
+                      ? _amountController
+                      : _sharesController,
                   keyboardType: TextInputType.numberWithOptions(decimal: true),
                   style: GoogleFonts.inter(
                     color: Colors.white,
@@ -557,7 +558,8 @@ class _BuyStockScreenState extends State<BuyStockScreen>
         SizedBox(height: 8.h),
         Row(
           children: [
-            _buildPaymentMethod('Wallet', 'wallet', Icons.account_balance_wallet),
+            _buildPaymentMethod(
+                'Wallet', 'wallet', Icons.account_balance_wallet),
             SizedBox(width: 12.w),
             _buildPaymentMethod('Card', 'card', Icons.credit_card),
           ],
@@ -591,7 +593,9 @@ class _BuyStockScreenState extends State<BuyStockScreen>
             children: [
               Icon(
                 icon,
-                color: isSelected ? const Color(0xFF6366F1) : Colors.white.withValues(alpha: 0.5),
+                color: isSelected
+                    ? const Color(0xFF6366F1)
+                    : Colors.white.withValues(alpha: 0.5),
                 size: 18.sp,
               ),
               SizedBox(width: 8.w),
@@ -637,14 +641,19 @@ class _BuyStockScreenState extends State<BuyStockScreen>
           SizedBox(height: 12.h),
           _buildSummaryItem('Stock', _selectedStock?.symbol ?? '-'),
           _buildSummaryItem('Shares', shares.toStringAsFixed(2)),
-          _buildSummaryItem('Price', _selectedStock != null
-              ? CurrencySymbols.formatAmountWithCurrency(_selectedStock!.currentPrice, ccy)
-              : '-'),
-          _buildSummaryItem('Subtotal', CurrencySymbols.formatAmountWithCurrency(amount, ccy)),
+          _buildSummaryItem(
+              'Price',
+              _selectedStock != null
+                  ? CurrencySymbols.formatAmountWithCurrency(
+                      _selectedStock!.currentPrice, ccy)
+                  : '-'),
+          _buildSummaryItem('Subtotal',
+              CurrencySymbols.formatAmountWithCurrency(amount, ccy)),
           _buildSummaryItem('Est. platform fee (~0.25%)',
               CurrencySymbols.formatAmountWithCurrency(fee, ccy)),
           Divider(color: Colors.white.withValues(alpha: 0.1)),
-          _buildSummaryItem('Total', CurrencySymbols.formatAmountWithCurrency(total, ccy),
+          _buildSummaryItem(
+              'Total', CurrencySymbols.formatAmountWithCurrency(total, ccy),
               isTotal: true),
         ],
       ),
@@ -660,9 +669,8 @@ class _BuyStockScreenState extends State<BuyStockScreen>
           Text(
             label,
             style: GoogleFonts.inter(
-              color: isTotal
-                  ? Colors.white
-                  : Colors.white.withValues(alpha: 0.7),
+              color:
+                  isTotal ? Colors.white : Colors.white.withValues(alpha: 0.7),
               fontSize: isTotal ? 16.sp : 14.sp,
               fontWeight: isTotal ? FontWeight.w600 : FontWeight.normal,
             ),
@@ -670,9 +678,7 @@ class _BuyStockScreenState extends State<BuyStockScreen>
           Text(
             value,
             style: GoogleFonts.inter(
-              color: isTotal
-                  ? const Color(0xFF6366F1)
-                  : Colors.white,
+              color: isTotal ? const Color(0xFF6366F1) : Colors.white,
               fontSize: isTotal ? 16.sp : 14.sp,
               fontWeight: isTotal ? FontWeight.w700 : FontWeight.w600,
             ),
@@ -742,7 +748,8 @@ class _BuyStockScreenState extends State<BuyStockScreen>
     );
   }
 
-  Widget _buildReviewCard(double amount, double shares, double fee, double total) {
+  Widget _buildReviewCard(
+      double amount, double shares, double fee, double total) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -776,7 +783,8 @@ class _BuyStockScreenState extends State<BuyStockScreen>
                 ),
                 child: Center(
                   child: Text(
-                    _selectedStock?.symbol.substring(0, 2).toUpperCase() ?? '??',
+                    _selectedStock?.symbol.substring(0, 2).toUpperCase() ??
+                        '??',
                     style: GoogleFonts.inter(
                       color: const Color(0xFF6366F1),
                       fontSize: 14.sp,

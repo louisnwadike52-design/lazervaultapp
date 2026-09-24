@@ -1,9 +1,11 @@
 class SprayWallet {
   final String id;
   final String userId;
+
   /// Spendable spray credit — bought from the personal account via buyGiftCredit,
   /// drained as the user sprays. Joiners spend from here.
   final int balance;
+
   /// Accumulated received gifts (creator earnings), withdrawable to personal.
   final int earningsBalance;
   final String currency;

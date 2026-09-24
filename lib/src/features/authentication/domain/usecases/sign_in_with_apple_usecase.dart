@@ -11,4 +11,4 @@ class SignInWithAppleUseCase {
   Future<Either<Failure, ProfileEntity>> call() async {
     return _repository.signInWithApple();
   }
-} 
+}

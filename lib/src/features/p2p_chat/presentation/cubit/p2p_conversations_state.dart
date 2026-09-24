@@ -32,8 +32,13 @@ class P2PConversationsLoaded extends P2PConversationsState {
   });
 
   @override
-  List<Object?> get props =>
-      [conversations, incomingRequests, totalUnread, requestCount, upcomingBirthdays];
+  List<Object?> get props => [
+        conversations,
+        incomingRequests,
+        totalUnread,
+        requestCount,
+        upcomingBirthdays
+      ];
 }
 
 class P2PConversationsError extends P2PConversationsState {

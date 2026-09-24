@@ -101,8 +101,8 @@ void main() {
     test('a row with no product signal still falls back to insurance', () {
       // Unchanged behaviour: when the category tells us nothing, the
       // service_name fallback is all there is.
-      expect(svcType('hold_capture', 'Capture'),
-          TransactionServiceType.insurance);
+      expect(
+          svcType('hold_capture', 'Capture'), TransactionServiceType.insurance);
     });
   });
 
@@ -121,8 +121,8 @@ void depositClassificationTests() {
   group('account deposits resolve to the deposit identity', () {
     test('a banking-service deposit is not unknown', () {
       expect(
-        inferServiceTypeFromCategory(
-            'deposit', 'credit', 'Deposit from Nnaemeka Ezeke', '', 'banking-service'),
+        inferServiceTypeFromCategory('deposit', 'credit',
+            'Deposit from Nnaemeka Ezeke', '', 'banking-service'),
         TransactionServiceType.deposit,
       );
     });
@@ -132,7 +132,8 @@ void depositClassificationTests() {
       // domain, the recovery path changes shape and this test should be
       // revisited rather than silently diverging.
       expect(
-        classifyDomain('deposit', 'Deposit from Nnaemeka Ezeke', '', 'banking-service'),
+        classifyDomain(
+            'deposit', 'Deposit from Nnaemeka Ezeke', '', 'banking-service'),
         '',
       );
     });

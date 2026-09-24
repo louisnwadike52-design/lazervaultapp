@@ -219,9 +219,7 @@ class _DashboardActionSheetState extends State<_DashboardActionSheet> {
             iconBackground: const Color(0xFF3B82F6).withValues(alpha: 0.12),
             label: 'Refresh accounts',
             description: 'Pull the latest balances and dashboard data.',
-            trailing: _busy
-                ? LazerVaultLoader(size: 18)
-                : null,
+            trailing: _busy ? LazerVaultLoader(size: 18) : null,
             onTap: _runRefresh,
             enabled: !_busy,
           ),

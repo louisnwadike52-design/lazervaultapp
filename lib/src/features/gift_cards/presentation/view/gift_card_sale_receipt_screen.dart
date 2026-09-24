@@ -55,7 +55,8 @@ class GiftCardSaleReceiptScreen extends StatefulWidget {
   });
 
   @override
-  State<GiftCardSaleReceiptScreen> createState() => _GiftCardSaleReceiptScreenState();
+  State<GiftCardSaleReceiptScreen> createState() =>
+      _GiftCardSaleReceiptScreenState();
 }
 
 class _GiftCardSaleReceiptScreenState extends State<GiftCardSaleReceiptScreen> {
@@ -186,7 +187,8 @@ class _GiftCardSaleReceiptScreenState extends State<GiftCardSaleReceiptScreen> {
         elevation: 0,
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18),
+          icon: const Icon(Icons.arrow_back_ios_new,
+              color: Colors.white, size: 18),
         ),
         // Mark + wordmark, matching the transfer receipt so a screenshot from
         // either flow carries the same identity.
@@ -308,7 +310,8 @@ class _GiftCardSaleReceiptScreenState extends State<GiftCardSaleReceiptScreen> {
         SizedBox(height: 14.h),
         Text(
           _amountLabel,
-          style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF8E8E93)),
+          style: GoogleFonts.inter(
+              fontSize: 12.sp, color: const Color(0xFF8E8E93)),
         ),
         SizedBox(height: 4.h),
         Text(
@@ -403,7 +406,8 @@ class _GiftCardSaleReceiptScreenState extends State<GiftCardSaleReceiptScreen> {
             width: 110.w,
             child: Text(
               label,
-              style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF8E8E93)),
+              style: GoogleFonts.inter(
+                  fontSize: 13.sp, color: const Color(0xFF8E8E93)),
             ),
           ),
           Expanded(
@@ -443,7 +447,8 @@ class _GiftCardSaleReceiptScreenState extends State<GiftCardSaleReceiptScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFFEF4444).withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.28)),
+        border:
+            Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.28)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -583,8 +588,8 @@ class _GiftCardSaleReceiptScreenState extends State<GiftCardSaleReceiptScreen> {
     try {
       await GiftCardSalePdfService.downloadSaleReceipt(sale: sale);
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text(ReceiptDownload.successBody)));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(ReceiptDownload.successBody)));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)

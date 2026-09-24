@@ -109,7 +109,8 @@ class PhoneLoginTwoFactorRequired extends PhonePasscodeState {
   final String twoFactorToken;
   final String method;
 
-  const PhoneLoginTwoFactorRequired({required this.twoFactorToken, required this.method});
+  const PhoneLoginTwoFactorRequired(
+      {required this.twoFactorToken, required this.method});
 
   @override
   List<Object?> get props => [twoFactorToken, method];
@@ -119,7 +120,7 @@ class PhoneLoginTwoFactorRequired extends PhonePasscodeState {
 /// one-time code before a session is issued. The screen routes to LoginOtpScreen.
 class PhoneLoginStepUpRequired extends PhonePasscodeState {
   final String stepUpToken;
-  final String method;      // "email" | "sms"
+  final String method; // "email" | "sms"
   final String destination; // masked
 
   /// Code lifetime in seconds as the server reported it. 0 = not supplied.

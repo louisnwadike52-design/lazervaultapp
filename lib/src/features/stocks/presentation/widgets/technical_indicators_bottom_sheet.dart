@@ -15,10 +15,12 @@ class TechnicalIndicatorsBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<TechnicalIndicatorsBottomSheet> createState() => _TechnicalIndicatorsBottomSheetState();
+  State<TechnicalIndicatorsBottomSheet> createState() =>
+      _TechnicalIndicatorsBottomSheetState();
 }
 
-class _TechnicalIndicatorsBottomSheetState extends State<TechnicalIndicatorsBottomSheet> {
+class _TechnicalIndicatorsBottomSheetState
+    extends State<TechnicalIndicatorsBottomSheet> {
   late List<String> _tempSelectedIndicators;
 
   @override
@@ -57,7 +59,7 @@ class _TechnicalIndicatorsBottomSheetState extends State<TechnicalIndicatorsBott
               ),
             ),
           ),
-          
+
           // Header
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -83,21 +85,21 @@ class _TechnicalIndicatorsBottomSheetState extends State<TechnicalIndicatorsBott
               ],
             ),
           ),
-          
+
           SizedBox(height: 16.h),
-          
+
           // Scrollable indicators list
           Flexible(
             child: SingleChildScrollView(
               padding: EdgeInsets.symmetric(horizontal: 20.w),
               child: Column(
-                children: widget.availableIndicators.map((indicator) => 
-                  _buildIndicatorTile(indicator)
-                ).toList(),
+                children: widget.availableIndicators
+                    .map((indicator) => _buildIndicatorTile(indicator))
+                    .toList(),
               ),
             ),
           ),
-          
+
           // Action buttons
           Container(
             padding: EdgeInsets.all(20.w),
@@ -166,7 +168,7 @@ class _TechnicalIndicatorsBottomSheetState extends State<TechnicalIndicatorsBott
 
   Widget _buildIndicatorTile(String indicator) {
     final isSelected = _tempSelectedIndicators.contains(indicator);
-    
+
     return Container(
       margin: EdgeInsets.only(bottom: 8.h),
       child: Material(
@@ -185,12 +187,16 @@ class _TechnicalIndicatorsBottomSheetState extends State<TechnicalIndicatorsBott
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
             decoration: BoxDecoration(
-              color: isSelected ? Colors.white.withValues(alpha: 0.1) : Colors.transparent,
+              color: isSelected
+                  ? Colors.white.withValues(alpha: 0.1)
+                  : Colors.transparent,
               borderRadius: BorderRadius.circular(12.r),
-              border: isSelected ? Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
-                width: 1,
-              ) : null,
+              border: isSelected
+                  ? Border.all(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      width: 1,
+                    )
+                  : null,
             ),
             child: Row(
               children: [
@@ -200,13 +206,12 @@ class _TechnicalIndicatorsBottomSheetState extends State<TechnicalIndicatorsBott
                   decoration: BoxDecoration(
                     color: isSelected ? Colors.white : Colors.transparent,
                     boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.08),
+                        blurRadius: 6,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                     borderRadius: BorderRadius.circular(4.r),
                   ),
                   child: isSelected
@@ -239,7 +244,8 @@ class _TechnicalIndicatorsBottomSheetState extends State<TechnicalIndicatorsBott
                 ),
                 if (isSelected)
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                     decoration: BoxDecoration(
                       color: Colors.green.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8.r),
@@ -281,4 +287,4 @@ class _TechnicalIndicatorsBottomSheetState extends State<TechnicalIndicatorsBott
         return 'Technical analysis indicator';
     }
   }
-} 
+}

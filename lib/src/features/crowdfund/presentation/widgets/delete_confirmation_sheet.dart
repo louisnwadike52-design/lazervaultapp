@@ -39,7 +39,8 @@ class DeleteConfirmationSheet extends StatelessWidget {
           SizedBox(height: 16.h),
           Row(
             children: [
-              const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 24),
+              const Icon(Icons.delete_outline,
+                  color: Color(0xFFEF4444), size: 24),
               SizedBox(width: 10.w),
               Text(
                 'Delete campaign',
@@ -102,7 +103,9 @@ class DeleteConfirmationSheet extends StatelessWidget {
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
-                    context.read<CrowdfundCubit>().deleteCrowdfund(crowdfund.id);
+                    context
+                        .read<CrowdfundCubit>()
+                        .deleteCrowdfund(crowdfund.id);
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(

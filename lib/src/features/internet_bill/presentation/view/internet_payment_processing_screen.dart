@@ -11,7 +11,6 @@ import '../cubit/internet_bill_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'internet_payment_processing_screen_widgets.dart';
 
-
 /// Stepped processing screen for internet subscription purchases.
 /// Mirrors the electricity bill processing screen's visual pattern:
 /// vertical step indicators with connectors, animated active step,
@@ -428,8 +427,7 @@ class _InternetPaymentProcessingScreenState
                     ],
                   ),
                 ),
-                if (isActive && !_hasFailed)
-                  LazerVaultLoader.small(),
+                if (isActive && !_hasFailed) LazerVaultLoader.small(),
                 if (isCompleted)
                   Icon(Icons.check_circle,
                       color: step.activeColor, size: 20.sp),
@@ -670,8 +668,7 @@ class _InternetPaymentProcessingScreenState
     if (m.contains('invalid') &&
         (m.contains('account number') || m.contains('account'))) {
       return (
-        title:
-            'Account number not recognised by ${providerDisplay()}',
+        title: 'Account number not recognised by ${providerDisplay()}',
         detail: hintForProvider() ??
             'Please double-check the account number and try again.',
       );
@@ -683,8 +680,7 @@ class _InternetPaymentProcessingScreenState
             'then try again.',
       );
     }
-    if (m.contains('biller') &&
-        (m.contains('unavail') || m.contains('down'))) {
+    if (m.contains('biller') && (m.contains('unavail') || m.contains('down'))) {
       return (
         title: '${providerDisplay()} is temporarily unavailable',
         detail: 'The provider is offline. Try again in a few minutes.',
@@ -767,8 +763,7 @@ class _InternetPaymentProcessingScreenState
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.lock_outline,
-              size: 16.sp, color: const Color(0xFF4E03D0)),
+          Icon(Icons.lock_outline, size: 16.sp, color: const Color(0xFF4E03D0)),
           SizedBox(width: 8.w),
           Expanded(
             child: Text(

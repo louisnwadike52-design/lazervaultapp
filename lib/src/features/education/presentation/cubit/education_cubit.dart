@@ -97,7 +97,8 @@ class EducationCubit extends Cubit<EducationState> {
       if (isClosed) return;
       if (_isNetworkError(e)) {
         emit(const EducationPurchaseFailed(
-          message: 'No internet connection. Please check your network and try again.',
+          message:
+              'No internet connection. Please check your network and try again.',
         ));
       } else {
         emit(EducationPurchaseFailed(message: _friendlyErrorMessage(e)));

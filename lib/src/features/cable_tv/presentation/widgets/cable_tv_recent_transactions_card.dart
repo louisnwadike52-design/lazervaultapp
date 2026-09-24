@@ -44,8 +44,7 @@ class _CableTVRecentTransactionsCardState
   }
 
   Future<List<pb.BillPayment>> _fetch() async {
-    final grpcClient =
-        GetIt.I<GrpcClient>(instanceName: 'commerceGrpcClient');
+    final grpcClient = GetIt.I<GrpcClient>(instanceName: 'commerceGrpcClient');
     final req = pb.GetBillPaymentHistoryRequest()
       ..billType = 'cable_tv'
       ..limit = 3;
@@ -276,8 +275,7 @@ class _CableTVRecentTransactionsCardState
           Expanded(
             child: Text(
               'Couldn\'t load recent purchases',
-              style: GoogleFonts.inter(
-                  color: _textSecondary, fontSize: 12.sp),
+              style: GoogleFonts.inter(color: _textSecondary, fontSize: 12.sp),
             ),
           ),
           GestureDetector(

@@ -26,10 +26,20 @@ class _RecipientChipsBuilderState extends State<RecipientChipsBuilder> {
   late RecipientFilterType _selectedFilterType;
 
   final List<RecipientFilterChip> recipientFilterChips = [
-    RecipientFilterChip(text: 'All', filterType: RecipientFilterType.all, isSelected: true),
-    RecipientFilterChip(text: 'Favorites', filterType: RecipientFilterType.favorites, isSelected: false),
-    RecipientFilterChip(text: 'Recurring', filterType: RecipientFilterType.recurring, isSelected: false),
-    RecipientFilterChip(text: 'History', filterType: RecipientFilterType.history, isSelected: false),
+    RecipientFilterChip(
+        text: 'All', filterType: RecipientFilterType.all, isSelected: true),
+    RecipientFilterChip(
+        text: 'Favorites',
+        filterType: RecipientFilterType.favorites,
+        isSelected: false),
+    RecipientFilterChip(
+        text: 'Recurring',
+        filterType: RecipientFilterType.recurring,
+        isSelected: false),
+    RecipientFilterChip(
+        text: 'History',
+        filterType: RecipientFilterType.history,
+        isSelected: false),
   ];
 
   @override
@@ -42,7 +52,8 @@ class _RecipientChipsBuilderState extends State<RecipientChipsBuilder> {
   @override
   void didUpdateWidget(covariant RecipientChipsBuilder oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.selectedFilter != null && widget.selectedFilter != _selectedFilterType) {
+    if (widget.selectedFilter != null &&
+        widget.selectedFilter != _selectedFilterType) {
       _selectedFilterType = widget.selectedFilter!;
       _updateChipsSelection();
     }

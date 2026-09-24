@@ -125,7 +125,8 @@ class _CryptoProcessingScreenState extends State<CryptoProcessingScreen>
           // Unexpected state
           setState(() {
             _state = ProcessingState.error;
-            _errorMessage = 'Transaction could not be completed. Please try again.';
+            _errorMessage =
+                'Transaction could not be completed. Please try again.';
           });
           _rotationController.stop();
         }
@@ -173,7 +174,9 @@ class _CryptoProcessingScreenState extends State<CryptoProcessingScreen>
       fiatAmount: widget.fiatAmount,
       networkFee: networkFee,
       tradingFee: tradingFee,
-      totalAmount: widget.transactionType == CryptoTransactionType.buy ? total : widget.fiatAmount - fee,
+      totalAmount: widget.transactionType == CryptoTransactionType.buy
+          ? total
+          : widget.fiatAmount - fee,
       paymentMethod: widget.paymentMethod,
       cryptoId: widget.cryptoId,
       cryptoQuantity: widget.cryptoQuantity,
@@ -195,7 +198,8 @@ class _CryptoProcessingScreenState extends State<CryptoProcessingScreen>
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Row(
           children: [
             Icon(Icons.error_outline, color: Colors.red, size: 28.sp),
@@ -348,7 +352,8 @@ class _CryptoProcessingScreenState extends State<CryptoProcessingScreen>
           SizedBox(height: 12.h),
           _buildProgressStep('Fetching exchange rate', true),
           SizedBox(height: 12.h),
-          _buildProgressStep('Executing ${_getTransactionTitle().toLowerCase()}', true),
+          _buildProgressStep(
+              'Executing ${_getTransactionTitle().toLowerCase()}', true),
           SizedBox(height: 12.h),
           _buildProgressStep('Confirming transaction', false),
         ],

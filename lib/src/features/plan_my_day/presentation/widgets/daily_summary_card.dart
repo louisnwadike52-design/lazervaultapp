@@ -24,7 +24,8 @@ class DailySummaryCard extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: _getProductivityColor(summary.productivityScore).withOpacity(0.3),
+          color:
+              _getProductivityColor(summary.productivityScore).withOpacity(0.3),
         ),
       ),
       child: Column(
@@ -67,7 +68,8 @@ class DailySummaryCard extends StatelessWidget {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: _getProductivityColor(summary.productivityScore).withOpacity(0.2),
+                  color: _getProductivityColor(summary.productivityScore)
+                      .withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Text(

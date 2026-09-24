@@ -1,5 +1,6 @@
 import '../../../../generated/electricity_bill.pbgrpc.dart' as pb;
-import '../../../../generated/google/protobuf/timestamp.pb.dart' as pb_timestamp;
+import '../../../../generated/google/protobuf/timestamp.pb.dart'
+    as pb_timestamp;
 import '../../../../core/network/grpc_client.dart';
 import '../models/provider_model.dart';
 import '../models/bill_payment_model.dart';
@@ -121,7 +122,8 @@ abstract class ElectricityBillRemoteDataSource {
   Future<void> deleteReminder({required String reminderId});
 }
 
-class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSource {
+class ElectricityBillRemoteDataSourceImpl
+    implements ElectricityBillRemoteDataSource {
   final GrpcClient grpcClient;
 
   ElectricityBillRemoteDataSourceImpl({required this.grpcClient});
@@ -173,7 +175,8 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
 
     return MeterValidationResult(
       customerName: response.customerName,
-      customerAddress: response.hasCustomerAddress() ? response.customerAddress : null,
+      customerAddress:
+          response.hasCustomerAddress() ? response.customerAddress : null,
       meterNumber: response.meterNumber,
       meterType: MeterTypeExtension.fromString(response.meterType),
       isValid: response.isValid,
@@ -184,8 +187,7 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
   Future<SmartMeterValidationResult> smartValidateMeter({
     required String meterNumber,
   }) async {
-    final request = pb.SmartValidateMeterRequest()
-      ..meterNumber = meterNumber;
+    final request = pb.SmartValidateMeterRequest()..meterNumber = meterNumber;
 
     final options = await grpcClient.callOptions;
     final response = await grpcClient.electricityBillClient.smartValidateMeter(
@@ -196,7 +198,8 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
     return SmartMeterValidationResult(
       isValid: response.isValid,
       customerName: response.customerName,
-      customerAddress: response.hasCustomerAddress() ? response.customerAddress : null,
+      customerAddress:
+          response.hasCustomerAddress() ? response.customerAddress : null,
       meterType: response.meterType,
       meterNumber: response.meterNumber,
       providerCode: response.providerCode,
@@ -280,8 +283,7 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
 
   @override
   Future<BillPaymentModel> verifyPayment({required String paymentId}) async {
-    final request = pb.VerifyPaymentRequest()
-      ..paymentId = paymentId;
+    final request = pb.VerifyPaymentRequest()..paymentId = paymentId;
 
     final options = await grpcClient.callOptions;
     final response = await grpcClient.electricityBillClient.verifyPayment(
@@ -293,7 +295,8 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
   }
 
   @override
-  Future<List<BillPaymentModel>> getPaymentHistory({int? limit, int? offset}) async {
+  Future<List<BillPaymentModel>> getPaymentHistory(
+      {int? limit, int? offset}) async {
     final request = pb.GetPaymentHistoryRequest()
       ..limit = limit ?? 50
       ..offset = offset ?? 0;
@@ -310,9 +313,9 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
   }
 
   @override
-  Future<BillPaymentModel> getPaymentReceipt({required String paymentId}) async {
-    final request = pb.GetPaymentReceiptRequest()
-      ..paymentId = paymentId;
+  Future<BillPaymentModel> getPaymentReceipt(
+      {required String paymentId}) async {
+    final request = pb.GetPaymentReceiptRequest()..paymentId = paymentId;
 
     final options = await grpcClient.callOptions;
     final response = await grpcClient.electricityBillClient.getPaymentReceipt(
@@ -616,8 +619,7 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
     bool? isRecurring,
     ReminderRecurrenceType? recurrenceType,
   }) async {
-    final request = pb.UpdateReminderRequest()
-      ..reminderId = reminderId;
+    final request = pb.UpdateReminderRequest()..reminderId = reminderId;
 
     if (title != null) {
       request.title = title;
@@ -650,8 +652,7 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
 
   @override
   Future<void> markReminderComplete({required String reminderId}) async {
-    final request = pb.MarkReminderCompleteRequest()
-      ..reminderId = reminderId;
+    final request = pb.MarkReminderCompleteRequest()..reminderId = reminderId;
 
     final options = await grpcClient.callOptions;
     await grpcClient.electricityBillClient.markReminderComplete(
@@ -662,8 +663,7 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
 
   @override
   Future<void> deleteReminder({required String reminderId}) async {
-    final request = pb.DeleteReminderRequest()
-      ..reminderId = reminderId;
+    final request = pb.DeleteReminderRequest()..reminderId = reminderId;
 
     final options = await grpcClient.callOptions;
     await grpcClient.electricityBillClient.deleteReminder(

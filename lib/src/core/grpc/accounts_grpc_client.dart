@@ -118,8 +118,7 @@ class AccountsGrpcClient {
     bool includeExternalBanks = true,
     String? locale,
   }) async {
-    final request = GetTransactionStatisticsRequest()
-      ..accountId = accountId;
+    final request = GetTransactionStatisticsRequest()..accountId = accountId;
 
     if (locale != null && locale.isNotEmpty) {
       request.locale = locale;
@@ -205,8 +204,7 @@ class AccountsGrpcClient {
   Future<Account> getAccount({
     required String accountId,
   }) async {
-    final request = GetAccountRequest()
-      ..accountId = accountId;
+    final request = GetAccountRequest()..accountId = accountId;
 
     final options = await _callOptionsHelper.withAuth();
 
@@ -315,8 +313,7 @@ class AccountsGrpcClient {
     bool includeExternalBanks = true,
     String? locale,
   }) async {
-    final request = GetCategoryAnalyticsRequest()
-      ..accountId = accountId;
+    final request = GetCategoryAnalyticsRequest()..accountId = accountId;
 
     if (locale != null && locale.isNotEmpty) {
       request.locale = locale;
@@ -373,8 +370,7 @@ class AccountsGrpcClient {
     bool includeExternalBanks = true,
     String? locale,
   }) async {
-    final request = GetExpenseTimeSeriesRequest()
-      ..accountId = accountId;
+    final request = GetExpenseTimeSeriesRequest()..accountId = accountId;
 
     if (locale != null && locale.isNotEmpty) {
       request.locale = locale;

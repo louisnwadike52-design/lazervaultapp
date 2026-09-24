@@ -15,7 +15,6 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'lock_fund_details_screen_widgets.dart';
 
-
 class LockFundDetailsScreen extends StatefulWidget {
   final LockFund lockFund;
 
@@ -304,9 +303,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
     final bg = filled
         ? (enabled ? accent : accent.withValues(alpha: 0.15))
         : Colors.white.withValues(alpha: 0.04);
-    final border = filled
-        ? Colors.transparent
-        : const Color(0xFF2D2D2D);
+    final border = filled ? Colors.transparent : const Color(0xFF2D2D2D);
     return GestureDetector(
       onTap: enabled
           ? () {
@@ -539,7 +536,10 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                   height: 8.h,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [progressColor, progressColor.withValues(alpha: 0.7)],
+                      colors: [
+                        progressColor,
+                        progressColor.withValues(alpha: 0.7)
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(4.r),
                   ),
@@ -654,7 +654,8 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
           _buildDetailRow('Principal Amount', lock.formattedAmount),
           _buildDetailRow('Interest Rate', lock.formattedInterestRate),
           _buildDetailRow('Lock Duration', lock.durationText),
-          _buildDetailRow('Auto-Renew', lock.autoRenew ? 'Enabled' : 'Disabled'),
+          _buildDetailRow(
+              'Auto-Renew', lock.autoRenew ? 'Enabled' : 'Disabled'),
           if (lock.transactionId != null)
             _buildDetailRow('Transaction ID', lock.transactionId!),
           if (lock.goalDescription?.isNotEmpty == true)
@@ -854,8 +855,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
   Widget _buildActivitySection() {
     return BlocBuilder<LockFundsCubit, LockFundsState>(
       buildWhen: (prev, next) =>
-          next is LockFundDetailsLoaded ||
-          next is LockFundsLoading,
+          next is LockFundDetailsLoaded || next is LockFundsLoading,
       builder: (context, state) {
         List<LockTransaction>? txs;
         if (state is LockFundDetailsLoaded) {
@@ -873,10 +873,14 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
             children: [
               Row(
                 children: [
-                  Icon(Icons.history_rounded, color: const Color(0xFF8B5CF6), size: 18.sp),
+                  Icon(Icons.history_rounded,
+                      color: const Color(0xFF8B5CF6), size: 18.sp),
                   SizedBox(width: 8.w),
-                  Text('Activity', style: GoogleFonts.inter(
-                    color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w700)),
+                  Text('Activity',
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w700)),
                 ],
               ),
               SizedBox(height: 14.h),
@@ -921,14 +925,16 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
       child: Row(
         children: [
           Container(
-            width: 32.w, height: 32.w,
+            width: 32.w,
+            height: 32.w,
             decoration: BoxDecoration(
               color: amountColor.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(9.r),
             ),
             child: Icon(
               isCredit ? Icons.south_west_rounded : Icons.north_east_rounded,
-              color: amountColor, size: 16.sp,
+              color: amountColor,
+              size: 16.sp,
             ),
           ),
           SizedBox(width: 12.w),
@@ -939,13 +945,15 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                 Text(
                   _humanizeTxType(tx.transactionType),
                   style: GoogleFonts.inter(
-                    color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600),
+                      color: Colors.white,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600),
                 ),
                 SizedBox(height: 2.h),
                 Text(
                   DateFormat.yMMMd().add_jm().format(tx.transactionDate),
                   style: GoogleFonts.inter(
-                    color: const Color(0xFFB7ABDA), fontSize: 11.sp),
+                      color: const Color(0xFFB7ABDA), fontSize: 11.sp),
                 ),
               ],
             ),
@@ -953,7 +961,9 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
           Text(
             '$sign${CurrencySymbols.getSymbol(widget.lockFund.currency)}${tx.amount.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
-              color: amountColor, fontSize: 13.sp, fontWeight: FontWeight.w700),
+                color: amountColor,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w700),
           ),
         ],
       ),
@@ -1006,5 +1016,4 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
       ),
     );
   }
-
 }

@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 part 'invoice_entity_widgets.dart';
 
-
 class Invoice extends Equatable {
   final String id;
 
@@ -217,7 +216,9 @@ class Invoice extends Equatable {
   }
 
   bool get isOverdue {
-    if (dueDate == null || status == InvoiceStatus.paid || status == InvoiceStatus.partiallyPaid) return false;
+    if (dueDate == null ||
+        status == InvoiceStatus.paid ||
+        status == InvoiceStatus.partiallyPaid) return false;
     return DateTime.now().isAfter(dueDate!);
   }
 
@@ -226,8 +227,7 @@ class Invoice extends Equatable {
   int get paidUsersCount =>
       taggedUsers?.where((u) => u.status == 'paid').length ?? 0;
 
-  int get unpaidUsersCount =>
-      (taggedUsers?.length ?? 0) - paidUsersCount;
+  int get unpaidUsersCount => (taggedUsers?.length ?? 0) - paidUsersCount;
 
   /// What has actually been paid so far. Uses each paid tag's real
   /// `amountPaid` (correct for custom splits); a paid tag whose amountPaid is
@@ -286,4 +286,4 @@ class Invoice extends Equatable {
         return 'Quote';
     }
   }
-} 
+}

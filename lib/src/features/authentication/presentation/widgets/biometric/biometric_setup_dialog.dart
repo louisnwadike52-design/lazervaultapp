@@ -54,9 +54,8 @@ class _DialogBody extends StatelessWidget {
   IconData get _icon =>
       _isOs ? Icons.settings_suggest_rounded : Icons.fingerprint;
 
-  String get _title => _isOs
-      ? 'Set up $label on your phone first'
-      : 'Turn on $label login';
+  String get _title =>
+      _isOs ? 'Set up $label on your phone first' : 'Turn on $label login';
 
   String get _body => _isOs
       ? 'To sign in with $label, your phone needs a screen lock (PIN, pattern '
@@ -147,7 +146,8 @@ class _DialogBody extends StatelessWidget {
             ),
             SizedBox(height: 2.h),
             // Hairline for visual grounding on very small screens.
-            Divider(color: BiometricSetupDialog._divider, height: 1, thickness: 0),
+            Divider(
+                color: BiometricSetupDialog._divider, height: 1, thickness: 0),
           ],
         ),
       ),

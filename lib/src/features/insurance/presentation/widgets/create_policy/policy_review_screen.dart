@@ -81,7 +81,8 @@ class _PolicyReviewScreenState extends State<PolicyReviewScreen>
                   _buildSummaryCard(
                     'Policy Type & Provider',
                     [
-                      _buildInfoRow('Type', _getTypeDisplayName(cubit.insuranceType)),
+                      _buildInfoRow(
+                          'Type', _getTypeDisplayName(cubit.insuranceType)),
                       _buildInfoRow('Provider', cubit.provider),
                     ],
                   ),
@@ -116,7 +117,8 @@ class _PolicyReviewScreenState extends State<PolicyReviewScreen>
                       ),
                       _buildInfoRow(
                         'Next Payment',
-                        DateFormat('MMM dd, yyyy').format(cubit.nextPaymentDate),
+                        DateFormat('MMM dd, yyyy')
+                            .format(cubit.nextPaymentDate),
                       ),
                     ],
                   ),
@@ -321,7 +323,8 @@ class _PolicyReviewScreenState extends State<PolicyReviewScreen>
                 );
           },
           decoration: InputDecoration(
-            hintText: 'Add any additional notes or details about this policy...',
+            hintText:
+                'Add any additional notes or details about this policy...',
             hintStyle: GoogleFonts.inter(
               fontSize: 14.sp,
               fontWeight: FontWeight.w400,

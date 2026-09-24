@@ -9,7 +9,6 @@ import '../cubit/insurance_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'insurance_claim_tracking_screen_widgets.dart';
 
-
 class InsuranceClaimTrackingScreen extends StatefulWidget {
   final InsuranceClaim claim;
 
@@ -120,10 +119,12 @@ class _InsuranceClaimTrackingScreenState
       borderRadius: 12.r,
       mainButton: TextButton(
         onPressed: () {
-          final email = 'mailto:?subject=Claim ${_claim.claimNumber}&body=Regarding claim ${_claim.claimNumber} for ${_claim.title}';
+          final email =
+              'mailto:?subject=Claim ${_claim.claimNumber}&body=Regarding claim ${_claim.claimNumber} for ${_claim.title}';
           launchUrl(Uri.parse(email), mode: LaunchMode.externalApplication);
         },
-        child: Text('Email', style: GoogleFonts.inter(color: const Color(0xFF6366F1))),
+        child: Text('Email',
+            style: GoogleFonts.inter(color: const Color(0xFF6366F1))),
       ),
     );
   }
@@ -158,25 +159,25 @@ class _InsuranceClaimTrackingScreenState
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              SizedBox(height: 20.h),
-              _buildClaimSummaryCard(),
-              SizedBox(height: 24.h),
-              _buildTimelineStepper(),
-              SizedBox(height: 24.h),
-              _buildClaimDetailsSection(),
-              SizedBox(height: 24.h),
-              _buildDocumentsSection(),
-              SizedBox(height: 24.h),
-              _buildFinancialSummarySection(),
-              SizedBox(height: 24.h),
-              _buildActionButtons(context),
-              SizedBox(height: 32.h),
-            ],
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(),
+                SizedBox(height: 20.h),
+                _buildClaimSummaryCard(),
+                SizedBox(height: 24.h),
+                _buildTimelineStepper(),
+                SizedBox(height: 24.h),
+                _buildClaimDetailsSection(),
+                SizedBox(height: 24.h),
+                _buildDocumentsSection(),
+                SizedBox(height: 24.h),
+                _buildFinancialSummarySection(),
+                SizedBox(height: 24.h),
+                _buildActionButtons(context),
+                SizedBox(height: 32.h),
+              ],
+            ),
           ),
-        ),
         ),
       ),
     );
@@ -464,9 +465,7 @@ class _InsuranceClaimTrackingScreenState
         'description': 'Claim settlement and payout',
         'state': isCancelled
             ? _StepState.future
-            : (currentStepIndex >= 4
-                ? _StepState.done
-                : _StepState.future),
+            : (currentStepIndex >= 4 ? _StepState.done : _StepState.future),
         'extraInfo': _getSettlementExtraInfo(),
         'extraInfoColor': const Color(0xFF10B981),
       },
@@ -478,7 +477,9 @@ class _InsuranceClaimTrackingScreenState
   int _getCurrentStepIndex() {
     final s = _claim.status;
     if (s == ClaimStatus.submitted) return 0;
-    if (s == ClaimStatus.approved || s == ClaimStatus.rejected || s == ClaimStatus.offerRejected) return 3;
+    if (s == ClaimStatus.approved ||
+        s == ClaimStatus.rejected ||
+        s == ClaimStatus.offerRejected) return 3;
     if (s == ClaimStatus.settled || s == ClaimStatus.paid) return 4;
     if (s == ClaimStatus.cancelled) return 0;
     // documented / inspection_submitted / repair estimate * / offer * /
@@ -794,41 +795,41 @@ class _InsuranceClaimTrackingScreenState
       onTap: () => _openDocument(filename),
       child: Container(
         margin: EdgeInsets.only(bottom: 8.h),
-      padding: EdgeInsets.all(12.w),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 36.w,
-            height: 36.w,
-            decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            child: Icon(
-              Icons.description,
-              color: const Color(0xFF6366F1),
-              size: 18.sp,
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Text(
-              filename,
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w400,
+        padding: EdgeInsets.all(12.w),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(color: const Color(0xFF2D2D2D)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 36.w,
+              height: 36.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8.r),
               ),
-              overflow: TextOverflow.ellipsis,
+              child: Icon(
+                Icons.description,
+                color: const Color(0xFF6366F1),
+                size: 18.sp,
+              ),
             ),
-          ),
-        ],
-      ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Text(
+                filename,
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w400,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

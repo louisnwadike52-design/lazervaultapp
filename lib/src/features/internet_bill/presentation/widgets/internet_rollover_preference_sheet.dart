@@ -64,7 +64,13 @@ class _InternetRolloverPreferenceSheetState
   static const _textSecondary = Color(0xFF9CA3AF);
 
   static const _weekdayLabels = [
-    'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat',
+    'Sun',
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
   ];
 
   void _submit() {
@@ -117,14 +123,12 @@ class _InternetRolloverPreferenceSheetState
               ),
             ),
             SizedBox(height: 20.h),
-
             _frequencyPicker(),
             SizedBox(height: 16.h),
             if (_frequency == 'weekly') _dayOfWeekPicker(),
             if (_frequency == 'monthly') _dayOfMonthPicker(),
             SizedBox(height: 16.h),
             _timePicker(),
-
             SizedBox(height: 24.h),
             Row(
               children: [
@@ -334,7 +338,8 @@ class _InternetRolloverPreferenceSheetState
                   ),
                 ),
                 const Spacer(),
-                Icon(Icons.arrow_forward_ios, color: _textSecondary, size: 14.sp),
+                Icon(Icons.arrow_forward_ios,
+                    color: _textSecondary, size: 14.sp),
               ],
             ),
           ),

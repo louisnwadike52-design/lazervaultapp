@@ -244,6 +244,4 @@ class _TransactionCard extends StatelessWidget {
           transaction: transaction,
         ));
   }
-
-
 }

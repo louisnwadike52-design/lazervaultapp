@@ -143,7 +143,8 @@ class InvestHubPanels {
                                     AppRoutes.stockDetails,
                                     arguments: {
                                       'stock': Stock.navigationStub(s),
-                                      ...InvestRouteArgs.hub(investCollectionId),
+                                      ...InvestRouteArgs.hub(
+                                          investCollectionId),
                                     },
                                   ),
                                 ),

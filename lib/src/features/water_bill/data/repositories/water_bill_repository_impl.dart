@@ -82,7 +82,8 @@ class WaterBillRepositoryImpl implements WaterBillRepository {
     required String paymentId,
   }) async {
     try {
-      final payment = await remoteDataSource.verifyPayment(paymentId: paymentId);
+      final payment =
+          await remoteDataSource.verifyPayment(paymentId: paymentId);
       return Right(payment);
     } catch (e) {
       return Left(NetworkFailure.fromException(e));
@@ -110,7 +111,8 @@ class WaterBillRepositoryImpl implements WaterBillRepository {
     required String paymentId,
   }) async {
     try {
-      final receipt = await remoteDataSource.getPaymentReceipt(paymentId: paymentId);
+      final receipt =
+          await remoteDataSource.getPaymentReceipt(paymentId: paymentId);
       return Right(receipt);
     } catch (e) {
       return Left(NetworkFailure.fromException(e));

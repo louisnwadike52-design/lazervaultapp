@@ -10,6 +10,7 @@ abstract class IGiftCardRepository {
   Future<Either<Failure, LiveBrand>> getGiftCardBrandLive({
     required String productRef,
     String? countryCode,
+
     /// Read from THIS provider instead of the active one. Set when repeating a
     /// card, whose product ref belongs to the issuing provider.
     String? providerName,
@@ -68,7 +69,8 @@ abstract class IGiftCardRepository {
 
   // Sell flow methods
 
-  Future<Either<Failure, List<SellableCard>>> getSellableCards({String? countryCode});
+  Future<Either<Failure, List<SellableCard>>> getSellableCards(
+      {String? countryCode});
 
   Future<Either<Failure, SellRate>> getSellRate({
     required String cardType,
@@ -95,16 +97,22 @@ abstract class IGiftCardRepository {
     required double denomination,
     required String transactionId,
     required String verificationToken,
+
     /// Doc-aligned Prestmit `payoutMethod` (e.g. "NAIRA").
     String? payoutMethod,
+
     /// Doc-aligned Prestmit `form`: "Physical" | "Ecode".
     String? form,
+
     /// Doc-aligned Prestmit `giftcard_id` (subcategory). Falls back to cardType.
     String? subcategoryId,
+
     /// Explicit Ecode value (replaces card_number when both are set).
     String? cardCode,
+
     /// Required to be true; backend rejects with FailedPrecondition otherwise.
     bool disclaimerAccepted = false,
+
     /// Required to be true; the "Verify balance" step's attestation that the
     /// user declared the card balance and accepted the liability terms.
     /// Backend rejects with FailedPrecondition otherwise.

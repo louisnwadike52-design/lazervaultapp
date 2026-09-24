@@ -54,7 +54,8 @@ class DeepLinkData {
   String? get errorMessage => param('error') ?? param('message');
 
   @override
-  String toString() => 'DeepLinkData(type: $type, path: $path, params: $queryParams)';
+  String toString() =>
+      'DeepLinkData(type: $type, path: $path, params: $queryParams)';
 }
 
 /// Deep Link Service - Handles incoming deep links for the app
@@ -151,9 +152,12 @@ class DeepLinkService {
 
     // Family invite: host=='family' + first-segment=='invite' + second-segment is the token.
     // (Or, on universal link, segments == [family, invite, <token>])
-    final isFamilyInvite =
-        (uri.host == 'family' && segments.length >= 2 && segments[0] == 'invite') ||
-        (segments.length >= 3 && segments[0] == 'family' && segments[1] == 'invite');
+    final isFamilyInvite = (uri.host == 'family' &&
+            segments.length >= 2 &&
+            segments[0] == 'invite') ||
+        (segments.length >= 3 &&
+            segments[0] == 'family' &&
+            segments[1] == 'invite');
 
     if (isFamilyInvite) {
       // Token is the last meaningful path segment. We don't validate UUID
@@ -171,9 +175,12 @@ class DeepLinkService {
 
     // Escrow offer share link: custom scheme puts host=='escrow' with
     // segments [offer, <token>]; universal link yields [escrow, offer, <token>].
-    final isEscrowOffer =
-        (uri.host == 'escrow' && segments.length >= 2 && segments[0] == 'offer') ||
-        (segments.length >= 3 && segments[0] == 'escrow' && segments[1] == 'offer');
+    final isEscrowOffer = (uri.host == 'escrow' &&
+            segments.length >= 2 &&
+            segments[0] == 'offer') ||
+        (segments.length >= 3 &&
+            segments[0] == 'escrow' &&
+            segments[1] == 'offer');
     if (isEscrowOffer) {
       final token = uri.host == 'escrow' ? segments[1] : segments[2];
       return DeepLinkData(

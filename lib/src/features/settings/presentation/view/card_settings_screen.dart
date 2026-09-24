@@ -13,7 +13,6 @@ import 'package:lazervault/src/features/card_settings/domain/entities/account_de
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'card_settings_screen_widgets.dart';
 
-
 class _CardSettingsViewState extends State<_CardSettingsView> {
   @override
   void initState() {
@@ -27,8 +26,8 @@ class _CardSettingsViewState extends State<_CardSettingsView> {
 
     if (userId != null) {
       context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
-        userId: userId,
-      );
+            userId: userId,
+          );
     }
   }
 
@@ -115,7 +114,8 @@ class _CardSettingsViewState extends State<_CardSettingsView> {
                   children: [
                     _buildHeader(),
                     SizedBox(height: 24.h),
-                    ...accounts.map((account) => _buildCardItem(context, account)),
+                    ...accounts
+                        .map((account) => _buildCardItem(context, account)),
                   ],
                 ),
               );
@@ -211,7 +211,8 @@ class _CardSettingsViewState extends State<_CardSettingsView> {
             children: [
               _buildCardHeader(account, accountDetails, isUpdating),
               if (accountDetails != null)
-                _buildCardSettings(context, account.id, accountDetails, isUpdating)
+                _buildCardSettings(
+                    context, account.id, accountDetails, isUpdating)
               else if (isLoading)
                 Padding(
                   padding: EdgeInsets.all(16.w),

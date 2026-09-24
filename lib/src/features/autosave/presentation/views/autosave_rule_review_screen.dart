@@ -3,7 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
@@ -13,7 +14,8 @@ class AutoSaveRuleReviewScreen extends StatefulWidget {
   const AutoSaveRuleReviewScreen({super.key});
 
   @override
-  State<AutoSaveRuleReviewScreen> createState() => _AutoSaveRuleReviewScreenState();
+  State<AutoSaveRuleReviewScreen> createState() =>
+      _AutoSaveRuleReviewScreenState();
 }
 
 class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
@@ -55,7 +57,8 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.1),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
+    ).animate(
+        CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
 
     _animationController.forward();
   }
@@ -129,7 +132,8 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
           default:
             freqText = 'Scheduled';
         }
-        final where = bank != null && bank.isNotEmpty ? bank : 'your linked bank';
+        final where =
+            bank != null && bank.isNotEmpty ? bank : 'your linked bank';
         return '$freqText standing order from $where${time != null ? ' at $time' : ''}';
       default:
         return 'Unknown trigger';
@@ -141,7 +145,8 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
     final amountValue = ruleData['amountValue'] as double;
 
     if (amountType == AmountType.fixed) {
-      return currency_formatter.CurrencySymbols.formatAmountWithCurrency(amountValue, 'NGN');
+      return currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+          amountValue, 'NGN');
     } else {
       return '${amountValue.toStringAsFixed(0)}% of transaction';
     }
@@ -255,7 +260,8 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
             children: [
               _buildDetailRow('Name', ruleData['name'] as String? ?? ''),
               SizedBox(height: 12.h),
-              _buildDetailRow('Description', ruleData['description'] as String? ?? ''),
+              _buildDetailRow(
+                  'Description', ruleData['description'] as String? ?? ''),
             ],
           ),
 
@@ -288,9 +294,13 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
             title: 'Account Settings',
             icon: Icons.account_balance_wallet,
             children: [
-              _buildDetailRow('Source Account', ruleData['sourceAccountName'] as String? ?? 'Not selected'),
+              _buildDetailRow('Source Account',
+                  ruleData['sourceAccountName'] as String? ?? 'Not selected'),
               SizedBox(height: 12.h),
-              _buildDetailRow('Destination Account', ruleData['destinationAccountName'] as String? ?? 'Not selected'),
+              _buildDetailRow(
+                  'Destination Account',
+                  ruleData['destinationAccountName'] as String? ??
+                      'Not selected'),
             ],
           ),
 
@@ -302,15 +312,27 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
               icon: Icons.flag,
               children: [
                 if (ruleData['targetAmount'] != null) ...[
-                  _buildDetailRow('Target Amount', currency_formatter.CurrencySymbols.formatAmountWithCurrency(ruleData['targetAmount'] as double, 'NGN')),
+                  _buildDetailRow(
+                      'Target Amount',
+                      currency_formatter.CurrencySymbols
+                          .formatAmountWithCurrency(
+                              ruleData['targetAmount'] as double, 'NGN')),
                   SizedBox(height: 12.h),
                 ],
                 if (ruleData['minimumBalance'] != null) ...[
-                  _buildDetailRow('Minimum Balance', currency_formatter.CurrencySymbols.formatAmountWithCurrency(ruleData['minimumBalance'] as double, 'NGN')),
+                  _buildDetailRow(
+                      'Minimum Balance',
+                      currency_formatter.CurrencySymbols
+                          .formatAmountWithCurrency(
+                              ruleData['minimumBalance'] as double, 'NGN')),
                   SizedBox(height: 12.h),
                 ],
                 if (ruleData['maximumPerSave'] != null)
-                  _buildDetailRow('Maximum Per Save', currency_formatter.CurrencySymbols.formatAmountWithCurrency(ruleData['maximumPerSave'] as double, 'NGN')),
+                  _buildDetailRow(
+                      'Maximum Per Save',
+                      currency_formatter.CurrencySymbols
+                          .formatAmountWithCurrency(
+                              ruleData['maximumPerSave'] as double, 'NGN')),
               ],
             ),
           ],
@@ -335,7 +357,8 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
 
   bool _isBankLinkedRule() {
     final t = ruleData['triggerType'] as TriggerType?;
-    return t == TriggerType.externalInflow || t == TriggerType.scheduledExternal;
+    return t == TriggerType.externalInflow ||
+        t == TriggerType.scheduledExternal;
   }
 
   /// Discloses the recurring direct-debit fee for a bank-linked rule. For a fixed
@@ -403,7 +426,8 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
     );
   }
 
-  Future<AutoSaveFeeQuote> _platformFeeQuote(double amount, TriggerType t) async {
+  Future<AutoSaveFeeQuote> _platformFeeQuote(
+      double amount, TriggerType t) async {
     final res = await serviceLocator<IAutoSaveRepository>().getFeeQuote(
       amount: amount,
       triggerType: t.name,
@@ -431,7 +455,8 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
           if (q == null) {
             return Text(
               'The fee is deducted from the amount saved.',
-              style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF9CA3AF)),
+              style: GoogleFonts.inter(
+                  fontSize: 12.sp, color: const Color(0xFF9CA3AF)),
             );
           }
           // Quote values are KOBO (gRPC minor units) — convert to naira.
@@ -439,14 +464,18 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
             'Fee ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(q.fee / 100, 'NGN')} per save — '
             '${currency_formatter.CurrencySymbols.formatAmountWithCurrency(q.netAmount / 100, 'NGN')} reaches your goal.'
             '${q.discount > 0 ? ' You save ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(q.discount / 100, 'NGN')} (discount).' : ''}',
-            style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.white, fontWeight: FontWeight.w600),
+            style: GoogleFonts.inter(
+                fontSize: 12.sp,
+                color: Colors.white,
+                fontWeight: FontWeight.w600),
           );
         },
       );
     } else {
       feeLine = Text(
         'The fee is deducted from each amount saved.',
-        style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF9CA3AF)),
+        style:
+            GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF9CA3AF)),
       );
     }
 
@@ -455,22 +484,30 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
       decoration: BoxDecoration(
         color: const Color(0xFFFB923C).withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.30)),
+        border:
+            Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.30)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline_rounded, color: const Color(0xFFFB923C), size: 18.sp),
+          Icon(Icons.info_outline_rounded,
+              color: const Color(0xFFFB923C), size: 18.sp),
           SizedBox(width: 10.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Direct debit fee applies',
-                    style: GoogleFonts.inter(fontSize: 13.sp, color: Colors.white, fontWeight: FontWeight.w700)),
+                    style: GoogleFonts.inter(
+                        fontSize: 13.sp,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700)),
                 SizedBox(height: 4.h),
                 Text(headline,
-                    style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF9CA3AF), height: 1.4)),
+                    style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        color: const Color(0xFF9CA3AF),
+                        height: 1.4)),
                 SizedBox(height: 6.h),
                 feeLine,
               ],
@@ -514,7 +551,8 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
               Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                  color: const Color.fromARGB(255, 78, 3, 208)
+                      .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Icon(
@@ -600,7 +638,8 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
               BoxShadow(
-                color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.4),
+                color: const Color.fromARGB(255, 78, 3, 208)
+                    .withValues(alpha: 0.4),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),

@@ -115,10 +115,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
               dividerColor: Colors.transparent,
               labelColor: Colors.white,
               unselectedLabelColor: InvoiceThemeColors.textGray400,
-              labelStyle:
-                  GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600),
-              unselectedLabelStyle:
-                  GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w500),
+              labelStyle: GoogleFonts.inter(
+                  fontSize: 13.sp, fontWeight: FontWeight.w600),
+              unselectedLabelStyle: GoogleFonts.inter(
+                  fontSize: 13.sp, fontWeight: FontWeight.w500),
               tabs: const [
                 Tab(text: 'Overview'),
                 Tab(text: 'Revenue'),
@@ -231,8 +231,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           RevenueExpenseBarChart(months: state.monthlyTrends.months),
           SizedBox(height: 20.h),
           if (incomeCategories.isNotEmpty) ...[
-            _buildCategoryList('Wallet inflows', incomeCategories,
-                const Color(0xFF10B981)),
+            _buildCategoryList(
+                'Wallet inflows', incomeCategories, const Color(0xFF10B981)),
             SizedBox(height: 20.h),
           ],
         ],
@@ -357,8 +357,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
       decoration: BoxDecoration(
         color: InvoiceThemeColors.secondaryBackground,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-            color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+        border:
+            Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

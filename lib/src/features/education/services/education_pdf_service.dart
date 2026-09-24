@@ -62,7 +62,8 @@ class EducationPdfService {
 
     String paymentDate;
     try {
-      paymentDate = _fullDateTimeFormat.format(DateTime.parse(purchase.createdAt));
+      paymentDate =
+          _fullDateTimeFormat.format(DateTime.parse(purchase.createdAt));
     } catch (_) {
       paymentDate = purchase.createdAt;
     }
@@ -108,8 +109,7 @@ class EducationPdfService {
               // PINs Section
               if (purchase.pins.isNotEmpty)
                 _buildPinsSection(purchase: purchase),
-              if (purchase.pins.isNotEmpty)
-                pw.SizedBox(height: 32),
+              if (purchase.pins.isNotEmpty) pw.SizedBox(height: 32),
 
               // Payment Details
               _buildPaymentDetails(
@@ -203,7 +203,8 @@ class EducationPdfService {
       children: [
         _buildSummaryRow('Receipt No.', receiptNumber),
         _buildSummaryRow('Payment Date', paymentDate),
-        _buildSummaryRow('Quantity', '$quantity ${quantity == 1 ? 'PIN' : 'PINs'}'),
+        _buildSummaryRow(
+            'Quantity', '$quantity ${quantity == 1 ? 'PIN' : 'PINs'}'),
         _buildSummaryRow('Status', status),
         _buildSummaryRow('Type', 'Education PIN Purchase'),
       ],
@@ -252,7 +253,8 @@ class EducationPdfService {
           return pw.Container(
             width: double.infinity,
             margin: const pw.EdgeInsets.only(bottom: 10),
-            padding: const pw.EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+            padding:
+                const pw.EdgeInsets.symmetric(vertical: 14, horizontal: 20),
             decoration: pw.BoxDecoration(
               color: const PdfColor.fromInt(0xFF1F1F1F),
               borderRadius: pw.BorderRadius.circular(10),
@@ -331,8 +333,7 @@ class EducationPdfService {
           ),
           child: pw.Column(
             children: [
-              if (unitPrice != null)
-                _buildDetailRow('Unit Price', unitPrice),
+              if (unitPrice != null) _buildDetailRow('Unit Price', unitPrice),
               _buildDetailRow(
                 'Quantity',
                 '${purchase.pins.length} ${purchase.pins.length == 1 ? 'PIN' : 'PINs'}',
@@ -452,7 +453,8 @@ class EducationPdfService {
     EducationProviderEntity? provider,
   }) async {
     try {
-      final file = await generateReceipt(purchase: purchase, provider: provider);
+      final file =
+          await generateReceipt(purchase: purchase, provider: provider);
 
       Directory? directory;
       if (Platform.isAndroid) {
@@ -488,7 +490,8 @@ class EducationPdfService {
     EducationProviderEntity? provider,
   }) async {
     try {
-      final file = await generateReceipt(purchase: purchase, provider: provider);
+      final file =
+          await generateReceipt(purchase: purchase, provider: provider);
 
       final amount = _currencyFormat.format(purchase.amount);
       final providerName = provider?.name ?? purchase.billType;

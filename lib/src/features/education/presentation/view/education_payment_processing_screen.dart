@@ -181,7 +181,8 @@ class _EducationPaymentProcessingScreenState
                         Container(
                           padding: EdgeInsets.all(16.w),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
+                            color:
+                                const Color(0xFF4E03D0).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                           child: Row(
@@ -358,7 +359,10 @@ class _EducationPaymentProcessingScreenState
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
+                      colors: [
+                        Color(0xFF4E03D0),
+                        Color.fromARGB(255, 78, 3, 208)
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),

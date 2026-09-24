@@ -60,8 +60,8 @@ String _postVerifyRoute({
 }) {
   // Where a verify step should hand off once done — never back to passcode
   // setup if the user already has a passcode.
-  final nextAfterVerify =
-      _postVerifyRoute(hasPasscode: hasPasscode, hasTransactionPin: hasTransactionPin);
+  final nextAfterVerify = _postVerifyRoute(
+      hasPasscode: hasPasscode, hasTransactionPin: hasTransactionPin);
   switch (step) {
     case 'email_verify':
       return (

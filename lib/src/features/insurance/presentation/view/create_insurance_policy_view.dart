@@ -17,7 +17,8 @@ class CreateInsurancePolicyView extends StatefulWidget {
   });
 
   @override
-  State<CreateInsurancePolicyView> createState() => _CreateInsurancePolicyViewState();
+  State<CreateInsurancePolicyView> createState() =>
+      _CreateInsurancePolicyViewState();
 }
 
 class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
@@ -176,13 +177,13 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
             SizedBox(height: 12.h),
             _buildInsuranceTypeSelector(),
             SizedBox(height: 24.h),
-
             _buildSectionHeader('Policy Holder Information'),
             SizedBox(height: 12.h),
             _buildInputField(
               'Full Name',
               _policyHolderNameController,
-              validator: (value) => value?.isEmpty == true ? 'Name is required' : null,
+              validator: (value) =>
+                  value?.isEmpty == true ? 'Name is required' : null,
             ),
             SizedBox(height: 16.h),
             _buildInputField(
@@ -191,7 +192,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
                 if (value?.isEmpty == true) return 'Email is required';
-                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
+                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                    .hasMatch(value!)) {
                   return 'Enter a valid email';
                 }
                 return null;
@@ -202,15 +204,14 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
               'Phone Number',
               _policyHolderPhoneController,
               keyboardType: TextInputType.phone,
-              validator: (value) => value?.isEmpty == true ? 'Phone number is required' : null,
+              validator: (value) =>
+                  value?.isEmpty == true ? 'Phone number is required' : null,
             ),
             SizedBox(height: 24.h),
-
             _buildSectionHeader('Insurance Provider'),
             SizedBox(height: 12.h),
             _buildProviderSelector(),
             SizedBox(height: 24.h),
-
             _buildSectionHeader('Coverage Details'),
             SizedBox(height: 12.h),
             Row(
@@ -221,7 +222,9 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                     _premiumAmountController,
                     keyboardType: TextInputType.number,
                     prefix: '\$',
-                    validator: (value) => value?.isEmpty == true ? 'Premium amount is required' : null,
+                    validator: (value) => value?.isEmpty == true
+                        ? 'Premium amount is required'
+                        : null,
                   ),
                 ),
                 SizedBox(width: 16.w),
@@ -231,35 +234,35 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                     _coverageAmountController,
                     keyboardType: TextInputType.number,
                     prefix: '\$',
-                    validator: (value) => value?.isEmpty == true ? 'Coverage amount is required' : null,
+                    validator: (value) => value?.isEmpty == true
+                        ? 'Coverage amount is required'
+                        : null,
                   ),
                 ),
               ],
             ),
             SizedBox(height: 24.h),
-
             _buildSectionHeader('Policy Dates'),
             SizedBox(height: 12.h),
-            _buildDateSelector('Start Date', _startDate, (date) => setState(() => _startDate = date)),
+            _buildDateSelector('Start Date', _startDate,
+                (date) => setState(() => _startDate = date)),
             SizedBox(height: 16.h),
-            _buildDateSelector('End Date', _endDate, (date) => setState(() => _endDate = date)),
+            _buildDateSelector('End Date', _endDate,
+                (date) => setState(() => _endDate = date)),
             SizedBox(height: 16.h),
-            _buildDateSelector('Next Payment Date', _nextPaymentDate, (date) => setState(() => _nextPaymentDate = date)),
+            _buildDateSelector('Next Payment Date', _nextPaymentDate,
+                (date) => setState(() => _nextPaymentDate = date)),
             SizedBox(height: 24.h),
-
             _buildSectionHeader('Beneficiaries'),
             SizedBox(height: 12.h),
             _buildBeneficiariesSection(),
             SizedBox(height: 24.h),
-
             _buildSectionHeader('Features'),
             SizedBox(height: 12.h),
             _buildFeaturesSection(),
             SizedBox(height: 24.h),
-
             _buildOptionalFieldsSection(),
             SizedBox(height: 32.h),
-
             _buildCreateButton(),
             SizedBox(height: 40.h),
           ],
@@ -300,9 +303,13 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
             child: Container(
               padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFF6366F1).withValues(alpha: 0.1) : null,
+                color: isSelected
+                    ? const Color(0xFF6366F1).withValues(alpha: 0.1)
+                    : null,
                 borderRadius: BorderRadius.circular(12.r),
-                border: isSelected ? Border.all(color: const Color(0xFF6366F1)) : null,
+                border: isSelected
+                    ? Border.all(color: const Color(0xFF6366F1))
+                    : null,
               ),
               child: Row(
                 children: [
@@ -317,7 +324,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                       style: GoogleFonts.inter(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w500,
-                        color: isSelected ? const Color(0xFF6366F1) : Colors.white,
+                        color:
+                            isSelected ? const Color(0xFF6366F1) : Colors.white,
                       ),
                     ),
                   ),
@@ -375,11 +383,13 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
             fillColor: Colors.white.withValues(alpha: 0.05),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+              borderSide:
+                  BorderSide(color: Colors.white.withValues(alpha: 0.1)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+              borderSide:
+                  BorderSide(color: Colors.white.withValues(alpha: 0.1)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
@@ -389,14 +399,16 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
               borderRadius: BorderRadius.circular(12.r),
               borderSide: const BorderSide(color: Colors.red),
             ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+            contentPadding:
+                EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildDateSelector(String label, DateTime date, Function(DateTime) onDateSelected) {
+  Widget _buildDateSelector(
+      String label, DateTime date, Function(DateTime) onDateSelected) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -438,12 +450,12 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
               color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12.r),
               boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -478,22 +490,24 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
           color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
             Expanded(
               child: Text(
-                _providerController.text.isEmpty ? 'Select Provider' : _providerController.text,
+                _providerController.text.isEmpty
+                    ? 'Select Provider'
+                    : _providerController.text,
                 style: GoogleFonts.inter(
                   fontSize: 16.sp,
-                  color: _providerController.text.isEmpty 
-                      ? const Color(0xFF9CA3AF) 
+                  color: _providerController.text.isEmpty
+                      ? const Color(0xFF9CA3AF)
                       : Colors.white,
                 ),
               ),
@@ -529,11 +543,14 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                 GestureDetector(
                   onTap: _showBeneficiariesDialog,
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20.r),
-                      border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+                      border: Border.all(
+                          color:
+                              const Color(0xFF6366F1).withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -564,7 +581,9 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                     decoration: BoxDecoration(
                       color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6.r),
-                      border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+                      border: Border.all(
+                          color:
+                              const Color(0xFF6366F1).withValues(alpha: 0.3)),
                     ),
                     child: Icon(
                       Icons.add,
@@ -588,7 +607,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                 decoration: BoxDecoration(
                   color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20.r),
-                  border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -633,17 +653,20 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
             fillColor: Colors.white.withValues(alpha: 0.05),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+              borderSide:
+                  BorderSide(color: Colors.white.withValues(alpha: 0.1)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+              borderSide:
+                  BorderSide(color: Colors.white.withValues(alpha: 0.1)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
               borderSide: const BorderSide(color: Color(0xFF6366F1)),
             ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+            contentPadding:
+                EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
             suffixIcon: GestureDetector(
               onTap: _addBeneficiary,
               child: Container(
@@ -686,11 +709,14 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                 GestureDetector(
                   onTap: _showFeaturesDialog,
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFF10B981).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20.r),
-                      border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                      border: Border.all(
+                          color:
+                              const Color(0xFF10B981).withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -721,7 +747,9 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                     decoration: BoxDecoration(
                       color: const Color(0xFF10B981).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6.r),
-                      border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                      border: Border.all(
+                          color:
+                              const Color(0xFF10B981).withValues(alpha: 0.3)),
                     ),
                     child: Icon(
                       Icons.add,
@@ -745,7 +773,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                 decoration: BoxDecoration(
                   color: const Color(0xFF10B981).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20.r),
-                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -790,17 +819,20 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
             fillColor: Colors.white.withValues(alpha: 0.05),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+              borderSide:
+                  BorderSide(color: Colors.white.withValues(alpha: 0.1)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+              borderSide:
+                  BorderSide(color: Colors.white.withValues(alpha: 0.1)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
               borderSide: const BorderSide(color: Color(0xFF10B981)),
             ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+            contentPadding:
+                EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
             suffixIcon: GestureDetector(
               onTap: _addFeature,
               child: Container(
@@ -900,14 +932,16 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
 
       // Add optional fields only if they're visible and have values
       if (_visibleOptionalFields.contains('deductible')) {
-        final deductible = double.tryParse(_getOrCreateController('deductible').text);
+        final deductible =
+            double.tryParse(_getOrCreateController('deductible').text);
         if (deductible != null && deductible > 0) {
           coverageDetails['deductible'] = deductible;
         }
       }
 
       if (_visibleOptionalFields.contains('coverage_limit')) {
-        final coverageLimit = double.tryParse(_getOrCreateController('coverage_limit').text);
+        final coverageLimit =
+            double.tryParse(_getOrCreateController('coverage_limit').text);
         if (coverageLimit != null && coverageLimit > 0) {
           coverageDetails['coverage_limit'] = coverageLimit;
         }
@@ -969,12 +1003,12 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
               color: const Color(0xFF1A1A1A),
               borderRadius: BorderRadius.circular(20.r),
               boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -984,7 +1018,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                   padding: EdgeInsets.all(20.w),
                   decoration: BoxDecoration(
                     border: Border(
-                      bottom: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                      bottom: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.1)),
                     ),
                   ),
                   child: Row(
@@ -1025,7 +1060,7 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                     itemBuilder: (context, index) {
                       final provider = _availableProviders[index];
                       final isSelected = _providerController.text == provider;
-                      
+
                       return GestureDetector(
                         onTap: () {
                           setState(() {
@@ -1034,13 +1069,15 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                           Navigator.of(context).pop();
                         },
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20.w, vertical: 16.h),
                           decoration: BoxDecoration(
-                            color: isSelected 
+                            color: isSelected
                                 ? const Color(0xFF6366F1).withValues(alpha: 0.1)
                                 : Colors.transparent,
                             border: Border(
-                              bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                              bottom: BorderSide(
+                                  color: Colors.white.withValues(alpha: 0.05)),
                             ),
                           ),
                           child: Row(
@@ -1049,7 +1086,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                 width: 40.w,
                                 height: 40.w,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                                  color: const Color(0xFF6366F1)
+                                      .withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(8.r),
                                 ),
                                 child: Center(
@@ -1070,7 +1108,9 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                   style: GoogleFonts.inter(
                                     fontSize: 16.sp,
                                     color: Colors.white,
-                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w600
+                                        : FontWeight.w400,
                                   ),
                                 ),
                               ),
@@ -1097,7 +1137,7 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
 
   void _showFeaturesDialog() {
     List<String> selectedFeatures = List.from(_features);
-    
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -1105,19 +1145,20 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
           builder: (context, setDialogState) {
             return Dialog(
               backgroundColor: Colors.transparent,
-              insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 40.h),
+              insetPadding:
+                  EdgeInsets.symmetric(horizontal: 20.w, vertical: 40.h),
               child: Container(
                 width: MediaQuery.of(context).size.width * 0.9,
                 decoration: BoxDecoration(
                   color: const Color(0xFF1A1A1A),
                   borderRadius: BorderRadius.circular(20.r),
                   boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -1127,7 +1168,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                       padding: EdgeInsets.all(20.w),
                       decoration: BoxDecoration(
                         border: Border(
-                          bottom: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                          bottom: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.1)),
                         ),
                       ),
                       child: Row(
@@ -1168,7 +1210,7 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                         itemBuilder: (context, index) {
                           final feature = _availableFeatures[index];
                           final isSelected = selectedFeatures.contains(feature);
-                          
+
                           return GestureDetector(
                             onTap: () {
                               setDialogState(() {
@@ -1180,13 +1222,17 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                               });
                             },
                             child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 20.w, vertical: 16.h),
                               decoration: BoxDecoration(
-                                color: isSelected 
-                                    ? const Color(0xFF10B981).withValues(alpha: 0.1)
+                                color: isSelected
+                                    ? const Color(0xFF10B981)
+                                        .withValues(alpha: 0.1)
                                     : Colors.transparent,
                                 border: Border(
-                                  bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                                  bottom: BorderSide(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.05)),
                                 ),
                               ),
                               child: Row(
@@ -1195,18 +1241,18 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                     width: 24.w,
                                     height: 24.w,
                                     decoration: BoxDecoration(
-                                      color: isSelected 
+                                      color: isSelected
                                           ? const Color(0xFF10B981)
                                           : Colors.transparent,
                                       borderRadius: BorderRadius.circular(4.r),
                                       boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                                        BoxShadow(
+                                          color: Colors.black
+                                              .withValues(alpha: 0.08),
+                                          blurRadius: 6,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
                                     ),
                                     child: isSelected
                                         ? Icon(
@@ -1223,7 +1269,9 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                       style: GoogleFonts.inter(
                                         fontSize: 16.sp,
                                         color: Colors.white,
-                                        fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w500
+                                            : FontWeight.w400,
                                       ),
                                     ),
                                   ),
@@ -1239,7 +1287,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                       padding: EdgeInsets.all(20.w),
                       decoration: BoxDecoration(
                         border: Border(
-                          top: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                          top: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.1)),
                         ),
                       ),
                       child: Row(
@@ -1247,7 +1296,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                           Expanded(
                             child: Container(
                               decoration: BoxDecoration(
-                                border: Border.all(color: const Color(0xFF10B981)),
+                                border:
+                                    Border.all(color: const Color(0xFF10B981)),
                                 borderRadius: BorderRadius.circular(12.r),
                               ),
                               child: TextButton(
@@ -1268,7 +1318,10 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                             child: Container(
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [Color(0xFF10B981), Color(0xFF059669)],
+                                  colors: [
+                                    Color(0xFF10B981),
+                                    Color(0xFF059669)
+                                  ],
                                 ),
                                 borderRadius: BorderRadius.circular(12.r),
                               ),
@@ -1310,7 +1363,7 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
     List<Map<String, String>> tempBeneficiaries = _beneficiaries
         .map((b) => {'name': b, 'relation': 'Other Family Member'})
         .toList();
-    
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -1318,19 +1371,20 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
           builder: (context, setDialogState) {
             return Dialog(
               backgroundColor: Colors.transparent,
-              insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 40.h),
+              insetPadding:
+                  EdgeInsets.symmetric(horizontal: 20.w, vertical: 40.h),
               child: Container(
                 width: MediaQuery.of(context).size.width * 0.9,
                 decoration: BoxDecoration(
                   color: const Color(0xFF1A1A1A),
                   borderRadius: BorderRadius.circular(20.r),
                   boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -1340,7 +1394,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                       padding: EdgeInsets.all(20.w),
                       decoration: BoxDecoration(
                         border: Border(
-                          bottom: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                          bottom: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.1)),
                         ),
                       ),
                       child: Row(
@@ -1378,7 +1433,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.02),
                         border: Border(
-                          bottom: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                          bottom: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.1)),
                         ),
                       ),
                       child: Column(
@@ -1389,7 +1445,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                 flex: 2,
                                 child: TextFormField(
                                   controller: nameController,
-                                  style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
+                                  style: GoogleFonts.inter(
+                                      fontSize: 14.sp, color: Colors.white),
                                   decoration: InputDecoration(
                                     hintText: 'Beneficiary name',
                                     hintStyle: GoogleFonts.inter(
@@ -1397,16 +1454,22 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                       fontSize: 14.sp,
                                     ),
                                     filled: true,
-                                    fillColor: Colors.white.withValues(alpha: 0.05),
+                                    fillColor:
+                                        Colors.white.withValues(alpha: 0.05),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8.r),
-                                      borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                                      borderSide: BorderSide(
+                                          color: Colors.white
+                                              .withValues(alpha: 0.1)),
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8.r),
-                                      borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                                      borderSide: BorderSide(
+                                          color: Colors.white
+                                              .withValues(alpha: 0.1)),
                                     ),
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                                    contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 12.w, vertical: 12.h),
                                   ),
                                 ),
                               ),
@@ -1418,7 +1481,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                     showDialog(
                                       context: context,
                                       builder: (ctx) => Dialog(
-                                        backgroundColor: const Color(0xFF1A1A1A),
+                                        backgroundColor:
+                                            const Color(0xFF1A1A1A),
                                         child: Container(
                                           padding: EdgeInsets.all(16.w),
                                           child: Column(
@@ -1433,14 +1497,17 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                                 ),
                                               ),
                                               SizedBox(height: 16.h),
-                                              ..._commonBeneficiaryRelations.map((relation) =>
-                                                ListTile(
+                                              ..._commonBeneficiaryRelations
+                                                  .map(
+                                                (relation) => ListTile(
                                                   title: Text(
                                                     relation,
-                                                    style: GoogleFonts.inter(color: Colors.white),
+                                                    style: GoogleFonts.inter(
+                                                        color: Colors.white),
                                                   ),
                                                   onTap: () {
-                                                    relationController.text = relation;
+                                                    relationController.text =
+                                                        relation;
                                                     Navigator.pop(ctx);
                                                   },
                                                 ),
@@ -1452,23 +1519,28 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                     );
                                   },
                                   child: Container(
-                                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 12.w, vertical: 12.h),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.05),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.05),
                                       borderRadius: BorderRadius.circular(8.r),
                                       boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
+                                        BoxShadow(
+                                          color: Colors.black
+                                              .withValues(alpha: 0.15),
+                                          blurRadius: 6,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
                                     ),
                                     child: Text(
-                                      relationController.text.isEmpty ? 'Relation' : relationController.text,
+                                      relationController.text.isEmpty
+                                          ? 'Relation'
+                                          : relationController.text,
                                       style: GoogleFonts.inter(
                                         fontSize: 14.sp,
-                                        color: relationController.text.isEmpty 
+                                        color: relationController.text.isEmpty
                                             ? const Color(0xFF9CA3AF)
                                             : Colors.white,
                                       ),
@@ -1483,9 +1555,10 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                     setDialogState(() {
                                       tempBeneficiaries.add({
                                         'name': nameController.text.trim(),
-                                        'relation': relationController.text.isEmpty 
-                                            ? 'Other Family Member' 
-                                            : relationController.text,
+                                        'relation':
+                                            relationController.text.isEmpty
+                                                ? 'Other Family Member'
+                                                : relationController.text,
                                       });
                                       nameController.clear();
                                       relationController.clear();
@@ -1497,11 +1570,15 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                   height: 36.w,
                                   decoration: BoxDecoration(
                                     gradient: const LinearGradient(
-                                      colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                                      colors: [
+                                        Color(0xFF6366F1),
+                                        Color.fromARGB(255, 78, 3, 208)
+                                      ],
                                     ),
                                     borderRadius: BorderRadius.circular(8.r),
                                   ),
-                                  child: Icon(Icons.add, color: Colors.white, size: 20.sp),
+                                  child: Icon(Icons.add,
+                                      color: Colors.white, size: 20.sp),
                                 ),
                               ),
                             ],
@@ -1518,12 +1595,15 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                           itemCount: tempBeneficiaries.length,
                           itemBuilder: (context, index) {
                             final beneficiary = tempBeneficiaries[index];
-                            
+
                             return Container(
-                              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 20.w, vertical: 12.h),
                               decoration: BoxDecoration(
                                 border: Border(
-                                  bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                                  bottom: BorderSide(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.05)),
                                 ),
                               ),
                               child: Row(
@@ -1532,7 +1612,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                     width: 36.w,
                                     height: 36.w,
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                                      color: const Color(0xFF6366F1)
+                                          .withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(18.r),
                                     ),
                                     child: Center(
@@ -1549,7 +1630,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                   SizedBox(width: 12.w),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           beneficiary['name']!,
@@ -1592,7 +1674,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                       padding: EdgeInsets.all(20.w),
                       decoration: BoxDecoration(
                         border: Border(
-                          top: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                          top: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.1)),
                         ),
                       ),
                       child: Row(
@@ -1600,7 +1683,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                           Expanded(
                             child: Container(
                               decoration: BoxDecoration(
-                                border: Border.all(color: const Color(0xFF6366F1)),
+                                border:
+                                    Border.all(color: const Color(0xFF6366F1)),
                                 borderRadius: BorderRadius.circular(12.r),
                               ),
                               child: TextButton(
@@ -1621,7 +1705,10 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                             child: Container(
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                                  colors: [
+                                    Color(0xFF6366F1),
+                                    Color.fromARGB(255, 78, 3, 208)
+                                  ],
                                 ),
                                 borderRadius: BorderRadius.circular(12.r),
                               ),
@@ -1630,7 +1717,9 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                   setState(() {
                                     _beneficiaries.clear();
                                     _beneficiaries.addAll(
-                                      tempBeneficiaries.map((b) => b['name']!).toList(),
+                                      tempBeneficiaries
+                                          .map((b) => b['name']!)
+                                          .toList(),
                                     );
                                   });
                                   Navigator.of(context).pop();
@@ -1679,10 +1768,12 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                  color: const Color.fromARGB(255, 78, 3, 208)
+                      .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20.r),
                   border: Border.all(
-                    color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
+                    color: const Color.fromARGB(255, 78, 3, 208)
+                        .withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
@@ -1833,7 +1924,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
           builder: (context, setDialogState) {
             return Dialog(
               backgroundColor: Colors.transparent,
-              insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 40.h),
+              insetPadding:
+                  EdgeInsets.symmetric(horizontal: 20.w, vertical: 40.h),
               child: Container(
                 width: MediaQuery.of(context).size.width * 0.9,
                 constraints: BoxConstraints(maxHeight: 500.h),
@@ -1899,7 +1991,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                         itemBuilder: (context, index) {
                           final field = _availableOptionalFields[index];
                           final fieldId = field['id'] as String;
-                          final isSelected = tempSelectedFields.contains(fieldId);
+                          final isSelected =
+                              tempSelectedFields.contains(fieldId);
 
                           return GestureDetector(
                             onTap: () {
@@ -1915,7 +2008,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                               padding: EdgeInsets.all(16.w),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1)
+                                    ? const Color.fromARGB(255, 78, 3, 208)
+                                        .withValues(alpha: 0.1)
                                     : Colors.transparent,
                                 border: Border(
                                   bottom: BorderSide(
@@ -1930,13 +2024,16 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                     height: 24.w,
                                     decoration: BoxDecoration(
                                       color: isSelected
-                                          ? const Color.fromARGB(255, 78, 3, 208)
+                                          ? const Color.fromARGB(
+                                              255, 78, 3, 208)
                                           : Colors.transparent,
                                       borderRadius: BorderRadius.circular(4.r),
                                       border: Border.all(
                                         color: isSelected
-                                            ? const Color.fromARGB(255, 78, 3, 208)
-                                            : Colors.white.withValues(alpha: 0.3),
+                                            ? const Color.fromARGB(
+                                                255, 78, 3, 208)
+                                            : Colors.white
+                                                .withValues(alpha: 0.3),
                                       ),
                                     ),
                                     child: isSelected
@@ -1950,13 +2047,15 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                   SizedBox(width: 16.w),
                                   Icon(
                                     field['icon'] as IconData,
-                                    color: const Color.fromARGB(255, 78, 3, 208),
+                                    color:
+                                        const Color.fromARGB(255, 78, 3, 208),
                                     size: 20.sp,
                                   ),
                                   SizedBox(width: 12.w),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           field['label'] as String,
@@ -2013,7 +2112,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                   'Cancel',
                                   style: GoogleFonts.inter(
                                     fontSize: 16.sp,
-                                    color: const Color.fromARGB(255, 78, 3, 208),
+                                    color:
+                                        const Color.fromARGB(255, 78, 3, 208),
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -2025,7 +2125,10 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                             child: Container(
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [Color.fromARGB(255, 78, 3, 208), Color(0xFF6366F1)],
+                                  colors: [
+                                    Color.fromARGB(255, 78, 3, 208),
+                                    Color(0xFF6366F1)
+                                  ],
                                 ),
                                 borderRadius: BorderRadius.circular(12.r),
                               ),
@@ -2033,7 +2136,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                 onPressed: () {
                                   setState(() {
                                     _visibleOptionalFields.clear();
-                                    _visibleOptionalFields.addAll(tempSelectedFields);
+                                    _visibleOptionalFields
+                                        .addAll(tempSelectedFields);
                                   });
                                   Navigator.of(context).pop();
                                 },
@@ -2060,4 +2164,4 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
       },
     );
   }
-} 
+}

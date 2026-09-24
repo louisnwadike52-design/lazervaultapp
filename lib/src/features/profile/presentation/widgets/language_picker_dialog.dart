@@ -108,7 +108,8 @@ class _LanguagePickerDialogState extends State<LanguagePickerDialog> {
                       });
                     },
                     child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+                      padding: EdgeInsets.symmetric(
+                          vertical: 12.h, horizontal: 16.w),
                       margin: EdgeInsets.only(bottom: 8.h),
                       decoration: BoxDecoration(
                         color: isSelected
@@ -128,7 +129,9 @@ class _LanguagePickerDialogState extends State<LanguagePickerDialog> {
                             language['name']!,
                             style: GoogleFonts.inter(
                               fontSize: 16.sp,
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.w400,
                               color: isSelected
                                   ? const Color(0xFF4E03D0)
                                   : const Color(0xFF1F2937),

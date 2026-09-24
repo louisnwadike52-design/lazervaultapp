@@ -3,7 +3,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 part 'voice_transaction_cubit_widgets.dart';
 
-
 // ==============================================================================
 // BLoC / Cubit
 // ==============================================================================
@@ -115,14 +114,18 @@ class VoiceTransactionCubit extends Cubit<VoiceTransactionState> {
       // Update additional data if provided
       transcript: event.data?['transcript'] as String?,
       intent: event.data?['intent'] as String?,
-      confidence: (event.data?['confidence'] as num?)?.toDouble() ?? currentContext.confidence,
+      confidence: (event.data?['confidence'] as num?)?.toDouble() ??
+          currentContext.confidence,
       recipient: event.data?['recipient'] as String?,
       amount: (event.data?['amount'] as num?)?.toDouble(),
       currency: event.data?['currency'] as String?,
       reference: event.data?['reference'] as String?,
-      voiceVerified: event.data?['voice_verified'] as bool? ?? currentContext.voiceVerified,
-      voiceConfidence: (event.data?['voice_confidence'] as num?)?.toDouble() ?? currentContext.voiceConfidence,
-      pinVerified: event.data?['pin_verified'] as bool? ?? currentContext.pinVerified,
+      voiceVerified: event.data?['voice_verified'] as bool? ??
+          currentContext.voiceVerified,
+      voiceConfidence: (event.data?['voice_confidence'] as num?)?.toDouble() ??
+          currentContext.voiceConfidence,
+      pinVerified:
+          event.data?['pin_verified'] as bool? ?? currentContext.pinVerified,
     );
 
     emit(state.copyWith(
@@ -143,7 +146,8 @@ class VoiceTransactionCubit extends Cubit<VoiceTransactionState> {
     emit(state.copyWith(context: updatedContext));
   }
 
-  Future<void> _onVerificationCompleted(VoiceVerificationCompleted event) async {
+  Future<void> _onVerificationCompleted(
+      VoiceVerificationCompleted event) async {
     final currentContext = state.context;
     if (currentContext == null) return;
 
@@ -156,7 +160,9 @@ class VoiceTransactionCubit extends Cubit<VoiceTransactionState> {
     // If verified but requires PIN, transition to awaiting PIN
     final newState = event.requiresPin
         ? VoiceActionState.awaitingPin
-        : (event.verified ? VoiceActionState.executing : VoiceActionState.error);
+        : (event.verified
+            ? VoiceActionState.executing
+            : VoiceActionState.error);
 
     emit(state.copyWith(
       currentState: newState,
@@ -165,7 +171,8 @@ class VoiceTransactionCubit extends Cubit<VoiceTransactionState> {
 
     if (!event.verified && !event.requiresPin) {
       emit(state.copyWith(
-        errorMessage: 'Voice verification failed (${(event.confidence * 100).toStringAsFixed(0)}% confidence)',
+        errorMessage:
+            'Voice verification failed (${(event.confidence * 100).toStringAsFixed(0)}% confidence)',
       ));
     }
   }
@@ -176,7 +183,8 @@ class VoiceTransactionCubit extends Cubit<VoiceTransactionState> {
     ));
   }
 
-  Future<void> _onConfirmationRequested(VoiceConfirmationRequested event) async {
+  Future<void> _onConfirmationRequested(
+      VoiceConfirmationRequested event) async {
     final confirmation = VoiceConfirmationRequest(
       actionId: state.context?.actionId ?? '',
       title: event.title,

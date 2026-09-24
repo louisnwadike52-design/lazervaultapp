@@ -13,7 +13,6 @@ import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_d
 import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_state.dart';
 part 'create_task_bottom_sheet_widgets.dart';
 
-
 class CreateTaskBottomSheet extends StatefulWidget {
   final DateTime selectedDate;
   final List<Category> categories;
@@ -95,224 +94,234 @@ class _CreateTaskBottomSheetState extends State<CreateTaskBottomSheet> {
             SizedBox(height: 20.h),
             if (_mode == _TaskMode.ai) ..._aiFields(),
             if (_mode == _TaskMode.manual) ...[
-            TextFormField(
-              controller: _titleController,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16.sp,
+              TextFormField(
+                controller: _titleController,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Task Title',
+                  labelStyle: TextStyle(color: Colors.grey[400]),
+                  hintText: 'Enter task title',
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  filled: true,
+                  fillColor: const Color(0xFF2D2D2D),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                    borderSide: BorderSide(color: Colors.grey[800]!),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                    borderSide: BorderSide(color: Colors.grey[800]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                    borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a title';
+                  }
+                  return null;
+                },
               ),
-              decoration: InputDecoration(
-                labelText: 'Task Title',
-                labelStyle: TextStyle(color: Colors.grey[400]),
-                hintText: 'Enter task title',
-                hintStyle: TextStyle(color: Colors.grey[600]),
-                filled: true,
-                fillColor: const Color(0xFF2D2D2D),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: BorderSide(color: Colors.grey[800]!),
+              SizedBox(height: 16.h),
+              TextFormField(
+                controller: _descriptionController,
+                maxLines: 3,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16.sp,
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: BorderSide(color: Colors.grey[800]!),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: const BorderSide(color: Color(0xFF3B82F6)),
-                ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a title';
-                }
-                return null;
-              },
-            ),
-            SizedBox(height: 16.h),
-            TextFormField(
-              controller: _descriptionController,
-              maxLines: 3,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16.sp,
-              ),
-              decoration: InputDecoration(
-                labelText: 'Description (Optional)',
-                labelStyle: TextStyle(color: Colors.grey[400]),
-                hintText: 'Add a description',
-                hintStyle: TextStyle(color: Colors.grey[600]),
-                filled: true,
-                fillColor: const Color(0xFF2D2D2D),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: BorderSide(color: Colors.grey[800]!),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: BorderSide(color: Colors.grey[800]!),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+                decoration: InputDecoration(
+                  labelText: 'Description (Optional)',
+                  labelStyle: TextStyle(color: Colors.grey[400]),
+                  hintText: 'Add a description',
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  filled: true,
+                  fillColor: const Color(0xFF2D2D2D),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                    borderSide: BorderSide(color: Colors.grey[800]!),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                    borderSide: BorderSide(color: Colors.grey[800]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                    borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 16.h),
-            // Due Date Picker
-            InkWell(
-              onTap: () => _selectDueDate(context),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2D2D2D),
-                  borderRadius: BorderRadius.circular(8.r),
-                  border: Border.all(color: Colors.grey[800]!),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.calendar_today_outlined,
-                      color: Colors.grey[400],
-                      size: 20,
-                    ),
-                    SizedBox(width: 12.w),
-                    Text(
-                      _dueDate != null
-                          ? 'Due: ${_formatDate(_dueDate!)}'
-                          : 'Due Date (Optional)',
-                      style: TextStyle(
-                        color: _dueDate != null ? Colors.white : Colors.grey[500],
-                        fontSize: 16.sp,
+              SizedBox(height: 16.h),
+              // Due Date Picker
+              InkWell(
+                onTap: () => _selectDueDate(context),
+                child: Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2D2D2D),
+                    borderRadius: BorderRadius.circular(8.r),
+                    border: Border.all(color: Colors.grey[800]!),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_today_outlined,
+                        color: Colors.grey[400],
+                        size: 20,
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 16.h),
-            // Reminder timeframe picker — schedules a push/email/SMS reminder.
-            InkWell(
-              onTap: () => _selectRemindAt(context),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2D2D2D),
-                  borderRadius: BorderRadius.circular(8.r),
-                  border: Border.all(color: Colors.grey[800]!),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.notifications_active_outlined,
-                        color: Colors.grey[400], size: 20),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: Text(
-                        _remindAt != null
-                            ? 'Remind: ${_formatDateTime(_remindAt!)}'
-                            : 'Remind me (Optional)',
+                      SizedBox(width: 12.w),
+                      Text(
+                        _dueDate != null
+                            ? 'Due: ${_formatDate(_dueDate!)}'
+                            : 'Due Date (Optional)',
                         style: TextStyle(
-                          color: _remindAt != null ? Colors.white : Colors.grey[500],
+                          color: _dueDate != null
+                              ? Colors.white
+                              : Colors.grey[500],
                           fontSize: 16.sp,
                         ),
                       ),
-                    ),
-                    if (_remindAt != null)
-                      GestureDetector(
-                        onTap: () => setState(() => _remindAt = null),
-                        child: Icon(Icons.close, color: Colors.grey[500], size: 18),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 16.h),
-            // Priority Selector
-            Text(
-              'Priority',
-              style: TextStyle(
-                color: Colors.grey[400],
-                fontSize: 14.sp,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Wrap(
-              spacing: 8.w,
-              children: [
-                _buildPriorityChip('Low', '1', const Color(0xFF10B981)),
-                _buildPriorityChip('Medium', '2', const Color(0xFFF59E0B)),
-                _buildPriorityChip('High', '3', const Color(0xFFEF4444)),
-                _buildPriorityChip('Urgent', '4', const Color(0xFFDC2626)),
-              ],
-            ),
-            SizedBox(height: 16.h),
-            // Estimated Duration
-            InkWell(
-              onTap: () => _selectDuration(context),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2D2D2D),
-                  borderRadius: BorderRadius.circular(8.r),
-                  border: Border.all(color: Colors.grey[800]!),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.timer_outlined,
-                      color: Colors.grey[400],
-                      size: 20,
-                    ),
-                    SizedBox(width: 12.w),
-                    Text(
-                      _estimatedDuration ?? 'Est. Duration (Optional)',
-                      style: TextStyle(
-                        color: _estimatedDuration != null ? Colors.white : Colors.grey[500],
-                        fontSize: 16.sp,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            if (widget.categories.isNotEmpty) ...[
               SizedBox(height: 16.h),
+              // Reminder timeframe picker — schedules a push/email/SMS reminder.
+              InkWell(
+                onTap: () => _selectRemindAt(context),
+                child: Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2D2D2D),
+                    borderRadius: BorderRadius.circular(8.r),
+                    border: Border.all(color: Colors.grey[800]!),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.notifications_active_outlined,
+                          color: Colors.grey[400], size: 20),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Text(
+                          _remindAt != null
+                              ? 'Remind: ${_formatDateTime(_remindAt!)}'
+                              : 'Remind me (Optional)',
+                          style: TextStyle(
+                            color: _remindAt != null
+                                ? Colors.white
+                                : Colors.grey[500],
+                            fontSize: 16.sp,
+                          ),
+                        ),
+                      ),
+                      if (_remindAt != null)
+                        GestureDetector(
+                          onTap: () => setState(() => _remindAt = null),
+                          child: Icon(Icons.close,
+                              color: Colors.grey[500], size: 18),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              // Priority Selector
               Text(
-                'Category (Optional)',
-                style: TextStyle(color: Colors.grey[400], fontSize: 14.sp),
+                'Priority',
+                style: TextStyle(
+                  color: Colors.grey[400],
+                  fontSize: 14.sp,
+                ),
               ),
               SizedBox(height: 8.h),
               Wrap(
                 spacing: 8.w,
-                runSpacing: 8.h,
                 children: [
-                  for (final cat in widget.categories)
-                    _buildCategoryChip(cat),
+                  _buildPriorityChip('Low', '1', const Color(0xFF10B981)),
+                  _buildPriorityChip('Medium', '2', const Color(0xFFF59E0B)),
+                  _buildPriorityChip('High', '3', const Color(0xFFEF4444)),
+                  _buildPriorityChip('Urgent', '4', const Color(0xFFDC2626)),
                 ],
               ),
-            ],
-            SizedBox(height: 24.h),
-            // Create Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _submitTask,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
-                  minimumSize: Size(double.infinity, 50.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
+              SizedBox(height: 16.h),
+              // Estimated Duration
+              InkWell(
+                onTap: () => _selectDuration(context),
+                child: Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2D2D2D),
+                    borderRadius: BorderRadius.circular(8.r),
+                    border: Border.all(color: Colors.grey[800]!),
                   ),
-                ),
-                child: Text(
-                  'Create Task',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.timer_outlined,
+                        color: Colors.grey[400],
+                        size: 20,
+                      ),
+                      SizedBox(width: 12.w),
+                      Text(
+                        _estimatedDuration ?? 'Est. Duration (Optional)',
+                        style: TextStyle(
+                          color: _estimatedDuration != null
+                              ? Colors.white
+                              : Colors.grey[500],
+                          fontSize: 16.sp,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
+              if (widget.categories.isNotEmpty) ...[
+                SizedBox(height: 16.h),
+                Text(
+                  'Category (Optional)',
+                  style: TextStyle(color: Colors.grey[400], fontSize: 14.sp),
+                ),
+                SizedBox(height: 8.h),
+                Wrap(
+                  spacing: 8.w,
+                  runSpacing: 8.h,
+                  children: [
+                    for (final cat in widget.categories)
+                      _buildCategoryChip(cat),
+                  ],
+                ),
+              ],
+              SizedBox(height: 24.h),
+              // Create Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _submitTask,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                    minimumSize: Size(double.infinity, 50.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                  child: Text(
+                    'Create Task',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ],
         ),
@@ -479,7 +488,8 @@ class _CreateTaskBottomSheetState extends State<CreateTaskBottomSheet> {
       setState(() => _aiSubmitting = false);
       messenger.showSnackBar(
         const SnackBar(
-          content: Text('Could not create that task right now. Please try again.'),
+          content:
+              Text('Could not create that task right now. Please try again.'),
         ),
       );
     }
@@ -631,14 +641,17 @@ class _CreateTaskBottomSheetState extends State<CreateTaskBottomSheet> {
     if (!_formKey.currentState!.validate()) return;
 
     context.read<PlanMyDayCubit>().createTask(
-      title: _titleController.text,
-      description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
-      dueDate: _dueDate,
-      priority: int.parse(_priority),
-      estimatedDuration: _estimatedDuration,
-      categoryIds: _selectedCategoryId != null ? [_selectedCategoryId!] : const [],
-      remindAt: _remindAt,
-    );
+          title: _titleController.text,
+          description: _descriptionController.text.isEmpty
+              ? null
+              : _descriptionController.text,
+          dueDate: _dueDate,
+          priority: int.parse(_priority),
+          estimatedDuration: _estimatedDuration,
+          categoryIds:
+              _selectedCategoryId != null ? [_selectedCategoryId!] : const [],
+          remindAt: _remindAt,
+        );
 
     Navigator.pop(context);
     widget.onTaskCreated();
@@ -655,11 +668,13 @@ class _CreateTaskBottomSheetState extends State<CreateTaskBottomSheet> {
     if (date == null || !mounted) return;
     final time = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.fromDateTime(_remindAt ?? now.add(const Duration(hours: 1))),
+      initialTime: TimeOfDay.fromDateTime(
+          _remindAt ?? now.add(const Duration(hours: 1))),
     );
     if (time == null) return;
     setState(() {
-      _remindAt = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+      _remindAt =
+          DateTime(date.year, date.month, date.day, time.hour, time.minute);
     });
   }
 

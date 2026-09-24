@@ -75,7 +75,8 @@ class ExchangeRateLoaded extends ExchangeState {
   }
 
   @override
-  List<Object?> get props => [rate, fromCurrency, toCurrency, amount, convertedAmount, fees];
+  List<Object?> get props =>
+      [rate, fromCurrency, toCurrency, amount, convertedAmount, fees];
 }
 
 /// Rate has expired and needs refresh.
@@ -208,5 +209,6 @@ class ExchangeHomeWithRate extends ExchangeState {
   }
 
   @override
-  List<Object?> get props => [supportedCurrencies, recentTransactions, rate, amount, convertedAmount];
+  List<Object?> get props =>
+      [supportedCurrencies, recentTransactions, rate, amount, convertedAmount];
 }

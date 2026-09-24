@@ -72,5 +72,6 @@ class FinancialGoalsContext {
   /// The fallback is a hint about INTENT, not a fabricated goal — it is used
   /// solely for the free-text `goals` field, while `financial_goals` stays
   /// truthfully empty so the model does not invent progress to report.
-  List<String> namesOr(List<String> fallback) => names.isEmpty ? fallback : names;
+  List<String> namesOr(List<String> fallback) =>
+      names.isEmpty ? fallback : names;
 }

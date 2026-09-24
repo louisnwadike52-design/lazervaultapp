@@ -53,9 +53,7 @@ class _WaterRemindersScreenState extends State<WaterRemindersScreen>
   }
 
   bool _isActive(WaterReminder r) =>
-      r.status == 'pending' ||
-      r.status == 'notified' ||
-      r.status == 'paused';
+      r.status == 'pending' || r.status == 'notified' || r.status == 'paused';
 
   bool _isCompleted(WaterReminder r) =>
       r.status == 'completed' || r.status == 'cancelled';
@@ -67,8 +65,8 @@ class _WaterRemindersScreenState extends State<WaterRemindersScreen>
     Get.dialog(
       AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Text('Delete Reminder',
             style: GoogleFonts.inter(
                 color: Colors.white,
@@ -76,8 +74,7 @@ class _WaterRemindersScreenState extends State<WaterRemindersScreen>
                 fontWeight: FontWeight.w700)),
         content: Text('Are you sure you want to delete this reminder?',
             style: GoogleFonts.inter(
-                color: Colors.white.withValues(alpha: 0.8),
-                fontSize: 14.sp)),
+                color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp)),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
@@ -176,49 +173,48 @@ class _WaterRemindersScreenState extends State<WaterRemindersScreen>
                   }
                   if (list.isEmpty) return _buildEmpty();
                   final due = list.where(_isDue).toList();
-                  final active = list
-                      .where((r) => _isActive(r) && !_isDue(r))
-                      .toList();
+                  final active =
+                      list.where((r) => _isActive(r) && !_isDue(r)).toList();
                   final completed = list.where(_isCompleted).toList();
                   return RefreshIndicator(
-                      color: _primary,
-                      backgroundColor: const Color(0xFF1F1F1F),
-                      onRefresh: () => context
-                          .read<WaterReminderCubit>()
-                          .getReminders(includePast: true),
-                      child: ListView(
-                        padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 100.h),
-                        children: [
-                          if (due.isNotEmpty) ...[
-                            _sectionHeader('Due', _accentOrange),
-                            SizedBox(height: 12.h),
-                            ...due.map((r) => Padding(
-                                  padding: EdgeInsets.only(bottom: 12.h),
-                                  child: _reminderCard(r, isDue: true),
-                                )),
-                            SizedBox(height: 24.h),
-                          ],
-                          if (active.isNotEmpty) ...[
-                            _sectionHeader('Upcoming', _primary),
-                            SizedBox(height: 12.h),
-                            ...active.map((r) => Padding(
-                                  padding: EdgeInsets.only(bottom: 12.h),
-                                  child: _reminderCard(r),
-                                )),
-                          ],
-                          if (completed.isNotEmpty) ...[
-                            if (active.isNotEmpty || due.isNotEmpty)
-                              SizedBox(height: 24.h),
-                            _sectionHeader('Completed', Colors.grey),
-                            SizedBox(height: 12.h),
-                            ...completed.map((r) => Padding(
-                                  padding: EdgeInsets.only(bottom: 12.h),
-                                  child: _reminderCard(r),
-                                )),
-                          ],
+                    color: _primary,
+                    backgroundColor: const Color(0xFF1F1F1F),
+                    onRefresh: () => context
+                        .read<WaterReminderCubit>()
+                        .getReminders(includePast: true),
+                    child: ListView(
+                      padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 100.h),
+                      children: [
+                        if (due.isNotEmpty) ...[
+                          _sectionHeader('Due', _accentOrange),
+                          SizedBox(height: 12.h),
+                          ...due.map((r) => Padding(
+                                padding: EdgeInsets.only(bottom: 12.h),
+                                child: _reminderCard(r, isDue: true),
+                              )),
+                          SizedBox(height: 24.h),
                         ],
-                      ),
-                    );
+                        if (active.isNotEmpty) ...[
+                          _sectionHeader('Upcoming', _primary),
+                          SizedBox(height: 12.h),
+                          ...active.map((r) => Padding(
+                                padding: EdgeInsets.only(bottom: 12.h),
+                                child: _reminderCard(r),
+                              )),
+                        ],
+                        if (completed.isNotEmpty) ...[
+                          if (active.isNotEmpty || due.isNotEmpty)
+                            SizedBox(height: 24.h),
+                          _sectionHeader('Completed', Colors.grey),
+                          SizedBox(height: 12.h),
+                          ...completed.map((r) => Padding(
+                                padding: EdgeInsets.only(bottom: 12.h),
+                                child: _reminderCard(r),
+                              )),
+                        ],
+                      ],
+                    ),
+                  );
                 },
               ),
             ),
@@ -240,8 +236,8 @@ class _WaterRemindersScreenState extends State<WaterRemindersScreen>
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(22.r),
-                  border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.15)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.15)),
                 ),
                 child: Icon(Icons.arrow_back_ios_new,
                     color: Colors.white, size: 18.sp),

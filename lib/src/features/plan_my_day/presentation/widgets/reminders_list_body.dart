@@ -50,7 +50,8 @@ class RemindersListBody extends StatelessWidget {
           );
         } else if (state is PlanMyDayError) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: Colors.red[700]),
+            SnackBar(
+                content: Text(state.message), backgroundColor: Colors.red[700]),
           );
         }
       },
@@ -59,11 +60,14 @@ class RemindersListBody extends StatelessWidget {
         if (state is PlanMyDayLoading) {
           return const Center(child: LazerVaultLoader.small());
         }
-        final reminders = state is ReminderListLoaded ? state.reminders : const <Reminder>[];
+        final reminders =
+            state is ReminderListLoaded ? state.reminders : const <Reminder>[];
         if (reminders.isEmpty) return _emptyState(context);
 
         final now = DateTime.now();
-        final upcoming = reminders.where((r) => _target(r).isAfter(now)).toList()
+        final upcoming = reminders
+            .where((r) => _target(r).isAfter(now))
+            .toList()
           ..sort((a, b) => _target(a).compareTo(_target(b)));
         final past = reminders.where((r) => !_target(r).isAfter(now)).toList()
           ..sort((a, b) => _target(b).compareTo(_target(a)));
@@ -96,7 +100,10 @@ class RemindersListBody extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 8.h),
         child: Text(t.toUpperCase(),
             style: GoogleFonts.inter(
-                color: Colors.grey[500], fontSize: 12.sp, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
+                color: Colors.grey[500],
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5)),
       );
 
   Widget _reminderTile(BuildContext context, Reminder r) {
@@ -108,7 +115,8 @@ class RemindersListBody extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: EdgeInsets.only(right: 20.w),
         margin: EdgeInsets.only(bottom: 10.h),
-        decoration: BoxDecoration(color: Colors.red[900], borderRadius: BorderRadius.circular(12.r)),
+        decoration: BoxDecoration(
+            color: Colors.red[900], borderRadius: BorderRadius.circular(12.r)),
         child: const Icon(Icons.delete_outline, color: Colors.white),
       ),
       confirmDismiss: (_) => _confirmDelete(context),
@@ -132,7 +140,8 @@ class RemindersListBody extends StatelessWidget {
                   color: r.getColor().withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
-                child: Icon(_categoryIcon(r.category), color: r.getColor(), size: 20.sp),
+                child: Icon(_categoryIcon(r.category),
+                    color: r.getColor(), size: 20.sp),
               ),
               SizedBox(width: 12.w),
               Expanded(
@@ -143,10 +152,13 @@ class RemindersListBody extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
-                            color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w600)),
+                            color: Colors.white,
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w600)),
                     SizedBox(height: 3.h),
                     Text(_subtitle(r, target),
-                        style: GoogleFonts.inter(color: Colors.grey[500], fontSize: 12.sp)),
+                        style: GoogleFonts.inter(
+                            color: Colors.grey[500], fontSize: 12.sp)),
                   ],
                 ),
               ),
@@ -168,7 +180,9 @@ class RemindersListBody extends StatelessWidget {
     final fmt = r.allDay
         ? DateFormat('EEE, d MMM yyyy').format(target)
         : DateFormat('EEE, d MMM · h:mm a').format(target);
-    final repeat = r.reminderType == 'recurring' ? ' · ${r.repeatPattern ?? 'repeats'}' : '';
+    final repeat = r.reminderType == 'recurring'
+        ? ' · ${r.repeatPattern ?? 'repeats'}'
+        : '';
     return '$fmt$repeat';
   }
 
@@ -195,14 +209,18 @@ class RemindersListBody extends StatelessWidget {
           Icon(Icons.notifications_none, size: 56.sp, color: Colors.grey[700]),
           SizedBox(height: 12.h),
           Text('No reminders yet',
-              style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600)),
+              style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600)),
           SizedBox(height: 6.h),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 40.w),
             child: Text(
               "Set a reminder for a birthday, bill or event — we'll nudge you 3 days, a day, and an hour before.",
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(color: Colors.grey[600], fontSize: 13.sp),
+              style:
+                  GoogleFonts.inter(color: Colors.grey[600], fontSize: 13.sp),
             ),
           ),
           SizedBox(height: 20.h),
@@ -211,11 +229,13 @@ class RemindersListBody extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: _accent,
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r)),
             ),
             icon: const Icon(Icons.add, color: Colors.white),
             label: Text('Create reminder',
-                style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600)),
+                style: GoogleFonts.inter(
+                    color: Colors.white, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -227,11 +247,14 @@ class RemindersListBody extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: _surface,
-        title: Text('Delete reminder?', style: GoogleFonts.inter(color: Colors.white)),
+        title: Text('Delete reminder?',
+            style: GoogleFonts.inter(color: Colors.white)),
         content: Text('This cancels its scheduled notifications.',
             style: GoogleFonts.inter(color: Colors.grey[400])),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text('Delete', style: TextStyle(color: Colors.red[400])),

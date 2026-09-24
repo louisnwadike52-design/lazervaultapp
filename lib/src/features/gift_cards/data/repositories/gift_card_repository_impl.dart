@@ -51,7 +51,8 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
         hasNext: result.hasNext,
       ));
     } catch (e) {
-      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+      return Left(
+          APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -77,7 +78,8 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
         reason: result.unavailableReason,
       ));
     } catch (e) {
-      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+      return Left(
+          APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -89,7 +91,8 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
       );
       return Right(countries);
     } catch (e) {
-      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+      return Left(
+          APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -138,7 +141,8 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
 
       return Right(giftCard);
     } catch (e) {
-      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+      return Left(
+          APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -161,7 +165,8 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
 
       return Right(giftCards);
     } catch (e) {
-      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+      return Left(
+          APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -171,7 +176,8 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
       final giftCard = await _remoteDataSource.getGiftCardById(giftCardId);
       return Right(giftCard);
     } catch (e) {
-      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+      return Left(
+          APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -194,7 +200,8 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
 
       return Right(transactions);
     } catch (e) {
-      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+      return Left(
+          APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -210,21 +217,24 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
       );
       return Right(result);
     } catch (e) {
-      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+      return Left(
+          APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
   // Sell flow methods
 
   @override
-  Future<Either<Failure, List<SellableCard>>> getSellableCards({String? countryCode}) async {
+  Future<Either<Failure, List<SellableCard>>> getSellableCards(
+      {String? countryCode}) async {
     try {
       final cards = await RetryPolicy.standard.execute(
         () => _remoteDataSource.getSellableCards(countryCode: countryCode),
       );
       return Right(cards);
     } catch (e) {
-      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+      return Left(
+          APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -242,7 +252,8 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
       );
       return Right(rate);
     } catch (e) {
-      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+      return Left(
+          APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -254,7 +265,8 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
       );
       return Right(methods);
     } catch (e) {
-      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+      return Left(
+          APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -266,7 +278,8 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
       );
       return Right(provider);
     } catch (e) {
-      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+      return Left(
+          APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -332,7 +345,8 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
       );
       return Right(sale);
     } catch (e) {
-      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+      return Left(
+          APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -342,7 +356,8 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
       final sale = await _remoteDataSource.getSellStatus(saleId);
       return Right(sale);
     } catch (e) {
-      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+      return Left(
+          APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -362,7 +377,8 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
       );
       return Right(sales);
     } catch (e) {
-      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+      return Left(
+          APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -380,7 +396,8 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
       );
       return Right(result);
     } catch (e) {
-      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+      return Left(
+          APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -394,8 +411,8 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
       );
       return Right(result);
     } catch (e) {
-      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+      return Left(
+          APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
-
 }

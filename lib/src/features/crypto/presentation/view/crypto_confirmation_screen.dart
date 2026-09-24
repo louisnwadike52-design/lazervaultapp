@@ -22,7 +22,8 @@ class CryptoConfirmationScreen extends StatefulWidget {
   });
 
   @override
-  State<CryptoConfirmationScreen> createState() => _CryptoConfirmationScreenState();
+  State<CryptoConfirmationScreen> createState() =>
+      _CryptoConfirmationScreenState();
 }
 
 class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
@@ -47,7 +48,8 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
   Timer? _countdownTimer;
 
   @override
-  ITransactionPinService get transactionPinService => GetIt.I<ITransactionPinService>();
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
 
   @override
   void initState() {
@@ -61,24 +63,24 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _processingController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _slideAnimation = Tween<double>(begin: 30.0, end: 0.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _rotationAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _processingController, curve: Curves.linear),
     );
-    
+
     _animationController.forward();
   }
 
@@ -142,7 +144,8 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
       amount: details.fiatAmount,
       currency: CurrencySymbols.currentCurrency,
       title: 'Confirm ${_getTransactionTypeTitle()}',
-      message: 'Confirm ${_getTransactionTypeTitle().toLowerCase()} of ${details.cryptoAmount} ${details.cryptoSymbol}',
+      message:
+          'Confirm ${_getTransactionTypeTitle().toLowerCase()} of ${details.cryptoAmount} ${details.cryptoSymbol}',
       onPinValidated: (token) async {
         verificationToken = token;
       },
@@ -160,7 +163,8 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
     });
     _processingController.repeat();
     final cubit = context.read<CryptoCubit>();
-    final quantity = details.cryptoQuantity ?? (double.tryParse(details.cryptoAmount) ?? 0.0);
+    final quantity = details.cryptoQuantity ??
+        (double.tryParse(details.cryptoAmount) ?? 0.0);
 
     // Execute real backend call based on transaction type
     switch (details.type) {
@@ -182,8 +186,10 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
         break;
       case CryptoTransactionType.swap:
         await cubit.convertCrypto(
-          fromCryptoId: details.fromCryptoId ?? details.fromCrypto?.toLowerCase() ?? '',
-          toCryptoId: details.toCryptoId ?? details.toCrypto?.toLowerCase() ?? '',
+          fromCryptoId:
+              details.fromCryptoId ?? details.fromCrypto?.toLowerCase() ?? '',
+          toCryptoId:
+              details.toCryptoId ?? details.toCrypto?.toLowerCase() ?? '',
           amount: quantity,
           transactionPin: verificationToken!,
         );
@@ -238,55 +244,56 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
           ? CryptoTransactionStatus.pending
           : mapBackendCryptoTxStatus(_transactionStatus),
     );
-    
+
     Get.off(() => CryptoReceiptScreen(receipt: receipt));
   }
 
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: !_isProcessing, // Prevent back navigation during transaction processing
+      canPop:
+          !_isProcessing, // Prevent back navigation during transaction processing
       child: Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1F1F1F),
-              const Color(0xFF0A0A0A),
-              const Color(0xFF0A0A0A),
-            ],
+        backgroundColor: const Color(0xFF0A0A0A),
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF1F1F1F),
+                const Color(0xFF0A0A0A),
+                const Color(0xFF0A0A0A),
+              ],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(
-                child: AnimatedBuilder(
-                  animation: _slideAnimation,
-                  builder: (context, child) {
-                    return Transform.translate(
-                      offset: Offset(0, _slideAnimation.value),
-                      child: FadeTransition(
-                        opacity: _fadeAnimation,
-                        child: _isCompleted 
-                            ? _buildSuccessScreen()
-                            : _isProcessing 
-                                ? _buildProcessingScreen()
-                                : _buildConfirmationScreen(),
-                      ),
-                    );
-                  },
+          child: SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(),
+                Expanded(
+                  child: AnimatedBuilder(
+                    animation: _slideAnimation,
+                    builder: (context, child) {
+                      return Transform.translate(
+                        offset: Offset(0, _slideAnimation.value),
+                        child: FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: _isCompleted
+                              ? _buildSuccessScreen()
+                              : _isProcessing
+                                  ? _buildProcessingScreen()
+                                  : _buildConfirmationScreen(),
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    ),
     );
   }
 
@@ -313,9 +320,9 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
           SizedBox(width: 16.w),
           Expanded(
             child: Text(
-              _isCompleted 
+              _isCompleted
                   ? 'Transaction Complete'
-                  : _isProcessing 
+                  : _isProcessing
                       ? 'Processing...'
                       : 'Confirm Transaction',
               style: GoogleFonts.inter(
@@ -370,7 +377,6 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -415,18 +421,32 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
             ],
           ),
           SizedBox(height: 24.h),
-          _buildSummaryRow('Amount', widget.transactionDetails.cryptoAmount, widget.transactionDetails.cryptoSymbol),
+          _buildSummaryRow('Amount', widget.transactionDetails.cryptoAmount,
+              widget.transactionDetails.cryptoSymbol),
           SizedBox(height: 12.h),
-          _buildSummaryRow('Price per ${widget.transactionDetails.cryptoSymbol}', '${CurrencySymbols.currentSymbol}${widget.transactionDetails.pricePerUnit.toStringAsFixed(2)}', ''),
+          _buildSummaryRow(
+              'Price per ${widget.transactionDetails.cryptoSymbol}',
+              '${CurrencySymbols.currentSymbol}${widget.transactionDetails.pricePerUnit.toStringAsFixed(2)}',
+              ''),
           SizedBox(height: 12.h),
-          _buildSummaryRow('Total ${CurrencySymbols.currentCurrency}', '${CurrencySymbols.currentSymbol}${widget.transactionDetails.fiatAmount.toStringAsFixed(2)}', ''),
+          _buildSummaryRow(
+              'Total ${CurrencySymbols.currentCurrency}',
+              '${CurrencySymbols.currentSymbol}${widget.transactionDetails.fiatAmount.toStringAsFixed(2)}',
+              ''),
           SizedBox(height: 12.h),
-          _buildSummaryRow('Network Fee', '${CurrencySymbols.currentSymbol}${widget.transactionDetails.networkFee.toStringAsFixed(2)}', ''),
+          _buildSummaryRow(
+              'Network Fee',
+              '${CurrencySymbols.currentSymbol}${widget.transactionDetails.networkFee.toStringAsFixed(2)}',
+              ''),
           SizedBox(height: 12.h),
           // Platform margin is inside the quoted rate, never a separate line.
           // See cryptoPlatformFeePolicy.
           Divider(color: Colors.white.withValues(alpha: 0.2), height: 24.h),
-          _buildSummaryRow('Total', '${CurrencySymbols.currentSymbol}${widget.transactionDetails.totalAmount.toStringAsFixed(2)}', '', isTotal: true),
+          _buildSummaryRow(
+              'Total',
+              '${CurrencySymbols.currentSymbol}${widget.transactionDetails.totalAmount.toStringAsFixed(2)}',
+              '',
+              isTotal: true),
           SizedBox(height: 16.h),
           // Rate countdown indicator
           Container(
@@ -487,7 +507,6 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -506,7 +525,8 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
               Container(
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+                  color: const Color.fromARGB(255, 78, 3, 208)
+                      .withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Icon(
@@ -563,7 +583,6 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -591,7 +610,8 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
           SizedBox(height: 8.h),
           _buildSecurityFeature('Cold Storage Wallet', Icons.ac_unit),
           SizedBox(height: 8.h),
-          _buildSecurityFeature('Multi-Signature Protection', Icons.verified_user),
+          _buildSecurityFeature(
+              'Multi-Signature Protection', Icons.verified_user),
           SizedBox(height: 8.h),
           _buildSecurityFeature('SEC Nigeria Licensed', Icons.gavel),
         ],
@@ -632,7 +652,6 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -841,7 +860,8 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
     );
   }
 
-  Widget _buildSummaryRow(String label, String value, String unit, {bool isTotal = false}) {
+  Widget _buildSummaryRow(String label, String value, String unit,
+      {bool isTotal = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -858,7 +878,8 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
           style: GoogleFonts.inter(
             fontSize: isTotal ? 18.sp : 14.sp,
             fontWeight: FontWeight.w600,
-            color: isTotal ? const Color.fromARGB(255, 78, 3, 208) : Colors.white,
+            color:
+                isTotal ? const Color.fromARGB(255, 78, 3, 208) : Colors.white,
           ),
         ),
       ],
@@ -934,4 +955,3 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
     }
   }
 }
- 

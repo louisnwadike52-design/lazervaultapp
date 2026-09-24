@@ -71,8 +71,8 @@ class InvoiceImageUploadService {
     required String filename,
     required String contentType,
   }) async {
-    final compressed =
-        await ImageCompressor.compressForUpload(bytes, contentType: contentType);
+    final compressed = await ImageCompressor.compressForUpload(bytes,
+        contentType: contentType);
     bytes = compressed.bytes;
     contentType = compressed.contentType;
     filename = ImageCompressor.alignedFilename(filename, contentType);

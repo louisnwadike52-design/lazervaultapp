@@ -187,8 +187,6 @@ class _WaterBillHomeScreenNewState extends State<WaterBillHomeScreenNew> {
   // Provider grid — flat, no primary / other split
   // ---------------------------------------------------------------------------
 
-
-
   // ---------------------------------------------------------------------------
   // Recent payments — top 3 rows via shared BillHistoryItem
   // ---------------------------------------------------------------------------
@@ -254,10 +252,8 @@ class _WaterBillHomeScreenNewState extends State<WaterBillHomeScreenNew> {
         ),
         child: Icon(Icons.water_drop, color: _primary, size: 20.sp),
       ),
-      title:
-          p.providerName.isNotEmpty ? p.providerName : 'Water Bill',
-      subtitle:
-          p.customerNumber.isNotEmpty ? p.customerNumber : 'Account',
+      title: p.providerName.isNotEmpty ? p.providerName : 'Water Bill',
+      subtitle: p.customerNumber.isNotEmpty ? p.customerNumber : 'Account',
       date: _relativeTime(p.createdAt),
       amount: p.amount,
       status: p.status.name,
@@ -288,7 +284,8 @@ class _WaterBillHomeScreenNewState extends State<WaterBillHomeScreenNew> {
         padding: EdgeInsets.symmetric(vertical: 8.h),
         child: Column(
           children: [
-            Icon(Icons.receipt_long, color: const Color(0xFF6B7280), size: 28.sp),
+            Icon(Icons.receipt_long,
+                color: const Color(0xFF6B7280), size: 28.sp),
             SizedBox(height: 8.h),
             Text(
               'No recent payments',
@@ -318,8 +315,8 @@ class _WaterBillHomeScreenNewState extends State<WaterBillHomeScreenNew> {
             LazerVaultLoader(size: 36),
             SizedBox(height: 16.h),
             Text('Loading water providers…',
-                style: GoogleFonts.inter(
-                    color: _textSecondary, fontSize: 13.sp)),
+                style:
+                    GoogleFonts.inter(color: _textSecondary, fontSize: 13.sp)),
           ],
         ),
       );
@@ -340,8 +337,8 @@ class _WaterBillHomeScreenNewState extends State<WaterBillHomeScreenNew> {
                       fontWeight: FontWeight.w600)),
               SizedBox(height: 8.h),
               Text(message,
-                  style: GoogleFonts.inter(
-                      color: _textSecondary, fontSize: 13.sp),
+                  style:
+                      GoogleFonts.inter(color: _textSecondary, fontSize: 13.sp),
                   textAlign: TextAlign.center),
               SizedBox(height: 20.h),
               ElevatedButton(
@@ -350,8 +347,8 @@ class _WaterBillHomeScreenNewState extends State<WaterBillHomeScreenNew> {
                   backgroundColor: _primary,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r)),
-                  padding: EdgeInsets.symmetric(
-                      horizontal: 28.w, vertical: 12.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 28.w, vertical: 12.h),
                 ),
                 child: Text('Retry',
                     style: GoogleFonts.inter(
@@ -367,7 +364,6 @@ class _WaterBillHomeScreenNewState extends State<WaterBillHomeScreenNew> {
   // ---------------------------------------------------------------------------
   // Actions
   // ---------------------------------------------------------------------------
-
 
   // Delegates to the shared water-specific actions sheet so the landing
   // and history screens dispatch through one code path (saved-contact

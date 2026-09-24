@@ -9,7 +9,8 @@ import 'package:get/get.dart';
 /// fill whole rows (no ragged last row).
 const int kEpinGridColumns = 4;
 const int kEpinRowsPerPage = 5;
-const int kEpinMaxQuantity = kEpinGridColumns * kEpinRowsPerPage; // 20 / A4 sheet
+const int kEpinMaxQuantity =
+    kEpinGridColumns * kEpinRowsPerPage; // 20 / A4 sheet
 const List<int> kEpinQuantityPresets = [4, 8, 12, 16, kEpinMaxQuantity];
 
 /// Shared visual language for the recharge-card (ePIN) flow.

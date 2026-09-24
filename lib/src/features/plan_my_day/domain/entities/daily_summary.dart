@@ -27,16 +27,16 @@ class DailySummary {
       eventsAttended: json['events_attended'] as int? ?? 0,
       focusMinutes: json['focus_minutes'] as int? ?? 0,
       completionRate: (json['completion_rate'] as num?)?.toDouble() ?? 0.0,
-      topCategories: (json['top_categories'] as List<dynamic>?)?.cast<String>() ?? [],
+      topCategories:
+          (json['top_categories'] as List<dynamic>?)?.cast<String>() ?? [],
       productivityScore: json['productivity_score'] as String? ?? 'medium',
     );
   }
 
   int get tasksRemaining => tasksTotal - tasksCompleted;
 
-  double get completionPercentage => tasksTotal > 0
-      ? (tasksCompleted / tasksTotal * 100)
-      : 0.0;
+  double get completionPercentage =>
+      tasksTotal > 0 ? (tasksCompleted / tasksTotal * 100) : 0.0;
 
   String get productivityLabel {
     switch (productivityScore) {

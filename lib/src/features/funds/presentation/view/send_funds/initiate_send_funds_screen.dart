@@ -8,15 +8,15 @@ class InitiateSendFundsScreen extends StatefulWidget {
   final RecipientModel recipient;
 
   @override
-  State<InitiateSendFundsScreen> createState() => _InitiateSendFundsScreenState();
+  State<InitiateSendFundsScreen> createState() =>
+      _InitiateSendFundsScreenState();
 }
 
 class _InitiateSendFundsScreenState extends State<InitiateSendFundsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:   AppColors.secondaryBackgroundColor,
-      body: InitiateSendFunds(recipient: widget.recipient)
-    );
-    }
-} 
+        backgroundColor: AppColors.secondaryBackgroundColor,
+        body: InitiateSendFunds(recipient: widget.recipient));
+  }
+}

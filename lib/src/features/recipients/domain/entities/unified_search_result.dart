@@ -175,19 +175,16 @@ class UnifiedSearchPage {
   });
 
   factory UnifiedSearchPage.fromJson(Map<String, dynamic> j) {
-    List<UnifiedSearchResult> parse(String k) =>
-        ((j[k] as List?) ?? const [])
-            .whereType<Map>()
-            .map((e) => UnifiedSearchResult.fromJson(
-                Map<String, dynamic>.from(e)))
-            .toList();
+    List<UnifiedSearchResult> parse(String k) => ((j[k] as List?) ?? const [])
+        .whereType<Map>()
+        .map((e) => UnifiedSearchResult.fromJson(Map<String, dynamic>.from(e)))
+        .toList();
     return UnifiedSearchPage(
       local: parse('local'),
       global: parse('global'),
       hasMore: j['has_more'] == true,
-      nextOffset: (j['next_offset'] is num)
-          ? (j['next_offset'] as num).toInt()
-          : 0,
+      nextOffset:
+          (j['next_offset'] is num) ? (j['next_offset'] as num).toInt() : 0,
     );
   }
 

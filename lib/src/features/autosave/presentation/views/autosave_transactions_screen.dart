@@ -18,7 +18,6 @@ import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_sta
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'autosave_transactions_screen_widgets.dart';
 
-
 /// Lists every autosave transaction the user has executed across all
 /// rules — manual triggers, scheduled fires, on-deposit fires,
 /// round-up fires. Distinct from the All Rules screen (which lists
@@ -195,13 +194,10 @@ class _AutoSaveTransactionsScreenState
                     backgroundColor: const Color(0xFF1F1F1F),
                     color: const Color.fromARGB(255, 78, 3, 208),
                     onRefresh: () async {
-                      await context
-                          .read<AutoSaveCubit>()
-                          .getTransactions();
+                      await context.read<AutoSaveCubit>().getTransactions();
                     },
                     child: ListView.builder(
-                      padding: EdgeInsets.fromLTRB(
-                          16.w, 4.h, 16.w, 24.h),
+                      padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 24.h),
                       itemCount: filtered.length,
                       itemBuilder: (_, i) => Padding(
                         padding: EdgeInsets.only(bottom: 12.h),
@@ -209,8 +205,7 @@ class _AutoSaveTransactionsScreenState
                           tx: filtered[i],
                           rule: _rulesById[filtered[i].ruleId],
                           onTap: () => _showDetailsSheet(
-                              filtered[i],
-                              _rulesById[filtered[i].ruleId]),
+                              filtered[i], _rulesById[filtered[i].ruleId]),
                         ),
                       ),
                     ),
@@ -233,14 +228,12 @@ class _AutoSaveTransactionsScreenState
         onChanged: (v) => setState(() => _query = v),
         decoration: InputDecoration(
           hintText: 'Search by rule name, reason, amount…',
-          hintStyle: GoogleFonts.inter(
-              color: Colors.grey[500], fontSize: 13.sp),
-          prefixIcon:
-              Icon(Icons.search, color: Colors.grey[500], size: 20.sp),
+          hintStyle:
+              GoogleFonts.inter(color: Colors.grey[500], fontSize: 13.sp),
+          prefixIcon: Icon(Icons.search, color: Colors.grey[500], size: 20.sp),
           suffixIcon: _query.isNotEmpty
               ? IconButton(
-                  icon: Icon(Icons.close,
-                      color: Colors.grey[500], size: 18.sp),
+                  icon: Icon(Icons.close, color: Colors.grey[500], size: 18.sp),
                   onPressed: () {
                     _searchController.clear();
                     setState(() => _query = '');
@@ -390,8 +383,7 @@ class _AutoSaveTransactionsScreenState
                     _triggerFilter = null;
                   });
                 },
-                icon: Icon(Icons.close,
-                    size: 14.sp, color: Colors.grey[400]),
+                icon: Icon(Icons.close, size: 14.sp, color: Colors.grey[400]),
                 label: Text(
                   'Clear filters',
                   style: GoogleFonts.inter(
@@ -401,8 +393,7 @@ class _AutoSaveTransactionsScreenState
                   ),
                 ),
                 style: TextButton.styleFrom(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: 8.w, vertical: 4.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
@@ -501,8 +492,10 @@ class _AutoSaveTransactionsScreenState
   /// A bank-funded rule pulls by Direct Debit, so the honest answer is the
   /// bank — the wallet account id on those rows is not the funding source at
   /// all. Everything else moves inside LazerVault, so it is the wallet account.
-  String? _sourceDetail(AutoSaveTransactionEntity tx, AutoSaveRuleEntity? rule) {
-    if (rule != null && AutoSaveTriggerLabels.usesLinkedBank(rule.triggerType)) {
+  String? _sourceDetail(
+      AutoSaveTransactionEntity tx, AutoSaveRuleEntity? rule) {
+    if (rule != null &&
+        AutoSaveTriggerLabels.usesLinkedBank(rule.triggerType)) {
       final bank = rule.sourceBankName.trim();
       if (bank.isNotEmpty) return '$bank · Direct Debit';
       // Mandate present but the bank name never came back — still say HOW the

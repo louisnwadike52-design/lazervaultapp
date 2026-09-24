@@ -21,16 +21,19 @@ UnifiedTransaction qrTxnToUnified(
       viewerUserId.isEmpty ||
       viewerUserId == txn.payerId;
   final otherName = viewerIsPayer
-      ? (txn.recipientName.isNotEmpty ? txn.recipientName : txn.recipientUsername)
+      ? (txn.recipientName.isNotEmpty
+          ? txn.recipientName
+          : txn.recipientUsername)
       : (txn.payerName.isNotEmpty ? txn.payerName : txn.payerUsername);
-  final otherHandle =
-      viewerIsPayer ? txn.recipientUsername : txn.payerUsername;
+  final otherHandle = viewerIsPayer ? txn.recipientUsername : txn.payerUsername;
 
   return UnifiedTransaction(
     id: txn.id.isNotEmpty ? txn.id : txn.referenceNumber,
     serviceType: TransactionServiceType.qrPayment,
     title: otherName.isNotEmpty
-        ? (viewerIsPayer ? 'QR Payment to $otherName' : 'QR Payment from $otherName')
+        ? (viewerIsPayer
+            ? 'QR Payment to $otherName'
+            : 'QR Payment from $otherName')
         : 'QR Payment',
     description: txn.description.isNotEmpty ? txn.description : null,
     amount: txn.amount,

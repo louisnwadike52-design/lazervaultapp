@@ -5,7 +5,6 @@ import 'package:lazervault/src/features/funds/cubit/deposit_state.dart';
 import 'package:lazervault/src/features/banking/services/banking_websocket_service.dart';
 import 'package:lazervault/src/core/services/analytics_service.dart';
 
-
 class DepositCubit extends Cubit<DepositState> {
   final InitiateDepositUseCase _initiateDepositUseCase;
   final BankingWebSocketService? _bankingWebSocketService;
@@ -33,7 +32,9 @@ class DepositCubit extends Cubit<DepositState> {
 
     // Telemetry: measure initiation latency + record outcome by method.
     final telemetryStart = DateTime.now();
-    final method = (paymentMethod == null || paymentMethod.isEmpty) ? 'card' : paymentMethod;
+    final method = (paymentMethod == null || paymentMethod.isEmpty)
+        ? 'card'
+        : paymentMethod;
     void recordDeposit(String outcome) {
       AnalyticsService.instance.trackDepositOutcome(
         method: method,
@@ -147,7 +148,9 @@ class DepositCubit extends Cubit<DepositState> {
   }
 
   void _subscribeToDepositUpdates(String? depositReference) {
-    if (_bankingWebSocketService == null || depositReference == null || depositReference.isEmpty) return;
+    if (_bankingWebSocketService == null ||
+        depositReference == null ||
+        depositReference.isEmpty) return;
 
     _wsSubscription?.cancel();
     _wsSubscription = _bankingWebSocketService!
@@ -163,7 +166,8 @@ class DepositCubit extends Cubit<DepositState> {
       } else if (status == 'reversed') {
         emit(DepositReversed(
           reference: event.reference ?? event.transferId,
-          reason: event.errorMessage ?? 'Deposit was reversed due to a processing error',
+          reason: event.errorMessage ??
+              'Deposit was reversed due to a processing error',
         ));
       } else if (status == 'failed') {
         emit(DepositWebSocketFailed(

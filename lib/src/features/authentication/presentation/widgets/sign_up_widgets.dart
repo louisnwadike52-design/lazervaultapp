@@ -14,7 +14,8 @@ class _PhoneCountryPickerSheet extends StatefulWidget {
   });
 
   @override
-  State<_PhoneCountryPickerSheet> createState() => _PhoneCountryPickerSheetState();
+  State<_PhoneCountryPickerSheet> createState() =>
+      _PhoneCountryPickerSheetState();
 }
 
 class _PhoneCountryPickerSheetState extends State<_PhoneCountryPickerSheet> {
@@ -61,13 +62,14 @@ class _PhoneCountryPickerSheetState extends State<_PhoneCountryPickerSheet> {
                 onChanged: (v) => setState(() => _query = v),
                 decoration: InputDecoration(
                   hintText: 'Search country or dial code',
-                  hintStyle: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5)),
+                  hintStyle:
+                      TextStyle(color: Colors.white.withValues(alpha: 0.5)),
                   prefixIcon: Icon(Icons.search,
                       color: Colors.white.withValues(alpha: 0.5)),
                   filled: true,
                   fillColor: Colors.white.withValues(alpha: 0.06),
-                  contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 12.w),
+                  contentPadding:
+                      EdgeInsets.symmetric(vertical: 0, horizontal: 12.w),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10.r),
                     borderSide: BorderSide.none,

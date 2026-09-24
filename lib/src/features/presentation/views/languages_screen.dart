@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lazervault/src/features/widgets/languages.dart';
 
-
 class LanguagesScreen extends StatefulWidget {
   const LanguagesScreen({super.key});
 
@@ -10,8 +9,6 @@ class LanguagesScreen extends StatefulWidget {
 }
 
 class _LanguagesScreenState extends State<LanguagesScreen> {
-
-
   @override
   void initState() {
     super.initState();

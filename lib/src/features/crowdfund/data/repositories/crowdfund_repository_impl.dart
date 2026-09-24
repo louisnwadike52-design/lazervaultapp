@@ -301,7 +301,8 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
     }
   }
 
-  static pb.LeaderboardSortBy _leaderboardSortByToProto(LeaderboardSortBy sortBy) {
+  static pb.LeaderboardSortBy _leaderboardSortByToProto(
+      LeaderboardSortBy sortBy) {
     switch (sortBy) {
       case LeaderboardSortBy.mostFunded:
         return pb.LeaderboardSortBy.LEADERBOARD_SORT_MOST_FUNDED;
@@ -374,8 +375,7 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
   }
 
   @override
-  Future<List<CrowdfundCustomCategory>>
-      listCrowdfundCustomCategories() async {
+  Future<List<CrowdfundCustomCategory>> listCrowdfundCustomCategories() async {
     try {
       return await remoteDataSource.listCrowdfundCustomCategories();
     } catch (e) {

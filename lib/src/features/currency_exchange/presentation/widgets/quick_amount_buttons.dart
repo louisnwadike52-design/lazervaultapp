@@ -34,7 +34,9 @@ class QuickAmountButtons extends StatelessWidget {
   String _formatAmount(double amount) {
     if (amount >= 1000) {
       final k = amount / 1000;
-      return k == k.roundToDouble() ? '${k.toInt()}K' : '${k.toStringAsFixed(1)}K';
+      return k == k.roundToDouble()
+          ? '${k.toInt()}K'
+          : '${k.toStringAsFixed(1)}K';
     }
     return amount.toInt().toString();
   }
@@ -68,7 +70,8 @@ class QuickAmountButtons extends StatelessWidget {
                   child: Text(
                     _formatAmount(amount),
                     style: TextStyle(
-                      color: isSelected ? const Color(0xFF4E03D0) : Colors.white,
+                      color:
+                          isSelected ? const Color(0xFF4E03D0) : Colors.white,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),

@@ -18,7 +18,8 @@ enum RolloverMode { renewOnExpiry, recurringSchedule }
 /// beneficiary toggle), so this preference only carries rollover settings.
 class RolloverPreference {
   final RolloverMode mode;
-  final String frequency; // "daily" | "weekly" | "monthly" (ignored for renewOnExpiry)
+  final String
+      frequency; // "daily" | "weekly" | "monthly" (ignored for renewOnExpiry)
   final int dayOfWeek; // 0-6 (Sun..Sat), used when frequency=weekly
   final int dayOfMonth; // 1-31, used when frequency=monthly
   final int executionHour; // 0-23
@@ -77,7 +78,13 @@ class _RolloverPreferenceSheetState extends State<RolloverPreferenceSheet> {
   static const _textSecondary = Color(0xFF9CA3AF);
 
   static const _weekdayLabels = [
-    'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat',
+    'Sun',
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
   ];
 
   void _submit() {

@@ -25,12 +25,14 @@ class VoiceVerificationScreen extends StatefulWidget {
   });
 
   @override
-  State<VoiceVerificationScreen> createState() => _VoiceVerificationScreenState();
+  State<VoiceVerificationScreen> createState() =>
+      _VoiceVerificationScreenState();
 }
 
 class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
     with WidgetsBindingObserver {
-  final VoiceBiometricsService _voiceService = GetIt.I<VoiceBiometricsService>();
+  final VoiceBiometricsService _voiceService =
+      GetIt.I<VoiceBiometricsService>();
   final AudioRecorder _recorder = AudioRecorder();
   final Connectivity _connectivity = Connectivity();
 
@@ -69,7 +71,8 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
 
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       if (_isRecording) {
         _cancelCurrentRecording();
       }
@@ -124,7 +127,8 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
         _handleCancel();
       }
     } catch (e) {
-      _showError('Failed to check microphone permission: ${_getErrorMessage(e)}');
+      _showError(
+          'Failed to check microphone permission: ${_getErrorMessage(e)}');
       _handleCancel();
     }
   }
@@ -135,7 +139,8 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
     }
 
     if (_retryCount >= maxRetries) {
-      _showError('Maximum verification attempts reached. Please try again later.');
+      _showError(
+          'Maximum verification attempts reached. Please try again later.');
       await Future.delayed(const Duration(seconds: 2));
       _handleCancel();
       return;
@@ -238,7 +243,8 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
     if (!await _checkNetworkConnectivity()) {
       setState(() {
         _isVerifying = false;
-        _errorMessage = 'No internet connection. Please check your network and try again.';
+        _errorMessage =
+            'No internet connection. Please check your network and try again.';
       });
       return;
     }
@@ -280,12 +286,15 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
           }
           return;
         } else if (result.isPoorQuality) {
-          errorMessage = 'Voice quality too low. Please speak clearly and try again.';
+          errorMessage =
+              'Voice quality too low. Please speak clearly and try again.';
         } else if (result.isBelowThreshold) {
           final similarity = result.similarityPercentage.toStringAsFixed(1);
-          errorMessage = 'Voice similarity ($similarity%) below threshold. Please try again.';
+          errorMessage =
+              'Voice similarity ($similarity%) below threshold. Please try again.';
         } else {
-          errorMessage = result.message ?? 'Verification failed. Please try again.';
+          errorMessage =
+              result.message ?? 'Verification failed. Please try again.';
         }
 
         setState(() {
@@ -342,7 +351,9 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
         title: Row(
           children: [
             Icon(
-              similarityScore > 0.7 ? Icons.warning_amber_rounded : Icons.error_outline,
+              similarityScore > 0.7
+                  ? Icons.warning_amber_rounded
+                  : Icons.error_outline,
               color: similarityScore > 0.7 ? Colors.orange : Colors.red,
             ),
             const SizedBox(width: 8),
@@ -425,7 +436,8 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
       final fileSize = await file.length();
 
       if (fileSize < 1000) {
-        _showError('Recording is too short. Please speak clearly and try again.');
+        _showError(
+            'Recording is too short. Please speak clearly and try again.');
         return null;
       }
 
@@ -649,12 +661,14 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.error_outline, color: Colors.red[700], size: 20),
+                      Icon(Icons.error_outline,
+                          color: Colors.red[700], size: 20),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           _errorMessage!,
-                          style: TextStyle(color: Colors.red[900], fontSize: 14),
+                          style:
+                              TextStyle(color: Colors.red[900], fontSize: 14),
                         ),
                       ),
                     ],
@@ -666,7 +680,8 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
               // Recording indicator
               if (_isRecording) ...[
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: Colors.blue[50],
                     borderRadius: BorderRadius.circular(20),
@@ -701,7 +716,8 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
                   child: LinearProgressIndicator(
                     value: _recordingProgress,
                     backgroundColor: Colors.grey[200],
-                    valueColor: AlwaysStoppedAnimation<Color>(theme.primaryColor),
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(theme.primaryColor),
                     minHeight: 8,
                   ),
                 ),
@@ -722,10 +738,13 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
                       color: _hasPermission && !_isRecording && !_isVerifying
                           ? theme.primaryColor
                           : Colors.grey[300],
-                      boxShadow: _hasPermission && !_isRecording && !_isVerifying
+                      boxShadow: _hasPermission &&
+                              !_isRecording &&
+                              !_isVerifying
                           ? [
                               BoxShadow(
-                                color: theme.primaryColor.withValues(alpha: 0.3),
+                                color:
+                                    theme.primaryColor.withValues(alpha: 0.3),
                                 blurRadius: 20,
                                 spreadRadius: 5,
                               ),
@@ -769,7 +788,8 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.info_outline, color: Colors.blue[700], size: 20),
+                        Icon(Icons.info_outline,
+                            color: Colors.blue[700], size: 20),
                         const SizedBox(width: 8),
                         Text(
                           'Tips for best results:',
@@ -784,7 +804,8 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
                     const Text('• Speak in a quiet environment'),
                     const Text('• Hold your phone steady'),
                     const Text('• Speak clearly and naturally'),
-                    const Text('• Recording lasts $verificationDuration seconds'),
+                    const Text(
+                        '• Recording lasts $verificationDuration seconds'),
                   ],
                 ),
               ),

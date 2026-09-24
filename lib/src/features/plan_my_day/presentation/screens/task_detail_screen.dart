@@ -33,7 +33,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.task.title);
-    _descriptionController = TextEditingController(text: widget.task.description ?? '');
+    _descriptionController =
+        TextEditingController(text: widget.task.description ?? '');
     _selectedPriority = widget.task.priority;
     _selectedStatus = widget.task.status;
     _selectedDueDate = widget.task.dueDate;
@@ -68,7 +69,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         actions: [
           if (!widget.task.isCompleted)
             IconButton(
-              icon: const Icon(Icons.check_circle_outline, color: Color(0xFF10B981)),
+              icon: const Icon(Icons.check_circle_outline,
+                  color: Color(0xFF10B981)),
               onPressed: _completeTask,
             ),
           PopupMenuButton<String>(
@@ -89,7 +91,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 value: 'edit',
                 child: ListTile(
                   leading: const Icon(Icons.edit, color: Color(0xFF4E03D0)),
-                  title: const Text('Edit', style: TextStyle(color: Colors.white)),
+                  title:
+                      const Text('Edit', style: TextStyle(color: Colors.white)),
                   contentPadding: EdgeInsets.symmetric(horizontal: 12.w),
                 ),
               ),
@@ -97,7 +100,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 value: 'delete',
                 child: ListTile(
                   leading: const Icon(Icons.delete, color: Color(0xFFEF4444)),
-                  title: const Text('Delete', style: TextStyle(color: Colors.white)),
+                  title: const Text('Delete',
+                      style: TextStyle(color: Colors.white)),
                   contentPadding: EdgeInsets.symmetric(horizontal: 12.w),
                 ),
               ),
@@ -149,20 +153,25 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   _buildInfoRow('Title', widget.task.title),
                   if (widget.task.description != null)
                     _buildInfoRow('Description', widget.task.description!),
-                  _buildInfoRow('Priority', _getPriorityLabel(widget.task.priority)),
-                  _buildInfoRow('Due Date', widget.task.dueDate != null
-                      ? DateFormat('MMM d, yyyy • h:mm a').format(widget.task.dueDate!)
-                      : 'No due date'),
+                  _buildInfoRow(
+                      'Priority', _getPriorityLabel(widget.task.priority)),
+                  _buildInfoRow(
+                      'Due Date',
+                      widget.task.dueDate != null
+                          ? DateFormat('MMM d, yyyy • h:mm a')
+                              .format(widget.task.dueDate!)
+                          : 'No due date'),
                   if (widget.task.estimatedDuration != null)
-                    _buildInfoRow('Estimated Duration', widget.task.estimatedDuration!),
-                  _buildInfoRow('Created', DateFormat('MMM d, yyyy').format(widget.task.createdAt)),
+                    _buildInfoRow(
+                        'Estimated Duration', widget.task.estimatedDuration!),
+                  _buildInfoRow('Created',
+                      DateFormat('MMM d, yyyy').format(widget.task.createdAt)),
                 ],
               ),
               SizedBox(height: 20.h),
 
               // Progress Card
-              if (!widget.task.isCompleted)
-                _buildProgressCard(),
+              if (!widget.task.isCompleted) _buildProgressCard(),
               SizedBox(height: 20.h),
 
               // Actions
@@ -214,7 +223,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     );
   }
 
-  Widget _buildSectionCard({required String title, required List<Widget> children}) {
+  Widget _buildSectionCard(
+      {required String title, required List<Widget> children}) {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -308,7 +318,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             ),
             if (!widget.task.isCompleted)
               IconButton(
-                icon: const Icon(Icons.add_circle_outline, color: Color(0xFF3B82F6)),
+                icon: const Icon(Icons.add_circle_outline,
+                    color: Color(0xFF3B82F6)),
                 onPressed: _showUpdateProgressDialog,
               ),
           ],
@@ -396,14 +407,15 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
 
   void _updateStatus(String status) {
     context.read<PlanMyDayCubit>().updateTask(
-      id: widget.task.id,
-      status: status,
-    );
+          id: widget.task.id,
+          status: status,
+        );
   }
 
   void _showEditDialog() {
     final titleController = TextEditingController(text: widget.task.title);
-    final descriptionController = TextEditingController(text: widget.task.description ?? '');
+    final descriptionController =
+        TextEditingController(text: widget.task.description ?? '');
     int selectedPriority = widget.task.priority;
     DateTime? selectedDueDate = widget.task.dueDate;
 
@@ -476,7 +488,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                       }
                     },
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 12.w, vertical: 12.h),
                       decoration: BoxDecoration(
                         color: const Color(0xFF2D2D2D),
                         borderRadius: BorderRadius.circular(8.r),
@@ -484,11 +497,13 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.calendar_today, color: Colors.grey[400], size: 18),
+                          Icon(Icons.calendar_today,
+                              color: Colors.grey[400], size: 18),
                           SizedBox(width: 8.w),
                           Text(
                             selectedDueDate != null
-                                ? DateFormat('MMM d, yyyy').format(selectedDueDate!)
+                                ? DateFormat('MMM d, yyyy')
+                                    .format(selectedDueDate!)
                                 : 'Set Due Date',
                             style: TextStyle(
                               color: selectedDueDate != null
@@ -511,22 +526,28 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   Wrap(
                     spacing: 8.w,
                     children: [
-                      _buildPriorityChip('Low', 1, const Color(0xFF10B981), selectedPriority, (value) {
+                      _buildPriorityChip(
+                          'Low', 1, const Color(0xFF10B981), selectedPriority,
+                          (value) {
                         setDialogState(() {
                           selectedPriority = value;
                         });
                       }),
-                      _buildPriorityChip('Medium', 2, const Color(0xFFF59E0B), selectedPriority, (value) {
+                      _buildPriorityChip('Medium', 2, const Color(0xFFF59E0B),
+                          selectedPriority, (value) {
                         setDialogState(() {
                           selectedPriority = value;
                         });
                       }),
-                      _buildPriorityChip('High', 3, const Color(0xFFEF4444), selectedPriority, (value) {
+                      _buildPriorityChip(
+                          'High', 3, const Color(0xFFEF4444), selectedPriority,
+                          (value) {
                         setDialogState(() {
                           selectedPriority = value;
                         });
                       }),
-                      _buildPriorityChip('Urgent', 4, const Color(0xFFDC2626), selectedPriority, (value) {
+                      _buildPriorityChip('Urgent', 4, const Color(0xFFDC2626),
+                          selectedPriority, (value) {
                         setDialogState(() {
                           selectedPriority = value;
                         });
@@ -553,18 +574,21 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     return;
                   }
                   context.read<PlanMyDayCubit>().updateTask(
-                    id: widget.task.id,
-                    title: titleController.text.trim(),
-                    description: descriptionController.text.trim().isEmpty ? null : descriptionController.text.trim(),
-                    dueDate: selectedDueDate,
-                    priority: selectedPriority,
-                  );
+                        id: widget.task.id,
+                        title: titleController.text.trim(),
+                        description: descriptionController.text.trim().isEmpty
+                            ? null
+                            : descriptionController.text.trim(),
+                        dueDate: selectedDueDate,
+                        priority: selectedPriority,
+                      );
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF3B82F6),
                 ),
-                child: const Text('Save', style: TextStyle(color: Colors.white)),
+                child:
+                    const Text('Save', style: TextStyle(color: Colors.white)),
               ),
             ],
           );
@@ -661,7 +685,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF3B82F6),
                 ),
-                child: const Text('Update', style: TextStyle(color: Colors.white)),
+                child:
+                    const Text('Update', style: TextStyle(color: Colors.white)),
               ),
             ],
           );

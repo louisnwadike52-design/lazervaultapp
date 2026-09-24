@@ -19,7 +19,6 @@ import 'package:lazervault/src/features/sprayme/presentation/screens/spray_room_
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'create_session_screen_widgets.dart';
 
-
 const _occasionTypes = [
   _OccasionType('Wedding', Icons.favorite),
   _OccasionType('Birthday', Icons.cake),
@@ -53,6 +52,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   bool _showSessionCode = false;
   String _sessionCode = '';
   String _sessionId = '';
+
   /// People picked BEFORE the session exists.
   ///
   /// Invites can only be sent once there is a session to attach them to, so
@@ -230,7 +230,8 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     if (_selectedImage != null && _uploadedImageUrl.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Your cover image didn't upload. Remove it or pick again before creating."),
+          content: Text(
+              "Your cover image didn't upload. Remove it or pick again before creating."),
           backgroundColor: Color(0xFFFB923C),
         ),
       );
@@ -491,9 +492,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
               child: Text(
                 hasSelection ? _selectedOccasion : 'Select occasion type...',
                 style: TextStyle(
-                  color: hasSelection
-                      ? Colors.white
-                      : const Color(0xFF9CA3AF),
+                  color: hasSelection ? Colors.white : const Color(0xFF9CA3AF),
                   fontSize: 15.sp,
                   fontWeight: hasSelection ? FontWeight.w500 : FontWeight.w400,
                 ),
@@ -541,8 +540,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                       SizedBox(height: 8.h),
                       Text(
                         'Uploading...',
-                        style: TextStyle(
-                            color: Colors.white, fontSize: 12.sp),
+                        style: TextStyle(color: Colors.white, fontSize: 12.sp),
                       ),
                     ],
                   ),
@@ -555,8 +553,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
               bottom: 8.h,
               left: 8.w,
               child: Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: const Color(0xFF10B981),
                   borderRadius: BorderRadius.circular(6.r),
@@ -677,13 +674,11 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
 
             // Code display
             Container(
-              padding:
-                  EdgeInsets.symmetric(vertical: 20.h, horizontal: 24.w),
+              padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 24.w),
               decoration: BoxDecoration(
                 color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(16.r),
-                border:
-                    Border.all(color: const Color(0xFF7C3AED), width: 1.5),
+                border: Border.all(color: const Color(0xFF7C3AED), width: 1.5),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -778,8 +773,8 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                 icon: Icon(Icons.copy, size: 18.sp),
                 label: Text(
                   'Copy Code',
-                  style: TextStyle(
-                      fontSize: 15.sp, fontWeight: FontWeight.w500),
+                  style:
+                      TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w500),
                 ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF9CA3AF),
@@ -855,12 +850,10 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       style: TextStyle(color: Colors.white, fontSize: 15.sp),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle:
-            TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+        hintStyle: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
         filled: true,
         fillColor: const Color(0xFF1F1F1F),
-        contentPadding:
-            EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
           borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
@@ -871,8 +864,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide:
-              const BorderSide(color: Color(0xFF7C3AED), width: 1.5),
+          borderSide: const BorderSide(color: Color(0xFF7C3AED), width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
@@ -880,8 +872,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide:
-              const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
         ),
         errorStyle: TextStyle(
           color: const Color(0xFFEF4444),

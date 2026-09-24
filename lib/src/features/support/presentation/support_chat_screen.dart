@@ -69,7 +69,8 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
       _api.markRead(_ticket!.id);
       _poll = Timer.periodic(const Duration(seconds: 3), (_) => _refresh());
     } catch (e) {
-      if (mounted) setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
+      if (mounted)
+        setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -144,7 +145,8 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Support', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
+            Text('Support',
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
             if (_ticket != null)
               Text(_ticket!.ticketNumber,
                   style: TextStyle(fontSize: 11.sp, color: _textSecondary)),
@@ -249,7 +251,8 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                         fontWeight: FontWeight.w600)),
               ),
             Text(m.body,
-                style: TextStyle(color: Colors.white, fontSize: 14.sp, height: 1.35)),
+                style: TextStyle(
+                    color: Colors.white, fontSize: 14.sp, height: 1.35)),
             if (m.viaEmail)
               Padding(
                 padding: EdgeInsets.only(top: 3.h),
@@ -271,8 +274,8 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF10B981).withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(
-            color: const Color(0xFF10B981).withValues(alpha: 0.30)),
+        border:
+            Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.30)),
       ),
       child: Row(
         children: [
@@ -282,8 +285,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
           Expanded(
             child: Text(
               'This ticket is resolved. Sending a message will reopen it.',
-              style: TextStyle(
-                  color: const Color(0xFF10B981), fontSize: 11.sp),
+              style: TextStyle(color: const Color(0xFF10B981), fontSize: 11.sp),
             ),
           ),
         ],
@@ -350,24 +352,25 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                 ),
               ),
               SizedBox(width: 8.w),
-          GestureDetector(
-            onTap: _send,
-            child: Container(
-              width: 46.w,
-              height: 46.w,
-              decoration: const BoxDecoration(
-                color: _primary,
-                shape: BoxShape.circle,
+              GestureDetector(
+                onTap: _send,
+                child: Container(
+                  width: 46.w,
+                  height: 46.w,
+                  decoration: const BoxDecoration(
+                    color: _primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: _sending
+                      ? Padding(
+                          padding: EdgeInsets.all(12.w),
+                          child: const CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white),
+                        )
+                      : Icon(Icons.send_rounded,
+                          color: Colors.white, size: 20.sp),
+                ),
               ),
-              child: _sending
-                  ? Padding(
-                      padding: EdgeInsets.all(12.w),
-                      child: const CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
-                    )
-                  : Icon(Icons.send_rounded, color: Colors.white, size: 20.sp),
-            ),
-          ),
             ],
           ),
         ],

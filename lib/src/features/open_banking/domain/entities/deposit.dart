@@ -63,7 +63,7 @@ class Deposit extends Equatable {
   // DirectPay authorization fields (for one-time payments)
   final bool requiresAuthorization;
   final String? paymentUrl; // URL to open for DirectPay authorization
-  final String? paymentId;  // DirectPay payment ID for tracking
+  final String? paymentId; // DirectPay payment ID for tracking
 
   const Deposit({
     required this.id,
@@ -91,7 +91,8 @@ class Deposit extends Equatable {
   double get netAmount => amount - fee;
 
   /// Check if deposit is pending
-  bool get isPending => status == DepositStatus.pending || status == DepositStatus.processing;
+  bool get isPending =>
+      status == DepositStatus.pending || status == DepositStatus.processing;
 
   /// Check if deposit is successful
   bool get isSuccessful => status == DepositStatus.successful;
@@ -198,7 +199,8 @@ class Deposit extends Equatable {
       failureReason: failureReason ?? this.failureReason,
       createdAt: createdAt ?? this.createdAt,
       completedAt: completedAt ?? this.completedAt,
-      requiresAuthorization: requiresAuthorization ?? this.requiresAuthorization,
+      requiresAuthorization:
+          requiresAuthorization ?? this.requiresAuthorization,
       paymentUrl: paymentUrl ?? this.paymentUrl,
       paymentId: paymentId ?? this.paymentId,
     );
@@ -264,7 +266,10 @@ class FeeLeg {
   final int discount;
 
   const FeeLeg(
-      {this.monoCost = 0, this.lazervaultFee = 0, this.total = 0, this.discount = 0});
+      {this.monoCost = 0,
+      this.lazervaultFee = 0,
+      this.total = 0,
+      this.discount = 0});
 
   bool get isFree => total <= 0;
 }

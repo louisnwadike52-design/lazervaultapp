@@ -53,7 +53,8 @@ Future<void> maybeShowSelfLockOnLaunch(BuildContext context) async {
   if (until == null || !context.mounted) return;
   final emergency = (await ss.getSelfLockReason()) == 'emergency';
   if (!context.mounted) return;
-  await showAccountLockedModal(context, until, selfLock: true, emergency: emergency);
+  await showAccountLockedModal(context, until,
+      selfLock: true, emergency: emergency);
 }
 
 /// Full-screen blocking modal shown on the login screens when the account is
@@ -163,7 +164,10 @@ class _AccountLockedDialogState extends State<_AccountLockedDialog> {
                   : widget.emergency
                       ? 'Emergency lock active'
                       : 'Account locked',
-              style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+              style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700)),
           SizedBox(height: 10.h),
           Text(
             widget.fraudFreeze
@@ -174,7 +178,10 @@ class _AccountLockedDialogState extends State<_AccountLockedDialog> {
                         ? 'You locked your account. Sign-in and all transactions are paused — there\'s no early unlock.'
                         : 'Too many attempts. Your account is temporarily locked.',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 13.5.sp, height: 1.45),
+            style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 13.5.sp,
+                height: 1.45),
           ),
           SizedBox(height: 18.h),
           Container(
@@ -184,10 +191,16 @@ class _AccountLockedDialogState extends State<_AccountLockedDialog> {
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Column(children: [
-              Text('Unlocks in', style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
+              Text('Unlocks in',
+                  style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
               SizedBox(height: 4.h),
               Text(_countdown,
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 22.sp, fontWeight: FontWeight.w800, letterSpacing: 1)),
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 22.sp,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1)),
             ]),
           ),
         ],
@@ -195,7 +208,9 @@ class _AccountLockedDialogState extends State<_AccountLockedDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).maybePop(),
-          child: Text('OK', style: GoogleFonts.inter(color: const Color(0xFF8B7FE8), fontWeight: FontWeight.w600)),
+          child: Text('OK',
+              style: GoogleFonts.inter(
+                  color: const Color(0xFF8B7FE8), fontWeight: FontWeight.w600)),
         ),
       ],
     );

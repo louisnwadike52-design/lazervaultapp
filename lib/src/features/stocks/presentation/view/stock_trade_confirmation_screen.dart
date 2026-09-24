@@ -25,7 +25,8 @@ class StockTradeConfirmationScreen extends StatefulWidget {
       _StockTradeConfirmationScreenState();
 }
 
-class _StockTradeConfirmationScreenState extends State<StockTradeConfirmationScreen>
+class _StockTradeConfirmationScreenState
+    extends State<StockTradeConfirmationScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -88,7 +89,8 @@ class _StockTradeConfirmationScreenState extends State<StockTradeConfirmationScr
     final dateFormat = DateFormat('MMM dd, yyyy • hh:mm a');
     final orderTypeLabel = _getOrderTypeLabel();
     final actionLabel = widget.order.side == OrderSide.buy ? 'BOUGHT' : 'SOLD';
-    final estimatedTotal = (widget.order.price ?? widget.stock.currentPrice) * widget.order.quantity;
+    final estimatedTotal = (widget.order.price ?? widget.stock.currentPrice) *
+        widget.order.quantity;
 
     final receiptText = '''
 📊 Trade Receipt - ${widget.stock.symbol}
@@ -110,13 +112,16 @@ Date: ${dateFormat.format(widget.order.createdAt)}
 🚀 Generated with Claude Code
 ''';
 
-    SharePlus.instance.share(ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+    SharePlus.instance
+        .share(ShareParams(
+      // iOS: a non-zero popover anchor is required — CGRectZero throws
+      // PlatformException and the share silently fails on iPhone/iPad.
+      sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       text: receiptText,
-      subject: '${widget.stock.symbol} Trade Receipt - Order #${widget.order.id}',
-    )).then((_) {
+      subject:
+          '${widget.stock.symbol} Trade Receipt - Order #${widget.order.id}',
+    ))
+        .then((_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -314,23 +319,24 @@ Date: ${dateFormat.format(widget.order.createdAt)}
           Row(
             children: [
               ...[
-              Container(
-                width: 48.w,
-                height: 48.w,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8.r),
+                Container(
+                  width: 48.w,
+                  height: 48.w,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  padding: EdgeInsets.all(8.w),
+                  child: Image.network(
+                    widget.stock.logoUrl,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(Icons.business,
+                          size: 32.sp, color: Colors.grey);
+                    },
+                  ),
                 ),
-                padding: EdgeInsets.all(8.w),
-                child: Image.network(
-                  widget.stock.logoUrl,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Icon(Icons.business, size: 32.sp, color: Colors.grey);
-                  },
-                ),
-              ),
-              SizedBox(width: 16.w),
-            ],
+                SizedBox(width: 16.w),
+              ],
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,19 +380,28 @@ Date: ${dateFormat.format(widget.order.createdAt)}
           ),
           SizedBox(height: 16.h),
 
-          _buildDetailRow('Action', widget.order.side == OrderSide.buy ? 'BUY' : 'SELL',
-              valueColor: widget.order.side == OrderSide.buy ? Colors.green : Colors.red),
+          _buildDetailRow(
+              'Action', widget.order.side == OrderSide.buy ? 'BUY' : 'SELL',
+              valueColor: widget.order.side == OrderSide.buy
+                  ? Colors.green
+                  : Colors.red),
           SizedBox(height: 12.h),
           _buildDetailRow('Order Type', _getOrderTypeLabel()),
           SizedBox(height: 12.h),
           _buildDetailRow('Quantity', '${widget.order.quantity} shares'),
           SizedBox(height: 12.h),
           if (widget.order.price != null)
-            _buildDetailRow('Price', CurrencySymbols.formatAmountWithCurrency(widget.order.price!, widget.stock.currency)),
+            _buildDetailRow(
+                'Price',
+                CurrencySymbols.formatAmountWithCurrency(
+                    widget.order.price!, widget.stock.currency)),
           if (widget.order.price != null) SizedBox(height: 12.h),
           _buildDetailRow(
             'Est. Total',
-            CurrencySymbols.formatAmountWithCurrency((widget.order.price ?? widget.stock.currentPrice) * widget.order.quantity, widget.stock.currency),
+            CurrencySymbols.formatAmountWithCurrency(
+                (widget.order.price ?? widget.stock.currentPrice) *
+                    widget.order.quantity,
+                widget.stock.currency),
             valueColor: const Color(0xFF6366F1),
           ),
           SizedBox(height: 12.h),

@@ -52,7 +52,8 @@ class TwoFactorSetup extends Equatable {
         verificationRequired = false;
 
   @override
-  List<Object?> get props => [secret, qrCode, backupCodes, method, verificationRequired];
+  List<Object?> get props =>
+      [secret, qrCode, backupCodes, method, verificationRequired];
 }
 
 /// Entity representing two-factor authentication status
@@ -76,7 +77,8 @@ class TwoFactorStatus extends Equatable {
         hasBackupCodes = false;
 
   @override
-  List<Object?> get props => [enabled, method, backupCodesCount, hasBackupCodes];
+  List<Object?> get props =>
+      [enabled, method, backupCodesCount, hasBackupCodes];
 }
 
 /// Entity representing a two-factor authentication method with details
@@ -102,7 +104,8 @@ class TwoFactorMethodInfo extends Equatable {
     TwoFactorMethodInfo(
       method: TwoFactorMethod.totp,
       name: 'Authenticator App',
-      description: 'Use Google Authenticator, Microsoft Authenticator, or Authy app to generate verification codes',
+      description:
+          'Use Google Authenticator, Microsoft Authenticator, or Authy app to generate verification codes',
       icon: 'shield',
     ),
     TwoFactorMethodInfo(

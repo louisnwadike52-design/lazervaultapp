@@ -94,7 +94,8 @@ class IntlAirtimeCubit extends Cubit<IntlAirtimeState> {
       // ranges, e.g. every GB number). Emitting IntlAirtimeError here left
       // the screen silent — it has no error branch — so the field just span
       // and nothing happened. Manual selection stays available.
-      emit(IntlAirtimeOperatorDetectionFailed(message: _detectFailureMessage(e)));
+      emit(IntlAirtimeOperatorDetectionFailed(
+          message: _detectFailureMessage(e)));
     }
   }
 
@@ -162,8 +163,7 @@ class IntlAirtimeCubit extends Cubit<IntlAirtimeState> {
         deliveredCurrency: result.deliveredCurrency.isNotEmpty
             ? result.deliveredCurrency
             : destCurrency,
-        fxRateUsed:
-            result.fxRateUsed > 0 ? result.fxRateUsed : fxRateSnapshot,
+        fxRateUsed: result.fxRateUsed > 0 ? result.fxRateUsed : fxRateSnapshot,
         operatorName: result.operatorName,
         countryName: result.countryName,
         phoneNumber:

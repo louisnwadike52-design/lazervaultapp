@@ -75,7 +75,8 @@ void main() {
       expect(
         announce.contains("!_onDeviceMode) return"),
         isFalse,
-        reason: 'announcing only on-device leaves no way to hand capture BACK to '
+        reason:
+            'announcing only on-device leaves no way to hand capture BACK to '
             'the server, so server STT stays latched off',
       );
       expect(announce, contains("'livekit'"),

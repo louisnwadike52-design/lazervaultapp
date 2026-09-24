@@ -73,7 +73,9 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
 
   Future<void> _fetchAccounts() async {
     final userId = widget.userId.isEmpty ? await _getUserId() : widget.userId;
-    final accessToken = widget.accessToken.isEmpty ? await _getAccessToken() : widget.accessToken;
+    final accessToken = widget.accessToken.isEmpty
+        ? await _getAccessToken()
+        : widget.accessToken;
     _userId = userId;
 
     if (userId.isNotEmpty && accessToken.isNotEmpty) {
@@ -92,7 +94,8 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
   /// cache (one-time / setting-up / switching / direct-debit), mirroring the
   /// deposit screen's `_accessChip`.
   Widget? _mandateChip(LinkedBankAccount account) {
-    final mandate = serviceLocator<MandateCubit>().getMandateForAccount(account.id);
+    final mandate =
+        serviceLocator<MandateCubit>().getMandateForAccount(account.id);
     final LinkedAccountState state;
     if (mandate == null) {
       state = LinkedAccountState.oneTime;
@@ -178,7 +181,8 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        title: const Text('Unlink Account', style: TextStyle(color: Colors.white)),
+        title:
+            const Text('Unlink Account', style: TextStyle(color: Colors.white)),
         content: Text(
           'Are you sure you want to unlink ${account.bankName} (${account.displayAccountNumber})?',
           style: const TextStyle(color: Color(0xFF9CA3AF)),
@@ -186,7 +190,8 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel', style: TextStyle(color: Color(0xFF9CA3AF))),
+            child: const Text('Cancel',
+                style: TextStyle(color: Color(0xFF9CA3AF))),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
@@ -199,7 +204,9 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
 
     if (confirm == true && mounted) {
       final userId = widget.userId.isEmpty ? await _getUserId() : widget.userId;
-      final accessToken = widget.accessToken.isEmpty ? await _getAccessToken() : widget.accessToken;
+      final accessToken = widget.accessToken.isEmpty
+          ? await _getAccessToken()
+          : widget.accessToken;
       if (userId.isNotEmpty && accessToken.isNotEmpty) {
         context.read<OpenBankingCubit>().unlinkAccount(
               accountId: account.id,
@@ -212,7 +219,9 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
 
   void _onSetDefault(LinkedBankAccount account) async {
     final userId = widget.userId.isEmpty ? await _getUserId() : widget.userId;
-    final accessToken = widget.accessToken.isEmpty ? await _getAccessToken() : widget.accessToken;
+    final accessToken = widget.accessToken.isEmpty
+        ? await _getAccessToken()
+        : widget.accessToken;
     if (userId.isNotEmpty && accessToken.isNotEmpty) {
       context.read<OpenBankingCubit>().setDefaultAccount(
             accountId: account.id,
@@ -225,7 +234,9 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
   void _onRefreshBalance(LinkedBankAccount account) async {
     _lastRefreshAccount = account;
     final userId = widget.userId.isEmpty ? await _getUserId() : widget.userId;
-    final accessToken = widget.accessToken.isEmpty ? await _getAccessToken() : widget.accessToken;
+    final accessToken = widget.accessToken.isEmpty
+        ? await _getAccessToken()
+        : widget.accessToken;
     if (userId.isEmpty || accessToken.isEmpty || !mounted) return;
     final cubit = context.read<OpenBankingCubit>();
 
@@ -248,7 +259,8 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
     }
 
     final feeNaira = feeKobo / 100.0;
-    final txnId = 'refresh-${account.id}-${DateTime.now().millisecondsSinceEpoch}';
+    final txnId =
+        'refresh-${account.id}-${DateTime.now().millisecondsSinceEpoch}';
     await validateTransactionPin(
       context: context,
       transactionId: txnId,
@@ -315,8 +327,8 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
                       ? SnackBarAction(
                           label: 'Reconnect',
                           textColor: Colors.white,
-                          onPressed: () =>
-                              startAccountReauthorization(context, reauthTarget),
+                          onPressed: () => startAccountReauthorization(
+                              context, reauthTarget),
                         )
                       : SnackBarAction(
                           label: 'Refresh List',
@@ -402,9 +414,8 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
         },
         builder: (context, state) {
           final accounts = context.read<OpenBankingCubit>().linkedAccounts;
-          final refreshingAccountId = state is BalanceRefreshing
-              ? state.accountId
-              : null;
+          final refreshingAccountId =
+              state is BalanceRefreshing ? state.accountId : null;
 
           // Full-screen loader ONLY on the initial load (no accounts yet). During
           // a pull-to-refresh with accounts already on screen, keep the list

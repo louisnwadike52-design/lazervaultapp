@@ -4,7 +4,6 @@ import '../../domain/entities/crowdfund_entities.dart';
 import '../../domain/entities/notification_channel_entities.dart';
 part 'crowdfund_models_widgets.dart';
 
-
 /// Safely decode JSON, returning null on malformed input
 Map<String, dynamic>? _safeJsonDecode(String json) {
   try {
@@ -38,7 +37,8 @@ class NotificationChannelModel extends NotificationChannel {
     required super.updatedAt,
   });
 
-  factory NotificationChannelModel.fromProto(pb.NotificationChannelMessage proto) {
+  factory NotificationChannelModel.fromProto(
+      pb.NotificationChannelMessage proto) {
     return NotificationChannelModel(
       id: proto.id,
       crowdfundId: proto.crowdfundId,
@@ -46,10 +46,10 @@ class NotificationChannelModel extends NotificationChannel {
       channelType: _channelTypeFromProto(proto.channelType),
       status: _channelStatusFromProto(proto.status),
       channelName: proto.channelName,
-      channelUsername: proto.channelUsername.isEmpty ? null : proto.channelUsername,
-      enabledEvents: proto.enabledEvents
-          .map((e) => _eventTypeFromProto(e))
-          .toList(),
+      channelUsername:
+          proto.channelUsername.isEmpty ? null : proto.channelUsername,
+      enabledEvents:
+          proto.enabledEvents.map((e) => _eventTypeFromProto(e)).toList(),
       preferences: proto.hasPreferences()
           ? _preferencesFromProto(proto.preferences)
           : NotificationPreferences.defaultPrefs(),
@@ -68,13 +68,15 @@ class NotificationChannelModel extends NotificationChannel {
     );
   }
 
-  static NotificationChannelType _channelTypeFromProto(pb.NotificationChannelType type) {
+  static NotificationChannelType _channelTypeFromProto(
+      pb.NotificationChannelType type) {
     switch (type) {
       case pb.NotificationChannelType.NOTIFICATION_CHANNEL_TYPE_TELEGRAM:
         return NotificationChannelType.telegram;
       case pb.NotificationChannelType.NOTIFICATION_CHANNEL_TYPE_DISCORD:
         return NotificationChannelType.discord;
-      case pb.NotificationChannelType.NOTIFICATION_CHANNEL_TYPE_WHATSAPP_BUSINESS:
+      case pb.NotificationChannelType
+            .NOTIFICATION_CHANNEL_TYPE_WHATSAPP_BUSINESS:
         return NotificationChannelType.whatsappBusiness;
       case pb.NotificationChannelType.NOTIFICATION_CHANNEL_TYPE_SLACK:
         return NotificationChannelType.slack;
@@ -83,7 +85,8 @@ class NotificationChannelModel extends NotificationChannel {
     }
   }
 
-  static NotificationChannelStatus _channelStatusFromProto(pb.NotificationChannelStatus status) {
+  static NotificationChannelStatus _channelStatusFromProto(
+      pb.NotificationChannelStatus status) {
     switch (status) {
       case pb.NotificationChannelStatus.NOTIFICATION_CHANNEL_STATUS_PENDING:
         return NotificationChannelStatus.pending;
@@ -93,14 +96,16 @@ class NotificationChannelModel extends NotificationChannel {
         return NotificationChannelStatus.paused;
       case pb.NotificationChannelStatus.NOTIFICATION_CHANNEL_STATUS_ERROR:
         return NotificationChannelStatus.error;
-      case pb.NotificationChannelStatus.NOTIFICATION_CHANNEL_STATUS_DISCONNECTED:
+      case pb
+            .NotificationChannelStatus.NOTIFICATION_CHANNEL_STATUS_DISCONNECTED:
         return NotificationChannelStatus.disconnected;
       default:
         return NotificationChannelStatus.unspecified;
     }
   }
 
-  static NotificationEventType _eventTypeFromProto(pb.NotificationEventType type) {
+  static NotificationEventType _eventTypeFromProto(
+      pb.NotificationEventType type) {
     switch (type) {
       case pb.NotificationEventType.NOTIFICATION_EVENT_TYPE_NEW_DONATION:
         return NotificationEventType.newDonation;
@@ -134,11 +139,14 @@ class NotificationChannelModel extends NotificationChannel {
       includeProgress: proto.includeProgress,
       includeLeaderboard: proto.includeLeaderboard,
       largeDonationThreshold: proto.largeDonationThreshold,
-      messageTemplate: proto.messageTemplate.isEmpty ? null : proto.messageTemplate,
+      messageTemplate:
+          proto.messageTemplate.isEmpty ? null : proto.messageTemplate,
       language: proto.language.isEmpty ? 'en' : proto.language,
       quietHoursEnabled: proto.quietHoursEnabled,
-      quietHoursStart: proto.quietHoursStart.isEmpty ? '22:00' : proto.quietHoursStart,
-      quietHoursEnd: proto.quietHoursEnd.isEmpty ? '08:00' : proto.quietHoursEnd,
+      quietHoursStart:
+          proto.quietHoursStart.isEmpty ? '22:00' : proto.quietHoursStart,
+      quietHoursEnd:
+          proto.quietHoursEnd.isEmpty ? '08:00' : proto.quietHoursEnd,
       timezone: proto.timezone.isEmpty ? 'Africa/Lagos' : proto.timezone,
     );
   }

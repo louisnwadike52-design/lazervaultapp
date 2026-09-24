@@ -77,15 +77,16 @@ class _IntlDataProcessingScreenState extends State<IntlDataProcessingScreen>
       _providerPhone = args['providerPhone'] as String;
       _transactionId = args['transactionId'] as String;
       _verificationToken = args['verificationToken'] as String;
-      _senderCurrency = args['senderCurrency'] as String? ?? _bundle.senderCurrencyCode;
-      _senderAmount = (args['senderAmount'] as num?)?.toDouble() ?? _bundle.amount;
+      _senderCurrency =
+          args['senderCurrency'] as String? ?? _bundle.senderCurrencyCode;
+      _senderAmount =
+          (args['senderAmount'] as num?)?.toDouble() ?? _bundle.amount;
       _argsValid = true;
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Get.back();
         Get.snackbar('Error', 'Invalid payment data',
-            backgroundColor: const Color(0xFFEF4444),
-            colorText: Colors.white);
+            backgroundColor: const Color(0xFFEF4444), colorText: Colors.white);
       });
     }
 
@@ -98,21 +99,22 @@ class _IntlDataProcessingScreenState extends State<IntlDataProcessingScreen>
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         final cubit = context.read<IntlDataCubit>();
-        cubit.loadOperators(_country.code, _country.name)
+        cubit
+            .loadOperators(_country.code, _country.name)
             .then((_) => cubit.loadBundles(_operator))
             .then((_) {
-            cubit.selectBundle(_bundle);
-            cubit.setRecipient(_providerPhone);
-            if (mounted) setState(() => _currentStep = 1);
-            cubit.buy(
-              accountId: '',
-              idempotencyKey: _transactionId,
-              pin: _verificationToken,
-              senderCurrency: _senderCurrency,
-              senderAmount: _senderAmount,
-            );
-            if (mounted) setState(() => _currentStep = 2);
-          });
+          cubit.selectBundle(_bundle);
+          cubit.setRecipient(_providerPhone);
+          if (mounted) setState(() => _currentStep = 1);
+          cubit.buy(
+            accountId: '',
+            idempotencyKey: _transactionId,
+            pin: _verificationToken,
+            senderCurrency: _senderCurrency,
+            senderAmount: _senderAmount,
+          );
+          if (mounted) setState(() => _currentStep = 2);
+        });
         _watchdog = Timer(_watchdogTimeout, _handleTimeout);
       });
     }
@@ -237,9 +239,8 @@ class _IntlDataProcessingScreenState extends State<IntlDataProcessingScreen>
                 AnimatedBuilder(
                   animation: _pulseController,
                   builder: (context, child) {
-                    final scale = isActive
-                        ? 1.0 + (_pulseController.value * 0.1)
-                        : 1.0;
+                    final scale =
+                        isActive ? 1.0 + (_pulseController.value * 0.1) : 1.0;
                     return Transform.scale(
                       scale: scale,
                       child: Container(
@@ -297,8 +298,7 @@ class _IntlDataProcessingScreenState extends State<IntlDataProcessingScreen>
                     ],
                   ),
                 ),
-                if (isActive)
-                  LazerVaultLoader.small(),
+                if (isActive) LazerVaultLoader.small(),
                 if (isCompleted)
                   Icon(Icons.check_circle, color: step.color, size: 20.sp),
               ],

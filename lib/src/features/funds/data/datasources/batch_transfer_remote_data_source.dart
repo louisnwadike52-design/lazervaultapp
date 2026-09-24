@@ -147,10 +147,14 @@ class BatchTransferRemoteDataSourceImpl
           .map((b) => BatchTransferHistoryModel.fromProto(b))
           .toList();
 
-      return (batches as List<BatchTransferHistoryEntity>, response.total.toInt());
+      return (
+        batches as List<BatchTransferHistoryEntity>,
+        response.total.toInt()
+      );
     } on GrpcError catch (e) {
       throw ServerException(
-        message: 'Failed to get batch transfers: ${e.message ?? "Unknown error"}',
+        message:
+            'Failed to get batch transfers: ${e.message ?? "Unknown error"}',
       );
     } catch (e) {
       throw ServerException(
@@ -182,11 +186,13 @@ class BatchTransferRemoteDataSourceImpl
       return BatchTransferDetailModel.fromProto(response);
     } on GrpcError catch (e) {
       throw ServerException(
-        message: 'Failed to get batch transfer detail: ${e.message ?? "Unknown error"}',
+        message:
+            'Failed to get batch transfer detail: ${e.message ?? "Unknown error"}',
       );
     } catch (e) {
       throw ServerException(
-        message: 'An unexpected error occurred while fetching batch transfer detail.',
+        message:
+            'An unexpected error occurred while fetching batch transfer detail.',
       );
     }
   }

@@ -19,12 +19,12 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/shared_widgets/lv_snackbar.dart';
 part 'download_statements_screen_widgets.dart';
 
-
 class DownloadStatementsScreen extends StatefulWidget {
   const DownloadStatementsScreen({super.key});
 
   @override
-  State<DownloadStatementsScreen> createState() => _DownloadStatementsScreenState();
+  State<DownloadStatementsScreen> createState() =>
+      _DownloadStatementsScreenState();
 }
 
 class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
@@ -32,7 +32,8 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
   DateTime? _startDate;
   DateTime? _endDate;
   StatementFormat _selectedFormat = StatementFormat.pdf;
-  final StatementFileService _fileService = serviceLocator<StatementFileService>();
+  final StatementFileService _fileService =
+      serviceLocator<StatementFileService>();
   bool _isPreparingFile = false;
 
   // Locally-persisted recent statements (no backend history RPC exists). Each
@@ -46,9 +47,9 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
     super.initState();
     final userId = context.read<AuthenticationCubit>().userId ?? '';
     context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
-      userId: userId,
-      accessToken: null,
-    );
+          userId: userId,
+          accessToken: null,
+        );
     _loadRecent();
   }
 
@@ -106,7 +107,8 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
 
   static const Color _purple = Color(0xFF4E03D0);
 
-  Future<DateTime?> _pickSingleDate(DateTime? initial, DateTime first, DateTime last) {
+  Future<DateTime?> _pickSingleDate(
+      DateTime? initial, DateTime first, DateTime last) {
     return showDatePicker(
       context: context,
       initialDate: initial ?? last,
@@ -139,12 +141,14 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
       builder: (sheetCtx) {
         return StatefulBuilder(
           builder: (sheetCtx, setSheet) {
-            Widget dateField(String label, DateTime? value, VoidCallback onTap) {
+            Widget dateField(
+                String label, DateTime? value, VoidCallback onTap) {
               return Expanded(
                 child: InkWell(
                   onTap: onTap,
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF9FAFB),
                       borderRadius: BorderRadius.circular(12.r),
@@ -155,7 +159,8 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
                       children: [
                         Text(label,
                             style: GoogleFonts.inter(
-                                fontSize: 11.sp, color: const Color(0xFF9CA3AF))),
+                                fontSize: 11.sp,
+                                color: const Color(0xFF9CA3AF))),
                         SizedBox(height: 4.h),
                         Text(
                           value != null
@@ -181,7 +186,8 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
                 onTap: onTap,
                 borderRadius: BorderRadius.circular(20.r),
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
                   decoration: BoxDecoration(
                     color: _purple.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(20.r),
@@ -281,7 +287,8 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
                           if (start!.isAfter(end!)) {
                             LVSnackbar.showError(
                               title: 'Invalid range',
-                              message: 'Start date must be before the end date.',
+                              message:
+                                  'Start date must be before the end date.',
                             );
                             return;
                           }
@@ -426,7 +433,8 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
                 ),
                 SizedBox(height: 8.h),
                 ListTile(
-                  leading: const Icon(Icons.open_in_new, color: Color(0xFF4E03D0)),
+                  leading:
+                      const Icon(Icons.open_in_new, color: Color(0xFF4E03D0)),
                   title: Text(
                     'Open',
                     style: GoogleFonts.inter(color: const Color(0xFF1F2937)),
@@ -449,7 +457,8 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
                     },
                   ),
                 ListTile(
-                  leading: const Icon(Icons.ios_share, color: Color(0xFF4E03D0)),
+                  leading:
+                      const Icon(Icons.ios_share, color: Color(0xFF4E03D0)),
                   title: Text(
                     'Share',
                     style: GoogleFonts.inter(color: const Color(0xFF1F2937)),
@@ -702,7 +711,8 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
                       label: 'PDF',
                       icon: Icons.picture_as_pdf,
                       isSelected: _selectedFormat == StatementFormat.pdf,
-                      onTap: () => setState(() => _selectedFormat = StatementFormat.pdf),
+                      onTap: () =>
+                          setState(() => _selectedFormat = StatementFormat.pdf),
                     ),
                   ),
                   SizedBox(width: 12.w),
@@ -711,7 +721,8 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
                       label: 'CSV',
                       icon: Icons.table_chart,
                       isSelected: _selectedFormat == StatementFormat.csv,
-                      onTap: () => setState(() => _selectedFormat = StatementFormat.csv),
+                      onTap: () =>
+                          setState(() => _selectedFormat = StatementFormat.csv),
                     ),
                   ),
                 ],
@@ -790,10 +801,12 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
   }
 
   Widget _recentTile(Map<String, dynamic> e) {
-    final fmt = e['format'] == 'csv' ? StatementFormat.csv : StatementFormat.pdf;
+    final fmt =
+        e['format'] == 'csv' ? StatementFormat.csv : StatementFormat.pdf;
     final start = DateTime.fromMillisecondsSinceEpoch(e['startMs'] as int);
     final end = DateTime.fromMillisecondsSinceEpoch(e['endMs'] as int);
-    final generated = DateTime.fromMillisecondsSinceEpoch(e['generatedMs'] as int);
+    final generated =
+        DateTime.fromMillisecondsSinceEpoch(e['generatedMs'] as int);
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(

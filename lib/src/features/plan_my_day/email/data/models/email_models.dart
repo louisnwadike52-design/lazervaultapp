@@ -67,7 +67,8 @@ class EmailSummariesResultModel {
     final messages = rawMessages is List
         ? rawMessages
             .whereType<Map>()
-            .map((m) => EmailMessageModel.fromJson(Map<String, dynamic>.from(m)))
+            .map(
+                (m) => EmailMessageModel.fromJson(Map<String, dynamic>.from(m)))
             .toList()
         : <EmailMessage>[];
     return EmailSummariesResult(

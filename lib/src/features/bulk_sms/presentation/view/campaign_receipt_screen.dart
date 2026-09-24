@@ -101,8 +101,7 @@ class CampaignReceiptScreen extends StatelessWidget {
             _row('Sender ID', campaign.senderId),
             SizedBox(height: 10.h),
           ],
-          _row('Units used',
-              '${campaign?.creditsUsed ?? 0}'),
+          _row('Units used', '${campaign?.creditsUsed ?? 0}'),
           SizedBox(height: 10.h),
           _row('Units left', '${result?.newCreditBalance ?? 0}'),
           if (scheduled && campaign?.scheduledAt != null) ...[
@@ -127,8 +126,8 @@ class CampaignReceiptScreen extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label,
-            style: TextStyle(
-                color: BulkSmsTheme.textSecondary, fontSize: 13.sp)),
+            style:
+                TextStyle(color: BulkSmsTheme.textSecondary, fontSize: 13.sp)),
         Flexible(
           child: Text(value,
               textAlign: TextAlign.right,

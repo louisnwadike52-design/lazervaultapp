@@ -39,7 +39,8 @@ class InternetBillCubit extends Cubit<InternetBillState> {
       (failure) => emit(InternetBillError(message: failure.message)),
       (providers) => emit(InternetBillProvidersLoaded(
         providers: providers
-            .where((p) => !_hiddenServiceIds.contains(p.serviceId.trim().toLowerCase()))
+            .where((p) =>
+                !_hiddenServiceIds.contains(p.serviceId.trim().toLowerCase()))
             .toList(),
       )),
     );
@@ -59,7 +60,8 @@ class InternetBillCubit extends Cubit<InternetBillState> {
 
     if (isClosed) return;
     result.fold(
-      (failure) => emit(InternetAccountValidationFailed(message: failure.message)),
+      (failure) =>
+          emit(InternetAccountValidationFailed(message: failure.message)),
       (validation) => emit(InternetAccountValidated(
         validation: validation,
         providerId: providerId,
@@ -144,7 +146,8 @@ class InternetBillCubit extends Cubit<InternetBillState> {
         if (payment.isCompleted) {
           emit(InternetBillPaymentSuccess(payment: payment));
         } else if (payment.isFailed) {
-          emit(InternetBillPaymentFailed(message: 'Payment failed. Please try again.'));
+          emit(InternetBillPaymentFailed(
+              message: 'Payment failed. Please try again.'));
         } else {
           // Pending - treat as success for now, user can check status later
           emit(InternetBillPaymentSuccess(payment: payment));

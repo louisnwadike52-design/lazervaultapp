@@ -12,8 +12,6 @@ class InputPinScreen extends StatefulWidget {
 }
 
 class _InputPinScreenState extends State<InputPinScreen> {
-
-
   @override
   void initState() {
     super.initState();
@@ -29,7 +27,7 @@ class _InputPinScreenState extends State<InputPinScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       body: SafeArea(
-        child:InputPin(recipient: widget.recipient),
+        child: InputPin(recipient: widget.recipient),
       ),
     );
   }

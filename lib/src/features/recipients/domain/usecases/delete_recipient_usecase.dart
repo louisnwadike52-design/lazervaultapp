@@ -9,6 +9,7 @@ class DeleteRecipientUseCase {
 
   Future<Either<Failure, void>> call(
       {required String recipientId, required String accessToken}) async {
-    return await _repository.deleteRecipient(recipientId: recipientId, accessToken: accessToken);
+    return await _repository.deleteRecipient(
+        recipientId: recipientId, accessToken: accessToken);
   }
 }

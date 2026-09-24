@@ -75,7 +75,8 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
     Get.snackbar(
       'Copied',
       '$label copied to clipboard',
-      backgroundColor: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.9),
+      backgroundColor:
+          const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.9),
       colorText: Colors.white,
       snackPosition: SnackPosition.BOTTOM,
       duration: const Duration(seconds: 2),
@@ -90,9 +91,22 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
   // so the row falls back to the muted "Being set up" state (empty is the
   // user-approved fallback over a mock/type).
   static const Set<String> _accountTypeTokens = {
-    'personal', 'business', 'savings', 'investment', 'family',
-    'family & friends', 'joint', 'group', 'multi-currency', 'multicurrency',
-    'usd', 'gbp', 'eur', 'ngn', 'account', 'wallet',
+    'personal',
+    'business',
+    'savings',
+    'investment',
+    'family',
+    'family & friends',
+    'joint',
+    'group',
+    'multi-currency',
+    'multicurrency',
+    'usd',
+    'gbp',
+    'eur',
+    'ngn',
+    'account',
+    'wallet',
   };
 
   /// The holder name to display, with bare account-type tokens scrubbed to ''.
@@ -273,7 +287,8 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
             label: 'Bank Name',
             value: widget.bankName,
             showCopy: true,
-            onCopy: () => _copyToClipboard(context, widget.bankName, 'Bank name'),
+            onCopy: () =>
+                _copyToClipboard(context, widget.bankName, 'Bank name'),
           ),
           SizedBox(height: 12.h),
           _buildDetailRow(
@@ -281,7 +296,8 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
             label: 'Account Number',
             value: widget.accountNumber,
             showCopy: true,
-            onCopy: () => _copyToClipboard(context, widget.accountNumber, 'Account number'),
+            onCopy: () => _copyToClipboard(
+                context, widget.accountNumber, 'Account number'),
           ),
           SizedBox(height: 12.h),
           _buildDetailRow(
@@ -289,7 +305,8 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
             label: 'Account Name',
             value: _displayAccountName,
             showCopy: true,
-            onCopy: () => _copyToClipboard(context, _displayAccountName, 'Account name'),
+            onCopy: () =>
+                _copyToClipboard(context, _displayAccountName, 'Account name'),
           ),
 
           SizedBox(height: 16.h),
@@ -424,7 +441,8 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
               child: Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+                  color: const Color.fromARGB(255, 78, 3, 208)
+                      .withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6.r),
                 ),
                 child: Icon(

@@ -348,8 +348,7 @@ class _EducationHistoryScreenState extends State<EducationHistoryScreen> {
           ),
           SizedBox(width: 8.w),
           GestureDetector(
-            onTap: () =>
-                isSingle ? _copyPins(p) : _viewPurchaseDetails(p),
+            onTap: () => isSingle ? _copyPins(p) : _viewPurchaseDetails(p),
             behavior: HitTestBehavior.opaque,
             child: Row(
               mainAxisSize: MainAxisSize.min,

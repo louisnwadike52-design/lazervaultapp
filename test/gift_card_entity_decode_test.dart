@@ -2,7 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/widgets/rich_card_text.dart';
 
 void main() {
-  test('decodes the malformed references the live catalogue actually sends', () {
+  test('decodes the malformed references the live catalogue actually sends',
+      () {
     // Real values from the production gift-card catalogue.
     expect(decodeHtmlEntities('A&233;ropostale'), 'Aéropostale');
     // &10; is a newline, and that is what the rich renderer should show.

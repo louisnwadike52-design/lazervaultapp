@@ -136,8 +136,8 @@ void main() {
             counterpartyName: '', counterpartyAccount: '0279098300'),
         isFalse,
       );
-      expect(RepeatTransfer.canRepeat(counterpartyAccount: '0279098300'),
-          isFalse);
+      expect(
+          RepeatTransfer.canRepeat(counterpartyAccount: '0279098300'), isFalse);
     });
 
     test('false with a name but nothing to address the payee by', () {

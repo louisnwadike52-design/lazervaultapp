@@ -75,7 +75,9 @@ class _OccasionPickerSheetState extends State<_OccasionPickerSheet> {
   List<_OccasionType> get _filteredOccasions {
     if (_searchQuery.isEmpty) return _occasionTypes.toList();
     final q = _searchQuery.toLowerCase();
-    return _occasionTypes.where((t) => t.label.toLowerCase().contains(q)).toList();
+    return _occasionTypes
+        .where((t) => t.label.toLowerCase().contains(q))
+        .toList();
   }
 
   @override
@@ -154,19 +156,15 @@ class _OccasionPickerSheetState extends State<_OccasionPickerSheet> {
                   Expanded(
                     child: TextField(
                       controller: _searchController,
-                      onChanged: (v) =>
-                          setState(() => _searchQuery = v.trim()),
-                      style: TextStyle(
-                          color: Colors.white, fontSize: 14.sp),
+                      onChanged: (v) => setState(() => _searchQuery = v.trim()),
+                      style: TextStyle(color: Colors.white, fontSize: 14.sp),
                       decoration: InputDecoration(
                         hintText: 'Search occasions...',
                         hintStyle: TextStyle(
-                            color: const Color(0xFF9CA3AF),
-                            fontSize: 14.sp),
+                            color: const Color(0xFF9CA3AF), fontSize: 14.sp),
                         border: InputBorder.none,
                         isDense: true,
-                        contentPadding:
-                            EdgeInsets.symmetric(vertical: 8.h),
+                        contentPadding: EdgeInsets.symmetric(vertical: 8.h),
                       ),
                     ),
                   ),
@@ -195,8 +193,7 @@ class _OccasionPickerSheetState extends State<_OccasionPickerSheet> {
                     child: Text(
                       'No matching occasions',
                       style: TextStyle(
-                          color: const Color(0xFF9CA3AF),
-                          fontSize: 14.sp),
+                          color: const Color(0xFF9CA3AF), fontSize: 14.sp),
                     ),
                   )
                 : SingleChildScrollView(
@@ -213,8 +210,7 @@ class _OccasionPickerSheetState extends State<_OccasionPickerSheet> {
                             widget.onSelect(occasion.label);
                           },
                           child: AnimatedContainer(
-                            duration:
-                                const Duration(milliseconds: 200),
+                            duration: const Duration(milliseconds: 200),
                             padding: EdgeInsets.symmetric(
                                 horizontal: 16.w, vertical: 12.h),
                             decoration: BoxDecoration(
@@ -222,8 +218,7 @@ class _OccasionPickerSheetState extends State<_OccasionPickerSheet> {
                                   ? const Color(0xFF7C3AED)
                                       .withValues(alpha: 0.2)
                                   : const Color(0xFF0A0A0A),
-                              borderRadius:
-                                  BorderRadius.circular(12.r),
+                              borderRadius: BorderRadius.circular(12.r),
                               border: Border.all(
                                 color: isSelected
                                     ? const Color(0xFF7C3AED)
@@ -257,8 +252,7 @@ class _OccasionPickerSheetState extends State<_OccasionPickerSheet> {
                                 if (isSelected) ...[
                                   SizedBox(width: 6.w),
                                   Icon(Icons.check,
-                                      color:
-                                          const Color(0xFF7C3AED),
+                                      color: const Color(0xFF7C3AED),
                                       size: 16.sp),
                                 ],
                               ],

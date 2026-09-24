@@ -87,8 +87,7 @@ class _WaterBillPaymentReceiptScreenState
           final list = await ds.getBeneficiaries();
           for (final b in list) {
             if (b.accountNumber == accountNumber &&
-                b.providerCode.toUpperCase() ==
-                    providerCode.toUpperCase()) {
+                b.providerCode.toUpperCase() == providerCode.toUpperCase()) {
               beneficiaryId = b.id;
               break;
             }
@@ -239,184 +238,185 @@ class _WaterBillPaymentReceiptScreenState
         if (!didPop) Get.offAllNamed(AppRoutes.waterBillHome);
       },
       child: Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Get.offAllNamed(AppRoutes.waterBillHome),
-          icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
-        ),
-        title: Text(
-          'Payment Receipt',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w700,
+        backgroundColor: const Color(0xFF0A0A0A),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            onPressed: () => Get.offAllNamed(AppRoutes.waterBillHome),
+            icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
           ),
+          title: Text(
+            'Payment Receipt',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          centerTitle: true,
         ),
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Column(
-                  children: [
-                    SizedBox(height: 20.h),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 20.h),
 
-                    // Status icon
-                    Container(
-                      width: 80.w,
-                      height: 80.w,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: _statusColor(payment.status)
-                            .withValues(alpha: 0.15),
-                        border: Border.all(
+                      // Status icon
+                      Container(
+                        width: 80.w,
+                        height: 80.w,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
                           color: _statusColor(payment.status)
-                              .withValues(alpha: 0.4),
-                          width: 2,
+                              .withValues(alpha: 0.15),
+                          border: Border.all(
+                            color: _statusColor(payment.status)
+                                .withValues(alpha: 0.4),
+                            width: 2,
+                          ),
+                        ),
+                        child: Icon(
+                          payment.isCompleted
+                              ? Icons.check_circle
+                              : payment.isPending || payment.isProcessing
+                                  ? Icons.schedule
+                                  : Icons.error_outline,
+                          color: _statusColor(payment.status),
+                          size: 44.sp,
                         ),
                       ),
-                      child: Icon(
-                        payment.isCompleted
-                            ? Icons.check_circle
-                            : payment.isPending || payment.isProcessing
-                                ? Icons.schedule
-                                : Icons.error_outline,
-                        color: _statusColor(payment.status),
-                        size: 44.sp,
-                      ),
-                    ),
-                    SizedBox(height: 16.h),
-
-                    Text(
-                      payment.isCompleted
-                          ? 'Payment Successful!'
-                          : payment.isPending || payment.isProcessing
-                              ? 'Payment Processing'
-                              : 'Payment Failed',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-
-                    Text(
-                      _formatAmount(payment.amount),
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF10B981),
-                        fontSize: 28.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 20.h),
-
-                    // Receipt card
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.all(20.w),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1F1F1F),
-                        borderRadius: BorderRadius.circular(16.r),
-                        border: Border.all(
-                          color: const Color(0xFF2D2D2D),
-                          width: 1,
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Transaction Details',
-                            style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          SizedBox(height: 20.h),
-                          _buildReceiptRow('Provider', payment.providerName),
-                          _buildDivider(),
-                          _buildReceiptRow(
-                              'Customer Number', payment.customerNumber),
-                          _buildDivider(),
-                          _buildReceiptRow(
-                              'Customer Name', payment.customerName),
-                          _buildDivider(),
-                          _buildReceiptRow(
-                              'Amount', _formatAmount(payment.amount)),
-                          _buildDivider(),
-                          if (payment.receiptNumber != null &&
-                              payment.receiptNumber!.isNotEmpty) ...[
-                            _buildReceiptRow(
-                              'Receipt Number',
-                              payment.receiptNumber!,
-                              isCopyable: true,
-                            ),
-                            _buildDivider(),
-                          ],
-                          if (payment.transactionReference != null &&
-                              payment.transactionReference!.isNotEmpty) ...[
-                            _buildReceiptRow(
-                              'Reference',
-                              payment.transactionReference!,
-                              isCopyable: true,
-                            ),
-                            _buildDivider(),
-                          ],
-                          _buildReceiptRow(
-                              'Date', _formatDate(payment.createdAt)),
-                          _buildDivider(),
-                          _buildReceiptRow(
-                            'Status',
-                            _formatStatus(payment.status),
-                            valueColor: _statusColor(payment.status),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (payment.isCompleted) ...[
                       SizedBox(height: 16.h),
-                      _buildSaveContactCta(payment),
+
+                      Text(
+                        payment.isCompleted
+                            ? 'Payment Successful!'
+                            : payment.isPending || payment.isProcessing
+                                ? 'Payment Processing'
+                                : 'Payment Failed',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(height: 8.h),
+
+                      Text(
+                        _formatAmount(payment.amount),
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF10B981),
+                          fontSize: 28.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(height: 20.h),
+
+                      // Receipt card
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.all(20.w),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1F1F1F),
+                          borderRadius: BorderRadius.circular(16.r),
+                          border: Border.all(
+                            color: const Color(0xFF2D2D2D),
+                            width: 1,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Transaction Details',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(height: 20.h),
+                            _buildReceiptRow('Provider', payment.providerName),
+                            _buildDivider(),
+                            _buildReceiptRow(
+                                'Customer Number', payment.customerNumber),
+                            _buildDivider(),
+                            _buildReceiptRow(
+                                'Customer Name', payment.customerName),
+                            _buildDivider(),
+                            _buildReceiptRow(
+                                'Amount', _formatAmount(payment.amount)),
+                            _buildDivider(),
+                            if (payment.receiptNumber != null &&
+                                payment.receiptNumber!.isNotEmpty) ...[
+                              _buildReceiptRow(
+                                'Receipt Number',
+                                payment.receiptNumber!,
+                                isCopyable: true,
+                              ),
+                              _buildDivider(),
+                            ],
+                            if (payment.transactionReference != null &&
+                                payment.transactionReference!.isNotEmpty) ...[
+                              _buildReceiptRow(
+                                'Reference',
+                                payment.transactionReference!,
+                                isCopyable: true,
+                              ),
+                              _buildDivider(),
+                            ],
+                            _buildReceiptRow(
+                                'Date', _formatDate(payment.createdAt)),
+                            _buildDivider(),
+                            _buildReceiptRow(
+                              'Status',
+                              _formatStatus(payment.status),
+                              valueColor: _statusColor(payment.status),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (payment.isCompleted) ...[
+                        SizedBox(height: 16.h),
+                        _buildSaveContactCta(payment),
+                      ],
+                      SizedBox(height: 20.h),
+                      BillReceiptQrBlock(
+                        type: 'water',
+                        reference:
+                            payment.transactionReference?.isNotEmpty == true
+                                ? payment.transactionReference!
+                                : (payment.receiptNumber ?? payment.id),
+                        amount: payment.amount,
+                        currency: payment.currency,
+                        status: payment.status.name,
+                        timestamp: payment.createdAt,
+                        showDivider: false,
+                        extraPayload: {
+                          if (payment.customerNumber.isNotEmpty)
+                            'account': payment.customerNumber,
+                          if (payment.providerName.isNotEmpty)
+                            'provider': payment.providerName,
+                          if (payment.customerName.isNotEmpty)
+                            'customer': payment.customerName,
+                          if (payment.receiptNumber != null &&
+                              payment.receiptNumber!.isNotEmpty)
+                            'receipt_no': payment.receiptNumber!,
+                        },
+                      ),
+                      SizedBox(height: 32.h),
                     ],
-                    SizedBox(height: 20.h),
-                    BillReceiptQrBlock(
-                      type: 'water',
-                      reference: payment.transactionReference?.isNotEmpty == true
-                          ? payment.transactionReference!
-                          : (payment.receiptNumber ?? payment.id),
-                      amount: payment.amount,
-                      currency: payment.currency,
-                      status: payment.status.name,
-                      timestamp: payment.createdAt,
-                      showDivider: false,
-                      extraPayload: {
-                        if (payment.customerNumber.isNotEmpty)
-                          'account': payment.customerNumber,
-                        if (payment.providerName.isNotEmpty)
-                          'provider': payment.providerName,
-                        if (payment.customerName.isNotEmpty)
-                          'customer': payment.customerName,
-                        if (payment.receiptNumber != null &&
-                            payment.receiptNumber!.isNotEmpty)
-                          'receipt_no': payment.receiptNumber!,
-                      },
-                    ),
-                    SizedBox(height: 32.h),
-                  ],
+                  ),
                 ),
               ),
-            ),
-            _buildActions(context, payment),
-          ],
+              _buildActions(context, payment),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -476,8 +476,8 @@ class _WaterBillPaymentReceiptScreenState
                   ),
                   if (isCopyable) ...[
                     SizedBox(width: 6.w),
-                    Icon(Icons.copy, color: const Color(0xFF9CA3AF),
-                        size: 14.sp),
+                    Icon(Icons.copy,
+                        color: const Color(0xFF9CA3AF), size: 14.sp),
                   ],
                 ],
               ),
@@ -619,53 +619,54 @@ class _WaterBillPaymentReceiptScreenState
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: _isSharing ? null : () => _shareReceipt(payment),
-              icon: _isSharing
-                  ? LazerVaultLoader(size: 18)
-                  : Icon(Icons.share, size: 18.sp, color: Colors.white),
-              label: Text(
-                'Share Receipt',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
+                  icon: _isSharing
+                      ? LazerVaultLoader(size: 18)
+                      : Icon(Icons.share, size: 18.sp, color: Colors.white),
+                  label: Text(
+                    'Share Receipt',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side:
+                        const BorderSide(color: Color(0xFF2D2D2D), width: 1.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                  ),
                 ),
               ),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFF2D2D2D), width: 1.5),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed:
+                      _isDownloading ? null : () => _downloadPdf(payment),
+                  icon: _isDownloading
+                      ? LazerVaultLoader(size: 18)
+                      : Icon(Icons.download, size: 18.sp, color: Colors.white),
+                  label: Text(
+                    'Download PDF',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                    disabledBackgroundColor:
+                        const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                  ),
                 ),
-                padding: EdgeInsets.symmetric(vertical: 14.h),
               ),
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed:
-                  _isDownloading ? null : () => _downloadPdf(payment),
-              icon: _isDownloading
-                  ? LazerVaultLoader(size: 18)
-                  : Icon(Icons.download, size: 18.sp, color: Colors.white),
-              label: Text(
-                'Download PDF',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
-                disabledBackgroundColor:
-                    const Color(0xFF3B82F6).withValues(alpha: 0.4),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                padding: EdgeInsets.symmetric(vertical: 14.h),
-              ),
-            ),
-          ),
             ],
           ),
         ],

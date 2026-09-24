@@ -235,7 +235,8 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
       _creationStatus = resp.creationStatus;
     } catch (e) {
       if (!mounted || myGen != _addressGen) return;
-      _addressError = friendlyCryptoError(e, context: 'generating your wallet address');
+      _addressError =
+          friendlyCryptoError(e, context: 'generating your wallet address');
     } finally {
       if (mounted && myGen == _addressGen) {
         setState(() => _generating = false);
@@ -259,8 +260,7 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
 
   void _onNetworkChange(String? net) {
     if (net == null || net == _selectedNetwork) return;
-    final match =
-        _networks.firstWhereOrNull((n) => n.network == net);
+    final match = _networks.firstWhereOrNull((n) => n.network == net);
     setState(() {
       _selectedNetwork = net;
       _minDeposit = match?.minDepositDecimal ?? '';
@@ -342,59 +342,59 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
         children: [
           Flexible(
             child: SingleChildScrollView(
-        padding: EdgeInsets.all(20.w),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _grabHandle(),
-            SizedBox(height: 12.h),
-            _header(symbol),
-            SizedBox(height: 16.h),
-            if ((_livePrice ?? widget.currentPrice) != null) ...[
-              _assetPriceCard(symbol, fiatSym),
-              SizedBox(height: 12.h),
-            ],
-            _balanceCard(symbol, balance, fiatValue, fiatSym),
-            SizedBox(height: 16.h),
-            if (_loading)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 40),
-                child: Center(child: LazerVaultLoader.small()),
-              )
-            else if (_error.isNotEmpty)
-              // Surface the transport / RPC failure clearly with a retry
-              // — DON'T also show the "no networks configured" banner,
-              // since that orange message reads as a permanent state and
-              // misleads when the real cause was a temporary connection
-              // drop (e.g. crypto-service restarting in dev).
-              _errorBanner()
-            else if (_networks.isEmpty)
-              _noNetworksBanner(symbol)
-            else ...[
-              _networkSelector(),
-              SizedBox(height: 16.h),
-              // Address generation can fail for the selected network alone
-              // (e.g. Quidax declines on-chain deposits for BTC's native
-              // chain while BEP20 works). Keep the selector above visible so
-              // the user can switch networks instead of hitting a dead end.
-              if (_addressError.isNotEmpty)
-                _addressUnavailableBanner()
-              else ...[
-                _qrAndAddress(symbol),
-                if (_destinationTag.isNotEmpty) ...[
+              padding: EdgeInsets.all(20.w),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _grabHandle(),
                   SizedBox(height: 12.h),
-                  _destinationTagBanner(),
+                  _header(symbol),
+                  SizedBox(height: 16.h),
+                  if ((_livePrice ?? widget.currentPrice) != null) ...[
+                    _assetPriceCard(symbol, fiatSym),
+                    SizedBox(height: 12.h),
+                  ],
+                  _balanceCard(symbol, balance, fiatValue, fiatSym),
+                  SizedBox(height: 16.h),
+                  if (_loading)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: Center(child: LazerVaultLoader.small()),
+                    )
+                  else if (_error.isNotEmpty)
+                    // Surface the transport / RPC failure clearly with a retry
+                    // — DON'T also show the "no networks configured" banner,
+                    // since that orange message reads as a permanent state and
+                    // misleads when the real cause was a temporary connection
+                    // drop (e.g. crypto-service restarting in dev).
+                    _errorBanner()
+                  else if (_networks.isEmpty)
+                    _noNetworksBanner(symbol)
+                  else ...[
+                    _networkSelector(),
+                    SizedBox(height: 16.h),
+                    // Address generation can fail for the selected network alone
+                    // (e.g. Quidax declines on-chain deposits for BTC's native
+                    // chain while BEP20 works). Keep the selector above visible so
+                    // the user can switch networks instead of hitting a dead end.
+                    if (_addressError.isNotEmpty)
+                      _addressUnavailableBanner()
+                    else ...[
+                      _qrAndAddress(symbol),
+                      if (_destinationTag.isNotEmpty) ...[
+                        SizedBox(height: 12.h),
+                        _destinationTagBanner(),
+                      ],
+                      if (_minDeposit.isNotEmpty && _minDeposit != '0') ...[
+                        SizedBox(height: 12.h),
+                        _minDepositNotice(symbol),
+                      ],
+                    ],
+                  ],
+                  SizedBox(height: 8.h),
                 ],
-                if (_minDeposit.isNotEmpty && _minDeposit != '0') ...[
-                  SizedBox(height: 12.h),
-                  _minDepositNotice(symbol),
-                ],
-              ],
-            ],
-            SizedBox(height: 8.h),
-          ],
-        ),
+              ),
             ),
           ),
           if (widget.onViewDetails != null) _viewDetailsBar(),
@@ -529,7 +529,8 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
     final price = _livePrice ?? widget.currentPrice ?? 0.0;
     final change = _livePriceChange24hPct ?? widget.priceChange24hPct;
     final isPositive = (change ?? 0) >= 0;
-    final pnlColor = isPositive ? const Color(0xFF10B981) : const Color(0xFFEF4444);
+    final pnlColor =
+        isPositive ? const Color(0xFF10B981) : const Color(0xFFEF4444);
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -578,8 +579,7 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
           ),
           if (change != null)
             Container(
-              padding:
-                  EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
               decoration: BoxDecoration(
                 color: pnlColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(8.r),
@@ -819,8 +819,8 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
     if (enabledNets.isEmpty) {
       return Text(
         'No deposit-enabled network for this asset. Try again later.',
-        style: GoogleFonts.inter(
-            color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+        style:
+            GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
       );
     }
     if (enabledNets.length == 1) {
@@ -896,9 +896,7 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
               color: const Color(0xFFFB923C), size: 44.sp),
           SizedBox(height: 12.h),
           Text(
-            pending
-                ? 'Creating your $symbol address'
-                : 'Address not ready yet',
+            pending ? 'Creating your $symbol address' : 'Address not ready yet',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               color: Colors.white,
@@ -935,8 +933,8 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
               ),
             ),
             style: TextButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 78, 3, 208)
-                  .withValues(alpha: 0.22),
+              backgroundColor:
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.22),
               padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.r),
@@ -1043,8 +1041,7 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
           SizedBox(height: 4.h),
           SelectableText(
             _destinationTag,
-            style: GoogleFonts.robotoMono(
-                color: Colors.white, fontSize: 13.sp),
+            style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13.sp),
           ),
         ]),
       );
@@ -1054,12 +1051,11 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
         decoration: BoxDecoration(
           color: const Color(0xFFFB923C).withValues(alpha: 0.10),
           borderRadius: BorderRadius.circular(8.r),
-          border: Border.all(
-              color: const Color(0xFFFB923C).withValues(alpha: 0.5)),
+          border:
+              Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.5)),
         ),
         child: Row(children: [
-          Icon(Icons.info_outline,
-              color: const Color(0xFFFB923C), size: 16.sp),
+          Icon(Icons.info_outline, color: const Color(0xFFFB923C), size: 16.sp),
           SizedBox(width: 8.w),
           Expanded(
             child: Text(
@@ -1074,4 +1070,3 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
         ]),
       );
 }
-

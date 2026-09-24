@@ -29,7 +29,8 @@ pb.ExpenseCategory protoCategory(String raw) {
 }
 
 void main() {
-  test('human display labels resolve — the shape that was silently failing', () {
+  test('human display labels resolve — the shape that was silently failing',
+      () {
     expect(protoCategory('Bills & Utilities'),
         pb.ExpenseCategory.EXPENSE_CATEGORY_BILLS_UTILITIES);
     expect(protoCategory('Food & Dining'),

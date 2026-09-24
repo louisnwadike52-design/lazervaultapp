@@ -51,9 +51,7 @@ class _IntlDataRemindersScreenState extends State<IntlDataRemindersScreen>
   }
 
   bool _isActive(DataReminder r) =>
-      r.status == 'pending' ||
-      r.status == 'notified' ||
-      r.status == 'paused';
+      r.status == 'pending' || r.status == 'notified' || r.status == 'paused';
 
   bool _isCompleted(DataReminder r) =>
       r.status == 'completed' || r.status == 'cancelled';
@@ -62,13 +60,11 @@ class _IntlDataRemindersScreenState extends State<IntlDataRemindersScreen>
   /// countryCode on DataReminder, we check the entity's countryCode field
   /// (populated from context at creation time). Falls back to showing all
   /// reminders with non-NG countryCode or whose title contains "intl".
-  List<DataReminder> _filterIntl(List<DataReminder> all) =>
-      all
-          .where((r) =>
-              (r.countryCode.isNotEmpty &&
-                  r.countryCode.toUpperCase() != 'NG') ||
-              r.title.toLowerCase().contains('intl'))
-          .toList();
+  List<DataReminder> _filterIntl(List<DataReminder> all) => all
+      .where((r) =>
+          (r.countryCode.isNotEmpty && r.countryCode.toUpperCase() != 'NG') ||
+          r.title.toLowerCase().contains('intl'))
+      .toList();
 
   void _markComplete(DataReminder r) =>
       context.read<DataReminderCubit>().markReminderComplete(reminderId: r.id);
@@ -77,8 +73,8 @@ class _IntlDataRemindersScreenState extends State<IntlDataRemindersScreen>
     Get.dialog(
       AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Text('Delete Reminder',
             style: GoogleFonts.inter(
                 color: Colors.white,
@@ -86,8 +82,7 @@ class _IntlDataRemindersScreenState extends State<IntlDataRemindersScreen>
                 fontWeight: FontWeight.w700)),
         content: Text('Are you sure you want to delete this reminder?',
             style: GoogleFonts.inter(
-                color: Colors.white.withValues(alpha: 0.8),
-                fontSize: 14.sp)),
+                color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp)),
         actions: [
           TextButton(
               onPressed: () => Get.back(),
@@ -160,8 +155,7 @@ class _IntlDataRemindersScreenState extends State<IntlDataRemindersScreen>
                 listener: (context, state) {
                   if (state is DataReminderError) {
                     Get.snackbar('Error', state.message,
-                        backgroundColor:
-                            Colors.red.withValues(alpha: 0.9),
+                        backgroundColor: Colors.red.withValues(alpha: 0.9),
                         colorText: Colors.white);
                   } else if (state is DataReminderDeleted ||
                       state is DataReminderCompleted) {
@@ -190,9 +184,8 @@ class _IntlDataRemindersScreenState extends State<IntlDataRemindersScreen>
                   final intl = _filterIntl(list);
                   if (intl.isEmpty) return _buildEmpty();
                   final due = intl.where(_isDue).toList();
-                  final active = intl
-                      .where((r) => _isActive(r) && !_isDue(r))
-                      .toList();
+                  final active =
+                      intl.where((r) => _isActive(r) && !_isDue(r)).toList();
                   final completed = intl.where(_isCompleted).toList();
                   return RefreshIndicator(
                     color: _primary,
@@ -205,8 +198,7 @@ class _IntlDataRemindersScreenState extends State<IntlDataRemindersScreen>
                       padding: EdgeInsets.all(20.w),
                       children: [
                         if (due.isNotEmpty) ...[
-                          _sectionHeader(
-                              'Due', const Color(0xFFF59E0B)),
+                          _sectionHeader('Due', const Color(0xFFF59E0B)),
                           SizedBox(height: 12.h),
                           ...due.map((r) => Padding(
                                 padding: EdgeInsets.only(bottom: 12.h),
@@ -256,8 +248,8 @@ class _IntlDataRemindersScreenState extends State<IntlDataRemindersScreen>
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(22.r),
-                  border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.15)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.15)),
                 ),
                 child: Icon(Icons.arrow_back_ios_new,
                     color: Colors.white, size: 18.sp),
@@ -317,8 +309,7 @@ class _IntlDataRemindersScreenState extends State<IntlDataRemindersScreen>
                       color: Colors.white.withValues(alpha: 0.1), width: 2),
                 ),
                 child: Icon(Icons.notifications_none,
-                    color: Colors.white.withValues(alpha: 0.3),
-                    size: 56.sp),
+                    color: Colors.white.withValues(alpha: 0.3), size: 56.sp),
               ),
               SizedBox(height: 24.h),
               Text('No Intl Reminders',

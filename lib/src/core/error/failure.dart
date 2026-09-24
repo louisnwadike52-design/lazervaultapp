@@ -35,6 +35,5 @@ class CacheFailure extends Failure {
 }
 
 class NetworkFailure extends Failure {
-  NetworkFailure({required super.message})
-      : super(statusCode: 'Network Error');
+  NetworkFailure({required super.message}) : super(statusCode: 'Network Error');
 }

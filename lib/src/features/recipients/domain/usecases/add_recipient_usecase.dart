@@ -10,6 +10,7 @@ class AddRecipientUseCase {
 
   Future<Either<Failure, RecipientModel>> call(
       {required RecipientModel recipient, required String accessToken}) async {
-    return await _repository.addRecipient(recipient: recipient, accessToken: accessToken);
+    return await _repository.addRecipient(
+        recipient: recipient, accessToken: accessToken);
   }
-} 
+}

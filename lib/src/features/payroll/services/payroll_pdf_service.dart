@@ -269,9 +269,9 @@ class PayrollPdfService {
       breakdown: breakdown,
     );
     await SharePlus.instance.share(ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+      // iOS: a non-zero popover anchor is required — CGRectZero throws
+      // PlatformException and the share silently fails on iPhone/iPad.
+      sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       files: [XFile(file.path)],
       text:
           'Payroll Report ($periodStart to $periodEnd) - Net Paid: ${_formatAmount((summary['totalNet'] as num?)?.toDouble() ?? 0.0)}',
@@ -287,11 +287,13 @@ class PayrollPdfService {
     required int employees,
     required int payRuns,
   }) {
-    pw.TableRow row(String label, String value, {PdfColor? color, bool bold = false}) {
+    pw.TableRow row(String label, String value,
+        {PdfColor? color, bool bold = false}) {
       return pw.TableRow(children: [
         pw.Padding(
           padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          child: pw.Text(label, style: _getTextStyle(fontSize: 12, isBold: bold)),
+          child:
+              pw.Text(label, style: _getTextStyle(fontSize: 12, isBold: bold)),
         ),
         pw.Padding(
           padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -348,7 +350,8 @@ class PayrollPdfService {
         ),
         ...breakdown.map((d) {
           final amt = ((d['amount'] as num?)?.toDouble() ?? 0.0) / 100.0;
-          final type = (d['type'] ?? d['description'] ?? 'Deduction').toString();
+          final type =
+              (d['type'] ?? d['description'] ?? 'Deduction').toString();
           return pw.TableRow(children: [
             pw.Padding(
               padding:
@@ -438,8 +441,8 @@ class PayrollPdfService {
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 pw.Text('Employee',
-                    style: _getTextStyle(
-                        fontSize: 10, color: PdfColors.grey600)),
+                    style:
+                        _getTextStyle(fontSize: 10, color: PdfColors.grey600)),
                 pw.SizedBox(height: 4),
                 pw.Text(slip.employeeName.toUpperCase(),
                     style: _getTextStyle(fontSize: 14, isBold: true)),
@@ -451,8 +454,8 @@ class PayrollPdfService {
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
                 pw.Text('Employee ID',
-                    style: _getTextStyle(
-                        fontSize: 10, color: PdfColors.grey600)),
+                    style:
+                        _getTextStyle(fontSize: 10, color: PdfColors.grey600)),
                 pw.SizedBox(height: 4),
                 pw.Text(
                   slip.employeeId.length > 8
@@ -526,13 +529,13 @@ class PayrollPdfService {
           child: pw.Column(
             children: [
               if (slip.incomeTax > 0)
-                _buildDetailRow('PAYE (Income Tax)', _formatAmount(slip.incomeTax)),
+                _buildDetailRow(
+                    'PAYE (Income Tax)', _formatAmount(slip.incomeTax)),
               if (slip.pensionContribution > 0)
                 _buildDetailRow('Pension Contribution',
                     _formatAmount(slip.pensionContribution)),
               if (slip.nationalInsurance > 0)
-                _buildDetailRow(
-                    'NHF', _formatAmount(slip.nationalInsurance)),
+                _buildDetailRow('NHF', _formatAmount(slip.nationalInsurance)),
               if (slip.studentLoanRepayment > 0)
                 _buildDetailRow('Student Loan Repayment',
                     _formatAmount(slip.studentLoanRepayment)),

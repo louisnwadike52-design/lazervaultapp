@@ -51,8 +51,10 @@ class Event {
       color: json['color'] as String?,
       isAllDay: json['is_all_day'] as bool? ?? false,
       recurrenceRule: json['recurrence_rule'] as String?,
-      categoryIds: (json['category_ids'] as List<dynamic>?)?.cast<String>() ?? [],
-      reminderIds: (json['reminder_ids'] as List<dynamic>?)?.cast<String>() ?? [],
+      categoryIds:
+          (json['category_ids'] as List<dynamic>?)?.cast<String>() ?? [],
+      reminderIds:
+          (json['reminder_ids'] as List<dynamic>?)?.cast<String>() ?? [],
       externalEventId: json['external_event_id'] as String?,
       externalCalendar: json['external_calendar'] as String?,
       createdAt: parsePlanTimestampRequired(json['created_at']),

@@ -51,10 +51,8 @@ class SavedBatchDetailCubit extends Cubit<SavedBatchDetailState> {
     final res = await body();
     if (isClosed) return;
     res.fold(
-      (f) => emit(current.copyWith(
-          mutating: false, mutationError: f.message)),
-      (newBatch) =>
-          emit(current.copyWith(batch: newBatch, mutating: false)),
+      (f) => emit(current.copyWith(mutating: false, mutationError: f.message)),
+      (newBatch) => emit(current.copyWith(batch: newBatch, mutating: false)),
     );
   }
 
@@ -74,8 +72,7 @@ class SavedBatchDetailCubit extends Cubit<SavedBatchDetailState> {
     final res = await repository.deleteSavedBatch(current.batch.id);
     if (isClosed) return;
     res.fold(
-      (f) => emit(current.copyWith(
-          mutating: false, mutationError: f.message)),
+      (f) => emit(current.copyWith(mutating: false, mutationError: f.message)),
       (_) => emit(SavedBatchDeletedFromDetail(id: current.batch.id)),
     );
   }
@@ -108,7 +105,8 @@ class SavedBatchDetailCubit extends Cubit<SavedBatchDetailState> {
         ));
   }
 
-  Future<void> applyCollective({double? multiplier, double? amountPerItem}) async {
+  Future<void> applyCollective(
+      {double? multiplier, double? amountPerItem}) async {
     final current = state;
     if (current is! SavedBatchDetailLoaded) return;
     await _runBatchMutation(() => repository.applyCollectiveAmount(
@@ -138,10 +136,9 @@ class SavedBatchDetailCubit extends Cubit<SavedBatchDetailState> {
     );
     if (isClosed) return;
     res.fold(
-      (f) => emit(current.copyWith(
-          mutating: false, mutationError: f.message)),
-      (batchTransfer) => emit(current.copyWith(
-          mutating: false, executedBatch: batchTransfer)),
+      (f) => emit(current.copyWith(mutating: false, mutationError: f.message)),
+      (batchTransfer) =>
+          emit(current.copyWith(mutating: false, executedBatch: batchTransfer)),
     );
   }
 

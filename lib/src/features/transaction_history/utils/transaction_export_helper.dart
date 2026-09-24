@@ -60,7 +60,16 @@ class TransactionExportHelper {
     DateTime endDate,
   ) async {
     final rows = <List<String>>[
-      ['Date', 'Time', 'Type', 'Description', 'Amount', 'Currency', 'Status', 'Reference'],
+      [
+        'Date',
+        'Time',
+        'Type',
+        'Description',
+        'Amount',
+        'Currency',
+        'Status',
+        'Reference'
+      ],
     ];
 
     for (final tx in transactions) {
@@ -158,9 +167,17 @@ class TransactionExportHelper {
                     4: const pw.FlexColumnWidth(1.2),
                     5: const pw.FlexColumnWidth(1.5),
                   },
-                  headers: ['Date', 'Type', 'Description', 'Amount', 'Currency', 'Status'],
+                  headers: [
+                    'Date',
+                    'Type',
+                    'Description',
+                    'Amount',
+                    'Currency',
+                    'Status'
+                  ],
                   data: pageItems.map((tx) {
-                    final sign = tx.flow == TransactionFlow.outgoing ? '-' : '+';
+                    final sign =
+                        tx.flow == TransactionFlow.outgoing ? '-' : '+';
                     return [
                       DateFormat('dd/MM/yy').format(tx.createdAt),
                       tx.serviceType.displayName,

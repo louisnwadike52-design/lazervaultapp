@@ -97,7 +97,8 @@ class _NameSlideItem extends StatefulWidget {
   final _NameSlideData data;
   final VoidCallback onComplete;
 
-  const _NameSlideItem({super.key, required this.data, required this.onComplete});
+  const _NameSlideItem(
+      {super.key, required this.data, required this.onComplete});
 
   @override
   State<_NameSlideItem> createState() => _NameSlideItemState();
@@ -161,9 +162,8 @@ class _NameSlideItemState extends State<_NameSlideItem>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final opacity = _controller.value < 0.75
-            ? _fadeIn.value
-            : _fadeOut.value;
+        final opacity =
+            _controller.value < 0.75 ? _fadeIn.value : _fadeOut.value;
 
         return SlideTransition(
           position: _slideIn,

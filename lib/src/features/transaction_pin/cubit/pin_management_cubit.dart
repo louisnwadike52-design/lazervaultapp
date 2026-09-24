@@ -47,7 +47,13 @@ class PinManagementOTPSent extends PinManagementState {
   });
 
   @override
-  List<Object?> get props => [channel, maskedDestination, expiresInSeconds, cooldownSeconds, operationType];
+  List<Object?> get props => [
+        channel,
+        maskedDestination,
+        expiresInSeconds,
+        cooldownSeconds,
+        operationType
+      ];
 }
 
 class PinManagementSuccess extends PinManagementState {

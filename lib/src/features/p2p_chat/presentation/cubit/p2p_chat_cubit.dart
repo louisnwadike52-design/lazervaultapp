@@ -35,7 +35,8 @@ class P2PChatCubit extends Cubit<P2PChatState> {
   // "failed"). This broke ALL P2P image AND voice-note sends on Android. See the
   // secure-storage-single-instance rule.
   final P2PChatMediaUploadService _mediaUploadService =
-      P2PChatMediaUploadService(storage: serviceLocator<FlutterSecureStorage>());
+      P2PChatMediaUploadService(
+          storage: serviceLocator<FlutterSecureStorage>());
   String _currentUserId;
 
   /// The authoritative current-user id used to stamp outgoing messages'
@@ -277,8 +278,7 @@ class P2PChatCubit extends Cubit<P2PChatState> {
 
       // Listen for read receipts
       _readReceiptSubscription?.cancel();
-      _readReceiptSubscription =
-          _wsService.readReceiptStream.listen((receipt) {
+      _readReceiptSubscription = _wsService.readReceiptStream.listen((receipt) {
         if (receipt.conversationId == _conversationId) {
           _updateDeliveryStatus(receipt.messageId, 'read');
         }
@@ -311,7 +311,8 @@ class P2PChatCubit extends Cubit<P2PChatState> {
 
       // Merge transfer history from accounts-service (best-effort, non-blocking)
       // First, deduplicate legacy transfer_sent/transfer_received pairs from backend
-      final chatMessages = _deduplicateLegacyTransfers(messages.reversed.toList());
+      final chatMessages =
+          _deduplicateLegacyTransfers(messages.reversed.toList());
       List<P2PMessageEntity> allMessages = chatMessages;
       try {
         // On a FRESH re-open (snapshot < 30s) reuse the cached transfer rows
@@ -331,7 +332,9 @@ class P2PChatCubit extends Cubit<P2PChatState> {
               .map((m) => _baseTransferRef(m.transferRef!))
               .toSet();
           final newTransfers = transferMessages
-              .where((t) => t.transferRef == null || !existingRefs.contains(_baseTransferRef(t.transferRef!)))
+              .where((t) =>
+                  t.transferRef == null ||
+                  !existingRefs.contains(_baseTransferRef(t.transferRef!)))
               .toList();
           allMessages = [...chatMessages, ...newTransfers];
           allMessages.sort((a, b) => a.createdAt.compareTo(b.createdAt));
@@ -397,7 +400,8 @@ class P2PChatCubit extends Cubit<P2PChatState> {
 
   bool _isUuid(String s) => _uuidRe.hasMatch(s.trim());
 
-  bool _computeCanSend(String connectionStatus, String? initiatedBy, int messageCount) {
+  bool _computeCanSend(
+      String connectionStatus, String? initiatedBy, int messageCount) {
     if (connectionStatus == 'accepted') return true;
     // Pending: initiator can send 1 message only
     if (initiatedBy == _currentUserId) {
@@ -513,8 +517,8 @@ class P2PChatCubit extends Cubit<P2PChatState> {
         }
       } catch (_) {/* transfers best-effort */}
 
-      allMessages = _injectPendingTransfers(
-          allMessages, _otherUserId ?? '', convId);
+      allMessages =
+          _injectPendingTransfers(allMessages, _otherUserId ?? '', convId);
 
       final current = state;
       if (current is P2PChatLoaded) {
@@ -882,7 +886,8 @@ class P2PChatCubit extends Cubit<P2PChatState> {
       final txCounterparty = tx.counterpartyName.toLowerCase().trim();
       final searchName = (otherUserName ?? '').toLowerCase().trim();
       if (txCounterparty.isEmpty || searchName.isEmpty) continue;
-      if (!txCounterparty.contains(searchName) && !searchName.contains(txCounterparty)) {
+      if (!txCounterparty.contains(searchName) &&
+          !searchName.contains(txCounterparty)) {
         continue;
       }
 
@@ -973,7 +978,8 @@ class P2PChatCubit extends Cubit<P2PChatState> {
   /// Deduplicate legacy transfer_sent/transfer_received pairs.
   /// For pairs sharing the same base transferRef (one with "-recv" suffix),
   /// keep only the transfer_sent one — display logic handles perspective via senderId.
-  List<P2PMessageEntity> _deduplicateLegacyTransfers(List<P2PMessageEntity> messages) {
+  List<P2PMessageEntity> _deduplicateLegacyTransfers(
+      List<P2PMessageEntity> messages) {
     // Single pass to collect base refs of BOTH sides (O(n)); previously this
     // did a nested `.any` per received row (O(n²)) on every load / loadMore /
     // incoming message.
@@ -994,7 +1000,8 @@ class P2PChatCubit extends Cubit<P2PChatState> {
       if (m.messageType != 'transfer_received') return true;
       // Drop a transfer_received when a matching transfer_sent exists (display
       // handles perspective via senderId).
-      final base = m.transferRef != null ? _baseTransferRef(m.transferRef!) : null;
+      final base =
+          m.transferRef != null ? _baseTransferRef(m.transferRef!) : null;
       return base == null || !sentRefs.contains(base);
     }).toList();
   }
@@ -1017,7 +1024,8 @@ class P2PChatCubit extends Cubit<P2PChatState> {
               message.transferRef!.isNotEmpty &&
               m.isTransfer &&
               m.transferRef != null &&
-              _baseTransferRef(m.transferRef!) == _baseTransferRef(message.transferRef!)));
+              _baseTransferRef(m.transferRef!) ==
+                  _baseTransferRef(message.transferRef!)));
       if (exists) return false;
 
       // Insert in chronological order
@@ -1081,7 +1089,8 @@ class P2PChatCubit extends Cubit<P2PChatState> {
   bool canEditMessage(P2PMessageEntity message) {
     if (message.senderId != _currentUserId) return false;
     if (message.messageType != 'text') return false;
-    if (message.deliveryStatus == 'failed' || message.deliveryStatus == 'sending') {
+    if (message.deliveryStatus == 'failed' ||
+        message.deliveryStatus == 'sending') {
       return false;
     }
     return DateTime.now().difference(message.createdAt) <=
@@ -1118,8 +1127,8 @@ class P2PChatCubit extends Cubit<P2PChatState> {
   Future<void> commitEdit(String newContent, {String? messageId}) async {
     final s = state;
     if (s is! P2PChatLoaded || _conversationId == null) return;
-    final target = messageId ??
-        (s.editingMessage != null ? s.editingMessage!.id : null);
+    final target =
+        messageId ?? (s.editingMessage != null ? s.editingMessage!.id : null);
     if (target == null) return;
     final trimmed = newContent.trim();
     if (trimmed.isEmpty) return;
@@ -1127,9 +1136,8 @@ class P2PChatCubit extends Cubit<P2PChatState> {
     // Optimistic: update content + stamp edited locally, drop edit mode.
     final now = DateTime.now();
     final updated = s.messages
-        .map((m) => m.id == target
-            ? m.copyWith(content: trimmed, editedAt: now)
-            : m)
+        .map((m) =>
+            m.id == target ? m.copyWith(content: trimmed, editedAt: now) : m)
         .toList();
     _safeEmit(s.copyWith(messages: updated, clearEditingMessage: true));
 
@@ -1240,8 +1248,7 @@ class P2PChatCubit extends Cubit<P2PChatState> {
     }
     final s = state;
     if (s is! P2PChatLoaded) return;
-    final found =
-        ids.where((id) => s.messages.any((m) => m.id == id)).toSet();
+    final found = ids.where((id) => s.messages.any((m) => m.id == id)).toSet();
     if (found.isEmpty) return;
     _safeEmit(s.copyWith(highlightedMessageIds: found));
     // Clear the flash after a few seconds so it's transient, not permanent.

@@ -33,7 +33,8 @@ void main() {
         last4s: const ['7890', '4321'],
       );
       expect(ids.isEmpty, isFalse,
-          reason: 'accountNumberLast4 is non-nullable and must carry the scope');
+          reason:
+              'accountNumberLast4 is non-nullable and must carry the scope');
       expect(ids.full, isEmpty);
       expect(ids.last4, containsAll(<String>['7890', '4321']));
     });
@@ -141,6 +142,6 @@ void main() {
         ),
         isEmpty,
       );
-  });
+    });
   });
 }

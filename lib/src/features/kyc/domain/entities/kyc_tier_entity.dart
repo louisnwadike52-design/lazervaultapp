@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 part 'kyc_tier_entity_widgets.dart';
 
-
 /// User KYC profile
 class UserKYCProfile extends Equatable {
   final KYCStatus status;

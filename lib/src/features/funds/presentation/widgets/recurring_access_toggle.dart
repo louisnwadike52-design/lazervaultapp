@@ -56,7 +56,8 @@ class RecurringAccessToggle extends StatelessWidget {
                       width: 36.w,
                       height: 36.w,
                       decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+                        color: const Color.fromARGB(255, 78, 3, 208)
+                            .withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Icon(
@@ -142,16 +143,19 @@ class RecurringAccessToggle extends StatelessWidget {
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.12),
+                  color: const Color.fromARGB(255, 78, 3, 208)
+                      .withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8.r),
                   border: Border.all(
-                    color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.4),
+                    color: const Color.fromARGB(255, 78, 3, 208)
+                        .withValues(alpha: 0.4),
                   ),
                 ),
                 child: Row(
                   children: [
                     Icon(Icons.verified_user_outlined,
-                        color: const Color.fromARGB(255, 138, 92, 246), size: 16.sp),
+                        color: const Color.fromARGB(255, 138, 92, 246),
+                        size: 16.sp),
                     SizedBox(width: 8.w),
                     Expanded(
                       child: Text(
@@ -173,7 +177,8 @@ class RecurringAccessToggle extends StatelessWidget {
                     ),
                     SizedBox(width: 2.w),
                     Icon(Icons.chevron_right,
-                        color: const Color.fromARGB(255, 138, 92, 246), size: 16.sp),
+                        color: const Color.fromARGB(255, 138, 92, 246),
+                        size: 16.sp),
                   ],
                 ),
               ),
@@ -236,7 +241,8 @@ class RecurringAccessToggle extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(Icons.account_balance_outlined, color: purple, size: 22.sp),
+                  Icon(Icons.account_balance_outlined,
+                      color: purple, size: 22.sp),
                   SizedBox(width: 10.w),
                   Expanded(
                     child: Text(

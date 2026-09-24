@@ -282,36 +282,36 @@ class _ErrorView extends StatelessWidget {
                   size: 64,
                   color: Color(0xFF9CA3AF),
                 ),
-              const SizedBox(height: 24),
-              Text(
-                'Report Generation Failed',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: Colors.white,
-                    ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                message,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: const Color(0xFF9CA3AF),
-                    ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton.icon(
-                onPressed: onRetry,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
+                const SizedBox(height: 24),
+                Text(
+                  'Report Generation Failed',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Colors.white,
+                      ),
                 ),
-                icon: const Icon(Icons.refresh),
-                label: const Text('Try Again'),
-              ),
-              const SizedBox(height: 12),
+                const SizedBox(height: 8),
+                Text(
+                  message,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: const Color(0xFF9CA3AF),
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton.icon(
+                  onPressed: onRetry,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                  ),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Try Again'),
+                ),
+                const SizedBox(height: 12),
                 TextButton(
                   onPressed: onClose,
                   child: const Text(
@@ -721,7 +721,8 @@ class _MilestonesCard extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(12),
                                 border: milestone.isReached
                                     ? Border.all(
-                                        color: Colors.white.withValues(alpha: 0.5),
+                                        color:
+                                            Colors.white.withValues(alpha: 0.5),
                                         width: 2,
                                       )
                                     : null,
@@ -753,7 +754,8 @@ class _MilestonesCard extends StatelessWidget {
                                         Text(
                                           milestone.description,
                                           style: TextStyle(
-                                            color: Colors.white.withValues(alpha: 0.8),
+                                            color: Colors.white
+                                                .withValues(alpha: 0.8),
                                             fontSize: 14,
                                           ),
                                         ),
@@ -796,9 +798,8 @@ class _ProgressIndicator extends StatelessWidget {
           width: isActive ? 24 : 8,
           height: 8,
           decoration: BoxDecoration(
-            color: isActive
-                ? Colors.white
-                : Colors.white.withValues(alpha: 0.3),
+            color:
+                isActive ? Colors.white : Colors.white.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(4),
           ),
         );

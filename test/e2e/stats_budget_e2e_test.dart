@@ -92,8 +92,8 @@ class _TestStorage extends Fake implements FlutterSecureStorage {
 Future<String> _login() async {
   final client = HttpClient();
   try {
-    final req = await client.postUrl(
-        Uri.parse('http://$_host:7878/api/v1/auth/login'));
+    final req =
+        await client.postUrl(Uri.parse('http://$_host:7878/api/v1/auth/login'));
     req.headers.contentType = ContentType.json;
     req.write(jsonEncode({'email': _email, 'password': _password}));
     final res = await req.close();
@@ -110,8 +110,7 @@ Future<String> _login() async {
 ClientChannel _channel(int port) => ClientChannel(
       _host,
       port: port,
-      options:
-          const ChannelOptions(credentials: ChannelCredentials.insecure()),
+      options: const ChannelOptions(credentials: ChannelCredentials.insecure()),
     );
 
 Future<StatisticsLoaded> _loadedState(StatisticsCubit cubit) async {
@@ -210,8 +209,10 @@ void main() {
       expect(gt.selectedBankAccountIds, [_gtbankId]);
 
       // Real activity, not zeros.
-      expect(gt.financialAnalytics!.currentPeriod.totalExpenses, greaterThan(0));
-      expect(zen.financialAnalytics!.currentPeriod.totalExpenses, greaterThan(0));
+      expect(
+          gt.financialAnalytics!.currentPeriod.totalExpenses, greaterThan(0));
+      expect(
+          zen.financialAnalytics!.currentPeriod.totalExpenses, greaterThan(0));
       expect(all.financialAnalytics!.currentPeriod.transactionCount,
           greaterThan(10));
 
@@ -247,8 +248,7 @@ void main() {
 
     test('honest UNAVAILABLE: non-owned bank id is refused, not zeroed',
         () async {
-      final st =
-          await loadBankScope('00000000-0000-4000-8000-000000000000');
+      final st = await loadBankScope('00000000-0000-4000-8000-000000000000');
       expect(st.externalStatus, ExternalDataStatus.unavailable,
           reason: 'ownership check must surface as UNAVAILABLE');
       expect(st.externalError, isNotNull);
@@ -290,7 +290,8 @@ void main() {
 
     Future<String> createBudget(stats_pb.BudgetEnforcementMode mode) async {
       final resp = await budgetRepository.createBudget(
-        name: 'E2E ${mode == stats_pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_STRICT ? "Strict" : "Flexible"} ${DateTime.now().millisecondsSinceEpoch}',
+        name:
+            'E2E ${mode == stats_pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_STRICT ? "Strict" : "Flexible"} ${DateTime.now().millisecondsSinceEpoch}',
         amount: 50.0, // ₦50 limit — any real transfer exceeds it
         currency: 'NGN',
         category: category,

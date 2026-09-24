@@ -102,14 +102,18 @@ class GrpcClient {
   IDPayServiceClient get idPayClient => _idPayClient;
   PortfolioServiceClient get portfolioClient => _portfolioClient;
   AccountCardServiceClient get accountCardClient => _accountCardClient;
-  ElectricityBillServiceClient get electricityBillClient => _electricityBillClient;
+  ElectricityBillServiceClient get electricityBillClient =>
+      _electricityBillClient;
   GiftCardsServiceClient get giftCardClient => _giftCardClient;
   LockFundsServiceClient get lockFundsClient => _lockFundsClient;
   InsuranceServiceClient get insuranceClient => _insuranceClient;
-  FinancialProductsServiceClient get financialProductsClient => _financialProductsClient;
-  ContactlessPaymentServiceClient get contactlessPaymentClient => _contactlessPaymentClient;
+  FinancialProductsServiceClient get financialProductsClient =>
+      _financialProductsClient;
+  ContactlessPaymentServiceClient get contactlessPaymentClient =>
+      _contactlessPaymentClient;
   SplitBillServiceClient get splitBillClient => _splitBillClient;
-  UtilityPaymentsServiceClient get utilityPaymentsClient => _utilityPaymentsClient;
+  UtilityPaymentsServiceClient get utilityPaymentsClient =>
+      _utilityPaymentsClient;
   EscrowServiceClient get escrowClient => _escrowClient;
   BulkSmsServiceClient get bulkSmsClient => _bulkSmsClient;
 
@@ -125,7 +129,8 @@ class GrpcClient {
     final accessToken = await _secureStorage.read(key: _accessTokenKey);
 
     if (accessToken == null || accessToken.isEmpty) {
-      throw GrpcError.unauthenticated('No authentication token available. Please log in again.');
+      throw GrpcError.unauthenticated(
+          'No authentication token available. Please log in again.');
     }
 
     final metadata = <String, String>{
@@ -145,7 +150,8 @@ class GrpcClient {
     int maxRetries = 1,
   }) async {
     if (_callOptionsHelper != null) {
-      return await _callOptionsHelper!.executeWithTokenRotation(call, maxRetries: maxRetries);
+      return await _callOptionsHelper!
+          .executeWithTokenRotation(call, maxRetries: maxRetries);
     }
 
     // Fallback: no token rotation if helper not available

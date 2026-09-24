@@ -50,44 +50,62 @@ class VoiceAudioChunk extends $pb.GeneratedMessage {
     return $result;
   }
   VoiceAudioChunk._() : super();
-  factory VoiceAudioChunk.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory VoiceAudioChunk.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory VoiceAudioChunk.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory VoiceAudioChunk.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VoiceAudioChunk', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'VoiceAudioChunk',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..a<$core.List<$core.int>>(2, _omitFieldNames ? '' : 'audioData', $pb.PbFieldType.OY)
+    ..a<$core.List<$core.int>>(
+        2, _omitFieldNames ? '' : 'audioData', $pb.PbFieldType.OY)
     ..aInt64(3, _omitFieldNames ? '' : 'sequenceNumber')
     ..aOB(4, _omitFieldNames ? '' : 'isFinal')
-    ..aOM<AudioFormat>(5, _omitFieldNames ? '' : 'format', subBuilder: AudioFormat.create)
-    ..m<$core.String, $core.String>(6, _omitFieldNames ? '' : 'metadata', entryClassName: 'VoiceAudioChunk.MetadataEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('voicebiometrics'))
-    ..hasRequiredFields = false
-  ;
+    ..aOM<AudioFormat>(5, _omitFieldNames ? '' : 'format',
+        subBuilder: AudioFormat.create)
+    ..m<$core.String, $core.String>(6, _omitFieldNames ? '' : 'metadata',
+        entryClassName: 'VoiceAudioChunk.MetadataEntry',
+        keyFieldType: $pb.PbFieldType.OS,
+        valueFieldType: $pb.PbFieldType.OS,
+        packageName: const $pb.PackageName('voicebiometrics'))
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   VoiceAudioChunk clone() => VoiceAudioChunk()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  VoiceAudioChunk copyWith(void Function(VoiceAudioChunk) updates) => super.copyWith((message) => updates(message as VoiceAudioChunk)) as VoiceAudioChunk;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  VoiceAudioChunk copyWith(void Function(VoiceAudioChunk) updates) =>
+      super.copyWith((message) => updates(message as VoiceAudioChunk))
+          as VoiceAudioChunk;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static VoiceAudioChunk create() => VoiceAudioChunk._();
   VoiceAudioChunk createEmptyInstance() => create();
-  static $pb.PbList<VoiceAudioChunk> createRepeated() => $pb.PbList<VoiceAudioChunk>();
+  static $pb.PbList<VoiceAudioChunk> createRepeated() =>
+      $pb.PbList<VoiceAudioChunk>();
   @$core.pragma('dart2js:noInline')
-  static VoiceAudioChunk getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VoiceAudioChunk>(create);
+  static VoiceAudioChunk getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<VoiceAudioChunk>(create);
   static VoiceAudioChunk? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String v) {
+    $_setString(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
@@ -96,7 +114,10 @@ class VoiceAudioChunk extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.List<$core.int> get audioData => $_getN(1);
   @$pb.TagNumber(2)
-  set audioData($core.List<$core.int> v) { $_setBytes(1, v); }
+  set audioData($core.List<$core.int> v) {
+    $_setBytes(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasAudioData() => $_has(1);
   @$pb.TagNumber(2)
@@ -105,7 +126,10 @@ class VoiceAudioChunk extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $fixnum.Int64 get sequenceNumber => $_getI64(2);
   @$pb.TagNumber(3)
-  set sequenceNumber($fixnum.Int64 v) { $_setInt64(2, v); }
+  set sequenceNumber($fixnum.Int64 v) {
+    $_setInt64(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasSequenceNumber() => $_has(2);
   @$pb.TagNumber(3)
@@ -114,7 +138,10 @@ class VoiceAudioChunk extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.bool get isFinal => $_getBF(3);
   @$pb.TagNumber(4)
-  set isFinal($core.bool v) { $_setBool(3, v); }
+  set isFinal($core.bool v) {
+    $_setBool(3, v);
+  }
+
   @$pb.TagNumber(4)
   $core.bool hasIsFinal() => $_has(3);
   @$pb.TagNumber(4)
@@ -123,7 +150,10 @@ class VoiceAudioChunk extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   AudioFormat get format => $_getN(4);
   @$pb.TagNumber(5)
-  set format(AudioFormat v) { setField(5, v); }
+  set format(AudioFormat v) {
+    setField(5, v);
+  }
+
   @$pb.TagNumber(5)
   $core.bool hasFormat() => $_has(4);
   @$pb.TagNumber(5)
@@ -171,45 +201,66 @@ class VerifyVoiceStreamResponse extends $pb.GeneratedMessage {
     return $result;
   }
   VerifyVoiceStreamResponse._() : super();
-  factory VerifyVoiceStreamResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory VerifyVoiceStreamResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory VerifyVoiceStreamResponse.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory VerifyVoiceStreamResponse.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyVoiceStreamResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'VerifyVoiceStreamResponse',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'verified')
-    ..a<$core.double>(2, _omitFieldNames ? '' : 'similarityScore', $pb.PbFieldType.OF)
-    ..a<$core.double>(3, _omitFieldNames ? '' : 'confidence', $pb.PbFieldType.OF)
+    ..a<$core.double>(
+        2, _omitFieldNames ? '' : 'similarityScore', $pb.PbFieldType.OF)
+    ..a<$core.double>(
+        3, _omitFieldNames ? '' : 'confidence', $pb.PbFieldType.OF)
     ..aOS(4, _omitFieldNames ? '' : 'message')
-    ..e<VerificationStatus>(5, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: VerificationStatus.VERIFICATION_UNKNOWN, valueOf: VerificationStatus.valueOf, enumValues: VerificationStatus.values)
+    ..e<VerificationStatus>(
+        5, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE,
+        defaultOrMaker: VerificationStatus.VERIFICATION_UNKNOWN,
+        valueOf: VerificationStatus.valueOf,
+        enumValues: VerificationStatus.values)
     ..aOB(6, _omitFieldNames ? '' : 'needsMoreAudio')
-    ..a<$core.int>(7, _omitFieldNames ? '' : 'chunksProcessed', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
+    ..a<$core.int>(
+        7, _omitFieldNames ? '' : 'chunksProcessed', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  VerifyVoiceStreamResponse clone() => VerifyVoiceStreamResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  VerifyVoiceStreamResponse copyWith(void Function(VerifyVoiceStreamResponse) updates) => super.copyWith((message) => updates(message as VerifyVoiceStreamResponse)) as VerifyVoiceStreamResponse;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  VerifyVoiceStreamResponse clone() =>
+      VerifyVoiceStreamResponse()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  VerifyVoiceStreamResponse copyWith(
+          void Function(VerifyVoiceStreamResponse) updates) =>
+      super.copyWith((message) => updates(message as VerifyVoiceStreamResponse))
+          as VerifyVoiceStreamResponse;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static VerifyVoiceStreamResponse create() => VerifyVoiceStreamResponse._();
   VerifyVoiceStreamResponse createEmptyInstance() => create();
-  static $pb.PbList<VerifyVoiceStreamResponse> createRepeated() => $pb.PbList<VerifyVoiceStreamResponse>();
+  static $pb.PbList<VerifyVoiceStreamResponse> createRepeated() =>
+      $pb.PbList<VerifyVoiceStreamResponse>();
   @$core.pragma('dart2js:noInline')
-  static VerifyVoiceStreamResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyVoiceStreamResponse>(create);
+  static VerifyVoiceStreamResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<VerifyVoiceStreamResponse>(create);
   static VerifyVoiceStreamResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.bool get verified => $_getBF(0);
   @$pb.TagNumber(1)
-  set verified($core.bool v) { $_setBool(0, v); }
+  set verified($core.bool v) {
+    $_setBool(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasVerified() => $_has(0);
   @$pb.TagNumber(1)
@@ -218,7 +269,10 @@ class VerifyVoiceStreamResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.double get similarityScore => $_getN(1);
   @$pb.TagNumber(2)
-  set similarityScore($core.double v) { $_setFloat(1, v); }
+  set similarityScore($core.double v) {
+    $_setFloat(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasSimilarityScore() => $_has(1);
   @$pb.TagNumber(2)
@@ -227,7 +281,10 @@ class VerifyVoiceStreamResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.double get confidence => $_getN(2);
   @$pb.TagNumber(3)
-  set confidence($core.double v) { $_setFloat(2, v); }
+  set confidence($core.double v) {
+    $_setFloat(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasConfidence() => $_has(2);
   @$pb.TagNumber(3)
@@ -236,7 +293,10 @@ class VerifyVoiceStreamResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.String get message => $_getSZ(3);
   @$pb.TagNumber(4)
-  set message($core.String v) { $_setString(3, v); }
+  set message($core.String v) {
+    $_setString(3, v);
+  }
+
   @$pb.TagNumber(4)
   $core.bool hasMessage() => $_has(3);
   @$pb.TagNumber(4)
@@ -245,7 +305,10 @@ class VerifyVoiceStreamResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   VerificationStatus get status => $_getN(4);
   @$pb.TagNumber(5)
-  set status(VerificationStatus v) { setField(5, v); }
+  set status(VerificationStatus v) {
+    setField(5, v);
+  }
+
   @$pb.TagNumber(5)
   $core.bool hasStatus() => $_has(4);
   @$pb.TagNumber(5)
@@ -254,7 +317,10 @@ class VerifyVoiceStreamResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   $core.bool get needsMoreAudio => $_getBF(5);
   @$pb.TagNumber(6)
-  set needsMoreAudio($core.bool v) { $_setBool(5, v); }
+  set needsMoreAudio($core.bool v) {
+    $_setBool(5, v);
+  }
+
   @$pb.TagNumber(6)
   $core.bool hasNeedsMoreAudio() => $_has(5);
   @$pb.TagNumber(6)
@@ -263,7 +329,10 @@ class VerifyVoiceStreamResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(7)
   $core.int get chunksProcessed => $_getIZ(6);
   @$pb.TagNumber(7)
-  set chunksProcessed($core.int v) { $_setSignedInt32(6, v); }
+  set chunksProcessed($core.int v) {
+    $_setSignedInt32(6, v);
+  }
+
   @$pb.TagNumber(7)
   $core.bool hasChunksProcessed() => $_has(6);
   @$pb.TagNumber(7)
@@ -294,42 +363,60 @@ class EnrollVoiceRequest extends $pb.GeneratedMessage {
     return $result;
   }
   EnrollVoiceRequest._() : super();
-  factory EnrollVoiceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory EnrollVoiceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory EnrollVoiceRequest.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory EnrollVoiceRequest.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'EnrollVoiceRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'EnrollVoiceRequest',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..p<$core.List<$core.int>>(2, _omitFieldNames ? '' : 'audioSamples', $pb.PbFieldType.PY)
-    ..aOM<AudioFormat>(3, _omitFieldNames ? '' : 'format', subBuilder: AudioFormat.create)
-    ..m<$core.String, $core.String>(4, _omitFieldNames ? '' : 'metadata', entryClassName: 'EnrollVoiceRequest.MetadataEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('voicebiometrics'))
-    ..hasRequiredFields = false
-  ;
+    ..p<$core.List<$core.int>>(
+        2, _omitFieldNames ? '' : 'audioSamples', $pb.PbFieldType.PY)
+    ..aOM<AudioFormat>(3, _omitFieldNames ? '' : 'format',
+        subBuilder: AudioFormat.create)
+    ..m<$core.String, $core.String>(4, _omitFieldNames ? '' : 'metadata',
+        entryClassName: 'EnrollVoiceRequest.MetadataEntry',
+        keyFieldType: $pb.PbFieldType.OS,
+        valueFieldType: $pb.PbFieldType.OS,
+        packageName: const $pb.PackageName('voicebiometrics'))
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   EnrollVoiceRequest clone() => EnrollVoiceRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  EnrollVoiceRequest copyWith(void Function(EnrollVoiceRequest) updates) => super.copyWith((message) => updates(message as EnrollVoiceRequest)) as EnrollVoiceRequest;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  EnrollVoiceRequest copyWith(void Function(EnrollVoiceRequest) updates) =>
+      super.copyWith((message) => updates(message as EnrollVoiceRequest))
+          as EnrollVoiceRequest;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static EnrollVoiceRequest create() => EnrollVoiceRequest._();
   EnrollVoiceRequest createEmptyInstance() => create();
-  static $pb.PbList<EnrollVoiceRequest> createRepeated() => $pb.PbList<EnrollVoiceRequest>();
+  static $pb.PbList<EnrollVoiceRequest> createRepeated() =>
+      $pb.PbList<EnrollVoiceRequest>();
   @$core.pragma('dart2js:noInline')
-  static EnrollVoiceRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<EnrollVoiceRequest>(create);
+  static EnrollVoiceRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<EnrollVoiceRequest>(create);
   static EnrollVoiceRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String v) {
+    $_setString(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
@@ -341,7 +428,10 @@ class EnrollVoiceRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   AudioFormat get format => $_getN(2);
   @$pb.TagNumber(3)
-  set format(AudioFormat v) { setField(3, v); }
+  set format(AudioFormat v) {
+    setField(3, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasFormat() => $_has(2);
   @$pb.TagNumber(3)
@@ -384,44 +474,58 @@ class EnrollVoiceResponse extends $pb.GeneratedMessage {
     return $result;
   }
   EnrollVoiceResponse._() : super();
-  factory EnrollVoiceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory EnrollVoiceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory EnrollVoiceResponse.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory EnrollVoiceResponse.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'EnrollVoiceResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'EnrollVoiceResponse',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'success')
     ..aOS(2, _omitFieldNames ? '' : 'enrollmentId')
     ..a<$core.int>(3, _omitFieldNames ? '' : 'samplesCount', $pb.PbFieldType.O3)
-    ..a<$core.double>(4, _omitFieldNames ? '' : 'qualityScore', $pb.PbFieldType.OF)
+    ..a<$core.double>(
+        4, _omitFieldNames ? '' : 'qualityScore', $pb.PbFieldType.OF)
     ..aOS(5, _omitFieldNames ? '' : 'message')
-    ..aOM<VoiceProfile>(6, _omitFieldNames ? '' : 'voiceProfile', subBuilder: VoiceProfile.create)
-    ..hasRequiredFields = false
-  ;
+    ..aOM<VoiceProfile>(6, _omitFieldNames ? '' : 'voiceProfile',
+        subBuilder: VoiceProfile.create)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   EnrollVoiceResponse clone() => EnrollVoiceResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  EnrollVoiceResponse copyWith(void Function(EnrollVoiceResponse) updates) => super.copyWith((message) => updates(message as EnrollVoiceResponse)) as EnrollVoiceResponse;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  EnrollVoiceResponse copyWith(void Function(EnrollVoiceResponse) updates) =>
+      super.copyWith((message) => updates(message as EnrollVoiceResponse))
+          as EnrollVoiceResponse;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static EnrollVoiceResponse create() => EnrollVoiceResponse._();
   EnrollVoiceResponse createEmptyInstance() => create();
-  static $pb.PbList<EnrollVoiceResponse> createRepeated() => $pb.PbList<EnrollVoiceResponse>();
+  static $pb.PbList<EnrollVoiceResponse> createRepeated() =>
+      $pb.PbList<EnrollVoiceResponse>();
   @$core.pragma('dart2js:noInline')
-  static EnrollVoiceResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<EnrollVoiceResponse>(create);
+  static EnrollVoiceResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<EnrollVoiceResponse>(create);
   static EnrollVoiceResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.bool get success => $_getBF(0);
   @$pb.TagNumber(1)
-  set success($core.bool v) { $_setBool(0, v); }
+  set success($core.bool v) {
+    $_setBool(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasSuccess() => $_has(0);
   @$pb.TagNumber(1)
@@ -430,7 +534,10 @@ class EnrollVoiceResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.String get enrollmentId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set enrollmentId($core.String v) { $_setString(1, v); }
+  set enrollmentId($core.String v) {
+    $_setString(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasEnrollmentId() => $_has(1);
   @$pb.TagNumber(2)
@@ -439,7 +546,10 @@ class EnrollVoiceResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.int get samplesCount => $_getIZ(2);
   @$pb.TagNumber(3)
-  set samplesCount($core.int v) { $_setSignedInt32(2, v); }
+  set samplesCount($core.int v) {
+    $_setSignedInt32(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasSamplesCount() => $_has(2);
   @$pb.TagNumber(3)
@@ -448,7 +558,10 @@ class EnrollVoiceResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.double get qualityScore => $_getN(3);
   @$pb.TagNumber(4)
-  set qualityScore($core.double v) { $_setFloat(3, v); }
+  set qualityScore($core.double v) {
+    $_setFloat(3, v);
+  }
+
   @$pb.TagNumber(4)
   $core.bool hasQualityScore() => $_has(3);
   @$pb.TagNumber(4)
@@ -457,7 +570,10 @@ class EnrollVoiceResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $core.String get message => $_getSZ(4);
   @$pb.TagNumber(5)
-  set message($core.String v) { $_setString(4, v); }
+  set message($core.String v) {
+    $_setString(4, v);
+  }
+
   @$pb.TagNumber(5)
   $core.bool hasMessage() => $_has(4);
   @$pb.TagNumber(5)
@@ -466,7 +582,10 @@ class EnrollVoiceResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   VoiceProfile get voiceProfile => $_getN(5);
   @$pb.TagNumber(6)
-  set voiceProfile(VoiceProfile v) { setField(6, v); }
+  set voiceProfile(VoiceProfile v) {
+    setField(6, v);
+  }
+
   @$pb.TagNumber(6)
   $core.bool hasVoiceProfile() => $_has(5);
   @$pb.TagNumber(6)
@@ -503,43 +622,61 @@ class VerifyVoiceRequest extends $pb.GeneratedMessage {
     return $result;
   }
   VerifyVoiceRequest._() : super();
-  factory VerifyVoiceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory VerifyVoiceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory VerifyVoiceRequest.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory VerifyVoiceRequest.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyVoiceRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'VerifyVoiceRequest',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..a<$core.List<$core.int>>(2, _omitFieldNames ? '' : 'audioSample', $pb.PbFieldType.OY)
-    ..aOM<AudioFormat>(3, _omitFieldNames ? '' : 'format', subBuilder: AudioFormat.create)
+    ..a<$core.List<$core.int>>(
+        2, _omitFieldNames ? '' : 'audioSample', $pb.PbFieldType.OY)
+    ..aOM<AudioFormat>(3, _omitFieldNames ? '' : 'format',
+        subBuilder: AudioFormat.create)
     ..a<$core.double>(4, _omitFieldNames ? '' : 'threshold', $pb.PbFieldType.OF)
-    ..m<$core.String, $core.String>(5, _omitFieldNames ? '' : 'metadata', entryClassName: 'VerifyVoiceRequest.MetadataEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('voicebiometrics'))
-    ..hasRequiredFields = false
-  ;
+    ..m<$core.String, $core.String>(5, _omitFieldNames ? '' : 'metadata',
+        entryClassName: 'VerifyVoiceRequest.MetadataEntry',
+        keyFieldType: $pb.PbFieldType.OS,
+        valueFieldType: $pb.PbFieldType.OS,
+        packageName: const $pb.PackageName('voicebiometrics'))
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   VerifyVoiceRequest clone() => VerifyVoiceRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  VerifyVoiceRequest copyWith(void Function(VerifyVoiceRequest) updates) => super.copyWith((message) => updates(message as VerifyVoiceRequest)) as VerifyVoiceRequest;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  VerifyVoiceRequest copyWith(void Function(VerifyVoiceRequest) updates) =>
+      super.copyWith((message) => updates(message as VerifyVoiceRequest))
+          as VerifyVoiceRequest;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static VerifyVoiceRequest create() => VerifyVoiceRequest._();
   VerifyVoiceRequest createEmptyInstance() => create();
-  static $pb.PbList<VerifyVoiceRequest> createRepeated() => $pb.PbList<VerifyVoiceRequest>();
+  static $pb.PbList<VerifyVoiceRequest> createRepeated() =>
+      $pb.PbList<VerifyVoiceRequest>();
   @$core.pragma('dart2js:noInline')
-  static VerifyVoiceRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyVoiceRequest>(create);
+  static VerifyVoiceRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<VerifyVoiceRequest>(create);
   static VerifyVoiceRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String v) {
+    $_setString(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
@@ -548,7 +685,10 @@ class VerifyVoiceRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.List<$core.int> get audioSample => $_getN(1);
   @$pb.TagNumber(2)
-  set audioSample($core.List<$core.int> v) { $_setBytes(1, v); }
+  set audioSample($core.List<$core.int> v) {
+    $_setBytes(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasAudioSample() => $_has(1);
   @$pb.TagNumber(2)
@@ -557,7 +697,10 @@ class VerifyVoiceRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   AudioFormat get format => $_getN(2);
   @$pb.TagNumber(3)
-  set format(AudioFormat v) { setField(3, v); }
+  set format(AudioFormat v) {
+    setField(3, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasFormat() => $_has(2);
   @$pb.TagNumber(3)
@@ -568,7 +711,10 @@ class VerifyVoiceRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.double get threshold => $_getN(3);
   @$pb.TagNumber(4)
-  set threshold($core.double v) { $_setFloat(3, v); }
+  set threshold($core.double v) {
+    $_setFloat(3, v);
+  }
+
   @$pb.TagNumber(4)
   $core.bool hasThreshold() => $_has(3);
   @$pb.TagNumber(4)
@@ -609,44 +755,62 @@ class VerifyVoiceResponse extends $pb.GeneratedMessage {
     return $result;
   }
   VerifyVoiceResponse._() : super();
-  factory VerifyVoiceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory VerifyVoiceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory VerifyVoiceResponse.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory VerifyVoiceResponse.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyVoiceResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'VerifyVoiceResponse',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'verified')
-    ..a<$core.double>(2, _omitFieldNames ? '' : 'similarityScore', $pb.PbFieldType.OF)
-    ..a<$core.double>(3, _omitFieldNames ? '' : 'confidence', $pb.PbFieldType.OF)
+    ..a<$core.double>(
+        2, _omitFieldNames ? '' : 'similarityScore', $pb.PbFieldType.OF)
+    ..a<$core.double>(
+        3, _omitFieldNames ? '' : 'confidence', $pb.PbFieldType.OF)
     ..aOS(4, _omitFieldNames ? '' : 'message')
-    ..e<VerificationStatus>(5, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: VerificationStatus.VERIFICATION_UNKNOWN, valueOf: VerificationStatus.valueOf, enumValues: VerificationStatus.values)
+    ..e<VerificationStatus>(
+        5, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE,
+        defaultOrMaker: VerificationStatus.VERIFICATION_UNKNOWN,
+        valueOf: VerificationStatus.valueOf,
+        enumValues: VerificationStatus.values)
     ..aInt64(6, _omitFieldNames ? '' : 'verificationTimestamp')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   VerifyVoiceResponse clone() => VerifyVoiceResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  VerifyVoiceResponse copyWith(void Function(VerifyVoiceResponse) updates) => super.copyWith((message) => updates(message as VerifyVoiceResponse)) as VerifyVoiceResponse;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  VerifyVoiceResponse copyWith(void Function(VerifyVoiceResponse) updates) =>
+      super.copyWith((message) => updates(message as VerifyVoiceResponse))
+          as VerifyVoiceResponse;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static VerifyVoiceResponse create() => VerifyVoiceResponse._();
   VerifyVoiceResponse createEmptyInstance() => create();
-  static $pb.PbList<VerifyVoiceResponse> createRepeated() => $pb.PbList<VerifyVoiceResponse>();
+  static $pb.PbList<VerifyVoiceResponse> createRepeated() =>
+      $pb.PbList<VerifyVoiceResponse>();
   @$core.pragma('dart2js:noInline')
-  static VerifyVoiceResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyVoiceResponse>(create);
+  static VerifyVoiceResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<VerifyVoiceResponse>(create);
   static VerifyVoiceResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.bool get verified => $_getBF(0);
   @$pb.TagNumber(1)
-  set verified($core.bool v) { $_setBool(0, v); }
+  set verified($core.bool v) {
+    $_setBool(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasVerified() => $_has(0);
   @$pb.TagNumber(1)
@@ -655,7 +819,10 @@ class VerifyVoiceResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.double get similarityScore => $_getN(1);
   @$pb.TagNumber(2)
-  set similarityScore($core.double v) { $_setFloat(1, v); }
+  set similarityScore($core.double v) {
+    $_setFloat(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasSimilarityScore() => $_has(1);
   @$pb.TagNumber(2)
@@ -664,7 +831,10 @@ class VerifyVoiceResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.double get confidence => $_getN(2);
   @$pb.TagNumber(3)
-  set confidence($core.double v) { $_setFloat(2, v); }
+  set confidence($core.double v) {
+    $_setFloat(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasConfidence() => $_has(2);
   @$pb.TagNumber(3)
@@ -673,7 +843,10 @@ class VerifyVoiceResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.String get message => $_getSZ(3);
   @$pb.TagNumber(4)
-  set message($core.String v) { $_setString(3, v); }
+  set message($core.String v) {
+    $_setString(3, v);
+  }
+
   @$pb.TagNumber(4)
   $core.bool hasMessage() => $_has(3);
   @$pb.TagNumber(4)
@@ -682,7 +855,10 @@ class VerifyVoiceResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   VerificationStatus get status => $_getN(4);
   @$pb.TagNumber(5)
-  set status(VerificationStatus v) { setField(5, v); }
+  set status(VerificationStatus v) {
+    setField(5, v);
+  }
+
   @$pb.TagNumber(5)
   $core.bool hasStatus() => $_has(4);
   @$pb.TagNumber(5)
@@ -691,7 +867,10 @@ class VerifyVoiceResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   $fixnum.Int64 get verificationTimestamp => $_getI64(5);
   @$pb.TagNumber(6)
-  set verificationTimestamp($fixnum.Int64 v) { $_setInt64(5, v); }
+  set verificationTimestamp($fixnum.Int64 v) {
+    $_setInt64(5, v);
+  }
+
   @$pb.TagNumber(6)
   $core.bool hasVerificationTimestamp() => $_has(5);
   @$pb.TagNumber(6)
@@ -710,39 +889,55 @@ class CheckEnrollmentStatusRequest extends $pb.GeneratedMessage {
     return $result;
   }
   CheckEnrollmentStatusRequest._() : super();
-  factory CheckEnrollmentStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory CheckEnrollmentStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory CheckEnrollmentStatusRequest.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory CheckEnrollmentStatusRequest.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CheckEnrollmentStatusRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CheckEnrollmentStatusRequest',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  CheckEnrollmentStatusRequest clone() => CheckEnrollmentStatusRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  CheckEnrollmentStatusRequest copyWith(void Function(CheckEnrollmentStatusRequest) updates) => super.copyWith((message) => updates(message as CheckEnrollmentStatusRequest)) as CheckEnrollmentStatusRequest;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  CheckEnrollmentStatusRequest clone() =>
+      CheckEnrollmentStatusRequest()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  CheckEnrollmentStatusRequest copyWith(
+          void Function(CheckEnrollmentStatusRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as CheckEnrollmentStatusRequest))
+          as CheckEnrollmentStatusRequest;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static CheckEnrollmentStatusRequest create() => CheckEnrollmentStatusRequest._();
+  static CheckEnrollmentStatusRequest create() =>
+      CheckEnrollmentStatusRequest._();
   CheckEnrollmentStatusRequest createEmptyInstance() => create();
-  static $pb.PbList<CheckEnrollmentStatusRequest> createRepeated() => $pb.PbList<CheckEnrollmentStatusRequest>();
+  static $pb.PbList<CheckEnrollmentStatusRequest> createRepeated() =>
+      $pb.PbList<CheckEnrollmentStatusRequest>();
   @$core.pragma('dart2js:noInline')
-  static CheckEnrollmentStatusRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CheckEnrollmentStatusRequest>(create);
+  static CheckEnrollmentStatusRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CheckEnrollmentStatusRequest>(create);
   static CheckEnrollmentStatusRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String v) {
+    $_setString(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
@@ -780,44 +975,62 @@ class CheckEnrollmentStatusResponse extends $pb.GeneratedMessage {
     return $result;
   }
   CheckEnrollmentStatusResponse._() : super();
-  factory CheckEnrollmentStatusResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory CheckEnrollmentStatusResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory CheckEnrollmentStatusResponse.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory CheckEnrollmentStatusResponse.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CheckEnrollmentStatusResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CheckEnrollmentStatusResponse',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'isEnrolled')
     ..aOS(2, _omitFieldNames ? '' : 'enrollmentId')
     ..aInt64(3, _omitFieldNames ? '' : 'enrolledAt')
     ..a<$core.int>(4, _omitFieldNames ? '' : 'samplesCount', $pb.PbFieldType.O3)
-    ..a<$core.double>(5, _omitFieldNames ? '' : 'qualityScore', $pb.PbFieldType.OF)
-    ..aOM<VoiceProfile>(6, _omitFieldNames ? '' : 'voiceProfile', subBuilder: VoiceProfile.create)
-    ..hasRequiredFields = false
-  ;
+    ..a<$core.double>(
+        5, _omitFieldNames ? '' : 'qualityScore', $pb.PbFieldType.OF)
+    ..aOM<VoiceProfile>(6, _omitFieldNames ? '' : 'voiceProfile',
+        subBuilder: VoiceProfile.create)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  CheckEnrollmentStatusResponse clone() => CheckEnrollmentStatusResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  CheckEnrollmentStatusResponse copyWith(void Function(CheckEnrollmentStatusResponse) updates) => super.copyWith((message) => updates(message as CheckEnrollmentStatusResponse)) as CheckEnrollmentStatusResponse;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  CheckEnrollmentStatusResponse clone() =>
+      CheckEnrollmentStatusResponse()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  CheckEnrollmentStatusResponse copyWith(
+          void Function(CheckEnrollmentStatusResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as CheckEnrollmentStatusResponse))
+          as CheckEnrollmentStatusResponse;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static CheckEnrollmentStatusResponse create() => CheckEnrollmentStatusResponse._();
+  static CheckEnrollmentStatusResponse create() =>
+      CheckEnrollmentStatusResponse._();
   CheckEnrollmentStatusResponse createEmptyInstance() => create();
-  static $pb.PbList<CheckEnrollmentStatusResponse> createRepeated() => $pb.PbList<CheckEnrollmentStatusResponse>();
+  static $pb.PbList<CheckEnrollmentStatusResponse> createRepeated() =>
+      $pb.PbList<CheckEnrollmentStatusResponse>();
   @$core.pragma('dart2js:noInline')
-  static CheckEnrollmentStatusResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CheckEnrollmentStatusResponse>(create);
+  static CheckEnrollmentStatusResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CheckEnrollmentStatusResponse>(create);
   static CheckEnrollmentStatusResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.bool get isEnrolled => $_getBF(0);
   @$pb.TagNumber(1)
-  set isEnrolled($core.bool v) { $_setBool(0, v); }
+  set isEnrolled($core.bool v) {
+    $_setBool(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasIsEnrolled() => $_has(0);
   @$pb.TagNumber(1)
@@ -826,7 +1039,10 @@ class CheckEnrollmentStatusResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.String get enrollmentId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set enrollmentId($core.String v) { $_setString(1, v); }
+  set enrollmentId($core.String v) {
+    $_setString(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasEnrollmentId() => $_has(1);
   @$pb.TagNumber(2)
@@ -835,7 +1051,10 @@ class CheckEnrollmentStatusResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $fixnum.Int64 get enrolledAt => $_getI64(2);
   @$pb.TagNumber(3)
-  set enrolledAt($fixnum.Int64 v) { $_setInt64(2, v); }
+  set enrolledAt($fixnum.Int64 v) {
+    $_setInt64(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasEnrolledAt() => $_has(2);
   @$pb.TagNumber(3)
@@ -844,7 +1063,10 @@ class CheckEnrollmentStatusResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.int get samplesCount => $_getIZ(3);
   @$pb.TagNumber(4)
-  set samplesCount($core.int v) { $_setSignedInt32(3, v); }
+  set samplesCount($core.int v) {
+    $_setSignedInt32(3, v);
+  }
+
   @$pb.TagNumber(4)
   $core.bool hasSamplesCount() => $_has(3);
   @$pb.TagNumber(4)
@@ -853,7 +1075,10 @@ class CheckEnrollmentStatusResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $core.double get qualityScore => $_getN(4);
   @$pb.TagNumber(5)
-  set qualityScore($core.double v) { $_setFloat(4, v); }
+  set qualityScore($core.double v) {
+    $_setFloat(4, v);
+  }
+
   @$pb.TagNumber(5)
   $core.bool hasQualityScore() => $_has(4);
   @$pb.TagNumber(5)
@@ -862,7 +1087,10 @@ class CheckEnrollmentStatusResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   VoiceProfile get voiceProfile => $_getN(5);
   @$pb.TagNumber(6)
-  set voiceProfile(VoiceProfile v) { setField(6, v); }
+  set voiceProfile(VoiceProfile v) {
+    setField(6, v);
+  }
+
   @$pb.TagNumber(6)
   $core.bool hasVoiceProfile() => $_has(5);
   @$pb.TagNumber(6)
@@ -883,39 +1111,55 @@ class DeleteVoiceEnrollmentRequest extends $pb.GeneratedMessage {
     return $result;
   }
   DeleteVoiceEnrollmentRequest._() : super();
-  factory DeleteVoiceEnrollmentRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory DeleteVoiceEnrollmentRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory DeleteVoiceEnrollmentRequest.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory DeleteVoiceEnrollmentRequest.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteVoiceEnrollmentRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'DeleteVoiceEnrollmentRequest',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  DeleteVoiceEnrollmentRequest clone() => DeleteVoiceEnrollmentRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  DeleteVoiceEnrollmentRequest copyWith(void Function(DeleteVoiceEnrollmentRequest) updates) => super.copyWith((message) => updates(message as DeleteVoiceEnrollmentRequest)) as DeleteVoiceEnrollmentRequest;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  DeleteVoiceEnrollmentRequest clone() =>
+      DeleteVoiceEnrollmentRequest()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  DeleteVoiceEnrollmentRequest copyWith(
+          void Function(DeleteVoiceEnrollmentRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as DeleteVoiceEnrollmentRequest))
+          as DeleteVoiceEnrollmentRequest;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static DeleteVoiceEnrollmentRequest create() => DeleteVoiceEnrollmentRequest._();
+  static DeleteVoiceEnrollmentRequest create() =>
+      DeleteVoiceEnrollmentRequest._();
   DeleteVoiceEnrollmentRequest createEmptyInstance() => create();
-  static $pb.PbList<DeleteVoiceEnrollmentRequest> createRepeated() => $pb.PbList<DeleteVoiceEnrollmentRequest>();
+  static $pb.PbList<DeleteVoiceEnrollmentRequest> createRepeated() =>
+      $pb.PbList<DeleteVoiceEnrollmentRequest>();
   @$core.pragma('dart2js:noInline')
-  static DeleteVoiceEnrollmentRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeleteVoiceEnrollmentRequest>(create);
+  static DeleteVoiceEnrollmentRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<DeleteVoiceEnrollmentRequest>(create);
   static DeleteVoiceEnrollmentRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String v) {
+    $_setString(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
@@ -937,40 +1181,56 @@ class DeleteVoiceEnrollmentResponse extends $pb.GeneratedMessage {
     return $result;
   }
   DeleteVoiceEnrollmentResponse._() : super();
-  factory DeleteVoiceEnrollmentResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory DeleteVoiceEnrollmentResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory DeleteVoiceEnrollmentResponse.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory DeleteVoiceEnrollmentResponse.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteVoiceEnrollmentResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'DeleteVoiceEnrollmentResponse',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'success')
     ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  DeleteVoiceEnrollmentResponse clone() => DeleteVoiceEnrollmentResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  DeleteVoiceEnrollmentResponse copyWith(void Function(DeleteVoiceEnrollmentResponse) updates) => super.copyWith((message) => updates(message as DeleteVoiceEnrollmentResponse)) as DeleteVoiceEnrollmentResponse;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  DeleteVoiceEnrollmentResponse clone() =>
+      DeleteVoiceEnrollmentResponse()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  DeleteVoiceEnrollmentResponse copyWith(
+          void Function(DeleteVoiceEnrollmentResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as DeleteVoiceEnrollmentResponse))
+          as DeleteVoiceEnrollmentResponse;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static DeleteVoiceEnrollmentResponse create() => DeleteVoiceEnrollmentResponse._();
+  static DeleteVoiceEnrollmentResponse create() =>
+      DeleteVoiceEnrollmentResponse._();
   DeleteVoiceEnrollmentResponse createEmptyInstance() => create();
-  static $pb.PbList<DeleteVoiceEnrollmentResponse> createRepeated() => $pb.PbList<DeleteVoiceEnrollmentResponse>();
+  static $pb.PbList<DeleteVoiceEnrollmentResponse> createRepeated() =>
+      $pb.PbList<DeleteVoiceEnrollmentResponse>();
   @$core.pragma('dart2js:noInline')
-  static DeleteVoiceEnrollmentResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeleteVoiceEnrollmentResponse>(create);
+  static DeleteVoiceEnrollmentResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<DeleteVoiceEnrollmentResponse>(create);
   static DeleteVoiceEnrollmentResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.bool get success => $_getBF(0);
   @$pb.TagNumber(1)
-  set success($core.bool v) { $_setBool(0, v); }
+  set success($core.bool v) {
+    $_setBool(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasSuccess() => $_has(0);
   @$pb.TagNumber(1)
@@ -979,7 +1239,10 @@ class DeleteVoiceEnrollmentResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.String get message => $_getSZ(1);
   @$pb.TagNumber(2)
-  set message($core.String v) { $_setString(1, v); }
+  set message($core.String v) {
+    $_setString(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasMessage() => $_has(1);
   @$pb.TagNumber(2)
@@ -1006,41 +1269,59 @@ class UpdateVoiceEnrollmentRequest extends $pb.GeneratedMessage {
     return $result;
   }
   UpdateVoiceEnrollmentRequest._() : super();
-  factory UpdateVoiceEnrollmentRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory UpdateVoiceEnrollmentRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory UpdateVoiceEnrollmentRequest.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory UpdateVoiceEnrollmentRequest.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateVoiceEnrollmentRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'UpdateVoiceEnrollmentRequest',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..p<$core.List<$core.int>>(2, _omitFieldNames ? '' : 'audioSamples', $pb.PbFieldType.PY)
-    ..aOM<AudioFormat>(3, _omitFieldNames ? '' : 'format', subBuilder: AudioFormat.create)
-    ..hasRequiredFields = false
-  ;
+    ..p<$core.List<$core.int>>(
+        2, _omitFieldNames ? '' : 'audioSamples', $pb.PbFieldType.PY)
+    ..aOM<AudioFormat>(3, _omitFieldNames ? '' : 'format',
+        subBuilder: AudioFormat.create)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  UpdateVoiceEnrollmentRequest clone() => UpdateVoiceEnrollmentRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  UpdateVoiceEnrollmentRequest copyWith(void Function(UpdateVoiceEnrollmentRequest) updates) => super.copyWith((message) => updates(message as UpdateVoiceEnrollmentRequest)) as UpdateVoiceEnrollmentRequest;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  UpdateVoiceEnrollmentRequest clone() =>
+      UpdateVoiceEnrollmentRequest()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  UpdateVoiceEnrollmentRequest copyWith(
+          void Function(UpdateVoiceEnrollmentRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as UpdateVoiceEnrollmentRequest))
+          as UpdateVoiceEnrollmentRequest;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static UpdateVoiceEnrollmentRequest create() => UpdateVoiceEnrollmentRequest._();
+  static UpdateVoiceEnrollmentRequest create() =>
+      UpdateVoiceEnrollmentRequest._();
   UpdateVoiceEnrollmentRequest createEmptyInstance() => create();
-  static $pb.PbList<UpdateVoiceEnrollmentRequest> createRepeated() => $pb.PbList<UpdateVoiceEnrollmentRequest>();
+  static $pb.PbList<UpdateVoiceEnrollmentRequest> createRepeated() =>
+      $pb.PbList<UpdateVoiceEnrollmentRequest>();
   @$core.pragma('dart2js:noInline')
-  static UpdateVoiceEnrollmentRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateVoiceEnrollmentRequest>(create);
+  static UpdateVoiceEnrollmentRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<UpdateVoiceEnrollmentRequest>(create);
   static UpdateVoiceEnrollmentRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String v) {
+    $_setString(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
@@ -1052,7 +1333,10 @@ class UpdateVoiceEnrollmentRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   AudioFormat get format => $_getN(2);
   @$pb.TagNumber(3)
-  set format(AudioFormat v) { setField(3, v); }
+  set format(AudioFormat v) {
+    setField(3, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasFormat() => $_has(2);
   @$pb.TagNumber(3)
@@ -1084,42 +1368,60 @@ class UpdateVoiceEnrollmentResponse extends $pb.GeneratedMessage {
     return $result;
   }
   UpdateVoiceEnrollmentResponse._() : super();
-  factory UpdateVoiceEnrollmentResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory UpdateVoiceEnrollmentResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory UpdateVoiceEnrollmentResponse.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory UpdateVoiceEnrollmentResponse.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateVoiceEnrollmentResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'UpdateVoiceEnrollmentResponse',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'newSamplesCount', $pb.PbFieldType.O3)
-    ..a<$core.double>(3, _omitFieldNames ? '' : 'updatedQualityScore', $pb.PbFieldType.OF)
+    ..a<$core.int>(
+        2, _omitFieldNames ? '' : 'newSamplesCount', $pb.PbFieldType.O3)
+    ..a<$core.double>(
+        3, _omitFieldNames ? '' : 'updatedQualityScore', $pb.PbFieldType.OF)
     ..aOS(4, _omitFieldNames ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  UpdateVoiceEnrollmentResponse clone() => UpdateVoiceEnrollmentResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  UpdateVoiceEnrollmentResponse copyWith(void Function(UpdateVoiceEnrollmentResponse) updates) => super.copyWith((message) => updates(message as UpdateVoiceEnrollmentResponse)) as UpdateVoiceEnrollmentResponse;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  UpdateVoiceEnrollmentResponse clone() =>
+      UpdateVoiceEnrollmentResponse()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  UpdateVoiceEnrollmentResponse copyWith(
+          void Function(UpdateVoiceEnrollmentResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as UpdateVoiceEnrollmentResponse))
+          as UpdateVoiceEnrollmentResponse;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static UpdateVoiceEnrollmentResponse create() => UpdateVoiceEnrollmentResponse._();
+  static UpdateVoiceEnrollmentResponse create() =>
+      UpdateVoiceEnrollmentResponse._();
   UpdateVoiceEnrollmentResponse createEmptyInstance() => create();
-  static $pb.PbList<UpdateVoiceEnrollmentResponse> createRepeated() => $pb.PbList<UpdateVoiceEnrollmentResponse>();
+  static $pb.PbList<UpdateVoiceEnrollmentResponse> createRepeated() =>
+      $pb.PbList<UpdateVoiceEnrollmentResponse>();
   @$core.pragma('dart2js:noInline')
-  static UpdateVoiceEnrollmentResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateVoiceEnrollmentResponse>(create);
+  static UpdateVoiceEnrollmentResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<UpdateVoiceEnrollmentResponse>(create);
   static UpdateVoiceEnrollmentResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.bool get success => $_getBF(0);
   @$pb.TagNumber(1)
-  set success($core.bool v) { $_setBool(0, v); }
+  set success($core.bool v) {
+    $_setBool(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasSuccess() => $_has(0);
   @$pb.TagNumber(1)
@@ -1128,7 +1430,10 @@ class UpdateVoiceEnrollmentResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.int get newSamplesCount => $_getIZ(1);
   @$pb.TagNumber(2)
-  set newSamplesCount($core.int v) { $_setSignedInt32(1, v); }
+  set newSamplesCount($core.int v) {
+    $_setSignedInt32(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasNewSamplesCount() => $_has(1);
   @$pb.TagNumber(2)
@@ -1137,7 +1442,10 @@ class UpdateVoiceEnrollmentResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.double get updatedQualityScore => $_getN(2);
   @$pb.TagNumber(3)
-  set updatedQualityScore($core.double v) { $_setFloat(2, v); }
+  set updatedQualityScore($core.double v) {
+    $_setFloat(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasUpdatedQualityScore() => $_has(2);
   @$pb.TagNumber(3)
@@ -1146,7 +1454,10 @@ class UpdateVoiceEnrollmentResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.String get message => $_getSZ(3);
   @$pb.TagNumber(4)
-  set message($core.String v) { $_setString(3, v); }
+  set message($core.String v) {
+    $_setString(3, v);
+  }
+
   @$pb.TagNumber(4)
   $core.bool hasMessage() => $_has(3);
   @$pb.TagNumber(4)
@@ -1165,39 +1476,53 @@ class GetVoiceEnrollmentRequest extends $pb.GeneratedMessage {
     return $result;
   }
   GetVoiceEnrollmentRequest._() : super();
-  factory GetVoiceEnrollmentRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetVoiceEnrollmentRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory GetVoiceEnrollmentRequest.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory GetVoiceEnrollmentRequest.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetVoiceEnrollmentRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetVoiceEnrollmentRequest',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetVoiceEnrollmentRequest clone() => GetVoiceEnrollmentRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetVoiceEnrollmentRequest copyWith(void Function(GetVoiceEnrollmentRequest) updates) => super.copyWith((message) => updates(message as GetVoiceEnrollmentRequest)) as GetVoiceEnrollmentRequest;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  GetVoiceEnrollmentRequest clone() =>
+      GetVoiceEnrollmentRequest()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  GetVoiceEnrollmentRequest copyWith(
+          void Function(GetVoiceEnrollmentRequest) updates) =>
+      super.copyWith((message) => updates(message as GetVoiceEnrollmentRequest))
+          as GetVoiceEnrollmentRequest;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetVoiceEnrollmentRequest create() => GetVoiceEnrollmentRequest._();
   GetVoiceEnrollmentRequest createEmptyInstance() => create();
-  static $pb.PbList<GetVoiceEnrollmentRequest> createRepeated() => $pb.PbList<GetVoiceEnrollmentRequest>();
+  static $pb.PbList<GetVoiceEnrollmentRequest> createRepeated() =>
+      $pb.PbList<GetVoiceEnrollmentRequest>();
   @$core.pragma('dart2js:noInline')
-  static GetVoiceEnrollmentRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetVoiceEnrollmentRequest>(create);
+  static GetVoiceEnrollmentRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetVoiceEnrollmentRequest>(create);
   static GetVoiceEnrollmentRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String v) {
+    $_setString(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
@@ -1223,41 +1548,58 @@ class GetVoiceEnrollmentResponse extends $pb.GeneratedMessage {
     return $result;
   }
   GetVoiceEnrollmentResponse._() : super();
-  factory GetVoiceEnrollmentResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetVoiceEnrollmentResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory GetVoiceEnrollmentResponse.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory GetVoiceEnrollmentResponse.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetVoiceEnrollmentResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetVoiceEnrollmentResponse',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'exists')
-    ..aOM<VoiceProfile>(2, _omitFieldNames ? '' : 'voiceProfile', subBuilder: VoiceProfile.create)
-    ..aOM<EnrollmentMetadata>(3, _omitFieldNames ? '' : 'metadata', subBuilder: EnrollmentMetadata.create)
-    ..hasRequiredFields = false
-  ;
+    ..aOM<VoiceProfile>(2, _omitFieldNames ? '' : 'voiceProfile',
+        subBuilder: VoiceProfile.create)
+    ..aOM<EnrollmentMetadata>(3, _omitFieldNames ? '' : 'metadata',
+        subBuilder: EnrollmentMetadata.create)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetVoiceEnrollmentResponse clone() => GetVoiceEnrollmentResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetVoiceEnrollmentResponse copyWith(void Function(GetVoiceEnrollmentResponse) updates) => super.copyWith((message) => updates(message as GetVoiceEnrollmentResponse)) as GetVoiceEnrollmentResponse;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  GetVoiceEnrollmentResponse clone() =>
+      GetVoiceEnrollmentResponse()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  GetVoiceEnrollmentResponse copyWith(
+          void Function(GetVoiceEnrollmentResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetVoiceEnrollmentResponse))
+          as GetVoiceEnrollmentResponse;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetVoiceEnrollmentResponse create() => GetVoiceEnrollmentResponse._();
   GetVoiceEnrollmentResponse createEmptyInstance() => create();
-  static $pb.PbList<GetVoiceEnrollmentResponse> createRepeated() => $pb.PbList<GetVoiceEnrollmentResponse>();
+  static $pb.PbList<GetVoiceEnrollmentResponse> createRepeated() =>
+      $pb.PbList<GetVoiceEnrollmentResponse>();
   @$core.pragma('dart2js:noInline')
-  static GetVoiceEnrollmentResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetVoiceEnrollmentResponse>(create);
+  static GetVoiceEnrollmentResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetVoiceEnrollmentResponse>(create);
   static GetVoiceEnrollmentResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.bool get exists => $_getBF(0);
   @$pb.TagNumber(1)
-  set exists($core.bool v) { $_setBool(0, v); }
+  set exists($core.bool v) {
+    $_setBool(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasExists() => $_has(0);
   @$pb.TagNumber(1)
@@ -1266,7 +1608,10 @@ class GetVoiceEnrollmentResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   VoiceProfile get voiceProfile => $_getN(1);
   @$pb.TagNumber(2)
-  set voiceProfile(VoiceProfile v) { setField(2, v); }
+  set voiceProfile(VoiceProfile v) {
+    setField(2, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasVoiceProfile() => $_has(1);
   @$pb.TagNumber(2)
@@ -1277,7 +1622,10 @@ class GetVoiceEnrollmentResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   EnrollmentMetadata get metadata => $_getN(2);
   @$pb.TagNumber(3)
-  set metadata(EnrollmentMetadata v) { setField(3, v); }
+  set metadata(EnrollmentMetadata v) {
+    setField(3, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasMetadata() => $_has(2);
   @$pb.TagNumber(3)
@@ -1346,51 +1694,65 @@ class VoiceProfile extends $pb.GeneratedMessage {
     return $result;
   }
   VoiceProfile._() : super();
-  factory VoiceProfile.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory VoiceProfile.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory VoiceProfile.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory VoiceProfile.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VoiceProfile', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'VoiceProfile',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
     ..aOS(2, _omitFieldNames ? '' : 'enrollmentId')
     ..aInt64(3, _omitFieldNames ? '' : 'createdAt')
     ..aInt64(4, _omitFieldNames ? '' : 'updatedAt')
     ..a<$core.int>(5, _omitFieldNames ? '' : 'samplesCount', $pb.PbFieldType.O3)
-    ..a<$core.double>(6, _omitFieldNames ? '' : 'qualityScore', $pb.PbFieldType.OF)
-    ..a<$core.int>(7, _omitFieldNames ? '' : 'verificationCount', $pb.PbFieldType.O3)
+    ..a<$core.double>(
+        6, _omitFieldNames ? '' : 'qualityScore', $pb.PbFieldType.OF)
+    ..a<$core.int>(
+        7, _omitFieldNames ? '' : 'verificationCount', $pb.PbFieldType.O3)
     ..aInt64(8, _omitFieldNames ? '' : 'lastVerifiedAt')
     ..aOS(9, _omitFieldNames ? '' : 'customVoiceId')
     ..aOS(10, _omitFieldNames ? '' : 'customVoiceProvider')
     ..aOS(11, _omitFieldNames ? '' : 'customVoiceStatus')
     ..aInt64(12, _omitFieldNames ? '' : 'customVoiceCreatedAt')
     ..aOS(13, _omitFieldNames ? '' : 'customVoiceError')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   VoiceProfile clone() => VoiceProfile()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  VoiceProfile copyWith(void Function(VoiceProfile) updates) => super.copyWith((message) => updates(message as VoiceProfile)) as VoiceProfile;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  VoiceProfile copyWith(void Function(VoiceProfile) updates) =>
+      super.copyWith((message) => updates(message as VoiceProfile))
+          as VoiceProfile;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static VoiceProfile create() => VoiceProfile._();
   VoiceProfile createEmptyInstance() => create();
-  static $pb.PbList<VoiceProfile> createRepeated() => $pb.PbList<VoiceProfile>();
+  static $pb.PbList<VoiceProfile> createRepeated() =>
+      $pb.PbList<VoiceProfile>();
   @$core.pragma('dart2js:noInline')
-  static VoiceProfile getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VoiceProfile>(create);
+  static VoiceProfile getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<VoiceProfile>(create);
   static VoiceProfile? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String v) {
+    $_setString(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
@@ -1399,7 +1761,10 @@ class VoiceProfile extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.String get enrollmentId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set enrollmentId($core.String v) { $_setString(1, v); }
+  set enrollmentId($core.String v) {
+    $_setString(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasEnrollmentId() => $_has(1);
   @$pb.TagNumber(2)
@@ -1408,7 +1773,10 @@ class VoiceProfile extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $fixnum.Int64 get createdAt => $_getI64(2);
   @$pb.TagNumber(3)
-  set createdAt($fixnum.Int64 v) { $_setInt64(2, v); }
+  set createdAt($fixnum.Int64 v) {
+    $_setInt64(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasCreatedAt() => $_has(2);
   @$pb.TagNumber(3)
@@ -1417,7 +1785,10 @@ class VoiceProfile extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $fixnum.Int64 get updatedAt => $_getI64(3);
   @$pb.TagNumber(4)
-  set updatedAt($fixnum.Int64 v) { $_setInt64(3, v); }
+  set updatedAt($fixnum.Int64 v) {
+    $_setInt64(3, v);
+  }
+
   @$pb.TagNumber(4)
   $core.bool hasUpdatedAt() => $_has(3);
   @$pb.TagNumber(4)
@@ -1426,7 +1797,10 @@ class VoiceProfile extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $core.int get samplesCount => $_getIZ(4);
   @$pb.TagNumber(5)
-  set samplesCount($core.int v) { $_setSignedInt32(4, v); }
+  set samplesCount($core.int v) {
+    $_setSignedInt32(4, v);
+  }
+
   @$pb.TagNumber(5)
   $core.bool hasSamplesCount() => $_has(4);
   @$pb.TagNumber(5)
@@ -1435,7 +1809,10 @@ class VoiceProfile extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   $core.double get qualityScore => $_getN(5);
   @$pb.TagNumber(6)
-  set qualityScore($core.double v) { $_setFloat(5, v); }
+  set qualityScore($core.double v) {
+    $_setFloat(5, v);
+  }
+
   @$pb.TagNumber(6)
   $core.bool hasQualityScore() => $_has(5);
   @$pb.TagNumber(6)
@@ -1444,7 +1821,10 @@ class VoiceProfile extends $pb.GeneratedMessage {
   @$pb.TagNumber(7)
   $core.int get verificationCount => $_getIZ(6);
   @$pb.TagNumber(7)
-  set verificationCount($core.int v) { $_setSignedInt32(6, v); }
+  set verificationCount($core.int v) {
+    $_setSignedInt32(6, v);
+  }
+
   @$pb.TagNumber(7)
   $core.bool hasVerificationCount() => $_has(6);
   @$pb.TagNumber(7)
@@ -1453,7 +1833,10 @@ class VoiceProfile extends $pb.GeneratedMessage {
   @$pb.TagNumber(8)
   $fixnum.Int64 get lastVerifiedAt => $_getI64(7);
   @$pb.TagNumber(8)
-  set lastVerifiedAt($fixnum.Int64 v) { $_setInt64(7, v); }
+  set lastVerifiedAt($fixnum.Int64 v) {
+    $_setInt64(7, v);
+  }
+
   @$pb.TagNumber(8)
   $core.bool hasLastVerifiedAt() => $_has(7);
   @$pb.TagNumber(8)
@@ -1462,7 +1845,10 @@ class VoiceProfile extends $pb.GeneratedMessage {
   @$pb.TagNumber(9)
   $core.String get customVoiceId => $_getSZ(8);
   @$pb.TagNumber(9)
-  set customVoiceId($core.String v) { $_setString(8, v); }
+  set customVoiceId($core.String v) {
+    $_setString(8, v);
+  }
+
   @$pb.TagNumber(9)
   $core.bool hasCustomVoiceId() => $_has(8);
   @$pb.TagNumber(9)
@@ -1471,7 +1857,10 @@ class VoiceProfile extends $pb.GeneratedMessage {
   @$pb.TagNumber(10)
   $core.String get customVoiceProvider => $_getSZ(9);
   @$pb.TagNumber(10)
-  set customVoiceProvider($core.String v) { $_setString(9, v); }
+  set customVoiceProvider($core.String v) {
+    $_setString(9, v);
+  }
+
   @$pb.TagNumber(10)
   $core.bool hasCustomVoiceProvider() => $_has(9);
   @$pb.TagNumber(10)
@@ -1480,7 +1869,10 @@ class VoiceProfile extends $pb.GeneratedMessage {
   @$pb.TagNumber(11)
   $core.String get customVoiceStatus => $_getSZ(10);
   @$pb.TagNumber(11)
-  set customVoiceStatus($core.String v) { $_setString(10, v); }
+  set customVoiceStatus($core.String v) {
+    $_setString(10, v);
+  }
+
   @$pb.TagNumber(11)
   $core.bool hasCustomVoiceStatus() => $_has(10);
   @$pb.TagNumber(11)
@@ -1489,7 +1881,10 @@ class VoiceProfile extends $pb.GeneratedMessage {
   @$pb.TagNumber(12)
   $fixnum.Int64 get customVoiceCreatedAt => $_getI64(11);
   @$pb.TagNumber(12)
-  set customVoiceCreatedAt($fixnum.Int64 v) { $_setInt64(11, v); }
+  set customVoiceCreatedAt($fixnum.Int64 v) {
+    $_setInt64(11, v);
+  }
+
   @$pb.TagNumber(12)
   $core.bool hasCustomVoiceCreatedAt() => $_has(11);
   @$pb.TagNumber(12)
@@ -1498,7 +1893,10 @@ class VoiceProfile extends $pb.GeneratedMessage {
   @$pb.TagNumber(13)
   $core.String get customVoiceError => $_getSZ(12);
   @$pb.TagNumber(13)
-  set customVoiceError($core.String v) { $_setString(12, v); }
+  set customVoiceError($core.String v) {
+    $_setString(12, v);
+  }
+
   @$pb.TagNumber(13)
   $core.bool hasCustomVoiceError() => $_has(12);
   @$pb.TagNumber(13)
@@ -1529,42 +1927,58 @@ class EnrollmentMetadata extends $pb.GeneratedMessage {
     return $result;
   }
   EnrollmentMetadata._() : super();
-  factory EnrollmentMetadata.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory EnrollmentMetadata.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory EnrollmentMetadata.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory EnrollmentMetadata.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'EnrollmentMetadata', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'EnrollmentMetadata',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'deviceInfo')
     ..aOS(2, _omitFieldNames ? '' : 'audioQuality')
     ..pPS(3, _omitFieldNames ? '' : 'sampleIds')
-    ..m<$core.String, $core.String>(4, _omitFieldNames ? '' : 'customFields', entryClassName: 'EnrollmentMetadata.CustomFieldsEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('voicebiometrics'))
-    ..hasRequiredFields = false
-  ;
+    ..m<$core.String, $core.String>(4, _omitFieldNames ? '' : 'customFields',
+        entryClassName: 'EnrollmentMetadata.CustomFieldsEntry',
+        keyFieldType: $pb.PbFieldType.OS,
+        valueFieldType: $pb.PbFieldType.OS,
+        packageName: const $pb.PackageName('voicebiometrics'))
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   EnrollmentMetadata clone() => EnrollmentMetadata()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  EnrollmentMetadata copyWith(void Function(EnrollmentMetadata) updates) => super.copyWith((message) => updates(message as EnrollmentMetadata)) as EnrollmentMetadata;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  EnrollmentMetadata copyWith(void Function(EnrollmentMetadata) updates) =>
+      super.copyWith((message) => updates(message as EnrollmentMetadata))
+          as EnrollmentMetadata;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static EnrollmentMetadata create() => EnrollmentMetadata._();
   EnrollmentMetadata createEmptyInstance() => create();
-  static $pb.PbList<EnrollmentMetadata> createRepeated() => $pb.PbList<EnrollmentMetadata>();
+  static $pb.PbList<EnrollmentMetadata> createRepeated() =>
+      $pb.PbList<EnrollmentMetadata>();
   @$core.pragma('dart2js:noInline')
-  static EnrollmentMetadata getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<EnrollmentMetadata>(create);
+  static EnrollmentMetadata getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<EnrollmentMetadata>(create);
   static EnrollmentMetadata? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get deviceInfo => $_getSZ(0);
   @$pb.TagNumber(1)
-  set deviceInfo($core.String v) { $_setString(0, v); }
+  set deviceInfo($core.String v) {
+    $_setString(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasDeviceInfo() => $_has(0);
   @$pb.TagNumber(1)
@@ -1573,7 +1987,10 @@ class EnrollmentMetadata extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.String get audioQuality => $_getSZ(1);
   @$pb.TagNumber(2)
-  set audioQuality($core.String v) { $_setString(1, v); }
+  set audioQuality($core.String v) {
+    $_setString(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasAudioQuality() => $_has(1);
   @$pb.TagNumber(2)
@@ -1610,27 +2027,34 @@ class AudioFormat extends $pb.GeneratedMessage {
     return $result;
   }
   AudioFormat._() : super();
-  factory AudioFormat.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory AudioFormat.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory AudioFormat.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory AudioFormat.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AudioFormat', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AudioFormat',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'codec')
     ..a<$core.int>(2, _omitFieldNames ? '' : 'sampleRate', $pb.PbFieldType.O3)
     ..a<$core.int>(3, _omitFieldNames ? '' : 'channels', $pb.PbFieldType.O3)
     ..a<$core.int>(4, _omitFieldNames ? '' : 'bitDepth', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   AudioFormat clone() => AudioFormat()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  AudioFormat copyWith(void Function(AudioFormat) updates) => super.copyWith((message) => updates(message as AudioFormat)) as AudioFormat;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  AudioFormat copyWith(void Function(AudioFormat) updates) =>
+      super.copyWith((message) => updates(message as AudioFormat))
+          as AudioFormat;
 
   $pb.BuilderInfo get info_ => _i;
 
@@ -1639,13 +2063,17 @@ class AudioFormat extends $pb.GeneratedMessage {
   AudioFormat createEmptyInstance() => create();
   static $pb.PbList<AudioFormat> createRepeated() => $pb.PbList<AudioFormat>();
   @$core.pragma('dart2js:noInline')
-  static AudioFormat getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AudioFormat>(create);
+  static AudioFormat getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AudioFormat>(create);
   static AudioFormat? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get codec => $_getSZ(0);
   @$pb.TagNumber(1)
-  set codec($core.String v) { $_setString(0, v); }
+  set codec($core.String v) {
+    $_setString(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasCodec() => $_has(0);
   @$pb.TagNumber(1)
@@ -1654,7 +2082,10 @@ class AudioFormat extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.int get sampleRate => $_getIZ(1);
   @$pb.TagNumber(2)
-  set sampleRate($core.int v) { $_setSignedInt32(1, v); }
+  set sampleRate($core.int v) {
+    $_setSignedInt32(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasSampleRate() => $_has(1);
   @$pb.TagNumber(2)
@@ -1663,7 +2094,10 @@ class AudioFormat extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.int get channels => $_getIZ(2);
   @$pb.TagNumber(3)
-  set channels($core.int v) { $_setSignedInt32(2, v); }
+  set channels($core.int v) {
+    $_setSignedInt32(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasChannels() => $_has(2);
   @$pb.TagNumber(3)
@@ -1672,7 +2106,10 @@ class AudioFormat extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.int get bitDepth => $_getIZ(3);
   @$pb.TagNumber(4)
-  set bitDepth($core.int v) { $_setSignedInt32(3, v); }
+  set bitDepth($core.int v) {
+    $_setSignedInt32(3, v);
+  }
+
   @$pb.TagNumber(4)
   $core.bool hasBitDepth() => $_has(3);
   @$pb.TagNumber(4)
@@ -1691,39 +2128,55 @@ class GetCustomVoiceStatusRequest extends $pb.GeneratedMessage {
     return $result;
   }
   GetCustomVoiceStatusRequest._() : super();
-  factory GetCustomVoiceStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetCustomVoiceStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory GetCustomVoiceStatusRequest.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory GetCustomVoiceStatusRequest.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCustomVoiceStatusRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetCustomVoiceStatusRequest',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetCustomVoiceStatusRequest clone() => GetCustomVoiceStatusRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetCustomVoiceStatusRequest copyWith(void Function(GetCustomVoiceStatusRequest) updates) => super.copyWith((message) => updates(message as GetCustomVoiceStatusRequest)) as GetCustomVoiceStatusRequest;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  GetCustomVoiceStatusRequest clone() =>
+      GetCustomVoiceStatusRequest()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  GetCustomVoiceStatusRequest copyWith(
+          void Function(GetCustomVoiceStatusRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetCustomVoiceStatusRequest))
+          as GetCustomVoiceStatusRequest;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static GetCustomVoiceStatusRequest create() => GetCustomVoiceStatusRequest._();
+  static GetCustomVoiceStatusRequest create() =>
+      GetCustomVoiceStatusRequest._();
   GetCustomVoiceStatusRequest createEmptyInstance() => create();
-  static $pb.PbList<GetCustomVoiceStatusRequest> createRepeated() => $pb.PbList<GetCustomVoiceStatusRequest>();
+  static $pb.PbList<GetCustomVoiceStatusRequest> createRepeated() =>
+      $pb.PbList<GetCustomVoiceStatusRequest>();
   @$core.pragma('dart2js:noInline')
-  static GetCustomVoiceStatusRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCustomVoiceStatusRequest>(create);
+  static GetCustomVoiceStatusRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetCustomVoiceStatusRequest>(create);
   static GetCustomVoiceStatusRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String v) {
+    $_setString(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
@@ -1765,10 +2218,18 @@ class GetCustomVoiceStatusResponse extends $pb.GeneratedMessage {
     return $result;
   }
   GetCustomVoiceStatusResponse._() : super();
-  factory GetCustomVoiceStatusResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetCustomVoiceStatusResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory GetCustomVoiceStatusResponse.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory GetCustomVoiceStatusResponse.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCustomVoiceStatusResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetCustomVoiceStatusResponse',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'hasCustomVoice')
     ..aOS(2, _omitFieldNames ? '' : 'customVoiceId')
     ..aOS(3, _omitFieldNames ? '' : 'customVoiceProvider')
@@ -1776,34 +2237,42 @@ class GetCustomVoiceStatusResponse extends $pb.GeneratedMessage {
     ..aInt64(5, _omitFieldNames ? '' : 'customVoiceCreatedAt')
     ..aOS(6, _omitFieldNames ? '' : 'customVoiceError')
     ..aOB(7, _omitFieldNames ? '' : 'enabled')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetCustomVoiceStatusResponse clone() => GetCustomVoiceStatusResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetCustomVoiceStatusResponse copyWith(void Function(GetCustomVoiceStatusResponse) updates) => super.copyWith((message) => updates(message as GetCustomVoiceStatusResponse)) as GetCustomVoiceStatusResponse;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  GetCustomVoiceStatusResponse clone() =>
+      GetCustomVoiceStatusResponse()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  GetCustomVoiceStatusResponse copyWith(
+          void Function(GetCustomVoiceStatusResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetCustomVoiceStatusResponse))
+          as GetCustomVoiceStatusResponse;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static GetCustomVoiceStatusResponse create() => GetCustomVoiceStatusResponse._();
+  static GetCustomVoiceStatusResponse create() =>
+      GetCustomVoiceStatusResponse._();
   GetCustomVoiceStatusResponse createEmptyInstance() => create();
-  static $pb.PbList<GetCustomVoiceStatusResponse> createRepeated() => $pb.PbList<GetCustomVoiceStatusResponse>();
+  static $pb.PbList<GetCustomVoiceStatusResponse> createRepeated() =>
+      $pb.PbList<GetCustomVoiceStatusResponse>();
   @$core.pragma('dart2js:noInline')
-  static GetCustomVoiceStatusResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCustomVoiceStatusResponse>(create);
+  static GetCustomVoiceStatusResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetCustomVoiceStatusResponse>(create);
   static GetCustomVoiceStatusResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.bool get hasCustomVoice => $_getBF(0);
   @$pb.TagNumber(1)
-  set hasCustomVoice($core.bool v) { $_setBool(0, v); }
+  set hasCustomVoice($core.bool v) {
+    $_setBool(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasHasCustomVoice() => $_has(0);
   @$pb.TagNumber(1)
@@ -1812,7 +2281,10 @@ class GetCustomVoiceStatusResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.String get customVoiceId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set customVoiceId($core.String v) { $_setString(1, v); }
+  set customVoiceId($core.String v) {
+    $_setString(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasCustomVoiceId() => $_has(1);
   @$pb.TagNumber(2)
@@ -1821,7 +2293,10 @@ class GetCustomVoiceStatusResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.String get customVoiceProvider => $_getSZ(2);
   @$pb.TagNumber(3)
-  set customVoiceProvider($core.String v) { $_setString(2, v); }
+  set customVoiceProvider($core.String v) {
+    $_setString(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasCustomVoiceProvider() => $_has(2);
   @$pb.TagNumber(3)
@@ -1830,7 +2305,10 @@ class GetCustomVoiceStatusResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.String get customVoiceStatus => $_getSZ(3);
   @$pb.TagNumber(4)
-  set customVoiceStatus($core.String v) { $_setString(3, v); }
+  set customVoiceStatus($core.String v) {
+    $_setString(3, v);
+  }
+
   @$pb.TagNumber(4)
   $core.bool hasCustomVoiceStatus() => $_has(3);
   @$pb.TagNumber(4)
@@ -1839,7 +2317,10 @@ class GetCustomVoiceStatusResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $fixnum.Int64 get customVoiceCreatedAt => $_getI64(4);
   @$pb.TagNumber(5)
-  set customVoiceCreatedAt($fixnum.Int64 v) { $_setInt64(4, v); }
+  set customVoiceCreatedAt($fixnum.Int64 v) {
+    $_setInt64(4, v);
+  }
+
   @$pb.TagNumber(5)
   $core.bool hasCustomVoiceCreatedAt() => $_has(4);
   @$pb.TagNumber(5)
@@ -1848,7 +2329,10 @@ class GetCustomVoiceStatusResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   $core.String get customVoiceError => $_getSZ(5);
   @$pb.TagNumber(6)
-  set customVoiceError($core.String v) { $_setString(5, v); }
+  set customVoiceError($core.String v) {
+    $_setString(5, v);
+  }
+
   @$pb.TagNumber(6)
   $core.bool hasCustomVoiceError() => $_has(5);
   @$pb.TagNumber(6)
@@ -1857,7 +2341,10 @@ class GetCustomVoiceStatusResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(7)
   $core.bool get enabled => $_getBF(6);
   @$pb.TagNumber(7)
-  set enabled($core.bool v) { $_setBool(6, v); }
+  set enabled($core.bool v) {
+    $_setBool(6, v);
+  }
+
   @$pb.TagNumber(7)
   $core.bool hasEnabled() => $_has(6);
   @$pb.TagNumber(7)
@@ -1880,40 +2367,56 @@ class SetCustomVoiceEnabledRequest extends $pb.GeneratedMessage {
     return $result;
   }
   SetCustomVoiceEnabledRequest._() : super();
-  factory SetCustomVoiceEnabledRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory SetCustomVoiceEnabledRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory SetCustomVoiceEnabledRequest.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory SetCustomVoiceEnabledRequest.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SetCustomVoiceEnabledRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SetCustomVoiceEnabledRequest',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
     ..aOB(2, _omitFieldNames ? '' : 'enabled')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  SetCustomVoiceEnabledRequest clone() => SetCustomVoiceEnabledRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  SetCustomVoiceEnabledRequest copyWith(void Function(SetCustomVoiceEnabledRequest) updates) => super.copyWith((message) => updates(message as SetCustomVoiceEnabledRequest)) as SetCustomVoiceEnabledRequest;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  SetCustomVoiceEnabledRequest clone() =>
+      SetCustomVoiceEnabledRequest()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  SetCustomVoiceEnabledRequest copyWith(
+          void Function(SetCustomVoiceEnabledRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as SetCustomVoiceEnabledRequest))
+          as SetCustomVoiceEnabledRequest;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static SetCustomVoiceEnabledRequest create() => SetCustomVoiceEnabledRequest._();
+  static SetCustomVoiceEnabledRequest create() =>
+      SetCustomVoiceEnabledRequest._();
   SetCustomVoiceEnabledRequest createEmptyInstance() => create();
-  static $pb.PbList<SetCustomVoiceEnabledRequest> createRepeated() => $pb.PbList<SetCustomVoiceEnabledRequest>();
+  static $pb.PbList<SetCustomVoiceEnabledRequest> createRepeated() =>
+      $pb.PbList<SetCustomVoiceEnabledRequest>();
   @$core.pragma('dart2js:noInline')
-  static SetCustomVoiceEnabledRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SetCustomVoiceEnabledRequest>(create);
+  static SetCustomVoiceEnabledRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SetCustomVoiceEnabledRequest>(create);
   static SetCustomVoiceEnabledRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String v) {
+    $_setString(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
@@ -1922,7 +2425,10 @@ class SetCustomVoiceEnabledRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.bool get enabled => $_getBF(1);
   @$pb.TagNumber(2)
-  set enabled($core.bool v) { $_setBool(1, v); }
+  set enabled($core.bool v) {
+    $_setBool(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasEnabled() => $_has(1);
   @$pb.TagNumber(2)
@@ -1948,41 +2454,57 @@ class SetCustomVoiceEnabledResponse extends $pb.GeneratedMessage {
     return $result;
   }
   SetCustomVoiceEnabledResponse._() : super();
-  factory SetCustomVoiceEnabledResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory SetCustomVoiceEnabledResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory SetCustomVoiceEnabledResponse.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory SetCustomVoiceEnabledResponse.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SetCustomVoiceEnabledResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SetCustomVoiceEnabledResponse',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'success')
     ..aOS(2, _omitFieldNames ? '' : 'message')
     ..aOS(3, _omitFieldNames ? '' : 'customVoiceStatus')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  SetCustomVoiceEnabledResponse clone() => SetCustomVoiceEnabledResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  SetCustomVoiceEnabledResponse copyWith(void Function(SetCustomVoiceEnabledResponse) updates) => super.copyWith((message) => updates(message as SetCustomVoiceEnabledResponse)) as SetCustomVoiceEnabledResponse;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  SetCustomVoiceEnabledResponse clone() =>
+      SetCustomVoiceEnabledResponse()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  SetCustomVoiceEnabledResponse copyWith(
+          void Function(SetCustomVoiceEnabledResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as SetCustomVoiceEnabledResponse))
+          as SetCustomVoiceEnabledResponse;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static SetCustomVoiceEnabledResponse create() => SetCustomVoiceEnabledResponse._();
+  static SetCustomVoiceEnabledResponse create() =>
+      SetCustomVoiceEnabledResponse._();
   SetCustomVoiceEnabledResponse createEmptyInstance() => create();
-  static $pb.PbList<SetCustomVoiceEnabledResponse> createRepeated() => $pb.PbList<SetCustomVoiceEnabledResponse>();
+  static $pb.PbList<SetCustomVoiceEnabledResponse> createRepeated() =>
+      $pb.PbList<SetCustomVoiceEnabledResponse>();
   @$core.pragma('dart2js:noInline')
-  static SetCustomVoiceEnabledResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SetCustomVoiceEnabledResponse>(create);
+  static SetCustomVoiceEnabledResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SetCustomVoiceEnabledResponse>(create);
   static SetCustomVoiceEnabledResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.bool get success => $_getBF(0);
   @$pb.TagNumber(1)
-  set success($core.bool v) { $_setBool(0, v); }
+  set success($core.bool v) {
+    $_setBool(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasSuccess() => $_has(0);
   @$pb.TagNumber(1)
@@ -1991,7 +2513,10 @@ class SetCustomVoiceEnabledResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.String get message => $_getSZ(1);
   @$pb.TagNumber(2)
-  set message($core.String v) { $_setString(1, v); }
+  set message($core.String v) {
+    $_setString(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasMessage() => $_has(1);
   @$pb.TagNumber(2)
@@ -2000,7 +2525,10 @@ class SetCustomVoiceEnabledResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.String get customVoiceStatus => $_getSZ(2);
   @$pb.TagNumber(3)
-  set customVoiceStatus($core.String v) { $_setString(2, v); }
+  set customVoiceStatus($core.String v) {
+    $_setString(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasCustomVoiceStatus() => $_has(2);
   @$pb.TagNumber(3)
@@ -2019,39 +2547,55 @@ class RetriggerVoiceCloningRequest extends $pb.GeneratedMessage {
     return $result;
   }
   RetriggerVoiceCloningRequest._() : super();
-  factory RetriggerVoiceCloningRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory RetriggerVoiceCloningRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory RetriggerVoiceCloningRequest.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory RetriggerVoiceCloningRequest.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RetriggerVoiceCloningRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RetriggerVoiceCloningRequest',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  RetriggerVoiceCloningRequest clone() => RetriggerVoiceCloningRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  RetriggerVoiceCloningRequest copyWith(void Function(RetriggerVoiceCloningRequest) updates) => super.copyWith((message) => updates(message as RetriggerVoiceCloningRequest)) as RetriggerVoiceCloningRequest;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  RetriggerVoiceCloningRequest clone() =>
+      RetriggerVoiceCloningRequest()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  RetriggerVoiceCloningRequest copyWith(
+          void Function(RetriggerVoiceCloningRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as RetriggerVoiceCloningRequest))
+          as RetriggerVoiceCloningRequest;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static RetriggerVoiceCloningRequest create() => RetriggerVoiceCloningRequest._();
+  static RetriggerVoiceCloningRequest create() =>
+      RetriggerVoiceCloningRequest._();
   RetriggerVoiceCloningRequest createEmptyInstance() => create();
-  static $pb.PbList<RetriggerVoiceCloningRequest> createRepeated() => $pb.PbList<RetriggerVoiceCloningRequest>();
+  static $pb.PbList<RetriggerVoiceCloningRequest> createRepeated() =>
+      $pb.PbList<RetriggerVoiceCloningRequest>();
   @$core.pragma('dart2js:noInline')
-  static RetriggerVoiceCloningRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RetriggerVoiceCloningRequest>(create);
+  static RetriggerVoiceCloningRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<RetriggerVoiceCloningRequest>(create);
   static RetriggerVoiceCloningRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String v) {
+    $_setString(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
@@ -2077,41 +2621,57 @@ class RetriggerVoiceCloningResponse extends $pb.GeneratedMessage {
     return $result;
   }
   RetriggerVoiceCloningResponse._() : super();
-  factory RetriggerVoiceCloningResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory RetriggerVoiceCloningResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory RetriggerVoiceCloningResponse.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory RetriggerVoiceCloningResponse.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RetriggerVoiceCloningResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RetriggerVoiceCloningResponse',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'),
+      createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'success')
     ..aOS(2, _omitFieldNames ? '' : 'message')
     ..aOS(3, _omitFieldNames ? '' : 'customVoiceStatus')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  RetriggerVoiceCloningResponse clone() => RetriggerVoiceCloningResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  RetriggerVoiceCloningResponse copyWith(void Function(RetriggerVoiceCloningResponse) updates) => super.copyWith((message) => updates(message as RetriggerVoiceCloningResponse)) as RetriggerVoiceCloningResponse;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  RetriggerVoiceCloningResponse clone() =>
+      RetriggerVoiceCloningResponse()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  RetriggerVoiceCloningResponse copyWith(
+          void Function(RetriggerVoiceCloningResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as RetriggerVoiceCloningResponse))
+          as RetriggerVoiceCloningResponse;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static RetriggerVoiceCloningResponse create() => RetriggerVoiceCloningResponse._();
+  static RetriggerVoiceCloningResponse create() =>
+      RetriggerVoiceCloningResponse._();
   RetriggerVoiceCloningResponse createEmptyInstance() => create();
-  static $pb.PbList<RetriggerVoiceCloningResponse> createRepeated() => $pb.PbList<RetriggerVoiceCloningResponse>();
+  static $pb.PbList<RetriggerVoiceCloningResponse> createRepeated() =>
+      $pb.PbList<RetriggerVoiceCloningResponse>();
   @$core.pragma('dart2js:noInline')
-  static RetriggerVoiceCloningResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RetriggerVoiceCloningResponse>(create);
+  static RetriggerVoiceCloningResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<RetriggerVoiceCloningResponse>(create);
   static RetriggerVoiceCloningResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.bool get success => $_getBF(0);
   @$pb.TagNumber(1)
-  set success($core.bool v) { $_setBool(0, v); }
+  set success($core.bool v) {
+    $_setBool(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasSuccess() => $_has(0);
   @$pb.TagNumber(1)
@@ -2120,7 +2680,10 @@ class RetriggerVoiceCloningResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.String get message => $_getSZ(1);
   @$pb.TagNumber(2)
-  set message($core.String v) { $_setString(1, v); }
+  set message($core.String v) {
+    $_setString(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasMessage() => $_has(1);
   @$pb.TagNumber(2)
@@ -2129,13 +2692,16 @@ class RetriggerVoiceCloningResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.String get customVoiceStatus => $_getSZ(2);
   @$pb.TagNumber(3)
-  set customVoiceStatus($core.String v) { $_setString(2, v); }
+  set customVoiceStatus($core.String v) {
+    $_setString(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasCustomVoiceStatus() => $_has(2);
   @$pb.TagNumber(3)
   void clearCustomVoiceStatus() => clearField(3);
 }
 
-
 const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');
+const _omitMessageNames =
+    $core.bool.fromEnvironment('protobuf.omit_message_names');

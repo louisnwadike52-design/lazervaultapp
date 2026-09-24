@@ -1,11 +1,12 @@
 import 'package:equatable/equatable.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 
 enum TriggerType {
   unknown,
-  onDeposit,    // Trigger when money is deposited
-  scheduled,    // Trigger on a schedule
-  roundUp,      // Round up transactions to nearest value
+  onDeposit, // Trigger when money is deposited
+  scheduled, // Trigger on a schedule
+  roundUp, // Round up transactions to nearest value
   externalInflow, // Money arriving in a linked external bank account
   scheduledExternal, // Recurring standing-order pull from a linked bank on a cadence
 }
@@ -28,8 +29,8 @@ enum AutoSaveStatus {
 
 enum AmountType {
   unknown,
-  fixed,       // Fixed amount per trigger
-  percentage,  // Percentage of incoming amount
+  fixed, // Fixed amount per trigger
+  percentage, // Percentage of incoming amount
 }
 
 class AutoSaveRuleEntity extends Equatable {
@@ -253,14 +254,19 @@ class AutoSaveRuleEntity extends Equatable {
         totalSaved: totalSaved + amountSaved,
       );
 
-  String get formattedAmount => currency_formatter.CurrencySymbols.formatAmountWithCurrency(amountValue, currency);
+  String get formattedAmount =>
+      currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+          amountValue, currency);
 
   // Formatted total saved with currency symbol
-  String get formattedTotalSaved => currency_formatter.CurrencySymbols.formatAmountWithCurrency(totalSaved, currency);
+  String get formattedTotalSaved =>
+      currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+          totalSaved, currency);
 
   // Formatted target amount with currency symbol
   String get formattedTargetAmount => targetAmount != null
-      ? currency_formatter.CurrencySymbols.formatAmountWithCurrency(targetAmount!, currency)
+      ? currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+          targetAmount!, currency)
       : 'N/A';
 
   // Formatted progress text (e.g., "₦1,000.00 / ₦5,000.00")
@@ -342,7 +348,9 @@ class AutoSaveTransactionEntity extends Equatable {
       ];
 
   // Formatted amount with currency
-  String get formattedAmount => currency_formatter.CurrencySymbols.formatAmountWithCurrency(amount, currency);
+  String get formattedAmount =>
+      currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+          amount, currency);
 }
 
 class AutoSaveStatisticsEntity extends Equatable {
@@ -382,8 +390,16 @@ class AutoSaveStatisticsEntity extends Equatable {
       ];
 
   // Formatted amounts with currency
-  String get formattedTotalSavedAllTime => currency_formatter.CurrencySymbols.formatAmountWithCurrency(totalSavedAllTime, currency);
-  String get formattedTotalSavedThisMonth => currency_formatter.CurrencySymbols.formatAmountWithCurrency(totalSavedThisMonth, currency);
-  String get formattedTotalSavedThisWeek => currency_formatter.CurrencySymbols.formatAmountWithCurrency(totalSavedThisWeek, currency);
-  String get formattedAverageSaveAmount => currency_formatter.CurrencySymbols.formatAmountWithCurrency(averageSaveAmount, currency);
+  String get formattedTotalSavedAllTime =>
+      currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+          totalSavedAllTime, currency);
+  String get formattedTotalSavedThisMonth =>
+      currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+          totalSavedThisMonth, currency);
+  String get formattedTotalSavedThisWeek =>
+      currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+          totalSavedThisWeek, currency);
+  String get formattedAverageSaveAmount =>
+      currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+          averageSaveAmount, currency);
 }

@@ -154,7 +154,7 @@ class TransactionHistoryNavigationHelper {
   static void goToDashboardFromService() {
     Get.until((route) {
       return route.settings.name == AppRoutes.dashboardTransactionHistory ||
-             route.settings.name == AppRoutes.dashboard;
+          route.settings.name == AppRoutes.dashboard;
     });
   }
 }
@@ -166,6 +166,7 @@ extension TransactionHistoryNavigation on GetInterface {
       TransactionHistoryNavigationHelper.navigateToDashboard();
 
   /// Navigate to service-specific transaction history
-  Future<void> toServiceTransactionHistory(TransactionServiceType serviceType) =>
+  Future<void> toServiceTransactionHistory(
+          TransactionServiceType serviceType) =>
       TransactionHistoryNavigationHelper.navigateToServiceHistory(serviceType);
 }

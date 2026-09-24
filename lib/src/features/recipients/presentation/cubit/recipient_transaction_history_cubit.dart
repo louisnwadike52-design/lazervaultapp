@@ -11,29 +11,35 @@ sealed class RecipientTransactionHistoryState {
   const RecipientTransactionHistoryState();
 }
 
-class RecipientTransactionHistoryInitial extends RecipientTransactionHistoryState {
+class RecipientTransactionHistoryInitial
+    extends RecipientTransactionHistoryState {
   const RecipientTransactionHistoryInitial();
 }
 
-class RecipientTransactionHistoryLoading extends RecipientTransactionHistoryState {
+class RecipientTransactionHistoryLoading
+    extends RecipientTransactionHistoryState {
   const RecipientTransactionHistoryLoading();
 }
 
-class RecipientTransactionHistoryLoaded extends RecipientTransactionHistoryState {
+class RecipientTransactionHistoryLoaded
+    extends RecipientTransactionHistoryState {
   final List<UnifiedTransaction> transactions;
   const RecipientTransactionHistoryLoaded({required this.transactions});
 }
 
-class RecipientTransactionHistoryEmpty extends RecipientTransactionHistoryState {
+class RecipientTransactionHistoryEmpty
+    extends RecipientTransactionHistoryState {
   const RecipientTransactionHistoryEmpty();
 }
 
-class RecipientTransactionHistoryError extends RecipientTransactionHistoryState {
+class RecipientTransactionHistoryError
+    extends RecipientTransactionHistoryState {
   final String message;
   const RecipientTransactionHistoryError({required this.message});
 }
 
-class RecipientTransactionHistoryCubit extends Cubit<RecipientTransactionHistoryState> {
+class RecipientTransactionHistoryCubit
+    extends Cubit<RecipientTransactionHistoryState> {
   final TransactionHistoryRepository repository;
   // Source of truth for EXTERNAL transfers' destination account — used to
   // supplement the accounts-service ledger, which can't link external transfers
@@ -86,7 +92,8 @@ class RecipientTransactionHistoryCubit extends Cubit<RecipientTransactionHistory
         ),
       );
 
-      var transactions = List<UnifiedTransaction>.from(byAccountResp.transactions);
+      var transactions =
+          List<UnifiedTransaction>.from(byAccountResp.transactions);
 
       developer.log(
         '[RecipientTxHistory] By counterparty_account: ${transactions.length}',
@@ -118,12 +125,12 @@ class RecipientTransactionHistoryCubit extends Cubit<RecipientTransactionHistory
           final lowerAccount = recipientAccountNumber.trim().toLowerCase();
           for (final tx in byNameResp.transactions) {
             final touchesAccount = (tx.counterpartyAccount ?? '')
-                .toLowerCase()
-                .contains(lowerAccount) && lowerAccount.isNotEmpty;
-            final touchesName = (tx.counterpartyName ?? '')
                     .toLowerCase()
-                    .contains(lowerName) ||
-                (tx.description ?? '').toLowerCase().contains(lowerName);
+                    .contains(lowerAccount) &&
+                lowerAccount.isNotEmpty;
+            final touchesName =
+                (tx.counterpartyName ?? '').toLowerCase().contains(lowerName) ||
+                    (tx.description ?? '').toLowerCase().contains(lowerName);
             if (touchesAccount || touchesName) {
               transactions.add(tx);
             }
@@ -154,7 +161,8 @@ class RecipientTransactionHistoryCubit extends Cubit<RecipientTransactionHistory
         );
         transactions.addAll(external);
       } catch (e) {
-        developer.log('[RecipientTxHistory] External-payments supplement failed: $e');
+        developer.log(
+            '[RecipientTxHistory] External-payments supplement failed: $e');
         // Best-effort — internal results still surface.
       }
 
@@ -183,12 +191,14 @@ class RecipientTransactionHistoryCubit extends Cubit<RecipientTransactionHistory
 
   /// Deduplicate transactions that share the same reference.
   /// Keeps the record with more populated fields (counterpartyName, etc).
-  List<UnifiedTransaction> _deduplicateByReference(List<UnifiedTransaction> txs) {
+  List<UnifiedTransaction> _deduplicateByReference(
+      List<UnifiedTransaction> txs) {
     final byRef = <String, UnifiedTransaction>{};
     for (final tx in txs) {
       final ref = tx.transactionReference ?? tx.id;
       // Strip -CR suffix to group sender/receiver records by base reference
-      final baseRef = ref.endsWith('-CR') ? ref.substring(0, ref.length - 3) : ref;
+      final baseRef =
+          ref.endsWith('-CR') ? ref.substring(0, ref.length - 3) : ref;
       final key = '${baseRef}_${tx.flow.name}';
       final existing = byRef[key];
       if (existing == null) {
@@ -223,7 +233,8 @@ class RecipientTransactionHistoryCubit extends Cubit<RecipientTransactionHistory
     final filtered = _allRecipientTransactions.where((tx) {
       if (tx.title.toLowerCase().contains(searchQuery)) return true;
       if (tx.formattedAmount.toLowerCase().contains(searchQuery)) return true;
-      if (tx.transactionReference?.toLowerCase().contains(searchQuery) == true) {
+      if (tx.transactionReference?.toLowerCase().contains(searchQuery) ==
+          true) {
         return true;
       }
       if (tx.counterpartyName?.toLowerCase().contains(searchQuery) == true) {
@@ -245,7 +256,8 @@ class RecipientTransactionHistoryCubit extends Cubit<RecipientTransactionHistory
 
   Future<void> refresh() async {
     if (_recipientAccountNumber != null && _recipientName != null) {
-      await loadRecipientTransactions(_recipientAccountNumber!, _recipientName!);
+      await loadRecipientTransactions(
+          _recipientAccountNumber!, _recipientName!);
     }
   }
 }

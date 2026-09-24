@@ -5,7 +5,8 @@ import 'package:lazervault/core/types/typedef.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/generated/auth.pb.dart' as auth_pb;
 import 'package:lazervault/src/generated/common.pb.dart' as common_pb;
-import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart' as timestamp_pb;
+import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart'
+    as timestamp_pb;
 import 'package:fixnum/fixnum.dart';
 
 // Helper from SessionModel (could be moved to a common place)
@@ -45,20 +46,19 @@ class UserModel extends User {
     super.dateOfBirth,
   });
 
-  static final UserModel empty =
-      UserModel(
-            id: '1',
-            firstName: '_empty.firstName',
-            lastName: '_empty.lastName',
-            email: '_empty.email',
-            phoneNumber: '_empty.phoneNumber',
-            username: '_empty.username',
-            role: '_empty.role',
-            roles: null,
-            verified: false,
-            isEmailVerified: false,
-            createdAt: DateTime.fromMillisecondsSinceEpoch(0),
-            updatedAt: DateTime.fromMillisecondsSinceEpoch(0));
+  static final UserModel empty = UserModel(
+      id: '1',
+      firstName: '_empty.firstName',
+      lastName: '_empty.lastName',
+      email: '_empty.email',
+      phoneNumber: '_empty.phoneNumber',
+      username: '_empty.username',
+      role: '_empty.role',
+      roles: null,
+      verified: false,
+      isEmailVerified: false,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(0),
+      updatedAt: DateTime.fromMillisecondsSinceEpoch(0));
 
   factory UserModel.fromJson(String source) =>
       UserModel.fromMap(jsonDecode(source) as DataMap);
@@ -86,10 +86,19 @@ class UserModel extends User {
       isEmailVerified: protoUser.isEmailVerified,
       createdAt: _timestampToDateTime(protoUser.createdAt),
       updatedAt: _timestampToDateTime(protoUser.updatedAt),
-      language: protoUser.hasLanguage() && protoUser.language.isNotEmpty ? protoUser.language : null,
-      currency: protoUser.hasCurrency() && protoUser.currency.isNotEmpty ? protoUser.currency : null,
-      country: protoUser.hasCountry() && protoUser.country.isNotEmpty ? protoUser.country : null,
-      profilePicture: protoUser.hasProfilePicture() && protoUser.profilePicture.isNotEmpty ? protoUser.profilePicture : null,
+      language: protoUser.hasLanguage() && protoUser.language.isNotEmpty
+          ? protoUser.language
+          : null,
+      currency: protoUser.hasCurrency() && protoUser.currency.isNotEmpty
+          ? protoUser.currency
+          : null,
+      country: protoUser.hasCountry() && protoUser.country.isNotEmpty
+          ? protoUser.country
+          : null,
+      profilePicture:
+          protoUser.hasProfilePicture() && protoUser.profilePicture.isNotEmpty
+              ? protoUser.profilePicture
+              : null,
       // NB: common_pb.User has no date_of_birth field — DOB is carried by the
       // auth proto (see fromAuthProto), which is what the profile/GetMe path uses.
     );
@@ -110,15 +119,12 @@ class UserModel extends User {
       twoFactorEnabled: user.twoFactorEnabled,
       twoFactorMethod:
           user.twoFactorMethod.isNotEmpty ? user.twoFactorMethod : null,
-      profilePicture:
-          user.profilePicture.isEmpty ? null : user.profilePicture,
+      profilePicture: user.profilePicture.isEmpty ? null : user.profilePicture,
       createdAt: DateTime.tryParse(user.createdAt) ?? DateTime.now(),
       updatedAt: DateTime.tryParse(user.updatedAt) ?? DateTime.now(),
-      signupStatus:
-          user.signupStatus.isNotEmpty ? user.signupStatus : null,
-      currentSignupStep: user.currentSignupStep.isNotEmpty
-          ? user.currentSignupStep
-          : null,
+      signupStatus: user.signupStatus.isNotEmpty ? user.signupStatus : null,
+      currentSignupStep:
+          user.currentSignupStep.isNotEmpty ? user.currentSignupStep : null,
       hasPassword: user.hasPassword,
       preferredLoginMethod: user.preferredLoginMethod.isNotEmpty
           ? user.preferredLoginMethod
@@ -224,27 +230,27 @@ class UserModel extends User {
 
   UserModel.fromMap(DataMap map)
       : this(
-          id: map['id'] as String,
-          firstName: map['firstName'] as String,
-          lastName: map['lastName'] as String,
-          email: map['email'] as String,
-          phoneNumber: map['phoneNumber'] as String?,
-          username: map['username'] as String?,
-          role: map['role'] as String?,
-          roles: (map['roles'] as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toList(),
-          verified: map['verified'] as bool,
-          isEmailVerified: map['isEmailVerified'] as bool,
-          createdAt: map['createdAt'] as DateTime,
-          updatedAt: map['updatedAt'] as DateTime,
-          signupStatus: map['signupStatus'] as String?,
-          currentSignupStep: map['currentSignupStep'] as String?,
-          hasPasscode: map['hasPasscode'] as bool? ?? false,
-          hasTransactionPin: map['hasTransactionPin'] as bool? ?? false,
-          hasPassword: map['hasPassword'] as bool? ?? false,
-          preferredLoginMethod: map['preferredLoginMethod'] as String?,
-          dateOfBirth: map['dateOfBirth'] as String?);
+            id: map['id'] as String,
+            firstName: map['firstName'] as String,
+            lastName: map['lastName'] as String,
+            email: map['email'] as String,
+            phoneNumber: map['phoneNumber'] as String?,
+            username: map['username'] as String?,
+            role: map['role'] as String?,
+            roles: (map['roles'] as List<dynamic>?)
+                ?.map((e) => e as String)
+                .toList(),
+            verified: map['verified'] as bool,
+            isEmailVerified: map['isEmailVerified'] as bool,
+            createdAt: map['createdAt'] as DateTime,
+            updatedAt: map['updatedAt'] as DateTime,
+            signupStatus: map['signupStatus'] as String?,
+            currentSignupStep: map['currentSignupStep'] as String?,
+            hasPasscode: map['hasPasscode'] as bool? ?? false,
+            hasTransactionPin: map['hasTransactionPin'] as bool? ?? false,
+            hasPassword: map['hasPassword'] as bool? ?? false,
+            preferredLoginMethod: map['preferredLoginMethod'] as String?,
+            dateOfBirth: map['dateOfBirth'] as String?);
 
   DataMap toMap() => {
         "id": id,

@@ -36,6 +36,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
   /// after pause/resume/delete/create don't flash a full-screen loader.
   List<AutoRechargeEntity>? _cachedList;
   AutoRechargeEntity? _pendingPayAutoRecharge;
+
   /// Re-entry guard on the FAB — blocks a second tap while the meter-
   /// picker fetch / picker sheet / create sheet chain is already in
   /// flight (otherwise rapid taps stack two pickers on top of each
@@ -64,8 +65,8 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
         elevation: 0,
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: Icon(Icons.arrow_back_ios_new,
-              color: Colors.white, size: 20.sp),
+          icon:
+              Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20.sp),
         ),
         title: Text(
           'Auto-Recharge',
@@ -138,8 +139,9 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
     return BillAutoRechargeItem(
       title: ar.customerName.isEmpty ? ar.providerName : ar.customerName,
       subtitle: ar.meterNumber,
-      planName:
-          ar.providerName.isEmpty ? null : '${ar.providerName} \u00B7 ${ar.meterType.name}',
+      planName: ar.providerName.isEmpty
+          ? null
+          : '${ar.providerName} \u00B7 ${ar.meterType.name}',
       amount: ar.amount,
       frequency: ar.frequency.name,
       status: ar.status.name,
@@ -148,8 +150,8 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
       executionHour: localNextRun.hour,
       executionMinute: localNextRun.minute,
       failureCount: ar.failureCount,
-      leadingIcon: Icon(Icons.bolt,
-          color: const Color(0xFF4E03D0), size: 20.sp),
+      leadingIcon:
+          Icon(Icons.bolt, color: const Color(0xFF4E03D0), size: 20.sp),
       onTap: () => _showDetailsDialog(ar),
       onPause: ar.isActive
           ? () => context
@@ -238,107 +240,112 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
       builder: (ctx) => BlocProvider.value(
         value: cubit,
         child: AlertDialog(
-        backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        titlePadding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 8.h),
-        contentPadding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 8.h),
-        actionsPadding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 12.h),
-        title: Row(
-          children: [
-            Expanded(
-              child: Text(
-                ar.customerName.isNotEmpty ? ar.customerName : 'Auto-Recharge',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w700,
+          backgroundColor: const Color(0xFF1F1F1F),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          titlePadding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 8.h),
+          contentPadding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 8.h),
+          actionsPadding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 12.h),
+          title: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  ar.customerName.isNotEmpty
+                      ? ar.customerName
+                      : 'Auto-Recharge',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-              decoration: BoxDecoration(
-                color: statusColor.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10.r),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Text(
+                  ar.status.displayName.toUpperCase(),
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _detailRow('Provider', ar.providerName),
+                _detailRow('Meter', ar.meterNumber),
+                _detailRow('Type', ar.meterType.name),
+                _detailRow(
+                  'Amount',
+                  '\u20A6${ar.amount.toStringAsFixed(2)} ${ar.currency}',
+                ),
+                _detailRow('Frequency', ar.frequencyDescription),
+                _detailRow(
+                  'Execution time',
+                  '${next.hour.toString().padLeft(2, '0')}:${next.minute.toString().padLeft(2, '0')}',
+                ),
+                _detailRow(
+                    'Next run', DateFormat('MMM dd, yyyy HH:mm').format(next)),
+                if (last != null)
+                  _detailRow('Last run',
+                      DateFormat('MMM dd, yyyy HH:mm').format(last)),
+                _detailRow('Failures', '${ar.failureCount} / ${ar.maxRetries}'),
+                if (ar.isActive) ...[
+                  SizedBox(height: 16.h),
+                  BlocBuilder<ElectricityBillCubit, ElectricityBillState>(
+                    builder: (context, state) {
+                      final isValidating = state is MeterValidating &&
+                          _pendingPayAutoRecharge?.id == ar.id;
+                      return SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: isValidating
+                              ? null
+                              : () {
+                                  Navigator.of(ctx).pop();
+                                  _payNow(ar);
+                                },
+                          icon: isValidating
+                              ? LazerVaultLoader.tiny()
+                              : const Icon(Icons.payment),
+                          label: Text(
+                              isValidating ? 'Validating\u2026' : 'Pay Now'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4E03D0),
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: 12.h),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
               child: Text(
-                ar.status.displayName.toUpperCase(),
+                'Close',
                 style: TextStyle(
-                  color: statusColor,
-                  fontSize: 10.sp,
-                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 14.sp,
                 ),
               ),
             ),
           ],
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _detailRow('Provider', ar.providerName),
-              _detailRow('Meter', ar.meterNumber),
-              _detailRow('Type', ar.meterType.name),
-              _detailRow(
-                'Amount',
-                '\u20A6${ar.amount.toStringAsFixed(2)} ${ar.currency}',
-              ),
-              _detailRow('Frequency', ar.frequencyDescription),
-              _detailRow(
-                'Execution time',
-                '${next.hour.toString().padLeft(2, '0')}:${next.minute.toString().padLeft(2, '0')}',
-              ),
-              _detailRow('Next run', DateFormat('MMM dd, yyyy HH:mm').format(next)),
-              if (last != null)
-                _detailRow('Last run', DateFormat('MMM dd, yyyy HH:mm').format(last)),
-              _detailRow('Failures', '${ar.failureCount} / ${ar.maxRetries}'),
-              if (ar.isActive) ...[
-                SizedBox(height: 16.h),
-                BlocBuilder<ElectricityBillCubit, ElectricityBillState>(
-                  builder: (context, state) {
-                    final isValidating = state is MeterValidating &&
-                        _pendingPayAutoRecharge?.id == ar.id;
-                    return SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: isValidating
-                            ? null
-                            : () {
-                                Navigator.of(ctx).pop();
-                                _payNow(ar);
-                              },
-                        icon: isValidating
-                            ? LazerVaultLoader.tiny()
-                            : const Icon(Icons.payment),
-                        label: Text(isValidating ? 'Validating\u2026' : 'Pay Now'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4E03D0),
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(vertical: 12.h),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(
-              'Close',
-              style: TextStyle(
-                color: const Color(0xFF9CA3AF),
-                fontSize: 14.sp,
-              ),
-            ),
-          ),
-        ],
         ),
       ),
     );
@@ -414,8 +421,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
           action: SnackBarAction(
             label: 'Pay a Bill',
             textColor: Colors.white,
-            onPressed: () =>
-                Get.toNamed(AppRoutes.electricityBillHome),
+            onPressed: () => Get.toNamed(AppRoutes.electricityBillHome),
           ),
         ),
       );

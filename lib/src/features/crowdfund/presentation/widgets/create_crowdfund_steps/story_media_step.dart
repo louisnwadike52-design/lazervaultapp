@@ -87,8 +87,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
       widget.onLocalFilePicked?.call(file);
       widget.onImageUrlChanged?.call('');
     } on PlatformException catch (e) {
-      if (e.code == 'camera_access_denied' ||
-          e.code == 'photo_access_denied') {
+      if (e.code == 'camera_access_denied' || e.code == 'photo_access_denied') {
         _showErrorSnackBar(
             'Permission denied. Please allow access in Settings.');
       } else {
@@ -136,8 +135,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
               },
             ),
             ListTile(
-              leading:
-                  Icon(Icons.camera_alt, color: PayFlowTheme.accentOnDark),
+              leading: Icon(Icons.camera_alt, color: PayFlowTheme.accentOnDark),
               title: Text(
                 'Camera',
                 style: GoogleFonts.inter(color: Colors.white),
@@ -196,8 +194,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
                 autocorrect: false,
                 decoration: InputDecoration(
                   hintText: 'https://example.com/image.jpg',
-                  hintStyle:
-                      GoogleFonts.inter(color: const Color(0xFF6B7280)),
+                  hintStyle: GoogleFonts.inter(color: const Color(0xFF6B7280)),
                   filled: true,
                   fillColor: const Color(0xFF0A0A0A),
                   errorText: urlError,
@@ -224,8 +221,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
               onPressed: () {
                 final url = urlController.text.trim();
                 if (url.isEmpty) {
-                  setDialogState(
-                      () => urlError = 'Please enter a URL');
+                  setDialogState(() => urlError = 'Please enter a URL');
                   return;
                 }
 
@@ -297,10 +293,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
               height: 80.w,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFF4E03D0),
-                    Color.fromARGB(255, 78, 3, 208)
-                  ],
+                  colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -376,8 +369,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
             SizedBox(height: 12.h),
             TextButton.icon(
               onPressed: _removeImage,
-              icon: const Icon(Icons.delete_outline,
-                  color: Color(0xFFEF4444)),
+              icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
               label: Text(
                 'Remove Image',
                 style: GoogleFonts.inter(color: const Color(0xFFEF4444)),
@@ -394,8 +386,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
               gradient: LinearGradient(
                 colors: [
                   const Color(0xFF4E03D0).withValues(alpha: 0.1),
-                  const Color.fromARGB(255, 78, 3, 208)
-                      .withValues(alpha: 0.05),
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -509,7 +500,6 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
       ),
     );
   }
-
 
   Widget _buildImagePickerPlaceholder() {
     return InkWell(

@@ -15,7 +15,6 @@ import '../cubit/data_bundles_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'create_data_auto_recharge_screen_widgets.dart';
 
-
 /// Create a new data Rollover schedule. Mirrors
 /// `AirtimeAutoRechargeCreateSheet` but as a full screen since data
 /// rollovers are variation-locked — the user must pick BOTH a saved
@@ -74,7 +73,17 @@ class _CreateDataAutoRechargeScreenState
     }
   }
 
-  static const _validNetworks = ['mtn-data', 'airtel-data', 'glo-data', 'etisalat-data', 'mtn', 'airtel', 'glo', '9mobile', 'etisalat'];
+  static const _validNetworks = [
+    'mtn-data',
+    'airtel-data',
+    'glo-data',
+    'etisalat-data',
+    'mtn',
+    'airtel',
+    'glo',
+    '9mobile',
+    'etisalat'
+  ];
 
   bool _isValidNetwork(String code) =>
       _validNetworks.contains(code.toLowerCase());
@@ -105,11 +114,10 @@ class _CreateDataAutoRechargeScreenState
                     fontWeight: FontWeight.w700)),
             SizedBox(height: 16.h),
             ...networks.map((n) => ListTile(
-                  leading: Icon(Icons.cell_tower,
-                      color: const Color(0xFF4E03D0)),
+                  leading:
+                      Icon(Icons.cell_tower, color: const Color(0xFF4E03D0)),
                   title: Text(n.$1,
-                      style: TextStyle(
-                          color: Colors.white, fontSize: 15.sp)),
+                      style: TextStyle(color: Colors.white, fontSize: 15.sp)),
                   onTap: () => Navigator.of(ctx).pop(n.$2),
                 )),
             SizedBox(height: 12.h),
@@ -279,8 +287,8 @@ class _CreateDataAutoRechargeScreenState
                     if (picked != null) setState(() => _time = picked);
                   },
                   child: Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 16.w, vertical: 14.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFF0A0A0A),
                       borderRadius: BorderRadius.circular(12.r),
@@ -318,8 +326,7 @@ class _CreateDataAutoRechargeScreenState
                                 ? 'Update Rollover'
                                 : 'Schedule Rollover',
                             style: TextStyle(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w600)),
+                                fontSize: 16.sp, fontWeight: FontWeight.w600)),
                   ),
                 ),
                 SizedBox(height: 24.h),
@@ -392,8 +399,7 @@ class _CreateDataAutoRechargeScreenState
             ),
             child: Text(
               'No saved contacts. Save one from a data purchase receipt first.',
-              style: TextStyle(
-                  color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
             ),
           );
         }
@@ -448,8 +454,7 @@ class _CreateDataAutoRechargeScreenState
         ),
         child: Row(
           children: [
-            Icon(Icons.data_usage,
-                color: const Color(0xFF10B981), size: 18.sp),
+            Icon(Icons.data_usage, color: const Color(0xFF10B981), size: 18.sp),
             SizedBox(width: 10.w),
             Expanded(
               child: Text(
@@ -457,9 +462,7 @@ class _CreateDataAutoRechargeScreenState
                     ? 'Choose a data plan'
                     : '${_plan!.name} \u00B7 ${_plan!.displayPrice}',
                 style: TextStyle(
-                  color: _plan == null
-                      ? const Color(0xFF4B5563)
-                      : Colors.white,
+                  color: _plan == null ? const Color(0xFF4B5563) : Colors.white,
                   fontSize: 15.sp,
                 ),
                 maxLines: 1,
@@ -483,8 +486,7 @@ class _CreateDataAutoRechargeScreenState
           color: selected ? const Color(0xFF10B981) : const Color(0xFF0A0A0A),
           borderRadius: BorderRadius.circular(8.r),
           border: Border.all(
-            color:
-                selected ? const Color(0xFF10B981) : const Color(0xFF2D2D2D),
+            color: selected ? const Color(0xFF10B981) : const Color(0xFF2D2D2D),
           ),
         ),
         child: Text(label,
@@ -522,9 +524,8 @@ class _CreateDataAutoRechargeScreenState
                     style: TextStyle(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w500,
-                        color: selected
-                            ? Colors.white
-                            : const Color(0xFF9CA3AF))),
+                        color:
+                            selected ? Colors.white : const Color(0xFF9CA3AF))),
               ),
             ),
           );
@@ -570,4 +571,3 @@ class _CreateDataAutoRechargeScreenState
         },
       );
 }
-

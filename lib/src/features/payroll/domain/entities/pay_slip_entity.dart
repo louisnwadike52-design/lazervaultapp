@@ -67,7 +67,8 @@ class PaySlipEntity extends Equatable {
 
   String get formattedGross => '\u20A6${grossPay.toStringAsFixed(2)}';
   String get formattedNet => '\u20A6${netPay.toStringAsFixed(2)}';
-  String get formattedDeductions => '\u20A6${totalDeductions.toStringAsFixed(2)}';
+  String get formattedDeductions =>
+      '\u20A6${totalDeductions.toStringAsFixed(2)}';
 
   bool get isPaid => paymentStatus == PaymentStatus.paid;
 

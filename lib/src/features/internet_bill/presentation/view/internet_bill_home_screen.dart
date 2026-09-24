@@ -32,8 +32,6 @@ class _InternetBillHomeScreenState extends State<InternetBillHomeScreen> {
     context.read<InternetBillCubit>().getProviders();
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -121,9 +119,6 @@ class _InternetBillHomeScreenState extends State<InternetBillHomeScreen> {
       ],
     );
   }
-
-
-
 }
 
 class _QuickActionCard extends StatelessWidget {

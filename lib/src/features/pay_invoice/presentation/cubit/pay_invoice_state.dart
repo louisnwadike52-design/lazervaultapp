@@ -148,4 +148,4 @@ class PayInvoiceOperationSuccess extends PayInvoiceState {
 
   @override
   List<Object?> get props => [message, operationType];
-} 
+}

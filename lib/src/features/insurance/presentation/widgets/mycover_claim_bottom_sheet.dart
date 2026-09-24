@@ -24,7 +24,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 part 'mycover_claim_bottom_sheet_widgets.dart';
 
-
 class MyCoverClaimBottomSheet extends StatefulWidget {
   const MyCoverClaimBottomSheet({
     super.key,
@@ -143,7 +142,8 @@ class MyCoverClaimBottomSheet extends StatefulWidget {
   }
 
   @override
-  State<MyCoverClaimBottomSheet> createState() => _MyCoverClaimBottomSheetState();
+  State<MyCoverClaimBottomSheet> createState() =>
+      _MyCoverClaimBottomSheetState();
 }
 
 class _MyCoverClaimBottomSheetState extends State<MyCoverClaimBottomSheet> {
@@ -231,8 +231,7 @@ class _MyCoverClaimBottomSheetState extends State<MyCoverClaimBottomSheet> {
   /// which is one of the root causes we've seen for a blank webview.
   /// Pin a realistic Chrome-on-Android UA so MyCover's CDN/WAF serves
   /// us the same HTML the browser would.
-  static const String _kModernUA =
-      'Mozilla/5.0 (Linux; Android 14; Pixel 9a) '
+  static const String _kModernUA = 'Mozilla/5.0 (Linux; Android 14; Pixel 9a) '
       'AppleWebKit/537.36 (KHTML, like Gecko) '
       'Chrome/137.0.0.0 Mobile Safari/537.36';
 
@@ -377,8 +376,7 @@ class _MyCoverClaimBottomSheetState extends State<MyCoverClaimBottomSheet> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.cloud_off_rounded,
-              color: Colors.white54, size: 48.sp),
+          Icon(Icons.cloud_off_rounded, color: Colors.white54, size: 48.sp),
           SizedBox(height: 16.h),
           Text(
             _errorTitle,
@@ -391,8 +389,7 @@ class _MyCoverClaimBottomSheetState extends State<MyCoverClaimBottomSheet> {
           ),
           SizedBox(height: 8.h),
           Text(
-            _errorMessage ??
-                'Please check your connection and try again.',
+            _errorMessage ?? 'Please check your connection and try again.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               color: Colors.white60,
@@ -423,8 +420,7 @@ class _MyCoverClaimBottomSheetState extends State<MyCoverClaimBottomSheet> {
           if (_resolvedUrl.isNotEmpty)
             TextButton.icon(
               onPressed: _openInExternalBrowser,
-              icon: Icon(Icons.open_in_new,
-                  color: Colors.white70, size: 16.sp),
+              icon: Icon(Icons.open_in_new, color: Colors.white70, size: 16.sp),
               label: Text(
                 'Open in browser',
                 style: GoogleFonts.inter(
@@ -496,8 +492,8 @@ class _MyCoverClaimBottomSheetState extends State<MyCoverClaimBottomSheet> {
                         ),
                         borderRadius: BorderRadius.circular(8.r),
                       ),
-                      child: Icon(_headerIcon,
-                          color: Colors.white, size: 18.sp),
+                      child:
+                          Icon(_headerIcon, color: Colors.white, size: 18.sp),
                     ),
                     SizedBox(width: 12.w),
                     Expanded(
@@ -515,7 +511,8 @@ class _MyCoverClaimBottomSheetState extends State<MyCoverClaimBottomSheet> {
                           ),
                           SizedBox(height: 2.h),
                           Text(
-                            widget.providerName != null && widget.providerName!.isNotEmpty
+                            widget.providerName != null &&
+                                    widget.providerName!.isNotEmpty
                                 ? '${widget.policyLabel} · ${widget.providerName}'
                                 : widget.policyLabel,
                             style: GoogleFonts.inter(
@@ -540,7 +537,8 @@ class _MyCoverClaimBottomSheetState extends State<MyCoverClaimBottomSheet> {
                     ),
                     IconButton(
                       onPressed: () => _controller.reload(),
-                      icon: Icon(Icons.refresh, color: Colors.white70, size: 18.sp),
+                      icon: Icon(Icons.refresh,
+                          color: Colors.white70, size: 18.sp),
                       tooltip: 'Reload',
                     ),
                     // Always-available escape hatch: open in the
@@ -548,16 +546,16 @@ class _MyCoverClaimBottomSheetState extends State<MyCoverClaimBottomSheet> {
                     // hangs or the hosted page disables certain JS
                     // features in WebView mode. Same URL, same flow.
                     IconButton(
-                      onPressed: _resolvedUrl.isEmpty
-                          ? null
-                          : _openInExternalBrowser,
+                      onPressed:
+                          _resolvedUrl.isEmpty ? null : _openInExternalBrowser,
                       icon: Icon(Icons.open_in_new,
                           color: Colors.white70, size: 18.sp),
                       tooltip: 'Open in browser',
                     ),
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: Icon(Icons.close, color: Colors.white70, size: 20.sp),
+                      icon:
+                          Icon(Icons.close, color: Colors.white70, size: 20.sp),
                       tooltip: 'Close',
                     ),
                   ],
@@ -583,7 +581,8 @@ class _MyCoverClaimBottomSheetState extends State<MyCoverClaimBottomSheet> {
                         controller: _controller,
                         // Vertical-drag recognizer so the claim page scrolls to
                         // its end inside the sheet (footer/actions reachable).
-                        gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+                        gestureRecognizers: <Factory<
+                            OneSequenceGestureRecognizer>>{
                           Factory<VerticalDragGestureRecognizer>(
                               () => VerticalDragGestureRecognizer()),
                         },

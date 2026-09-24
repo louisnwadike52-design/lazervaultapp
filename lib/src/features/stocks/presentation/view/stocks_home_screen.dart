@@ -494,8 +494,10 @@ class _StocksHomeScreenState extends State<StocksHomeScreen>
                           child: MarketIndexCard(
                             name: indices[firstIndex].key,
                             value: indices[firstIndex].value.toStringAsFixed(2),
-                            change: '0.0%', // TODO: Backend should provide change percentage
-                            isPositive: true, // TODO: Backend should provide change direction
+                            change:
+                                '0.0%', // TODO: Backend should provide change percentage
+                            isPositive:
+                                true, // TODO: Backend should provide change direction
                           ),
                         ),
                       if (secondIndex < indices.length) ...[
@@ -503,9 +505,12 @@ class _StocksHomeScreenState extends State<StocksHomeScreen>
                         Expanded(
                           child: MarketIndexCard(
                             name: indices[secondIndex].key,
-                            value: indices[secondIndex].value.toStringAsFixed(2),
-                            change: '0.0%', // TODO: Backend should provide change percentage
-                            isPositive: true, // TODO: Backend should provide change direction
+                            value:
+                                indices[secondIndex].value.toStringAsFixed(2),
+                            change:
+                                '0.0%', // TODO: Backend should provide change percentage
+                            isPositive:
+                                true, // TODO: Backend should provide change direction
                           ),
                         ),
                       ],

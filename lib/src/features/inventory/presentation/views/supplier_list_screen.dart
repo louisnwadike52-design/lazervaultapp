@@ -495,102 +495,101 @@ class _SupplierListScreenState extends State<SupplierListScreen>
     return GestureDetector(
       onTap: () => _showAddSupplierDialog(existing: supplier),
       child: Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Row(
-        children: [
-          // Avatar with initials
-          Container(
-            width: 44.w,
-            height: 44.w,
-            decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10.r),
-            ),
-            child: Center(
-              child: Text(
-                supplier.initials,
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF3B82F6),
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w700,
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Row(
+          children: [
+            // Avatar with initials
+            Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Center(
+                child: Text(
+                  supplier.initials,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF3B82F6),
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),
-          ),
-          SizedBox(width: 12.w),
+            SizedBox(width: 12.w),
 
-          // Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        supplier.name,
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    _buildStatusBadge(supplier),
-                  ],
-                ),
-                SizedBox(height: 4.h),
-                if (supplier.contactName.isNotEmpty)
-                  Text(
-                    supplier.contactName,
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 13.sp,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                if (supplier.email.isNotEmpty) ...[
-                  SizedBox(height: 2.h),
+            // Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Row(
                     children: [
-                      Icon(
-                        Icons.email_outlined,
-                        color: const Color(0xFF6B7280),
-                        size: 13.sp,
-                      ),
-                      SizedBox(width: 4.w),
                       Expanded(
                         child: Text(
-                          supplier.email,
+                          supplier.name,
                           style: GoogleFonts.inter(
-                            color: const Color(0xFF6B7280),
-                            fontSize: 12.sp,
+                            color: Colors.white,
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w600,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      _buildStatusBadge(supplier),
                     ],
                   ),
+                  SizedBox(height: 4.h),
+                  if (supplier.contactName.isNotEmpty)
+                    Text(
+                      supplier.contactName,
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF9CA3AF),
+                        fontSize: 13.sp,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  if (supplier.email.isNotEmpty) ...[
+                    SizedBox(height: 2.h),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.email_outlined,
+                          color: const Color(0xFF6B7280),
+                          size: 13.sp,
+                        ),
+                        SizedBox(width: 4.w),
+                        Expanded(
+                          child: Text(
+                            supplier.email,
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF6B7280),
+                              fontSize: 12.sp,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildStatusBadge(SupplierEntity supplier) {
     final isActive = supplier.status == SupplierStatus.active;
-    final color =
-        isActive ? const Color(0xFF10B981) : const Color(0xFF9CA3AF);
+    final color = isActive ? const Color(0xFF10B981) : const Color(0xFF9CA3AF);
 
     return Container(
       margin: EdgeInsets.only(left: 8.w),

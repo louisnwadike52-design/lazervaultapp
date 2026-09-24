@@ -41,26 +41,24 @@ class _IntlReceiptScreenState extends State<IntlReceiptScreen> {
     String reference = args['reference'] as String? ?? '';
     double amountPaid = (args['amountPaid'] as num?)?.toDouble() ?? 0;
     String senderCurrency = args['senderCurrency'] as String? ?? 'NGN';
-    double deliveredAmount =
-        (args['deliveredAmount'] as num?)?.toDouble() ?? 0;
+    double deliveredAmount = (args['deliveredAmount'] as num?)?.toDouble() ?? 0;
     String deliveredCurrency = args['deliveredCurrency'] as String? ?? '';
     double fxRateUsed = (args['fxRateUsed'] as num?)?.toDouble() ?? 0;
     String operatorName = args['operatorName'] as String? ?? '';
     String countryName = args['countryName'] as String? ?? '';
     String phoneNumber = args['phoneNumber'] as String? ?? '';
     bool isSuccess = args['isSuccess'] as bool? ?? true;
-    DateTime timestamp =
-        (args['createdAt'] as DateTime?) ?? DateTime.now();
+    DateTime timestamp = (args['createdAt'] as DateTime?) ?? DateTime.now();
 
     if (tx is AirtimeTransaction) {
       final meta = tx.metadata ?? const {};
       paymentId = paymentId.isEmpty ? tx.id : paymentId;
       reference = reference.isEmpty ? tx.transactionReference : reference;
       amountPaid = amountPaid > 0 ? amountPaid : tx.amount;
-      senderCurrency = senderCurrency == 'NGN' &&
-              (meta['sender_currency'] != null)
-          ? meta['sender_currency'].toString()
-          : (meta['sender_currency']?.toString() ?? tx.currency);
+      senderCurrency =
+          senderCurrency == 'NGN' && (meta['sender_currency'] != null)
+              ? meta['sender_currency'].toString()
+              : (meta['sender_currency']?.toString() ?? tx.currency);
       final destAmt = meta['delivered_amount'] ?? meta['dest_amount'];
       if (destAmt is num) deliveredAmount = destAmt.toDouble();
       deliveredCurrency = deliveredCurrency.isNotEmpty
@@ -120,8 +118,7 @@ class _IntlReceiptScreenState extends State<IntlReceiptScreen> {
           top: true,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding:
-                EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -213,8 +210,7 @@ class _IntlReceiptScreenState extends State<IntlReceiptScreen> {
                   SizedBox(height: 20.h),
                   BillReceiptQrBlock(
                     type: 'intl_airtime',
-                    reference:
-                        reference.isNotEmpty ? reference : paymentId,
+                    reference: reference.isNotEmpty ? reference : paymentId,
                     amount: amountPaid,
                     currency: senderCurrency,
                     status: isSuccess ? 'completed' : 'failed',
@@ -222,14 +218,12 @@ class _IntlReceiptScreenState extends State<IntlReceiptScreen> {
                     showDivider: false,
                     extraPayload: {
                       if (phoneNumber.isNotEmpty) 'phone': phoneNumber,
-                      if (operatorName.isNotEmpty)
-                        'operator': operatorName,
+                      if (operatorName.isNotEmpty) 'operator': operatorName,
                       if (countryName.isNotEmpty) 'country': countryName,
                       if (deliveredCurrency.isNotEmpty)
                         'dest_currency': deliveredCurrency,
                       if (deliveredAmount > 0)
-                        'dest_amount':
-                            deliveredAmount.toStringAsFixed(2),
+                        'dest_amount': deliveredAmount.toStringAsFixed(2),
                     },
                   ),
                 ],
@@ -254,9 +248,7 @@ class _IntlReceiptScreenState extends State<IntlReceiptScreen> {
   // ---------------------------------------------------------------------------
 
   Widget _buildStatusIcon(bool isSuccess) {
-    final color = isSuccess
-        ? const Color(0xFF10B981)
-        : const Color(0xFFEF4444);
+    final color = isSuccess ? const Color(0xFF10B981) : const Color(0xFFEF4444);
     final icon = isSuccess ? Icons.check_circle : Icons.cancel;
     return Container(
       width: 64.w,
@@ -291,11 +283,9 @@ class _IntlReceiptScreenState extends State<IntlReceiptScreen> {
   }) {
     final dateFormat = DateFormat('MMM dd, yyyy');
     final timeFormat = DateFormat('hh:mm a');
-    final hasDelivered =
-        deliveredAmount > 0 && deliveredCurrency.isNotEmpty;
+    final hasDelivered = deliveredAmount > 0 && deliveredCurrency.isNotEmpty;
     final hasFx = fxRateUsed > 0 && deliveredCurrency.isNotEmpty;
-    final hasRefRow =
-        reference.isNotEmpty || paymentId.isNotEmpty;
+    final hasRefRow = reference.isNotEmpty || paymentId.isNotEmpty;
 
     return Container(
       width: double.infinity,
@@ -361,8 +351,7 @@ class _IntlReceiptScreenState extends State<IntlReceiptScreen> {
           if (hasRefRow) ...[
             _sectionDivider(),
             _copyableRow(
-                'Reference',
-                reference.isNotEmpty ? reference : paymentId),
+                'Reference', reference.isNotEmpty ? reference : paymentId),
           ],
           SizedBox(height: 10.h),
           _detailRow('Date', dateFormat.format(timestamp.toLocal())),
@@ -372,9 +361,8 @@ class _IntlReceiptScreenState extends State<IntlReceiptScreen> {
           _detailRow(
             'Status',
             isSuccess ? 'Completed' : 'Failed',
-            valueColor: isSuccess
-                ? const Color(0xFF10B981)
-                : const Color(0xFFEF4444),
+            valueColor:
+                isSuccess ? const Color(0xFF10B981) : const Color(0xFFEF4444),
           ),
         ],
       ),
@@ -458,8 +446,7 @@ class _IntlReceiptScreenState extends State<IntlReceiptScreen> {
                   ),
                 ),
                 SizedBox(width: 6.w),
-                Icon(Icons.copy,
-                    color: const Color(0xFF9CA3AF), size: 14.sp),
+                Icon(Icons.copy, color: const Color(0xFF9CA3AF), size: 14.sp),
               ],
             ),
           ),

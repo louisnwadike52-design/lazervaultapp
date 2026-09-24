@@ -223,8 +223,7 @@ class SavedBatchRemoteDataSourceImpl implements ISavedBatchRemoteDataSource {
       final opts = (await _callOptionsHelper.withAuth()).mergedWith(
         CallOptions(timeout: const Duration(seconds: 30)),
       );
-      final res =
-          await _client.updateSavedBatchItemAmount(req, options: opts);
+      final res = await _client.updateSavedBatchItemAmount(req, options: opts);
       return SavedBatchModel.fromProto(res);
     });
   }

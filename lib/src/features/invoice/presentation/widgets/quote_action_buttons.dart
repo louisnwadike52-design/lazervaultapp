@@ -31,20 +31,25 @@ class QuoteActionButtons extends StatefulWidget {
 class _QuoteActionButtonsState extends State<QuoteActionButtons> {
   bool _busy = false;
 
-  Future<void> _run(Future<Invoice> Function(InvoiceRepository repo) op, String successMessage) async {
+  Future<void> _run(Future<Invoice> Function(InvoiceRepository repo) op,
+      String successMessage) async {
     if (_busy) return;
     setState(() => _busy = true);
     try {
       await op(serviceLocator<InvoiceRepository>());
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(successMessage), backgroundColor: InvoiceThemeColors.successGreen),
+        SnackBar(
+            content: Text(successMessage),
+            backgroundColor: InvoiceThemeColors.successGreen),
       );
       widget.onChanged();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_friendlyError(e)), backgroundColor: InvoiceThemeColors.errorRed),
+        SnackBar(
+            content: Text(_friendlyError(e)),
+            backgroundColor: InvoiceThemeColors.errorRed),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -53,8 +58,10 @@ class _QuoteActionButtonsState extends State<QuoteActionButtons> {
 
   String _friendlyError(Object e) {
     final s = e.toString();
-    if (s.contains('QUOTE_CONVERTED')) return 'This quote is already an invoice';
-    if (s.contains('NOT_TAGGED')) return 'Only a tagged payer can respond to this quote';
+    if (s.contains('QUOTE_CONVERTED'))
+      return 'This quote is already an invoice';
+    if (s.contains('NOT_TAGGED'))
+      return 'Only a tagged payer can respond to this quote';
     return 'Something went wrong. Please try again.';
   }
 
@@ -72,14 +79,16 @@ class _QuoteActionButtonsState extends State<QuoteActionButtons> {
         child: ElevatedButton.icon(
           onPressed: _busy
               ? null
-              : () => _run((repo) => repo.convertQuoteToInvoice(invoice.id), 'Quote converted to invoice'),
+              : () => _run((repo) => repo.convertQuoteToInvoice(invoice.id),
+                  'Quote converted to invoice'),
           icon: const Icon(Icons.receipt_long),
           label: Text(_busy ? 'Converting…' : 'Convert to Invoice'),
           style: ElevatedButton.styleFrom(
             backgroundColor: InvoiceThemeColors.primaryPurple,
             foregroundColor: Colors.white,
             padding: EdgeInsets.symmetric(vertical: 16.h),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r)),
           ),
         ),
       ));
@@ -92,14 +101,17 @@ class _QuoteActionButtonsState extends State<QuoteActionButtons> {
           child: ElevatedButton.icon(
             onPressed: _busy || invoice.quoteStatus == 'accepted'
                 ? null
-                : () => _run((repo) => repo.respondToQuote(invoice.id, 'accept'), 'Quote accepted'),
+                : () => _run(
+                    (repo) => repo.respondToQuote(invoice.id, 'accept'),
+                    'Quote accepted'),
             icon: const Icon(Icons.check_circle_outline),
             label: const Text('Accept'),
             style: ElevatedButton.styleFrom(
               backgroundColor: InvoiceThemeColors.successGreen,
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(vertical: 16.h),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r)),
             ),
           ),
         ),
@@ -108,14 +120,17 @@ class _QuoteActionButtonsState extends State<QuoteActionButtons> {
           child: ElevatedButton.icon(
             onPressed: _busy || invoice.quoteStatus == 'declined'
                 ? null
-                : () => _run((repo) => repo.respondToQuote(invoice.id, 'decline'), 'Quote declined'),
+                : () => _run(
+                    (repo) => repo.respondToQuote(invoice.id, 'decline'),
+                    'Quote declined'),
             icon: const Icon(Icons.cancel_outlined),
             label: const Text('Decline'),
             style: ElevatedButton.styleFrom(
               backgroundColor: InvoiceThemeColors.errorRed,
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(vertical: 16.h),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r)),
             ),
           ),
         ),
@@ -128,9 +143,15 @@ class _QuoteActionButtonsState extends State<QuoteActionButtons> {
 
   Widget _statusChip(Invoice invoice) {
     final (label, color) = switch (invoice.quoteStatus) {
-      'accepted' => ('Quote accepted - awaiting conversion', InvoiceThemeColors.successGreen),
+      'accepted' => (
+          'Quote accepted - awaiting conversion',
+          InvoiceThemeColors.successGreen
+        ),
       'declined' => ('Quote declined', InvoiceThemeColors.errorRed),
-      _ => ('Quote - not payable until converted', InvoiceThemeColors.warningOrange),
+      _ => (
+          'Quote - not payable until converted',
+          InvoiceThemeColors.warningOrange
+        ),
     };
     return Container(
       width: double.infinity,
@@ -146,7 +167,8 @@ class _QuoteActionButtonsState extends State<QuoteActionButtons> {
         Expanded(
           child: Text(
             label,
-            style: GoogleFonts.inter(color: color, fontSize: 13.sp, fontWeight: FontWeight.w600),
+            style: GoogleFonts.inter(
+                color: color, fontSize: 13.sp, fontWeight: FontWeight.w600),
           ),
         ),
       ]),

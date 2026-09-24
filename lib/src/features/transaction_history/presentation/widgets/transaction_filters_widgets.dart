@@ -39,7 +39,8 @@ class MonthFilterChips extends StatelessWidget {
         separatorBuilder: (_, __) => SizedBox(width: 8.w),
         itemBuilder: (context, index) {
           final item = months[index];
-          final isSelected = item.month == selectedMonth && item.year == selectedYear;
+          final isSelected =
+              item.month == selectedMonth && item.year == selectedYear;
 
           return GestureDetector(
             onTap: () => onChanged((month: item.month, year: item.year)),
@@ -283,7 +284,9 @@ class _DateFilterSheetState extends State<_DateFilterSheet> {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.fromLTRB(
-        20.w, 12.h, 20.w,
+        20.w,
+        12.h,
+        20.w,
         MediaQuery.of(context).viewPadding.bottom + 16.h,
       ),
       decoration: BoxDecoration(
@@ -298,13 +301,15 @@ class _DateFilterSheetState extends State<_DateFilterSheet> {
           SizedBox(height: 16.h),
           Row(
             children: [
-              Expanded(child: _buildDateButton(
+              Expanded(
+                  child: _buildDateButton(
                 'From',
                 _startDate,
                 () => _pickDate(isStart: true),
               )),
               SizedBox(width: 12.w),
-              Expanded(child: _buildDateButton(
+              Expanded(
+                  child: _buildDateButton(
                 'To',
                 _endDate,
                 () => _pickDate(isStart: false),
@@ -454,7 +459,9 @@ class _StatusFilterSheetState extends State<_StatusFilterSheet> {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.fromLTRB(
-        20.w, 12.h, 20.w,
+        20.w,
+        12.h,
+        20.w,
         MediaQuery.of(context).viewPadding.bottom + 16.h,
       ),
       decoration: BoxDecoration(
@@ -599,7 +606,9 @@ class _CategoryFilterSheetState extends State<_CategoryFilterSheet> {
         maxHeight: MediaQuery.of(context).size.height * 0.6,
       ),
       padding: EdgeInsets.fromLTRB(
-        20.w, 12.h, 20.w,
+        20.w,
+        12.h,
+        20.w,
         MediaQuery.of(context).viewPadding.bottom + 16.h,
       ),
       decoration: BoxDecoration(
@@ -743,7 +752,9 @@ class _TypeFilterSheetState extends State<_TypeFilterSheet> {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.fromLTRB(
-        20.w, 12.h, 20.w,
+        20.w,
+        12.h,
+        20.w,
         MediaQuery.of(context).viewPadding.bottom + 16.h,
       ),
       decoration: BoxDecoration(
@@ -784,9 +795,8 @@ class _TypeFilterSheetState extends State<_TypeFilterSheet> {
           padding: EdgeInsets.symmetric(vertical: 12.h),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: isSelected
-                ? const Color(0xFF581CD9)
-                : const Color(0xFF1F1F1F),
+            color:
+                isSelected ? const Color(0xFF581CD9) : const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(18.r),
           ),
           child: Text(

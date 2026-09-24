@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 
-enum DrawingTool { 
-  none, 
-  measure, 
-  trendline, 
-  horizontalLine, 
-  verticalLine, 
-  fibonacciRetracement, 
-  elliottWave 
+enum DrawingTool {
+  none,
+  measure,
+  trendline,
+  horizontalLine,
+  verticalLine,
+  fibonacciRetracement,
+  elliottWave
 }
 
 abstract class DrawingElement {
@@ -43,7 +43,8 @@ abstract class DrawingElement {
     throw UnimplementedError('copyWith must be implemented by subclasses');
   }
 
-  void draw(Canvas canvas, Size size, double minPrice, double maxPrice, int dataLength);
+  void draw(Canvas canvas, Size size, double minPrice, double maxPrice,
+      int dataLength);
 }
 
 class TrendlineElement extends DrawingElement {
@@ -83,7 +84,7 @@ class TrendlineElement extends DrawingElement {
     final newPoints = points ?? this.points;
     final newPricePoints = pricePoints ?? this.pricePoints;
     final newTimeIndices = timeIndices ?? this.timeIndices;
-    
+
     return TrendlineElement(
       startPoint: newPoints.isNotEmpty ? newPoints[0] : startPoint,
       endPoint: newPoints.length > 1 ? newPoints[1] : endPoint,
@@ -97,14 +98,17 @@ class TrendlineElement extends DrawingElement {
   }
 
   @override
-  void draw(Canvas canvas, Size size, double minPrice, double maxPrice, int dataLength) {
+  void draw(Canvas canvas, Size size, double minPrice, double maxPrice,
+      int dataLength) {
     final paint = Paint()
       ..color = color
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke;
 
-    final startY = size.height - ((startValue - minPrice) / (maxPrice - minPrice)) * size.height;
-    final endY = size.height - ((endValue - minPrice) / (maxPrice - minPrice)) * size.height;
+    final startY = size.height -
+        ((startValue - minPrice) / (maxPrice - minPrice)) * size.height;
+    final endY = size.height -
+        ((endValue - minPrice) / (maxPrice - minPrice)) * size.height;
     final startX = (startIndex / dataLength) * size.width;
     final endX = (endIndex / dataLength) * size.width;
 
@@ -144,7 +148,7 @@ class HorizontalLineElement extends DrawingElement {
   }) {
     final newPricePoints = pricePoints ?? this.pricePoints;
     final newPoints = points ?? this.points;
-    
+
     return HorizontalLineElement(
       value: newPricePoints.isNotEmpty ? newPricePoints[0] : value,
       yPosition: newPoints.isNotEmpty ? newPoints[0].dy : yPosition,
@@ -154,14 +158,16 @@ class HorizontalLineElement extends DrawingElement {
   }
 
   @override
-  void draw(Canvas canvas, Size size, double minPrice, double maxPrice, int dataLength) {
+  void draw(Canvas canvas, Size size, double minPrice, double maxPrice,
+      int dataLength) {
     final paint = Paint()
       ..color = color
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke;
 
-    final y = size.height - ((value - minPrice) / (maxPrice - minPrice)) * size.height;
-    
+    final y = size.height -
+        ((value - minPrice) / (maxPrice - minPrice)) * size.height;
+
     canvas.drawLine(
       Offset(0, y),
       Offset(size.width, y),
@@ -211,7 +217,7 @@ class VerticalLineElement extends DrawingElement {
   }) {
     final newTimeIndices = timeIndices ?? this.timeIndices;
     final newPoints = points ?? this.points;
-    
+
     return VerticalLineElement(
       index: newTimeIndices.isNotEmpty ? newTimeIndices[0] : index,
       xPosition: newPoints.isNotEmpty ? newPoints[0].dx : xPosition,
@@ -222,14 +228,15 @@ class VerticalLineElement extends DrawingElement {
   }
 
   @override
-  void draw(Canvas canvas, Size size, double minPrice, double maxPrice, int dataLength) {
+  void draw(Canvas canvas, Size size, double minPrice, double maxPrice,
+      int dataLength) {
     final paint = Paint()
       ..color = color
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke;
 
     final x = (index / dataLength) * size.width;
-    
+
     canvas.drawLine(
       Offset(x, 0),
       Offset(x, size.height),
@@ -286,7 +293,7 @@ class MeasureElement extends DrawingElement {
     final newPoints = points ?? this.points;
     final newPricePoints = pricePoints ?? this.pricePoints;
     final newTimeIndices = timeIndices ?? this.timeIndices;
-    
+
     return MeasureElement(
       startPoint: newPoints.isNotEmpty ? newPoints[0] : startPoint,
       endPoint: newPoints.length > 1 ? newPoints[1] : endPoint,
@@ -300,7 +307,8 @@ class MeasureElement extends DrawingElement {
   }
 
   @override
-  void draw(Canvas canvas, Size size, double minPrice, double maxPrice, int dataLength) {
+  void draw(Canvas canvas, Size size, double minPrice, double maxPrice,
+      int dataLength) {
     final paint = Paint()
       ..color = color
       ..strokeWidth = strokeWidth
@@ -311,8 +319,10 @@ class MeasureElement extends DrawingElement {
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
-    final startY = size.height - ((startValue - minPrice) / (maxPrice - minPrice)) * size.height;
-    final endY = size.height - ((endValue - minPrice) / (maxPrice - minPrice)) * size.height;
+    final startY = size.height -
+        ((startValue - minPrice) / (maxPrice - minPrice)) * size.height;
+    final endY = size.height -
+        ((endValue - minPrice) / (maxPrice - minPrice)) * size.height;
     final startX = (startIndex / dataLength) * size.width;
     final endX = (endIndex / dataLength) * size.width;
 
@@ -324,10 +334,14 @@ class MeasureElement extends DrawingElement {
     );
 
     // Draw crosshairs
-    _drawDashedLine(canvas, Offset(startX, 0), Offset(startX, size.height), dashPaint);
-    _drawDashedLine(canvas, Offset(endX, 0), Offset(endX, size.height), dashPaint);
-    _drawDashedLine(canvas, Offset(0, startY), Offset(size.width, startY), dashPaint);
-    _drawDashedLine(canvas, Offset(0, endY), Offset(size.width, endY), dashPaint);
+    _drawDashedLine(
+        canvas, Offset(startX, 0), Offset(startX, size.height), dashPaint);
+    _drawDashedLine(
+        canvas, Offset(endX, 0), Offset(endX, size.height), dashPaint);
+    _drawDashedLine(
+        canvas, Offset(0, startY), Offset(size.width, startY), dashPaint);
+    _drawDashedLine(
+        canvas, Offset(0, endY), Offset(size.width, endY), dashPaint);
 
     // Draw measurement info
     final priceDiff = (endValue - startValue).abs();
@@ -337,14 +351,16 @@ class MeasureElement extends DrawingElement {
 
     final textPainter = TextPainter(
       text: TextSpan(
-        text: '${CurrencySymbols.formatAmountWithCurrency(priceDiff, 'USD')}\n${priceChange.toStringAsFixed(2)}%',
-        style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
+        text:
+            '${CurrencySymbols.formatAmountWithCurrency(priceDiff, 'USD')}\n${priceChange.toStringAsFixed(2)}%',
+        style:
+            TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
       ),
       textDirection: TextDirection.ltr,
       textAlign: TextAlign.center,
     );
     textPainter.layout();
-    
+
     // Draw background for text
     final textRect = Rect.fromCenter(
       center: Offset(midX, midY),
@@ -355,8 +371,9 @@ class MeasureElement extends DrawingElement {
       RRect.fromRectAndRadius(textRect, Radius.circular(4)),
       Paint()..color = Colors.black.withValues(alpha: 0.8),
     );
-    
-    textPainter.paint(canvas, Offset(midX - textPainter.width / 2, midY - textPainter.height / 2));
+
+    textPainter.paint(canvas,
+        Offset(midX - textPainter.width / 2, midY - textPainter.height / 2));
   }
 
   void _drawDashedLine(Canvas canvas, Offset start, Offset end, Paint paint) {
@@ -364,11 +381,11 @@ class MeasureElement extends DrawingElement {
     const dashSpace = 3.0;
     double distance = (end - start).distance;
     double dashCount = (distance / (dashWidth + dashSpace)).floor().toDouble();
-    
+
     for (int i = 0; i < dashCount; i++) {
       double startRatio = (i * (dashWidth + dashSpace)) / distance;
       double endRatio = ((i * (dashWidth + dashSpace)) + dashWidth) / distance;
-      
+
       canvas.drawLine(
         Offset.lerp(start, end, startRatio)!,
         Offset.lerp(start, end, endRatio)!,
@@ -376,4 +393,4 @@ class MeasureElement extends DrawingElement {
       );
     }
   }
-} 
+}

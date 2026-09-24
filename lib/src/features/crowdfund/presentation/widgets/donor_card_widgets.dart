@@ -3,6 +3,7 @@ part of 'donor_card.dart';
 class DonorCard extends StatefulWidget {
   final CrowdfundDonation donation;
   final Crowdfund? crowdfund;
+
   /// Optional pool of all donations loaded for this campaign on the
   /// current screen. When provided, the donor-detail modal
   /// aggregates the same donor's contributions across this list to
@@ -190,7 +191,8 @@ class _DonorCardState extends State<DonorCard> {
   Widget _buildMessage() {
     final message = widget.donation.message!;
     final shouldTruncate = message.length > 100 && !_showFullMessage;
-    final displayMessage = shouldTruncate ? '${message.substring(0, 100)}...' : message;
+    final displayMessage =
+        shouldTruncate ? '${message.substring(0, 100)}...' : message;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,7 +266,6 @@ class _DonorCardState extends State<DonorCard> {
       ),
     );
   }
-
 }
 
 /// Avatar that mirrors the recipients-list pattern in the send-funds

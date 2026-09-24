@@ -15,7 +15,6 @@ import '../cubit/internet_bill_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'create_internet_rollover_screen_widgets.dart';
 
-
 /// Create / edit an internet Rollover schedule. Mirrors the data
 /// bundles' `CreateDataAutoRechargeScreen`:
 ///
@@ -299,8 +298,8 @@ class _CreateInternetRolloverScreenState
                     if (picked != null) setState(() => _time = picked);
                   },
                   child: Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 16.w, vertical: 14.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                     decoration: BoxDecoration(
                       color: _bg,
                       borderRadius: BorderRadius.circular(12.r),
@@ -312,8 +311,8 @@ class _CreateInternetRolloverScreenState
                         SizedBox(width: 10.w),
                         Text(
                           _time.format(context),
-                          style: TextStyle(
-                              color: Colors.white, fontSize: 15.sp),
+                          style:
+                              TextStyle(color: Colors.white, fontSize: 15.sp),
                         ),
                       ],
                     ),

@@ -20,11 +20,12 @@ class WithdrawFundsProcessingScreen extends StatefulWidget {
   });
 
   @override
-  State<WithdrawFundsProcessingScreen> createState() => _WithdrawFundsProcessingScreenState();
+  State<WithdrawFundsProcessingScreen> createState() =>
+      _WithdrawFundsProcessingScreenState();
 }
 
-class _WithdrawFundsProcessingScreenState extends State<WithdrawFundsProcessingScreen>
-    with TickerProviderStateMixin {
+class _WithdrawFundsProcessingScreenState
+    extends State<WithdrawFundsProcessingScreen> with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late AnimationController _rotationController;
   late Animation<double> _pulseAnimation;
@@ -101,9 +102,9 @@ class _WithdrawFundsProcessingScreenState extends State<WithdrawFundsProcessingS
 
       // Navigate to confirmation
       Get.off(() => WithdrawFundsConfirmationScreen(
-        amount: widget.amount,
-        paymentMethod: widget.paymentMethod,
-      ));
+            amount: widget.amount,
+            paymentMethod: widget.paymentMethod,
+          ));
     } catch (e) {
       // Error handling
       if (!mounted) return;
@@ -346,8 +347,7 @@ class _WithdrawFundsProcessingScreenState extends State<WithdrawFundsProcessingS
                 ),
               ),
               // Loading indicator for active step
-              if (isActive && !isCompleted)
-                LazerVaultLoader.tiny(),
+              if (isActive && !isCompleted) LazerVaultLoader.tiny(),
             ],
           ),
         );

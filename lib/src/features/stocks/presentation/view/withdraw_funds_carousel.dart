@@ -93,15 +93,18 @@ class _WithdrawFundsCarouselState extends State<WithdrawFundsCarousel> {
     switch (_currentPage) {
       case 0: // Amount
         if (_amount <= 0) {
-          _showError('Please enter an amount greater than ${CurrencySymbols.getSymbol(widget.currency)}0');
+          _showError(
+              'Please enter an amount greater than ${CurrencySymbols.getSymbol(widget.currency)}0');
           return false;
         }
         if (_amount < 10) {
-          _showError('Minimum withdrawal amount is ${CurrencySymbols.getSymbol(widget.currency)}10');
+          _showError(
+              'Minimum withdrawal amount is ${CurrencySymbols.getSymbol(widget.currency)}10');
           return false;
         }
         if (_amount > widget.availableCash) {
-          _showError('Insufficient funds. Available: ${CurrencySymbols.formatAmountWithCurrency(widget.availableCash, widget.currency)}');
+          _showError(
+              'Insufficient funds. Available: ${CurrencySymbols.formatAmountWithCurrency(widget.availableCash, widget.currency)}');
           return false;
         }
         return true;
@@ -130,10 +133,10 @@ class _WithdrawFundsCarouselState extends State<WithdrawFundsCarousel> {
 
   void _proceedToProcessing() {
     Get.to(() => WithdrawFundsProcessingScreen(
-      amount: _amount,
-      paymentMethod: _withdrawMethod,
-      paymentDetails: _withdrawDetails,
-    ));
+          amount: _amount,
+          paymentMethod: _withdrawMethod,
+          paymentDetails: _withdrawDetails,
+        ));
   }
 
   @override
@@ -177,7 +180,8 @@ class _WithdrawFundsCarouselState extends State<WithdrawFundsCarousel> {
               // Linear progress bar
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
-                width: (screenWidth - 32.w) * ((_currentPage + 1) / _totalPages),
+                width:
+                    (screenWidth - 32.w) * ((_currentPage + 1) / _totalPages),
                 height: 4.h,
                 decoration: BoxDecoration(
                   gradient: _currentPage == _totalPages - 1
@@ -185,7 +189,10 @@ class _WithdrawFundsCarouselState extends State<WithdrawFundsCarousel> {
                           colors: [Color(0xFFE53E3E), Color(0xFFD53F3F)],
                         )
                       : const LinearGradient(
-                          colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                          colors: [
+                            Color(0xFF6366F1),
+                            Color.fromARGB(255, 78, 3, 208)
+                          ],
                         ),
                   borderRadius: BorderRadius.circular(2.r),
                 ),
@@ -288,7 +295,9 @@ class _WithdrawFundsCarouselState extends State<WithdrawFundsCarousel> {
                     ),
                   ),
                   child: Text(
-                    _currentPage == _totalPages - 1 ? 'Withdraw Funds' : 'Continue',
+                    _currentPage == _totalPages - 1
+                        ? 'Withdraw Funds'
+                        : 'Continue',
                     style: GoogleFonts.inter(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,

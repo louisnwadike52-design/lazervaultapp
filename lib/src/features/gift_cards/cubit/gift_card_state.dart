@@ -2,7 +2,6 @@ import 'package:equatable/equatable.dart';
 import '../domain/entities/gift_card_entity.dart';
 part 'gift_card_state_widgets.dart';
 
-
 // Success States
 class GiftCardBrandsLoaded extends GiftCardState {
   final List<GiftCardBrand> brands;
@@ -24,5 +23,13 @@ class GiftCardBrandsLoaded extends GiftCardState {
   });
 
   @override
-  List<Object> get props => [brands, if (selectedCategory != null) selectedCategory!, isStale, currentPage, totalPages, hasNext, isLoadingMore];
+  List<Object> get props => [
+        brands,
+        if (selectedCategory != null) selectedCategory!,
+        isStale,
+        currentPage,
+        totalPages,
+        hasNext,
+        isLoadingMore
+      ];
 }

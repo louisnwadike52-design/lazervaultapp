@@ -35,7 +35,8 @@ abstract class IProfileRepository {
     required String query,
     int limit = 10,
     int offset = 0,
-    String searchType = '', // "username", "name", "phone", "email", or "" for unified search
+    String searchType =
+        '', // "username", "name", "phone", "email", or "" for unified search
   });
 
   /// Upload a new profile picture, persist the resulting public URL on

@@ -20,7 +20,8 @@ class StockDetailsRouteArgs {
     }
     if (raw is Map) {
       final collection = raw['investCollection'];
-      final id = collection is String && collection.isNotEmpty ? collection : null;
+      final id =
+          collection is String && collection.isNotEmpty ? collection : null;
 
       final s = raw['stock'];
       if (s is Stock) {
@@ -28,7 +29,8 @@ class StockDetailsRouteArgs {
       }
       final sym = raw['symbol'];
       if (sym is String && sym.isNotEmpty) {
-        final currency = raw['currency'] is String ? raw['currency'] as String : 'USD';
+        final currency =
+            raw['currency'] is String ? raw['currency'] as String : 'USD';
         return StockDetailsRouteArgs(
           stock: Stock.navigationStub(sym, currency: currency),
           investCollectionId: id,

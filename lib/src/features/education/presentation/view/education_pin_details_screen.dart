@@ -121,8 +121,9 @@ class EducationPinDetailsScreen extends StatelessWidget {
                     SizedBox(height: 16.h),
 
                     ...purchase.pins.asMap().entries.map(
-                      (entry) => _buildPinCard(context, entry.key, entry.value),
-                    ),
+                          (entry) =>
+                              _buildPinCard(context, entry.key, entry.value),
+                        ),
                   ],
                 ),
               ),
@@ -166,7 +167,8 @@ class EducationPinDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPurchaseInfoCard(EducationHistoryEntity purchase, String? providerName) {
+  Widget _buildPurchaseInfoCard(
+      EducationHistoryEntity purchase, String? providerName) {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -222,7 +224,8 @@ class EducationPinDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPinCard(BuildContext context, int index, EducationPinEntity pin) {
+  Widget _buildPinCard(
+      BuildContext context, int index, EducationPinEntity pin) {
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(16.w),
@@ -275,7 +278,8 @@ class EducationPinDetailsScreen extends StatelessWidget {
               GestureDetector(
                 onTap: () => _copyPin(context, pin.pin),
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                   decoration: BoxDecoration(
                     color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8.r),

@@ -51,10 +51,8 @@ Iterable<(String, String)> _allSources() => _libDir
 /// Every removal here is documented in a comment that quotes the shape it replaced
 /// — `onPressed: () {}` and the rest — so without stripping, the rationale matches
 /// as a regression and the test fails on correct code.
-String _stripComments(String source) => source
-    .split('\n')
-    .where((l) => !l.trimLeft().startsWith('//'))
-    .join('\n');
+String _stripComments(String source) =>
+    source.split('\n').where((l) => !l.trimLeft().startsWith('//')).join('\n');
 
 /// Files allowed an empty closure, each for a stated non-stub reason.
 ///
@@ -85,7 +83,8 @@ void main() {
         if (_emptyClosureAllowed.containsKey(base)) continue;
         for (final line in _stripComments(source).split('\n')) {
           if (line.contains('catch')) continue;
-          if (pattern.hasMatch(line)) offenders.add('$path\n    ${line.trim()}');
+          if (pattern.hasMatch(line))
+            offenders.add('$path\n    ${line.trim()}');
         }
       }
 
@@ -110,7 +109,8 @@ void main() {
       // ten legitimate ones exist. The enclosing call is found by scanning back
       // for `fold(`/`then(`/`catchError(` since the callback sits on its own line.
       final pattern = RegExp(r'^\s*\((?:value|v|_|checked)\)\s*\{\s*\},?\s*$');
-      final ignoredCall = RegExp(r'\.?(fold|then|catchError|onError|listen)\s*\(');
+      final ignoredCall =
+          RegExp(r'\.?(fold|then|catchError|onError|listen)\s*\(');
       final offenders = <String>[];
 
       for (final (path, source) in _allSources()) {
@@ -118,9 +118,8 @@ void main() {
         final lines = _stripComments(source).split('\n');
         for (var i = 0; i < lines.length; i++) {
           if (!pattern.hasMatch(lines[i])) continue;
-          final lookback = lines
-              .sublist((i - 4).clamp(0, lines.length), i + 1)
-              .join('\n');
+          final lookback =
+              lines.sublist((i - 4).clamp(0, lines.length), i + 1).join('\n');
           if (ignoredCall.hasMatch(lookback)) continue;
           offenders.add('$path:${i + 1}: ${lines[i].trim()}');
         }
@@ -143,7 +142,8 @@ void main() {
           final l = lines[i];
           if (!RegExp(r'//\s*TODO.*[Ii]mplement').hasMatch(l)) continue;
           // Look at the next few lines for a user-visible toast.
-          final window = lines.sublist(i, (i + 6).clamp(0, lines.length)).join('\n');
+          final window =
+              lines.sublist(i, (i + 6).clamp(0, lines.length)).join('\n');
           if (RegExp(r'coming soon', caseSensitive: false).hasMatch(window)) {
             offenders.add('$path:${i + 1}');
           }
@@ -168,7 +168,8 @@ void main() {
         expect(
           _stripComments(source).contains('calendar/outlook/'),
           isFalse,
-          reason: '$path posts to a calendar/outlook route with no server handler',
+          reason:
+              '$path posts to a calendar/outlook route with no server handler',
         );
       }
     });

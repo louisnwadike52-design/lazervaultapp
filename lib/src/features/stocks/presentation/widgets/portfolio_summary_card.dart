@@ -59,113 +59,118 @@ class PortfolioSummaryCard extends StatelessWidget {
                 ),
                 SizedBox(width: 16.w),
                 Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Portfolio value',
-                          style: GoogleFonts.inter(
-                            color: InvestTradingUi.textSecondary,
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Icon(
-                          Icons.chevron_right_rounded,
-                          color: InvestTradingUi.textSecondary,
-                          size: 22.sp,
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 10.h),
-                    Text(
-                      CurrencySymbols.formatAmountWithCurrency(totalValue, 'USD'),
-                      style: GoogleFonts.inter(
-                        color: InvestTradingUi.textPrimary,
-                        fontSize: 30.sp,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.6,
-                      ),
-                    ),
-                    SizedBox(height: 10.h),
-                    Row(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                          decoration: BoxDecoration(
-                            color: move.withValues(alpha: 0.14),
-                            borderRadius: BorderRadius.circular(8.r),
-                            border: Border.all(color: move.withValues(alpha: 0.35)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                isPositive
-                                    ? Icons.trending_up_rounded
-                                    : Icons.trending_down_rounded,
-                                color: move,
-                                size: 14.sp,
-                              ),
-                              SizedBox(width: 4.w),
-                              Text(
-                                CurrencySymbols.formatAmountWithCurrency(
-                                    dayChange.abs(), 'USD'),
-                                style: GoogleFonts.inter(
-                                  color: move,
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          '${isPositive ? '+' : ''}${dayChangePercent.toStringAsFixed(2)}%',
-                          style: GoogleFonts.inter(
-                            color: move,
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          'Today',
-                          style: GoogleFonts.inter(
-                            color: InvestTradingUi.textSecondary,
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (hasPortfolio && portfolio!.holdings.isNotEmpty) ...[
-                      SizedBox(height: 16.h),
-                      Divider(color: InvestTradingUi.border, height: 1),
-                      SizedBox(height: 16.h),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _buildStat('Holdings', portfolio!.holdings.length.toString()),
-                          _buildStat(
-                              'Cash',
-                              CurrencySymbols.formatAmountWithCurrency(
-                                  portfolio!.availableCash, 'USD')),
-                          _buildStat(
-                              'Invested',
-                              CurrencySymbols.formatAmountWithCurrency(
-                                  totalValue - portfolio!.availableCash, 'USD')),
+                          Text(
+                            'Portfolio value',
+                            style: GoogleFonts.inter(
+                              color: InvestTradingUi.textSecondary,
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            color: InvestTradingUi.textSecondary,
+                            size: 22.sp,
+                          ),
                         ],
                       ),
+                      SizedBox(height: 10.h),
+                      Text(
+                        CurrencySymbols.formatAmountWithCurrency(
+                            totalValue, 'USD'),
+                        style: GoogleFonts.inter(
+                          color: InvestTradingUi.textPrimary,
+                          fontSize: 30.sp,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.6,
+                        ),
+                      ),
+                      SizedBox(height: 10.h),
+                      Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8.w, vertical: 4.h),
+                            decoration: BoxDecoration(
+                              color: move.withValues(alpha: 0.14),
+                              borderRadius: BorderRadius.circular(8.r),
+                              border: Border.all(
+                                  color: move.withValues(alpha: 0.35)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isPositive
+                                      ? Icons.trending_up_rounded
+                                      : Icons.trending_down_rounded,
+                                  color: move,
+                                  size: 14.sp,
+                                ),
+                                SizedBox(width: 4.w),
+                                Text(
+                                  CurrencySymbols.formatAmountWithCurrency(
+                                      dayChange.abs(), 'USD'),
+                                  style: GoogleFonts.inter(
+                                    color: move,
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+                          Text(
+                            '${isPositive ? '+' : ''}${dayChangePercent.toStringAsFixed(2)}%',
+                            style: GoogleFonts.inter(
+                              color: move,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            'Today',
+                            style: GoogleFonts.inter(
+                              color: InvestTradingUi.textSecondary,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (hasPortfolio && portfolio!.holdings.isNotEmpty) ...[
+                        SizedBox(height: 16.h),
+                        Divider(color: InvestTradingUi.border, height: 1),
+                        SizedBox(height: 16.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildStat('Holdings',
+                                portfolio!.holdings.length.toString()),
+                            _buildStat(
+                                'Cash',
+                                CurrencySymbols.formatAmountWithCurrency(
+                                    portfolio!.availableCash, 'USD')),
+                            _buildStat(
+                                'Invested',
+                                CurrencySymbols.formatAmountWithCurrency(
+                                    totalValue - portfolio!.availableCash,
+                                    'USD')),
+                          ],
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
             ),
           ),
         ),

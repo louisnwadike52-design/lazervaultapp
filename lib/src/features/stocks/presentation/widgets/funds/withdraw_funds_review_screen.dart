@@ -123,11 +123,14 @@ class WithdrawFundsReviewScreen extends StatelessWidget {
             _buildDivider(),
             _buildDetailRow('Processing Time', _processingTime),
             _buildDivider(),
-            _buildDetailRow('Withdrawal Amount', CurrencySymbols.formatAmountWithCurrency(amount, currency)),
+            _buildDetailRow('Withdrawal Amount',
+                CurrencySymbols.formatAmountWithCurrency(amount, currency)),
             _buildDivider(),
             _buildDetailRow(
               'Processing Fee',
-              _fee == 0 ? 'Free' : '-${CurrencySymbols.formatAmountWithCurrency(_fee, currency)}',
+              _fee == 0
+                  ? 'Free'
+                  : '-${CurrencySymbols.formatAmountWithCurrency(_fee, currency)}',
               labelColor: Colors.grey[500],
               valueColor: _fee > 0 ? Colors.orange : null,
             ),
@@ -168,7 +171,8 @@ class WithdrawFundsReviewScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      CurrencySymbols.formatAmountWithCurrency(_totalAmount, currency),
+                      CurrencySymbols.formatAmountWithCurrency(
+                          _totalAmount, currency),
                       style: GoogleFonts.inter(
                         fontSize: 32.sp,
                         fontWeight: FontWeight.w700,
@@ -215,7 +219,8 @@ class WithdrawFundsReviewScreen extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  CurrencySymbols.formatAmountWithCurrency(availableCash - amount, currency),
+                  CurrencySymbols.formatAmountWithCurrency(
+                      availableCash - amount, currency),
                   style: GoogleFonts.inter(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w700,
@@ -352,7 +357,8 @@ class WithdrawFundsReviewScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoBox(IconData icon, String title, String message, Color color) {
+  Widget _buildInfoBox(
+      IconData icon, String title, String message, Color color) {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(

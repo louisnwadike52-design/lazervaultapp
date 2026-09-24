@@ -7,7 +7,6 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:uuid/uuid.dart';
 part 'transaction_pin_service_widgets.dart';
 
-
 /// Implementation of transaction PIN service using gRPC
 class TransactionPinService implements ITransactionPinService {
   final TransactionPinServiceClient _client;
@@ -112,27 +111,31 @@ class TransactionPinService implements ITransactionPinService {
     if (_hasPinConfirmed && !forceRefresh) return true;
     try {
       final userId = await _getUserId();
-      print('[TransactionPinService] checkUserHasPin for userId: $userId (forceRefresh=$forceRefresh)');
+      print(
+          '[TransactionPinService] checkUserHasPin for userId: $userId (forceRefresh=$forceRefresh)');
 
       final request = CheckUserHasPinRequest()..userId = userId;
 
-      final response =
-          await _retryOnTransient(() => _callOptionsHelper.executeWithTokenRotation(() async {
-        final callOptions = await _callOptionsHelper.withAuth();
-        return await _client.checkUserHasPin(
-          request,
-          options: callOptions,
-        );
-      }));
+      final response = await _retryOnTransient(
+          () => _callOptionsHelper.executeWithTokenRotation(() async {
+                final callOptions = await _callOptionsHelper.withAuth();
+                return await _client.checkUserHasPin(
+                  request,
+                  options: callOptions,
+                );
+              }));
 
-      print('[TransactionPinService] checkUserHasPin response: hasPin=${response.hasPin}, isActive=${response.isActive}');
+      print(
+          '[TransactionPinService] checkUserHasPin response: hasPin=${response.hasPin}, isActive=${response.isActive}');
       // Keep the cache authoritative in BOTH directions so a forceRefresh after a
       // reset flips a stale true → false (and vice-versa).
       _hasPinConfirmed = response.hasPin;
       return response.hasPin;
     } on GrpcError catch (e) {
-      print('[TransactionPinService] gRPC Error checking PIN: ${e.codeName} - ${e.message}');
-      throw Exception('Failed to check PIN status: ${e.message ?? "Unknown error"}');
+      print(
+          '[TransactionPinService] gRPC Error checking PIN: ${e.codeName} - ${e.message}');
+      throw Exception(
+          'Failed to check PIN status: ${e.message ?? "Unknown error"}');
     } catch (e) {
       print('[TransactionPinService] Unexpected error checking PIN: $e');
       throw Exception('An unexpected error occurred: $e');
@@ -160,14 +163,14 @@ class TransactionPinService implements ITransactionPinService {
         ..currency = currency
         ..deviceId = deviceId;
 
-      final response =
-          await _retryOnTransient(() => _callOptionsHelper.executeWithTokenRotation(() async {
-        final callOptions = await _callOptionsHelper.withAuth();
-        return await _client.verifyTransactionPin(
-          request,
-          options: callOptions,
-        );
-      }));
+      final response = await _retryOnTransient(
+          () => _callOptionsHelper.executeWithTokenRotation(() async {
+                final callOptions = await _callOptionsHelper.withAuth();
+                return await _client.verifyTransactionPin(
+                  request,
+                  options: callOptions,
+                );
+              }));
 
       if (!response.success) {
         // "No PIN set up" (e.g. an admin cleared it) comes back as a NORMAL
@@ -181,7 +184,8 @@ class TransactionPinService implements ITransactionPinService {
                 msg.contains('not set up') ||
                 msg.contains('pin needs to be set'))) {
           _hasPinConfirmed = false;
-          return TransactionPinVerificationResult.noPinSet(message: response.message);
+          return TransactionPinVerificationResult.noPinSet(
+              message: response.message);
         }
 
         // Check if PIN is locked
@@ -234,7 +238,8 @@ class TransactionPinService implements ITransactionPinService {
         ..userId = userId
         ..transactionId = transactionId;
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.validateTransactionPinToken(
           request,
@@ -245,7 +250,8 @@ class TransactionPinService implements ITransactionPinService {
       return response.valid;
     } on GrpcError catch (e) {
       print('gRPC Error validating token: $e');
-      throw Exception('Failed to validate token: ${e.message ?? "Unknown error"}');
+      throw Exception(
+          'Failed to validate token: ${e.message ?? "Unknown error"}');
     } catch (e) {
       print('Unexpected error validating token: $e');
       throw Exception('An unexpected error occurred');
@@ -272,16 +278,19 @@ class TransactionPinService implements ITransactionPinService {
       // Run inside the token-rotation wrapper so an expired access token
       // doesn't permanently fail the create — the wrapper refreshes and
       // retries once on Unauthenticated.
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
-        print('[TransactionPinService] createPin for userId: $userId, deviceId: $deviceId');
+        print(
+            '[TransactionPinService] createPin for userId: $userId, deviceId: $deviceId');
         return await _client.createTransactionPin(
           request,
           options: callOptions,
         );
       });
 
-      print('[TransactionPinService] createPin response: success=${response.success}, message=${response.message}');
+      print(
+          '[TransactionPinService] createPin response: success=${response.success}, message=${response.message}');
       // A PIN now exists — warm the session cache so the very next PIN-gated
       // action (e.g. the payment we bounced out of, or a resumed login flow)
       // doesn't need another round-trip to discover it.
@@ -292,7 +301,8 @@ class TransactionPinService implements ITransactionPinService {
       // e.code (AlreadyExists, InvalidArgument, Unauthenticated, …) that the
       // backend mapped via classifyPinError in transaction_pin_server.go.
       // Wrapping in a generic Exception here would erase that signal.
-      print('[TransactionPinService] gRPC Error creating PIN: ${e.codeName} - ${e.message}');
+      print(
+          '[TransactionPinService] gRPC Error creating PIN: ${e.codeName} - ${e.message}');
       rethrow;
     } catch (e) {
       print('Unexpected error creating PIN: $e');
@@ -315,7 +325,8 @@ class TransactionPinService implements ITransactionPinService {
         ..newPin = newPin
         ..confirmNewPin = confirmNewPin;
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.changeTransactionPin(
           request,
@@ -397,8 +408,10 @@ class TransactionPinService implements ITransactionPinService {
         cooldownSeconds: response.cooldownSeconds,
       );
     } on GrpcError catch (e) {
-      print('[TransactionPinService] gRPC Error initiating PIN OTP: ${e.codeName} - ${e.message}');
-      throw Exception('Failed to initiate OTP: ${e.message ?? "Unknown error"}');
+      print(
+          '[TransactionPinService] gRPC Error initiating PIN OTP: ${e.codeName} - ${e.message}');
+      throw Exception(
+          'Failed to initiate OTP: ${e.message ?? "Unknown error"}');
     } catch (e) {
       print('[TransactionPinService] Unexpected error initiating PIN OTP: $e');
       throw Exception('An unexpected error occurred');
@@ -441,7 +454,8 @@ class TransactionPinService implements ITransactionPinService {
         remainingAttempts: response.remainingAttempts,
       );
     } on GrpcError catch (e) {
-      print('[TransactionPinService] gRPC Error verifying PIN OTP: ${e.codeName} - ${e.message}');
+      print(
+          '[TransactionPinService] gRPC Error verifying PIN OTP: ${e.codeName} - ${e.message}');
       throw Exception('Failed to verify OTP: ${e.message ?? "Unknown error"}');
     } catch (e) {
       print('[TransactionPinService] Unexpected error verifying PIN OTP: $e');
@@ -454,8 +468,7 @@ class TransactionPinService implements ITransactionPinService {
     try {
       final userId = await _getUserId();
 
-      final request = GetPinOTPChannelsRequest()
-        ..userId = userId;
+      final request = GetPinOTPChannelsRequest()..userId = userId;
 
       final callOptions = await _callOptionsHelper.withAuth();
       final response = await _client.getPinOTPChannels(
@@ -463,17 +476,22 @@ class TransactionPinService implements ITransactionPinService {
         options: callOptions,
       );
 
-      return response.channels.map((ch) => OTPChannelInfo(
-        type: ch.type,
-        maskedDestination: ch.maskedDestination,
-        isVerified: ch.isVerified,
-        isAvailable: ch.isAvailable,
-      )).toList();
+      return response.channels
+          .map((ch) => OTPChannelInfo(
+                type: ch.type,
+                maskedDestination: ch.maskedDestination,
+                isVerified: ch.isVerified,
+                isAvailable: ch.isAvailable,
+              ))
+          .toList();
     } on GrpcError catch (e) {
-      print('[TransactionPinService] gRPC Error getting PIN OTP channels: ${e.codeName} - ${e.message}');
-      throw Exception('Failed to get OTP channels: ${e.message ?? "Unknown error"}');
+      print(
+          '[TransactionPinService] gRPC Error getting PIN OTP channels: ${e.codeName} - ${e.message}');
+      throw Exception(
+          'Failed to get OTP channels: ${e.message ?? "Unknown error"}');
     } catch (e) {
-      print('[TransactionPinService] Unexpected error getting PIN OTP channels: $e');
+      print(
+          '[TransactionPinService] Unexpected error getting PIN OTP channels: $e');
       throw Exception('An unexpected error occurred');
     }
   }
@@ -507,10 +525,13 @@ class TransactionPinService implements ITransactionPinService {
         remainingAttempts: response.remainingAttempts,
       );
     } on GrpcError catch (e) {
-      print('[TransactionPinService] gRPC Error completing forgot PIN: ${e.codeName} - ${e.message}');
-      throw Exception('Failed to complete forgot PIN: ${e.message ?? "Unknown error"}');
+      print(
+          '[TransactionPinService] gRPC Error completing forgot PIN: ${e.codeName} - ${e.message}');
+      throw Exception(
+          'Failed to complete forgot PIN: ${e.message ?? "Unknown error"}');
     } catch (e) {
-      print('[TransactionPinService] Unexpected error completing forgot PIN: $e');
+      print(
+          '[TransactionPinService] Unexpected error completing forgot PIN: $e');
       throw Exception('An unexpected error occurred');
     }
   }

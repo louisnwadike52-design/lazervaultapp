@@ -104,56 +104,56 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
           if (!didPop) Get.back(result: _didMutate);
         },
         child: Scaffold(
-        backgroundColor: const Color(0xFF0A0A0A),
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            onPressed: () => Get.back(result: _didMutate),
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-          ),
-          title: Text(
-            'Expense',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
+          backgroundColor: const Color(0xFF0A0A0A),
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              onPressed: () => Get.back(result: _didMutate),
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
             ),
-          ),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.edit, color: Colors.white),
-              onPressed: () async {
-                final cubit = context.read<ExpenseCubit>();
-                final r = await Get.toNamed(
-                  AppRoutes.editExpense,
-                  arguments: _expense,
-                );
-                if (r == true) {
-                  cubit.getExpense(_expense.id);
-                }
-              },
+            title: Text(
+              'Expense',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            IconButton(
-              icon: const Icon(Icons.delete, color: Color(0xFFEF4444)),
-              onPressed: _confirmDelete,
-            ),
-          ],
-        ),
-        body: SafeArea(
-          child: ListView(
-            padding: EdgeInsets.all(20.w),
-            children: [
-              _headerCard(),
-              SizedBox(height: 16.h),
-              _detailsCard(),
-              SizedBox(height: 16.h),
-              _actionsCard(),
+            centerTitle: true,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.edit, color: Colors.white),
+                onPressed: () async {
+                  final cubit = context.read<ExpenseCubit>();
+                  final r = await Get.toNamed(
+                    AppRoutes.editExpense,
+                    arguments: _expense,
+                  );
+                  if (r == true) {
+                    cubit.getExpense(_expense.id);
+                  }
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete, color: Color(0xFFEF4444)),
+                onPressed: _confirmDelete,
+              ),
             ],
           ),
+          body: SafeArea(
+            child: ListView(
+              padding: EdgeInsets.all(20.w),
+              children: [
+                _headerCard(),
+                SizedBox(height: 16.h),
+                _detailsCard(),
+                SizedBox(height: 16.h),
+                _actionsCard(),
+              ],
+            ),
+          ),
         ),
-      ),
       ),
     );
   }
@@ -185,8 +185,8 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
                   color: e.category.color.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: Icon(e.category.icon,
-                    color: e.category.color, size: 24.sp),
+                child:
+                    Icon(e.category.icon, color: e.category.color, size: 24.sp),
               ),
               SizedBox(width: 12.w),
               Expanded(

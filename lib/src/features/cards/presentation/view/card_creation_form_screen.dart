@@ -22,7 +22,8 @@ class CardCreationFormScreen extends StatefulWidget {
 
 class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
   final TextEditingController _nicknameController = TextEditingController();
-  final TextEditingController _spendingLimitController = TextEditingController();
+  final TextEditingController _spendingLimitController =
+      TextEditingController();
 
   String spendingLimitAmount = ''; // Stores amount in minor units
   CardType _cardType = CardType.virtual;
@@ -80,7 +81,8 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
         return;
       }
 
-      final getAccountSummariesUseCase = context.read<GetAccountSummariesUseCase>();
+      final getAccountSummariesUseCase =
+          context.read<GetAccountSummariesUseCase>();
       final result = await getAccountSummariesUseCase(userId: userId);
 
       result.fold(
@@ -130,7 +132,8 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
     setState(() {
       if (value == '<') {
         if (spendingLimitAmount.isNotEmpty) {
-          spendingLimitAmount = spendingLimitAmount.substring(0, spendingLimitAmount.length - 1);
+          spendingLimitAmount =
+              spendingLimitAmount.substring(0, spendingLimitAmount.length - 1);
         }
       } else {
         if (spendingLimitAmount.length < 8) {
@@ -228,7 +231,8 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
                             Colors.white.withValues(alpha: 0.05),
                           ],
                         ),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.2)),
                       ),
                       child: Icon(
                         _cardType == CardType.virtual
@@ -262,15 +266,19 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
                     children: [
                       _buildConfirmationRow('Card Holder', cardHolderName, ''),
                       if (_nicknameController.text.isNotEmpty)
-                        _buildConfirmationRow('Nickname', _nicknameController.text, ''),
-                      if (_cardType == CardType.disposable && limit != null) ...[
+                        _buildConfirmationRow(
+                            'Nickname', _nicknameController.text, ''),
+                      if (_cardType == CardType.disposable &&
+                          limit != null) ...[
                         _buildConfirmationRow(
                           'Spending Limit',
                           '',
-                          NumberFormat.currency(symbol: '£', decimalDigits: 2).format(limit),
+                          NumberFormat.currency(symbol: '£', decimalDigits: 2)
+                              .format(limit),
                         ),
                         if (_maxUsageCount != null)
-                          _buildConfirmationRow('Max Uses', '', '$_maxUsageCount times'),
+                          _buildConfirmationRow(
+                              'Max Uses', '', '$_maxUsageCount times'),
                         _buildConfirmationRow(
                           'Expires In',
                           '',
@@ -298,12 +306,14 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
                                 _createCard();
                               },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2962FF).withValues(alpha: 0.9),
+                          backgroundColor:
+                              const Color(0xFF2962FF).withValues(alpha: 0.9),
                           padding: EdgeInsets.symmetric(vertical: 16.h),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          disabledBackgroundColor: Colors.grey.withValues(alpha: 0.5),
+                          disabledBackgroundColor:
+                              Colors.grey.withValues(alpha: 0.5),
                           elevation: 8,
                         ),
                         child: _isLoading
@@ -320,7 +330,9 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
                     ),
                     SizedBox(height: 12.h),
                     TextButton(
-                      onPressed: _isLoading ? null : () => Navigator.pop(dialogContext),
+                      onPressed: _isLoading
+                          ? null
+                          : () => Navigator.pop(dialogContext),
                       child: Text(
                         'Cancel',
                         style: TextStyle(
@@ -339,7 +351,8 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
     );
   }
 
-  Widget _buildConfirmationRow(String label, String name, String detail, {bool isLast = false}) {
+  Widget _buildConfirmationRow(String label, String name, String detail,
+      {bool isLast = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -472,7 +485,8 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
                                   Text(
                                     cardHolderName,
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.7),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.7),
                                       fontSize: 12,
                                     ),
                                   ),
@@ -505,7 +519,8 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
                       // Card Details Section
                       if (_cardType == CardType.disposable) ...[
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 16.w, vertical: 10.h),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(16),
@@ -521,9 +536,11 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
                               Row(
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.05),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.05),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: const Text(
@@ -545,7 +562,8 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
                                         border: InputBorder.none,
                                         hintText: '£0.00',
                                         hintStyle: TextStyle(
-                                          color: Colors.white.withValues(alpha: 0.5),
+                                          color: Colors.white
+                                              .withValues(alpha: 0.5),
                                           fontSize: 24,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -559,7 +577,8 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
 
                               // Nickname field
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 0),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withValues(alpha: 0.05),
                                   borderRadius: BorderRadius.circular(8),
@@ -586,7 +605,8 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
                                             color: Colors.white70,
                                             fontSize: 14,
                                           ),
-                                          contentPadding: EdgeInsets.symmetric(vertical: 14),
+                                          contentPadding: EdgeInsets.symmetric(
+                                              vertical: 14),
                                         ),
                                       ),
                                     ),
@@ -607,10 +627,13 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
                                 .map((limitValue) => GestureDetector(
                                       onTap: () => _setQuickLimit(limitValue),
                                       child: Container(
-                                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 16.w, vertical: 8.h),
                                         decoration: BoxDecoration(
-                                          color: Colors.white.withValues(alpha: 0.05),
-                                          borderRadius: BorderRadius.circular(20),
+                                          color: Colors.white
+                                              .withValues(alpha: 0.05),
+                                          borderRadius:
+                                              BorderRadius.circular(20),
                                         ),
                                         child: Text(
                                           '£$limitValue',
@@ -633,7 +656,8 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
                           children: [
                             const Text(
                               'Card Expiry',
-                              style: TextStyle(color: Colors.white70, fontSize: 14),
+                              style: TextStyle(
+                                  color: Colors.white70, fontSize: 14),
                             ),
                             SizedBox(height: 8.h),
                             Row(
@@ -679,7 +703,8 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
                                       color: Colors.white70,
                                       fontSize: 14,
                                     ),
-                                    contentPadding: EdgeInsets.symmetric(vertical: 14),
+                                    contentPadding:
+                                        EdgeInsets.symmetric(vertical: 14),
                                   ),
                                 ),
                               ),
@@ -693,14 +718,17 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: _isLoading ? null : _showConfirmationDialog,
+                          onPressed:
+                              _isLoading ? null : _showConfirmationDialog,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2962FF).withValues(alpha: 0.8),
+                            backgroundColor:
+                                const Color(0xFF2962FF).withValues(alpha: 0.8),
                             padding: EdgeInsets.symmetric(vertical: 12.h),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            disabledBackgroundColor: Colors.grey.withValues(alpha: 0.3),
+                            disabledBackgroundColor:
+                                Colors.grey.withValues(alpha: 0.3),
                           ),
                           child: const Text(
                             'Create Card',

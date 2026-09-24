@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'package:csv/csv.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 import 'package:intl/intl.dart';
 import 'dart:ui' show Rect;
@@ -70,12 +71,13 @@ class AutoSaveExportHelper {
     final String csv = const ListToCsvConverter().convert(rows);
 
     // Generate filename with timestamp
-    final String timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+    final String timestamp =
+        DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
     // Share the CSV file
     await SharePlus.instance.share(ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+      // iOS: a non-zero popover anchor is required — CGRectZero throws
+      // PlatformException and the share silently fails on iPhone/iPad.
+      sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       text: csv,
       subject: 'AutoSave Rules Export - $timestamp',
     ));
@@ -103,15 +105,17 @@ class AutoSaveExportHelper {
     };
 
     // Convert to formatted JSON string
-    final String jsonString = const JsonEncoder.withIndent('  ').convert(exportData);
+    final String jsonString =
+        const JsonEncoder.withIndent('  ').convert(exportData);
 
     // Generate filename with timestamp
-    final String timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+    final String timestamp =
+        DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
     // Share the JSON file
     await SharePlus.instance.share(ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+      // iOS: a non-zero popover anchor is required — CGRectZero throws
+      // PlatformException and the share silently fails on iPhone/iPad.
+      sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       text: jsonString,
       subject: 'AutoSave Rules Export - $timestamp',
     ));
@@ -128,10 +132,12 @@ class AutoSaveExportHelper {
       throw Exception('No rules to export');
     }
 
-    final totalSaved = rules.fold<double>(0, (sum, rule) => sum + rule.totalSaved);
+    final totalSaved =
+        rules.fold<double>(0, (sum, rule) => sum + rule.totalSaved);
     final activeCount = rules.where((r) => r.isActive).length;
     final pausedCount = rules.where((r) => r.isPaused).length;
-    final completedCount = rules.where((r) => r.status == AutoSaveStatus.completed).length;
+    final completedCount =
+        rules.where((r) => r.status == AutoSaveStatus.completed).length;
     final avgSaved = rules.isNotEmpty ? totalSaved / rules.length : 0;
     // fold + nullable accumulator instead of `.reduce(...)` so a list
     // whose runtime element type is AutoSaveRuleModel (data class
@@ -139,8 +145,7 @@ class AutoSaveExportHelper {
     // variance check. See cubit's normalisation comment for context.
     final bestPerformer = rules.fold<AutoSaveRuleEntity?>(
       null,
-      (best, r) =>
-          best == null || r.totalSaved > best.totalSaved ? r : best,
+      (best, r) => best == null || r.totalSaved > best.totalSaved ? r : best,
     );
 
     final summary = '''
@@ -177,9 +182,9 @@ Rule: ${rule.name}
 ''';
 
     await SharePlus.instance.share(ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+      // iOS: a non-zero popover anchor is required — CGRectZero throws
+      // PlatformException and the share silently fails on iPhone/iPad.
+      sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       text: summary,
       subject: 'AutoSave Rules Summary Report',
     ));
@@ -212,7 +217,9 @@ Rule: ${rule.name}
       },
       'schedule': rule.triggerType == TriggerType.scheduled
           ? {
-              'frequency': rule.frequency != null ? _getFrequencyText(rule.frequency!) : null,
+              'frequency': rule.frequency != null
+                  ? _getFrequencyText(rule.frequency!)
+                  : null,
               'time': rule.scheduleTime,
               'day': rule.scheduleDay,
             }
@@ -246,7 +253,8 @@ Rule: ${rule.name}
   }
 
   // Helper method to get trigger type text
-  static String _getTriggerTypeText(TriggerType type) => AutoSaveTriggerLabels.nameOf(type);
+  static String _getTriggerTypeText(TriggerType type) =>
+      AutoSaveTriggerLabels.nameOf(type);
 
   // Helper method to get frequency text
   static String _getFrequencyText(ScheduleFrequency frequency) {

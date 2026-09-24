@@ -18,7 +18,8 @@ void main() {
   group('voice language endpoint composition', () {
     test('a host base produces the path exactly once', () {
       final url = compose('https://api.lazervault.app');
-      expect(url, 'https://api.lazervault.app/api/v1/voice/languages?country=NG');
+      expect(
+          url, 'https://api.lazervault.app/api/v1/voice/languages?country=NG');
       expect('/voice/languages'.allMatches(url).length, 1);
     });
 

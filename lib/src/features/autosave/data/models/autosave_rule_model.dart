@@ -34,7 +34,7 @@ class AutoSaveRuleModel extends AutoSaveRuleEntity {
     // Gateway sends amounts in kobo (minor units), convert to Naira (major) for display
     final amountType = _amountTypeFromProto(proto.amountType);
     final amountValue = amountType == AmountType.percentage
-        ? proto.amountValue  // Percentages stay as-is
+        ? proto.amountValue // Percentages stay as-is
         : proto.amountValue / 100; // kobo -> Naira
 
     return AutoSaveRuleModel(
@@ -52,12 +52,20 @@ class AutoSaveRuleModel extends AutoSaveRuleEntity {
       scheduleTime: proto.scheduleTime.isEmpty ? null : proto.scheduleTime,
       scheduleDay: proto.scheduleDay == 0 ? null : proto.scheduleDay,
       roundUpTo: proto.roundUpTo == 0 ? null : proto.roundUpTo,
-      targetAmount: proto.targetAmount == 0 ? null : proto.targetAmount / 100, // kobo -> Naira
-      minimumBalance: proto.minimumBalance == 0 ? null : proto.minimumBalance / 100, // kobo -> Naira
-      maximumPerSave: proto.maximumPerSave == 0 ? null : proto.maximumPerSave / 100, // kobo -> Naira
+      targetAmount: proto.targetAmount == 0
+          ? null
+          : proto.targetAmount / 100, // kobo -> Naira
+      minimumBalance: proto.minimumBalance == 0
+          ? null
+          : proto.minimumBalance / 100, // kobo -> Naira
+      maximumPerSave: proto.maximumPerSave == 0
+          ? null
+          : proto.maximumPerSave / 100, // kobo -> Naira
       createdAt: proto.createdAt.toDateTime(),
       updatedAt: proto.updatedAt.toDateTime(),
-      lastTriggeredAt: proto.hasLastTriggeredAt() ? proto.lastTriggeredAt.toDateTime() : null,
+      lastTriggeredAt: proto.hasLastTriggeredAt()
+          ? proto.lastTriggeredAt.toDateTime()
+          : null,
       triggerCount: proto.triggerCount,
       totalSaved: proto.totalSaved / 100, // kobo -> Naira
       sourceLinkedAccountId: proto.sourceLinkedAccountId,
@@ -109,7 +117,8 @@ class AutoSaveRuleModel extends AutoSaveRuleEntity {
     }
   }
 
-  static ScheduleFrequency? _frequencyFromProto(autosave_pb.ScheduleFrequency proto) {
+  static ScheduleFrequency? _frequencyFromProto(
+      autosave_pb.ScheduleFrequency proto) {
     switch (proto) {
       case autosave_pb.ScheduleFrequency.FREQUENCY_DAILY:
         return ScheduleFrequency.daily;
@@ -123,7 +132,6 @@ class AutoSaveRuleModel extends AutoSaveRuleEntity {
         return null;
     }
   }
-
 }
 
 class AutoSaveTransactionModel extends AutoSaveTransactionEntity {
@@ -145,7 +153,8 @@ class AutoSaveTransactionModel extends AutoSaveTransactionEntity {
     super.metadata,
   });
 
-  factory AutoSaveTransactionModel.fromProto(autosave_pb.AutoSaveTransaction proto) {
+  factory AutoSaveTransactionModel.fromProto(
+      autosave_pb.AutoSaveTransaction proto) {
     return AutoSaveTransactionModel(
       id: proto.id,
       ruleId: proto.ruleId,
@@ -179,7 +188,8 @@ class AutoSaveStatisticsModel extends AutoSaveStatisticsEntity {
     super.mostActiveRule,
   });
 
-  factory AutoSaveStatisticsModel.fromProto(autosave_pb.AutoSaveStatistics proto) {
+  factory AutoSaveStatisticsModel.fromProto(
+      autosave_pb.AutoSaveStatistics proto) {
     return AutoSaveStatisticsModel(
       userId: proto.userId,
       activeRulesCount: proto.activeRulesCount,

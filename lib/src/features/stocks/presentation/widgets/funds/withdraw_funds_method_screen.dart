@@ -17,7 +17,8 @@ class WithdrawFundsMethodScreen extends StatefulWidget {
   });
 
   @override
-  State<WithdrawFundsMethodScreen> createState() => _WithdrawFundsMethodScreenState();
+  State<WithdrawFundsMethodScreen> createState() =>
+      _WithdrawFundsMethodScreenState();
 }
 
 class _WithdrawFundsMethodScreenState extends State<WithdrawFundsMethodScreen> {
@@ -25,35 +26,35 @@ class _WithdrawFundsMethodScreenState extends State<WithdrawFundsMethodScreen> {
   final Map<String, String> _withdrawDetails = {};
 
   List<Map<String, dynamic>> get _withdrawMethods => [
-    {
-      'name': 'Bank Transfer',
-      'icon': Icons.account_balance,
-      'description': 'Transfer to your linked bank account',
-      'processingTime': '1-3 business days',
-      'fee': 'Free',
-    },
-    {
-      'name': 'Wire Transfer',
-      'icon': Icons.payment,
-      'description': 'Direct wire transfer to your account',
-      'processingTime': 'Same day',
-      'fee': '${CurrencySymbols.getSymbol(widget.currency)}25 fee',
-    },
-    {
-      'name': 'PayPal',
-      'icon': Icons.paypal,
-      'description': 'Instant transfer to your PayPal account',
-      'processingTime': 'Instant',
-      'fee': '2% fee',
-    },
-    {
-      'name': 'Check',
-      'icon': Icons.mail_outline,
-      'description': 'Physical check mailed to your address',
-      'processingTime': '5-7 business days',
-      'fee': '${CurrencySymbols.getSymbol(widget.currency)}5 fee',
-    },
-  ];
+        {
+          'name': 'Bank Transfer',
+          'icon': Icons.account_balance,
+          'description': 'Transfer to your linked bank account',
+          'processingTime': '1-3 business days',
+          'fee': 'Free',
+        },
+        {
+          'name': 'Wire Transfer',
+          'icon': Icons.payment,
+          'description': 'Direct wire transfer to your account',
+          'processingTime': 'Same day',
+          'fee': '${CurrencySymbols.getSymbol(widget.currency)}25 fee',
+        },
+        {
+          'name': 'PayPal',
+          'icon': Icons.paypal,
+          'description': 'Instant transfer to your PayPal account',
+          'processingTime': 'Instant',
+          'fee': '2% fee',
+        },
+        {
+          'name': 'Check',
+          'icon': Icons.mail_outline,
+          'description': 'Physical check mailed to your address',
+          'processingTime': '5-7 business days',
+          'fee': '${CurrencySymbols.getSymbol(widget.currency)}5 fee',
+        },
+      ];
 
   @override
   void initState() {
@@ -105,7 +106,8 @@ class _WithdrawFundsMethodScreenState extends State<WithdrawFundsMethodScreen> {
                   colors: isSelected
                       ? [
                           const Color(0xFF6366F1).withValues(alpha: 0.3),
-                          const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
+                          const Color.fromARGB(255, 78, 3, 208)
+                              .withValues(alpha: 0.3),
                         ]
                       : [
                           const Color(0xFF2A2A3E).withValues(alpha: 0.8),
@@ -139,7 +141,9 @@ class _WithdrawFundsMethodScreenState extends State<WithdrawFundsMethodScreen> {
                           ),
                           child: Icon(
                             method['icon'],
-                            color: isSelected ? const Color(0xFF6366F1) : Colors.grey[400],
+                            color: isSelected
+                                ? const Color(0xFF6366F1)
+                                : Colors.grey[400],
                             size: 24.sp,
                           ),
                         ),
@@ -167,7 +171,8 @@ class _WithdrawFundsMethodScreenState extends State<WithdrawFundsMethodScreen> {
                                     decoration: BoxDecoration(
                                       color: method['fee'] == 'Free'
                                           ? Colors.green.withValues(alpha: 0.2)
-                                          : Colors.orange.withValues(alpha: 0.2),
+                                          : Colors.orange
+                                              .withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(8.r),
                                     ),
                                     child: Text(

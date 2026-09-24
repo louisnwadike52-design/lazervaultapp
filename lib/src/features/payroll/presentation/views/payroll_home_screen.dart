@@ -421,7 +421,10 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [InvoiceThemeColors.primaryPurple, InvoiceThemeColors.primaryPurpleLight],
+          colors: [
+            InvoiceThemeColors.primaryPurple,
+            InvoiceThemeColors.primaryPurpleLight
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -496,7 +499,8 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
           children: [
             CircleAvatar(
               radius: 22.r,
-              backgroundColor: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
+              backgroundColor:
+                  InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
               child: Text(
                 employee.fullName.isNotEmpty
                     ? employee.fullName[0].toUpperCase()
@@ -995,195 +999,200 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Period picker
-          GestureDetector(
-            onTap: _showPeriodPicker,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-              decoration: BoxDecoration(
-                color: InvoiceThemeColors.secondaryBackground,
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.calendar_month_outlined,
-                    color: InvoiceThemeColors.primaryPurpleLight,
-                    size: 20.sp,
-                  ),
-                  SizedBox(width: 10.w),
-                  Text(
-                    '$_reportPeriodStart to $_reportPeriodEnd',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w500,
+            GestureDetector(
+              onTap: _showPeriodPicker,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                decoration: BoxDecoration(
+                  color: InvoiceThemeColors.secondaryBackground,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_month_outlined,
+                      color: InvoiceThemeColors.primaryPurpleLight,
+                      size: 20.sp,
                     ),
-                  ),
-                  const Spacer(),
-                  Icon(
-                    Icons.chevron_right,
-                    color: InvoiceThemeColors.textGray400,
-                    size: 20.sp,
-                  ),
-                ],
+                    SizedBox(width: 10.w),
+                    Text(
+                      '$_reportPeriodStart to $_reportPeriodEnd',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const Spacer(),
+                    Icon(
+                      Icons.chevron_right,
+                      color: InvoiceThemeColors.textGray400,
+                      size: 20.sp,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          SizedBox(height: 16.h),
+            SizedBox(height: 16.h),
 
-          // Summary cards
-          _buildReportSummaryCard(
-            'Total Gross Pay',
-            '\u20A6${totalGross.toStringAsFixed(2)}',
-            Icons.trending_up,
-            InvoiceThemeColors.primaryPurpleLight,
-          ),
-          SizedBox(height: 10.h),
-          _buildReportSummaryCard(
-            'Total Deductions',
-            '\u20A6${totalDeductions.toStringAsFixed(2)}',
-            Icons.trending_down,
-            InvoiceThemeColors.errorRed,
-          ),
-          SizedBox(height: 10.h),
-          _buildReportSummaryCard(
-            'Total Net Pay',
-            '\u20A6${totalNet.toStringAsFixed(2)}',
-            Icons.account_balance_wallet,
-            InvoiceThemeColors.successGreen,
-          ),
-          SizedBox(height: 10.h),
-          _buildReportSummaryCard(
-            'Employer Contributions',
-            '\u20A6${totalEmployerContributions.toStringAsFixed(2)}',
-            Icons.business,
-            InvoiceThemeColors.warningOrange,
-          ),
-          SizedBox(height: 16.h),
+            // Summary cards
+            _buildReportSummaryCard(
+              'Total Gross Pay',
+              '\u20A6${totalGross.toStringAsFixed(2)}',
+              Icons.trending_up,
+              InvoiceThemeColors.primaryPurpleLight,
+            ),
+            SizedBox(height: 10.h),
+            _buildReportSummaryCard(
+              'Total Deductions',
+              '\u20A6${totalDeductions.toStringAsFixed(2)}',
+              Icons.trending_down,
+              InvoiceThemeColors.errorRed,
+            ),
+            SizedBox(height: 10.h),
+            _buildReportSummaryCard(
+              'Total Net Pay',
+              '\u20A6${totalNet.toStringAsFixed(2)}',
+              Icons.account_balance_wallet,
+              InvoiceThemeColors.successGreen,
+            ),
+            SizedBox(height: 10.h),
+            _buildReportSummaryCard(
+              'Employer Contributions',
+              '\u20A6${totalEmployerContributions.toStringAsFixed(2)}',
+              Icons.business,
+              InvoiceThemeColors.warningOrange,
+            ),
+            SizedBox(height: 16.h),
 
-          // Stats row
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard(
-                  'Employees',
-                  employeeCount.toString(),
-                  Icons.people,
-                ),
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: _buildStatCard(
-                  'Pay Runs',
-                  payRunCount.toString(),
-                  Icons.receipt_long,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 20.h),
-
-          // Employees & payments — the actual per-employee payroll report for the
-          // period (name + gross / deductions / net), not just the tax totals.
-          _buildEmployeePaymentsSection(),
-          SizedBox(height: 16.h),
-
-          // Export report (PDF) — Download + Share. Only enabled once a real
-          // summary is loaded (empty map = nothing to export).
-          if (summary.isNotEmpty) ...[
+            // Stats row
             Row(
               children: [
                 Expanded(
-                  child: SizedBox(
-                    height: 48.h,
-                    child: OutlinedButton.icon(
-                      onPressed: _exportingReport
-                          ? null
-                          : () => _exportReport(summary, share: false),
-                      icon: _exportingReport
-                          ? LazerVaultLoader.tiny()
-                          : Icon(Icons.download_outlined,
-                              color: InvoiceThemeColors.successGreen, size: 20.sp),
-                      label: Text(
-                        'Download PDF',
-                        style: GoogleFonts.inter(
-                          color: InvoiceThemeColors.successGreen,
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: InvoiceThemeColors.successGreen),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                      ),
-                    ),
+                  child: _buildStatCard(
+                    'Employees',
+                    employeeCount.toString(),
+                    Icons.people,
                   ),
                 ),
                 SizedBox(width: 10.w),
                 Expanded(
-                  child: SizedBox(
-                    height: 48.h,
-                    child: OutlinedButton.icon(
-                      onPressed: _exportingReport
-                          ? null
-                          : () => _exportReport(summary, share: true),
-                      icon: Icon(Icons.share_outlined,
-                          color: InvoiceThemeColors.primaryPurpleLight, size: 20.sp),
-                      label: Text(
-                        'Share',
-                        style: GoogleFonts.inter(
-                          color: InvoiceThemeColors.primaryPurpleLight,
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: InvoiceThemeColors.primaryPurpleLight),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                      ),
-                    ),
+                  child: _buildStatCard(
+                    'Pay Runs',
+                    payRunCount.toString(),
+                    Icons.receipt_long,
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 10.h),
-          ],
+            SizedBox(height: 20.h),
 
-          // Tax report button
-          SizedBox(
-            width: double.infinity,
-            height: 48.h,
-            child: OutlinedButton.icon(
-              onPressed: () {
-                context.read<PayrollCubit>().getTaxReport(
-                      start: _reportPeriodStart,
-                      end: _reportPeriodEnd,
-                    );
-              },
-              icon: Icon(Icons.description_outlined,
-                  color: InvoiceThemeColors.primaryPurpleLight, size: 20.sp),
-              label: Text(
-                'View Tax Report',
-                style: GoogleFonts.inter(
-                  color: InvoiceThemeColors.primaryPurpleLight,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                ),
+            // Employees & payments — the actual per-employee payroll report for the
+            // period (name + gross / deductions / net), not just the tax totals.
+            _buildEmployeePaymentsSection(),
+            SizedBox(height: 16.h),
+
+            // Export report (PDF) — Download + Share. Only enabled once a real
+            // summary is loaded (empty map = nothing to export).
+            if (summary.isNotEmpty) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 48.h,
+                      child: OutlinedButton.icon(
+                        onPressed: _exportingReport
+                            ? null
+                            : () => _exportReport(summary, share: false),
+                        icon: _exportingReport
+                            ? LazerVaultLoader.tiny()
+                            : Icon(Icons.download_outlined,
+                                color: InvoiceThemeColors.successGreen,
+                                size: 20.sp),
+                        label: Text(
+                          'Download PDF',
+                          style: GoogleFonts.inter(
+                            color: InvoiceThemeColors.successGreen,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(
+                              color: InvoiceThemeColors.successGreen),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: SizedBox(
+                      height: 48.h,
+                      child: OutlinedButton.icon(
+                        onPressed: _exportingReport
+                            ? null
+                            : () => _exportReport(summary, share: true),
+                        icon: Icon(Icons.share_outlined,
+                            color: InvoiceThemeColors.primaryPurpleLight,
+                            size: 20.sp),
+                        label: Text(
+                          'Share',
+                          style: GoogleFonts.inter(
+                            color: InvoiceThemeColors.primaryPurpleLight,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(
+                              color: InvoiceThemeColors.primaryPurpleLight),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: InvoiceThemeColors.primaryPurpleLight),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
+              SizedBox(height: 10.h),
+            ],
+
+            // Tax report button
+            SizedBox(
+              width: double.infinity,
+              height: 48.h,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  context.read<PayrollCubit>().getTaxReport(
+                        start: _reportPeriodStart,
+                        end: _reportPeriodEnd,
+                      );
+                },
+                icon: Icon(Icons.description_outlined,
+                    color: InvoiceThemeColors.primaryPurpleLight, size: 20.sp),
+                label: Text(
+                  'View Tax Report',
+                  style: GoogleFonts.inter(
+                    color: InvoiceThemeColors.primaryPurpleLight,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side:
+                      BorderSide(color: InvoiceThemeColors.primaryPurpleLight),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
                 ),
               ),
             ),
-          ),
-          SizedBox(height: 24.h),
-        ],
+            SizedBox(height: 24.h),
+          ],
         ),
       ),
     );
@@ -1217,7 +1226,8 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
               if (_employeePayments.isNotEmpty)
                 Text('${_employeePayments.length}',
                     style: GoogleFonts.inter(
-                        color: InvoiceThemeColors.textGray400, fontSize: 13.sp)),
+                        color: InvoiceThemeColors.textGray400,
+                        fontSize: 13.sp)),
             ],
           ),
           SizedBox(height: 12.h),
@@ -1247,8 +1257,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
     final deductionsRaw = (e['totalDeductions'] as num?)?.toDouble();
     final deductions =
         deductionsRaw ?? (gross - net).clamp(0, double.infinity).toDouble();
-    final status =
-        (e['paymentStatus'] as PaymentStatus?) ?? PaymentStatus.paid;
+    final status = (e['paymentStatus'] as PaymentStatus?) ?? PaymentStatus.paid;
     final label = (name == null || name.isEmpty) ? 'Employee' : name;
 
     final (Color statusColor, String statusLabel) = switch (status) {
@@ -1291,8 +1300,8 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
                     ),
                     SizedBox(width: 8.w),
                     Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 7.w, vertical: 2.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
                       decoration: BoxDecoration(
                         color: statusColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6.r),
@@ -1309,7 +1318,8 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
                 Text(
                     'Gross ${_formatAmount(gross)} · Deductions ${_formatAmount(deductions)}',
                     style: GoogleFonts.inter(
-                        color: InvoiceThemeColors.textGray400, fontSize: 11.5.sp)),
+                        color: InvoiceThemeColors.textGray400,
+                        fontSize: 11.5.sp)),
               ],
             ),
           ),
@@ -1413,9 +1423,8 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
   }
 
   String _formatAmount(dynamic amount) {
-    final value = (amount is int)
-        ? amount.toDouble()
-        : (amount as double? ?? 0.0);
+    final value =
+        (amount is int) ? amount.toDouble() : (amount as double? ?? 0.0);
     return '\u20A6${value.toStringAsFixed(2)}';
   }
 
@@ -1459,7 +1468,8 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
               child: Row(
                 children: [
                   Icon(Icons.description_outlined,
-                      color: InvoiceThemeColors.primaryPurpleLight, size: 24.sp),
+                      color: InvoiceThemeColors.primaryPurpleLight,
+                      size: 24.sp),
                   SizedBox(width: 10.w),
                   Text(
                     'Tax Report',
@@ -1493,8 +1503,10 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
                   children: [
                     // Tax totals
                     _buildTaxRow('Total PAYE', totalPaye),
-                    _buildTaxRow('Total Pension (Employee)', totalPensionEmployee),
-                    _buildTaxRow('Total Pension (Employer)', totalPensionEmployer),
+                    _buildTaxRow(
+                        'Total Pension (Employee)', totalPensionEmployee),
+                    _buildTaxRow(
+                        'Total Pension (Employer)', totalPensionEmployer),
                     _buildTaxRow('Total NHF', totalNhf),
                     _buildTaxRow('Total NSITF', totalNsitf),
                     _buildTaxRow('Total ITF', totalItf),

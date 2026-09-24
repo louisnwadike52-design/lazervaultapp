@@ -15,7 +15,6 @@ import '../../domain/entities/business_overview_entity.dart';
 import '../cubit/business_dashboard_cubit.dart';
 part 'business_dashboard_screen_widgets.dart';
 
-
 /// The Lazavote Business dashboard — the hub shown behind the Business account
 /// card. Combines the business account BALANCE (passed in from the accounts
 /// carousel) with the aggregated overview (payroll/expenses/inventory/tax/
@@ -50,7 +49,9 @@ class BusinessDashboardScreen extends StatelessWidget {
           iconTheme: const IconThemeData(color: Colors.white),
           title: Text('Business',
               style: GoogleFonts.inter(
-                  color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700)),
           actions: [
             // Per-service voice + chat, pinned to the business hub agent
             // (DIRECT_ROUTES['business'] → chat-business-service). Same
@@ -72,8 +73,8 @@ class BusinessDashboardScreen extends StatelessWidget {
               tooltip: 'Analytics',
               // Scope analytics to THIS business account (falls back to the
               // active account when opened without it).
-              onPressed: () => Get.toNamed(AppRoutes.businessAnalytics,
-                  arguments: account),
+              onPressed: () =>
+                  Get.toNamed(AppRoutes.businessAnalytics, arguments: account),
             ),
           ],
         ),
@@ -162,31 +163,40 @@ class BusinessDashboardScreen extends StatelessWidget {
               SizedBox(width: 8.w),
               Text('Business Balance',
                   style: GoogleFonts.inter(
-                      color: Colors.white70, fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                      color: Colors.white70,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600)),
               const Spacer(),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                 decoration: BoxDecoration(
-                    color: Colors.white24, borderRadius: BorderRadius.circular(20.r)),
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(20.r)),
                 child: Text('PRO',
                     style: GoogleFonts.inter(
-                        color: Colors.white, fontSize: 10.sp, fontWeight: FontWeight.w700)),
+                        color: Colors.white,
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.w700)),
               ),
             ],
           ),
           SizedBox(height: 10.h),
           Text(_money(balance, currency),
               style: GoogleFonts.inter(
-                  color: Colors.white, fontSize: 30.sp, fontWeight: FontWeight.w800)),
+                  color: Colors.white,
+                  fontSize: 30.sp,
+                  fontWeight: FontWeight.w800)),
           SizedBox(height: 8.h),
-          if (account?.accountNumber != null && account!.accountNumber!.isNotEmpty)
+          if (account?.accountNumber != null &&
+              account!.accountNumber!.isNotEmpty)
             Text(
               '${account.bankName ?? ''} · ${account.accountNumber}'.trim(),
               style: GoogleFonts.inter(color: Colors.white70, fontSize: 12.sp),
             )
           else
             Text('Virtual account pending — complete business KYC to activate',
-                style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5.sp)),
+                style: GoogleFonts.inter(
+                    color: Colors.white70, fontSize: 11.5.sp)),
         ],
       ),
     );
@@ -195,12 +205,17 @@ class BusinessDashboardScreen extends StatelessWidget {
   Widget _kpiGrid(BusinessOverviewEntity o) {
     final c = o.currency;
     final items = [
-      _Kpi('Revenue', _money(o.revenueMajor, c), Icons.trending_up_rounded, const Color(0xFF10B981)),
-      _Kpi('Expenses', _money(o.expensesMajor, c), Icons.receipt_long_rounded, const Color(0xFFFB923C)),
+      _Kpi('Revenue', _money(o.revenueMajor, c), Icons.trending_up_rounded,
+          const Color(0xFF10B981)),
+      _Kpi('Expenses', _money(o.expensesMajor, c), Icons.receipt_long_rounded,
+          const Color(0xFFFB923C)),
       _Kpi('Payroll', _money(o.payrollMajor, c), Icons.groups_rounded, _accent),
-      _Kpi('Tax due', _money(o.taxMajor, c), Icons.account_balance_rounded, const Color(0xFFEF4444)),
-      _Kpi('Inventory', _money(o.inventoryMajor, c), Icons.inventory_2_rounded, const Color(0xFF8B5CF6)),
-      _Kpi('Customers', '${o.customerCount}', Icons.people_rounded, const Color(0xFF06B6D4)),
+      _Kpi('Tax due', _money(o.taxMajor, c), Icons.account_balance_rounded,
+          const Color(0xFFEF4444)),
+      _Kpi('Inventory', _money(o.inventoryMajor, c), Icons.inventory_2_rounded,
+          const Color(0xFF8B5CF6)),
+      _Kpi('Customers', '${o.customerCount}', Icons.people_rounded,
+          const Color(0xFF06B6D4)),
     ];
     return GridView.count(
       crossAxisCount: 2,
@@ -217,13 +232,16 @@ class BusinessDashboardScreen extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-          color: _card, borderRadius: BorderRadius.circular(14.r), border: Border.all(color: _border)),
+          color: _card,
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: _border)),
       child: Row(
         children: [
           Container(
             padding: EdgeInsets.all(9.w),
             decoration: BoxDecoration(
-                color: k.color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(10.r)),
+                color: k.color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10.r)),
             child: Icon(k.icon, color: k.color, size: 18.sp),
           ),
           SizedBox(width: 10.w),
@@ -233,13 +251,16 @@ class BusinessDashboardScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(k.label,
-                    style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
+                    style: GoogleFonts.inter(
+                        color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
                 SizedBox(height: 2.h),
                 Text(k.value,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
-                        color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w700)),
+                        color: Colors.white,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700)),
               ],
             ),
           ),
@@ -260,11 +281,14 @@ class BusinessDashboardScreen extends StatelessWidget {
       _Bar('Money in', moneyIn, const Color(0xFF10B981)),
       _Bar('Money out', moneyOut, const Color(0xFFEF4444)),
     ];
-    final maxV = bars.map((b) => b.value).fold<double>(0, (a, b) => b > a ? b : a);
+    final maxV =
+        bars.map((b) => b.value).fold<double>(0, (a, b) => b > a ? b : a);
     return Container(
       padding: EdgeInsets.fromLTRB(12.w, 18.h, 12.w, 8.h),
       decoration: BoxDecoration(
-          color: _card, borderRadius: BorderRadius.circular(16.r), border: Border.all(color: _border)),
+          color: _card,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: _border)),
       height: 200.h,
       child: BarChart(
         BarChartData(
@@ -282,9 +306,12 @@ class BusinessDashboardScreen extends StatelessWidget {
             ),
           ),
           titlesData: FlTitlesData(
-            leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            leftTitles:
+                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles:
+                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles:
+                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
@@ -299,7 +326,8 @@ class BusinessDashboardScreen extends StatelessWidget {
                       children: [
                         Text(bars[i].label,
                             style: GoogleFonts.inter(
-                                color: const Color(0xFF9CA3AF), fontSize: 10.sp)),
+                                color: const Color(0xFF9CA3AF),
+                                fontSize: 10.sp)),
                         SizedBox(height: 2.h),
                         Text(_compactMoney(bars[i].value, c),
                             style: GoogleFonts.inter(
@@ -320,7 +348,8 @@ class BusinessDashboardScreen extends StatelessWidget {
                   toY: bars[i].value,
                   color: bars[i].color,
                   width: 40.w,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(6.r)),
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(6.r)),
                 ),
               ]),
           ],
@@ -345,13 +374,16 @@ class BusinessDashboardScreen extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-          color: _card, borderRadius: BorderRadius.circular(16.r), border: Border.all(color: _border)),
+          color: _card,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: _border)),
       child: total <= 0
           ? Padding(
               padding: EdgeInsets.symmetric(vertical: 24.h),
               child: Center(
                 child: Text('No spending recorded yet',
-                    style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 12.5.sp)),
+                    style: GoogleFonts.inter(
+                        color: const Color(0xFF9CA3AF), fontSize: 12.5.sp)),
               ),
             )
           : Row(
@@ -385,16 +417,22 @@ class BusinessDashboardScreen extends StatelessWidget {
                           padding: EdgeInsets.symmetric(vertical: 4.h),
                           child: Row(
                             children: [
-                              Container(width: 10.w, height: 10.w,
-                                  decoration: BoxDecoration(color: s.color, shape: BoxShape.circle)),
+                              Container(
+                                  width: 10.w,
+                                  height: 10.w,
+                                  decoration: BoxDecoration(
+                                      color: s.color, shape: BoxShape.circle)),
                               SizedBox(width: 8.w),
                               Expanded(
                                 child: Text(s.label,
-                                    style: GoogleFonts.inter(color: Colors.white, fontSize: 12.sp)),
+                                    style: GoogleFonts.inter(
+                                        color: Colors.white, fontSize: 12.sp)),
                               ),
-                              Text('${(s.value / total * 100).toStringAsFixed(0)}%',
+                              Text(
+                                  '${(s.value / total * 100).toStringAsFixed(0)}%',
                                   style: GoogleFonts.inter(
-                                      color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+                                      color: const Color(0xFF9CA3AF),
+                                      fontSize: 12.sp)),
                             ],
                           ),
                         ),
@@ -407,7 +445,9 @@ class BusinessDashboardScreen extends StatelessWidget {
   }
 
   Widget _taxCard(BusinessOverviewEntity o) {
-    if (o.pendingObligations == 0 && o.overdueObligations == 0 && o.taxTotalDue == 0) {
+    if (o.pendingObligations == 0 &&
+        o.overdueObligations == 0 &&
+        o.taxTotalDue == 0) {
       return const SizedBox.shrink();
     }
     return Container(
@@ -415,11 +455,13 @@ class BusinessDashboardScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFEF4444).withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+        border:
+            Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          Icon(Icons.account_balance_rounded, color: const Color(0xFFEF4444), size: 20.sp),
+          Icon(Icons.account_balance_rounded,
+              color: const Color(0xFFEF4444), size: 20.sp),
           SizedBox(width: 10.w),
           Expanded(
             child: Text(
@@ -430,7 +472,10 @@ class BusinessDashboardScreen extends StatelessWidget {
           TextButton(
             onPressed: () => Get.toNamed(AppRoutes.taxDashboard),
             child: Text('View',
-                style: GoogleFonts.inter(color: const Color(0xFFEF4444), fontSize: 12.5.sp, fontWeight: FontWeight.w600)),
+                style: GoogleFonts.inter(
+                    color: const Color(0xFFEF4444),
+                    fontSize: 12.5.sp,
+                    fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -443,12 +488,14 @@ class BusinessDashboardScreen extends StatelessWidget {
       _Action('Sales', Icons.sell_rounded, AppRoutes.sales),
       _Action('Payroll', Icons.payments_rounded, AppRoutes.payroll),
       _Action('Employees', Icons.badge_rounded, AppRoutes.payrollEmployees),
-      _Action('Expenses', Icons.account_balance_wallet_rounded, AppRoutes.expenses),
+      _Action(
+          'Expenses', Icons.account_balance_wallet_rounded, AppRoutes.expenses),
       _Action('Invoices', Icons.receipt_long_rounded, AppRoutes.invoice),
       _Action('Customers', Icons.people_rounded, AppRoutes.customers),
       _Action('Inventory', Icons.inventory_2_rounded, AppRoutes.inventory),
       _Action('Taxes', Icons.account_balance_rounded, AppRoutes.taxDashboard),
-      _Action('Analytics', Icons.bar_chart_rounded, AppRoutes.businessAnalytics),
+      _Action(
+          'Analytics', Icons.bar_chart_rounded, AppRoutes.businessAnalytics),
     ];
     return GridView.count(
       crossAxisCount: 3,
@@ -476,7 +523,9 @@ class BusinessDashboardScreen extends StatelessWidget {
           },
           child: Container(
             decoration: BoxDecoration(
-                color: _card, borderRadius: BorderRadius.circular(14.r), border: Border.all(color: _border)),
+                color: _card,
+                borderRadius: BorderRadius.circular(14.r),
+                border: Border.all(color: _border)),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -484,7 +533,8 @@ class BusinessDashboardScreen extends StatelessWidget {
                 SizedBox(height: 8.h),
                 Text(a.label,
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(color: Colors.white, fontSize: 11.5.sp)),
+                    style: GoogleFonts.inter(
+                        color: Colors.white, fontSize: 11.5.sp)),
               ],
             ),
           ),
@@ -494,26 +544,32 @@ class BusinessDashboardScreen extends StatelessWidget {
   }
 
   Widget _sectionTitle(String t) => Text(t,
-      style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700));
+      style: GoogleFonts.inter(
+          color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700));
 
   Widget _errorBox(BuildContext context, String message) {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-          color: _card, borderRadius: BorderRadius.circular(14.r), border: Border.all(color: _border)),
+          color: _card,
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: _border)),
       child: Column(
         children: [
-          Icon(Icons.cloud_off_rounded, color: const Color(0xFF9CA3AF), size: 32.sp),
+          Icon(Icons.cloud_off_rounded,
+              color: const Color(0xFF9CA3AF), size: 32.sp),
           SizedBox(height: 10.h),
           Text(message,
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 12.5.sp)),
+              style: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF), fontSize: 12.5.sp)),
           SizedBox(height: 12.h),
           TextButton.icon(
             onPressed: () => context.read<BusinessDashboardCubit>().load(),
             icon: Icon(Icons.refresh_rounded, size: 18.sp, color: _accent),
             label: Text('Retry',
-                style: GoogleFonts.inter(color: _accent, fontWeight: FontWeight.w600)),
+                style: GoogleFonts.inter(
+                    color: _accent, fontWeight: FontWeight.w600)),
           ),
         ],
       ),

@@ -50,7 +50,6 @@ class ReminderCubit extends Cubit<ReminderState> {
     );
   }
 
-
   Future<void> updateReminder({
     required String reminderId,
     String? title,
@@ -84,7 +83,8 @@ class ReminderCubit extends Cubit<ReminderState> {
     if (isClosed) return;
     emit(ReminderCompleting());
 
-    final result = await repository.markReminderComplete(reminderId: reminderId);
+    final result =
+        await repository.markReminderComplete(reminderId: reminderId);
 
     if (isClosed) return;
     result.fold(

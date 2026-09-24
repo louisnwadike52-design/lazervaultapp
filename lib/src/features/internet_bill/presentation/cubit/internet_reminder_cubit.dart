@@ -147,9 +147,7 @@ class InternetReminderCubit extends Cubit<InternetReminderState> {
     final previous = _cachedReminders;
     try {
       _cachedReminders = _cachedReminders
-          .map((r) => r.id == reminderId
-              ? r.copyWith(status: 'completed')
-              : r)
+          .map((r) => r.id == reminderId ? r.copyWith(status: 'completed') : r)
           .toList();
       emit(InternetRemindersLoaded(reminders: _cachedReminders));
       await datasource.markReminderComplete(reminderId);

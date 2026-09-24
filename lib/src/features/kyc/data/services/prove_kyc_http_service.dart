@@ -197,9 +197,11 @@ class ProveKycHttpService {
     final reference = (data['reference'] ?? '').toString();
     if (monoUrl.isEmpty || reference.isEmpty) {
       AppLogger.event('kyc_prove', 'initiate.no_url',
-          level: 'error', screen: 'kyc_verification',
+          level: 'error',
+          screen: 'kyc_verification',
           fields: {'reference': reference, 'has_mono_url': monoUrl.isNotEmpty});
-      throw ProveKycException('Could not start verification. Please try again.');
+      throw ProveKycException(
+          'Could not start verification. Please try again.');
     }
     AppLogger.event('kyc_prove', 'initiate.ok',
         screen: 'kyc_verification',
@@ -255,7 +257,8 @@ class ProveKycHttpService {
       tier: _asInt(data['tier']),
       tierName: (data['tierName'] ?? data['tier_name'] ?? '').toString(),
       message: (data['message'] ?? '').toString(),
-      completedSteps: _asStringList(data['completedSteps'] ?? data['completed_steps']),
+      completedSteps:
+          _asStringList(data['completedSteps'] ?? data['completed_steps']),
       nextTier: _asInt(data['nextTier'] ?? data['next_tier']),
       nextRequirements:
           _asStringList(data['nextRequirements'] ?? data['next_requirements']),
@@ -279,7 +282,8 @@ class ProveKycHttpService {
       verified: data['verified'] == true,
       tier: _asInt(data['tier']),
       tierName: (data['tierName'] ?? data['tier_name'] ?? '').toString(),
-      completedSteps: _asStringList(data['completedSteps'] ?? data['completed_steps']),
+      completedSteps:
+          _asStringList(data['completedSteps'] ?? data['completed_steps']),
       nextTier: _asInt(data['nextTier'] ?? data['next_tier']),
       nextRequirements:
           _asStringList(data['nextRequirements'] ?? data['next_requirements']),

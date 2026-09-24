@@ -71,15 +71,15 @@ class InsuranceTermsBottomSheet extends StatefulWidget {
   }
 
   @override
-  State<InsuranceTermsBottomSheet> createState() => _InsuranceTermsBottomSheetState();
+  State<InsuranceTermsBottomSheet> createState() =>
+      _InsuranceTermsBottomSheetState();
 }
 
 class _InsuranceTermsBottomSheetState extends State<InsuranceTermsBottomSheet> {
   // Pinned modern Chrome UA so providers that user-agent-sniff serve
   // the mobile HTML they'd send a real browser instead of a stripped
   // WebView page.
-  static const String _kModernUA =
-      'Mozilla/5.0 (Linux; Android 14; Pixel 9a) '
+  static const String _kModernUA = 'Mozilla/5.0 (Linux; Android 14; Pixel 9a) '
       'AppleWebKit/537.36 (KHTML, like Gecko) '
       'Chrome/137.0.0.0 Mobile Safari/537.36';
 
@@ -207,7 +207,10 @@ class _InsuranceTermsBottomSheetState extends State<InsuranceTermsBottomSheet> {
           children: [
             _buildDragHandle(),
             _buildHeader(context),
-            if (_loadingPage && !_resolving && _resolvedUrl != null && !_pageFailed)
+            if (_loadingPage &&
+                !_resolving &&
+                _resolvedUrl != null &&
+                !_pageFailed)
               _buildProgressBar(),
             Expanded(child: _buildBody()),
           ],
@@ -240,8 +243,8 @@ class _InsuranceTermsBottomSheetState extends State<InsuranceTermsBottomSheet> {
               color: const Color(0xFF6366F1).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10.r),
             ),
-            child: Icon(widget.icon,
-                color: const Color(0xFF6366F1), size: 20.sp),
+            child:
+                Icon(widget.icon, color: const Color(0xFF6366F1), size: 20.sp),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -312,8 +315,7 @@ class _InsuranceTermsBottomSheetState extends State<InsuranceTermsBottomSheet> {
     if (_linkUnavailable) {
       return _buildErrorState(
         title: 'Terms unavailable',
-        message:
-            "The insurance terms link hasn't been configured yet. "
+        message: "The insurance terms link hasn't been configured yet. "
             'Please reach out to support if this is unexpected.',
         onRetry: _resolveAndLoad,
         retryLabel: 'Try again',

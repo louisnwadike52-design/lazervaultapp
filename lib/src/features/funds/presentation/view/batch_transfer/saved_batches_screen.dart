@@ -52,8 +52,8 @@ class _SavedBatchesScreenState extends State<SavedBatchesScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: btCard,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text('Delete saved batch?',
             style: GoogleFonts.inter(
                 color: btTextPrimary, fontWeight: FontWeight.w600)),
@@ -69,8 +69,7 @@ class _SavedBatchesScreenState extends State<SavedBatchesScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text('Delete',
-                style: GoogleFonts.inter(color: btRed)),
+            child: Text('Delete', style: GoogleFonts.inter(color: btRed)),
           ),
         ],
       ),
@@ -110,8 +109,7 @@ class _SavedBatchesScreenState extends State<SavedBatchesScreen> {
                         physics: const AlwaysScrollableScrollPhysics(),
                         children: [
                           SizedBox(height: 60.h),
-                          const Center(
-                              child: LazerVaultLoader.small()),
+                          const Center(child: LazerVaultLoader.small()),
                         ],
                       );
                     }
@@ -129,8 +127,7 @@ class _SavedBatchesScreenState extends State<SavedBatchesScreen> {
                       padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 24.h),
                       itemCount: batches.length,
                       separatorBuilder: (_, __) => SizedBox(height: 10.h),
-                      itemBuilder: (context, i) =>
-                          _buildBatchCard(batches[i]),
+                      itemBuilder: (context, i) => _buildBatchCard(batches[i]),
                     );
                   },
                 ),
@@ -156,8 +153,8 @@ class _SavedBatchesScreenState extends State<SavedBatchesScreen> {
                 color: btCardElevated,
                 borderRadius: BorderRadius.circular(20.r),
               ),
-              child:
-                  Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 16.sp),
+              child: Icon(Icons.arrow_back_ios_new,
+                  color: Colors.white, size: 16.sp),
             ),
           ),
           SizedBox(width: 14.w),
@@ -171,7 +168,8 @@ class _SavedBatchesScreenState extends State<SavedBatchesScreen> {
                         fontSize: 20.sp,
                         fontWeight: FontWeight.w700)),
                 SizedBox(height: 2.h),
-                Text('Reusable transfer templates. No money moves until you tap Send.',
+                Text(
+                    'Reusable transfer templates. No money moves until you tap Send.',
                     style: GoogleFonts.inter(
                         color: btTextSecondary, fontSize: 12.sp)),
               ],
@@ -220,7 +218,8 @@ class _SavedBatchesScreenState extends State<SavedBatchesScreen> {
               GestureDetector(
                 onTap: () => Get.toNamed(AppRoutes.batchTransfer),
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 12.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 22.w, vertical: 12.h),
                   decoration: BoxDecoration(
                     color: btBlue,
                     borderRadius: BorderRadius.circular(14.r),
@@ -260,8 +259,8 @@ class _SavedBatchesScreenState extends State<SavedBatchesScreen> {
                 child: Text(
                   message,
                   textAlign: TextAlign.center,
-                  style:
-                      GoogleFonts.inter(color: btTextSecondary, fontSize: 12.sp),
+                  style: GoogleFonts.inter(
+                      color: btTextSecondary, fontSize: 12.sp),
                 ),
               ),
               SizedBox(height: 16.h),
@@ -291,9 +290,8 @@ class _SavedBatchesScreenState extends State<SavedBatchesScreen> {
   Widget _buildBatchCard(SavedBatchEntity batch) {
     final symbol = CurrencyUtils.getSymbol(batch.currency);
     final updated = batch.updatedAt ?? batch.createdAt;
-    final updatedStr = updated != null
-        ? DateFormat('MMM dd, yyyy').format(updated)
-        : '';
+    final updatedStr =
+        updated != null ? DateFormat('MMM dd, yyyy').format(updated) : '';
 
     return GestureDetector(
       onTap: () => _openDetail(batch),

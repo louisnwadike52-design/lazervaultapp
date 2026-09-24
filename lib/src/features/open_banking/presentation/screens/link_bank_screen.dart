@@ -23,8 +23,7 @@ class LinkBankScreen extends StatefulWidget {
   State<LinkBankScreen> createState() => _LinkBankScreenState();
 }
 
-class _LinkBankScreenState extends State<LinkBankScreen>
-    with BankLinkFeeMixin {
+class _LinkBankScreenState extends State<LinkBankScreen> with BankLinkFeeMixin {
   late WebViewController _webViewController;
   bool _isLoading = true;
   String? _publicKey;
@@ -49,6 +48,7 @@ class _LinkBankScreenState extends State<LinkBankScreen>
     _exited = true;
     Navigator.pop(context, linked);
   }
+
   String _monoCustomerId = '';
   String _customerName = '';
   String _customerEmail = '';
@@ -100,10 +100,8 @@ class _LinkBankScreenState extends State<LinkBankScreen>
     // Customer identity for the widget — without it Mono makes EVERY user
     // "verify identity" in-widget regardless of their LazerVault KYC tier.
     // Prefer the pre-created cus_ id; fall back to inline name/email(+BVN).
-    String esc(String s) => s
-        .replaceAll(r'\', r'\\')
-        .replaceAll('"', r'\"')
-        .replaceAll('\n', ' ');
+    String esc(String s) =>
+        s.replaceAll(r'\', r'\\').replaceAll('"', r'\"').replaceAll('\n', ' ');
     String customerJs = '';
     if (_monoCustomerId.isNotEmpty) {
       customerJs = 'data: { customer: { id: "${esc(_monoCustomerId)}" } },';
@@ -351,7 +349,8 @@ class _LinkBankScreenState extends State<LinkBankScreen>
                 ),
               );
             }
-          } else if (state is ServiceUnavailable || state is OpenBankingOffline) {
+          } else if (state is ServiceUnavailable ||
+              state is OpenBankingOffline) {
             // Banking / Mono backend unreachable → themed "temporarily
             // unavailable" modal (not a snackbar), then back out of the dead
             // webview so the user isn't stuck.
@@ -360,7 +359,8 @@ class _LinkBankScreenState extends State<LinkBankScreen>
           }
         },
         builder: (context, state) {
-          if (state is OpenBankingLoading || state is AccountLinkingInProgress) {
+          if (state is OpenBankingLoading ||
+              state is AccountLinkingInProgress) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,

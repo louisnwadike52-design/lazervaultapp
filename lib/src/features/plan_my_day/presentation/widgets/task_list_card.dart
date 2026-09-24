@@ -21,9 +21,8 @@ class TaskListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Filter tasks based on showCompleted flag
-    final filteredTasks = showCompleted
-        ? tasks
-        : tasks.where((t) => !t.isCompleted).toList();
+    final filteredTasks =
+        showCompleted ? tasks : tasks.where((t) => !t.isCompleted).toList();
 
     if (filteredTasks.isEmpty) {
       return _buildEmptyState();
@@ -45,7 +44,8 @@ class TaskListCard extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: sortedTasks.map((task) => _buildTaskItem(context, task)).toList(),
+        children:
+            sortedTasks.map((task) => _buildTaskItem(context, task)).toList(),
       ),
     );
   }
@@ -63,9 +63,7 @@ class TaskListCard extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           Text(
-            showCompleted
-                ? 'No completed tasks yet'
-                : 'No tasks for today',
+            showCompleted ? 'No completed tasks yet' : 'No tasks for today',
             style: TextStyle(
               color: Colors.grey[500],
               fontSize: 16.sp,
@@ -112,9 +110,7 @@ class TaskListCard extends StatelessWidget {
                 height: 24.h,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: task.isCompleted
-                      ? Colors.green
-                      : Colors.transparent,
+                  color: task.isCompleted ? Colors.green : Colors.transparent,
                   border: Border.all(
                     color: task.isCompleted
                         ? Colors.green
@@ -136,14 +132,11 @@ class TaskListCard extends StatelessWidget {
                   Text(
                     task.title,
                     style: TextStyle(
-                      color: task.isCompleted
-                          ? Colors.grey[500]
-                          : Colors.white,
+                      color: task.isCompleted ? Colors.grey[500] : Colors.white,
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w500,
-                      decoration: task.isCompleted
-                          ? TextDecoration.lineThrough
-                          : null,
+                      decoration:
+                          task.isCompleted ? TextDecoration.lineThrough : null,
                     ),
                   ),
                   if (task.description != null) ...[
@@ -158,7 +151,8 @@ class TaskListCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
-                  if (task.dueDate != null || task.estimatedDuration != null) ...[
+                  if (task.dueDate != null ||
+                      task.estimatedDuration != null) ...[
                     SizedBox(height: 8.h),
                     Row(
                       children: [
@@ -181,7 +175,8 @@ class TaskListCard extends StatelessWidget {
                             ),
                           ),
                         ],
-                        if (task.dueDate != null && task.estimatedDuration != null)
+                        if (task.dueDate != null &&
+                            task.estimatedDuration != null)
                           SizedBox(width: 12.w),
                         if (task.estimatedDuration != null) ...[
                           Icon(

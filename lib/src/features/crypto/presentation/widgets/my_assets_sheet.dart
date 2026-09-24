@@ -169,7 +169,8 @@ class _MyAssetsSheet extends StatelessWidget {
   }
 
   void _openDetails(BuildContext context, Crypto c) {
-    if (Navigator.canPop(context)) Navigator.pop(context); // close My assets sheet
+    if (Navigator.canPop(context))
+      Navigator.pop(context); // close My assets sheet
     Get.toNamed(AppRoutes.cryptoDetails, arguments: c);
   }
 
@@ -232,7 +233,8 @@ class _MyAssetsSheet extends StatelessWidget {
             child: held.isEmpty
                 ? _empty()
                 : ListView.separated(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
                     itemCount: held.length,
                     separatorBuilder: (_, __) => SizedBox(height: 8.h),
                     itemBuilder: (_, i) => _row(context, held[i]),
@@ -264,8 +266,7 @@ class _MyAssetsSheet extends StatelessWidget {
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: big
-                    ? () => _showFullValue(
-                        context, '24h Change', change24hFiat)
+                    ? () => _showFullValue(context, '24h Change', change24hFiat)
                     : null,
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
@@ -406,9 +407,7 @@ class _MyAssetsSheet extends StatelessWidget {
                     onTap: _isBig(holding.totalValue)
                         ? () => _showFullValue(
                             context,
-                            c.name.isNotEmpty
-                                ? c.name
-                                : c.symbol.toUpperCase(),
+                            c.name.isNotEmpty ? c.name : c.symbol.toUpperCase(),
                             holding.totalValue)
                         : null,
                     child: Text(
@@ -438,7 +437,8 @@ class _MyAssetsSheet extends StatelessWidget {
               // Jump straight to the asset detail page.
               IconButton(
                 onPressed: () => _openDetails(context, c),
-                icon: Icon(Icons.bar_chart_rounded, color: _accent, size: 20.sp),
+                icon:
+                    Icon(Icons.bar_chart_rounded, color: _accent, size: 20.sp),
                 tooltip: 'View details',
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,

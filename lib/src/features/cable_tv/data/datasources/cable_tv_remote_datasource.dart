@@ -34,9 +34,9 @@ class CableTVRemoteDataSourceImpl implements CableTVRemoteDataSource {
   CableTVRemoteDataSourceImpl({required this.grpcClient});
 
   @override
-  Future<List<CableTVProviderModel>> getProviders({bool activeOnly = true}) async {
-    final request = pb.GetCableTVProvidersRequest()
-      ..activeOnly = activeOnly;
+  Future<List<CableTVProviderModel>> getProviders(
+      {bool activeOnly = true}) async {
+    final request = pb.GetCableTVProvidersRequest()..activeOnly = activeOnly;
 
     final options = await grpcClient.callOptions;
     final response = await grpcClient.utilityPaymentsClient.getCableTVProviders(
@@ -69,8 +69,7 @@ class CableTVRemoteDataSourceImpl implements CableTVRemoteDataSource {
 
   @override
   Future<List<TVPackageModel>> getPackages({required String providerId}) async {
-    final request = pb.GetTVPackagesRequest()
-      ..providerId = providerId;
+    final request = pb.GetTVPackagesRequest()..providerId = providerId;
 
     final options = await grpcClient.callOptions;
     final response = await grpcClient.utilityPaymentsClient.getTVPackages(

@@ -5,7 +5,10 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/grpc/crypto_grpc_client.dart';
 import '../../../../generated/crypto.pb.dart'
-    show GetAssetNetworkStatusResponse, AssetNetworkStatusEntry, QuidaxAssetNetwork;
+    show
+        GetAssetNetworkStatusResponse,
+        AssetNetworkStatusEntry,
+        QuidaxAssetNetwork;
 import 'crypto_shimmer_loading.dart';
 
 /// A well styled chip that shows the network a held asset lives on, plus a

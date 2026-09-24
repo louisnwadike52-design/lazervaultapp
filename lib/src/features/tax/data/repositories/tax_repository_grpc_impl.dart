@@ -79,9 +79,7 @@ class TaxRepositoryGrpcImpl implements TaxRepository {
           throw Exception(response.message);
         }
 
-        return response.events
-            .map((e) => _calendarEventFromProto(e))
-            .toList();
+        return response.events.map((e) => _calendarEventFromProto(e)).toList();
       },
     );
   }
@@ -255,9 +253,7 @@ class TaxRepositoryGrpcImpl implements TaxRepository {
           options: options,
         );
 
-        return response.documents
-            .map((d) => _documentFromProto(d))
-            .toList();
+        return response.documents.map((d) => _documentFromProto(d)).toList();
       },
     );
   }
@@ -290,8 +286,7 @@ class TaxRepositoryGrpcImpl implements TaxRepository {
   Future<Map<String, dynamic>> getVATSchedule(String period) async {
     return retryWithBackoff(
       operation: () async {
-        final request = payroll_pb.GetVATScheduleRequest()
-          ..period = period;
+        final request = payroll_pb.GetVATScheduleRequest()..period = period;
 
         final options = await _callOptionsHelper.withAuth();
         final response = await _client.getVATSchedule(
@@ -314,7 +309,8 @@ class TaxRepositoryGrpcImpl implements TaxRepository {
                     'direction': e.direction.value,
                     'invoiceReference': e.invoiceReference,
                     'period': e.period,
-                    'transactionDate': e.transactionDate.toDateTime().toIso8601String(),
+                    'transactionDate':
+                        e.transactionDate.toDateTime().toIso8601String(),
                     'createdAt': e.createdAt.toDateTime().toIso8601String(),
                   })
               .toList(),
@@ -381,8 +377,7 @@ class TaxRepositoryGrpcImpl implements TaxRepository {
   Future<Map<String, dynamic>> getWHTSchedule(String period) async {
     return retryWithBackoff(
       operation: () async {
-        final request = payroll_pb.GetWHTScheduleRequest()
-          ..period = period;
+        final request = payroll_pb.GetWHTScheduleRequest()..period = period;
 
         final options = await _callOptionsHelper.withAuth();
         final response = await _client.getWHTSchedule(
@@ -405,7 +400,8 @@ class TaxRepositoryGrpcImpl implements TaxRepository {
                     'whtAmount': e.whtAmount.toInt() / 100.0,
                     'paymentReference': e.paymentReference,
                     'period': e.period,
-                    'transactionDate': e.transactionDate.toDateTime().toIso8601String(),
+                    'transactionDate':
+                        e.transactionDate.toDateTime().toIso8601String(),
                     'createdAt': e.createdAt.toDateTime().toIso8601String(),
                   })
               .toList(),
@@ -551,10 +547,8 @@ class TaxRepositoryGrpcImpl implements TaxRepository {
       amount: proto.amount.toInt() / 100.0,
       status: _obligationStatusFromProto(proto.status),
       dueDate: proto.dueDate.toDateTime(),
-      filedDate:
-          proto.hasFiledDate() ? proto.filedDate.toDateTime() : null,
-      paidDate:
-          proto.hasPaidDate() ? proto.paidDate.toDateTime() : null,
+      filedDate: proto.hasFiledDate() ? proto.filedDate.toDateTime() : null,
+      paidDate: proto.hasPaidDate() ? proto.paidDate.toDateTime() : null,
       reference: proto.reference,
       notes: proto.notes,
       createdAt: proto.createdAt.toDateTime(),
@@ -569,8 +563,7 @@ class TaxRepositoryGrpcImpl implements TaxRepository {
       documentType: _documentTypeFromProto(proto.documentType),
       name: proto.name,
       fileUrl: proto.fileUrl,
-      expiryDate:
-          proto.hasExpiryDate() ? proto.expiryDate.toDateTime() : null,
+      expiryDate: proto.hasExpiryDate() ? proto.expiryDate.toDateTime() : null,
       notes: proto.notes,
       createdAt: proto.createdAt.toDateTime(),
     );
@@ -649,8 +642,7 @@ class TaxRepositoryGrpcImpl implements TaxRepository {
   // ---------------------------------------------------------------------------
 
   payroll_pb.TaxType _taxTypeToProto(int value) {
-    return payroll_pb.TaxType.valueOf(value) ??
-        payroll_pb.TaxType.TAX_TYPE_VAT;
+    return payroll_pb.TaxType.valueOf(value) ?? payroll_pb.TaxType.TAX_TYPE_VAT;
   }
 
   payroll_pb.TaxObligationStatus _obligationStatusToProto(int value) {

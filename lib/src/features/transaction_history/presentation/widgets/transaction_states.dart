@@ -114,7 +114,8 @@ class TransactionErrorState extends StatelessWidget {
               GestureDetector(
                 onTap: onRetry,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 10.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 24.w, vertical: 10.h),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1F1F1F),
                     borderRadius: BorderRadius.circular(20.r),

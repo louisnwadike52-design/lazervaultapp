@@ -8,7 +8,6 @@ import '../widgets/share_report_bottom_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'crowdfund_report_screen_widgets.dart';
 
-
 class _ShareCard extends StatelessWidget {
   final CrowdfundReport report;
   final VoidCallback onShare;

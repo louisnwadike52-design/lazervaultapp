@@ -19,13 +19,13 @@ Future<bool?> showBudgetWarningSheet(
 }) {
   final budget = result.primaryBudget;
   final isExceeded = result.status == BudgetStatus.exceeded;
-  final accent =
-      isExceeded ? const Color(0xFFFB923C) : const Color(0xFFFBBF24);
+  final accent = isExceeded ? const Color(0xFFFB923C) : const Color(0xFFFBBF24);
 
   final projectedSpent = result.currentSpent + transactionAmount;
   final overBy = projectedSpent - result.budgetLimit;
 
-  String money(double v) => CurrencySymbols.formatAmountWithCurrency(v, currency);
+  String money(double v) =>
+      CurrencySymbols.formatAmountWithCurrency(v, currency);
 
   return showModalBottomSheet<bool>(
     context: context,
@@ -115,8 +115,10 @@ Future<bool?> showBudgetWarningSheet(
             if (isExceeded && overBy > 0)
               _row('Over by', money(overBy), valueColor: accent, bold: true)
             else
-              _row('Remaining after',
-                  money((result.budgetLimit - projectedSpent).clamp(0, double.infinity)),
+              _row(
+                  'Remaining after',
+                  money((result.budgetLimit - projectedSpent)
+                      .clamp(0, double.infinity)),
                   valueColor: const Color(0xFF10B981)),
 
             SizedBox(height: 16.h),

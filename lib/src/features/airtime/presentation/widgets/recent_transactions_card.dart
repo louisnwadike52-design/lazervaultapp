@@ -232,8 +232,7 @@ class RecentTransactionsCard extends StatelessWidget {
           SizedBox(height: 6.h),
           GestureDetector(
             onTap: () {
-              final userId =
-                  context.read<AuthenticationCubit>().userId ?? '';
+              final userId = context.read<AuthenticationCubit>().userId ?? '';
               context.read<AirtimeCubit>().loadTransactionHistory(userId);
             },
             child: Text(

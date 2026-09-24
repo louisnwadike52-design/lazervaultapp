@@ -9,7 +9,6 @@ import 'package:get/get.dart';
 import '../../../../../core/types/app_routes.dart';
 part 'advanced_chart_widget_widgets.dart';
 
-
 class AdvancedChartWidget extends StatefulWidget {
   final List<StockPrice> priceHistory;
   final Stock stock;
@@ -30,13 +29,13 @@ class AdvancedChartWidget extends StatefulWidget {
 
 class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
   ChartType _selectedChartType = ChartType.line;
-  
+
   // Pan and zoom variables
   double _currentScale = 1.0;
   double _baseScale = 1.0;
   int _visibleDataPoints = 30;
   int _startIndex = 0;
-  
+
   // Touch interaction
   bool _isDragging = false;
   bool _isScaling = false;
@@ -57,12 +56,13 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
   }
 
   void _initializeChart() {
-    final priceHistory = widget.priceHistory.isNotEmpty 
-        ? widget.priceHistory 
+    final priceHistory = widget.priceHistory.isNotEmpty
+        ? widget.priceHistory
         : _generateMockPriceHistory();
-    
+
     _visibleDataPoints = (priceHistory.length * 0.8).round().clamp(10, 50);
-    _startIndex = (priceHistory.length - _visibleDataPoints).clamp(0, priceHistory.length - 1);
+    _startIndex = (priceHistory.length - _visibleDataPoints)
+        .clamp(0, priceHistory.length - 1);
     _currentScale = 1.0;
     _baseScale = 1.0;
   }
@@ -81,8 +81,8 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
       );
     }
 
-    final priceHistory = widget.priceHistory.isNotEmpty 
-        ? widget.priceHistory 
+    final priceHistory = widget.priceHistory.isNotEmpty
+        ? widget.priceHistory
         : _generateMockPriceHistory();
 
     return Column(
@@ -96,7 +96,8 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
           child: Stack(
             children: [
               _buildInteractiveChart(priceHistory),
-              if (widget.selectedIndicators.contains('Volume') && _selectedChartType != ChartType.volume)
+              if (widget.selectedIndicators.contains('Volume') &&
+                  _selectedChartType != ChartType.volume)
                 Positioned(
                   bottom: 0,
                   left: 0,
@@ -133,7 +134,8 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
         ),
         Spacer(),
         GestureDetector(
-          onTap: () => Get.toNamed(AppRoutes.stockChartDetails, arguments: widget.stock),
+          onTap: () =>
+              Get.toNamed(AppRoutes.stockChartDetails, arguments: widget.stock),
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
             decoration: BoxDecoration(
@@ -169,7 +171,8 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.center_focus_strong, color: Colors.white, size: 16.sp),
+                Icon(Icons.center_focus_strong,
+                    color: Colors.white, size: 16.sp),
                 SizedBox(width: 4.w),
                 Text(
                   'Reset',
@@ -218,7 +221,7 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
               ),
             ),
           ),
-        
+
         // Zoom indicator
         if (_isScaling)
           Positioned(
@@ -268,15 +271,17 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
             // This is a zoom gesture
             _isScaling = true;
             _isDragging = false;
-            
+
             final newScale = (_baseScale * details.scale).clamp(0.3, 8.0);
 
             // Calculate new visible data points based on scale
-            final newVisiblePoints = (priceHistory.length / newScale).round().clamp(5, priceHistory.length);
-            
+            final newVisiblePoints = (priceHistory.length / newScale)
+                .round()
+                .clamp(5, priceHistory.length);
+
             // Maintain center position during zoom
             final centerIndex = _startIndex + (_visibleDataPoints / 2).round();
-            
+
             _currentScale = newScale;
             _visibleDataPoints = newVisiblePoints;
             _startIndex = (centerIndex - (_visibleDataPoints / 2).round())
@@ -284,12 +289,14 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
           } else if (!_isScaling) {
             // This is a pan gesture (only if not currently scaling)
             _isDragging = true;
-            
+
             final deltaX = details.focalPoint.dx - _lastPanX;
-            final panSensitivity = _visibleDataPoints / 400; // Adjust sensitivity based on zoom level
+            final panSensitivity = _visibleDataPoints /
+                400; // Adjust sensitivity based on zoom level
             final indexChange = (-deltaX * panSensitivity).round();
-            
-            _startIndex = (_startIndex + indexChange).clamp(0, priceHistory.length - _visibleDataPoints);
+
+            _startIndex = (_startIndex + indexChange)
+                .clamp(0, priceHistory.length - _visibleDataPoints);
             _lastPanX = details.focalPoint.dx;
           }
         });
@@ -299,10 +306,11 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
           _isDragging = false;
           _isScaling = false;
         });
-        
+
         // Add some momentum to panning if desired
         if (details.velocity.pixelsPerSecond.distance > 500) {
-          _applyPanMomentum(details.velocity.pixelsPerSecond.dx, priceHistory.length);
+          _applyPanMomentum(
+              details.velocity.pixelsPerSecond.dx, priceHistory.length);
         }
       },
       child: _buildSelectedChart(_getVisibleData(priceHistory)),
@@ -313,15 +321,17 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
     // Apply momentum-based panning for smooth scrolling
     final momentum = -velocityX / 1000; // Adjust momentum factor
     final indexChange = (momentum * _visibleDataPoints / 100).round();
-    
+
     setState(() {
-      _startIndex = (_startIndex + indexChange).clamp(0, dataLength - _visibleDataPoints);
+      _startIndex =
+          (_startIndex + indexChange).clamp(0, dataLength - _visibleDataPoints);
     });
   }
 
   List<StockPrice> _getVisibleData(List<StockPrice> priceHistory) {
     if (priceHistory.isEmpty) return [];
-    final endIndex = (_startIndex + _visibleDataPoints).clamp(0, priceHistory.length);
+    final endIndex =
+        (_startIndex + _visibleDataPoints).clamp(0, priceHistory.length);
     return priceHistory.sublist(_startIndex, endIndex);
   }
 
@@ -345,10 +355,12 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
       child: Row(
         children: [
           _buildChartTypeButton(ChartType.line, Icons.show_chart, 'Line'),
-          _buildChartTypeButton(ChartType.candlestick, Icons.candlestick_chart, 'Candle'),
+          _buildChartTypeButton(
+              ChartType.candlestick, Icons.candlestick_chart, 'Candle'),
           _buildChartTypeButton(ChartType.area, Icons.area_chart, 'Area'),
           _buildChartTypeButton(ChartType.ohlc, Icons.bar_chart, 'OHLC'),
-          _buildChartTypeButton(ChartType.volume, Icons.bar_chart_outlined, 'Volume'),
+          _buildChartTypeButton(
+              ChartType.volume, Icons.bar_chart_outlined, 'Volume'),
         ],
       ),
     );
@@ -410,13 +422,15 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
 
   Widget _buildLineChart(List<StockPrice> priceHistory) {
     if (priceHistory.isEmpty) return Container();
-    
+
     final spots = priceHistory.asMap().entries.map((entry) {
       return FlSpot(entry.key.toDouble(), entry.value.close);
     }).toList();
 
-    final maxPrice = priceHistory.map((e) => e.high).reduce((a, b) => a > b ? a : b);
-    final minPrice = priceHistory.map((e) => e.low).reduce((a, b) => a < b ? a : b);
+    final maxPrice =
+        priceHistory.map((e) => e.high).reduce((a, b) => a > b ? a : b);
+    final minPrice =
+        priceHistory.map((e) => e.low).reduce((a, b) => a < b ? a : b);
 
     return LineChart(
       LineChartData(
@@ -442,7 +456,10 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
               showTitles: true,
               reservedSize: 22,
               getTitlesWidget: (value, meta) {
-                if (value.toInt() % (priceHistory.length ~/ 4).clamp(1, priceHistory.length) == 0 && 
+                if (value.toInt() %
+                            (priceHistory.length ~/ 4)
+                                .clamp(1, priceHistory.length) ==
+                        0 &&
                     value.toInt() < priceHistory.length) {
                   final date = priceHistory[value.toInt()].timestamp;
                   return Text(
@@ -464,7 +481,8 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
         borderData: FlBorderData(show: false),
         lineTouchData: LineTouchData(
           enabled: true,
-          handleBuiltInTouches: false, // Disable built-in touch to avoid conflicts
+          handleBuiltInTouches:
+              false, // Disable built-in touch to avoid conflicts
           touchTooltipData: LineTouchTooltipData(
             getTooltipItems: (touchedSpots) {
               return touchedSpots.map((spot) {
@@ -491,7 +509,9 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
             gradient: LinearGradient(
               colors: [
                 widget.stock.isPositive ? Colors.green : Colors.red,
-                widget.stock.isPositive ? Colors.green.withValues(alpha: 0.3) : Colors.red.withValues(alpha: 0.3),
+                widget.stock.isPositive
+                    ? Colors.green.withValues(alpha: 0.3)
+                    : Colors.red.withValues(alpha: 0.3),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -501,7 +521,9 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
             dotData: FlDotData(show: false),
             belowBarData: BarAreaData(show: false),
           ),
-          ...widget.selectedIndicators.map((indicator) => _buildIndicatorLine(indicator, priceHistory)).where((line) => line.spots.isNotEmpty),
+          ...widget.selectedIndicators
+              .map((indicator) => _buildIndicatorLine(indicator, priceHistory))
+              .where((line) => line.spots.isNotEmpty),
         ],
       ),
     );
@@ -509,13 +531,15 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
 
   Widget _buildAreaChart(List<StockPrice> priceHistory) {
     if (priceHistory.isEmpty) return Container();
-    
+
     final spots = priceHistory.asMap().entries.map((entry) {
       return FlSpot(entry.key.toDouble(), entry.value.close);
     }).toList();
 
-    final maxPrice = priceHistory.map((e) => e.high).reduce((a, b) => a > b ? a : b);
-    final minPrice = priceHistory.map((e) => e.low).reduce((a, b) => a < b ? a : b);
+    final maxPrice =
+        priceHistory.map((e) => e.high).reduce((a, b) => a > b ? a : b);
+    final minPrice =
+        priceHistory.map((e) => e.low).reduce((a, b) => a < b ? a : b);
 
     return LineChart(
       LineChartData(
@@ -552,8 +576,12 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
               show: true,
               gradient: LinearGradient(
                 colors: [
-                  widget.stock.isPositive ? Colors.green.withValues(alpha: 0.4) : Colors.red.withValues(alpha: 0.4),
-                  widget.stock.isPositive ? Colors.green.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.1),
+                  widget.stock.isPositive
+                      ? Colors.green.withValues(alpha: 0.4)
+                      : Colors.red.withValues(alpha: 0.4),
+                  widget.stock.isPositive
+                      ? Colors.green.withValues(alpha: 0.1)
+                      : Colors.red.withValues(alpha: 0.1),
                 ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -567,9 +595,11 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
 
   Widget _buildCandlestickChart(List<StockPrice> priceHistory) {
     if (priceHistory.isEmpty) return Container();
-    
-    final maxPrice = priceHistory.map((e) => e.high).reduce((a, b) => a > b ? a : b);
-    final minPrice = priceHistory.map((e) => e.low).reduce((a, b) => a < b ? a : b);
+
+    final maxPrice =
+        priceHistory.map((e) => e.high).reduce((a, b) => a > b ? a : b);
+    final minPrice =
+        priceHistory.map((e) => e.low).reduce((a, b) => a < b ? a : b);
 
     return CustomPaint(
       size: Size(double.infinity, 300.h),
@@ -583,9 +613,11 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
 
   Widget _buildOHLCChart(List<StockPrice> priceHistory) {
     if (priceHistory.isEmpty) return Container();
-    
-    final maxPrice = priceHistory.map((e) => e.high).reduce((a, b) => a > b ? a : b);
-    final minPrice = priceHistory.map((e) => e.low).reduce((a, b) => a < b ? a : b);
+
+    final maxPrice =
+        priceHistory.map((e) => e.high).reduce((a, b) => a > b ? a : b);
+    final minPrice =
+        priceHistory.map((e) => e.low).reduce((a, b) => a < b ? a : b);
 
     return CustomPaint(
       size: Size(double.infinity, 300.h),
@@ -599,15 +631,17 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
 
   Widget _buildFullVolumeChart(List<StockPrice> priceHistory) {
     if (priceHistory.isEmpty) return Container();
-    
+
     final volumeBars = priceHistory.asMap().entries.map((entry) {
       return BarChartGroupData(
         x: entry.key,
         barRods: [
           BarChartRodData(
             toY: entry.value.volume,
-            color: priceHistory[entry.key].close > 
-                   (entry.key > 0 ? priceHistory[entry.key - 1].close : entry.value.close)
+            color: priceHistory[entry.key].close >
+                    (entry.key > 0
+                        ? priceHistory[entry.key - 1].close
+                        : entry.value.close)
                 ? Colors.green.withValues(alpha: 0.8)
                 : Colors.red.withValues(alpha: 0.8),
             width: 3,
@@ -619,7 +653,9 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
     return BarChart(
       BarChartData(
         alignment: BarChartAlignment.spaceAround,
-        maxY: priceHistory.map((e) => e.volume).reduce((a, b) => a > b ? a : b) * 1.2,
+        maxY:
+            priceHistory.map((e) => e.volume).reduce((a, b) => a > b ? a : b) *
+                1.2,
         barGroups: volumeBars,
         titlesData: FlTitlesData(
           show: true,
@@ -628,7 +664,8 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
               showTitles: true,
               reservedSize: 30,
               getTitlesWidget: (value, meta) {
-                if (value.toInt() % 5 == 0 && value.toInt() < priceHistory.length) {
+                if (value.toInt() % 5 == 0 &&
+                    value.toInt() < priceHistory.length) {
                   final date = priceHistory[value.toInt()].timestamp;
                   return Text(
                     '${date.month}/${date.day}',
@@ -688,12 +725,12 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
     final now = DateTime.now();
     final prices = <StockPrice>[];
     double basePrice = widget.stock.currentPrice;
-    
+
     for (int i = 60; i >= 0; i--) {
       final date = now.subtract(Duration(days: i));
       final variation = (i % 5 - 2) * 0.02;
       final price = basePrice * (1 + variation);
-      
+
       prices.add(StockPrice(
         timestamp: date,
         open: price * 0.99,
@@ -703,11 +740,12 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
         volume: 1000000 + (i * 50000),
       ));
     }
-    
+
     return prices;
   }
 
-  LineChartBarData _buildIndicatorLine(String indicator, List<StockPrice> priceHistory) {
+  LineChartBarData _buildIndicatorLine(
+      String indicator, List<StockPrice> priceHistory) {
     List<FlSpot> spots = [];
     Color color = Colors.blue;
 
@@ -777,15 +815,17 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
 
   Widget _buildVolumeChart(List<StockPrice> priceHistory) {
     if (priceHistory.isEmpty) return Container();
-    
+
     final volumeBars = priceHistory.asMap().entries.map((entry) {
       return BarChartGroupData(
         x: entry.key,
         barRods: [
           BarChartRodData(
             toY: entry.value.volume,
-            color: priceHistory[entry.key].close > 
-                   (entry.key > 0 ? priceHistory[entry.key - 1].close : entry.value.close)
+            color: priceHistory[entry.key].close >
+                    (entry.key > 0
+                        ? priceHistory[entry.key - 1].close
+                        : entry.value.close)
                 ? Colors.green.withValues(alpha: 0.6)
                 : Colors.red.withValues(alpha: 0.6),
             width: 2,
@@ -797,7 +837,9 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
     return BarChart(
       BarChartData(
         alignment: BarChartAlignment.spaceAround,
-        maxY: priceHistory.map((e) => e.volume).reduce((a, b) => a > b ? a : b) * 1.2,
+        maxY:
+            priceHistory.map((e) => e.volume).reduce((a, b) => a > b ? a : b) *
+                1.2,
         barGroups: volumeBars,
         titlesData: FlTitlesData(show: false),
         borderData: FlBorderData(show: false),
@@ -807,16 +849,22 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
   }
 
   Widget _buildPriceLabels(List<StockPrice> priceHistory) {
-    if (_selectedChartType == ChartType.volume || priceHistory.isEmpty) return Container();
-    
-    final maxPrice = priceHistory.map((e) => e.high).reduce((a, b) => a > b ? a : b);
-    final minPrice = priceHistory.map((e) => e.low).reduce((a, b) => a < b ? a : b);
+    if (_selectedChartType == ChartType.volume || priceHistory.isEmpty)
+      return Container();
+
+    final maxPrice =
+        priceHistory.map((e) => e.high).reduce((a, b) => a > b ? a : b);
+    final minPrice =
+        priceHistory.map((e) => e.low).reduce((a, b) => a < b ? a : b);
     final currentPrice = priceHistory.last.close;
 
     return Positioned(
       right: 8.w,
       top: 0,
-      bottom: widget.selectedIndicators.contains('Volume') && _selectedChartType != ChartType.volume ? 60.h : 0,
+      bottom: widget.selectedIndicators.contains('Volume') &&
+              _selectedChartType != ChartType.volume
+          ? 60.h
+          : 0,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -853,4 +901,4 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
       ),
     );
   }
-} 
+}

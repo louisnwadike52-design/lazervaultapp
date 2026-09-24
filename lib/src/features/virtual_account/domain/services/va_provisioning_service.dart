@@ -64,7 +64,8 @@ class VaProvisioningService {
     if (!await isVerified()) return null;
 
     final bvn = (await _storage.getBvn())?.trim() ?? '';
-    if (bvn.length < 10) return null; // no verified BVN on file → can't mint a NG NUBAN
+    if (bvn.length < 10)
+      return null; // no verified BVN on file → can't mint a NG NUBAN
 
     var fName = firstName.trim();
     var lName = lastName.trim();

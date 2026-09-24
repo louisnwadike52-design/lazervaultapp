@@ -18,7 +18,8 @@ class DataRecipientInputScreen extends StatefulWidget {
 class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
-  CountryLocale _selectedDialCountry = CountryLocales.all.first; // Nigeria default
+  CountryLocale _selectedDialCountry =
+      CountryLocales.all.first; // Nigeria default
   String? _validationError;
 
   /// Nigerian mobile prefixes per carrier, keyed by the backend network
@@ -30,18 +31,49 @@ class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
   /// centralising would invite staleness in the other flow's mapping.
   static const Map<String, Set<String>> _networkPrefixes = {
     'mtn-data': {
-      '703', '704', '706', '707', '801', '803', '806', '810',
-      '813', '814', '816', '903', '906', '913', '916',
+      '703',
+      '704',
+      '706',
+      '707',
+      '801',
+      '803',
+      '806',
+      '810',
+      '813',
+      '814',
+      '816',
+      '903',
+      '906',
+      '913',
+      '916',
     },
     'airtel-data': {
-      '701', '708', '802', '808', '812', '901', '902', '904',
-      '907', '912',
+      '701',
+      '708',
+      '802',
+      '808',
+      '812',
+      '901',
+      '902',
+      '904',
+      '907',
+      '912',
     },
     'glo-data': {
-      '705', '805', '807', '811', '815', '905', '915',
+      '705',
+      '805',
+      '807',
+      '811',
+      '815',
+      '905',
+      '915',
     },
     'etisalat-data': {
-      '809', '817', '818', '908', '909',
+      '809',
+      '817',
+      '818',
+      '908',
+      '909',
     },
   };
 
@@ -64,7 +96,8 @@ class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
   /// `0803…` (11 digits) and `803…` (10 digits) interchangeably, so the
   /// validation reads one shape everywhere downstream.
   String _normalizedPhone() {
-    final digits = _phoneController.text.trim().replaceAll(RegExp(r'[^\d]'), '');
+    final digits =
+        _phoneController.text.trim().replaceAll(RegExp(r'[^\d]'), '');
     return digits.startsWith('0') ? digits.substring(1) : digits;
   }
 
@@ -291,7 +324,8 @@ class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
                       children: [
                         // Country code prefix (display only - Nigeria)
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 14.w, vertical: 16.h),
                           decoration: const BoxDecoration(
                             border: Border(
                               right: BorderSide(
@@ -337,7 +371,8 @@ class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
                             decoration: InputDecoration(
                               hintText: '801 234 5678',
                               hintStyle: GoogleFonts.inter(
-                                color: const Color(0xFF9CA3AF).withValues(alpha: 0.5),
+                                color: const Color(0xFF9CA3AF)
+                                    .withValues(alpha: 0.5),
                                 fontSize: 16.sp,
                               ),
                               border: InputBorder.none,

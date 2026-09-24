@@ -73,7 +73,8 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
         actions: [
           TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
-              child: Text('Stay', style: GoogleFonts.inter(color: btTextSecondary))),
+              child: Text('Stay',
+                  style: GoogleFonts.inter(color: btTextSecondary))),
           TextButton(
               onPressed: () => Navigator.of(ctx).pop(true),
               child: Text('Leave', style: GoogleFonts.inter(color: btRed))),
@@ -102,8 +103,7 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-            bottom: MediaQuery.of(ctx).viewInsets.bottom),
+        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
         child: Container(
           padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 24.h),
           decoration: BoxDecoration(
@@ -168,27 +168,26 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
     final added = await AddRecipientSheet.show(
       context: context,
       currency: batch.currency,
-      existingAccountNumbers:
-          batch.items.map((i) => i.accountNumber).toList(),
+      existingAccountNumbers: batch.items.map((i) => i.accountNumber).toList(),
     );
     if (added == null || !mounted) return;
     await context.read<SavedBatchDetailCubit>().addItem(added);
   }
 
   Future<void> _editItemAmount(SavedBatchItemEntity item) async {
-    final controller = TextEditingController(text: item.amount.toStringAsFixed(2));
+    final controller =
+        TextEditingController(text: item.amount.toStringAsFixed(2));
     final symbol = CurrencyUtils.getSymbol(_currency);
     final newAmount = await showDialog<double>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: btCard,
-        title: Text('Edit amount',
-            style: GoogleFonts.inter(color: btTextPrimary)),
+        title:
+            Text('Edit amount', style: GoogleFonts.inter(color: btTextPrimary)),
         content: TextField(
           controller: controller,
           autofocus: true,
-          keyboardType:
-              const TextInputType.numberWithOptions(decimal: true),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
           style: GoogleFonts.inter(color: btTextPrimary, fontSize: 18.sp),
           decoration: InputDecoration(
             prefixText: symbol,
@@ -266,15 +265,13 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-            bottom: MediaQuery.of(ctx).viewInsets.bottom),
+        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
         child: StatefulBuilder(builder: (ctx, setSheet) {
           return Container(
             padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 24.h),
             decoration: BoxDecoration(
               color: btCard,
-              borderRadius:
-                  BorderRadius.vertical(top: Radius.circular(24.r)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -315,8 +312,7 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
                         color: btTextPrimary, fontSize: 16.sp),
                     decoration: InputDecoration(
                       labelText: 'Multiplier',
-                      labelStyle:
-                          GoogleFonts.inter(color: btTextSecondary),
+                      labelStyle: GoogleFonts.inter(color: btTextSecondary),
                       filled: true,
                       fillColor: btBackground,
                       border: OutlineInputBorder(
@@ -340,10 +336,8 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
                     decoration: InputDecoration(
                       labelText: 'Amount per recipient',
                       prefixText: symbol,
-                      prefixStyle:
-                          GoogleFonts.inter(color: btTextSecondary),
-                      labelStyle:
-                          GoogleFonts.inter(color: btTextSecondary),
+                      prefixStyle: GoogleFonts.inter(color: btTextSecondary),
+                      labelStyle: GoogleFonts.inter(color: btTextSecondary),
                       filled: true,
                       fillColor: btBackground,
                       border: OutlineInputBorder(
@@ -511,8 +505,7 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-            bottom: MediaQuery.of(ctx).viewInsets.bottom),
+        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
         child: Container(
           constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.85),
@@ -540,8 +533,7 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
                           Text(
                               'Tweak amounts here without changing the saved batch.',
                               style: GoogleFonts.inter(
-                                  color: btTextSecondary,
-                                  fontSize: 12.sp)),
+                                  color: btTextSecondary, fontSize: 12.sp)),
                         ],
                       ),
                     ),
@@ -563,8 +555,8 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
               Flexible(
                 child: ListView.separated(
                   shrinkWrap: true,
-                  padding: EdgeInsets.symmetric(
-                      horizontal: 16.w, vertical: 12.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                   itemCount: batch.items.length,
                   separatorBuilder: (_, __) => SizedBox(height: 8.h),
                   itemBuilder: (ctx, i) {
@@ -615,15 +607,13 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
                                 isDense: true,
                                 prefixText: symbol,
                                 prefixStyle: GoogleFonts.inter(
-                                    color: btTextSecondary,
-                                    fontSize: 11.sp),
+                                    color: btTextSecondary, fontSize: 11.sp),
                                 contentPadding: EdgeInsets.symmetric(
                                     horizontal: 8.w, vertical: 8.h),
                                 filled: true,
                                 fillColor: btCard,
                                 border: OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(8.r),
+                                  borderRadius: BorderRadius.circular(8.r),
                                   borderSide: BorderSide.none,
                                 ),
                               ),
@@ -664,8 +654,7 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
                     ),
                     child: Text('Continue to PIN',
                         style: GoogleFonts.inter(
-                            fontSize: 15.sp,
-                            fontWeight: FontWeight.w600)),
+                            fontSize: 15.sp, fontWeight: FontWeight.w600)),
                   ),
                 ),
               ),
@@ -761,8 +750,7 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
                   'totalAmount': executed.totalAmount.toDouble() / 100,
                   'totalFee': executed.totalFee.toDouble() / 100,
                   'currency': batch.currency,
-                  'currencySymbol':
-                      CurrencyUtils.getSymbol(batch.currency),
+                  'currencySymbol': CurrencyUtils.getSymbol(batch.currency),
                   'status': executed.status,
                   'recipientCount': executed.totalTransfers,
                   'successfulTransfers': executed.successfulTransfers,
@@ -976,8 +964,7 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
                 ),
                 PopupMenuItem(
                   value: 'delete',
-                  child:
-                      Text('Delete', style: GoogleFonts.inter(color: btRed)),
+                  child: Text('Delete', style: GoogleFonts.inter(color: btRed)),
                 ),
               ],
             ),
@@ -1139,8 +1126,8 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
                     fontWeight: FontWeight.w600)),
             SizedBox(height: 4.h),
             Text('Tap Add recipient to start building this batch.',
-                style: GoogleFonts.inter(
-                    color: btTextSecondary, fontSize: 12.sp)),
+                style:
+                    GoogleFonts.inter(color: btTextSecondary, fontSize: 12.sp)),
           ],
         ),
       ),
@@ -1213,8 +1200,7 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
           GestureDetector(
             onTap: mutating ? null : () => _editItemAmount(item),
             child: Container(
-              padding:
-                  EdgeInsets.symmetric(horizontal: 8.w, vertical: 5.h),
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 5.h),
               decoration: BoxDecoration(
                 color: btBackground,
                 borderRadius: BorderRadius.circular(8.r),
@@ -1235,8 +1221,8 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
           ),
           IconButton(
             onPressed: mutating ? null : () => _removeItem(item),
-            icon: Icon(Icons.close_rounded,
-                color: btTextSecondary, size: 18.sp),
+            icon:
+                Icon(Icons.close_rounded, color: btTextSecondary, size: 18.sp),
             tooltip: 'Remove',
           ),
         ],

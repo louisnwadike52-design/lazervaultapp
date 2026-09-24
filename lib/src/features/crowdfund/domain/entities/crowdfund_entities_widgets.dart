@@ -83,7 +83,8 @@ class CrowdfundCreator extends Equatable {
       verifiedAt: json['verifiedAt'] != null
           ? DateTime.tryParse(json['verifiedAt'] as String)
           : null,
-      facialRecognitionEnabled: (json['facialRecognitionEnabled'] as bool?) ?? false,
+      facialRecognitionEnabled:
+          (json['facialRecognitionEnabled'] as bool?) ?? false,
     );
   }
 
@@ -217,9 +218,8 @@ class CrowdfundDonation extends Equatable {
       donor: CrowdfundDonor.fromJson(json['donor'] as Map<String, dynamic>),
       amount: (json['amount'] as num).toDouble(),
       currency: json['currency'] as String? ?? '',
-      donationDate:
-          DateTime.tryParse(json['donationDate'] as String? ?? '') ??
-              DateTime.now(),
+      donationDate: DateTime.tryParse(json['donationDate'] as String? ?? '') ??
+          DateTime.now(),
       status: DonationStatus.values.firstWhere(
         (e) => e.name == (json['status'] as String? ?? ''),
         orElse: () => DonationStatus.pending,
@@ -425,7 +425,8 @@ class CrowdfundReport extends Equatable {
               .toList() ??
           [],
       milestones: (json['milestones'] as List<dynamic>?)
-              ?.map((e) => CrowdfundMilestone.fromJson(e as Map<String, dynamic>))
+              ?.map(
+                  (e) => CrowdfundMilestone.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
       callToAction: json['call_to_action'] as String? ?? '',
@@ -437,7 +438,8 @@ class CrowdfundReport extends Equatable {
           [],
       success: json['success'] as bool? ?? false,
       generatedAt: json['generated_at'] != null
-          ? (DateTime.tryParse(json['generated_at'] as String) ?? DateTime.now())
+          ? (DateTime.tryParse(json['generated_at'] as String) ??
+              DateTime.now())
           : DateTime.now(),
       error: json['error'] as String?,
     );
@@ -515,7 +517,13 @@ class CrowdfundSharingText extends Equatable {
 // LEADERBOARD ENTITIES
 // ============================================================================
 
-enum LeaderboardSortBy { mostFunded, mostDonors, trending, nearlyComplete, newest }
+enum LeaderboardSortBy {
+  mostFunded,
+  mostDonors,
+  trending,
+  nearlyComplete,
+  newest
+}
 
 class LeaderboardEntry extends Equatable {
   final int rank;
@@ -772,6 +780,11 @@ class CancelCrowdfundResult extends Equatable {
   });
 
   @override
-  List<Object?> get props =>
-      [crowdfund, totalContributions, refundsQueued, totalRefundAmount, message];
+  List<Object?> get props => [
+        crowdfund,
+        totalContributions,
+        refundsQueued,
+        totalRefundAmount,
+        message
+      ];
 }

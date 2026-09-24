@@ -36,7 +36,8 @@ class LockFundsCubit extends Cubit<LockFundsState> {
     // is shared across the list screen and receipt, so a single
     // load covers both surfaces.
     if (isClosed) return;
-    if (currentUserId != null && event.userId.isNotEmpty &&
+    if (currentUserId != null &&
+        event.userId.isNotEmpty &&
         event.userId != currentUserId) {
       return;
     }

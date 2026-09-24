@@ -33,9 +33,9 @@ class EducationRemoteDataSourceImpl implements EducationRemoteDataSource {
   EducationRemoteDataSourceImpl({required this.grpcClient});
 
   @override
-  Future<List<EducationProviderModel>> getProviders({bool activeOnly = true}) async {
-    final request = pb.GetEducationProvidersRequest()
-      ..activeOnly = activeOnly;
+  Future<List<EducationProviderModel>> getProviders(
+      {bool activeOnly = true}) async {
+    final request = pb.GetEducationProvidersRequest()..activeOnly = activeOnly;
 
     final options = await grpcClient.callOptions;
     final response = await grpcClient.utilityPaymentsClient

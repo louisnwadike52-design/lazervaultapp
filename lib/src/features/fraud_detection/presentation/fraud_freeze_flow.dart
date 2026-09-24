@@ -123,7 +123,9 @@ class _FraudFreezeModalState extends State<FraudFreezeModal>
                 : 'We paused a transfer that looked unusually large for your account and locked it for your security. Verify it\'s you to unlock.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF), fontSize: 13.5.sp, height: 1.45),
+                color: const Color(0xFF9CA3AF),
+                fontSize: 13.5.sp,
+                height: 1.45),
           ),
           if (_error != null) ...[
             SizedBox(height: 10.h),

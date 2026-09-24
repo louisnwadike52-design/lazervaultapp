@@ -207,12 +207,9 @@ class _CancelProgressScreenState extends State<CancelProgressScreen> {
             children: [
               _statChip('Pending', _crowdfund.refundsPending,
                   const Color(0xFFF59E0B)),
-              _statChip('Failed', _crowdfund.refundsFailed,
-                  const Color(0xFFEF4444)),
               _statChip(
-                  'Refunded total',
-                  null,
-                  const Color(0xFF10B981),
+                  'Failed', _crowdfund.refundsFailed, const Color(0xFFEF4444)),
+              _statChip('Refunded total', null, const Color(0xFF10B981),
                   amount:
                       '${_crowdfund.currency} ${_fmt(_crowdfund.totalRefunded)}'),
             ],
@@ -247,7 +244,8 @@ class _CancelProgressScreenState extends State<CancelProgressScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFFEF4444).withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+        border:
+            Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -301,8 +299,9 @@ class _CancelProgressScreenState extends State<CancelProgressScreen> {
     if (value <= 0) return '0';
     final isInt = value == value.roundToDouble();
     final whole = value.floor();
-    final frac =
-        isInt ? '' : '.${((value - whole) * 100).round().toString().padLeft(2, '0')}';
+    final frac = isInt
+        ? ''
+        : '.${((value - whole) * 100).round().toString().padLeft(2, '0')}';
     final w = whole.toString();
     final buf = StringBuffer();
     for (var i = 0; i < w.length; i++) {

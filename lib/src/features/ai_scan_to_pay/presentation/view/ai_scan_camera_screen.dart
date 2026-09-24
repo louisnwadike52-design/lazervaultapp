@@ -148,7 +148,8 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen> {
                     color: Colors.white)),
             SizedBox(height: 8.h),
             Text('Redirecting…',
-                style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white70)),
+                style:
+                    GoogleFonts.inter(fontSize: 14.sp, color: Colors.white70)),
           ],
         ),
       ),
@@ -184,7 +185,8 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen> {
             SizedBox(height: 8.h),
             Text('Please wait while we analyze your image…',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white70)),
+                style:
+                    GoogleFonts.inter(fontSize: 14.sp, color: Colors.white70)),
           ],
         ),
       ),

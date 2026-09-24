@@ -30,7 +30,8 @@ class AirtimeTransactionModel extends AirtimeTransaction {
   }) {
     final payment = response.payment;
     // A successful gRPC response (no exception) with empty status means completed
-    final effectiveStatus = payment.status.isEmpty ? 'completed' : payment.status;
+    final effectiveStatus =
+        payment.status.isEmpty ? 'completed' : payment.status;
     return AirtimeTransactionModel(
       id: payment.id,
       transactionReference: payment.reference,
@@ -69,8 +70,8 @@ class AirtimeTransactionModel extends AirtimeTransaction {
     return AirtimeTransactionModel(
       id: payment.id,
       transactionReference: payment.reference,
-      networkProvider: _networkTypeFromBillType(payment.providerId,
-          phone: recipientPhone),
+      networkProvider:
+          _networkTypeFromBillType(payment.providerId, phone: recipientPhone),
       recipientPhoneNumber: recipientPhone,
       recipientName: recipientName,
       amount: payment.amount,
@@ -104,8 +105,7 @@ class AirtimeTransactionModel extends AirtimeTransaction {
     // released on a `failed` row — propagate it so the shared
     // [BillHistoryItem] can promote the chip from "Failed" to
     // "Refunded".
-    final refundSource =
-        payment.hasRefundSource() ? payment.refundSource : '';
+    final refundSource = payment.hasRefundSource() ? payment.refundSource : '';
 
     // Parse the JSON metadata blob the backend stamps on every payment
     // (country_code, dest_currency, operator_name, fx_rate_used, etc.
@@ -220,8 +220,7 @@ class AirtimeTransactionModel extends AirtimeTransaction {
         if (operatorHint.contains('verizon')) {
           return NetworkProviderType.verizon;
         }
-        if (operatorHint.contains('at&t') ||
-            operatorHint.contains('att')) {
+        if (operatorHint.contains('at&t') || operatorHint.contains('att')) {
           return NetworkProviderType.att;
         }
         if (operatorHint.contains('t-mobile') ||
@@ -393,7 +392,7 @@ class AirtimeTransactionModel extends AirtimeTransaction {
         orElse: () => AirtimeTransactionStatus.pending,
       ),
       createdAt: DateTime.parse(json['createdAt'] as String),
-      completedAt: json['completedAt'] != null 
+      completedAt: json['completedAt'] != null
           ? DateTime.parse(json['completedAt'] as String)
           : null,
       failureReason: json['failureReason'] as String?,
@@ -464,4 +463,4 @@ class AirtimeTransactionModel extends AirtimeTransaction {
       totalAmount: totalAmount ?? this.totalAmount,
     );
   }
-} 
+}

@@ -75,7 +75,8 @@ class EmailWebSocketService {
           headers: {'Authorization': 'Bearer $token'},
         );
       }
-      _channel!.stream.listen(_onMessage, onError: (_) => _onDone(), onDone: _onDone, cancelOnError: false);
+      _channel!.stream.listen(_onMessage,
+          onError: (_) => _onDone(), onDone: _onDone, cancelOnError: false);
       _connected = true;
       _attempts = 0;
     } catch (_) {
@@ -89,7 +90,8 @@ class EmailWebSocketService {
       if (decoded is Map<String, dynamic>) {
         final type = decoded['type'] as String? ?? '';
         if (type.isEmpty || type == 'connected' || type == 'pong') return;
-        final data = (decoded['data'] as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
+        final data = (decoded['data'] as Map?)?.cast<String, dynamic>() ??
+            <String, dynamic>{};
         _events.add(EmailWsEvent(type, data));
       }
     } catch (_) {/* ignore malformed frames */}

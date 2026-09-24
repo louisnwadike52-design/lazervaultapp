@@ -7,7 +7,6 @@ import '../entities/two_factor_entity.dart';
 import '../usecases/sign_up_usecase.dart';
 part 'i_auth_repository_widgets.dart';
 
-
 abstract class IAuthRepository {
   // Authentication methods - return ProfileEntity on success.
   // Exactly one of [email] / [phone] identifies the account (the email+password
@@ -173,12 +172,14 @@ abstract class IAuthRepository {
   /// Request in-app deletion of the current account (30-day cancellable grace).
   /// The user is identified by the bearer token. On the server this revokes
   /// sessions; the client should clear the local session on success.
-  Future<Either<Failure, AccountDeletionOutcome>> requestAccountDeletion({String? reason});
+  Future<Either<Failure, AccountDeletionOutcome>> requestAccountDeletion(
+      {String? reason});
 
   /// Arm a self-imposed account lock for [durationSeconds] (Settings → Security).
   /// Blocks login + transactions until it elapses; no early unlock. Returns the
   /// ISO-8601 unlock time on success. The current session is revoked server-side.
-  Future<Either<Failure, DateTime>> requestAccountLock({required int durationSeconds, String? reason});
+  Future<Either<Failure, DateTime>> requestAccountLock(
+      {required int durationSeconds, String? reason});
 
   /// Cancel a pending account deletion within the grace window.
   Future<Either<Failure, String>> cancelAccountDeletion();
@@ -192,7 +193,8 @@ abstract class IAuthRepository {
     String? phoneNumber,
     String? username,
     String? referralCode,
-    String? locale, // Locale format: "en-NG", "en-US", etc. Backend will derive country/currency
+    String?
+        locale, // Locale format: "en-NG", "en-US", etc. Backend will derive country/currency
     String? bvn,
     String? nin,
   });
@@ -212,7 +214,8 @@ abstract class IAuthRepository {
 
   /// Verify password reset code (OTP for SMS or token for email)
   /// Returns PasswordResetVerificationResult with reset token
-  Future<Either<Failure, PasswordResetVerificationResult>> verifyPasswordResetCode({
+  Future<Either<Failure, PasswordResetVerificationResult>>
+      verifyPasswordResetCode({
     required String contact,
     required String code,
     required auth_enum.PasswordResetDeliveryMethod deliveryMethod,

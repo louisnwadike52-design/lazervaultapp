@@ -26,7 +26,8 @@ class VoiceConversationMessage extends Equatable {
       text: json['text'] as String,
       timestamp: DateTime.parse(json['timestamp'] as String),
       metadata: json['metadata'] != null
-          ? VoiceConversationMetadata.fromJson(json['metadata'] as Map<String, dynamic>)
+          ? VoiceConversationMetadata.fromJson(
+              json['metadata'] as Map<String, dynamic>)
           : null,
     );
   }
@@ -69,7 +70,8 @@ enum VoiceConversationSender {
 
 /// Optional metadata for special messages (e.g., transaction receipts, file attachments)
 class VoiceConversationMetadata extends Equatable {
-  final String? type; // 'transaction_receipt', 'transfer_summary', 'error', etc.
+  final String?
+      type; // 'transaction_receipt', 'transfer_summary', 'error', etc.
   final Map<String, dynamic>? data;
   final String? fileUrl; // For attachments (receipts, images, etc.)
   final String? fileName;
@@ -141,7 +143,8 @@ class VoiceConversation extends Equatable {
   }
 
   /// Add a user message to the conversation
-  VoiceConversation addUserMessage(String text, {VoiceConversationMetadata? metadata}) {
+  VoiceConversation addUserMessage(String text,
+      {VoiceConversationMetadata? metadata}) {
     return copyWith(
       messages: [
         ...messages,
@@ -157,7 +160,8 @@ class VoiceConversation extends Equatable {
   }
 
   /// Add an agent message to the conversation
-  VoiceConversation addAgentMessage(String text, {VoiceConversationMetadata? metadata}) {
+  VoiceConversation addAgentMessage(String text,
+      {VoiceConversationMetadata? metadata}) {
     return copyWith(
       messages: [
         ...messages,
@@ -183,5 +187,6 @@ class VoiceConversation extends Equatable {
       messages.where((m) => m.sender == VoiceConversationSender.agent).length;
 
   @override
-  List<Object?> get props => [sessionId, startedAt, endedAt, messages, language, sessionMetadata];
+  List<Object?> get props =>
+      [sessionId, startedAt, endedAt, messages, language, sessionMetadata];
 }

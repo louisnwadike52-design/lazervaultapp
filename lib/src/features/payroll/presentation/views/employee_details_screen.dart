@@ -14,7 +14,6 @@ import 'edit_employee_screen.dart';
 import 'pay_slip_details_screen.dart';
 part 'employee_details_screen_widgets.dart';
 
-
 class EmployeeDetailsScreen extends StatelessWidget {
   final EmployeeEntity employee;
 
@@ -105,8 +104,7 @@ class EmployeeDetailsScreen extends StatelessWidget {
                         icon: Icons.payments_outlined,
                         rows: [
                           _DetailRow('Pay Rate', employee.formattedPayRate),
-                          _DetailRow(
-                              'Frequency', employee.payFrequencyDisplay),
+                          _DetailRow('Frequency', employee.payFrequencyDisplay),
                         ],
                       ),
                       SizedBox(height: 16.h),
@@ -122,9 +120,10 @@ class EmployeeDetailsScreen extends StatelessWidget {
                                 _DetailRow('Method', 'Lazervault wallet'),
                               ]
                             : [
+                                _DetailRow('Account Number',
+                                    employee.bankAccountNumber),
                                 _DetailRow(
-                                    'Account Number', employee.bankAccountNumber),
-                                _DetailRow('Account Name', employee.bankAccountName),
+                                    'Account Name', employee.bankAccountName),
                                 _DetailRow('Bank Name', employee.bankName),
                                 _DetailRow('Bank Code', employee.bankCode),
                               ],
@@ -243,7 +242,8 @@ class EmployeeDetailsScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, color: InvoiceThemeColors.primaryPurpleLight, size: 18.sp),
+              Icon(icon,
+                  color: InvoiceThemeColors.primaryPurpleLight, size: 18.sp),
               SizedBox(width: 8.w),
               Text(
                 title,
@@ -353,23 +353,23 @@ class EmployeeDetailsScreen extends StatelessWidget {
                               MaterialPageRoute(
                                 builder: (_) => BlocProvider.value(
                                   value: context.read<PayrollCubit>(),
-                                  child: EditEmployeeScreen(
-                                      employee: employee),
+                                  child: EditEmployeeScreen(employee: employee),
                                 ),
                               ),
                             );
                             if (result == true) {
                               // Refresh employee data after edit
                               if (context.mounted) {
-                                context.read<PayrollCubit>().getEmployee(
-                                    employee.id);
+                                context
+                                    .read<PayrollCubit>()
+                                    .getEmployee(employee.id);
                               }
                             }
                           },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: InvoiceThemeColors.primaryPurple,
-                      disabledBackgroundColor:
-                          InvoiceThemeColors.primaryPurple.withValues(alpha: 0.4),
+                      disabledBackgroundColor: InvoiceThemeColors.primaryPurple
+                          .withValues(alpha: 0.4),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
                       ),

@@ -15,7 +15,8 @@ class AirtimeAutoRechargeScreen extends StatefulWidget {
   const AirtimeAutoRechargeScreen({super.key});
 
   @override
-  State<AirtimeAutoRechargeScreen> createState() => _AirtimeAutoRechargeScreenState();
+  State<AirtimeAutoRechargeScreen> createState() =>
+      _AirtimeAutoRechargeScreenState();
 }
 
 class _AirtimeAutoRechargeScreenState extends State<AirtimeAutoRechargeScreen> {
@@ -79,10 +80,7 @@ class _AirtimeAutoRechargeScreenState extends State<AirtimeAutoRechargeScreen> {
             setState(() {
               _autoRecharges = [
                 for (final a in _autoRecharges)
-                  if (a.id == state.autoRecharge.id)
-                    state.autoRecharge
-                  else
-                    a,
+                  if (a.id == state.autoRecharge.id) state.autoRecharge else a,
               ];
             });
           } else if (state is AirtimeAutoRechargeStatusChanged) {
@@ -90,10 +88,7 @@ class _AirtimeAutoRechargeScreenState extends State<AirtimeAutoRechargeScreen> {
             setState(() {
               _autoRecharges = [
                 for (final a in _autoRecharges)
-                  if (a.id == state.id)
-                    a.copyWith(status: state.status)
-                  else
-                    a,
+                  if (a.id == state.id) a.copyWith(status: state.status) else a,
               ];
             });
           } else if (state is AirtimeAutoRechargeDeleted) {
@@ -137,7 +132,8 @@ class _AirtimeAutoRechargeScreenState extends State<AirtimeAutoRechargeScreen> {
                   ),
                   SizedBox(height: 24.h),
                   ElevatedButton(
-                    onPressed: () => context.read<AirtimeCubit>().loadAutoRecharges(),
+                    onPressed: () =>
+                        context.read<AirtimeCubit>().loadAutoRecharges(),
                     child: const Text('Retry'),
                   ),
                 ],
@@ -240,10 +236,12 @@ class _AirtimeAutoRechargeScreenState extends State<AirtimeAutoRechargeScreen> {
       // Edit, and Delete keep their own row actions.
       onTap: () => _showAutoRechargeDetailsSheet(autoRecharge),
       onPause: isActive
-          ? () => context.read<AirtimeCubit>().pauseAutoRecharge(autoRecharge.id)
+          ? () =>
+              context.read<AirtimeCubit>().pauseAutoRecharge(autoRecharge.id)
           : null,
       onResume: !isActive
-          ? () => context.read<AirtimeCubit>().resumeAutoRecharge(autoRecharge.id)
+          ? () =>
+              context.read<AirtimeCubit>().resumeAutoRecharge(autoRecharge.id)
           : null,
       onEdit: () => _showEditDialog(autoRecharge),
       onDelete: () => _showDeleteConfirmation(autoRecharge.id),
@@ -277,8 +275,13 @@ class _AirtimeAutoRechargeScreenState extends State<AirtimeAutoRechargeScreen> {
 
     String scheduleLine() {
       const days = [
-        'Monday', 'Tuesday', 'Wednesday', 'Thursday',
-        'Friday', 'Saturday', 'Sunday'
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday'
       ];
       switch (ar.frequency.toLowerCase()) {
         case 'weekly':
@@ -297,8 +300,7 @@ class _AirtimeAutoRechargeScreenState extends State<AirtimeAutoRechargeScreen> {
 
     BillDetailsSheet.show(
       context,
-      title:
-          ar.networkName.isNotEmpty ? ar.networkName : 'Auto-Recharge',
+      title: ar.networkName.isNotEmpty ? ar.networkName : 'Auto-Recharge',
       subtitle: ar.phoneNumber,
       headerIcon: Icons.autorenew,
       headerColor: accent,
@@ -365,14 +367,12 @@ class _AirtimeAutoRechargeScreenState extends State<AirtimeAutoRechargeScreen> {
     }
   }
 
-
   void _showEditDialog(AirtimeAutoRecharge autoRecharge) {
     final amountController = TextEditingController(
       text: autoRecharge.amount.toStringAsFixed(0),
     );
-    String selectedFrequency = autoRecharge.frequency.isNotEmpty
-        ? autoRecharge.frequency
-        : 'monthly';
+    String selectedFrequency =
+        autoRecharge.frequency.isNotEmpty ? autoRecharge.frequency : 'monthly';
 
     // Parse execution time from nextRunDate or default to midnight
     TimeOfDay selectedTime = const TimeOfDay(hour: 0, minute: 0);
@@ -434,7 +434,8 @@ class _AirtimeAutoRechargeScreenState extends State<AirtimeAutoRechargeScreen> {
               SizedBox(height: 4.h),
               Text(
                 '${autoRecharge.networkName} · ${autoRecharge.phoneNumber}',
-                style: TextStyle(fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
+                style:
+                    TextStyle(fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
               ),
               SizedBox(height: 24.h),
               // Amount field
@@ -449,7 +450,8 @@ class _AirtimeAutoRechargeScreenState extends State<AirtimeAutoRechargeScreen> {
               SizedBox(height: 8.h),
               TextField(
                 controller: amountController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: false),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: false),
                 style: TextStyle(color: Colors.white, fontSize: 15.sp),
                 decoration: InputDecoration(
                   filled: true,
@@ -467,10 +469,14 @@ class _AirtimeAutoRechargeScreenState extends State<AirtimeAutoRechargeScreen> {
                     borderSide: const BorderSide(color: Color(0xFF10B981)),
                   ),
                   prefixIcon: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
-                    child: Text('₦', style: TextStyle(color: const Color(0xFF6B7280), fontSize: 16.sp)),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                    child: Text('₦',
+                        style: TextStyle(
+                            color: const Color(0xFF6B7280), fontSize: 16.sp)),
                   ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                 ),
               ),
               SizedBox(height: 16.h),
@@ -489,7 +495,8 @@ class _AirtimeAutoRechargeScreenState extends State<AirtimeAutoRechargeScreen> {
                   final isSelected = selectedFrequency == f['value'];
                   return Expanded(
                     child: GestureDetector(
-                      onTap: () => setModalState(() => selectedFrequency = f['value']!),
+                      onTap: () =>
+                          setModalState(() => selectedFrequency = f['value']!),
                       child: Container(
                         margin: EdgeInsets.only(
                           right: f['value'] != 'monthly' ? 8.w : 0,
@@ -511,7 +518,8 @@ class _AirtimeAutoRechargeScreenState extends State<AirtimeAutoRechargeScreen> {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 13.sp,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                            fontWeight:
+                                isSelected ? FontWeight.w600 : FontWeight.w400,
                             color: isSelected
                                 ? const Color(0xFF10B981)
                                 : const Color(0xFF9CA3AF),
@@ -555,7 +563,8 @@ class _AirtimeAutoRechargeScreenState extends State<AirtimeAutoRechargeScreen> {
                   }
                 },
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1F1F1F),
                     borderRadius: BorderRadius.circular(12.r),
@@ -605,19 +614,22 @@ class _AirtimeAutoRechargeScreenState extends State<AirtimeAutoRechargeScreen> {
                           final amount = double.tryParse(amountStr);
                           if (amount == null || amount <= 0) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Please enter a valid amount')),
+                              const SnackBar(
+                                  content: Text('Please enter a valid amount')),
                             );
                             return;
                           }
                           setModalState(() => isLoading = true);
                           try {
-                            await context.read<AirtimeCubit>().updateAutoRecharge(
-                              autoRechargeId: autoRecharge.id,
-                              amount: amount,
-                              frequency: selectedFrequency,
-                              executionHour: selectedTime.hour,
-                              executionMinute: selectedTime.minute,
-                            );
+                            await context
+                                .read<AirtimeCubit>()
+                                .updateAutoRecharge(
+                                  autoRechargeId: autoRecharge.id,
+                                  amount: amount,
+                                  frequency: selectedFrequency,
+                                  executionHour: selectedTime.hour,
+                                  executionMinute: selectedTime.minute,
+                                );
                             if (ctx.mounted) Navigator.of(ctx).pop();
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -644,7 +656,8 @@ class _AirtimeAutoRechargeScreenState extends State<AirtimeAutoRechargeScreen> {
                       ? LazerVaultLoader.small()
                       : Text(
                           'Save Changes',
-                          style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                              fontSize: 15.sp, fontWeight: FontWeight.w600),
                         ),
                 ),
               ),

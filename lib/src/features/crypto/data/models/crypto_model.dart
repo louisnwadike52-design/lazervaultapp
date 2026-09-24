@@ -50,21 +50,28 @@ class CryptoModel extends Crypto {
       high24h: (json['high_24h'] ?? 0).toDouble(),
       low24h: (json['low_24h'] ?? 0).toDouble(),
       priceChange24h: (json['price_change_24h'] ?? 0).toDouble(),
-      priceChangePercentage24h: (json['price_change_percentage_24h'] ?? 0).toDouble(),
-      priceChangePercentage7d: json['price_change_percentage_7d_in_currency']?.toDouble(),
-      priceChangePercentage30d: json['price_change_percentage_30d_in_currency']?.toDouble(),
-      priceChangePercentage1y: json['price_change_percentage_1y_in_currency']?.toDouble(),
+      priceChangePercentage24h:
+          (json['price_change_percentage_24h'] ?? 0).toDouble(),
+      priceChangePercentage7d:
+          json['price_change_percentage_7d_in_currency']?.toDouble(),
+      priceChangePercentage30d:
+          json['price_change_percentage_30d_in_currency']?.toDouble(),
+      priceChangePercentage1y:
+          json['price_change_percentage_1y_in_currency']?.toDouble(),
       marketCapChange24h: json['market_cap_change_24h']?.toDouble(),
-      marketCapChangePercentage24h: json['market_cap_change_percentage_24h']?.toDouble(),
+      marketCapChangePercentage24h:
+          json['market_cap_change_percentage_24h']?.toDouble(),
       circulatingSupply: (json['circulating_supply'] ?? 0).toDouble(),
       totalSupply: json['total_supply']?.toDouble(),
       maxSupply: json['max_supply']?.toDouble(),
       ath: json['ath']?.toDouble(),
       athChangePercentage: json['ath_change_percentage']?.toDouble(),
-      athDate: json['ath_date'] != null ? DateTime.parse(json['ath_date']) : null,
+      athDate:
+          json['ath_date'] != null ? DateTime.parse(json['ath_date']) : null,
       atl: json['atl']?.toDouble(),
       atlChangePercentage: json['atl_change_percentage']?.toDouble(),
-      atlDate: json['atl_date'] != null ? DateTime.parse(json['atl_date']) : null,
+      atlDate:
+          json['atl_date'] != null ? DateTime.parse(json['atl_date']) : null,
       lastUpdated: json['last_updated'] != null
           ? DateTime.parse(json['last_updated'])
           : DateTime.now(),
@@ -136,27 +143,43 @@ class CryptoModel extends Crypto {
       currentPrice: proto.currentPrice,
       marketCap: proto.marketCap.toDouble(),
       marketCapRank: proto.marketCapRank,
-      fullyDilutedValuation: proto.hasFullyDilutedValuation() ? proto.fullyDilutedValuation : null,
+      fullyDilutedValuation:
+          proto.hasFullyDilutedValuation() ? proto.fullyDilutedValuation : null,
       totalVolume: proto.totalVolume.toDouble(),
       high24h: proto.hasHigh24h() ? proto.high24h : 0.0,
       low24h: proto.hasLow24h() ? proto.low24h : 0.0,
       priceChange24h: proto.hasPriceChange24h() ? proto.priceChange24h : 0.0,
-      priceChangePercentage24h: proto.hasPriceChangePercentage24h() ? proto.priceChangePercentage24h : 0.0,
-      priceChangePercentage7d: proto.hasPriceChangePercentage7d() ? proto.priceChangePercentage7d : null,
-      priceChangePercentage30d: proto.hasPriceChangePercentage30d() ? proto.priceChangePercentage30d : null,
-      priceChangePercentage1y: proto.hasPriceChangePercentage1y() ? proto.priceChangePercentage1y : null,
-      marketCapChange24h: proto.hasMarketCapChange24h() ? proto.marketCapChange24h : null,
-      marketCapChangePercentage24h: proto.hasMarketCapChangePercentage24h() ? proto.marketCapChangePercentage24h : null,
+      priceChangePercentage24h: proto.hasPriceChangePercentage24h()
+          ? proto.priceChangePercentage24h
+          : 0.0,
+      priceChangePercentage7d: proto.hasPriceChangePercentage7d()
+          ? proto.priceChangePercentage7d
+          : null,
+      priceChangePercentage30d: proto.hasPriceChangePercentage30d()
+          ? proto.priceChangePercentage30d
+          : null,
+      priceChangePercentage1y: proto.hasPriceChangePercentage1y()
+          ? proto.priceChangePercentage1y
+          : null,
+      marketCapChange24h:
+          proto.hasMarketCapChange24h() ? proto.marketCapChange24h : null,
+      marketCapChangePercentage24h: proto.hasMarketCapChangePercentage24h()
+          ? proto.marketCapChangePercentage24h
+          : null,
       circulatingSupply: proto.circulatingSupply,
       totalSupply: proto.hasTotalSupply() ? proto.totalSupply : null,
       maxSupply: proto.hasMaxSupply() ? proto.maxSupply : null,
       ath: proto.hasAth() ? proto.ath : null,
-      athChangePercentage: proto.hasAthChangePercentage() ? proto.athChangePercentage : null,
+      athChangePercentage:
+          proto.hasAthChangePercentage() ? proto.athChangePercentage : null,
       athDate: proto.hasAthDate() ? proto.athDate.toDateTime() : null,
       atl: proto.hasAtl() ? proto.atl : null,
-      atlChangePercentage: proto.hasAtlChangePercentage() ? proto.atlChangePercentage : null,
+      atlChangePercentage:
+          proto.hasAtlChangePercentage() ? proto.atlChangePercentage : null,
       atlDate: proto.hasAtlDate() ? proto.atlDate.toDateTime() : null,
-      lastUpdated: proto.hasLastUpdated() ? proto.lastUpdated.toDateTime() : DateTime.now(),
+      lastUpdated: proto.hasLastUpdated()
+          ? proto.lastUpdated.toDateTime()
+          : DateTime.now(),
       sparklineIn7d: null,
       priceHistory: proto.priceHistory
           .map((point) => PricePoint(
@@ -174,36 +197,36 @@ class CryptoModel extends Crypto {
   }
 
   Crypto toEntity() => Crypto(
-    id: id,
-    symbol: symbol,
-    name: name,
-    image: image,
-    currentPrice: currentPrice,
-    marketCap: marketCap,
-    marketCapRank: marketCapRank,
-    fullyDilutedValuation: fullyDilutedValuation,
-    totalVolume: totalVolume,
-    high24h: high24h,
-    low24h: low24h,
-    priceChange24h: priceChange24h,
-    priceChangePercentage24h: priceChangePercentage24h,
-    priceChangePercentage7d: priceChangePercentage7d,
-    priceChangePercentage30d: priceChangePercentage30d,
-    priceChangePercentage1y: priceChangePercentage1y,
-    marketCapChange24h: marketCapChange24h,
-    marketCapChangePercentage24h: marketCapChangePercentage24h,
-    circulatingSupply: circulatingSupply,
-    totalSupply: totalSupply,
-    maxSupply: maxSupply,
-    ath: ath,
-    athChangePercentage: athChangePercentage,
-    athDate: athDate,
-    atl: atl,
-    atlChangePercentage: atlChangePercentage,
-    atlDate: atlDate,
-    lastUpdated: lastUpdated,
-    sparklineIn7d: sparklineIn7d,
-    priceHistory: priceHistory,
-    isFavorite: isFavorite,
-  );
-} 
+        id: id,
+        symbol: symbol,
+        name: name,
+        image: image,
+        currentPrice: currentPrice,
+        marketCap: marketCap,
+        marketCapRank: marketCapRank,
+        fullyDilutedValuation: fullyDilutedValuation,
+        totalVolume: totalVolume,
+        high24h: high24h,
+        low24h: low24h,
+        priceChange24h: priceChange24h,
+        priceChangePercentage24h: priceChangePercentage24h,
+        priceChangePercentage7d: priceChangePercentage7d,
+        priceChangePercentage30d: priceChangePercentage30d,
+        priceChangePercentage1y: priceChangePercentage1y,
+        marketCapChange24h: marketCapChange24h,
+        marketCapChangePercentage24h: marketCapChangePercentage24h,
+        circulatingSupply: circulatingSupply,
+        totalSupply: totalSupply,
+        maxSupply: maxSupply,
+        ath: ath,
+        athChangePercentage: athChangePercentage,
+        athDate: athDate,
+        atl: atl,
+        atlChangePercentage: atlChangePercentage,
+        atlDate: atlDate,
+        lastUpdated: lastUpdated,
+        sparklineIn7d: sparklineIn7d,
+        priceHistory: priceHistory,
+        isFavorite: isFavorite,
+      );
+}

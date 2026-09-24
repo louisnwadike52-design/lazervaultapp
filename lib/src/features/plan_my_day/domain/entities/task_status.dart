@@ -15,7 +15,8 @@ class PlanTaskStatus {
   static const todo = PlanTaskStatus('pending', 'To-do', Color(0xFF9CA3AF));
   static const inProgress =
       PlanTaskStatus('in_progress', 'In progress', Color(0xFF3B82F6));
-  static const blocked = PlanTaskStatus('blocked', 'Blocked', Color(0xFFEF4444));
+  static const blocked =
+      PlanTaskStatus('blocked', 'Blocked', Color(0xFFEF4444));
   static const inReview =
       PlanTaskStatus('in_review', 'In review', Color(0xFFFB923C));
   static const done = PlanTaskStatus('completed', 'Done', Color(0xFF10B981));

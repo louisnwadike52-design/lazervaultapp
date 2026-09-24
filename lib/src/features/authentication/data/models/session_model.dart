@@ -1,10 +1,13 @@
 import 'package:lazervault/src/features/authentication/domain/entities/session_entity.dart';
-import 'package:lazervault/src/generated/common.pb.dart' as common_pb; // Import common proto containing Session
-import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart' as timestamp_pb; // Import timestamp proto
+import 'package:lazervault/src/generated/common.pb.dart'
+    as common_pb; // Import common proto containing Session
+import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart'
+    as timestamp_pb; // Import timestamp proto
 import 'package:fixnum/fixnum.dart';
 
 // Helper to convert Protobuf Timestamp to Dart DateTime
-DateTime _timestampToDateTime(timestamp_pb.Timestamp timestamp) { // Use correct Timestamp type
+DateTime _timestampToDateTime(timestamp_pb.Timestamp timestamp) {
+  // Use correct Timestamp type
   // Ensure seconds and nanos are not null before conversion
   final seconds = timestamp.hasSeconds() ? timestamp.seconds : Int64.ZERO;
   final nanos = timestamp.hasNanos() ? timestamp.nanos : 0;
@@ -29,8 +32,10 @@ class SessionModel extends SessionEntity {
       userId: protoSession.userId.toString(), // Convert Int64 userId if needed
       accessToken: protoSession.accessToken,
       refreshToken: protoSession.refreshToken,
-      accessTokenExpiresAt: _timestampToDateTime(protoSession.accessTokenExpiresAt),
-      refreshTokenExpiresAt: _timestampToDateTime(protoSession.refreshTokenExpiresAt),
+      accessTokenExpiresAt:
+          _timestampToDateTime(protoSession.accessTokenExpiresAt),
+      refreshTokenExpiresAt:
+          _timestampToDateTime(protoSession.refreshTokenExpiresAt),
     );
   }
-} 
+}

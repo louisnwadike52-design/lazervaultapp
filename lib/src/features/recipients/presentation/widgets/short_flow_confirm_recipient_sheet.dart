@@ -98,8 +98,8 @@ class _ShortFlowConfirmRecipientSheetState
                 if (isInternal)
                   CircleAvatar(
                     radius: 22.r,
-                    backgroundColor:
-                        ShortFlowConfirmRecipientSheet._purple.withValues(alpha: 0.2),
+                    backgroundColor: ShortFlowConfirmRecipientSheet._purple
+                        .withValues(alpha: 0.2),
                     child: Text(
                       r.name.isNotEmpty ? r.name[0].toUpperCase() : '?',
                       style: GoogleFonts.inter(

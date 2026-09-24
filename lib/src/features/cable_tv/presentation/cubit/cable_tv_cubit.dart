@@ -16,7 +16,8 @@ class CableTVCubit extends Cubit<CableTVState> {
   Future<void> loadPaymentHistory({int limit = 50, int offset = 0}) async {
     if (isClosed) return;
     emit(CableTVPaymentHistoryLoading());
-    final result = await repository.getPaymentHistory(limit: limit, offset: offset);
+    final result =
+        await repository.getPaymentHistory(limit: limit, offset: offset);
     if (isClosed) return;
     result.fold(
       (failure) => emit(CableTVPaymentHistoryError(message: failure.message)),
@@ -120,7 +121,8 @@ class CableTVCubit extends Cubit<CableTVState> {
       (failure) => emit(CableTVPaymentFailed(message: failure.message)),
       (payment) {
         if (payment.isFailed) {
-          emit(CableTVPaymentFailed(message: 'Payment failed. Please try again.'));
+          emit(CableTVPaymentFailed(
+              message: 'Payment failed. Please try again.'));
         } else {
           emit(CableTVPaymentSuccess(payment: payment));
         }

@@ -35,7 +35,6 @@ class AiScanToPayScreen extends StatefulWidget {
 
 class _AiScanToPayScreenState extends State<AiScanToPayScreen>
     with TransactionPinMixin<AiScanToPayScreen> {
-
   // Guards for the unified flow.
   bool _confirmPushed = false;
   bool _payingScreenPushed = false;
@@ -98,13 +97,12 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
               color: const Color(0xFF1F1F1F),
               shape: BoxShape.circle,
               boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
             child: Icon(
               Icons.arrow_back,
@@ -133,13 +131,12 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
                 color: const Color(0xFF1F1F1F),
                 shape: BoxShape.circle,
                 boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
               child: Icon(
                 Icons.history,
@@ -153,76 +150,76 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
       ),
       body: ServiceEntranceAnimation(
         child: BlocConsumer<AiScanCubit, AiScanState>(
-        listener: (context, state) {
-          // A fresh analysis (camera capture or upload) means any prior
-          // confirm/paying screen is done — reset the one-shot push guards so
-          // the next resolved intent can push cleanly even after a retry.
-          if (state is AiScanAnalyzing) {
-            _confirmPushed = false;
-            _payingScreenPushed = false;
-          }
-          if (state is AiScanResumable) {
-            // Surface the resumable session as a sticky bottom sheet
-            // with Resume / Discard. Either choice dispatches back to
-            // the cubit and clears this transient state.
-            _showResumePrompt(context, state);
-          } else if (state is AiScanCamera) {
-            Get.to(() => BlocProvider.value(
-              value: context.read<AiScanCubit>(),
-              child: const AiScanCameraScreen(),
-            ));
-          } else if (state is AiScanIntentResolved) {
-            _handleIntentResolved(context, state);
-          } else if (state is AiScanOcrResolved) {
-            _handleOcrResolved(context, state);
-          } else if (state is AiScanNoDataResult) {
-            _handleNoData(context, state);
-          } else if (state is AiScanPaying) {
-            _handlePaying(context, state);
-          } else if (state is AiScanPaymentCompleted) {
-            _handlePaymentCompleted(context, state);
-          } else if (state is AiScanPaymentFailedResult) {
-            _handlePaymentFailed(context, state);
-          } else if (state is AiScanBankDetailsExtracted) {
-            // Resume path (a stored session with already-extracted bank
-            // details). Hand the details straight to the send-funds flow — its
-            // amount bottom sheet → PIN → receipt (short) / initiate screen
-            // (long) with external-account name verification — instead of the
-            // dedicated bank-details bottom sheet + processing/receipt screens.
-            _payViaSendFunds(
-              recipient: _recipientFromBankDetails(state.bankDetails),
-              amount: null,
-              currency: 'NGN',
-            );
-          } else if (state is AiScanError) {
-            Get.snackbar(
-              'Error',
-              state.message,
-              backgroundColor: const Color(0xFFEF4444),
-              colorText: Colors.white,
-              snackPosition: SnackPosition.TOP,
-            );
-          }
-        },
-        builder: (context, state) {
-          if (state is AiScanLoading) {
-            return _buildLoadingState(state.message);
-          } else if (state is AiScanAnalyzing) {
-            return _buildAnalyzingState(state.message);
-          } else if (state is AiScanResumable ||
-              state is AiScanTypeSelection) {
-            // Behind the auto-opened camera, show the simple scan landing
-            // (a single "Scan to pay" CTA) — reached when the user backs out.
-            return _buildInitialState();
-          } else if (state is AiScanLocalHistoryLoaded) {
-            return _buildLocalHistory(state.entries);
-          } else if (state is AiScanError) {
-            return _buildErrorState(state.message);
-          }
+          listener: (context, state) {
+            // A fresh analysis (camera capture or upload) means any prior
+            // confirm/paying screen is done — reset the one-shot push guards so
+            // the next resolved intent can push cleanly even after a retry.
+            if (state is AiScanAnalyzing) {
+              _confirmPushed = false;
+              _payingScreenPushed = false;
+            }
+            if (state is AiScanResumable) {
+              // Surface the resumable session as a sticky bottom sheet
+              // with Resume / Discard. Either choice dispatches back to
+              // the cubit and clears this transient state.
+              _showResumePrompt(context, state);
+            } else if (state is AiScanCamera) {
+              Get.to(() => BlocProvider.value(
+                    value: context.read<AiScanCubit>(),
+                    child: const AiScanCameraScreen(),
+                  ));
+            } else if (state is AiScanIntentResolved) {
+              _handleIntentResolved(context, state);
+            } else if (state is AiScanOcrResolved) {
+              _handleOcrResolved(context, state);
+            } else if (state is AiScanNoDataResult) {
+              _handleNoData(context, state);
+            } else if (state is AiScanPaying) {
+              _handlePaying(context, state);
+            } else if (state is AiScanPaymentCompleted) {
+              _handlePaymentCompleted(context, state);
+            } else if (state is AiScanPaymentFailedResult) {
+              _handlePaymentFailed(context, state);
+            } else if (state is AiScanBankDetailsExtracted) {
+              // Resume path (a stored session with already-extracted bank
+              // details). Hand the details straight to the send-funds flow — its
+              // amount bottom sheet → PIN → receipt (short) / initiate screen
+              // (long) with external-account name verification — instead of the
+              // dedicated bank-details bottom sheet + processing/receipt screens.
+              _payViaSendFunds(
+                recipient: _recipientFromBankDetails(state.bankDetails),
+                amount: null,
+                currency: 'NGN',
+              );
+            } else if (state is AiScanError) {
+              Get.snackbar(
+                'Error',
+                state.message,
+                backgroundColor: const Color(0xFFEF4444),
+                colorText: Colors.white,
+                snackPosition: SnackPosition.TOP,
+              );
+            }
+          },
+          builder: (context, state) {
+            if (state is AiScanLoading) {
+              return _buildLoadingState(state.message);
+            } else if (state is AiScanAnalyzing) {
+              return _buildAnalyzingState(state.message);
+            } else if (state is AiScanResumable ||
+                state is AiScanTypeSelection) {
+              // Behind the auto-opened camera, show the simple scan landing
+              // (a single "Scan to pay" CTA) — reached when the user backs out.
+              return _buildInitialState();
+            } else if (state is AiScanLocalHistoryLoaded) {
+              return _buildLocalHistory(state.entries);
+            } else if (state is AiScanError) {
+              return _buildErrorState(state.message);
+            }
 
-          return _buildInitialState();
-        },
-      ),
+            return _buildInitialState();
+          },
+        ),
       ),
     );
   }
@@ -325,7 +322,6 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
     );
   }
 
-
   /// "Previous scans" — on-device history. Completed scans open the full-screen
   /// receipt; incomplete ones tell the user the flow wasn't finished.
   Widget _buildLocalHistory(List<AiScanHistoryEntry> entries) {
@@ -423,8 +419,9 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
               ),
               child: Icon(
                 completed ? Icons.check_circle : Icons.hourglass_empty,
-                color:
-                    completed ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
+                color: completed
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFF9CA3AF),
                 size: 22.sp,
               ),
             ),
@@ -497,7 +494,9 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
           title: Text(
             'Scan not completed',
             style: GoogleFonts.inter(
-                color: Colors.white, fontSize: 17.sp, fontWeight: FontWeight.w700),
+                color: Colors.white,
+                fontSize: 17.sp,
+                fontWeight: FontWeight.w700),
           ),
           content: Text(
             'This scan didn\'t complete the payment flow, so there\'s no receipt '
@@ -599,9 +598,9 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
         .trim();
     final hasExtracted = state.bankDetails != null;
     final ageMins = DateTime.now()
-            .difference(state.session.createdAt)
-            .inMinutes
-            .clamp(0, 999);
+        .difference(state.session.createdAt)
+        .inMinutes
+        .clamp(0, 999);
 
     showModalBottomSheet<void>(
       context: context,
@@ -609,8 +608,7 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
       enableDrag: false,
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(20.r)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       builder: (sheetCtx) {
         return Padding(
@@ -661,8 +659,7 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
                   cubit.resumeStoredSession();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      const Color.fromARGB(255, 78, 3, 208),
+                  backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                   foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(vertical: 14.h),
                   shape: RoundedRectangleBorder(
@@ -770,8 +767,7 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
     Get.to(() => MultiBlocProvider(
           providers: [
             BlocProvider.value(value: cubit),
-            BlocProvider(
-                create: (_) => GetIt.I<AccountCardsSummaryCubit>()),
+            BlocProvider(create: (_) => GetIt.I<AccountCardsSummaryCubit>()),
           ],
           child: AiScanConfirmScreen(intent: intent),
         ))?.then((_) {
@@ -792,7 +788,8 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
         }
         return RecipientModel(
           id: '',
-          name: i.title.isNotEmpty ? i.title : (i.username ?? 'Lazervault user'),
+          name:
+              i.title.isNotEmpty ? i.title : (i.username ?? 'Lazervault user'),
           accountNumber: i.accountNumber ?? '',
           bankName: 'Lazervault',
           sortCode: '',
@@ -847,7 +844,8 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
     double? amount,
     required String currency,
   }) {
-    final minor = (amount != null && amount > 0) ? (amount * 100).round() : null;
+    final minor =
+        (amount != null && amount > 0) ? (amount * 100).round() : null;
     SendFundsLauncher.open(
       recipient: recipient,
       autoContinue: true,
@@ -1051,9 +1049,7 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
     }
     Get.snackbar(
       'Payment failed',
-      state.canRetry
-          ? '${state.message} — you can try again.'
-          : state.message,
+      state.canRetry ? '${state.message} — you can try again.' : state.message,
       backgroundColor: const Color(0xFFEF4444),
       colorText: Colors.white,
       snackPosition: SnackPosition.TOP,

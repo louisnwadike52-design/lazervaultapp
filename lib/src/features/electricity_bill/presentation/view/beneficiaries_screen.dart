@@ -33,7 +33,8 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
   void initState() {
     super.initState();
     final args = Get.arguments;
-    if (args is Map<String, dynamic> && args['providers'] is List<ElectricityProviderEntity>) {
+    if (args is Map<String, dynamic> &&
+        args['providers'] is List<ElectricityProviderEntity>) {
       _providers = args['providers'] as List<ElectricityProviderEntity>;
     }
     context.read<BeneficiaryCubit>().getBeneficiaries();
@@ -297,9 +298,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
         );
       },
       (_) {
-        context
-            .read<BeneficiaryCubit>()
-            .applyBeneficiaryDelete(beneficiary.id);
+        context.read<BeneficiaryCubit>().applyBeneficiaryDelete(beneficiary.id);
         if (linkedAuto != null) {
           setState(() {
             _autoRecharges = _autoRecharges
@@ -719,26 +718,37 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
               ),
               child: Column(
                 children: [
-                  _buildDetailRow('Meter Number', beneficiary.meterNumber, Icons.numbers),
+                  _buildDetailRow(
+                      'Meter Number', beneficiary.meterNumber, Icons.numbers),
                   SizedBox(height: 12.h),
-                  _buildDetailRow('Provider', beneficiary.providerName, Icons.business),
+                  _buildDetailRow(
+                      'Provider', beneficiary.providerName, Icons.business),
                   SizedBox(height: 12.h),
-                  _buildDetailRow('Meter Type', beneficiary.meterType.displayName, Icons.label),
+                  _buildDetailRow('Meter Type',
+                      beneficiary.meterType.displayName, Icons.label),
                   if (beneficiary.customerAddress != null &&
                       beneficiary.customerAddress!.isNotEmpty) ...[
                     SizedBox(height: 12.h),
-                    _buildDetailRow('Address', beneficiary.customerAddress!, Icons.location_on_outlined),
+                    _buildDetailRow('Address', beneficiary.customerAddress!,
+                        Icons.location_on_outlined),
                   ],
                   if (beneficiary.phoneNumber != null &&
                       beneficiary.phoneNumber!.isNotEmpty) ...[
                     SizedBox(height: 12.h),
-                    _buildDetailRow('Phone', beneficiary.phoneNumber!, Icons.phone_outlined),
+                    _buildDetailRow('Phone', beneficiary.phoneNumber!,
+                        Icons.phone_outlined),
                   ],
                   SizedBox(height: 12.h),
-                  _buildDetailRow('Added', dateFormat.format(beneficiary.createdAt), Icons.calendar_today),
+                  _buildDetailRow(
+                      'Added',
+                      dateFormat.format(beneficiary.createdAt),
+                      Icons.calendar_today),
                   if (beneficiary.hasBeenUsed) ...[
                     SizedBox(height: 12.h),
-                    _buildDetailRow('Last Used', dateFormat.format(beneficiary.lastUsedAt!), Icons.access_time),
+                    _buildDetailRow(
+                        'Last Used',
+                        dateFormat.format(beneficiary.lastUsedAt!),
+                        Icons.access_time),
                   ],
                 ],
               ),
@@ -856,9 +866,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
     final isPaused = auto?.status == AutoRechargeStatus.paused;
     final rollColor = isActive
         ? const Color(0xFF10B981)
-        : (isPaused
-            ? const Color(0xFFFB923C)
-            : const Color(0xFF9CA3AF));
+        : (isPaused ? const Color(0xFFFB923C) : const Color(0xFF9CA3AF));
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -884,28 +892,28 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
             behavior: HitTestBehavior.opaque,
             onTap: () => _openEditAutoRechargeSheet(beneficiary, auto),
             child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-            decoration: BoxDecoration(
-              color: rollColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(color: rollColor.withValues(alpha: 0.4)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.autorenew, size: 12.sp, color: rollColor),
-                SizedBox(width: 4.w),
-                Text(
-                  'Roll',
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w600,
-                    color: rollColor,
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: rollColor.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(20.r),
+                border: Border.all(color: rollColor.withValues(alpha: 0.4)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.autorenew, size: 12.sp, color: rollColor),
+                  SizedBox(width: 4.w),
+                  Text(
+                    'Roll',
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w600,
+                      color: rollColor,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
           ),
         ],
       ],
@@ -916,8 +924,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
   /// the internet `_showOptions` sheet: View Details / View Purchases /
   /// Pay Now / Set Auto-Recharge / Edit Nickname / Delete. Replaces the
   /// previous behaviour where tap opened the details dialog directly.
-  void _showOptions(
-      BillBeneficiaryEntity b, AutoRechargeEntity? auto) {
+  void _showOptions(BillBeneficiaryEntity b, AutoRechargeEntity? auto) {
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
@@ -939,8 +946,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
             ),
             SizedBox(height: 16.h),
             ListTile(
-              leading: const Icon(Icons.info_outline,
-                  color: Color(0xFF4E03D0)),
+              leading: const Icon(Icons.info_outline, color: Color(0xFF4E03D0)),
               title: Text('View Details',
                   style: TextStyle(color: Colors.white, fontSize: 15.sp)),
               onTap: () {
@@ -950,8 +956,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
             ),
             const Divider(color: Color(0xFF2D2D2D), height: 1),
             ListTile(
-              leading:
-                  const Icon(Icons.history, color: Color(0xFF9CA3AF)),
+              leading: const Icon(Icons.history, color: Color(0xFF9CA3AF)),
               title: Text('View Purchases',
                   style: TextStyle(color: Colors.white, fontSize: 15.sp)),
               onTap: () {
@@ -967,8 +972,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
             ),
             const Divider(color: Color(0xFF2D2D2D), height: 1),
             ListTile(
-              leading:
-                  const Icon(Icons.bolt, color: Color(0xFF4E03D0)),
+              leading: const Icon(Icons.bolt, color: Color(0xFF4E03D0)),
               title: Text('Pay Now',
                   style: TextStyle(color: Colors.white, fontSize: 15.sp)),
               onTap: () {
@@ -978,8 +982,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
             ),
             const Divider(color: Color(0xFF2D2D2D), height: 1),
             ListTile(
-              leading:
-                  const Icon(Icons.autorenew, color: Color(0xFF10B981)),
+              leading: const Icon(Icons.autorenew, color: Color(0xFF10B981)),
               title: Text(
                 auto == null ? 'Set Auto-Recharge' : 'Manage Auto-Recharge',
                 style: TextStyle(color: Colors.white, fontSize: 15.sp),
@@ -1044,8 +1047,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
             ),
             const Divider(color: Color(0xFF2D2D2D), height: 1),
             ListTile(
-              leading:
-                  const Icon(Icons.edit_note, color: Color(0xFF4E03D0)),
+              leading: const Icon(Icons.edit_note, color: Color(0xFF4E03D0)),
               title: Text('Rename',
                   style: TextStyle(color: Colors.white, fontSize: 15.sp)),
               subtitle: Text(
@@ -1077,8 +1079,8 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
             const Divider(color: Color(0xFF2D2D2D), height: 1),
             if (!b.isDefault) ...[
               ListTile(
-                leading: const Icon(Icons.star_outline,
-                    color: Color(0xFFFB923C)),
+                leading:
+                    const Icon(Icons.star_outline, color: Color(0xFFFB923C)),
                 title: Text('Set as Default',
                     style: TextStyle(color: Colors.white, fontSize: 15.sp)),
                 onTap: () {
@@ -1089,8 +1091,8 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
               const Divider(color: Color(0xFF2D2D2D), height: 1),
             ],
             ListTile(
-              leading: const Icon(Icons.delete_outline,
-                  color: Color(0xFFEF4444)),
+              leading:
+                  const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
               title: Text('Delete Meter',
                   style: TextStyle(
                       color: const Color(0xFFEF4444), fontSize: 15.sp)),

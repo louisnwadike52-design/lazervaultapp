@@ -20,7 +20,8 @@ class GetOptionsUseCase {
     );
   }
 
-  Future<Either<Failure, OptionContract>> getOptionDetails(String optionSymbol) async {
+  Future<Either<Failure, OptionContract>> getOptionDetails(
+      String optionSymbol) async {
     return await repository.getOptionDetails(optionSymbol);
   }
-} 
+}

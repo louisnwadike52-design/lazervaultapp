@@ -87,7 +87,8 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
     Get.snackbar(
       error ? 'Error' : 'Success',
       msg,
-      backgroundColor: error ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+      backgroundColor:
+          error ? const Color(0xFFEF4444) : const Color(0xFF10B981),
       colorText: Colors.white,
       snackPosition: SnackPosition.BOTTOM,
     );
@@ -101,7 +102,10 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
         backgroundColor: _card,
         elevation: 0,
         title: const Text('Change phone number',
-            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w600)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Get.back(),
@@ -110,7 +114,8 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: _step == _Step.enterPhone ? _buildPhoneStep() : _buildOtpStep(),
+          child:
+              _step == _Step.enterPhone ? _buildPhoneStep() : _buildOtpStep(),
         ),
       ),
     );
@@ -121,7 +126,10 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const Text('Enter your new phone number',
-            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
         const Text(
           'We\'ll send a 6-digit code to the new number to confirm it\'s yours.',
@@ -135,7 +143,8 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
           decoration: _fieldDecoration('New phone', '+2348012345678'),
         ),
         const SizedBox(height: 24),
-        _primaryButton(_busy ? 'Sending…' : 'Send code', _busy ? null : _requestChange),
+        _primaryButton(
+            _busy ? 'Sending…' : 'Send code', _busy ? null : _requestChange),
       ],
     );
   }
@@ -145,22 +154,29 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text('Enter the code sent to $_newPhone',
-            style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600)),
         const SizedBox(height: 20),
         TextField(
           controller: _otpController,
           keyboardType: TextInputType.number,
           maxLength: 6,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          style: const TextStyle(color: Colors.white, fontSize: 20, letterSpacing: 8),
+          style: const TextStyle(
+              color: Colors.white, fontSize: 20, letterSpacing: 8),
           decoration: _fieldDecoration('6-digit code', '••••••'),
         ),
         const SizedBox(height: 12),
-        _primaryButton(_busy ? 'Verifying…' : 'Verify & update', _busy ? null : _verifyChange),
+        _primaryButton(_busy ? 'Verifying…' : 'Verify & update',
+            _busy ? null : _verifyChange),
         const SizedBox(height: 8),
         TextButton(
-          onPressed: _busy ? null : () => setState(() => _step = _Step.enterPhone),
-          child: const Text('Use a different number', style: TextStyle(color: _primary)),
+          onPressed:
+              _busy ? null : () => setState(() => _step = _Step.enterPhone),
+          child: const Text('Use a different number',
+              style: TextStyle(color: _primary)),
         ),
       ],
     );
@@ -199,7 +215,8 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       child: Text(label,
-          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+          style: const TextStyle(
+              color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
     );
   }
 }

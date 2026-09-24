@@ -91,8 +91,7 @@ class SecureWalletScreen extends StatelessWidget {
                 color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Icon(Icons.arrow_back,
-                  color: Colors.white, size: 20.sp),
+              child: Icon(Icons.arrow_back, color: Colors.white, size: 20.sp),
             ),
           ),
           SizedBox(width: 16.w),
@@ -140,7 +139,9 @@ class SecureWalletScreen extends StatelessWidget {
                   onPressed: () => context.read<CryptoCubit>().loadCryptos(),
                   child: Text('Retry',
                       style: GoogleFonts.inter(
-                          color: _accent, fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                          color: _accent,
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600)),
                 ),
               ],
             ),
@@ -224,19 +225,19 @@ class SecureWalletScreen extends StatelessWidget {
           // provider". Passing the loaded cubit also means the wallets render
           // immediately with no re-fetch. Matches crypto_wallets_screen.dart:204.
           onTap: () => Get.to(
-                () => BlocProvider.value(
-                  value: context.read<CryptoCubit>(),
-                  child: const CryptoWalletsScreen(),
-                ),
-                // SecureWalletScreen is itself pushed as
-                // `BlocProvider.value(child: SecureWalletScreen())`
-                // (crypto_screen.dart:1677). GetX derives an anonymous route's
-                // name from the page's runtimeType, so BOTH routes resolve to
-                // `BlocProvider<CryptoCubit>` and the default
-                // preventDuplicates:true silently swallows this navigation.
-                // Disable it so the wallets page actually opens.
-                preventDuplicates: false,
-              ),
+            () => BlocProvider.value(
+              value: context.read<CryptoCubit>(),
+              child: const CryptoWalletsScreen(),
+            ),
+            // SecureWalletScreen is itself pushed as
+            // `BlocProvider.value(child: SecureWalletScreen())`
+            // (crypto_screen.dart:1677). GetX derives an anonymous route's
+            // name from the page's runtimeType, so BOTH routes resolve to
+            // `BlocProvider<CryptoCubit>` and the default
+            // preventDuplicates:true silently swallows this navigation.
+            // Disable it so the wallets page actually opens.
+            preventDuplicates: false,
+          ),
           child: Container(
             padding: EdgeInsets.all(18.w),
             decoration: BoxDecoration(
@@ -352,9 +353,8 @@ class SecureWalletScreen extends StatelessWidget {
                             ),
                             child: Center(
                               child: Text(
-                                w.cryptoSymbol
-                                    .toUpperCase()
-                                    .substring(0, w.cryptoSymbol.length.clamp(0, 2)),
+                                w.cryptoSymbol.toUpperCase().substring(
+                                    0, w.cryptoSymbol.length.clamp(0, 2)),
                                 style: GoogleFonts.inter(
                                   color: Colors.white,
                                   fontSize: 10.sp,
@@ -451,8 +451,8 @@ class SecureWalletScreen extends StatelessWidget {
               ),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.verified_user_rounded,
-                color: _accent, size: 42.sp),
+            child:
+                Icon(Icons.verified_user_rounded, color: _accent, size: 42.sp),
           ),
           SizedBox(height: 16.h),
           Text(

@@ -52,7 +52,15 @@ class RecipientLoaded extends RecipientState {
   }
 
   @override
-  List<Object> get props => [recipients, isStale, isRevalidating, hasMore, currentPage, totalItems, totalPages];
+  List<Object> get props => [
+        recipients,
+        isStale,
+        isRevalidating,
+        hasMore,
+        currentPage,
+        totalItems,
+        totalPages
+      ];
 }
 
 class RecipientError extends RecipientState {
@@ -92,4 +100,4 @@ class RecipientLoadingMore extends RecipientState {
 
   @override
   List<Object> get props => [currentRecipients, hasMore, currentPage];
-} 
+}

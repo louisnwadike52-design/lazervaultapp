@@ -15,7 +15,6 @@ import '../../cubit/create_lock_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'payment_method_selector_widgets.dart';
 
-
 /// Payment slide — bottom half of wizard step 2 (Details & Payment).
 ///
 ///   - Shows the dashboard's primary same-currency account as a
@@ -79,11 +78,11 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
         if (a.id == _selectedAccountId) return a;
       }
     }
-    final matching = accounts.where((a) => _currencyMatches(a, currency)).toList();
+    final matching =
+        accounts.where((a) => _currencyMatches(a, currency)).toList();
     if (matching.isEmpty) return accounts.first;
-    final eligible = matching
-        .where((a) => _hasSufficientBalance(a, amount))
-        .toList();
+    final eligible =
+        matching.where((a) => _hasSufficientBalance(a, amount)).toList();
     return eligible.isNotEmpty ? eligible.first : matching.first;
   }
 
@@ -406,9 +405,8 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
             ),
             child: Icon(
               Icons.repeat_rounded,
-              color: autoRenew
-                  ? const Color(0xFF8B5CF6)
-                  : const Color(0xFF9CA3AF),
+              color:
+                  autoRenew ? const Color(0xFF8B5CF6) : const Color(0xFF9CA3AF),
               size: 18.sp,
             ),
           ),
@@ -465,8 +463,8 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
       decoration: BoxDecoration(
         color: const Color(0xFFF59E0B).withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-            color: const Color(0xFFF59E0B).withValues(alpha: 0.25)),
+        border:
+            Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -606,90 +604,90 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
 
         return _buildInterestDestinationHeader(
           child: InkWell(
-              onTap: () => _openInterestDestinationPicker(
-                  allAccounts, currency, cubit),
-              borderRadius: BorderRadius.circular(14.r),
-              child: Container(
-                padding: EdgeInsets.all(14.w),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1F1F1F),
-                  borderRadius: BorderRadius.circular(14.r),
-                  border: Border.all(
-                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.4),
-                    width: 1.4,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 42.w,
-                      height: 42.w,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(11.r),
-                      ),
-                      child: Icon(
-                        Icons.account_balance_wallet_rounded,
-                        color: const Color(0xFF8B5CF6),
-                        size: 20.sp,
-                      ),
-                    ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            active.accountType,
-                            style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w700,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          SizedBox(height: 2.h),
-                          Text(
-                            CurrencySymbols.formatAmountWithCurrency(
-                                active.availableBalance, active.currency),
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFF9CA3AF),
-                              fontSize: 12.sp,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: 8.w),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 8.w, vertical: 4.h),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Change',
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFF8B5CF6),
-                              fontSize: 11.sp,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          SizedBox(width: 2.w),
-                          Icon(Icons.arrow_drop_down_rounded,
-                              color: const Color(0xFF8B5CF6), size: 16.sp),
-                        ],
-                      ),
-                    ),
-                  ],
+            onTap: () =>
+                _openInterestDestinationPicker(allAccounts, currency, cubit),
+            borderRadius: BorderRadius.circular(14.r),
+            child: Container(
+              padding: EdgeInsets.all(14.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(14.r),
+                border: Border.all(
+                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.4),
+                  width: 1.4,
                 ),
               ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 42.w,
+                    height: 42.w,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(11.r),
+                    ),
+                    child: Icon(
+                      Icons.account_balance_wallet_rounded,
+                      color: const Color(0xFF8B5CF6),
+                      size: 20.sp,
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          active.accountType,
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: 2.h),
+                        Text(
+                          CurrencySymbols.formatAmountWithCurrency(
+                              active.availableBalance, active.currency),
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF9CA3AF),
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Change',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF8B5CF6),
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        SizedBox(width: 2.w),
+                        Icon(Icons.arrow_drop_down_rounded,
+                            color: const Color(0xFF8B5CF6), size: 16.sp),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
+          ),
         );
       },
     );

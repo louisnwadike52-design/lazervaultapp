@@ -18,7 +18,6 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/settings/presentation/widgets/webview_bottom_sheet.dart';
 part 'crypto_detail_screen_widgets.dart';
 
-
 class CryptoDetailScreen extends StatefulWidget {
   final Crypto crypto;
   final CryptoDetailEntryMode entryMode;
@@ -33,7 +32,8 @@ class CryptoDetailScreen extends StatefulWidget {
   State<CryptoDetailScreen> createState() => _CryptoDetailScreenState();
 }
 
-class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProviderStateMixin {
+class _CryptoDetailScreenState extends State<CryptoDetailScreen>
+    with TickerProviderStateMixin {
   late TabController _tabController;
   late AnimationController _animationController;
 
@@ -100,18 +100,26 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
   }
 
   void _loadCryptoDetails() {
-    context.read<CryptoCubit>().loadCryptoDetails(widget.crypto.id, timeframe: _timeframeToRange(_selectedTimeframe));
+    context.read<CryptoCubit>().loadCryptoDetails(widget.crypto.id,
+        timeframe: _timeframeToRange(_selectedTimeframe));
   }
 
   String _timeframeToRange(String timeframe) {
     switch (timeframe) {
-      case '1D': return '1';
-      case '7D': return '7';
-      case '30D': return '30';
-      case '90D': return '90';
-      case '1Y': return '365';
-      case 'ALL': return 'max';
-      default: return '7';
+      case '1D':
+        return '1';
+      case '7D':
+        return '7';
+      case '30D':
+        return '30';
+      case '90D':
+        return '90';
+      case '1Y':
+        return '365';
+      case 'ALL':
+        return 'max';
+      default:
+        return '7';
     }
   }
 
@@ -251,16 +259,17 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
               child: Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  color: _isInWatchlist ? _getCryptoColor().withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.3),
+                  color: _isInWatchlist
+                      ? _getCryptoColor().withValues(alpha: 0.2)
+                      : Colors.black.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(8.r),
                   boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Icon(
                   _isInWatchlist ? Icons.bookmark : Icons.bookmark_border,
@@ -292,7 +301,8 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
         indicatorPadding: EdgeInsets.all(4.w),
         labelColor: Colors.white,
         unselectedLabelColor: Colors.grey[400],
-        labelStyle: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
+        labelStyle:
+            GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
         unselectedLabelStyle: GoogleFonts.inter(fontSize: 14.sp),
         dividerColor: Colors.transparent,
         tabs: const [
@@ -318,8 +328,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
         // render a skeleton spinner, not "Chart data unavailable". The
         // empty-data branch only fires when Loaded with an honestly-
         // empty priceHistory.
-        final isChartLoading =
-            state is CryptoLoading || state is CryptoInitial;
+        final isChartLoading = state is CryptoLoading || state is CryptoInitial;
         final isChartError = state is CryptoError;
 
         return SingleChildScrollView(
@@ -386,7 +395,6 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -399,12 +407,15 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12.r),
                   gradient: LinearGradient(
-                    colors: [_getCryptoColor(), _getCryptoColor().withValues(alpha: 0.7)],
+                    colors: [
+                      _getCryptoColor(),
+                      _getCryptoColor().withValues(alpha: 0.7)
+                    ],
                   ),
                 ),
                 child: Center(
                   child: Text(
-                    widget.crypto.symbol.length >= 2 
+                    widget.crypto.symbol.length >= 2
                         ? widget.crypto.symbol.substring(0, 2).toUpperCase()
                         : widget.crypto.symbol.toUpperCase(),
                     style: GoogleFonts.inter(
@@ -470,8 +481,8 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                   },
                   borderRadius: BorderRadius.circular(14.r),
                   child: Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 14.w, vertical: 10.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -536,15 +547,21 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
           Row(
             children: [
               Icon(
-                _crypto.priceChangePercentage24h >= 0 ? Icons.trending_up : Icons.trending_down,
-                color: _crypto.priceChangePercentage24h >= 0 ? Colors.green : Colors.red,
+                _crypto.priceChangePercentage24h >= 0
+                    ? Icons.trending_up
+                    : Icons.trending_down,
+                color: _crypto.priceChangePercentage24h >= 0
+                    ? Colors.green
+                    : Colors.red,
                 size: 20.sp,
               ),
               SizedBox(width: 4.w),
               Text(
                 '${_crypto.priceChangePercentage24h >= 0 ? '+' : ''}${_crypto.priceChangePercentage24h.toStringAsFixed(2)}%',
                 style: GoogleFonts.inter(
-                  color: _crypto.priceChangePercentage24h >= 0 ? Colors.green : Colors.red,
+                  color: _crypto.priceChangePercentage24h >= 0
+                      ? Colors.green
+                      : Colors.red,
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                 ),
@@ -806,17 +823,22 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                     },
                     child: Container(
                       margin: EdgeInsets.only(right: 8.w),
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                       decoration: BoxDecoration(
-                        color: isSelected ? _getCryptoColor().withValues(alpha: 0.2) : Colors.transparent,
+                        color: isSelected
+                            ? _getCryptoColor().withValues(alpha: 0.2)
+                            : Colors.transparent,
                         borderRadius: BorderRadius.circular(6.r),
                       ),
                       child: Text(
                         timeframe,
                         style: GoogleFonts.inter(
-                          color: isSelected ? _getCryptoColor() : Colors.grey[400],
+                          color:
+                              isSelected ? _getCryptoColor() : Colors.grey[400],
                           fontSize: 12.sp,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.normal,
                         ),
                       ),
                     ),
@@ -846,7 +868,9 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                   titlesData: FlTitlesData(show: false),
                   borderData: FlBorderData(show: false),
                   minX: 0,
-                  maxX: (chartData.length - 1).toDouble().clamp(1, double.infinity),
+                  maxX: (chartData.length - 1)
+                      .toDouble()
+                      .clamp(1, double.infinity),
                   minY: _getMinY(chartData),
                   maxY: _getMaxY(chartData),
                   lineBarsData: [
@@ -877,7 +901,8 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                   ],
                   lineTouchData: LineTouchData(
                     touchTooltipData: LineTouchTooltipData(
-                      getTooltipColor: (touchedSpot) => Colors.black.withValues(alpha: 0.8),
+                      getTooltipColor: (touchedSpot) =>
+                          Colors.black.withValues(alpha: 0.8),
                       getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
                         return touchedBarSpots.map((barSpot) {
                           return LineTooltipItem(
@@ -953,7 +978,10 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Colors.green, Colors.green.withValues(alpha: 0.8)],
+                      colors: [
+                        Colors.green,
+                        Colors.green.withValues(alpha: 0.8)
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
@@ -1101,7 +1129,8 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
           icon: chg >= 0
               ? Icons.trending_up_rounded
               : Icons.trending_down_rounded,
-          iconTint: chg >= 0 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+          iconTint:
+              chg >= 0 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
           label: '24h change',
           value: _crypto.priceChange24h != 0
               ? '${_signedPct(chg)}  (${chg >= 0 ? '+' : '-'}$sym${_crypto.priceChange24h.abs().toStringAsFixed(2)})'
@@ -1156,9 +1185,9 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
 
         final holdings = state.holdings;
         final userHolding = holdings.cast<CryptoHolding?>().firstWhere(
-          (h) => h?.cryptoId == widget.crypto.id,
-          orElse: () => null,
-        );
+              (h) => h?.cryptoId == widget.crypto.id,
+              orElse: () => null,
+            );
 
         if (userHolding == null) {
           return _statsCard(
@@ -1176,8 +1205,8 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                       decoration: BoxDecoration(
                         color: _accent.withValues(alpha: 0.14),
                         borderRadius: BorderRadius.circular(10.r),
-                        border: Border.all(
-                            color: _accent.withValues(alpha: 0.30)),
+                        border:
+                            Border.all(color: _accent.withValues(alpha: 0.30)),
                       ),
                       child: Icon(Icons.add_chart_rounded,
                           color: Colors.white.withValues(alpha: 0.85),
@@ -1224,8 +1253,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
         return _statsCard(
           headerIcon: Icons.account_balance_wallet_rounded,
           title: 'Your portfolio',
-          subtitle:
-              '${widget.crypto.symbol.toUpperCase()} position summary',
+          subtitle: '${widget.crypto.symbol.toUpperCase()} position summary',
           children: [
             _statTile(
               icon: Icons.scale_rounded,
@@ -1267,8 +1295,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
             SizedBox(height: 6.h),
             // P&L pct bar — full width pill, semantic color.
             Container(
-              padding:
-                  EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
               decoration: BoxDecoration(
                 color: pnlColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10.r),
@@ -1339,8 +1366,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-            color: _accent.withValues(alpha: 0.25), width: 1),
+        border: Border.all(color: _accent.withValues(alpha: 0.25), width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.25),
@@ -1376,8 +1402,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                       ),
                     ],
                   ),
-                  child: Icon(headerIcon,
-                      color: Colors.white, size: 18.sp),
+                  child: Icon(headerIcon, color: Colors.white, size: 18.sp),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
@@ -1967,8 +1992,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
     };
 
     final timeAgo = _formatTimeAgo(newsItem.publishedAt);
-    final hasVotes =
-        newsItem.votesPositive > 0 || newsItem.votesNegative > 0;
+    final hasVotes = newsItem.votesPositive > 0 || newsItem.votesNegative > 0;
 
     return GestureDetector(
       onTap: () {
@@ -2013,7 +2037,8 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                               color: sentimentColor.withValues(alpha: 0.14),
                               borderRadius: BorderRadius.circular(6.r),
                               border: Border.all(
-                                  color: sentimentColor.withValues(alpha: 0.30)),
+                                  color:
+                                      sentimentColor.withValues(alpha: 0.30)),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -2217,9 +2242,12 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
     final base = _getCryptoColor();
     final hsl = HSLColor.fromColor(base);
     if (hsl.lightness >= 0.62) return base;
-    return hsl.withLightness(0.72).withSaturation(
+    return hsl
+        .withLightness(0.72)
+        .withSaturation(
           hsl.saturation < 0.35 ? 0.45 : hsl.saturation,
-        ).toColor();
+        )
+        .toColor();
   }
 
   Color _getCryptoColor() {
@@ -2273,10 +2301,12 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
     CryptoHolding? holding;
     if (cubitState is CryptosLoaded) {
       holding = cubitState.holdings.cast<CryptoHolding?>().firstWhere(
-        (h) => h?.cryptoId == widget.crypto.id ||
-            h?.cryptoSymbol.toLowerCase() == widget.crypto.symbol.toLowerCase(),
-        orElse: () => null,
-      );
+            (h) =>
+                h?.cryptoId == widget.crypto.id ||
+                h?.cryptoSymbol.toLowerCase() ==
+                    widget.crypto.symbol.toLowerCase(),
+            orElse: () => null,
+          );
     }
     showSellCryptoSheet(
       context,
@@ -2285,4 +2315,4 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
       cubit: context.read<CryptoCubit>(),
     );
   }
-} 
+}

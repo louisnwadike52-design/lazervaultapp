@@ -94,11 +94,13 @@ class OpenBankingRemoteDataSource {
     );
 
     final data = response.parseJsonOrThrow();
-    final publicKey = data['public_key'] as String? ??
-        data['publicKey'] as String?;
-    final appId = data['app_id'] as String? ??
-        data['appId'] as String?;
-    if (publicKey == null || publicKey.isEmpty || appId == null || appId.isEmpty) {
+    final publicKey =
+        data['public_key'] as String? ?? data['publicKey'] as String?;
+    final appId = data['app_id'] as String? ?? data['appId'] as String?;
+    if (publicKey == null ||
+        publicKey.isEmpty ||
+        appId == null ||
+        appId.isEmpty) {
       throw const GenericBankingException(
         message: 'Invalid connect configuration received from server',
         isRetryable: true,
@@ -534,7 +536,8 @@ class OpenBankingRemoteDataSource {
     int offset = 0,
   }) async {
     final response = await _client.get(
-      Uri.parse('$_baseUrl/users/$userId/withdrawals?limit=$limit&offset=$offset'),
+      Uri.parse(
+          '$_baseUrl/users/$userId/withdrawals?limit=$limit&offset=$offset'),
       headers: await _getHeaders(),
     );
 

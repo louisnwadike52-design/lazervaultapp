@@ -6,6 +6,7 @@ class WaterProviderEntity extends Equatable {
   final String? logoUrl;
   final List<String> supportedStates;
   final bool isActive;
+
   /// Per-disco amount bounds sourced from VTpass (via the backend's
   /// `bill_providers` row that the seeder populates from the provider's
   /// service-variation catalogue). When either is zero, the Flutter

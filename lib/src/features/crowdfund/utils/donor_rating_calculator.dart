@@ -81,19 +81,22 @@ class DonorRatingCalculator {
     final donorId = donation.donorUserId;
 
     // Gather all donations by this donor
-    final donorDonations = allDonations
-        .where((d) => d.donorUserId == donorId)
-        .toList();
+    final donorDonations =
+        allDonations.where((d) => d.donorUserId == donorId).toList();
 
     if (donorDonations.isEmpty) {
       return DonorRating.newDonor;
     }
 
     // 1. Generosity (40%) - total donated vs average donation
-    final donorTotal = donorDonations.fold<double>(0, (sum, d) => sum + d.amount);
-    final avgDonation = allDonations.fold<double>(0, (sum, d) => sum + d.amount) / allDonations.length;
+    final donorTotal =
+        donorDonations.fold<double>(0, (sum, d) => sum + d.amount);
+    final avgDonation =
+        allDonations.fold<double>(0, (sum, d) => sum + d.amount) /
+            allDonations.length;
     final generosityScore = avgDonation > 0
-        ? (donorTotal / (avgDonation * 2)).clamp(0.0, 1.0) // 2x average = max score
+        ? (donorTotal / (avgDonation * 2))
+            .clamp(0.0, 1.0) // 2x average = max score
         : 0.0;
 
     // 2. Repeat Support (25%) - donor's donation count vs most active donor
@@ -107,21 +110,24 @@ class DonorRatingCalculator {
         : 0.0;
 
     // 3. Engagement (20%) - has message (50%) + not anonymous (50%)
-    final hasMessage = donorDonations.any((d) => d.message != null && d.message!.isNotEmpty);
-    final engagementScore = (hasMessage ? 0.5 : 0.0) + 0.5; // +0.5 for being non-anonymous
+    final hasMessage =
+        donorDonations.any((d) => d.message != null && d.message!.isNotEmpty);
+    final engagementScore =
+        (hasMessage ? 0.5 : 0.0) + 0.5; // +0.5 for being non-anonymous
 
     // 4. Early Support (15%) - how early the first donation was relative to campaign age
     final campaignAge = DateTime.now().difference(crowdfund.createdAt).inDays;
-    final earliestDonation = donorDonations.map((d) => d.donationDate).reduce(
-        (a, b) => a.isBefore(b) ? a : b);
-    final daysSinceCampaignStart = earliestDonation.difference(crowdfund.createdAt).inDays;
+    final earliestDonation = donorDonations
+        .map((d) => d.donationDate)
+        .reduce((a, b) => a.isBefore(b) ? a : b);
+    final daysSinceCampaignStart =
+        earliestDonation.difference(crowdfund.createdAt).inDays;
     final earlySupportScore = campaignAge > 0
         ? (1.0 - (daysSinceCampaignStart / campaignAge)).clamp(0.0, 1.0)
         : 1.0; // If donated on same day as creation, max score
 
     // Weighted average
-    final weightedAverage =
-        (generosityScore * 0.40) +
+    final weightedAverage = (generosityScore * 0.40) +
         (repeatSupportScore * 0.25) +
         (engagementScore * 0.20) +
         (earlySupportScore * 0.15);

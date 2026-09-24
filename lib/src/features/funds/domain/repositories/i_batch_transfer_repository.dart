@@ -12,7 +12,8 @@ abstract class IBatchTransferRepository {
     DateTime? scheduledAt,
   });
 
-  Future<Either<Failure, (List<BatchTransferHistoryEntity>, int)>> getBatchTransfers({
+  Future<Either<Failure, (List<BatchTransferHistoryEntity>, int)>>
+      getBatchTransfers({
     required int page,
     required int pageSize,
   });

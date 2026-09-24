@@ -202,18 +202,19 @@ class TransferCubit extends Cubit<TransferState> {
   Future<void> sendFunds({
     required String fromAccountId,
     required String toAccountNumber,
-    String? toAccountId,              // Account UUID for internal transfers
-    required String type,              // "internal" or "external" - PRIMARY KEY
-    required double amount,             // Amount in major units (e.g., 100.50)
+    String? toAccountId, // Account UUID for internal transfers
+    required String type, // "internal" or "external" - PRIMARY KEY
+    required double amount, // Amount in major units (e.g., 100.50)
     required String description,
     required String transactionId,
     required String verificationToken,
-    String? destinationBankCode,        // External: bank code from recipient.sortCode
-    String? beneficiaryName,            // External: recipient name on bank account
+    String? destinationBankCode, // External: bank code from recipient.sortCode
+    String? beneficiaryName, // External: recipient name on bank account
     DateTime? scheduledAt,
-    double? availableBalance,          // Source account available balance (major units)
-    int? expenseCategory,              // Budget category enum value selected by user
-    String? flow,                      // Funnel flow ("long"|"short"); falls back to last screen view
+    double? availableBalance, // Source account available balance (major units)
+    int? expenseCategory, // Budget category enum value selected by user
+    String?
+        flow, // Funnel flow ("long"|"short"); falls back to last screen view
   }) async {
     if (isClosed) return;
 
@@ -236,7 +237,8 @@ class TransferCubit extends Cubit<TransferState> {
     // Pre-flight balance check: reject early if amount exceeds available balance
     if (availableBalance != null && amount > availableBalance) {
       emit(TransferFailure(
-        message: 'Insufficient available balance. You have ${availableBalance.toStringAsFixed(2)} available.',
+        message:
+            'Insufficient available balance. You have ${availableBalance.toStringAsFixed(2)} available.',
       ));
       recordOutcome('failure');
       return;
@@ -249,7 +251,7 @@ class TransferCubit extends Cubit<TransferState> {
         fromAccountId: fromAccountId,
         toAccountNumber: toAccountNumber,
         toAccountId: toAccountId,
-        type: type,  // REQUIRED: "internal" or "external"
+        type: type, // REQUIRED: "internal" or "external"
         amount: amount,
         description: description,
         transactionId: transactionId,
@@ -270,8 +272,10 @@ class TransferCubit extends Cubit<TransferState> {
         // uses isInFlight to render a Processing badge and listens on the
         // balance WebSocket for the terminal Success/Failure event.
         final status = result.status?.toLowerCase() ?? '';
-        final isInFlight = type == 'external' && (status == 'pending' || status == 'processing');
-        emit(TransferSuccess(response: _toEntity(result), isInFlight: isInFlight));
+        final isInFlight = type == 'external' &&
+            (status == 'pending' || status == 'processing');
+        emit(TransferSuccess(
+            response: _toEntity(result), isInFlight: isInFlight));
         recordOutcome('success');
         // Tally the destination bank so it leads the "Most used" picker pill.
         if (type == 'external' &&
@@ -280,7 +284,8 @@ class TransferCubit extends Cubit<TransferState> {
           MostUsedBanks.record(destinationBankCode);
         }
       } else {
-        emit(TransferFailure(message: result.errorMessage ?? 'Transfer failed'));
+        emit(
+            TransferFailure(message: result.errorMessage ?? 'Transfer failed'));
         recordOutcome('failure');
       }
     } on GrpcError catch (e) {
@@ -297,7 +302,8 @@ class TransferCubit extends Cubit<TransferState> {
       // Check for KYC tier insufficient error
       if (isKYCLimitError(e.message)) {
         emit(TransferFailure(
-          message: 'Transaction limit reached. Upgrade your account to increase limits.',
+          message:
+              'Transaction limit reached. Upgrade your account to increase limits.',
           isKYCError: true,
         ));
         recordOutcome('kyc_error');
@@ -316,7 +322,8 @@ class TransferCubit extends Cubit<TransferState> {
 
       if (_isNetworkError(e)) {
         emit(const TransferFailure(
-          message: 'No internet connection. Please check your network and try again.',
+          message:
+              'No internet connection. Please check your network and try again.',
           isRetryable: true,
         ));
         recordOutcome('network_error');
@@ -340,7 +347,7 @@ class TransferCubit extends Cubit<TransferState> {
     // Use response fee if available, otherwise fall back to cached fee lookup
     final feeMinor = result.fee ?? lastFeeLoaded?.fee ?? 0;
     return TransferEntity(
-      transferId: result.transferId ?? '',  // UUID string, not Int64
+      transferId: result.transferId ?? '', // UUID string, not Int64
       status: result.status ?? 'pending',
       amount: Int64(amountMinor),
       fee: Int64(feeMinor),

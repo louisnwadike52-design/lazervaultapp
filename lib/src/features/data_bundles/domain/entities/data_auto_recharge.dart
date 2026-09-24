@@ -59,8 +59,7 @@ class DataAutoRecharge extends Equatable {
 
   factory DataAutoRecharge.fromProto(pb.DataAutoRecharge proto) {
     String? tsToIso(bool has, dynamic ts) => has
-        ? DateTime.fromMillisecondsSinceEpoch(
-                ts.seconds.toInt() * 1000,
+        ? DateTime.fromMillisecondsSinceEpoch(ts.seconds.toInt() * 1000,
                 isUtc: true)
             .toIso8601String()
         : null;
@@ -85,9 +84,10 @@ class DataAutoRecharge extends Equatable {
       status: proto.status,
       failureCount: proto.failureCount,
       maxRetries: proto.maxRetries,
-      countryCode: proto.hasBeneficiary() && proto.beneficiary.countryCode.isNotEmpty
-          ? proto.beneficiary.countryCode
-          : 'NG',
+      countryCode:
+          proto.hasBeneficiary() && proto.beneficiary.countryCode.isNotEmpty
+              ? proto.beneficiary.countryCode
+              : 'NG',
       createdAt: tsToIso(proto.hasCreatedAt(), proto.createdAt) ?? '',
       beneficiary: proto.hasBeneficiary()
           ? DataBeneficiary.fromProto(proto.beneficiary)

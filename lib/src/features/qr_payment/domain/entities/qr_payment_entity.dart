@@ -101,8 +101,7 @@ class QRPaymentEntity extends Equatable {
     this.paidAt,
   });
 
-  bool get isExpired =>
-      expiresAt != null && DateTime.now().isAfter(expiresAt!);
+  bool get isExpired => expiresAt != null && DateTime.now().isAfter(expiresAt!);
   bool get isPending => status == QRPaymentStatus.pending;
   bool get isPaid => status == QRPaymentStatus.paid;
   bool get isStatic => qrType == QRPaymentType.static;

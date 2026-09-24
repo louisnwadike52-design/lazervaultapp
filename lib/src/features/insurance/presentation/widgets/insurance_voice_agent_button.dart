@@ -183,7 +183,8 @@ class InsuranceVoiceAgentControl extends StatefulWidget {
       _InsuranceVoiceAgentControlState();
 }
 
-class _InsuranceVoiceAgentControlState extends State<InsuranceVoiceAgentControl> {
+class _InsuranceVoiceAgentControlState
+    extends State<InsuranceVoiceAgentControl> {
   livekit.Room? _room;
   bool _isConnected = false;
   bool _isMuted = false;
@@ -293,8 +294,7 @@ class _InsuranceVoiceAgentControlState extends State<InsuranceVoiceAgentControl>
                 // Speaker button
                 IconButton(
                   onPressed: _isConnected ? _toggleSpeaker : null,
-                  icon: Icon(
-                      _isSpeakerOn ? Icons.volume_up : Icons.volume_off),
+                  icon: Icon(_isSpeakerOn ? Icons.volume_up : Icons.volume_off),
                   color: const Color(0xFF10B981),
                 ),
               ],

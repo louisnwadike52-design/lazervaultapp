@@ -114,7 +114,8 @@ class SupportRepositoryImpl implements ISupportRepository {
   }
 
   @override
-  Future<Either<Failure, SupportTicket>> getSupportTicket(String ticketId) async {
+  Future<Either<Failure, SupportTicket>> getSupportTicket(
+      String ticketId) async {
     try {
       final callOptions = await _callOptionsHelper.withAuth();
       final request = support_pb.GetSupportTicketRequest(
@@ -262,7 +263,8 @@ class SupportRepositoryImpl implements ISupportRepository {
       );
 
       if (response.success && response.hasContactMessage()) {
-        final messageModel = ContactMessageModel.fromProto(response.contactMessage);
+        final messageModel =
+            ContactMessageModel.fromProto(response.contactMessage);
         return Right(messageModel);
       } else {
         return Left(ServerFailure(

@@ -45,146 +45,154 @@ class _RecurringTransferModalState extends State<RecurringTransferModal> {
           behavior: HitTestBehavior.opaque,
           onTap: () => FocusScope.of(context).unfocus(),
           child: Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFF0A0A0A),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            children: [
-              // Handle bar
-              Container(
-                margin: const EdgeInsets.only(top: 12),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2D2D2D),
-                  borderRadius: BorderRadius.circular(2),
+            decoration: const BoxDecoration(
+              color: Color(0xFF0A0A0A),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Column(
+              children: [
+                // Handle bar
+                Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2D2D2D),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-              ),
-              // Header
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Recurring Payment',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close, color: Color(0xFF9CA3AF)),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  children: [
-                    // Frequency selector
-                    const Text(
-                      'Frequency',
-                      style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
-                    ),
-                    const SizedBox(height: 8),
-                    _buildFrequencySelector(),
-                    const SizedBox(height: 20),
-
-                    // Day selector (conditional)
-                    if (_frequency == RecurringFrequency.weekly ||
-                        _frequency == RecurringFrequency.biweekly) ...[
+                // Header
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
                       const Text(
-                        'Day of Week',
-                        style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                        'Recurring Payment',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close, color: Color(0xFF9CA3AF)),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: ListView(
+                    controller: scrollController,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    children: [
+                      // Frequency selector
+                      const Text(
+                        'Frequency',
+                        style:
+                            TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
                       ),
                       const SizedBox(height: 8),
-                      _buildWeekDaySelector(),
+                      _buildFrequencySelector(),
                       const SizedBox(height: 20),
-                    ],
 
-                    if (_frequency == RecurringFrequency.monthly) ...[
+                      // Day selector (conditional)
+                      if (_frequency == RecurringFrequency.weekly ||
+                          _frequency == RecurringFrequency.biweekly) ...[
+                        const Text(
+                          'Day of Week',
+                          style:
+                              TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildWeekDaySelector(),
+                        const SizedBox(height: 20),
+                      ],
+
+                      if (_frequency == RecurringFrequency.monthly) ...[
+                        const Text(
+                          'Day of Month',
+                          style:
+                              TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildMonthDaySelector(),
+                        const SizedBox(height: 20),
+                      ],
+
+                      // Time picker
                       const Text(
-                        'Day of Month',
-                        style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                        'Time',
+                        style:
+                            TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
                       ),
                       const SizedBox(height: 8),
-                      _buildMonthDaySelector(),
+                      _buildTimePicker(),
                       const SizedBox(height: 20),
-                    ],
 
-                    // Time picker
-                    const Text(
-                      'Time',
-                      style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
-                    ),
-                    const SizedBox(height: 8),
-                    _buildTimePicker(),
-                    const SizedBox(height: 20),
-
-                    // End date
-                    const Text(
-                      'Duration',
-                      style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
-                    ),
-                    const SizedBox(height: 8),
-                    _buildEndDateSelector(),
-                    const SizedBox(height: 24),
-
-                    // Summary
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1F1F1F),
-                        borderRadius: BorderRadius.circular(12),
+                      // End date
+                      const Text(
+                        'Duration',
+                        style:
+                            TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
                       ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.repeat, color: Color(0xFF3B82F6), size: 20),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              _buildSummary(),
-                              style: const TextStyle(color: Colors.white, fontSize: 14),
+                      const SizedBox(height: 8),
+                      _buildEndDateSelector(),
+                      const SizedBox(height: 24),
+
+                      // Summary
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1F1F1F),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.repeat,
+                                color: Color(0xFF3B82F6), size: 20),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                _buildSummary(),
+                                style: const TextStyle(
+                                    color: Colors.white, fontSize: 14),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
+                      const SizedBox(height: 24),
+                    ],
+                  ),
                 ),
-              ),
-              // Set button
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton(
-                    onPressed: _onSetRecurring,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3B82F6),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                // Set button
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: _onSetRecurring,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF3B82F6),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                    ),
-                    child: const Text(
-                      'Set Recurring',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      child: const Text(
+                        'Set Recurring',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
         );
       },
     );
@@ -207,7 +215,9 @@ class _RecurringTransferModalState extends State<RecurringTransferModal> {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF1F1F1F),
+                  color: isSelected
+                      ? const Color(0xFF3B82F6)
+                      : const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 alignment: Alignment.center,
@@ -216,7 +226,8 @@ class _RecurringTransferModalState extends State<RecurringTransferModal> {
                   style: TextStyle(
                     color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
                     fontSize: 12,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.normal,
                   ),
                 ),
               ),
@@ -240,7 +251,9 @@ class _RecurringTransferModalState extends State<RecurringTransferModal> {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF1F1F1F),
+                  color: isSelected
+                      ? const Color(0xFF3B82F6)
+                      : const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 alignment: Alignment.center,
@@ -249,7 +262,8 @@ class _RecurringTransferModalState extends State<RecurringTransferModal> {
                   style: TextStyle(
                     color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
                     fontSize: 12,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.normal,
                   ),
                 ),
               ),
@@ -275,7 +289,9 @@ class _RecurringTransferModalState extends State<RecurringTransferModal> {
             width: 44,
             height: 36,
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF1F1F1F),
+              color: isSelected
+                  ? const Color(0xFF3B82F6)
+                  : const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(8),
             ),
             alignment: Alignment.center,
@@ -351,16 +367,20 @@ class _RecurringTransferModalState extends State<RecurringTransferModal> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
-                    color: !_hasEndDate ? const Color(0xFF3B82F6) : const Color(0xFF1F1F1F),
+                    color: !_hasEndDate
+                        ? const Color(0xFF3B82F6)
+                        : const Color(0xFF1F1F1F),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     'Until I cancel',
                     style: TextStyle(
-                      color: !_hasEndDate ? Colors.white : const Color(0xFF9CA3AF),
+                      color:
+                          !_hasEndDate ? Colors.white : const Color(0xFF9CA3AF),
                       fontSize: 14,
-                      fontWeight: !_hasEndDate ? FontWeight.w600 : FontWeight.normal,
+                      fontWeight:
+                          !_hasEndDate ? FontWeight.w600 : FontWeight.normal,
                     ),
                   ),
                 ),
@@ -397,7 +417,9 @@ class _RecurringTransferModalState extends State<RecurringTransferModal> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
-                    color: _hasEndDate ? const Color(0xFF3B82F6) : const Color(0xFF1F1F1F),
+                    color: _hasEndDate
+                        ? const Color(0xFF3B82F6)
+                        : const Color(0xFF1F1F1F),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   alignment: Alignment.center,
@@ -406,9 +428,11 @@ class _RecurringTransferModalState extends State<RecurringTransferModal> {
                         ? '${_endDate!.day}/${_endDate!.month}/${_endDate!.year}'
                         : 'Set end date',
                     style: TextStyle(
-                      color: _hasEndDate ? Colors.white : const Color(0xFF9CA3AF),
+                      color:
+                          _hasEndDate ? Colors.white : const Color(0xFF9CA3AF),
                       fontSize: 14,
-                      fontWeight: _hasEndDate ? FontWeight.w600 : FontWeight.normal,
+                      fontWeight:
+                          _hasEndDate ? FontWeight.w600 : FontWeight.normal,
                     ),
                   ),
                 ),

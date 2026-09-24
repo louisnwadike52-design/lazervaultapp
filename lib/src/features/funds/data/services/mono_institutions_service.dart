@@ -50,10 +50,13 @@ class MonoInstitutionsService {
     String? accessToken,
   }) async {
     // Return cached data if valid
-    if (!forceRefresh && _cachedInstitutions != null && _lastFetchTime != null) {
+    if (!forceRefresh &&
+        _cachedInstitutions != null &&
+        _lastFetchTime != null) {
       final elapsed = DateTime.now().difference(_lastFetchTime!);
       if (elapsed < _cacheDuration) {
-        debugPrint('[MonoInstitutions] Returning cached institutions (${_cachedInstitutions!.length} items)');
+        debugPrint(
+            '[MonoInstitutions] Returning cached institutions (${_cachedInstitutions!.length} items)');
         return _cachedInstitutions!;
       }
     }
@@ -62,7 +65,8 @@ class MonoInstitutionsService {
       final institutions = await _fetchFromBackend(accessToken: accessToken);
       _cachedInstitutions = institutions;
       _lastFetchTime = DateTime.now();
-      debugPrint('[MonoInstitutions] Fetched ${institutions.length} institutions from backend');
+      debugPrint(
+          '[MonoInstitutions] Fetched ${institutions.length} institutions from backend');
       return institutions;
     } catch (e) {
       debugPrint('[MonoInstitutions] Error fetching from backend: $e');
@@ -78,7 +82,8 @@ class MonoInstitutionsService {
   }
 
   /// Fetch institutions from backend via gRPC
-  Future<List<MonoInstitutionData>> _fetchFromBackend({String? accessToken}) async {
+  Future<List<MonoInstitutionData>> _fetchFromBackend(
+      {String? accessToken}) async {
     final client = _getClient();
 
     // Build call options with auth if available. ALWAYS carry a deadline: the
@@ -97,7 +102,8 @@ class MonoInstitutionsService {
     );
 
     final request = GetMonoInstitutionsRequest();
-    final response = await client.getMonoInstitutions(request, options: options);
+    final response =
+        await client.getMonoInstitutions(request, options: options);
 
     if (!response.success) {
       throw Exception(response.errorMessage.isNotEmpty
@@ -107,10 +113,12 @@ class MonoInstitutionsService {
 
     return response.institutions.map((inst) {
       // Parse auth methods
-      final authMethods = inst.authMethods.map((am) => MonoAuthMethod(
-        type: am.type,
-        name: am.name,
-      )).toList();
+      final authMethods = inst.authMethods
+          .map((am) => MonoAuthMethod(
+                type: am.type,
+                name: am.name,
+              ))
+          .toList();
 
       return MonoInstitutionData(
         id: inst.id,
@@ -127,7 +135,8 @@ class MonoInstitutionsService {
   }
 
   /// Get institution by ID
-  Future<MonoInstitutionData?> getInstitutionById(String id, {String? accessToken}) async {
+  Future<MonoInstitutionData?> getInstitutionById(String id,
+      {String? accessToken}) async {
     final institutions = await getInstitutions(accessToken: accessToken);
     try {
       return institutions.firstWhere((i) => i.id == id);
@@ -137,7 +146,8 @@ class MonoInstitutionsService {
   }
 
   /// Get institution by name (fuzzy match)
-  Future<MonoInstitutionData?> getInstitutionByName(String name, {String? accessToken}) async {
+  Future<MonoInstitutionData?> getInstitutionByName(String name,
+      {String? accessToken}) async {
     final institutions = await getInstitutions(accessToken: accessToken);
     final lowerName = name.toLowerCase();
 
@@ -160,7 +170,8 @@ class MonoInstitutionsService {
   }
 
   /// Get institution by bank code
-  Future<MonoInstitutionData?> getInstitutionByBankCode(String bankCode, {String? accessToken}) async {
+  Future<MonoInstitutionData?> getInstitutionByBankCode(String bankCode,
+      {String? accessToken}) async {
     final institutions = await getInstitutions(accessToken: accessToken);
     try {
       return institutions.firstWhere((i) => i.bankCode == bankCode);
@@ -170,14 +181,18 @@ class MonoInstitutionsService {
   }
 
   /// Check if an institution supports mobile banking
-  Future<bool> supportsMobileBanking(String institutionId, {String? accessToken}) async {
-    final inst = await getInstitutionById(institutionId, accessToken: accessToken);
+  Future<bool> supportsMobileBanking(String institutionId,
+      {String? accessToken}) async {
+    final inst =
+        await getInstitutionById(institutionId, accessToken: accessToken);
     return inst?.supportsMobileBanking ?? false;
   }
 
   /// Get preferred auth method for institution
-  Future<String> getPreferredAuthMethod(String institutionId, {String? accessToken}) async {
-    final inst = await getInstitutionById(institutionId, accessToken: accessToken);
+  Future<String> getPreferredAuthMethod(String institutionId,
+      {String? accessToken}) async {
+    final inst =
+        await getInstitutionById(institutionId, accessToken: accessToken);
     if (inst == null) return 'internet_banking';
 
     // Prefer mobile banking for better UX
@@ -227,7 +242,8 @@ class MonoInstitutionData {
   });
 
   @override
-  String toString() => 'MonoInstitutionData(id: $id, name: $name, bankCode: $bankCode)';
+  String toString() =>
+      'MonoInstitutionData(id: $id, name: $name, bankCode: $bankCode)';
 }
 
 /// Mono auth method model

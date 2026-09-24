@@ -17,8 +17,7 @@ class GiftCardPdfService {
   static pw.Font? _regularFont;
   static pw.Font? _boldFont;
 
-  static String _currencySymbolFor(String code) =>
-      receiptCurrencySymbol(code);
+  static String _currencySymbolFor(String code) => receiptCurrencySymbol(code);
 
   static Future<pw.MemoryImage?> _loadLogo() async {
     try {
@@ -145,8 +144,7 @@ class GiftCardPdfService {
     return file;
   }
 
-  static pw.Widget _buildHeader(
-      pw.MemoryImage? logo, String generatedDate) {
+  static pw.Widget _buildHeader(pw.MemoryImage? logo, String generatedDate) {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -211,8 +209,8 @@ class GiftCardPdfService {
           if (isPrepaidGiftCard(giftCard.brandName)) ...[
             pw.SizedBox(height: 6),
             pw.Container(
-              padding: const pw.EdgeInsets.symmetric(
-                  horizontal: 8, vertical: 3),
+              padding:
+                  const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: pw.BoxDecoration(
                 color: PdfColors.lightBlue50,
                 borderRadius: pw.BorderRadius.circular(4),
@@ -238,8 +236,7 @@ class GiftCardPdfService {
           ],
           pw.SizedBox(height: 8),
           pw.Container(
-            padding:
-                const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: pw.BoxDecoration(
               color: giftCard.status == 'available'
                   ? PdfColors.green50
@@ -299,10 +296,9 @@ class GiftCardPdfService {
               // the downloadable copy was the one without the useful number.
               if (giftCard.reference.isNotEmpty)
                 _buildDetailRow('Reference', giftCard.reference),
-              _buildDetailRow('Purchase Date',
-                  _formatDate(giftCard.purchaseDate)),
               _buildDetailRow(
-                  'Expiry Date', _formatDate(giftCard.expiryDate)),
+                  'Purchase Date', _formatDate(giftCard.purchaseDate)),
+              _buildDetailRow('Expiry Date', _formatDate(giftCard.expiryDate)),
               if (giftCard.countryCode != null &&
                   giftCard.countryCode!.isNotEmpty)
                 _buildDetailRow('Country', giftCard.countryCode!),

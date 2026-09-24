@@ -76,7 +76,8 @@ class BatchTransferCubit extends Cubit<BatchTransferState> {
           } else if (status == 'auto_released') {
             emit(BatchTransferAutoReleased(response: batchTransferEntity));
           } else if (status == 'pending_verification') {
-            emit(BatchTransferPendingVerification(response: batchTransferEntity));
+            emit(BatchTransferPendingVerification(
+                response: batchTransferEntity));
           } else {
             emit(BatchTransferSuccess(response: batchTransferEntity));
           }
@@ -86,7 +87,8 @@ class BatchTransferCubit extends Cubit<BatchTransferState> {
       if (isClosed) return;
       if (_isNetworkError(e)) {
         emit(const BatchTransferNetworkError(
-            message: 'No internet connection. Please check your network and try again.'));
+            message:
+                'No internet connection. Please check your network and try again.'));
       } else {
         emit(BatchTransferFailure(
             message: 'Error during batch transfer process: ${e.toString()}'));
@@ -96,7 +98,8 @@ class BatchTransferCubit extends Cubit<BatchTransferState> {
     }
   }
 
-  Future<void> loadBatchTransferHistory({int page = 1, int pageSize = 20}) async {
+  Future<void> loadBatchTransferHistory(
+      {int page = 1, int pageSize = 20}) async {
     if (getBatchTransfersUseCase == null || isClosed) return;
     emit(const BatchTransferHistoryLoading());
 

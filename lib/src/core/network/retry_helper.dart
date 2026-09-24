@@ -16,17 +16,20 @@ Future<T> retryWithBackoff<T>({
     } on GrpcError catch (e) {
       // Let auth errors propagate as GrpcError so executeWithTokenRotation
       // can detect them and trigger token refresh
-      if (e.code == StatusCode.unauthenticated || e.code == StatusCode.permissionDenied) {
+      if (e.code == StatusCode.unauthenticated ||
+          e.code == StatusCode.permissionDenied) {
         rethrow;
       }
       if (retries >= maxRetries || !_isRetryable(e)) {
         throw mapGrpcError(e);
       }
 
-      print('Retry attempt ${retries + 1}/$maxRetries after ${delay.inSeconds}s delay');
+      print(
+          'Retry attempt ${retries + 1}/$maxRetries after ${delay.inSeconds}s delay');
       await Future.delayed(delay);
 
-      delay = Duration(milliseconds: (delay.inMilliseconds * backoffMultiplier).toInt());
+      delay = Duration(
+          milliseconds: (delay.inMilliseconds * backoffMultiplier).toInt());
       retries++;
     }
   }
@@ -34,6 +37,6 @@ Future<T> retryWithBackoff<T>({
 
 bool _isRetryable(GrpcError error) {
   return error.code == StatusCode.unavailable ||
-         error.code == StatusCode.deadlineExceeded ||
-         error.code == StatusCode.resourceExhausted;
+      error.code == StatusCode.deadlineExceeded ||
+      error.code == StatusCode.resourceExhausted;
 }

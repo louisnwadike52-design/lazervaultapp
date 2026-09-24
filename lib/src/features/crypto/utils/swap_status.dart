@@ -28,7 +28,8 @@ enum CanonicalStatus {
 // deposits). Optional — callers can supply `unknown` and we'll do best-effort.
 enum StatusKind { swap, deposit, withdraw, order, rollback, unknown }
 
-CanonicalStatus normalizeQuidaxStatus(String raw, [StatusKind kind = StatusKind.unknown]) {
+CanonicalStatus normalizeQuidaxStatus(String raw,
+    [StatusKind kind = StatusKind.unknown]) {
   final r = raw.trim().toLowerCase();
   if (r.isEmpty) return CanonicalStatus.unknown;
 

@@ -155,15 +155,16 @@ class _CreateEducationReminderScreenState
               children: [
                 _label('Title'),
                 SizedBox(height: 8.h),
-                _textInput(_titleController, 'e.g., JAMB registration deadline'),
+                _textInput(
+                    _titleController, 'e.g., JAMB registration deadline'),
                 SizedBox(height: 16.h),
                 _label('Reminder date & time'),
                 SizedBox(height: 8.h),
                 InkWell(
                   onTap: _pickDate,
                   child: Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 16.w, vertical: 14.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFF0A0A0A),
                       borderRadius: BorderRadius.circular(12.r),
@@ -205,8 +206,7 @@ class _CreateEducationReminderScreenState
                   activeThumbColor: const Color(0xFFFB923C),
                   contentPadding: EdgeInsets.zero,
                   title: Text('Recurring',
-                      style: TextStyle(
-                          color: Colors.white, fontSize: 14.sp)),
+                      style: TextStyle(color: Colors.white, fontSize: 14.sp)),
                   subtitle: Text('Repeat yearly for exam cycles',
                       style: TextStyle(
                           color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
@@ -240,8 +240,7 @@ class _CreateEducationReminderScreenState
                         ? LazerVaultLoader.small()
                         : Text('Create Reminder',
                             style: TextStyle(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w600)),
+                                fontSize: 16.sp, fontWeight: FontWeight.w600)),
                   ),
                 ),
                 SizedBox(height: 24.h),
@@ -274,8 +273,7 @@ class _CreateEducationReminderScreenState
       style: TextStyle(color: Colors.white, fontSize: 15.sp),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(
-            color: const Color(0xFF4B5563), fontSize: 15.sp),
+        hintStyle: TextStyle(color: const Color(0xFF4B5563), fontSize: 15.sp),
         filled: true,
         fillColor: const Color(0xFF0A0A0A),
         border: OutlineInputBorder(
@@ -290,8 +288,7 @@ class _CreateEducationReminderScreenState
           borderRadius: BorderRadius.circular(12.r),
           borderSide: const BorderSide(color: Color(0xFFFB923C)),
         ),
-        contentPadding:
-            EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       ),
     );
   }
@@ -309,8 +306,8 @@ class _CreateEducationReminderScreenState
               border: Border.all(color: const Color(0xFF2D2D2D)),
             ),
             child: Text('Loading candidates…',
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
           );
         }
         final list = state.beneficiaries;
@@ -322,10 +319,9 @@ class _CreateEducationReminderScreenState
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(color: const Color(0xFF2D2D2D)),
             ),
-            child: Text(
-                'No saved candidates (reminder will still be created)',
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
+            child: Text('No saved candidates (reminder will still be created)',
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
           );
         }
         return Container(
@@ -380,9 +376,8 @@ class _CreateEducationReminderScreenState
           color: selected ? const Color(0xFFFB923C) : const Color(0xFF0A0A0A),
           borderRadius: BorderRadius.circular(8.r),
           border: Border.all(
-              color: selected
-                  ? const Color(0xFFFB923C)
-                  : const Color(0xFF2D2D2D)),
+              color:
+                  selected ? const Color(0xFFFB923C) : const Color(0xFF2D2D2D)),
         ),
         child: Text(label,
             style: TextStyle(

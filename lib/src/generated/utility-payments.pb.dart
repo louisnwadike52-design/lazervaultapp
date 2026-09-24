@@ -4707,8 +4707,7 @@ class BillService extends $pb.GeneratedMessage {
   static BillService create() => BillService._();
   @$core.override
   BillService createEmptyInstance() => create();
-  static $pb.PbList<BillService> createRepeated() =>
-      $pb.PbList<BillService>();
+  static $pb.PbList<BillService> createRepeated() => $pb.PbList<BillService>();
   @$core.pragma('dart2js:noInline')
   static BillService getDefault() => _defaultInstance ??=
       $pb.GeneratedMessage.$_defaultFor<BillService>(create);

@@ -21,10 +21,12 @@ class RecurringTransferCubit extends Cubit<RecurringTransferState> {
       emit(RecurringTransferListLoaded(transfers: transfers, total: total));
     } on GrpcError catch (e) {
       if (isClosed) return;
-      emit(RecurringTransferError(message: friendlyGrpcError(e, 'Failed to load recurring transfers')));
+      emit(RecurringTransferError(
+          message: friendlyGrpcError(e, 'Failed to load recurring transfers')));
     } catch (e) {
       if (isClosed) return;
-      emit(RecurringTransferError(message: 'Failed to load recurring transfers'));
+      emit(RecurringTransferError(
+          message: 'Failed to load recurring transfers'));
     }
   }
 
@@ -36,10 +38,12 @@ class RecurringTransferCubit extends Cubit<RecurringTransferState> {
       emit(RecurringTransferDetailLoaded(transfer: transfer));
     } on GrpcError catch (e) {
       if (isClosed) return;
-      emit(RecurringTransferError(message: friendlyGrpcError(e, 'Failed to load recurring transfer')));
+      emit(RecurringTransferError(
+          message: friendlyGrpcError(e, 'Failed to load recurring transfer')));
     } catch (e) {
       if (isClosed) return;
-      emit(RecurringTransferError(message: 'Failed to load recurring transfer'));
+      emit(
+          RecurringTransferError(message: 'Failed to load recurring transfer'));
     }
   }
 
@@ -119,10 +123,13 @@ class RecurringTransferCubit extends Cubit<RecurringTransferState> {
         ));
         return;
       }
-      emit(RecurringTransferError(message: friendlyGrpcError(e, 'Failed to create recurring transfer')));
+      emit(RecurringTransferError(
+          message:
+              friendlyGrpcError(e, 'Failed to create recurring transfer')));
     } catch (e) {
       if (isClosed) return;
-      emit(RecurringTransferError(message: 'Failed to create recurring transfer'));
+      emit(RecurringTransferError(
+          message: 'Failed to create recurring transfer'));
     }
   }
 
@@ -144,10 +151,12 @@ class RecurringTransferCubit extends Cubit<RecurringTransferState> {
       ));
     } on GrpcError catch (e) {
       if (isClosed) return;
-      emit(RecurringTransferError(message: friendlyGrpcError(e, 'Failed to pause recurring transfer')));
+      emit(RecurringTransferError(
+          message: friendlyGrpcError(e, 'Failed to pause recurring transfer')));
     } catch (e) {
       if (isClosed) return;
-      emit(RecurringTransferError(message: 'Failed to pause recurring transfer'));
+      emit(RecurringTransferError(
+          message: 'Failed to pause recurring transfer'));
     }
   }
 
@@ -162,10 +171,13 @@ class RecurringTransferCubit extends Cubit<RecurringTransferState> {
       ));
     } on GrpcError catch (e) {
       if (isClosed) return;
-      emit(RecurringTransferError(message: friendlyGrpcError(e, 'Failed to resume recurring transfer')));
+      emit(RecurringTransferError(
+          message:
+              friendlyGrpcError(e, 'Failed to resume recurring transfer')));
     } catch (e) {
       if (isClosed) return;
-      emit(RecurringTransferError(message: 'Failed to resume recurring transfer'));
+      emit(RecurringTransferError(
+          message: 'Failed to resume recurring transfer'));
     }
   }
 
@@ -174,13 +186,17 @@ class RecurringTransferCubit extends Cubit<RecurringTransferState> {
     try {
       await _repository.delete(id: id);
       if (isClosed) return;
-      emit(const RecurringTransferDeleted(message: 'Recurring payment cancelled'));
+      emit(const RecurringTransferDeleted(
+          message: 'Recurring payment cancelled'));
     } on GrpcError catch (e) {
       if (isClosed) return;
-      emit(RecurringTransferError(message: friendlyGrpcError(e, 'Failed to cancel recurring transfer')));
+      emit(RecurringTransferError(
+          message:
+              friendlyGrpcError(e, 'Failed to cancel recurring transfer')));
     } catch (e) {
       if (isClosed) return;
-      emit(RecurringTransferError(message: 'Failed to cancel recurring transfer'));
+      emit(RecurringTransferError(
+          message: 'Failed to cancel recurring transfer'));
     }
   }
 
@@ -207,10 +223,13 @@ class RecurringTransferCubit extends Cubit<RecurringTransferState> {
       ));
     } on GrpcError catch (e) {
       if (isClosed) return;
-      emit(RecurringTransferError(message: friendlyGrpcError(e, 'Failed to update recurring transfer')));
+      emit(RecurringTransferError(
+          message:
+              friendlyGrpcError(e, 'Failed to update recurring transfer')));
     } catch (e) {
       if (isClosed) return;
-      emit(RecurringTransferError(message: 'Failed to update recurring transfer'));
+      emit(RecurringTransferError(
+          message: 'Failed to update recurring transfer'));
     }
   }
 
@@ -221,10 +240,12 @@ class RecurringTransferCubit extends Cubit<RecurringTransferState> {
         recurringTransferId: recurringTransferId,
       );
       if (isClosed) return;
-      emit(RecurringTransferExecutionsLoaded(executions: executions, total: total));
+      emit(RecurringTransferExecutionsLoaded(
+          executions: executions, total: total));
     } on GrpcError catch (e) {
       if (isClosed) return;
-      emit(RecurringTransferError(message: friendlyGrpcError(e, 'Failed to load executions')));
+      emit(RecurringTransferError(
+          message: friendlyGrpcError(e, 'Failed to load executions')));
     } catch (e) {
       if (isClosed) return;
       emit(RecurringTransferError(message: 'Failed to load executions'));
@@ -238,13 +259,16 @@ class RecurringTransferCubit extends Cubit<RecurringTransferState> {
         recipientAccount: recipientAccountNumber,
       );
       if (isClosed) return;
-      emit(RecurringTransferListLoaded(transfers: transfers, total: transfers.length));
+      emit(RecurringTransferListLoaded(
+          transfers: transfers, total: transfers.length));
     } on GrpcError catch (e) {
       if (isClosed) return;
-      emit(RecurringTransferError(message: friendlyGrpcError(e, 'Failed to load recurring transfers')));
+      emit(RecurringTransferError(
+          message: friendlyGrpcError(e, 'Failed to load recurring transfers')));
     } catch (e) {
       if (isClosed) return;
-      emit(RecurringTransferError(message: 'Failed to load recurring transfers'));
+      emit(RecurringTransferError(
+          message: 'Failed to load recurring transfers'));
     }
   }
 }

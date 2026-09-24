@@ -382,7 +382,8 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     if (_splitMethod == _SplitMethod.custom) {
       final unallocated = _selectedParticipants
           .where((p) => (_customAmounts[p.key] ?? 0.0) <= 0.0)
-          .map((p) => p.displayName.isNotEmpty ? p.displayName : '@${p.username}')
+          .map((p) =>
+              p.displayName.isNotEmpty ? p.displayName : '@${p.username}')
           .toList();
       if (unallocated.isNotEmpty) {
         showAppSnackbar(
@@ -396,7 +397,8 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     } else if (_splitMethod == _SplitMethod.percentage) {
       final unallocated = _selectedParticipants
           .where((p) => (_percentages[p.key] ?? 0.0) <= 0.0)
-          .map((p) => p.displayName.isNotEmpty ? p.displayName : '@${p.username}')
+          .map((p) =>
+              p.displayName.isNotEmpty ? p.displayName : '@${p.username}')
           .toList();
       if (unallocated.isNotEmpty) {
         showAppSnackbar(

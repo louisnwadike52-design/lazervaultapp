@@ -7,11 +7,14 @@ import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_state.dart'
-    show AirtimeBeneficiariesLoaded, AirtimeBeneficiary, AirtimeReminder, AirtimeState;
+    show
+        AirtimeBeneficiariesLoaded,
+        AirtimeBeneficiary,
+        AirtimeReminder,
+        AirtimeState;
 import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_reminder_cubit.dart';
 import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_reminder_state.dart';
 part 'create_airtime_reminder_screen_widgets.dart';
-
 
 class CreateAirtimeReminderScreen extends StatefulWidget {
   const CreateAirtimeReminderScreen({super.key});
@@ -193,7 +196,8 @@ class _CreateAirtimeReminderScreenState
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20.sp),
+          icon:
+              Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20.sp),
           onPressed: () => Get.back(),
         ),
         title: Text(
@@ -257,9 +261,10 @@ class _CreateAirtimeReminderScreenState
                   _textField(
                     controller: _titleController,
                     hintText: 'e.g., Recharge airtime for mom',
-                    validator: (value) => (value == null || value.trim().isEmpty)
-                        ? 'Please enter a title'
-                        : null,
+                    validator: (value) =>
+                        (value == null || value.trim().isEmpty)
+                            ? 'Please enter a title'
+                            : null,
                   ),
                   SizedBox(height: 24.h),
                   _sectionTitle('Description (Optional)'),
@@ -278,7 +283,8 @@ class _CreateAirtimeReminderScreenState
                         child: _dateTimeCard(
                           icon: Icons.calendar_today,
                           label: 'Date',
-                          value: DateFormat('MMM dd, yyyy').format(_selectedDate),
+                          value:
+                              DateFormat('MMM dd, yyyy').format(_selectedDate),
                           onTap: _selectDate,
                         ),
                       ),
@@ -344,7 +350,9 @@ class _CreateAirtimeReminderScreenState
                       child: isLoading
                           ? LazerVaultLoader.small()
                           : Text(
-                              _isEditing ? 'Update Reminder' : 'Create Reminder',
+                              _isEditing
+                                  ? 'Update Reminder'
+                                  : 'Create Reminder',
                               style: GoogleFonts.inter(
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
@@ -402,20 +410,17 @@ class _CreateAirtimeReminderScreenState
         fillColor: Colors.white.withValues(alpha: 0.05),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16.r),
-          borderSide:
-              BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16.r),
-          borderSide:
-              BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16.r),
           borderSide: const BorderSide(color: Color(0xFF10B981), width: 2),
         ),
-        contentPadding:
-            EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+        contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       ),
     );
   }
@@ -478,8 +483,7 @@ class _CreateAirtimeReminderScreenState
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(16.r),
-                border:
-                    Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
               child: Text(
                 'No saved beneficiaries — reminder will be unlinked.',
@@ -525,33 +529,35 @@ class _CreateAirtimeReminderScreenState
                       ),
                     ),
                   ),
-                  ...beneficiaries.map((b) => DropdownMenuItem<AirtimeBeneficiary>(
-                        value: b,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              b.nickname ?? b.phoneNumber,
-                              style: GoogleFonts.inter(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white,
-                              ),
+                  ...beneficiaries
+                      .map((b) => DropdownMenuItem<AirtimeBeneficiary>(
+                            value: b,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  b.nickname ?? b.phoneNumber,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                SizedBox(height: 2.h),
+                                Text(
+                                  '${b.networkName} • ${b.phoneNumber}',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12.sp,
+                                    color: Colors.white.withValues(alpha: 0.5),
+                                  ),
+                                ),
+                              ],
                             ),
-                            SizedBox(height: 2.h),
-                            Text(
-                              '${b.networkName} • ${b.phoneNumber}',
-                              style: GoogleFonts.inter(
-                                fontSize: 12.sp,
-                                color: Colors.white.withValues(alpha: 0.5),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )),
+                          )),
                 ],
-                onChanged: (value) => setState(() => _selectedBeneficiary = value),
+                onChanged: (value) =>
+                    setState(() => _selectedBeneficiary = value),
               ),
             ),
           );

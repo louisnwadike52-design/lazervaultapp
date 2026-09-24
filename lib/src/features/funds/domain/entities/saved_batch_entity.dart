@@ -5,7 +5,8 @@ import 'package:equatable/equatable.dart';
 class SavedBatchItemEntity extends Equatable {
   final String id;
   final String savedBatchId;
-  final String recipientType; // internal_lazervault | external_bank | tagpay | contact
+  final String
+      recipientType; // internal_lazervault | external_bank | tagpay | contact
   final String recipientUserId;
   final String bankCode;
   final String accountNumber;

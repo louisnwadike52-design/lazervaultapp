@@ -95,9 +95,8 @@ class SubscriptionTypePieChart extends StatelessWidget {
                       sectionsSpace: 2,
                       centerSpaceRadius: 36.r,
                       sections: entries.map((entry) {
-                        final percentage = total > 0
-                            ? (entry.value / total * 100)
-                            : 0.0;
+                        final percentage =
+                            total > 0 ? (entry.value / total * 100) : 0.0;
                         return PieChartSectionData(
                           color: _colorForType(entry.key),
                           value: entry.value,
@@ -117,45 +116,45 @@ class SubscriptionTypePieChart extends StatelessWidget {
                 Expanded(
                   child: SingleChildScrollView(
                     child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: entries.map((entry) {
-                      return Padding(
-                        padding: EdgeInsets.only(bottom: 8.h),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 10.w,
-                              height: 10.w,
-                              decoration: BoxDecoration(
-                                color: _colorForType(entry.key),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            SizedBox(width: 8.w),
-                            Expanded(
-                              child: Text(
-                                _displayName(entry.key),
-                                style: TextStyle(
-                                  color: const Color(0xFF9CA3AF),
-                                  fontSize: 12.sp,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: entries.map((entry) {
+                        return Padding(
+                          padding: EdgeInsets.only(bottom: 8.h),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 10.w,
+                                height: 10.w,
+                                decoration: BoxDecoration(
+                                  color: _colorForType(entry.key),
+                                  shape: BoxShape.circle,
                                 ),
-                                overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                            Text(
-                              '${CurrencySymbols.currentSymbol}${formatter.format(entry.value)}',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12.sp,
-                                fontWeight: FontWeight.w600,
+                              SizedBox(width: 8.w),
+                              Expanded(
+                                child: Text(
+                                  _displayName(entry.key),
+                                  style: TextStyle(
+                                    color: const Color(0xFF9CA3AF),
+                                    fontSize: 12.sp,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
+                              Text(
+                                '${CurrencySymbols.currentSymbol}${formatter.format(entry.value)}',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ),
                 ),
               ],

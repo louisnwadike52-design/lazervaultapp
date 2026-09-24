@@ -18,5 +18,12 @@ class SmartCardValidationEntity extends Equatable {
   });
 
   @override
-  List<Object?> get props => [isValid, customerName, smartCardNumber, currentPackage, renewalDate, dueDate];
+  List<Object?> get props => [
+        isValid,
+        customerName,
+        smartCardNumber,
+        currentPackage,
+        renewalDate,
+        dueDate
+      ];
 }

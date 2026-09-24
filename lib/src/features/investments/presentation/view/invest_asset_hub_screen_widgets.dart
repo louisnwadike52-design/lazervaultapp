@@ -93,7 +93,9 @@ class _InstrumentTile extends StatelessWidget {
                   Text(
                     '${isPositive ? '+' : ''}${change.toStringAsFixed(2)}%',
                     style: GoogleFonts.inter(
-                      color: isPositive ? InvestTradingUi.buy : InvestTradingUi.sell,
+                      color: isPositive
+                          ? InvestTradingUi.buy
+                          : InvestTradingUi.sell,
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w700,
                     ),

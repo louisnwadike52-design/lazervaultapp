@@ -78,7 +78,6 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
     super.dispose();
   }
 
-
   /// Refetches the landing data (last-3 codes + payments). Called on entry,
   /// on pull-to-refresh, and every time the user comes BACK from a sub-screen
   /// so a freshly created code appears in the last-3 immediately.

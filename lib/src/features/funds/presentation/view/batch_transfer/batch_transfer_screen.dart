@@ -86,8 +86,9 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
   void initState() {
     super.initState();
     // Recent batch history.
-    context.read<BatchTransferCubit>().loadBatchTransferHistory(
-        page: 1, pageSize: 5);
+    context
+        .read<BatchTransferCubit>()
+        .loadBatchTransferHistory(page: 1, pageSize: 5);
     // Saved batch drafts (kept on a separate cubit so the in-page form's
     // state machine is untouched).
     _savedBatchesCubit.load();
@@ -126,8 +127,9 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
   }
 
   Future<void> _onRefresh() async {
-    context.read<BatchTransferCubit>().loadBatchTransferHistory(
-        page: 1, pageSize: 5);
+    context
+        .read<BatchTransferCubit>()
+        .loadBatchTransferHistory(page: 1, pageSize: 5);
     _loadBeneficiaries(forceRefresh: true);
     await _savedBatchesCubit.refresh();
   }
@@ -209,49 +211,50 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
                 Expanded(
                   child: ServiceEntranceAnimation(
                     child: _shortFlow
-                      ? _buildShortBody(arguments)
-                      : RefreshIndicator(
-                          onRefresh: _onRefresh,
-                          color: btBlue,
-                          backgroundColor: btCard,
-                          child: SingleChildScrollView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(height: 6.h),
-                                _buildQuickInfoBar(),
-                                SizedBox(height: 14.h),
-                                _buildSavedBatchesSection(),
-                                SizedBox(height: 14.h),
-                                BlocProvider<RecipientCubit>.value(
-                                  value: _recipientCubit,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      // Beneficiaries strip removed: saved
-                                      // recipients live in the Add-Recipients
-                                      // sheet's Saved tab — one surface, no
-                                      // duplicate mental model.
-                                      BatchTransferForm(
-                                        key: _formKey,
-                                        preSelectedRecipients:
-                                            arguments?['preSelectedRecipients'],
-                                        isRepeatTransaction: arguments?[
-                                                'isRepeatTransaction'] ??
-                                            false,
-                                        batchReference:
-                                            arguments?['batchReference'],
-                                      ),
-                                    ],
+                        ? _buildShortBody(arguments)
+                        : RefreshIndicator(
+                            onRefresh: _onRefresh,
+                            color: btBlue,
+                            backgroundColor: btCard,
+                            child: SingleChildScrollView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(height: 6.h),
+                                  _buildQuickInfoBar(),
+                                  SizedBox(height: 14.h),
+                                  _buildSavedBatchesSection(),
+                                  SizedBox(height: 14.h),
+                                  BlocProvider<RecipientCubit>.value(
+                                    value: _recipientCubit,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        // Beneficiaries strip removed: saved
+                                        // recipients live in the Add-Recipients
+                                        // sheet's Saved tab — one surface, no
+                                        // duplicate mental model.
+                                        BatchTransferForm(
+                                          key: _formKey,
+                                          preSelectedRecipients: arguments?[
+                                              'preSelectedRecipients'],
+                                          isRepeatTransaction: arguments?[
+                                                  'isRepeatTransaction'] ??
+                                              false,
+                                          batchReference:
+                                              arguments?['batchReference'],
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                _buildRecentHistory(),
-                                SizedBox(height: 24.h),
-                              ],
+                                  _buildRecentHistory(),
+                                  SizedBox(height: 24.h),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
                   ),
                 ),
               ],
@@ -283,8 +286,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
               isRepeatTransaction: arguments?['isRepeatTransaction'] ?? false,
               batchReference: arguments?['batchReference'],
               shortFlow: true,
-              proceedLabel:
-                  _isScheduled ? 'Schedule Batch' : 'Send to All',
+              proceedLabel: _isScheduled ? 'Schedule Batch' : 'Send to All',
               onShortSubmit: _runShortBatch,
             ),
             SizedBox(height: 24.h),
@@ -304,7 +306,8 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
   Future<void> _selectShortScheduleDate() async {
     final date = await showDatePicker(
       context: context,
-      initialDate: _scheduledDate ?? DateTime.now().add(const Duration(days: 1)),
+      initialDate:
+          _scheduledDate ?? DateTime.now().add(const Duration(days: 1)),
       firstDate: DateTime.now().add(const Duration(hours: 1)),
       lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
     );
@@ -375,7 +378,8 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
                               color: btTextSecondary, fontSize: 13.sp),
                         ),
                       ),
-                      Icon(Icons.chevron_right, color: btTextTertiary, size: 18.sp),
+                      Icon(Icons.chevron_right,
+                          color: btTextTertiary, size: 18.sp),
                     ],
                   ),
                 ),
@@ -420,7 +424,8 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
             snackPosition: SnackPosition.BOTTOM);
         return;
       }
-      if (scheduledDt.isBefore(DateTime.now().add(const Duration(minutes: 5)))) {
+      if (scheduledDt
+          .isBefore(DateTime.now().add(const Duration(minutes: 5)))) {
         Get.snackbar('Invalid time',
             'Scheduled time must be at least 5 minutes in the future.',
             snackPosition: SnackPosition.BOTTOM);
@@ -652,7 +657,8 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
       ),
       child: Column(
         children: [
-          Icon(Icons.bookmark_border_rounded, color: btTextTertiary, size: 26.sp),
+          Icon(Icons.bookmark_border_rounded,
+              color: btTextTertiary, size: 26.sp),
           SizedBox(height: 8.h),
           Text('No beneficiaries yet',
               style: GoogleFonts.inter(
@@ -672,8 +678,8 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
 
   // ignore: unused_element
   Widget _buildBeneficiaryChip(RecipientModel r) {
-    final isInternal = r.type == 'internal' ||
-        r.bankName.toLowerCase() == 'lazervault';
+    final isInternal =
+        r.type == 'internal' || r.bankName.toLowerCase() == 'lazervault';
     final label = (r.alias != null && r.alias!.isNotEmpty) ? r.alias! : r.name;
     final initial = label.isNotEmpty ? label[0].toUpperCase() : '?';
     final inBatch = _formKey.currentState?.containsRecipient(r) ?? false;
@@ -704,8 +710,8 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
                   width: 52.w,
                   height: 52.w,
                   decoration: BoxDecoration(
-                    color:
-                        (isInternal ? btBlue : btOrange).withValues(alpha: 0.15),
+                    color: (isInternal ? btBlue : btOrange)
+                        .withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                     border: Border.all(
                         color: inBatch
@@ -730,8 +736,8 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
                       height: 20.w,
                       decoration: const BoxDecoration(
                           color: btGreen, shape: BoxShape.circle),
-                      child: Icon(Icons.check,
-                          color: Colors.white, size: 13.sp),
+                      child:
+                          Icon(Icons.check, color: Colors.white, size: 13.sp),
                     ),
                   ),
               ],
@@ -753,8 +759,8 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
 
   // ignore: unused_element
   void _showBeneficiaryOptions(RecipientModel r) {
-    final isInternal = r.type == 'internal' ||
-        r.bankName.toLowerCase() == 'lazervault';
+    final isInternal =
+        r.type == 'internal' || r.bankName.toLowerCase() == 'lazervault';
     final subtitle = isInternal
         ? 'Lazervault • ${r.name}'
         : '${r.displayBankName} •••• ${r.accountNumber.length >= 4 ? r.accountNumber.substring(r.accountNumber.length - 4) : r.accountNumber}';
@@ -784,8 +790,8 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
                   children: [
                     CircleAvatar(
                       radius: 22.r,
-                      backgroundColor:
-                          (isInternal ? btBlue : btOrange).withValues(alpha: 0.15),
+                      backgroundColor: (isInternal ? btBlue : btOrange)
+                          .withValues(alpha: 0.15),
                       child: Text(
                         (r.alias?.isNotEmpty == true ? r.alias! : r.name)
                             .substring(0, 1)
@@ -800,8 +806,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                              r.alias?.isNotEmpty == true ? r.alias! : r.name,
+                          Text(r.alias?.isNotEmpty == true ? r.alias! : r.name,
                               style: GoogleFonts.inter(
                                   color: btTextPrimary,
                                   fontSize: 16.sp,
@@ -840,8 +845,8 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
                 Get.back();
                 _repeatToSendFunds(r);
               }),
-              _optionTile(Icons.drive_file_rename_outline, 'Rename', btTextPrimary,
-                  () {
+              _optionTile(
+                  Icons.drive_file_rename_outline, 'Rename', btTextPrimary, () {
                 Get.back();
                 _renameBeneficiary(r);
               }),
@@ -857,7 +862,8 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
     );
   }
 
-  Widget _optionTile(IconData icon, String label, Color color, VoidCallback onTap) {
+  Widget _optionTile(
+      IconData icon, String label, Color color, VoidCallback onTap) {
     return ListTile(
       onTap: onTap,
       leading: Icon(icon, color: color, size: 22.sp),
@@ -957,8 +963,8 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
     Get.dialog(
       AlertDialog(
         backgroundColor: btCard,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.r)),
         title: Text('Delete beneficiary?',
             style: GoogleFonts.inter(
                 color: btTextPrimary, fontWeight: FontWeight.w700)),
@@ -1256,8 +1262,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
     return BlocBuilder<BatchTransferCubit, BatchTransferState>(
       builder: (context, state) {
         if (state is BatchTransferHistoryLoaded && state.batches.isNotEmpty) {
-          final activeCurrency =
-              GetIt.I<LocaleManager>().currentCurrency;
+          final activeCurrency = GetIt.I<LocaleManager>().currentCurrency;
           final filtered = state.batches
               .where((b) =>
                   b.currency.toUpperCase() == activeCurrency.toUpperCase())
@@ -1282,8 +1287,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
                         if (mounted) {
                           context
                               .read<BatchTransferCubit>()
-                              .loadBatchTransferHistory(
-                                  page: 1, pageSize: 5);
+                              .loadBatchTransferHistory(page: 1, pageSize: 5);
                         }
                       },
                       child: Text('View All',
@@ -1315,8 +1319,9 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
         await Get.toNamed(AppRoutes.batchTransferDetail,
             arguments: {'batchId': batch.batchId});
         if (mounted) {
-          context.read<BatchTransferCubit>().loadBatchTransferHistory(
-              page: 1, pageSize: 5);
+          context
+              .read<BatchTransferCubit>()
+              .loadBatchTransferHistory(page: 1, pageSize: 5);
         }
       },
       child: Container(

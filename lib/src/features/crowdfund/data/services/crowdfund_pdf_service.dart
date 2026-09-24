@@ -72,8 +72,15 @@ class CrowdfundPdfService {
                       ['Reference:', donation.transactionId!.trim()]
                     else
                       ['Donation ID:', donation.id],
-                    ['Date & Time:', DateFormat('MMMM dd, yyyy • hh:mm a').format(donation.donationDate)],
-                    ['Amount:', '${donation.currency} ${donation.amount.toStringAsFixed(2)}'],
+                    [
+                      'Date & Time:',
+                      DateFormat('MMMM dd, yyyy • hh:mm a')
+                          .format(donation.donationDate)
+                    ],
+                    [
+                      'Amount:',
+                      '${donation.currency} ${donation.amount.toStringAsFixed(2)}'
+                    ],
                     ['Payment Method:', donation.paymentMethod],
                     ['Status:', _getStatusText(donation.status)],
                   ],
@@ -88,7 +95,10 @@ class CrowdfundPdfService {
                     ['Campaign:', crowdfund.title],
                     ['Category:', crowdfund.category],
                     ['Campaign Code:', crowdfund.crowdfundCode],
-                    ['Creator:', '${crowdfund.creator.firstName} ${crowdfund.creator.lastName}${crowdfund.creator.verified ? ' (Verified)' : ''}'],
+                    [
+                      'Creator:',
+                      '${crowdfund.creator.firstName} ${crowdfund.creator.lastName}${crowdfund.creator.verified ? ' (Verified)' : ''}'
+                    ],
                   ],
                 ),
 
@@ -108,7 +118,8 @@ class CrowdfundPdfService {
                     ],
                   ),
 
-                if (donation.message != null && donation.message!.isNotEmpty) ...[
+                if (donation.message != null &&
+                    donation.message!.isNotEmpty) ...[
                   pw.SizedBox(height: 24),
                   pw.Text(
                     'Message',
@@ -123,7 +134,8 @@ class CrowdfundPdfService {
                     padding: const pw.EdgeInsets.all(12),
                     decoration: pw.BoxDecoration(
                       color: PdfColors.grey200,
-                      borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                      borderRadius:
+                          const pw.BorderRadius.all(pw.Radius.circular(8)),
                     ),
                     child: pw.Text(
                       donation.message!,
@@ -288,33 +300,33 @@ class CrowdfundPdfService {
         ),
         pw.SizedBox(height: 12),
         ...items.map((item) => pw.Padding(
-          padding: const pw.EdgeInsets.only(bottom: 8),
-          child: pw.Row(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.SizedBox(
-                width: 140,
-                child: pw.Text(
-                  item[0],
-                  style: const pw.TextStyle(
-                    fontSize: 11,
-                    color: PdfColors.grey700,
+              padding: const pw.EdgeInsets.only(bottom: 8),
+              child: pw.Row(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.SizedBox(
+                    width: 140,
+                    child: pw.Text(
+                      item[0],
+                      style: const pw.TextStyle(
+                        fontSize: 11,
+                        color: PdfColors.grey700,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              pw.Expanded(
-                child: pw.Text(
-                  item[1],
-                  style: pw.TextStyle(
-                    fontSize: 11,
-                    fontWeight: pw.FontWeight.bold,
-                    color: PdfColors.black,
+                  pw.Expanded(
+                    child: pw.Text(
+                      item[1],
+                      style: pw.TextStyle(
+                        fontSize: 11,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColors.black,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
-        )),
+            )),
       ],
     );
   }

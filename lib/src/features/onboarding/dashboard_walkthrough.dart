@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
 part 'dashboard_walkthrough_widgets.dart';
 
-
 /// First-run coach-mark walkthrough for the dashboard.
 ///
 /// One focused, brand-purple tooltip per region, shown ONCE PER ACCOUNT (gated

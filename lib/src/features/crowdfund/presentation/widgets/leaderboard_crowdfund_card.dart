@@ -56,7 +56,8 @@ class LeaderboardCrowdfundCard extends StatelessWidget {
                   child: crowdfund.imageUrl != null
                       ? RepaintBoundary(
                           child: CachedNetworkImage(
-                            imageUrl: rewriteHostForEmulator(crowdfund.imageUrl!),
+                            imageUrl:
+                                rewriteHostForEmulator(crowdfund.imageUrl!),
                             width: 60.w,
                             height: 60.w,
                             fit: BoxFit.cover,
@@ -66,7 +67,8 @@ class LeaderboardCrowdfundCard extends StatelessWidget {
                             memCacheWidth: 200,
                             fadeInDuration: const Duration(milliseconds: 120),
                             placeholder: (_, __) => _buildImagePlaceholder(),
-                            errorWidget: (_, __, ___) => _buildImagePlaceholder(),
+                            errorWidget: (_, __, ___) =>
+                                _buildImagePlaceholder(),
                           ),
                         )
                       : _buildImagePlaceholder(),

@@ -17,7 +17,6 @@ import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfe
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'batch_transfer_processing_screen_widgets.dart';
 
-
 class BatchTransferProcessingScreen extends StatefulWidget {
   const BatchTransferProcessingScreen({super.key});
 
@@ -120,8 +119,7 @@ class _BatchTransferProcessingScreenState
       _hasValidData = false;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Get.snackbar('Error', 'Missing transfer data. Please try again.',
-            backgroundColor: btRed,
-            colorText: Colors.white);
+            backgroundColor: btRed, colorText: Colors.white);
         Get.offAllNamed(AppRoutes.dashboard);
       });
       return;
@@ -472,8 +470,7 @@ class _BatchTransferProcessingScreenState
 
     String headerTitle;
     if (_isCompleted) {
-      headerTitle =
-          _isScheduled ? 'Transfer Scheduled!' : 'Transfer Complete!';
+      headerTitle = _isScheduled ? 'Transfer Scheduled!' : 'Transfer Complete!';
     } else if (_isScheduled) {
       headerTitle = splitType != null
           ? 'Scheduling Split Payment...'
@@ -750,8 +747,7 @@ class _BatchTransferProcessingScreenState
               ],
             ),
           ),
-          if (isCurrent && !_isCompleted)
-            LazerVaultLoader.tiny(),
+          if (isCurrent && !_isCompleted) LazerVaultLoader.tiny(),
         ],
       ),
     );

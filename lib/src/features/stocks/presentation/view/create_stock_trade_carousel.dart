@@ -26,7 +26,8 @@ class CreateStockTradeCarousel extends StatefulWidget {
   });
 
   @override
-  State<CreateStockTradeCarousel> createState() => _CreateStockTradeCarouselState();
+  State<CreateStockTradeCarousel> createState() =>
+      _CreateStockTradeCarouselState();
 }
 
 class _CreateStockTradeCarouselState extends State<CreateStockTradeCarousel>
@@ -99,11 +100,13 @@ class _CreateStockTradeCarouselState extends State<CreateStockTradeCarousel>
           _showErrorSnackBar('Please enter a valid quantity');
           return false;
         }
-        if (_orderType == OrderType.limit && (_limitPrice == null || _limitPrice! <= 0)) {
+        if (_orderType == OrderType.limit &&
+            (_limitPrice == null || _limitPrice! <= 0)) {
           _showErrorSnackBar('Please enter a valid limit price');
           return false;
         }
-        if (_orderType == OrderType.stopLoss && (_stopPrice == null || _stopPrice! <= 0)) {
+        if (_orderType == OrderType.stopLoss &&
+            (_stopPrice == null || _stopPrice! <= 0)) {
           _showErrorSnackBar('Please enter a valid stop price');
           return false;
         }
@@ -137,7 +140,8 @@ class _CreateStockTradeCarouselState extends State<CreateStockTradeCarousel>
         'shares': _quantity,
         'sharesExact': _quantity.toDouble(),
         'fees': fees,
-        'estimatedTotal': _orderSide == OrderSide.buy ? gross + fees : gross - fees,
+        'estimatedTotal':
+            _orderSide == OrderSide.buy ? gross + fees : gross - fees,
         'paymentMethod': 'wallet',
         'paymentDetails': <String, dynamic>{},
         'orderType': _orderType,

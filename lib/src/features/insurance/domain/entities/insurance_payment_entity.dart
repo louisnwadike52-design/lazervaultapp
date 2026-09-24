@@ -187,4 +187,4 @@ class InsurancePayment extends Equatable {
         updatedAt,
         userId,
       ];
-} 
+}

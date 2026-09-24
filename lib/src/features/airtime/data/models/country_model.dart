@@ -23,7 +23,8 @@ class CountryModel extends Country {
       currency: json['currency'] as String,
       currencySymbol: json['currencySymbol'] as String,
       isActive: json['isActive'] as bool? ?? true,
-      popularPrefixes: List<String>.from(json['popularPrefixes'] as List? ?? []),
+      popularPrefixes:
+          List<String>.from(json['popularPrefixes'] as List? ?? []),
     );
   }
 
@@ -65,4 +66,4 @@ class CountryModel extends Country {
       popularPrefixes: popularPrefixes ?? this.popularPrefixes,
     );
   }
-} 
+}

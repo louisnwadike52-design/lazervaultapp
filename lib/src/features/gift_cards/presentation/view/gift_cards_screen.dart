@@ -57,9 +57,11 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
   /// showing the same rows for every such country. Offering only regions that
   /// exist means every option changes the result.
   List<String> _sellRegions = [];
+
   /// Sell-side category, kept separate from the buy tab's _selectedCategory.
   /// The two catalogues use different taxonomies and must not share state.
   String? _sellCategory;
+
   /// How many sellable cards are currently rendered. The sell catalogue is a
   /// single live provider read (~177 cards, more before any filter), so it is
   /// paged CLIENT-side: that keeps one page-size rule across all three filter
@@ -70,6 +72,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
   static const int _kSellPageSize = 20;
   List<String> _sellCategories = [];
   final ScrollController _scrollController = ScrollController();
+
   /// The sell grid needs its OWN controller: a ScrollController drives exactly
   /// one attached scroll view, and the buy grid already claims the one above.
   /// Sharing it would leave the sell tab's paging silently dead.
@@ -94,7 +97,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     // Load data for both tabs so switching is instant
     cubit.loadGiftCardBrands();
     cubit.loadSellableCards(
-            countryCode: _sellCountryCode.isEmpty ? null : _sellCountryCode);
+        countryCode: _sellCountryCode.isEmpty ? null : _sellCountryCode);
     cubit.loadSupportedCountries();
     _scrollController.addListener(_onScroll);
     _sellScrollController.addListener(_onSellScroll);
@@ -165,7 +168,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     if (state.currentPage <= 1 && !state.isLoadingMore) {
       _primedSecondBrandsPage = false;
     }
-    if (_primedSecondBrandsPage || !state.hasNext || state.isLoadingMore) return;
+    if (_primedSecondBrandsPage || !state.hasNext || state.isLoadingMore)
+      return;
     _primedSecondBrandsPage = true;
     context.read<GiftCardCubit>().loadMoreBrands();
   }
@@ -207,10 +211,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                 _selectedCountryCode.isEmpty ? null : _selectedCountryCode,
           );
     } else {
-      await context
-          .read<GiftCardCubit>()
-          .loadSellableCards(
-            countryCode: _sellCountryCode.isEmpty ? null : _sellCountryCode);
+      await context.read<GiftCardCubit>().loadSellableCards(
+          countryCode: _sellCountryCode.isEmpty ? null : _sellCountryCode);
     }
   }
 
@@ -436,9 +438,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     // silently re-filter the buy catalogue behind them.
     final activeCountry =
         _currentTab == 0 ? _selectedCountryCode : _sellCountryCode;
-    final flag = activeCountry.isEmpty
-        ? '\u{1F30D}'
-        : _getFlagForCountry(activeCountry);
+    final flag =
+        activeCountry.isEmpty ? '\u{1F30D}' : _getFlagForCountry(activeCountry);
     final countryLabel = activeCountry.isEmpty
         ? 'All'
         : (_currentTab == 1
@@ -471,7 +472,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                 // lands. FocusManager rather than FocusScope.of(context): it
                 // targets whatever actually holds focus instead of depending on
                 // this subtree's scope.
-                onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                onTapOutside: (_) =>
+                    FocusManager.instance.primaryFocus?.unfocus(),
                 style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
                 decoration: InputDecoration(
                   hintText: _currentTab == 0
@@ -563,7 +565,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
         .toSet()
         .toList()
       ..sort();
-    if (regions.isEmpty || regions.toString() == _sellRegions.toString()) return;
+    if (regions.isEmpty || regions.toString() == _sellRegions.toString())
+      return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) setState(() => _sellRegions = regions);
     });
@@ -647,8 +650,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
       ),
       builder: (ctx) => SafeArea(
         child: ConstrainedBox(
-          constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(ctx).size.height * 0.7),
+          constraints:
+              BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.7),
           child: Padding(
             padding: EdgeInsets.all(16.w),
             child: Column(
@@ -714,9 +717,9 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
         // this must NOT call loadGiftCardBrands (a BUY-catalogue RPC, which
         // is what the shared picker used to do from the sell tab).
         setState(() {
-      _sellCategory = value;
-      _resetSellPaging();
-    });
+          _sellCategory = value;
+          _resetSellPaging();
+        });
       },
     );
   }
@@ -743,7 +746,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
             ),
             ListTile(
               title: Text('All regions',
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp)),
+                  style:
+                      GoogleFonts.inter(color: Colors.white, fontSize: 14.sp)),
               trailing: _sellCountryCode.isEmpty
                   ? const Icon(Icons.check, color: Color(0xFF10B981))
                   : null,
@@ -1192,7 +1196,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                   ),
                   // Open-loop prepaid cards behave like a debit card, not a
                   // store voucher — flag them before the user commits.
-                  if (isPrepaidGiftCard(brand.name, category: brand.category)) ...[
+                  if (isPrepaidGiftCard(brand.name,
+                      category: brand.category)) ...[
                     SizedBox(width: 6.w),
                     const PrepaidBadge(compact: true),
                   ],
@@ -1366,7 +1371,6 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     return category[0].toUpperCase() + category.substring(1);
   }
 
-
   // Real brand logo for a sellable card — see sellCardLogoUrl() in
   // utils/sell_card_logo.dart. Shared with the sell detail header so both
   // surfaces derive the same Clearbit fallback for logo-less Prestmit cards.
@@ -1427,10 +1431,9 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                     _searchController.clear();
                     _sellSearchQuery = '';
                     setState(() => _currentTab = 1);
-                    context
-                        .read<GiftCardCubit>()
-                        .loadSellableCards(
-            countryCode: _sellCountryCode.isEmpty ? null : _sellCountryCode);
+                    context.read<GiftCardCubit>().loadSellableCards(
+                        countryCode:
+                            _sellCountryCode.isEmpty ? null : _sellCountryCode);
                   }
                 },
                 child: Container(
@@ -1618,8 +1621,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                 ),
                 SizedBox(height: 18.h),
                 Container(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: 14.w, vertical: 12.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1F1F1F),
                     borderRadius: BorderRadius.circular(12.r),
@@ -1940,9 +1943,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                 onPressed: () => filtered
                     ? _clearSellFilters()
                     : context.read<GiftCardCubit>().loadSellableCards(
-                        countryCode: _sellCountryCode.isEmpty
-                            ? null
-                            : _sellCountryCode),
+                        countryCode:
+                            _sellCountryCode.isEmpty ? null : _sellCountryCode),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: InvoiceThemeColors.primaryPurple,
                   shape: RoundedRectangleBorder(

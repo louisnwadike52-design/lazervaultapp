@@ -80,8 +80,8 @@ class P2PChatMediaUploadService {
 
     // Compress images before upload (voice notes / non-images pass through
     // untouched — the compressor is a no-op for audio content types).
-    final compressed =
-        await ImageCompressor.compressForUpload(bytes, contentType: contentType);
+    final compressed = await ImageCompressor.compressForUpload(bytes,
+        contentType: contentType);
     bytes = compressed.bytes;
     contentType = compressed.contentType;
     filename = ImageCompressor.alignedFilename(filename, contentType);

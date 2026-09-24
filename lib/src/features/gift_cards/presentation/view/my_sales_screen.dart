@@ -124,7 +124,8 @@ class _MySalesScreenState extends State<MySalesScreen>
             AppRoutes.giftCards,
             arguments: const {'initialTab': 'sell'},
           ),
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18),
+          icon: const Icon(Icons.arrow_back_ios_new,
+              color: Colors.white, size: 18),
         ),
         title: Text(
           'My Sales',
@@ -142,8 +143,10 @@ class _MySalesScreenState extends State<MySalesScreen>
           unselectedLabelColor: const Color(0xFF9CA3AF),
           indicatorColor: InvoiceThemeColors.primaryPurple,
           indicatorSize: TabBarIndicatorSize.label,
-          labelStyle: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600),
-          unselectedLabelStyle: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w500),
+          labelStyle:
+              GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600),
+          unselectedLabelStyle:
+              GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w500),
           tabs: _tabs
               .map((t) => Tab(
                     key: Key(
@@ -153,7 +156,8 @@ class _MySalesScreenState extends State<MySalesScreen>
               .toList(),
         ),
       ),
-      body: GiftCardBackground(child: BlocBuilder<GiftCardCubit, GiftCardState>(
+      body: GiftCardBackground(
+          child: BlocBuilder<GiftCardCubit, GiftCardState>(
         // Only react to states that actually describe the list. Sale-
         // detail lookups (GiftCardLoading → SellStatusLoaded) and any
         // sheet-scoped errors are owned by the bottom sheet's own
@@ -426,18 +430,27 @@ class _MySalesScreenState extends State<MySalesScreen>
                     ],
                   ),
                   SizedBox(height: 20.h),
-                  _buildSaleDetailRow('Card Type', displaySale.cardType.replaceAll('_', ' ').toUpperCase()),
+                  _buildSaleDetailRow('Card Type',
+                      displaySale.cardType.replaceAll('_', ' ').toUpperCase()),
                   SizedBox(height: 10.h),
-                  _buildSaleDetailRow('Card Number', displaySale.cardNumber.isNotEmpty ? '****${displaySale.cardNumber.substring(displaySale.cardNumber.length > 4 ? displaySale.cardNumber.length - 4 : 0)}' : 'N/A'),
+                  _buildSaleDetailRow(
+                      'Card Number',
+                      displaySale.cardNumber.isNotEmpty
+                          ? '****${displaySale.cardNumber.substring(displaySale.cardNumber.length > 4 ? displaySale.cardNumber.length - 4 : 0)}'
+                          : 'N/A'),
                   SizedBox(height: 10.h),
-                  _buildSaleDetailRow('Denomination', '${displaySale.currency} ${displaySale.denomination.toStringAsFixed(0)}'),
+                  _buildSaleDetailRow('Denomination',
+                      '${displaySale.currency} ${displaySale.denomination.toStringAsFixed(0)}'),
                   SizedBox(height: 10.h),
-                  _buildSaleDetailRow('Rate', '${displaySale.ratePercentage.toStringAsFixed(0)}%'),
+                  _buildSaleDetailRow('Rate',
+                      '${displaySale.ratePercentage.toStringAsFixed(0)}%'),
                   SizedBox(height: 10.h),
-                  _buildSaleDetailRow('Expected Payout', _formatCurrency(displaySale.expectedPayout)),
+                  _buildSaleDetailRow('Expected Payout',
+                      _formatCurrency(displaySale.expectedPayout)),
                   if (displaySale.actualPayout > 0) ...[
                     SizedBox(height: 10.h),
-                    _buildSaleDetailRow('Actual Payout', _formatCurrency(displaySale.actualPayout)),
+                    _buildSaleDetailRow('Actual Payout',
+                        _formatCurrency(displaySale.actualPayout)),
                   ],
                   if (displaySale.reference.isNotEmpty) ...[
                     SizedBox(height: 10.h),
@@ -451,23 +464,28 @@ class _MySalesScreenState extends State<MySalesScreen>
                   // so support can cross-check with the provider when needed.
                   if (displaySale.providerSaleId.isNotEmpty) ...[
                     SizedBox(height: 10.h),
-                    _buildSaleDetailRow('Provider Sale ID', displaySale.providerSaleId),
+                    _buildSaleDetailRow(
+                        'Provider Sale ID', displaySale.providerSaleId),
                   ],
                   // Settlement status (pending/verified/failed) — the payout's
                   // money-movement state, separate from the sale's review status.
                   if (displaySale.settlementStatus.isNotEmpty &&
-                      displaySale.settlementStatus.toLowerCase() != 'pending') ...[
+                      displaySale.settlementStatus.toLowerCase() !=
+                          'pending') ...[
                     SizedBox(height: 10.h),
                     _buildSaleDetailRow('Settlement',
                         displaySale.settlementStatus.toUpperCase()),
                   ],
                   SizedBox(height: 10.h),
-                  _buildSaleDetailRow('Submitted', _formatDate(displaySale.submittedAt)),
+                  _buildSaleDetailRow(
+                      'Submitted', _formatDate(displaySale.submittedAt)),
                   if (displaySale.paidAt.isNotEmpty) ...[
                     SizedBox(height: 10.h),
-                    _buildSaleDetailRow('Paid', _formatDate(displaySale.paidAt)),
+                    _buildSaleDetailRow(
+                        'Paid', _formatDate(displaySale.paidAt)),
                   ],
-                  if (displaySale.isRejected && displaySale.rejectionReason.isNotEmpty) ...[
+                  if (displaySale.isRejected &&
+                      displaySale.rejectionReason.isNotEmpty) ...[
                     SizedBox(height: 16.h),
                     Container(
                       padding: EdgeInsets.all(12.w),
@@ -507,7 +525,8 @@ class _MySalesScreenState extends State<MySalesScreen>
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(Icons.help_outline,
-                                    color: const Color(0xFFEF4444), size: 15.sp),
+                                    color: const Color(0xFFEF4444),
+                                    size: 15.sp),
                                 SizedBox(width: 6.w),
                                 Text(
                                   'Why was this rejected?',
@@ -686,7 +705,8 @@ class _MySalesScreenState extends State<MySalesScreen>
                     color: const Color(0xFF1F1F1F),
                     borderRadius: BorderRadius.circular(36.r),
                   ),
-                  child: Icon(icon, size: 32.sp, color: const Color(0xFF6B7280)),
+                  child:
+                      Icon(icon, size: 32.sp, color: const Color(0xFF6B7280)),
                 ),
                 SizedBox(height: 16.h),
                 Text(
@@ -737,9 +757,9 @@ class _MySalesScreenState extends State<MySalesScreen>
   String _formatCurrency(double amount) {
     if (amount >= 1000) {
       return 'NGN ${amount.toStringAsFixed(0).replaceAllMapped(
-        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-        (match) => '${match[1]},',
-      )}';
+            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+            (match) => '${match[1]},',
+          )}';
     }
     return 'NGN ${amount.toStringAsFixed(2)}';
   }

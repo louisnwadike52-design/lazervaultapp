@@ -1,7 +1,8 @@
 import 'package:dartz/dartz.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/error/failure.dart';
-import 'package:lazervault/src/core/errors/failures.dart' show friendlyGrpcError;
+import 'package:lazervault/src/core/errors/failures.dart'
+    show friendlyGrpcError;
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/features/multi_country/domain/entities/locale_account_group.dart';
 import 'package:lazervault/src/features/multi_country/domain/repositories/i_multi_country_repository.dart';
@@ -15,21 +16,24 @@ class MultiCountryRepositoryImpl implements IMultiCountryRepository {
   MultiCountryRepositoryImpl(this._client, this._callOptionsHelper);
 
   @override
-  Future<Either<Failure, ({
-    List<LocaleAccountGroupEntity> locales,
-    String activeLocale,
-    String signupLocale,
-  })>> getAccountsByLocale() async {
+  Future<
+      Either<
+          Failure,
+          ({
+            List<LocaleAccountGroupEntity> locales,
+            String activeLocale,
+            String signupLocale,
+          })>> getAccountsByLocale() async {
     try {
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final request = pb.GetAccountsByLocaleRequest();
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.getAccountsByLocale(request, options: callOptions);
       });
 
-      final locales = response.locales
-          .map(LocaleAccountGroupEntity.fromProto)
-          .toList();
+      final locales =
+          response.locales.map(LocaleAccountGroupEntity.fromProto).toList();
 
       // Sort: signup locale first, then locales with accounts, then others
       locales.sort((a, b) {
@@ -65,9 +69,9 @@ class MultiCountryRepositoryImpl implements IMultiCountryRepository {
     String? accountName,
   }) async {
     try {
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
-        final request = pb.CreateLocaleAccountRequest()
-          ..locale = locale;
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
+        final request = pb.CreateLocaleAccountRequest()..locale = locale;
         if (accountType != null) request.accountType = accountType;
         if (accountName != null) request.accountName = accountName;
 
@@ -97,17 +101,18 @@ class MultiCountryRepositoryImpl implements IMultiCountryRepository {
   }
 
   @override
-  Future<Either<Failure, List<SupportedLocaleEntity>>> getSupportedLocales() async {
+  Future<Either<Failure, List<SupportedLocaleEntity>>>
+      getSupportedLocales() async {
     try {
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final request = pb.GetSupportedLocalesRequest();
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.getSupportedLocales(request, options: callOptions);
       });
 
-      final locales = response.locales
-          .map(SupportedLocaleEntity.fromProto)
-          .toList();
+      final locales =
+          response.locales.map(SupportedLocaleEntity.fromProto).toList();
 
       return Right(locales);
     } on GrpcError catch (e) {
@@ -124,9 +129,18 @@ class MultiCountryRepositoryImpl implements IMultiCountryRepository {
   }
 
   @override
-  Future<Either<Failure, ({String locale, String countryCode, String currencyCode, String signupLocale})>> getUserLocale() async {
+  Future<
+      Either<
+          Failure,
+          ({
+            String locale,
+            String countryCode,
+            String currencyCode,
+            String signupLocale
+          })>> getUserLocale() async {
     try {
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final request = pb.GetUserLocaleRequest();
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.getUserLocale(request, options: callOptions);
@@ -154,7 +168,8 @@ class MultiCountryRepositoryImpl implements IMultiCountryRepository {
   @override
   Future<Either<Failure, String>> setUserLocale(String locale) async {
     try {
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final request = pb.SetUserLocaleRequest()..locale = locale;
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.setUserLocale(request, options: callOptions);
@@ -175,13 +190,18 @@ class MultiCountryRepositoryImpl implements IMultiCountryRepository {
   }
 
   @override
-  Future<Either<Failure, ({String overallStatus, int totalLocales, int completedLocales})>> getAccountCreationStatus({String? jobId}) async {
+  Future<
+          Either<Failure,
+              ({String overallStatus, int totalLocales, int completedLocales})>>
+      getAccountCreationStatus({String? jobId}) async {
     try {
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final request = pb.GetAccountCreationStatusRequest();
         if (jobId != null) request.jobId = jobId;
         final callOptions = await _callOptionsHelper.withAuth();
-        return await _client.getAccountCreationStatus(request, options: callOptions);
+        return await _client.getAccountCreationStatus(request,
+            options: callOptions);
       });
 
       return Right((

@@ -28,7 +28,9 @@ abstract class InvoiceRepository {
   // Specific Operations
   Future<Invoice> sendInvoice(String invoiceId);
   Future<void> sendInvoiceToEmail(String invoiceId, String email);
-  Future<Invoice> markInvoiceAsPaid(String invoiceId, PaymentMethod paymentMethod, String? paymentReference, {String? pin, String? verificationToken});
+  Future<Invoice> markInvoiceAsPaid(
+      String invoiceId, PaymentMethod paymentMethod, String? paymentReference,
+      {String? pin, String? verificationToken});
   Future<Invoice> cancelInvoice(String invoiceId);
   Future<String> generateQRCode(String invoiceId);
   Future<List<Invoice>> searchInvoices(String query);
@@ -38,20 +40,27 @@ abstract class InvoiceRepository {
   // File Operations
   Future<String> generateInvoicePDF(String invoiceId);
   Future<void> shareInvoice(String invoiceId, List<String> recipients);
-  
+
   // Unlock invoice (pay service fee)
-  Future<Invoice> unlockInvoice(String invoiceId, {String? accountId, String? pin, String? verificationToken, String? transactionId, String? idempotencyKey});
+  Future<Invoice> unlockInvoice(String invoiceId,
+      {String? accountId,
+      String? pin,
+      String? verificationToken,
+      String? transactionId,
+      String? idempotencyKey});
 
   // Invoice service fee quote (admin-configured base fee, FX-converted into the
   // active account's currency). Display-only; the charge is computed server-side.
   Future<InvoiceFeeQuote> getServiceFeeQuote({String? accountId});
 
   // Payment tracking
-  Future<void> recordPayment(String invoiceId, double amount, PaymentMethod method, String reference);
+  Future<void> recordPayment(
+      String invoiceId, double amount, PaymentMethod method, String reference);
   Future<List<Map<String, dynamic>>> getPaymentHistory(String invoiceId);
 
   // User tagging for invoices
-  Future<TagUsersResponse> tagUsersToInvoice(String invoiceId, List<String> userIds, List<String> emails, List<String> phoneNumbers);
+  Future<TagUsersResponse> tagUsersToInvoice(String invoiceId,
+      List<String> userIds, List<String> emails, List<String> phoneNumbers);
   Future<List<InvoiceUser>> searchUsers(String query, {int limit = 20});
 
   // Paginated queries
@@ -140,4 +149,4 @@ class TagUsersResponse {
     required this.invitedPhones,
     required this.message,
   });
-} 
+}

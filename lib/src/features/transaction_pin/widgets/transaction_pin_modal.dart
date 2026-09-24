@@ -9,7 +9,6 @@ import 'package:lazervault/src/features/transaction_pin/utils/transaction_servic
 import 'package:lazervault/src/features/widgets/user_avatar.dart';
 part 'transaction_pin_modal_widgets.dart';
 
-
 class TransactionPinModalState extends State<TransactionPinModal>
     with TickerProviderStateMixin {
   final List<FocusNode> _pinFocusNodes = List.generate(4, (_) => FocusNode());
@@ -63,8 +62,8 @@ class TransactionPinModalState extends State<TransactionPinModal>
     // this shared modal.
     for (var i = 0; i < _pinFocusNodes.length; i++) {
       final index = i;
-      _pinFocusNodes[i].onKeyEvent = (node, event) =>
-          _handlePinBackspace(index, event);
+      _pinFocusNodes[i].onKeyEvent =
+          (node, event) => _handlePinBackspace(index, event);
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -209,8 +208,7 @@ class TransactionPinModalState extends State<TransactionPinModal>
     }
   }
 
-  String get _displaySymbol =>
-      widget.currencySymbol ?? widget.currency ?? '';
+  String get _displaySymbol => widget.currencySymbol ?? widget.currency ?? '';
 
   @override
   Widget build(BuildContext context) {
@@ -312,7 +310,10 @@ class TransactionPinModalState extends State<TransactionPinModal>
                   imageUrl: widget.recipientImageUrl,
                   firstName: (widget.recipientName ?? '').split(' ').first,
                   lastName: (widget.recipientName ?? '').split(' ').length > 1
-                      ? (widget.recipientName ?? '').split(' ').sublist(1).join(' ')
+                      ? (widget.recipientName ?? '')
+                          .split(' ')
+                          .sublist(1)
+                          .join(' ')
                       : null,
                 ),
                 SizedBox(width: 8.w),
@@ -362,9 +363,7 @@ class TransactionPinModalState extends State<TransactionPinModal>
                 return Column(
                   children: [
                     Text(
-                      feeOnly
-                          ? 'Fee'
-                          : (fee > 0 ? 'Total Amount' : 'Amount'),
+                      feeOnly ? 'Fee' : (fee > 0 ? 'Total Amount' : 'Amount'),
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
                         color: Colors.grey.shade500,
@@ -407,7 +406,8 @@ class TransactionPinModalState extends State<TransactionPinModal>
               ),
               child: Row(
                 children: [
-                  Icon(Icons.error_outline, color: Colors.red.shade700, size: 18.sp),
+                  Icon(Icons.error_outline,
+                      color: Colors.red.shade700, size: 18.sp),
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
@@ -438,7 +438,8 @@ class TransactionPinModalState extends State<TransactionPinModal>
               ),
               child: Row(
                 children: [
-                  Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700, size: 18.sp),
+                  Icon(Icons.warning_amber_rounded,
+                      color: Colors.orange.shade700, size: 18.sp),
                   SizedBox(width: 8.w),
                   Text(
                     '$remainingAttempts attempt${remainingAttempts == 1 ? '' : 's'} remaining',
@@ -492,7 +493,8 @@ class TransactionPinModalState extends State<TransactionPinModal>
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r),
-                      borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
+                      borderSide:
+                          const BorderSide(color: Color(0xFF4E03D0), width: 2),
                     ),
                     filled: true,
                     fillColor: Colors.grey.shade50,
@@ -516,7 +518,9 @@ class TransactionPinModalState extends State<TransactionPinModal>
                   });
                 },
                 icon: Icon(
-                  _isObscured ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                  _isObscured
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
                   size: 18.sp,
                   color: Colors.grey.shade600,
                 ),
@@ -562,10 +566,12 @@ class TransactionPinModalState extends State<TransactionPinModal>
             width: double.infinity,
             height: 48.h,
             child: OutlinedButton(
-              onPressed: widget.isLoading ? null : () {
-                Navigator.of(context).pop();
-                widget.onCancel?.call();
-              },
+              onPressed: widget.isLoading
+                  ? null
+                  : () {
+                      Navigator.of(context).pop();
+                      widget.onCancel?.call();
+                    },
               style: OutlinedButton.styleFrom(
                 side: BorderSide(color: Colors.grey.shade300),
                 shape: RoundedRectangleBorder(
@@ -757,7 +763,8 @@ class TransactionPinModalState extends State<TransactionPinModal>
               ),
               child: Row(
                 children: [
-                  Icon(Icons.error_outline, color: Colors.red.shade700, size: 18.sp),
+                  Icon(Icons.error_outline,
+                      color: Colors.red.shade700, size: 18.sp),
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
@@ -929,9 +936,7 @@ class TransactionPinModalState extends State<TransactionPinModal>
           return Expanded(
             child: Container(
               height: 2.h,
-              color: isActive
-                  ? const Color(0xFF16A34A)
-                  : Colors.grey.shade200,
+              color: isActive ? const Color(0xFF16A34A) : Colors.grey.shade200,
             ),
           );
         }
@@ -967,7 +972,8 @@ class TransactionPinModalState extends State<TransactionPinModal>
                 child: isCompleted
                     ? Icon(Icons.check, size: 16.sp, color: Colors.white)
                     : isFailed
-                        ? Icon(Icons.close, size: 16.sp, color: Colors.red.shade700)
+                        ? Icon(Icons.close,
+                            size: 16.sp, color: Colors.red.shade700)
                         : isCurrent
                             ? LazerVaultLoader(size: 12)
                             : null,

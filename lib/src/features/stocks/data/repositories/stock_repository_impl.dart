@@ -45,7 +45,8 @@ class StockRepositoryImpl implements IStockRepository {
     String timeframe,
   ) async {
     try {
-      final priceHistory = await remoteDataSource.getStockPriceHistory(symbol, timeframe);
+      final priceHistory =
+          await remoteDataSource.getStockPriceHistory(symbol, timeframe);
       return Right(priceHistory);
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 500));
@@ -63,7 +64,8 @@ class StockRepositoryImpl implements IStockRepository {
   }
 
   @override
-  Future<Either<Failure, List<Stock>>> searchStocks(String query, {String? market}) async {
+  Future<Either<Failure, List<Stock>>> searchStocks(String query,
+      {String? market}) async {
     try {
       final stocks = await remoteDataSource.searchStocks(query, market: market);
       return Right(stocks);
@@ -126,7 +128,8 @@ class StockRepositoryImpl implements IStockRepository {
     String? symbol,
   }) async {
     try {
-      final orders = await remoteDataSource.getOrders(status: status, symbol: symbol);
+      final orders =
+          await remoteDataSource.getOrders(status: status, symbol: symbol);
       return Right(orders);
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 500));
@@ -154,7 +157,8 @@ class StockRepositoryImpl implements IStockRepository {
   }
 
   @override
-  Future<Either<Failure, Watchlist>> createWatchlist(String name, List<String> symbols) async {
+  Future<Either<Failure, Watchlist>> createWatchlist(
+      String name, List<String> symbols) async {
     try {
       final watchlist = await remoteDataSource.createWatchlist(name, symbols);
       return Right(watchlist);
@@ -164,9 +168,11 @@ class StockRepositoryImpl implements IStockRepository {
   }
 
   @override
-  Future<Either<Failure, Watchlist>> updateWatchlist(String watchlistId, String name, List<String> symbols) async {
+  Future<Either<Failure, Watchlist>> updateWatchlist(
+      String watchlistId, String name, List<String> symbols) async {
     try {
-      final watchlist = await remoteDataSource.updateWatchlist(watchlistId, name, symbols);
+      final watchlist =
+          await remoteDataSource.updateWatchlist(watchlistId, name, symbols);
       return Right(watchlist);
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 500));
@@ -174,9 +180,11 @@ class StockRepositoryImpl implements IStockRepository {
   }
 
   @override
-  Future<Either<Failure, Watchlist>> addToWatchlist(String watchlistId, String symbol) async {
+  Future<Either<Failure, Watchlist>> addToWatchlist(
+      String watchlistId, String symbol) async {
     try {
-      final watchlist = await remoteDataSource.addToWatchlist(watchlistId, symbol);
+      final watchlist =
+          await remoteDataSource.addToWatchlist(watchlistId, symbol);
       return Right(watchlist);
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 500));
@@ -184,9 +192,11 @@ class StockRepositoryImpl implements IStockRepository {
   }
 
   @override
-  Future<Either<Failure, Watchlist>> removeFromWatchlist(String watchlistId, String symbol) async {
+  Future<Either<Failure, Watchlist>> removeFromWatchlist(
+      String watchlistId, String symbol) async {
     try {
-      final watchlist = await remoteDataSource.removeFromWatchlist(watchlistId, symbol);
+      final watchlist =
+          await remoteDataSource.removeFromWatchlist(watchlistId, symbol);
       return Right(watchlist);
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 500));
@@ -234,7 +244,8 @@ class StockRepositoryImpl implements IStockRepository {
   }
 
   @override
-  Future<Either<Failure, List<SectorPerformance>>> getSectorPerformance() async {
+  Future<Either<Failure, List<SectorPerformance>>>
+      getSectorPerformance() async {
     try {
       final sectors = await remoteDataSource.getSectorPerformance();
       return Right(sectors);
@@ -329,9 +340,11 @@ class StockRepositoryImpl implements IStockRepository {
   }
 
   @override
-  Future<Either<Failure, TradingSession>> startTradingSession(double startingBalance) async {
+  Future<Either<Failure, TradingSession>> startTradingSession(
+      double startingBalance) async {
     try {
-      final session = await remoteDataSource.startTradingSession(startingBalance);
+      final session =
+          await remoteDataSource.startTradingSession(startingBalance);
       return Right(session);
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 500));
@@ -339,7 +352,8 @@ class StockRepositoryImpl implements IStockRepository {
   }
 
   @override
-  Future<Either<Failure, TradingSession>> endTradingSession(String sessionId) async {
+  Future<Either<Failure, TradingSession>> endTradingSession(
+      String sessionId) async {
     try {
       final session = await remoteDataSource.endTradingSession(sessionId);
       return Right(session);
@@ -349,7 +363,8 @@ class StockRepositoryImpl implements IStockRepository {
   }
 
   @override
-  Future<Either<Failure, List<TradingSession>>> getTradingSessionHistory() async {
+  Future<Either<Failure, List<TradingSession>>>
+      getTradingSessionHistory() async {
     try {
       final sessions = await remoteDataSource.getTradingSessionHistory();
       return Right(sessions);
@@ -378,7 +393,8 @@ class StockRepositoryImpl implements IStockRepository {
   }
 
   @override
-  Future<Either<Failure, OptionContract>> getOptionDetails(String optionSymbol) async {
+  Future<Either<Failure, OptionContract>> getOptionDetails(
+      String optionSymbol) async {
     try {
       final option = await remoteDataSource.getOptionDetails(optionSymbol);
       return Right(option);
@@ -419,7 +435,8 @@ class StockRepositoryImpl implements IStockRepository {
   }
 
   @override
-  Future<Either<Failure, List<Stock>>> getEarningsCalendar({DateTime? date}) async {
+  Future<Either<Failure, List<Stock>>> getEarningsCalendar(
+      {DateTime? date}) async {
     try {
       final stocks = await remoteDataSource.getEarningsCalendar(date: date);
       return Right(stocks);
@@ -429,7 +446,8 @@ class StockRepositoryImpl implements IStockRepository {
   }
 
   @override
-  Future<Either<Failure, List<Stock>>> getDividendCalendar({DateTime? date}) async {
+  Future<Either<Failure, List<Stock>>> getDividendCalendar(
+      {DateTime? date}) async {
     try {
       final stocks = await remoteDataSource.getDividendCalendar(date: date);
       return Right(stocks);
@@ -437,4 +455,4 @@ class StockRepositoryImpl implements IStockRepository {
       return Left(ServerFailure(message: e.toString(), statusCode: 500));
     }
   }
-} 
+}

@@ -26,7 +26,8 @@ class RecipientRepositoryImpl implements IRecipientRepository {
   }) async {
     try {
       // Use executeWithTokenRotation for automatic token refresh on auth errors
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         final request = grpc.ListRecipientsRequest();
 
@@ -63,7 +64,8 @@ class RecipientRepositoryImpl implements IRecipientRepository {
     int pageSize = 20,
   }) async {
     try {
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         final request = grpc.ListRecipientsRequest();
 
@@ -106,7 +108,8 @@ class RecipientRepositoryImpl implements IRecipientRepository {
       {required RecipientModel recipient, required String accessToken}) async {
     try {
       // Use executeWithTokenRotation for automatic token refresh on auth errors
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final request = grpc.CreateRecipientRequest()
           ..name = recipient.name
           ..accountNumber = recipient.accountNumber
@@ -123,7 +126,8 @@ class RecipientRepositoryImpl implements IRecipientRepository {
                   ? 'internal'
                   : 'external');
 
-        print("DEBUG RecipientRepository: Creating recipient - name: ${recipient.name}, bank: ${recipient.bankName}, type: ${recipient.type}, request.type: ${request.type}");
+        print(
+            "DEBUG RecipientRepository: Creating recipient - name: ${recipient.name}, bank: ${recipient.bankName}, type: ${recipient.type}, request.type: ${request.type}");
 
         if (recipient.countryCode != null) {
           request.countryCode = recipient.countryCode!;
@@ -146,7 +150,8 @@ class RecipientRepositoryImpl implements IRecipientRepository {
         if (recipient.alias != null && recipient.alias!.isNotEmpty) {
           request.alias = recipient.alias!;
         }
-        if (recipient.internalUserId != null && recipient.internalUserId!.isNotEmpty) {
+        if (recipient.internalUserId != null &&
+            recipient.internalUserId!.isNotEmpty) {
           request.internalUserId = recipient.internalUserId!;
         }
 
@@ -166,7 +171,9 @@ class RecipientRepositoryImpl implements IRecipientRepository {
 
   @override
   Future<Either<Failure, void>> toggleFavorite(
-      {required String recipientId, required bool isFavorite, required String accessToken}) async {
+      {required String recipientId,
+      required bool isFavorite,
+      required String accessToken}) async {
     try {
       // Use executeWithTokenRotation for automatic token refresh on auth errors
       await _callOptionsHelper.executeWithTokenRotation(() async {
@@ -190,9 +197,12 @@ class RecipientRepositoryImpl implements IRecipientRepository {
 
   @override
   Future<Either<Failure, RecipientModel>> updateAlias(
-      {required String recipientId, required String? alias, required String accessToken}) async {
+      {required String recipientId,
+      required String? alias,
+      required String accessToken}) async {
     try {
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final request = grpc.UpdateRecipientRequest()
           ..recipientId = Int64.parseInt(recipientId)
           ..alias = StringValue(value: alias ?? '');
@@ -232,4 +242,4 @@ class RecipientRepositoryImpl implements IRecipientRepository {
           Failure(message: 'Failed to delete recipient: $e', statusCode: 500));
     }
   }
-} 
+}

@@ -19,7 +19,8 @@ class AddFundsConfirmationScreen extends StatefulWidget {
   });
 
   @override
-  State<AddFundsConfirmationScreen> createState() => _AddFundsConfirmationScreenState();
+  State<AddFundsConfirmationScreen> createState() =>
+      _AddFundsConfirmationScreenState();
 }
 
 class _AddFundsConfirmationScreenState extends State<AddFundsConfirmationScreen>
@@ -103,13 +104,15 @@ Date: ${dateFormat.format(now)}
 🚀 Generated with Claude Code
 ''';
 
-    SharePlus.instance.share(ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+    SharePlus.instance
+        .share(ShareParams(
+      // iOS: a non-zero popover anchor is required — CGRectZero throws
+      // PlatformException and the share silently fails on iPhone/iPad.
+      sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       text: receiptText,
       subject: 'Deposit Receipt - $_transactionId',
-    )).then((_) {
+    ))
+        .then((_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -301,7 +304,8 @@ Date: ${dateFormat.format(now)}
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  CurrencySymbols.formatAmountWithCurrency(widget.amount, 'USD'),
+                  CurrencySymbols.formatAmountWithCurrency(
+                      widget.amount, 'USD'),
                   style: GoogleFonts.inter(
                     fontSize: 48.sp,
                     fontWeight: FontWeight.w700,

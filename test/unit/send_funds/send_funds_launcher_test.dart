@@ -30,7 +30,8 @@ void main() {
 
     test('does NOT stop at a send-flow route — it gets removed', () {
       expect(
-          SendFundsLauncher.isCleanBaseRoute(AppRoutes.initiateSendFunds, false),
+          SendFundsLauncher.isCleanBaseRoute(
+              AppRoutes.initiateSendFunds, false),
           isFalse);
       expect(
           SendFundsLauncher.isCleanBaseRoute(AppRoutes.selectRecipient, false),
@@ -87,8 +88,7 @@ void main() {
     });
 
     test('a completed receipt beneath is removed on the next send', () {
-      final base =
-          unwind([AppRoutes.dashboard, AppRoutes.transferProof]);
+      final base = unwind([AppRoutes.dashboard, AppRoutes.transferProof]);
       expect(base, [AppRoutes.dashboard]);
     });
 

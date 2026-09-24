@@ -139,8 +139,7 @@ class _UpliftFundingActivityScreenState
         itemBuilder: (_, i) {
           final r = _refunds[i];
           return _activityTile(
-            title:
-                'Pool refund${r.reason.isNotEmpty ? ' (${r.reason})' : ''}',
+            title: 'Pool refund${r.reason.isNotEmpty ? ' (${r.reason})' : ''}',
             amount: r.amount.toInt(),
             status: r.status,
             attempt: r.attemptCount,

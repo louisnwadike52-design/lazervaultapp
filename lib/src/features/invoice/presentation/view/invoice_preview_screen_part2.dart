@@ -172,13 +172,12 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                   ),
                   borderRadius: BorderRadius.circular(12.r),
                   boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Icon(
                   Icons.group_add,
@@ -298,7 +297,6 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: TabBar(
         controller: _tabController,
@@ -371,13 +369,12 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
               color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12.r),
               boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
             child: TextField(
               controller: _searchController,
@@ -412,7 +409,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
             ),
           ),
           SizedBox(height: 20.h),
-          
+
           // User list
           Expanded(
             child: _buildUserList(),
@@ -455,16 +452,18 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
     final isAlreadyTagged = _alreadyTaggedUserIds.contains(user.id);
 
     return GestureDetector(
-      onTap: isAlreadyTagged ? null : () {
-        HapticFeedback.lightImpact();
-        setState(() {
-          if (isSelected) {
-            _selectedUserIds.remove(user.id);
-          } else {
-            _selectedUserIds.add(user.id);
-          }
-        });
-      },
+      onTap: isAlreadyTagged
+          ? null
+          : () {
+              HapticFeedback.lightImpact();
+              setState(() {
+                if (isSelected) {
+                  _selectedUserIds.remove(user.id);
+                } else {
+                  _selectedUserIds.add(user.id);
+                }
+              });
+            },
       child: Container(
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
@@ -485,7 +484,9 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                   radius: 26.r,
                   backgroundColor: Colors.white.withValues(alpha: 0.1),
                   child: Text(
-                    user.name.isNotEmpty ? user.name.substring(0, 1).toUpperCase() : '?',
+                    user.name.isNotEmpty
+                        ? user.name.substring(0, 1).toUpperCase()
+                        : '?',
                     style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 18.sp,
@@ -509,13 +510,12 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                         ),
                         shape: BoxShape.circle,
                         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 6,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Icon(
                         Icons.check,
@@ -535,20 +535,19 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                         color: InvoiceThemeColors.successGreen,
                         shape: BoxShape.circle,
                         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 6,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
                       ),
                     ),
                   ),
               ],
             ),
             SizedBox(width: 16.w),
-            
+
             // User info
             Expanded(
               child: Column(
@@ -573,16 +572,16 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                             vertical: 4.h,
                           ),
                           decoration: BoxDecoration(
-                            color: InvoiceThemeColors.successGreen.withValues(alpha: 0.1),
+                            color: InvoiceThemeColors.successGreen
+                                .withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8.r),
                             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.08),
+                                blurRadius: 6,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
                           ),
                           child: Text(
                             'Online',
@@ -614,7 +613,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                 ],
               ),
             ),
-            
+
             // Selection indicator or Already Tagged badge
             if (isAlreadyTagged)
               Container(
@@ -686,7 +685,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
             ),
           ),
           SizedBox(height: 24.h),
-          
+
           // Phone input
           _buildInputField(
             controller: _phoneController,
@@ -696,7 +695,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
             keyboardType: TextInputType.phone,
           ),
           SizedBox(height: 16.h),
-          
+
           // Email input
           _buildInputField(
             controller: _emailController,
@@ -706,7 +705,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
             keyboardType: TextInputType.emailAddress,
           ),
           SizedBox(height: 24.h),
-          
+
           // Add button
           Container(
             width: double.infinity,
@@ -752,13 +751,14 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
             ),
           ),
           SizedBox(height: 32.h),
-          
+
           // Info card
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12.r),            ),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
             child: Row(
               children: [
                 Icon(
@@ -819,10 +819,11 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
             ],
           ),
           SizedBox(height: 20.h),
-          
+
           // Contacts list
           SizedBox(
-            height: MediaQuery.of(context).size.height * 0.4, // Fixed height for contacts list
+            height: MediaQuery.of(context).size.height *
+                0.4, // Fixed height for contacts list
             child: _loadingContacts
                 ? _buildLoadingState()
                 : _contacts.isEmpty
@@ -858,13 +859,12 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: TextField(
             controller: controller,
@@ -1043,7 +1043,8 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
   }
 
   Widget _buildContactTile(Map<String, dynamic> contact) {
-    final isOnPlatform = contact['isOnPlatform'] == true && contact['userId'] != null;
+    final isOnPlatform =
+        contact['isOnPlatform'] == true && contact['userId'] != null;
     final userId = contact['userId']?.toString() ?? '';
     final phone = contact['phone']?.toString() ?? '';
     final email = contact['email']?.toString() ?? '';
@@ -1079,7 +1080,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: isSelected 
+          color: isSelected
               ? InvoiceThemeColors.infoBlue.withValues(alpha: 0.1)
               : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
@@ -1090,8 +1091,8 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
               radius: 24.r,
               backgroundColor: Colors.white.withValues(alpha: 0.1),
               child: Text(
-                (contact['name']?.isNotEmpty == true 
-                    ? contact['name'][0].toUpperCase() 
+                (contact['name']?.isNotEmpty == true
+                    ? contact['name'][0].toUpperCase()
                     : '?'),
                 style: GoogleFonts.inter(
                   color: Colors.white,
@@ -1163,13 +1164,12 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(6.r),
                 boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
               child: isSelected
                   ? Icon(
@@ -1233,13 +1233,16 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                         : [Colors.grey.shade700, Colors.grey.shade800],
                   ),
                   borderRadius: BorderRadius.circular(12.r),
-                  boxShadow: _hasTagSelection ? [
-                    BoxShadow(
-                      color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.3),
-                      offset: const Offset(0, 4),
-                      blurRadius: 12,
-                    ),
-                  ] : null,
+                  boxShadow: _hasTagSelection
+                      ? [
+                          BoxShadow(
+                            color: InvoiceThemeColors.infoBlue
+                                .withValues(alpha: 0.3),
+                            offset: const Offset(0, 4),
+                            blurRadius: 12,
+                          ),
+                        ]
+                      : null,
                 ),
                 child: ElevatedButton.icon(
                   onPressed: _hasTagSelection ? _tagSelectedUsers : null,
@@ -1258,7 +1261,9 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                   ),
                   label: Text(
                     () {
-                      final totalCount = _selectedUserIds.length + _selectedEmails.length + _selectedPhones.length;
+                      final totalCount = _selectedUserIds.length +
+                          _selectedEmails.length +
+                          _selectedPhones.length;
                       if (totalCount == 0) {
                         return 'Select Users';
                       } else {
@@ -1318,7 +1323,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
 
   Future<void> _requestContactsPermission() async {
     final status = await Permission.contacts.request();
-    
+
     if (status.isGranted) {
       _loadContacts();
     } else if (status.isDenied) {
@@ -1373,14 +1378,16 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
       final profileCubit = serviceLocator<ProfileCubit>();
       final results = await profileCubit.searchUsers(query, limit: 20);
       setState(() {
-        _searchResults = results.map((user) => InvoiceUser(
-          id: user.userId,
-          name: user.fullName,
-          email: user.email,
-          username: user.username,
-          phone: '',
-          isOnline: false,
-        )).toList();
+        _searchResults = results
+            .map((user) => InvoiceUser(
+                  id: user.userId,
+                  name: user.fullName,
+                  email: user.email,
+                  username: user.username,
+                  phone: '',
+                  isOnline: false,
+                ))
+            .toList();
       });
     } catch (e) {
       _showErrorSnackbar('Failed to search users');
@@ -1405,14 +1412,17 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
       final permission = await Permission.contacts.status;
       if (permission.isGranted) {
         // Load real contacts from contact sync service
-        final syncedContactsResult = await _contactSyncRepository.getSyncedContacts();
+        final syncedContactsResult =
+            await _contactSyncRepository.getSyncedContacts();
 
         // Convert to display format
         final contactsList = syncedContactsResult.contacts.map((contact) {
           return {
             'id': contact.id,
             'name': contact.name,
-            'phone': contact.phoneNumbers.isNotEmpty ? contact.phoneNumbers.first : '',
+            'phone': contact.phoneNumbers.isNotEmpty
+                ? contact.phoneNumbers.first
+                : '',
             'email': contact.emails.isNotEmpty ? contact.emails.first : '',
             'isOnPlatform': contact.isLazervaultUser,
             'userId': contact.lazervaultUserId,
@@ -1433,7 +1443,9 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
   }
 
   Future<void> _tagSelectedUsers() async {
-    if (_selectedUserIds.isEmpty && _selectedEmails.isEmpty && _selectedPhones.isEmpty) {
+    if (_selectedUserIds.isEmpty &&
+        _selectedEmails.isEmpty &&
+        _selectedPhones.isEmpty) {
       _showErrorSnackbar('Please select at least one user');
       return;
     }
@@ -1452,15 +1464,19 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
 
         // Show detailed success message from what the backend actually did.
         final totalTagged = response.usersTagged;
-        final totalInvited = response.invitedEmails.length + response.invitedPhones.length;
+        final totalInvited =
+            response.invitedEmails.length + response.invitedPhones.length;
 
         String message = '';
         if (totalTagged > 0 && totalInvited > 0) {
-          message = '$totalTagged user${totalTagged == 1 ? '' : 's'} tagged, $totalInvited invitation${totalInvited == 1 ? '' : 's'} sent';
+          message =
+              '$totalTagged user${totalTagged == 1 ? '' : 's'} tagged, $totalInvited invitation${totalInvited == 1 ? '' : 's'} sent';
         } else if (totalTagged > 0) {
-          message = '$totalTagged user${totalTagged == 1 ? '' : 's'} tagged for payment';
+          message =
+              '$totalTagged user${totalTagged == 1 ? '' : 's'} tagged for payment';
         } else if (totalInvited > 0) {
-          message = '$totalInvited invitation${totalInvited == 1 ? '' : 's'} sent';
+          message =
+              '$totalInvited invitation${totalInvited == 1 ? '' : 's'} sent';
         }
 
         if (!mounted) return;
@@ -1554,5 +1570,4 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
       ),
     );
   }
-
 }

@@ -64,9 +64,11 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
     _isUpdatingAmounts = true;
     setState(() {
       if (_fromInFiat) {
-        _fromAmountController.text = typed > 0 ? (typed / _fromPrice).toStringAsFixed(6) : '';
+        _fromAmountController.text =
+            typed > 0 ? (typed / _fromPrice).toStringAsFixed(6) : '';
       } else {
-        _fromAmountController.text = typed > 0 ? (typed * _fromPrice).toStringAsFixed(2) : '';
+        _fromAmountController.text =
+            typed > 0 ? (typed * _fromPrice).toStringAsFixed(2) : '';
       }
       _fromInFiat = !_fromInFiat;
     });
@@ -75,7 +77,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
   }
 
   @override
-  ITransactionPinService get transactionPinService => GetIt.I<ITransactionPinService>();
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
 
   List<CryptoHolding> get _holdings {
     final state = context.read<CryptoCubit>().state;
@@ -93,7 +96,9 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
     final state = context.read<CryptoCubit>().state;
     if (state is CryptosLoaded) {
       // Use Quidax-supported assets for swap selection
-      return state.supportedAssets.isNotEmpty ? state.supportedAssets : state.cryptos;
+      return state.supportedAssets.isNotEmpty
+          ? state.supportedAssets
+          : state.cryptos;
     }
     return [];
   }
@@ -153,25 +158,27 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    
+
     _swapAnimationController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
-    
+    ).animate(
+        CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
+
     _rotationAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _swapAnimationController, curve: Curves.elasticOut),
+      CurvedAnimation(
+          parent: _swapAnimationController, curve: Curves.elasticOut),
     );
-    
+
     _animationController.forward();
   }
 
@@ -196,7 +203,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
       final gbpValue = fromAmount * _fromHolding!.currentPrice;
       final toAmount = gbpValue / _toCrypto!.currentPrice;
       _isUpdatingAmounts = true;
-      _toAmountController.text = toAmount > 0 ? toAmount.toStringAsFixed(6) : '';
+      _toAmountController.text =
+          toAmount > 0 ? toAmount.toStringAsFixed(6) : '';
       _isUpdatingAmounts = false;
     }
     setState(() {});
@@ -321,88 +329,89 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
     return BlocListener<CryptoCubit, CryptoState>(
       listener: _reconcileFromHolding,
       child: Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1F1F1F),
-              const Color(0xFF0A0A0A),
-              const Color(0xFF0A0A0A),
-            ],
+        backgroundColor: const Color(0xFF0A0A0A),
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF1F1F1F),
+                const Color(0xFF0A0A0A),
+                const Color(0xFF0A0A0A),
+              ],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: SlideTransition(
-                    position: _slideAnimation,
-                    child: SingleChildScrollView(
-                      padding: EdgeInsets.all(20.w),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildSwapInterface(),
-                          if (_fromHolding != null || _toCrypto != null) ...[
-                            SizedBox(height: 12.h),
-                            Row(
-                              children: [
-                                if (_fromHolding != null)
-                                  Expanded(
-                                    child: PriceQuoteCard(
-                                      cryptoId: _fromHolding!.cryptoId,
-                                      cryptoSymbol: _fromHolding!.cryptoSymbol,
+          child: SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(),
+                Expanded(
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: SlideTransition(
+                      position: _slideAnimation,
+                      child: SingleChildScrollView(
+                        padding: EdgeInsets.all(20.w),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildSwapInterface(),
+                            if (_fromHolding != null || _toCrypto != null) ...[
+                              SizedBox(height: 12.h),
+                              Row(
+                                children: [
+                                  if (_fromHolding != null)
+                                    Expanded(
+                                      child: PriceQuoteCard(
+                                        cryptoId: _fromHolding!.cryptoId,
+                                        cryptoSymbol:
+                                            _fromHolding!.cryptoSymbol,
+                                      ),
                                     ),
-                                  ),
-                                if (_fromHolding != null && _toCrypto != null)
-                                  SizedBox(width: 8.w),
-                                if (_toCrypto != null)
-                                  Expanded(
-                                    child: PriceQuoteCard(
-                                      cryptoId: _toCrypto!.id,
-                                      cryptoSymbol: _toCrypto!.symbol,
+                                  if (_fromHolding != null && _toCrypto != null)
+                                    SizedBox(width: 8.w),
+                                  if (_toCrypto != null)
+                                    Expanded(
+                                      child: PriceQuoteCard(
+                                        cryptoId: _toCrypto!.id,
+                                        cryptoSymbol: _toCrypto!.symbol,
+                                      ),
                                     ),
-                                  ),
-                              ],
-                            ),
-                          ],
-                          SizedBox(height: 24.h),
-                          if (_fromHolding != null && _toCrypto != null) ...[
-                            _buildExchangeRate(),
+                                ],
+                              ),
+                            ],
                             SizedBox(height: 24.h),
-                            if (_hasValidAmount) _buildSwapSummary(),
-                            if (_hasValidAmount) SizedBox(height: 24.h),
+                            if (_fromHolding != null && _toCrypto != null) ...[
+                              _buildExchangeRate(),
+                              SizedBox(height: 24.h),
+                              if (_hasValidAmount) _buildSwapSummary(),
+                              if (_hasValidAmount) SizedBox(height: 24.h),
+                            ],
+                            _buildSwapSettings(),
+                            SizedBox(height: 16.h),
+                            const CryptoFiatWalletPill(
+                                caption: 'Your wallet balance'),
+                            SizedBox(height: 12.h),
+                            const CryptoFlowGuidance(
+                              text:
+                                  'Swaps trade one crypto directly for another — no fiat leaves your account. The new asset lands in your crypto wallet as soon as the swap fills.',
+                            ),
+                            SizedBox(height: 24.h),
+                            _buildLegalDisclaimer(),
+                            SizedBox(height: 32.h),
+                            _buildSwapButton(),
+                            SizedBox(height: 20.h),
                           ],
-                          _buildSwapSettings(),
-                          SizedBox(height: 16.h),
-                          const CryptoFiatWalletPill(
-                              caption: 'Your wallet balance'),
-                          SizedBox(height: 12.h),
-                          const CryptoFlowGuidance(
-                            text:
-                                'Swaps trade one crypto directly for another — no fiat leaves your account. The new asset lands in your crypto wallet as soon as the swap fills.',
-                          ),
-                          SizedBox(height: 24.h),
-                          _buildLegalDisclaimer(),
-                          SizedBox(height: 32.h),
-                          _buildSwapButton(),
-                          SizedBox(height: 20.h),
-                        ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -475,8 +484,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                 ),
                 child: Row(children: [
                   Icon(Icons.account_balance_wallet_outlined,
-                      color: Colors.white.withValues(alpha: 0.92),
-                      size: 16.sp),
+                      color: Colors.white.withValues(alpha: 0.92), size: 16.sp),
                   SizedBox(width: 6.w),
                   Text(
                     'Wallet',
@@ -494,7 +502,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+              color:
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(
@@ -520,7 +529,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
@@ -581,7 +591,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                         borderRadius: BorderRadius.circular(12.r),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
+                            color: const Color.fromARGB(255, 78, 3, 208)
+                                .withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -638,7 +649,6 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -661,12 +671,14 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                   GestureDetector(
                     onTap: _toggleFromUnit,
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                       decoration: BoxDecoration(
                         color: const Color(0xFF9F7AEA).withValues(alpha: 0.14),
                         borderRadius: BorderRadius.circular(8.r),
                         border: Border.all(
-                            color: const Color(0xFF9F7AEA).withValues(alpha: 0.35)),
+                            color: const Color(0xFF9F7AEA)
+                                .withValues(alpha: 0.35)),
                       ),
                       child: Row(mainAxisSize: MainAxisSize.min, children: [
                         Text(
@@ -699,12 +711,15 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                     }
                   },
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
-                          const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                          const Color.fromARGB(255, 78, 3, 208)
+                              .withValues(alpha: 0.2),
+                          const Color.fromARGB(255, 78, 3, 208)
+                              .withValues(alpha: 0.1),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(8.r),
@@ -743,7 +758,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                               ),
                               borderRadius: BorderRadius.circular(20.r),
                             ),
-                            child: Icon(Icons.add, color: Colors.white, size: 20.sp),
+                            child: Icon(Icons.add,
+                                color: Colors.white, size: 20.sp),
                           )
                         : CryptoAssetAvatar(
                             symbol: symbol,
@@ -759,9 +775,9 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                           style: GoogleFonts.inter(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
-                            color: isEmpty 
-                              ? Colors.white.withValues(alpha: 0.6)
-                              : Colors.white,
+                            color: isEmpty
+                                ? Colors.white.withValues(alpha: 0.6)
+                                : Colors.white,
                           ),
                         ),
                         if (symbol.isNotEmpty)
@@ -788,7 +804,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                 Expanded(
                   child: TextField(
                     controller: controller,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
                     textAlign: TextAlign.right,
                     onTap: () => setState(() => _isFromAmountActive = isFrom),
                     style: GoogleFonts.inter(
@@ -878,7 +895,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
           BoxShadow(
             color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
             blurRadius: 10,
@@ -914,7 +932,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                 child: Container(
                   padding: EdgeInsets.all(6.w),
                   decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+                    color: const Color.fromARGB(255, 78, 3, 208)
+                        .withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Icon(
@@ -992,7 +1011,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
           BoxShadow(
             color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
             blurRadius: 10,
@@ -1022,11 +1042,13 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
             ],
           ),
           SizedBox(height: 16.h),
-          _buildSummaryRow('You swap', '${_fromAmount.toStringAsFixed(6)} ${_fromHolding!.cryptoSymbol.toUpperCase()}'),
+          _buildSummaryRow('You swap',
+              '${_fromAmount.toStringAsFixed(6)} ${_fromHolding!.cryptoSymbol.toUpperCase()}'),
           SizedBox(height: 8.h),
           // Trading fee intentionally not shown: it is the spread already
           // inside the effective rate below. See cryptoPlatformFeePolicy.
-          _buildSummaryRow('Effective rate', '1 ${_fromHolding!.cryptoSymbol.toUpperCase()} = ${effectiveRate.toStringAsFixed(6)} ${_toCrypto!.symbol.toUpperCase()}'),
+          _buildSummaryRow('Effective rate',
+              '1 ${_fromHolding!.cryptoSymbol.toUpperCase()} = ${effectiveRate.toStringAsFixed(6)} ${_toCrypto!.symbol.toUpperCase()}'),
           SizedBox(height: 12.h),
           Container(
             height: 1.h,
@@ -1041,7 +1063,9 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
             ),
           ),
           SizedBox(height: 12.h),
-          _buildSummaryRow('You receive', '${_toAmount.toStringAsFixed(6)} ${_toCrypto!.symbol.toUpperCase()}', isTotal: true),
+          _buildSummaryRow('You receive',
+              '${_toAmount.toStringAsFixed(6)} ${_toCrypto!.symbol.toUpperCase()}',
+              isTotal: true),
         ],
       ),
     );
@@ -1064,7 +1088,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
           style: GoogleFonts.inter(
             fontSize: isTotal ? 16.sp : 14.sp,
             fontWeight: FontWeight.w600,
-            color: isTotal ? const Color.fromARGB(255, 78, 3, 208) : Colors.white,
+            color:
+                isTotal ? const Color.fromARGB(255, 78, 3, 208) : Colors.white,
           ),
         ),
       ],
@@ -1083,7 +1108,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
@@ -1115,7 +1141,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
           SizedBox(height: 16.h),
           _buildSettingRow('Slippage tolerance', '0.5%', Icons.tune),
           SizedBox(height: 12.h),
-          _buildSettingRow('Transaction deadline', '20 minutes', Icons.access_time),
+          _buildSettingRow(
+              'Transaction deadline', '20 minutes', Icons.access_time),
           SizedBox(height: 12.h),
           _buildSettingRow('Exchange type', 'Market swap', Icons.swap_horiz),
         ],
@@ -1146,7 +1173,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
           ),
         ),
         SizedBox(width: 8.w),
-        Icon(Icons.chevron_right, color: Colors.white.withValues(alpha: 0.4), size: 16.sp),
+        Icon(Icons.chevron_right,
+            color: Colors.white.withValues(alpha: 0.4), size: 16.sp),
       ],
     );
   }
@@ -1169,7 +1197,6 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1196,7 +1223,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
   }
 
   Widget _buildSwapButton() {
-    final isEnabled = _fromHolding != null && _toCrypto != null && _hasValidAmount;
+    final isEnabled =
+        _fromHolding != null && _toCrypto != null && _hasValidAmount;
 
     return SizedBox(
       width: double.infinity,
@@ -1216,55 +1244,58 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
             width: double.infinity,
             padding: EdgeInsets.symmetric(vertical: 18.h),
             decoration: BoxDecoration(
-              gradient: isEnabled 
-                ? LinearGradient(
-                    colors: [
-                      const Color.fromARGB(255, 78, 3, 208),
-                      const Color(0xFF8B7CF6),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  )
-                : LinearGradient(
-                    colors: [
-                      Colors.grey.withValues(alpha: 0.3),
-                      Colors.grey.withValues(alpha: 0.1),
-                    ],
-                  ),
+              gradient: isEnabled
+                  ? LinearGradient(
+                      colors: [
+                        const Color.fromARGB(255, 78, 3, 208),
+                        const Color(0xFF8B7CF6),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : LinearGradient(
+                      colors: [
+                        Colors.grey.withValues(alpha: 0.3),
+                        Colors.grey.withValues(alpha: 0.1),
+                      ],
+                    ),
               borderRadius: BorderRadius.circular(16.r),
-              boxShadow: isEnabled ? [
-                BoxShadow(
-                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ] : null,
+              boxShadow: isEnabled
+                  ? [
+                      BoxShadow(
+                        color: const Color.fromARGB(255, 78, 3, 208)
+                            .withValues(alpha: 0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
+                  : null,
             ),
             child: _isLoading
-              ? Center(
-                  child: LazerVaultLoader.small(),
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.swap_horiz,
-                      color: Colors.white,
-                      size: 20.sp,
-                    ),
-                    SizedBox(width: 8.w),
-                    Text(
-                      _fromHolding != null && _toCrypto != null
-                        ? 'Swap ${_fromHolding!.cryptoSymbol.toUpperCase()} for ${_toCrypto!.symbol.toUpperCase()}'
-                        : 'Select cryptos to swap',
-                      style: GoogleFonts.inter(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
+                ? Center(
+                    child: LazerVaultLoader.small(),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.swap_horiz,
                         color: Colors.white,
+                        size: 20.sp,
                       ),
-                    ),
-                  ],
-                ),
+                      SizedBox(width: 8.w),
+                      Text(
+                        _fromHolding != null && _toCrypto != null
+                            ? 'Swap ${_fromHolding!.cryptoSymbol.toUpperCase()} for ${_toCrypto!.symbol.toUpperCase()}'
+                            : 'Select cryptos to swap',
+                        style: GoogleFonts.inter(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
           ),
         ),
       ),
@@ -1326,10 +1357,9 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
           final q = query.trim().toLowerCase();
           // Exclude the counterpart asset so a user can't pick X on both
           // sides (you can't swap an asset into itself).
-          final excludeSymbol = (isFrom
-                  ? _toCrypto?.symbol
-                  : _fromHolding?.cryptoSymbol)
-              ?.toLowerCase();
+          final excludeSymbol =
+              (isFrom ? _toCrypto?.symbol : _fromHolding?.cryptoSymbol)
+                  ?.toLowerCase();
 
           // FROM lists ONLY the user's positive-balance holdings; TO lists the
           // Quidax-supported catalogue. Both honour the live search query.
@@ -1404,7 +1434,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                       ),
                       GestureDetector(
                         onTap: () => Get.back(),
-                        child: Icon(Icons.close, color: Colors.white, size: 24.sp),
+                        child:
+                            Icon(Icons.close, color: Colors.white, size: 24.sp),
                       ),
                     ],
                   ),
@@ -1529,7 +1560,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                 // sheet) with the shared cubit.
                 await Get.to(() => BlocProvider.value(
                       value: cubit,
-                      child: const AllAssetsScreen(mode: AssetSelectionMode.buy),
+                      child:
+                          const AllAssetsScreen(mode: AssetSelectionMode.buy),
                     ));
                 // Pull fresh holdings so a just-bought asset is immediately
                 // swappable without a manual refresh.
@@ -1632,21 +1664,21 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                 Row(
                   children: [
                     Icon(
-                      holding.totalGainLossPercentage >= 0 
-                        ? Icons.arrow_upward 
-                        : Icons.arrow_downward,
-                      color: holding.totalGainLossPercentage >= 0 
-                        ? Colors.green 
-                        : Colors.red,
+                      holding.totalGainLossPercentage >= 0
+                          ? Icons.arrow_upward
+                          : Icons.arrow_downward,
+                      color: holding.totalGainLossPercentage >= 0
+                          ? Colors.green
+                          : Colors.red,
                       size: 12.sp,
                     ),
                     Text(
                       '${holding.totalGainLossPercentage.abs().toStringAsFixed(2)}%',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
-                        color: holding.totalGainLossPercentage >= 0 
-                          ? Colors.green 
-                          : Colors.red,
+                        color: holding.totalGainLossPercentage >= 0
+                            ? Colors.green
+                            : Colors.red,
                       ),
                     ),
                   ],
@@ -1722,21 +1754,21 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                 Row(
                   children: [
                     Icon(
-                      crypto.priceChangePercentage24h >= 0 
-                        ? Icons.arrow_upward 
-                        : Icons.arrow_downward,
-                      color: crypto.priceChangePercentage24h >= 0 
-                        ? Colors.green 
-                        : Colors.red,
+                      crypto.priceChangePercentage24h >= 0
+                          ? Icons.arrow_upward
+                          : Icons.arrow_downward,
+                      color: crypto.priceChangePercentage24h >= 0
+                          ? Colors.green
+                          : Colors.red,
                       size: 12.sp,
                     ),
                     Text(
                       '${crypto.priceChangePercentage24h.abs().toStringAsFixed(2)}%',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
-                        color: crypto.priceChangePercentage24h >= 0 
-                          ? Colors.green 
-                          : Colors.red,
+                        color: crypto.priceChangePercentage24h >= 0
+                            ? Colors.green
+                            : Colors.red,
                       ),
                     ),
                   ],
@@ -1750,10 +1782,15 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
   }
 
   Future<void> _processSwapOrder() async {
-    if (_fromHolding == null || _toCrypto == null || !_hasValidAmount || _isLoading || _isTransacting) return;
+    if (_fromHolding == null ||
+        _toCrypto == null ||
+        !_hasValidAmount ||
+        _isLoading ||
+        _isTransacting) return;
     // Prevent swapping same crypto to same crypto
     if (_fromHolding!.cryptoId == _toCrypto!.id ||
-        _fromHolding!.cryptoSymbol.toLowerCase() == _toCrypto!.symbol.toLowerCase()) {
+        _fromHolding!.cryptoSymbol.toLowerCase() ==
+            _toCrypto!.symbol.toLowerCase()) {
       Get.snackbar(
         'Invalid Swap',
         'Cannot swap a cryptocurrency for itself. Please select a different target.',

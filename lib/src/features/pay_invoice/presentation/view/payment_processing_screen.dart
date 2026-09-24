@@ -23,25 +23,25 @@ class PaymentProcessingScreen extends StatefulWidget {
   });
 
   @override
-  State<PaymentProcessingScreen> createState() => _PaymentProcessingScreenState();
+  State<PaymentProcessingScreen> createState() =>
+      _PaymentProcessingScreenState();
 }
 
 class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
     with TickerProviderStateMixin {
-  
   late AnimationController _pulseController;
   late AnimationController _rotationController;
   late AnimationController _scaleController;
   late Animation<double> _pulseAnimation;
   late Animation<double> _rotationAnimation;
   late Animation<double> _scaleAnimation;
-  
+
   List<String> _processingSteps = [];
   int _currentStep = 0;
   bool _isProcessing = true;
   bool _isSuccess = false;
   String? _errorMessage;
-  
+
   @override
   void initState() {
     super.initState();
@@ -135,23 +135,23 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
   Future<void> _startPaymentProcessing() async {
     for (int i = 0; i < _processingSteps.length; i++) {
       if (!mounted) return;
-      
+
       setState(() {
         _currentStep = i;
       });
-      
+
       // Simulate processing time
       await Future.delayed(Duration(milliseconds: 800 + (i * 200)));
     }
 
     // Simulate payment result
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     if (!mounted) return;
 
     // Simulate different success rates based on payment method
     final isSuccess = _simulatePaymentResult();
-    
+
     setState(() {
       _isProcessing = false;
       _isSuccess = isSuccess;
@@ -166,7 +166,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
 
     // Navigate after showing result
     await Future.delayed(const Duration(seconds: 2));
-    
+
     if (!mounted) return;
 
     if (isSuccess) {
@@ -283,9 +283,9 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _isProcessing 
+                  _isProcessing
                       ? 'Processing Payment...'
-                      : _isSuccess 
+                      : _isSuccess
                           ? 'Payment Successful!'
                           : 'Payment Failed',
                   style: GoogleFonts.inter(
@@ -319,13 +319,15 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: LinearGradient(
-              colors: _isSuccess 
+              colors: _isSuccess
                   ? [InvoiceThemeColors.successGreen, const Color(0xFF059669)]
                   : [InvoiceThemeColors.errorRed, const Color(0xFFDC2626)],
             ),
             boxShadow: [
               BoxShadow(
-                color: (_isSuccess ? InvoiceThemeColors.successGreen : InvoiceThemeColors.errorRed)
+                color: (_isSuccess
+                        ? InvoiceThemeColors.successGreen
+                        : InvoiceThemeColors.errorRed)
                     .withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
@@ -354,13 +356,12 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
             );
           },
@@ -377,7 +378,10 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
+                    colors: [
+                      Color(0xFF3B82F6),
+                      Color.fromARGB(255, 78, 3, 208)
+                    ],
                   ),
                 ),
                 child: Icon(
@@ -406,13 +410,12 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Column(
         children: [
           if (_isProcessing)
             Text(
-              _currentStep < _processingSteps.length 
+              _currentStep < _processingSteps.length
                   ? _processingSteps[_currentStep]
                   : 'Finalizing...',
               style: GoogleFonts.inter(
@@ -492,7 +495,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                 height: 20.w,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isCompleted 
+                  color: isCompleted
                       ? InvoiceThemeColors.successGreen
                       : isCurrent
                           ? InvoiceThemeColors.infoBlue
@@ -535,7 +538,10 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                 height: 56.h,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
+                    colors: [
+                      Color(0xFF3B82F6),
+                      Color.fromARGB(255, 78, 3, 208)
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
@@ -570,7 +576,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                   Expanded(
                     child: Container(
                       height: 56.h,
-                      decoration: BoxDecoration(                        borderRadius: BorderRadius.circular(16.r),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16.r),
                       ),
                       child: Material(
                         color: Colors.transparent,
@@ -597,7 +604,10 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                       height: 56.h,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
+                          colors: [
+                            Color(0xFF3B82F6),
+                            Color.fromARGB(255, 78, 3, 208)
+                          ],
                         ),
                         borderRadius: BorderRadius.circular(16.r),
                       ),
@@ -650,4 +660,4 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
   void _showRetryOptions() {
     // Additional retry logic could be implemented here
   }
-} 
+}

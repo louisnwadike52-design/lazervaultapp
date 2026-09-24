@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 part 'social_links_step_widgets.dart';
 
-
 const List<SocialLink> _kPlatforms = [
   SocialLink(
     platform: 'website',
@@ -201,9 +200,8 @@ class _SocialLinksStepState extends State<SocialLinksStep> {
             Wrap(
               spacing: 8.w,
               runSpacing: 8.h,
-              children: hidden
-                  .map((p) => _buildAddPill(p))
-                  .toList(growable: false),
+              children:
+                  hidden.map((p) => _buildAddPill(p)).toList(growable: false),
             ),
           ],
           SizedBox(height: 32.h),
@@ -273,9 +271,8 @@ class _SocialLinksStepState extends State<SocialLinksStep> {
     final hasError = error != null;
     final isInitial = _kInitialVisible.contains(platform.platform);
 
-    final borderColor = hasError
-        ? const Color(0xFFEF4444)
-        : const Color(0xFF2D2D2D);
+    final borderColor =
+        hasError ? const Color(0xFFEF4444) : const Color(0xFF2D2D2D);
 
     return Padding(
       padding: EdgeInsets.only(bottom: 14.h),
@@ -284,7 +281,8 @@ class _SocialLinksStepState extends State<SocialLinksStep> {
         children: [
           Row(
             children: [
-              Icon(platform.icon, color: PayFlowTheme.accentOnDark, size: 18.sp),
+              Icon(platform.icon,
+                  color: PayFlowTheme.accentOnDark, size: 18.sp),
               SizedBox(width: 8.w),
               Text(
                 platform.label,
@@ -299,7 +297,8 @@ class _SocialLinksStepState extends State<SocialLinksStep> {
                 GestureDetector(
                   onTap: () => _removePlatform(platform),
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
                     child: Row(
                       children: [
                         Icon(Icons.close,
