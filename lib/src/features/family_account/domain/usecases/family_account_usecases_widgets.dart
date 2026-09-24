@@ -510,6 +510,55 @@ class UpdateFundDistributionModeParams {
   });
 }
 
+// Update Family Settings Use Case — spending visibility + funding policy on an
+// account that has already completed setup. Before this existed, both settings
+// were write-once: SetupFamilyAccount refuses to run once the account leaves
+// pending_setup, and nothing else could write them.
+class UpdateFamilySettingsUseCase
+    extends UseCase<FamilyAccount, UpdateFamilySettingsParams> {
+  final FamilyAccountRepository repository;
+
+  UpdateFamilySettingsUseCase(this.repository);
+
+  @override
+  Future<Either<Failure, FamilyAccount>> call(
+      UpdateFamilySettingsParams params) {
+    return repository.updateFamilySettings(
+      familyId: params.familyId,
+      spendingVisibilityEnabled: params.spendingVisibilityEnabled,
+      fundingPolicy: params.fundingPolicy,
+      specificMemberIds: params.specificMemberIds,
+      invitationExpiryDays: params.invitationExpiryDays,
+    );
+  }
+}
+
+class UpdateFamilySettingsParams {
+  final String familyId;
+
+  /// Null = leave unchanged. Nullable rather than defaulted so changing the
+  /// funding policy alone cannot silently switch spending visibility off.
+  final bool? spendingVisibilityEnabled;
+
+  /// Null = leave unchanged.
+  final String? fundingPolicy;
+
+  /// Replaces the allow-list; only read when fundingPolicy is specific_members.
+  final List<String> specificMemberIds;
+
+  /// Null = leave unchanged; 0 = clear the per-account override so the family
+  /// follows the platform default again.
+  final int? invitationExpiryDays;
+
+  UpdateFamilySettingsParams({
+    required this.familyId,
+    this.spendingVisibilityEnabled,
+    this.fundingPolicy,
+    this.specificMemberIds = const [],
+    this.invitationExpiryDays,
+  });
+}
+
 // ─── Invitation history use cases ──────────────────────────────────────
 
 class GetMyInvitationHistoryUseCase extends UseCase<

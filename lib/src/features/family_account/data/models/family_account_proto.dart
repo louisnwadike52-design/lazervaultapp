@@ -27,6 +27,16 @@ class FamilyMemberProto {
   final String invitationExpiresAt;
   final String? cardLastFour;
   final bool hasCard;
+
+  /// Whether this member may fund the pool when funding_policy=specific_members.
+  /// Defaults true to match the server column default; the server ignores it for
+  /// the other policies.
+  final bool canContribute;
+
+  /// True when this member LEFT rather than being removed. Both land on
+  /// invitationStatus=removed, so without this the member list can only say
+  /// "removed" for someone who walked away.
+  final bool selfExited;
   final String? joinedAt;
   final String createdAt;
   final String updatedAt;
@@ -54,6 +64,8 @@ class FamilyMemberProto {
     required this.invitationExpiresAt,
     this.cardLastFour,
     required this.hasCard,
+    this.canContribute = true,
+    this.selfExited = false,
     this.joinedAt,
     required this.createdAt,
     required this.updatedAt,
@@ -87,6 +99,8 @@ class FamilyMemberProto {
       invitationExpiresAt: json['invitation_expires_at'] as String? ?? '',
       cardLastFour: json['card_last_four'] as String?,
       hasCard: json['has_card'] as bool? ?? false,
+      canContribute: json['can_contribute'] as bool? ?? true,
+      selfExited: json['self_exited'] as bool? ?? false,
       joinedAt: json['joined_at'] as String?,
       createdAt: json['created_at'] as String? ?? '',
       updatedAt: json['updated_at'] as String? ?? '',
@@ -117,6 +131,8 @@ class FamilyMemberProto {
       'invitation_expires_at': invitationExpiresAt,
       if (cardLastFour != null) 'card_last_four': cardLastFour,
       'has_card': hasCard,
+      'can_contribute': canContribute,
+      'self_exited': selfExited,
       if (joinedAt != null) 'joined_at': joinedAt,
       'created_at': createdAt,
       'updated_at': updatedAt,

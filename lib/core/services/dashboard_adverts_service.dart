@@ -10,57 +10,76 @@ class DashboardAdvert {
   final String imageUrl; // remote image; empty rows are dropped
   final String
       link; // GetX route path (e.g. "/bills") or full https URL; may be empty
-  final String title; // optional accessibility / overlay label
+  final String title; // headline drawn OVER the image by the carousel
+  final String subtitle; // supporting line under the headline; may be empty
   final int sort; // ascending display order
 
   const DashboardAdvert({
     required this.imageUrl,
     required this.link,
     required this.title,
+    this.subtitle = '',
     required this.sort,
   });
 }
 
 /// Bundled seed adverts. Shown when the admin hasn't configured any
 /// (`dashboard_adverts` unset / unreachable) so the carousel launches with real
-/// imagery instead of a single painted placeholder. Admin config fully replaces
-/// these the moment it lands. Images depict our services in an African context
-/// (royalty-free, hotlink-permitted Pexels CDN); each links to a real in-app
-/// route and degrades to the painted card if the URL fails.
+/// art instead of a single painted placeholder. Admin config fully replaces
+/// these the moment it lands.
+///
+/// The art is OURS, served from our own storage service on api.lazervault.app.
+/// It replaced five hotlinked images.pexels.com URLs, which were a production
+/// liability three ways over: unlicensed for this use, availability controlled
+/// by a third party, and — at this card's ~3.3:1 crop — mostly cropped away.
+/// Each slide is authored at exactly that ratio so nothing is lost to BoxFit.
+///
+/// The art deliberately carries NO baked-in text. Copy lives in `title` /
+/// `subtitle` and is drawn by Flutter over the image, so it stays crisp at every
+/// pixel density and marketing can reword a slide from the admin dashboard
+/// without re-exporting artwork.
+///
+/// Keep this list in step with AFRICAN_STARTER_ADVERTS in the admin dashboard's
+/// DashboardAdvertsTab.tsx — they are two copies of the same defaults.
 const List<DashboardAdvert> kSeedDashboardAdverts = <DashboardAdvert>[
   DashboardAdvert(
     imageUrl:
-        'https://images.pexels.com/photos/4560063/pexels-photo-4560063.jpeg?auto=compress&cs=tinysrgb&w=1200',
+        'https://api.lazervault.app/v1/storage/objects/dashboard-adverts/brand/a9faa295-bc31-408a-8431-9bdc1973bdf4.webp',
     link: '/bills',
     title: 'Pay bills in seconds',
+    subtitle: 'Electricity, data, TV and more',
     sort: 0,
   ),
   DashboardAdvert(
     imageUrl:
-        'https://images.pexels.com/photos/19518397/pexels-photo-19518397.jpeg?auto=compress&cs=tinysrgb&w=1200',
+        'https://api.lazervault.app/v1/storage/objects/dashboard-adverts/brand/dd698680-d040-4bd4-af29-89fa7560ff77.webp',
     link: '/send-funds',
     title: 'Send money instantly',
+    subtitle: 'To any bank in Nigeria, free',
     sort: 1,
   ),
   DashboardAdvert(
     imageUrl:
-        'https://images.pexels.com/photos/5991144/pexels-photo-5991144.jpeg?auto=compress&cs=tinysrgb&w=1200',
+        'https://api.lazervault.app/v1/storage/objects/dashboard-adverts/brand/9a0a3236-7d3b-4ec5-bfed-da8fc981de81.webp',
     link: '/exchange',
     title: 'Send money home',
+    subtitle: 'Great rates across borders',
     sort: 2,
   ),
   DashboardAdvert(
     imageUrl:
-        'https://images.pexels.com/photos/6744352/pexels-photo-6744352.jpeg?auto=compress&cs=tinysrgb&w=1200',
+        'https://api.lazervault.app/v1/storage/objects/dashboard-adverts/brand/ce691202-fdc7-4acf-aef2-0ebd7fe94236.webp',
     link: '/crypto',
     title: 'Buy and sell crypto',
+    subtitle: 'Live rates, settled to your wallet',
     sort: 3,
   ),
   DashboardAdvert(
     imageUrl:
-        'https://images.pexels.com/photos/30220079/pexels-photo-30220079.jpeg?auto=compress&cs=tinysrgb&w=1200',
+        'https://api.lazervault.app/v1/storage/objects/dashboard-adverts/brand/6e9b17e2-d6d7-4896-8ddb-ce3aa27a743c.webp',
     link: '/lock-funds',
     title: 'Save towards your goals',
+    subtitle: 'Lock funds and earn as you save',
     sort: 4,
   ),
 ];
@@ -137,6 +156,8 @@ class DashboardAdvertsService {
           imageUrl: imageUrl,
           link: (item['link'] ?? '').toString().trim(),
           title: (item['title'] ?? '').toString().trim(),
+          subtitle:
+              (item['subtitle'] ?? item['sub_title'] ?? '').toString().trim(),
           sort: sort,
         ));
       }

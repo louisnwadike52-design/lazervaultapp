@@ -24,6 +24,10 @@ class FamilyAccount extends Equatable {
   final DateTime updatedAt;
   // Funding policy + pool virtual-account details (from the backend).
   final String fundingPolicy; // any_member | creator_only | specific_members
+
+  /// Per-account invitation lifetime override, in days. 0 = no override, so
+  /// this family follows the platform default set in the admin dashboard.
+  final int invitationExpiryDays;
   final String? accountNumber; // pool NUBAN (only once provisioned/active)
   final String? bankName; // pool bank name (only once provisioned/active)
   final String? virtualAccountStatus; // processing | active | frozen
@@ -51,6 +55,7 @@ class FamilyAccount extends Equatable {
     required this.createdAt,
     required this.updatedAt,
     this.fundingPolicy = 'any_member',
+    this.invitationExpiryDays = 0,
     this.accountNumber,
     this.bankName,
     this.virtualAccountStatus,
@@ -82,6 +87,7 @@ class FamilyAccount extends Equatable {
         createdAt,
         updatedAt,
         fundingPolicy,
+        invitationExpiryDays,
         accountNumber,
         bankName,
         virtualAccountStatus,

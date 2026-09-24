@@ -2481,6 +2481,8 @@ const UpdateContributionRequest$json = {
       '5': 8,
       '10': 'autoPayoutEnabledSet'
     },
+    {'1': 'total_cycles', '3': 10, '4': 1, '5': 5, '10': 'totalCycles'},
+    {'1': 'total_cycles_set', '3': 11, '4': 1, '5': 8, '10': 'totalCyclesSet'},
   ],
 };
 
@@ -2493,7 +2495,8 @@ final $typed_data.Uint8List updateContributionRequestDescriptor = $convert.base6
     'dGF0dXMYBiABKA4yIi5ncm91cF9hY2NvdW50cy5Db250cmlidXRpb25TdGF0dXNSBnN0YXR1cx'
     'IaCghtZXRhZGF0YRgHIAEoCVIIbWV0YWRhdGESLgoTYXV0b19wYXlvdXRfZW5hYmxlZBgIIAEo'
     'CFIRYXV0b1BheW91dEVuYWJsZWQSNQoXYXV0b19wYXlvdXRfZW5hYmxlZF9zZXQYCSABKAhSFG'
-    'F1dG9QYXlvdXRFbmFibGVkU2V0');
+    'F1dG9QYXlvdXRFbmFibGVkU2V0EiEKDHRvdGFsX2N5Y2xlcxgKIAEoBVILdG90YWxDeWNsZXMS'
+    'KAoQdG90YWxfY3ljbGVzX3NldBgLIAEoCFIOdG90YWxDeWNsZXNTZXQ=');
 
 @$core.Deprecated('Use updateContributionResponseDescriptor instead')
 const UpdateContributionResponse$json = {

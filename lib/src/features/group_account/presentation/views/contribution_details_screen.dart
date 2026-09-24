@@ -873,6 +873,25 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                       ],
                     ),
                   ),
+                // Cycles — rotating savings only, and only for someone who may
+                // edit the contribution. The server refuses both cases, so
+                // showing the item otherwise offers a guaranteed failure.
+                if (canEditContribution &&
+                    contribution.type == ContributionType.rotatingSavings)
+                  PopupMenuItem(
+                    value: 'cycles',
+                    child: Row(
+                      children: [
+                        Icon(Icons.repeat_rounded,
+                            color: Colors.white, size: 20.sp),
+                        SizedBox(width: 12.w),
+                        Text(
+                          'Change cycles',
+                          style: GoogleFonts.inter(color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
                 PopupMenuItem(
                   value: 'transcript',
                   child: Row(
@@ -2392,6 +2411,9 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           text: _buildShareText(contribution),
           subject: contribution.title,
         ));
+        break;
+      case 'cycles':
+        _showChangeCyclesDialog(contribution);
         break;
       case 'edit':
         // Reuse the existing EditContributionScreen. Returning from
@@ -4116,3 +4138,114 @@ Powered by LazerVault 🚀
 // sites compiling without churn — they delegate straight to the
 // promoted versions.
 typedef _UserPaymentGroupBase = UserPaymentGroup;
+
+/// Change-cycles dialog for a rotating-savings contribution.
+///
+/// Mounted as an extension so the 4k-line screen does not grow another inline
+/// builder. The bounds it enforces MIRROR the server's, so the user is told the
+/// limit before submitting rather than after:
+///
+///   * at least the current cycle — otherwise the UI would render "cycle 4 of 2"
+///   * at least the member count — appending members already widens
+///     total_cycles back up with a GREATEST(), so a smaller value is silently
+///     undone and the admin thinks the save failed
+extension ChangeCyclesDialog on _ContributionDetailsScreenState {
+  void _showChangeCyclesDialog(Contribution contribution) {
+    final current = contribution.currentCycle ?? 1;
+    final memberCount = contribution.members.length;
+    // The floor is whichever constraint binds harder.
+    final minAllowed = current > memberCount ? current : memberCount;
+    final controller = TextEditingController(
+      text: (contribution.totalCycles ?? minAllowed).toString(),
+    );
+    String? error;
+
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF1F1F1F),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+          title: Text('Change cycles',
+              style: GoogleFonts.inter(color: Colors.white, fontSize: 17.sp)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'How many payout rounds this rotation runs for. Everyone in the '
+                'rotation needs a turn, so it cannot be fewer than the number '
+                'of members.',
+                style: GoogleFonts.inter(
+                    color: Colors.white.withValues(alpha: 0.7),
+                    fontSize: 13.sp),
+              ),
+              SizedBox(height: 12.h),
+              TextField(
+                controller: controller,
+                keyboardType: TextInputType.number,
+                style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp),
+                onChanged: (_) {
+                  if (error != null) setDialogState(() => error = null);
+                },
+                decoration: InputDecoration(
+                  labelText: 'Cycles',
+                  labelStyle: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.6)),
+                  errorText: error,
+                  helperText:
+                      'Currently on cycle $current · $memberCount members',
+                  helperStyle: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.45),
+                      fontSize: 11.sp),
+                  filled: true,
+                  fillColor: const Color(0xFF141414),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text('Cancel',
+                  style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.7))),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4E03D0),
+                  foregroundColor: Colors.white),
+              onPressed: () {
+                final n = int.tryParse(controller.text.trim());
+                if (n == null || n < 1) {
+                  setDialogState(() => error = 'Enter a whole number');
+                  return;
+                }
+                if (n < minAllowed) {
+                  setDialogState(() => error = n < current
+                      ? 'Already on cycle $current'
+                      : 'At least $memberCount — one per member');
+                  return;
+                }
+                if (n == contribution.totalCycles) {
+                  Navigator.pop(dialogContext);
+                  return;
+                }
+                Navigator.pop(dialogContext);
+                context.read<GroupAccountCubit>().updateContributionDetails(
+                      contribution.copyWith(totalCycles: n),
+                    );
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

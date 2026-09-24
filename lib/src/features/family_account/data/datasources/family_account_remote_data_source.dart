@@ -69,6 +69,21 @@ abstract class FamilyAccountRemoteDataSource {
     List<MemberAllocationProto> allocations = const [],
   });
 
+  /// Change spending visibility and/or funding policy AFTER setup.
+  ///
+  /// Both were previously write-once — SetupFamilyAccount refuses to run once
+  /// the account leaves pending_setup, and nothing else could write them. Null
+  /// arguments mean "leave unchanged", so changing one cannot reset the other.
+  Future<FamilyAccountProto> updateFamilySettings({
+    required String familyId,
+    bool? spendingVisibilityEnabled,
+    String? fundingPolicy,
+    List<String> specificMemberIds = const [],
+    /// null = leave unchanged; 0 = clear the override and follow the platform
+    /// default again.
+    int? invitationExpiryDays,
+  });
+
   /// Invitee-side invitation history. statusFilter ∈
   /// {all, pending, accepted, declined, expired, removed}. Empty = all.
   Future<List<InvitationHistoryEntryProto>> getMyInvitationHistory({
@@ -975,6 +990,48 @@ class FamilyAccountRemoteDataSourceImpl
       fundDistributionMode: fundDistributionMode,
       setupCompleted: account.setupCompleted,
       spendingVisibilityEnabled: account.spendingVisibilityEnabled,
+    );
+    _familyAccounts[familyId] = updated;
+    return updated;
+  }
+
+  @override
+  Future<FamilyAccountProto> updateFamilySettings({
+    required String familyId,
+    bool? spendingVisibilityEnabled,
+    String? fundingPolicy,
+    List<String> specificMemberIds = const [],
+    /// null = leave unchanged; 0 = clear the override and follow the platform
+    /// default again.
+    int? invitationExpiryDays,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    final account = _familyAccounts[familyId];
+    if (account == null) throw Exception('Family account not found');
+    // Mirrors the server's partial semantics: a null argument leaves the stored
+    // value alone, so a test that changes one setting does not assert away the
+    // other. Constructed field-by-field because FamilyAccountProto has no
+    // copyWith — same as updateFundDistributionMode just above.
+    final updated = FamilyAccountProto(
+      id: account.id,
+      creatorId: account.creatorId,
+      creatorName: account.creatorName,
+      name: account.name,
+      description: account.description,
+      totalAllocatedBalance: account.totalAllocatedBalance,
+      totalPoolBalance: account.totalPoolBalance,
+      allowMemberContributions: account.allowMemberContributions,
+      totalBalance: account.totalBalance,
+      status: account.status,
+      createdAt: account.createdAt,
+      updatedAt: DateTime.now().toIso8601String(),
+      members: account.members,
+      memberCount: account.memberCount,
+      activeMemberCount: account.activeMemberCount,
+      fundDistributionMode: account.fundDistributionMode,
+      setupCompleted: account.setupCompleted,
+      spendingVisibilityEnabled:
+          spendingVisibilityEnabled ?? account.spendingVisibilityEnabled,
     );
     _familyAccounts[familyId] = updated;
     return updated;

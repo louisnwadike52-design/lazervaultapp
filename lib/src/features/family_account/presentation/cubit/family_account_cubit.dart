@@ -26,6 +26,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
   final ProcessMemberContributionUseCase processMemberContribution;
   final SetupFamilyAccountUseCase setupFamilyAccount;
   final UpdateFundDistributionModeUseCase updateFundDistributionMode;
+  final UpdateFamilySettingsUseCase updateFamilySettings;
   final GetMyInvitationHistoryUseCase getMyInvitationHistory;
   final GetSentInvitationsUseCase getSentInvitations;
 
@@ -49,6 +50,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     required this.processMemberContribution,
     required this.setupFamilyAccount,
     required this.updateFundDistributionMode,
+    required this.updateFamilySettings,
     required this.getMyInvitationHistory,
     required this.getSentInvitations,
   })  : _acceptInvitationUseCase = acceptInvitationUseCase,
@@ -150,6 +152,48 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
   }
 
   // Add member to family account
+  /// Add a member and AWAIT the outcome, without emitting cubit states.
+  ///
+  /// The setup wizard sends a batch of staged invitations on final submit. The
+  /// state-emitting addMember would fire FamilyMemberAdding/FamilyMemberAdded
+  /// for each one, and the wizard's BlocConsumer treats FamilyMemberAdded as
+  /// "a new invite just landed" — so a batch of five would re-enter that handler
+  /// five times mid-submit and fight the setup flow it is part of.
+  ///
+  /// Throws on failure so the caller can report exactly which invitations did
+  /// not go out.
+  Future<void> addMemberAwaitable({
+    required String familyId,
+    required String invitationMethod,
+    required String invitationDestination,
+    required double initialAllocation,
+    required double dailyLimit,
+    required double monthlyLimit,
+    required double perTransactionLimit,
+    required double allocationPercentageCap,
+    required String role,
+    String? personalMessage,
+    String? displayName,
+  }) async {
+    final result = await addFamilyMember(AddFamilyMemberParams(
+      familyId: familyId,
+      invitationMethod: invitationMethod,
+      invitationDestination: invitationDestination,
+      initialAllocation: initialAllocation,
+      dailyLimit: dailyLimit,
+      monthlyLimit: monthlyLimit,
+      perTransactionLimit: perTransactionLimit,
+      allocationPercentageCap: allocationPercentageCap,
+      role: role,
+      personalMessage: personalMessage,
+      displayName: displayName,
+    ));
+    result.fold(
+      (failure) => throw Exception(failure.message),
+      (_) {},
+    );
+  }
+
   Future<void> addMember({
     required String familyId,
     required String invitationMethod,
@@ -487,6 +531,31 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     result.fold(
       (failure) => emit(FamilyAccountError(failure.message)),
       (account) => emit(FundDistributionModeUpdated(account)),
+    );
+  }
+
+  /// Change spending visibility and/or the funding policy after setup.
+  ///
+  /// Null arguments mean "leave unchanged" all the way down to the server, so a
+  /// caller toggling visibility cannot reset who may fund the pool.
+  Future<void> updateSettings({
+    required String familyId,
+    bool? spendingVisibilityEnabled,
+    String? fundingPolicy,
+    List<String> specificMemberIds = const [],
+    int? invitationExpiryDays,
+  }) async {
+    emit(FamilyAccountLoading());
+    final result = await updateFamilySettings(UpdateFamilySettingsParams(
+      familyId: familyId,
+      spendingVisibilityEnabled: spendingVisibilityEnabled,
+      fundingPolicy: fundingPolicy,
+      specificMemberIds: specificMemberIds,
+      invitationExpiryDays: invitationExpiryDays,
+    ));
+    result.fold(
+      (failure) => emit(FamilyAccountError(failure.message)),
+      (account) => emit(FamilySettingsUpdated(account)),
     );
   }
 

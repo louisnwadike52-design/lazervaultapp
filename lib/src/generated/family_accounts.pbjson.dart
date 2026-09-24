@@ -2395,6 +2395,76 @@ final $typed_data.Uint8List updateFundDistributionModeResponseDescriptor =
         'EgASgLMhouYWNjb3VudHMudjEuRmFtaWx5QWNjb3VudFINZmFtaWx5QWNjb3VudBIYCgdtZXNz'
         'YWdlGAIgASgJUgdtZXNzYWdl');
 
+@$core.Deprecated('Use updateFamilySettingsRequestDescriptor instead')
+const UpdateFamilySettingsRequest$json = {
+  '1': 'UpdateFamilySettingsRequest',
+  '2': [
+    {'1': 'family_id', '3': 1, '4': 1, '5': 9, '10': 'familyId'},
+    {
+      '1': 'spending_visibility_enabled',
+      '3': 2,
+      '4': 1,
+      '5': 8,
+      '9': 0,
+      '10': 'spendingVisibilityEnabled',
+      '17': true
+    },
+    {'1': 'funding_policy', '3': 3, '4': 1, '5': 9, '10': 'fundingPolicy'},
+    {
+      '1': 'specific_member_ids',
+      '3': 4,
+      '4': 3,
+      '5': 9,
+      '10': 'specificMemberIds'
+    },
+    {
+      '1': 'invitation_expiry_days',
+      '3': 5,
+      '4': 1,
+      '5': 5,
+      '9': 1,
+      '10': 'invitationExpiryDays',
+      '17': true
+    },
+  ],
+  '8': [
+    {'1': '_spending_visibility_enabled'},
+    {'1': '_invitation_expiry_days'},
+  ],
+};
+
+/// Descriptor for `UpdateFamilySettingsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateFamilySettingsRequestDescriptor = $convert.base64Decode(
+    'ChtVcGRhdGVGYW1pbHlTZXR0aW5nc1JlcXVlc3QSGwoJZmFtaWx5X2lkGAEgASgJUghmYW1pbH'
+    'lJZBJDChtzcGVuZGluZ192aXNpYmlsaXR5X2VuYWJsZWQYAiABKAhIAFIZc3BlbmRpbmdWaXNp'
+    'YmlsaXR5RW5hYmxlZIgBARIlCg5mdW5kaW5nX3BvbGljeRgDIAEoCVINZnVuZGluZ1BvbGljeR'
+    'IuChNzcGVjaWZpY19tZW1iZXJfaWRzGAQgAygJUhFzcGVjaWZpY01lbWJlcklkcxI5ChZpbnZp'
+    'dGF0aW9uX2V4cGlyeV9kYXlzGAUgASgFSAFSFGludml0YXRpb25FeHBpcnlEYXlziAEBQh4KHF'
+    '9zcGVuZGluZ192aXNpYmlsaXR5X2VuYWJsZWRCGQoXX2ludml0YXRpb25fZXhwaXJ5X2RheXM=');
+
+@$core.Deprecated('Use updateFamilySettingsResponseDescriptor instead')
+const UpdateFamilySettingsResponse$json = {
+  '1': 'UpdateFamilySettingsResponse',
+  '2': [
+    {
+      '1': 'family_account',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.accounts.v1.FamilyAccount',
+      '10': 'familyAccount'
+    },
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `UpdateFamilySettingsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateFamilySettingsResponseDescriptor =
+    $convert.base64Decode(
+        'ChxVcGRhdGVGYW1pbHlTZXR0aW5nc1Jlc3BvbnNlEkEKDmZhbWlseV9hY2NvdW50GAEgASgLMh'
+        'ouYWNjb3VudHMudjEuRmFtaWx5QWNjb3VudFINZmFtaWx5QWNjb3VudBIYCgdtZXNzYWdlGAIg'
+        'ASgJUgdtZXNzYWdl');
+
 @$core.Deprecated('Use familyAccountDescriptor instead')
 const FamilyAccount$json = {
   '1': 'FamilyAccount',
@@ -2479,6 +2549,13 @@ const FamilyAccount$json = {
       '5': 9,
       '10': 'virtualAccountStatus'
     },
+    {
+      '1': 'invitation_expiry_days',
+      '3': 25,
+      '4': 1,
+      '5': 5,
+      '10': 'invitationExpiryDays'
+    },
   ],
 };
 
@@ -2502,7 +2579,8 @@ final $typed_data.Uint8List familyAccountDescriptor = $convert.base64Decode(
     'xBY2NvdW50SWQSJQoOZnVuZGluZ19wb2xpY3kYFSABKAlSDWZ1bmRpbmdQb2xpY3kSJQoOYWNj'
     'b3VudF9udW1iZXIYFiABKAlSDWFjY291bnROdW1iZXISGwoJYmFua19uYW1lGBcgASgJUghiYW'
     '5rTmFtZRI0ChZ2aXJ0dWFsX2FjY291bnRfc3RhdHVzGBggASgJUhR2aXJ0dWFsQWNjb3VudFN0'
-    'YXR1cw==');
+    'YXR1cxI0ChZpbnZpdGF0aW9uX2V4cGlyeV9kYXlzGBkgASgFUhRpbnZpdGF0aW9uRXhwaXJ5RG'
+    'F5cw==');
 
 @$core.Deprecated('Use familyMemberDescriptor instead')
 const FamilyMember$json = {
@@ -2582,6 +2660,7 @@ const FamilyMember$json = {
       '10': 'remainingBalance'
     },
     {'1': 'can_contribute', '3': 26, '4': 1, '5': 8, '10': 'canContribute'},
+    {'1': 'self_exited', '3': 27, '4': 1, '5': 8, '10': 'selfExited'},
   ],
 };
 
@@ -2604,7 +2683,7 @@ final $typed_data.Uint8List familyMemberDescriptor = $convert.base64Decode(
     'aW1pdBgXIAEoAVITcGVyVHJhbnNhY3Rpb25MaW1pdBI6ChlhbGxvY2F0aW9uX3BlcmNlbnRhZ2'
     'VfY2FwGBggASgBUhdhbGxvY2F0aW9uUGVyY2VudGFnZUNhcBIrChFyZW1haW5pbmdfYmFsYW5j'
     'ZRgZIAEoAVIQcmVtYWluaW5nQmFsYW5jZRIlCg5jYW5fY29udHJpYnV0ZRgaIAEoCFINY2FuQ2'
-    '9udHJpYnV0ZQ==');
+    '9udHJpYnV0ZRIfCgtzZWxmX2V4aXRlZBgbIAEoCFIKc2VsZkV4aXRlZA==');
 
 @$core.Deprecated('Use familyTransactionDescriptor instead')
 const FamilyTransaction$json = {

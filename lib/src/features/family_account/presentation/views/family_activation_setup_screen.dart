@@ -33,7 +33,23 @@ class _FamilyActivationSetupScreenState
   final FamilyAccountCubit _cubit = serviceLocator<FamilyAccountCubit>();
 
   int _currentStep = 0;
-  final int _totalSteps = 5;
+
+  /// Whether the chosen mode has per-member amounts to enter.
+  ///
+  /// Only Custom Allocation does. Shared Pool and Equal Split are defined
+  /// entirely by the choice already made on step 1.
+  bool get _needsAllocationStep =>
+      _selectedMode == FundDistributionMode.customAllocation;
+
+  /// Steps this setup actually needs, rather than a fixed five.
+  ///
+  /// "Configure Allocation" had nothing to configure for Shared Pool or Equal
+  /// Split: it rendered a single explanatory card above a Continue button, so
+  /// the user spent a whole step of a five-step progress bar re-reading the
+  /// description of the mode they had just picked on the card that sent them
+  /// there. It now appears only for Custom Allocation, where per-member amounts
+  /// genuinely have to be entered.
+  int get _totalSteps => _needsAllocationStep ? 5 : 4;
 
   // Setup data
   FundDistributionMode _selectedMode = FundDistributionMode.sharedPool;
@@ -52,16 +68,28 @@ class _FamilyActivationSetupScreenState
   final Set<String> _expandedLimitMembers = {};
 
   // Invite members data
+  //
+  // _invitedMembers holds members that ALREADY EXIST server-side (a resumed
+  // setup, or someone invited before this change). _stagedInvites holds people
+  // chosen in THIS session who have not been contacted yet — they are sent once,
+  // on final submit. Keeping them apart is what stops a resumed setup from
+  // re-inviting everyone.
   final List<FamilyMember> _invitedMembers = [];
+  final List<_StagedInvite> _stagedInvites = [];
   final TextEditingController _usernameController = TextEditingController();
   // Account display name — every family account is named (user request
   // 2026-09-07). Prefilled with the stored name; editable during setup.
   final TextEditingController _accountNameController = TextEditingController();
+
+  /// Inline error under the account-name field, set when Continue is refused.
+  String? _accountNameValidationError;
   final TextEditingController _inviteDailyLimitController =
       TextEditingController();
   final TextEditingController _inviteMonthlyLimitController =
       TextEditingController();
-  bool _isInviting = false;
+  /// Guards the final submit: a second tap would re-send every staged invite
+  /// before the server refused the duplicate activation.
+  bool _isSubmittingSetup = false;
   UserSearchResultEntity? _selectedUser;
 
   // Loaded family account data
@@ -109,7 +137,53 @@ class _FamilyActivationSetupScreenState
     super.dispose();
   }
 
+  /// Names the account was created with rather than named by a person.
+  ///
+  /// Matched case- and space-insensitively because the value is compared against
+  /// whatever the backend stored, not against a constant we control.
+  static bool _isPlaceholderAccountName(String name) {
+    final n = name.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+    return n.isEmpty ||
+        n == 'family & friends' ||
+        n == 'family and friends' ||
+        n == 'family account';
+  }
+
+  /// The account name must be a real choice before step 1 can be left.
+  ///
+  /// Enforced here AND on the server: this stops the accidental default, the
+  /// server stops a client that skips the flow. Minimum 2 characters so a
+  /// single stray keystroke does not count as naming it.
+  String? _accountNameError() {
+    final name = _accountNameController.text.trim();
+    if (name.isEmpty) return 'Give this account a name';
+    if (name.length < 2) return 'That name is too short';
+    if (_isPlaceholderAccountName(name)) {
+      return 'Choose a name your members will recognise';
+    }
+    return null;
+  }
+
   void _nextStep() {
+    // Step 1 owns the account name. Blocking here rather than disabling the
+    // button so the user is told WHY, instead of facing a dead control.
+    if (_currentStep == 0) {
+      final err = _accountNameError();
+      if (err != null) {
+        setState(() => _accountNameValidationError = err);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(err),
+            backgroundColor: const Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+      if (_accountNameValidationError != null) {
+        setState(() => _accountNameValidationError = null);
+      }
+    }
     if (_currentStep < _totalSteps - 1) {
       setState(() => _currentStep++);
       _pageController.nextPage(
@@ -129,9 +203,47 @@ class _FamilyActivationSetupScreenState
     }
   }
 
-  void _activateAccount() {
+  /// Final submit: send the staged invitations, THEN activate.
+  ///
+  /// Ordering matters. Invitations first means the members exist before the
+  /// account goes active, so allocation and limits apply to a settled roster
+  /// rather than one that grows a moment later. It also means a creator who
+  /// abandons the wizard has sent nothing at all.
+  ///
+  /// Guarded against a double-tap: activation is a one-shot transition the
+  /// server refuses to repeat, but a second tap would re-send every staged
+  /// invitation before hitting that refusal.
+  Future<void> _activateAccount() async {
     if (widget.familyId.isEmpty) return;
+    if (_isSubmittingSetup) return;
+    setState(() => _isSubmittingSetup = true);
 
+    try {
+      final failed = await _sendStagedInvites();
+      if (!mounted) return;
+      if (failed.isNotEmpty) {
+        // Named explicitly. "Some invitations failed" leaves the creator with no
+        // idea who to re-add, and the account is about to go active either way.
+        Get.snackbar(
+          'Some invitations were not sent',
+          'Could not invite: ${failed.join(', ')}. You can invite them again '
+              'from the account details.',
+          backgroundColor: const Color(0xFFFB923C).withValues(alpha: 0.95),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 6),
+        );
+      }
+      // Sent (or attempted) exactly once — clear so a retry of the activation
+      // step cannot re-invite the same people.
+      if (mounted) setState(() => _stagedInvites.clear());
+      _submitSetup();
+    } finally {
+      if (mounted) setState(() => _isSubmittingSetup = false);
+    }
+  }
+
+  void _submitSetup() {
     final allocations = <MemberAllocationEntry>[];
     if (_selectedMode == FundDistributionMode.customAllocation &&
         _familyAccount != null) {
@@ -298,9 +410,21 @@ class _FamilyActivationSetupScreenState
             if (state is FamilyAccountLoaded) {
               setState(() {
                 _familyAccount = state.familyAccount;
-                // Prefill the name field with the stored name once (don't
-                // clobber what the user is typing on refreshes).
-                if (_accountNameController.text.isEmpty) {
+                // Prefill ONLY a name the user actually chose.
+                //
+                // A Family & Friends account is created with the placeholder name
+                // "Family & Friends" before this screen runs, and prefilling that
+                // made step 1 look already-answered: the field showed a real
+                // value with a 16/50 counter, so people pressed Continue and
+                // shipped an account every member sees as the generic default.
+                // Leaving it empty lets the hint do its job and makes the
+                // required-field validation below meaningful.
+                //
+                // Still prefilled when the user HAS named it, so returning to
+                // this step edits rather than retypes. Never clobbers in-progress
+                // typing on a refresh.
+                if (_accountNameController.text.isEmpty &&
+                    !_isPlaceholderAccountName(state.familyAccount.name)) {
                   _accountNameController.text = state.familyAccount.name;
                 }
                 // Initialize allocation and spending limit controllers for active members
@@ -316,32 +440,17 @@ class _FamilyActivationSetupScreenState
                   }
                 }
               });
-            } else if (state is FamilyMemberAdded) {
-              setState(() {
-                _invitedMembers.add(state.member);
-                _isInviting = false;
-                _selectedUser = null;
-                _usernameController.clear();
-                _inviteDailyLimitController.clear();
-                _inviteMonthlyLimitController.clear();
-              });
-              Get.snackbar(
-                'Invitation Sent',
-                '${state.member.fullName.isNotEmpty ? state.member.fullName : 'Member'} has been invited.',
-                backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.9),
-                colorText: Colors.white,
-                snackPosition: SnackPosition.TOP,
-              );
-              // Reload the family account to refresh member list
-              _cubit.loadFamilyAccount(widget.familyId);
-            } else if (state is FamilyMemberAdding) {
-              setState(() => _isInviting = true);
+            // FamilyMemberAdded / FamilyMemberAdding are no longer handled here.
+            // Staging is local and the batch send on submit uses
+            // addMemberAwaitable, which deliberately emits no cubit state — so
+            // these branches could only fire from another screen sharing this
+            // cubit, where reacting would be wrong.
             } else if (state is FamilyAccountSetupCompleted) {
               // Apply spending limits to members if any were set
               _applySpendingLimitsAndNavigate();
               return; // Navigation happens in _applySpendingLimitsAndNavigate
             } else if (state is FamilyAccountError) {
-              setState(() => _isInviting = false);
+
               final msg = state.message.toLowerCase();
               if (msg.contains('exceed') || msg.contains('insufficient')) {
                 _showAllocationErrorDialog(context, state.message);
@@ -374,7 +483,10 @@ class _FamilyActivationSetupScreenState
                     children: [
                       _buildDistributionModeStep(),
                       _buildInviteMembersStep(),
-                      _buildConfigureAllocationStep(),
+                      // Only when there is something to allocate — see
+                      // _needsAllocationStep.
+                      if (_needsAllocationStep)
+                        _buildConfigureAllocationStep(),
                       _buildSpendingVisibilityStep(),
                       _buildReviewStep(state),
                     ],
@@ -493,8 +605,19 @@ class _FamilyActivationSetupScreenState
             controller: _accountNameController,
             maxLength: 50,
             style: TextStyle(color: Colors.white, fontSize: 15.sp),
+            textCapitalization: TextCapitalization.words,
+            // Clear the error as soon as they start fixing it — leaving it up
+            // while they type reads as "still wrong" when it no longer is.
+            onChanged: (_) {
+              if (_accountNameValidationError != null) {
+                setState(() => _accountNameValidationError = null);
+              }
+            },
             decoration: InputDecoration(
               hintText: 'e.g. The Nwadikes, Weekend Crew…',
+              errorText: _accountNameValidationError,
+              errorStyle: TextStyle(
+                  color: const Color(0xFFEF4444), fontSize: 12.sp),
               hintStyle:
                   TextStyle(color: const Color(0xFF6B7280), fontSize: 14.sp),
               counterStyle:
@@ -553,7 +676,17 @@ class _FamilyActivationSetupScreenState
   Widget _buildModeCard(FundDistributionMode mode, IconData icon) {
     final isSelected = _selectedMode == mode;
     return GestureDetector(
-      onTap: () => setState(() => _selectedMode = mode),
+      onTap: () => setState(() {
+        _selectedMode = mode;
+        // Switching away from Custom Allocation removes a page. The mode is only
+        // selectable on step 1 so this should already hold, but an out-of-range
+        // _currentStep would render a blank wizard with a broken progress bar —
+        // cheap to make impossible rather than rely on that.
+        if (_currentStep > _totalSteps - 1) {
+          _currentStep = _totalSteps - 1;
+          _pageController.jumpToPage(_currentStep);
+        }
+      }),
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
@@ -1306,12 +1439,17 @@ class _FamilyActivationSetupScreenState
                   width: double.infinity,
                   height: 44.h,
                   child: ElevatedButton.icon(
-                    onPressed: _isInviting ? null : _inviteMember,
-                    icon: _isInviting
-                        ? LazerVaultLoader(size: 18)
-                        : Icon(Icons.person_add, size: 18.sp),
+                    // "Add to invite list", not "Send Invitation": nothing is
+                    // sent here any more. Naming it Send was the honest label
+                    // for the old behaviour and would be a lie for this one —
+                    // the invitations go out when the setup is submitted.
+                    //
+                    // Disabled until someone is actually picked, so the button
+                    // cannot be tapped into a "No User Selected" warning.
+                    onPressed: _selectedUser == null ? null : _inviteMember,
+                    icon: Icon(Icons.person_add_alt_1, size: 18.sp),
                     label: Text(
-                      _isInviting ? 'Inviting...' : 'Send Invitation',
+                      'Add to invite list',
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
@@ -1331,11 +1469,118 @@ class _FamilyActivationSetupScreenState
             ),
           ),
 
-          // Invited members list
+          // People staged in THIS session — not contacted yet, and removable
+          // right up to submit. Kept visually distinct from _invitedMembers
+          // (already invited server-side) so "will be invited" is never
+          // confused with "has been invited".
+          if (_stagedInvites.isNotEmpty) ...[
+            SizedBox(height: 24.h),
+            Row(
+              children: [
+                Text(
+                  'Will be invited',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Text('${_stagedInvites.length}',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w700)),
+                ),
+              ],
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              'Invitations are sent when you finish setup.',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 12.sp,
+              ),
+            ),
+            SizedBox(height: 12.h),
+            ..._stagedInvites.map((s) => Container(
+                  margin: EdgeInsets.only(bottom: 8.h),
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F1F1F),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border:
+                        Border.all(color: const Color(0xFF4E03D0), width: 1),
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 18.r,
+                        backgroundColor:
+                            const Color(0xFF4E03D0).withValues(alpha: 0.3),
+                        backgroundImage: (s.avatarUrl?.isNotEmpty ?? false)
+                            ? NetworkImage(s.avatarUrl!)
+                            : null,
+                        child: (s.avatarUrl?.isNotEmpty ?? false)
+                            ? null
+                            : Text(
+                                s.displayName.isNotEmpty
+                                    ? s.displayName[0].toUpperCase()
+                                    : '?',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                      ),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(s.displayName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w600)),
+                            Text('@${s.username}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    color: const Color(0xFFA78BFA),
+                                    fontSize: 12.sp)),
+                          ],
+                        ),
+                      ),
+                      // Removable right up to submit — nothing has been sent,
+                      // so this genuinely un-invites rather than revoking.
+                      IconButton(
+                        icon: Icon(Icons.close,
+                            size: 18.sp,
+                            color: Colors.white.withValues(alpha: 0.6)),
+                        onPressed: () =>
+                            setState(() => _stagedInvites.remove(s)),
+                        tooltip: 'Remove',
+                      ),
+                    ],
+                  ),
+                )),
+          ],
+
+          // Members that already exist server-side (resumed setup).
           if (_invitedMembers.isNotEmpty) ...[
             SizedBox(height: 24.h),
             Text(
-              'Invited Members',
+              'Already invited',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 15.sp,
@@ -1531,9 +1776,13 @@ class _FamilyActivationSetupScreenState
     }
 
     // Prevent duplicate invitations to the same username
-    final alreadyInvited = _invitedMembers.any(
-      (m) => m.username?.toLowerCase() == username.toLowerCase(),
-    );
+    // Checked against BOTH lists. Someone already invited server-side (a
+    // resumed setup) and someone staged in this session are both duplicates —
+    // and staging the same person twice would send two invitations on submit.
+    final lower = username.toLowerCase();
+    final alreadyInvited =
+        _invitedMembers.any((m) => m.username?.toLowerCase() == lower) ||
+            _stagedInvites.any((s) => s.username.toLowerCase() == lower);
     if (alreadyInvited) {
       Get.snackbar(
         'Already Invited',
@@ -1570,17 +1819,60 @@ class _FamilyActivationSetupScreenState
         (double.tryParse(_inviteMonthlyLimitController.text) ?? 0.0)
             .clamp(0.0, double.infinity);
 
-    _cubit.addMember(
-      familyId: widget.familyId,
-      invitationMethod: 'username',
-      invitationDestination: username,
-      initialAllocation: 0.0,
-      dailyLimit: dailyLimit,
-      monthlyLimit: monthlyLimit,
-      perTransactionLimit: 0.0,
-      allocationPercentageCap: 100.0,
-      role: 'member',
-    );
+    // STAGE, do not send.
+    //
+    // This used to call _cubit.addMember() immediately, so tapping the button
+    // dispatched a real invitation before the wizard had been submitted — the
+    // person was notified, appeared as PENDING, and stayed a member of an
+    // account whose setup the creator might still abandon. Invitations now go
+    // out once, from _activateAccount, after the whole setup is confirmed.
+    setState(() {
+      _stagedInvites.add(_StagedInvite(
+        username: username,
+        displayName: _selectedUser?.fullName ?? username,
+        avatarUrl: _selectedUser?.profilePicture,
+        dailyLimit: dailyLimit,
+        monthlyLimit: monthlyLimit,
+      ));
+      // Clear the picker so the next person can be added without extra taps —
+      // the whole point of staging is that several go in before submit.
+      _selectedUser = null;
+      _usernameController.clear();
+      _inviteDailyLimitController.clear();
+      _inviteMonthlyLimitController.clear();
+    });
+  }
+
+  /// Send every staged invitation, then report what failed.
+  ///
+  /// Sequential rather than concurrent: each invite is a write against the same
+  /// family row, and the server takes a row lock per call. Firing them in
+  /// parallel would just queue on that lock while making the failure attribution
+  /// harder — with a handful of members the wall-clock difference is nil.
+  ///
+  /// A failure does NOT abort the rest: the creator has already confirmed the
+  /// whole setup, and stopping halfway would leave some people invited and
+  /// others silently dropped with no record of which.
+  Future<List<String>> _sendStagedInvites() async {
+    final failed = <String>[];
+    for (final invite in _stagedInvites) {
+      try {
+        await _cubit.addMemberAwaitable(
+          familyId: widget.familyId,
+          invitationMethod: 'username',
+          invitationDestination: invite.username,
+          initialAllocation: 0.0,
+          dailyLimit: invite.dailyLimit,
+          monthlyLimit: invite.monthlyLimit,
+          perTransactionLimit: 0.0,
+          allocationPercentageCap: 100.0,
+          role: 'member',
+        );
+      } catch (_) {
+        failed.add(invite.username);
+      }
+    }
+    return failed;
   }
 
   // Step 5: Review & Activate
@@ -1656,11 +1948,22 @@ class _FamilyActivationSetupScreenState
                   'Active Members',
                   '${_familyAccount?.activeMemberCount ?? 0}',
                 ),
+                // Already sent (a resumed setup) and about-to-be-sent are
+                // different facts and are counted separately. Folding the
+                // staged ones into "Pending Invitations" would tell the creator
+                // invitations exist that have not left the device yet.
                 if (_invitedMembers.isNotEmpty) ...[
                   SizedBox(height: 16.h),
                   _buildSummaryRow(
                     'Pending Invitations',
                     '${_invitedMembers.length}',
+                  ),
+                ],
+                if (_stagedInvites.isNotEmpty) ...[
+                  SizedBox(height: 16.h),
+                  _buildSummaryRow(
+                    'Will be invited',
+                    '${_stagedInvites.length}',
                   ),
                 ],
               ],
@@ -1827,4 +2130,28 @@ class _FamilyActivationSetupScreenState
       ),
     );
   }
+}
+
+/// A person chosen during setup who has NOT been contacted yet.
+///
+/// Invitations used to fire the moment the button was tapped, so someone was
+/// notified — and became a PENDING member of the account — before the creator
+/// had finished, or even committed to, the setup. Abandoning the wizard left
+/// real invitations out in the world for an account that was never configured.
+///
+/// These are held locally and sent once, from _activateAccount.
+class _StagedInvite {
+  final String username;
+  final String displayName;
+  final String? avatarUrl;
+  final double dailyLimit;
+  final double monthlyLimit;
+
+  const _StagedInvite({
+    required this.username,
+    required this.displayName,
+    this.avatarUrl,
+    this.dailyLimit = 0.0,
+    this.monthlyLimit = 0.0,
+  });
 }

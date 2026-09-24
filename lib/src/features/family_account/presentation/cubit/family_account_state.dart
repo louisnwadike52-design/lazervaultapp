@@ -267,6 +267,18 @@ class FundDistributionModeUpdated extends FamilyAccountState {
   List<Object?> get props => [familyAccount];
 }
 
+/// Emitted after spending visibility / funding policy are changed on an account
+/// that has already completed setup. Carries the re-read account so the screen
+/// renders the server's view rather than an optimistic local guess.
+class FamilySettingsUpdated extends FamilyAccountState {
+  final FamilyAccount familyAccount;
+
+  const FamilySettingsUpdated(this.familyAccount);
+
+  @override
+  List<Object?> get props => [familyAccount];
+}
+
 // Error State
 class FamilyAccountError extends FamilyAccountState {
   final String message;

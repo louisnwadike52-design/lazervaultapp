@@ -145,6 +145,20 @@ abstract class FamilyAccountRepository {
     List<MemberAllocationEntry> allocations = const [],
   });
 
+  /// Change spending visibility and/or the funding policy after setup.
+  ///
+  /// Null means "leave unchanged" for each, so a caller changing one setting
+  /// cannot silently reset the other.
+  Future<Either<Failure, FamilyAccount>> updateFamilySettings({
+    required String familyId,
+    bool? spendingVisibilityEnabled,
+    String? fundingPolicy,
+    List<String> specificMemberIds = const [],
+    /// null = leave unchanged; 0 = clear the override and follow the platform
+    /// default again.
+    int? invitationExpiryDays,
+  });
+
   // Invitee-side invitation history (pending + accepted + declined + expired + removed).
   Future<Either<Failure, List<InvitationHistoryEntry>>> getMyInvitationHistory({
     String statusFilter = '',

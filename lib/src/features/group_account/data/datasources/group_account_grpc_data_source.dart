@@ -442,6 +442,14 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         // caller and it always carries an intent.
         ..autoPayoutEnabled = contribution.autoPayoutEnabled
         ..autoPayoutEnabledSet = true;
+      // Only sent when the contribution actually carries a cycle count, so an
+      // edit to any OTHER field cannot rewrite cycles as a side effect — the
+      // server treats totalCyclesSet=false as "leave alone".
+      if (contribution.totalCycles != null && contribution.totalCycles! > 0) {
+        request
+          ..totalCycles = contribution.totalCycles!
+          ..totalCyclesSet = true;
+      }
 
       // Include metadata if present
       if (contribution.metadata != null && contribution.metadata!.isNotEmpty) {

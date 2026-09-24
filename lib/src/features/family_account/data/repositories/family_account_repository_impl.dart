@@ -487,6 +487,34 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
   }
 
   @override
+  Future<Either<Failure, FamilyAccount>> updateFamilySettings({
+    required String familyId,
+    bool? spendingVisibilityEnabled,
+    String? fundingPolicy,
+    List<String> specificMemberIds = const [],
+    /// null = leave unchanged; 0 = clear the override and follow the platform
+    /// default again.
+    int? invitationExpiryDays,
+  }) async {
+    try {
+      final account = await remoteDataSource.updateFamilySettings(
+        familyId: familyId,
+        spendingVisibilityEnabled: spendingVisibilityEnabled,
+        fundingPolicy: fundingPolicy,
+        specificMemberIds: specificMemberIds,
+        invitationExpiryDays: invitationExpiryDays,
+      );
+      return Right(account.toDomain());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, statusCode: e.code ?? 500));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<InvitationHistoryEntry>>> getMyInvitationHistory({
     String statusFilter = '',
     int page = 1,

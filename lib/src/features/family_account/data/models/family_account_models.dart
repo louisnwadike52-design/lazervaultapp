@@ -55,6 +55,7 @@ extension FamilyAccountProtoExtension on FamilyAccountProto {
       setupCompleted: setupCompleted,
       spendingVisibilityEnabled: spendingVisibilityEnabled,
       fundingPolicy: fundingPolicy,
+      invitationExpiryDays: invitationExpiryDays,
       accountNumber: accountNumber,
       bankName: bankName,
       virtualAccountStatus: virtualAccountStatus,
@@ -94,6 +95,11 @@ extension FamilyMemberProtoExtension on FamilyMemberProto {
       invitationExpiresAt: _parseDate(invitationExpiresAt),
       cardLastFour: cardLastFour,
       hasCard: hasCard,
+      // Carried through explicitly: the entity defaults it to true, so omitting
+      // it here would have made every member look allowed to fund regardless of
+      // the allow-list the admin actually set.
+      canContribute: canContribute,
+      selfExited: selfExited,
       joinedAt: _parseNullableDate(joinedAt),
       createdAt: _parseDate(createdAt),
       updatedAt: _parseDate(updatedAt),

@@ -177,6 +177,13 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     // Non-admins still see the bottom sheet but only the "View Details"
     // option (read-only) — the destructive options are filtered out.
     final viewerIsAdmin = account.isCurrentUserAdmin(_currentUserId);
+    // The creator is permanently admin server-side (UpdateFamilyMember refuses
+    // to demote them, RemoveFamilyMember refuses to remove them), so every
+    // mutating action is hidden for that target rather than offered and 403'd.
+    // Compared on userId: creatorId identifies a USER, member.id is the
+    // membership row.
+    final isCreatorMember =
+        member.userId != null && member.userId == account.creatorId;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -228,7 +235,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                             style: GoogleFonts.inter(
                               fontSize: 18.sp,
                               fontWeight: FontWeight.w600,
-                              color: _kFamilyPurple,
+                              color: _kFamilyPurpleText,
                             ),
                           ),
                         ),
@@ -264,14 +271,20 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             ),
             SizedBox(height: 20.h),
 
-            // Options. Mutations are gated on the VIEWER being an admin
-            // (server enforces too, but matching here avoids surfacing
-            // actions that would 403). Editing/removing another admin is
-            // still hidden by member.role != admin to keep destructive
-            // peer-admin actions out of the bottom sheet UX; demotion is
-            // available via Edit Limits → role picker (future work) or
-            // via the admin dashboard.
-            if (viewerIsAdmin && member.role != FamilyMemberRole.admin) ...[
+            // Options. Mutations are gated on the VIEWER being an admin — the
+            // server enforces it too, but matching here avoids surfacing an
+            // action that can only 403.
+            //
+            // The TARGET gate is the account CREATOR, not "is an admin". The
+            // server permanently pins the creator as admin and refuses to remove
+            // them, but every other admin is a normal target: an admin who can
+            // never be demoted or removed from the app is a family that cannot
+            // fix a mistaken promotion without the admin dashboard.
+            //
+            // Both remaining destructive paths are still protected server-side:
+            // ensureAtLeastOneActiveAdmin blocks demoting or removing the last
+            // admin, so the UI cannot strand a family without one.
+            if (viewerIsAdmin && !isCreatorMember) ...[
               _buildOption(
                 Icons.edit,
                 'Edit Limits',
@@ -310,7 +323,30 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 _showMemberDetailSheet(account, member);
               },
             ),
-            if (viewerIsAdmin && member.role != FamilyMemberRole.admin) ...[
+            // Role change. Only for members who have ACCEPTED: the server
+            // refuses to change the role of a pending/declined invitation, so
+            // offering it there would surface a guaranteed failure.
+            if (viewerIsAdmin &&
+                !isCreatorMember &&
+                member.invitationStatus == InvitationStatus.accepted) ...[
+              SizedBox(height: 12.h),
+              _buildOption(
+                member.role == FamilyMemberRole.admin
+                    ? Icons.person_outline
+                    : Icons.admin_panel_settings_outlined,
+                member.role == FamilyMemberRole.admin
+                    ? 'Make Member'
+                    : 'Make Admin',
+                member.role == FamilyMemberRole.admin
+                    ? 'Remove management access'
+                    : 'Allow them to manage this account',
+                () {
+                  Get.back();
+                  _confirmRoleChange(account, member);
+                },
+              ),
+            ],
+            if (viewerIsAdmin && !isCreatorMember) ...[
               SizedBox(height: 12.h),
               _buildOption(
                 Icons.remove_circle_outline,
@@ -361,7 +397,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                     TextStyle(color: Colors.white.withValues(alpha: 0.6)),
                 prefixText: '${CurrencySymbols.currentSymbol} ',
                 prefixStyle: TextStyle(
-                  color: _kFamilyPurple,
+                  color: _kFamilyPurpleText,
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                 ),
@@ -436,6 +472,52 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     if (!account.isActive) return const SizedBox.shrink();
     if (!account.isCurrentUserMember(_currentUserId))
       return const SizedBox.shrink();
+
+    // The pool VA has its own lifecycle, separate from the family account's.
+    //
+    // The family can be ACTIVE while its virtual account is still minting a
+    // NUBAN, and the card shows an account number as soon as one exists — so
+    // the screen looked completely ready while every contribution died on
+    // "destination account is not active". The server does allow funding a
+    // provisioning pool, but any other non-active state is a hard refusal, and
+    // a button that can only fail is worse than one that explains itself.
+    final vaStatus = (account.virtualAccountStatus ?? '').trim();
+    final vaUnusable =
+        vaStatus.isNotEmpty && vaStatus != 'active' && vaStatus != 'processing';
+    if (vaUnusable) {
+      return Padding(
+        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFB923C).withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+                color: const Color(0xFFFB923C).withValues(alpha: 0.4)),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.info_outline,
+                  color: const Color(0xFFFB923C), size: 18.sp),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Text(
+                  // Names the state, so a support conversation starts from the
+                  // actual reason rather than "funding is broken".
+                  "This pool can't take money yet — its account is "
+                  '"$vaStatus". Contact support if it stays this way.',
+                  style: GoogleFonts.inter(
+                      fontSize: 12.sp,
+                      color: Colors.white.withValues(alpha: 0.85)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Padding(
       padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
       child: SizedBox(
@@ -516,7 +598,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               SizedBox(height: 12.h),
               _fundOptionTile(
                 icon: Icons.groups_2_outlined,
-                color: _kFamilyPurple,
+                color: _kFamilyPurpleText,
                 title: 'Allocate to members',
                 subtitle: activeMembers.isEmpty
                     ? 'No active members yet'
@@ -975,7 +1057,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                             style: GoogleFonts.inter(
                               fontSize: 28.sp,
                               fontWeight: FontWeight.w600,
-                              color: _kFamilyPurple,
+                              color: _kFamilyPurpleText,
                             ),
                           ),
                         ),
@@ -1802,14 +1884,30 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
+      // SCROLLABLE. This was a bare Column in a default-height sheet, so once the
+      // option list grew past ~half the screen the last entries were unreachable
+      // — an admin could not see or tap Delete Account, with nothing to indicate
+      // there was more below. isScrollControlled lifts the height cap; 0.85 keeps
+      // the page visible behind so it still reads as a sheet, not a route.
+      isScrollControlled: true,
+      builder: (context) => ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
+        child: Container(
         padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
         decoration: BoxDecoration(
           // Lifted surface: lighter than the 0xFF0A0A0A page background.
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
         ),
-        child: Column(
+        child: SingleChildScrollView(
+          // Clears the home indicator so the final option is tappable rather
+          // than sitting under the gesture bar.
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewPadding.bottom + 8.h,
+          ),
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Handle
@@ -1836,6 +1934,27 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             _buildAccountDetailsCard(account),
             SizedBox(height: 12.h),
 
+            // Spending visibility + funding policy, editable AFTER setup.
+            //
+            // Both are collected by the setup wizard and both are enforced
+            // server-side, but until UpdateFamilySettings existed there was no
+            // writer for them outside SetupFamilyAccount — which refuses to run
+            // once the account leaves pending_setup. A creator who picked the
+            // wrong option in the wizard was stuck with it permanently.
+            if (viewerIsAdmin &&
+                account.status == FamilyAccountStatus.active) ...[
+              _buildOption(
+                Icons.visibility_outlined,
+                'Spending & Funding',
+                'Who can see spending, and who can add money',
+                () {
+                  Get.back();
+                  _showFamilySettingsSheet(account);
+                },
+              ),
+              SizedBox(height: 12.h),
+            ],
+
             // Account statement — available to every member (read-only export).
             _buildOption(
               Icons.receipt_long_outlined,
@@ -1856,8 +1975,13 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             if (viewerIsAdmin) ...[
               _buildOption(
                 Icons.send_outlined,
-                'Sent Invitations',
-                'See invitations you sent for this family',
+                'Invitations',
+                // Renamed from "Sent Invitations": the screen already filters by
+                // pending / declined / expired / removed, so it is the
+                // invitation HISTORY, not just what is outstanding. Called
+                // "Sent" it read as a list of things still in flight, and
+                // nobody looked there for a declined invite.
+                'Pending, declined, expired and past members',
                 () {
                   Get.back();
                   Get.toNamed(
@@ -1944,6 +2068,363 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               ),
             SizedBox(height: 20.h),
           ],
+        ),
+        ),
+        ),
+      ),
+    );
+  }
+
+  /// Edit spending visibility + funding policy on an account that has already
+  /// completed setup.
+  ///
+  /// Both settings were previously WRITE-ONCE: the wizard collects them, but the
+  /// only writer was SetupFamilyAccount, which refuses to run once the account
+  /// leaves pending_setup. A creator who picked wrong in the wizard was stuck
+  /// with it for the life of the account, and support had no way to change it
+  /// either. UpdateFamilySettings is the writer; this is its UI.
+  ///
+  /// Sends ONLY what changed. The RPC treats a null/absent field as "leave
+  /// alone", so touching one control cannot reset the other.
+  void _showFamilySettingsSheet(FamilyAccount account) {
+    bool visibility = account.spendingVisibilityEnabled;
+    String policy = account.fundingPolicy.isEmpty
+        ? 'any_member'
+        : account.fundingPolicy;
+    // Seeded from the members already flagged as contributors, so reopening the
+    // sheet shows the current allow-list rather than an empty one.
+    int expiryDays = account.invitationExpiryDays;
+
+    final selectedContributors = <String>{
+      for (final m in account.members)
+        if (m.canContribute && m.invitationStatus == InvitationStatus.accepted)
+          m.id,
+    };
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setSheetState) => ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(sheetContext).size.height * 0.85,
+          ),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+            ),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(sheetContext).viewPadding.bottom + 8.h,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40.w,
+                      height: 4.h,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(2.r),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  Center(
+                    child: Text(
+                      'Spending & Funding',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20.h),
+
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: visibility,
+                    onChanged: (v) => setSheetState(() => visibility = v),
+                    activeThumbColor: const Color(0xFF4E03D0),
+                    title: Text(
+                      'Spending visibility',
+                      style: TextStyle(color: Colors.white, fontSize: 15.sp),
+                    ),
+                    subtitle: Text(
+                      // States the admin carve-out, because the server enforces
+                      // it: an admin always sees the full summary regardless.
+                      'Members can see what each other spends. Admins always '
+                      'see everything.',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.55),
+                        fontSize: 12.sp,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+
+                  Text(
+                    'Who can fund the pool',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  ...[
+                    ('any_member', 'Any member', 'Every member can add money.'),
+                    ('creator_only', 'Only me', 'Only you can add money.'),
+                    (
+                      'specific_members',
+                      'Specific members',
+                      'Only members you pick can add money.'
+                    ),
+                  ].map((opt) {
+                    final selected = policy == opt.$1;
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: 8.h),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12.r),
+                        onTap: () => setSheetState(() => policy = opt.$1),
+                        child: Container(
+                          padding: EdgeInsets.all(12.w),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF141414),
+                            borderRadius: BorderRadius.circular(12.r),
+                            border: Border.all(
+                              color: selected
+                                  ? const Color(0xFF4E03D0)
+                                  : Colors.white.withValues(alpha: 0.08),
+                              width: selected ? 2 : 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                selected
+                                    ? Icons.check_circle
+                                    : Icons.circle_outlined,
+                                color: selected
+                                    ? const Color(0xFF4E03D0)
+                                    : Colors.white.withValues(alpha: 0.3),
+                                size: 20.sp,
+                              ),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(opt.$2,
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14.sp,
+                                            fontWeight: FontWeight.w600)),
+                                    Text(opt.$3,
+                                        style: TextStyle(
+                                            color: Colors.white
+                                                .withValues(alpha: 0.5),
+                                            fontSize: 12.sp)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+
+                  // The allow-list only when it is actually read. The server
+                  // ignores specific_member_ids for the other two policies.
+                  if (policy == 'specific_members') ...[
+                    SizedBox(height: 4.h),
+                    Text(
+                      'Members allowed to fund',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 13.sp,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    ...account.members
+                        .where((m) =>
+                            m.invitationStatus == InvitationStatus.accepted)
+                        .map((m) => CheckboxListTile(
+                              contentPadding: EdgeInsets.zero,
+                              dense: true,
+                              value: selectedContributors.contains(m.id),
+                              activeColor: const Color(0xFF4E03D0),
+                              onChanged: (on) => setSheetState(() {
+                                if (on == true) {
+                                  selectedContributors.add(m.id);
+                                } else {
+                                  selectedContributors.remove(m.id);
+                                }
+                              }),
+                              title: Text(
+                                m.fullName.isNotEmpty
+                                    ? m.fullName
+                                    : (m.username ?? 'Member'),
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 14.sp),
+                              ),
+                            )),
+                    // The creator can always fund, whatever the list says —
+                    // the server exempts them, so promising otherwise here
+                    // would be a lie the backend contradicts.
+                    Padding(
+                      padding: EdgeInsets.only(top: 4.h),
+                      child: Text(
+                        'You can always add money as the account creator.',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.45),
+                          fontSize: 11.sp,
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  SizedBox(height: 16.h),
+                  Text(
+                    'Invitation lifetime',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    // Says what "Default" means so the admin knows the platform
+                    // value can move under them — that is the point of not
+                    // pinning an override.
+                    expiryDays == 0
+                        ? 'Following the platform default. Invitations expire on '
+                            'the standard schedule.'
+                        : 'Invitations to this family expire after $expiryDays '
+                            '${expiryDays == 1 ? 'day' : 'days'}.',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.55),
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Wrap(
+                    spacing: 8.w,
+                    runSpacing: 8.h,
+                    children: [
+                      // 0 is the "clear the override" choice, not a 0-day
+                      // expiry — the server reads it that way too.
+                      (0, 'Default'),
+                      (3, '3 days'),
+                      (7, '7 days'),
+                      (14, '14 days'),
+                      (30, '30 days'),
+                    ].map((opt) {
+                      final selected = expiryDays == opt.$1;
+                      return InkWell(
+                        borderRadius: BorderRadius.circular(20.r),
+                        onTap: () => setSheetState(() => expiryDays = opt.$1),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 14.w, vertical: 8.h),
+                          decoration: BoxDecoration(
+                            color: selected
+                                ? const Color(0xFF4E03D0).withValues(alpha: 0.25)
+                                : const Color(0xFF141414),
+                            borderRadius: BorderRadius.circular(20.r),
+                            border: Border.all(
+                              color: selected
+                                  ? const Color(0xFF4E03D0)
+                                  : Colors.white.withValues(alpha: 0.08),
+                            ),
+                          ),
+                          child: Text(
+                            opt.$2,
+                            style: TextStyle(
+                              color: selected
+                                  ? Colors.white
+                                  : Colors.white.withValues(alpha: 0.7),
+                              fontSize: 13.sp,
+                              fontWeight:
+                                  selected ? FontWeight.w600 : FontWeight.w400,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    // Stated because it is the surprising half: an admin who
+                    // shortens the window may expect outstanding invites to
+                    // expire sooner, and they will not.
+                    'Applies to new invitations. Ones already sent keep the '
+                    'window they were issued with.',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.4),
+                      fontSize: 11.sp,
+                    ),
+                  ),
+
+                  SizedBox(height: 20.h),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48.h,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4E03D0),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14.r),
+                        ),
+                      ),
+                      onPressed: () {
+                        // Nothing changed — close without a pointless round
+                        // trip that would also emit a no-op audit entry.
+                        final visibilityChanged =
+                            visibility != account.spendingVisibilityEnabled;
+                        final policyChanged = policy != account.fundingPolicy;
+                        final expiryChanged =
+                            expiryDays != account.invitationExpiryDays;
+                        if (!visibilityChanged &&
+                            !policyChanged &&
+                            !expiryChanged) {
+                          Get.back();
+                          return;
+                        }
+                        Get.back();
+                        _cubit.updateSettings(
+                          familyId: widget.familyId,
+                          // Only the changed field travels; null means
+                          // "leave alone" all the way to the server.
+                          spendingVisibilityEnabled:
+                              visibilityChanged ? visibility : null,
+                          fundingPolicy: policyChanged ? policy : null,
+                          specificMemberIds: policy == 'specific_members'
+                              ? selectedContributors.toList()
+                              : const [],
+                          invitationExpiryDays:
+                              expiryChanged ? expiryDays : null,
+                        );
+                      },
+                      child: Text('Save changes',
+                          style: TextStyle(
+                              fontSize: 15.sp, fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -2659,7 +3140,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w),
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 13.h),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -2695,23 +3176,43 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               ),
             ],
           ),
-          SizedBox(height: 6.h),
-          Text(
-            '$symbol${spendable.toStringAsFixed(2)}',
-            style: GoogleFonts.inter(
-              fontSize: 28.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+          SizedBox(height: 4.h),
+          // Amount and account state on one line.
+          //
+          // The state used to be a full-width banner at the top of the Overview
+          // tab — a notification-shaped strip that read as something needing
+          // action, took a whole row of vertical space, and was only visible on
+          // ONE tab. It belongs next to the figure it qualifies: a frozen
+          // account's balance means something different from an active one's.
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '$symbol${spendable.toStringAsFixed(2)}',
+                    style: GoogleFonts.inter(
+                      fontSize: 28.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 8.w),
+              _buildAccountStateBadge(account.status),
+            ],
           ),
-          SizedBox(height: 14.h),
+          SizedBox(height: 12.h),
           Row(
             children: [
               _buildHeroStat(
                   'Members', '${account.activeMemberCount}', Icons.people),
               Container(
                 width: 1,
-                height: 30.h,
+                height: 26.h,
                 color: Colors.white.withValues(alpha: 0.2),
               ),
               _buildHeroStat(
@@ -2721,7 +3222,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               ),
               Container(
                 width: 1,
-                height: 30.h,
+                height: 26.h,
                 color: Colors.white.withValues(alpha: 0.2),
               ),
               _buildHeroStat(
@@ -2986,58 +3487,13 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         children: [
           SizedBox(height: 16.h),
 
-          // Account Status
-          Builder(builder: (context) {
-            final (statusColor, statusIcon, statusLabel) =
-                switch (account.status) {
-              FamilyAccountStatus.active => (
-                  Colors.green,
-                  Icons.check_circle,
-                  'Account Active'
-                ),
-              FamilyAccountStatus.frozen => (
-                  Colors.blue,
-                  Icons.ac_unit,
-                  'Account Frozen'
-                ),
-              FamilyAccountStatus.pendingSetup => (
-                  const Color(0xFFFB923C),
-                  Icons.settings,
-                  'Pending Setup'
-                ),
-              FamilyAccountStatus.closed => (
-                  Colors.red,
-                  Icons.cancel,
-                  'Account Closed'
-                ),
-            };
-            return Container(
-              padding: EdgeInsets.all(16.w),
-              decoration: BoxDecoration(
-                color: statusColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: statusColor.withValues(alpha: 0.3),
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(statusIcon, color: statusColor, size: 20.sp),
-                  SizedBox(width: 12.w),
-                  Text(
-                    statusLabel,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
-          SizedBox(height: 20.h),
+          // The account-state banner that sat here is gone. It was a full-width
+          // notification-shaped strip that read as something needing action,
+          // consumed a whole row, and only appeared on the Overview tab. The
+          // state is now a compact badge beside the balance figure on the hero
+          // card (_buildAccountStateBadge) — visible from every tab, and next to
+          // the number it qualifies.
+
 
           // Funding + spending breakdown (who funded, top spenders, monthly stats).
           _buildFamilyStatsSection(account),
@@ -3081,29 +3537,11 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             'Created',
             '${account.createdAt.day}/${account.createdAt.month}/${account.createdAt.year}',
           ),
-          if (account.allowMemberContributions) ...[
-            SizedBox(height: 24.h),
-            SizedBox(
-              width: double.infinity,
-              height: 48.h,
-              child: ElevatedButton.icon(
-                onPressed: () => _showContributeDialog(account),
-                icon: Icon(Icons.volunteer_activism, size: 20.sp),
-                label: Text(
-                  'Contribute to Pool',
-                  style:
-                      TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF10B981),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                ),
-              ),
-            ),
-          ],
+          // The green "Contribute to Pool" button that sat here is gone: the
+          // Fund CTA at the top of the screen already opens "Top up pool",
+          // which calls the SAME _showContributeDialog. Two buttons in two
+          // colours for one action, one of them below the fold past a settings
+          // list, reads as two different things.
           SizedBox(height: 30.h),
         ],
       ),
@@ -3117,7 +3555,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         account.isCurrentUserAdmin(_currentUserId) && account.canAcceptMembers;
     return RefreshIndicator(
       onRefresh: () async => _loadFamilyAccount(),
-      color: _kFamilyPurple,
+      color: _kFamilyPurpleText,
       backgroundColor: const Color(0xFF1F1F1F),
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -3268,14 +3706,14 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                   // can re-pull after spending without leaving the screen.
                   return RefreshIndicator(
                     onRefresh: () async => _loadTransactions(),
-                    color: _kFamilyPurple,
+                    color: _kFamilyPurpleText,
                     backgroundColor: const Color(0xFF1F1F1F),
                     child: _buildEmptyActivityState(),
                   );
                 }
                 return RefreshIndicator(
                   onRefresh: () async => _loadTransactions(),
-                  color: _kFamilyPurple,
+                  color: _kFamilyPurpleText,
                   backgroundColor: const Color(0xFF1F1F1F),
                   child: ListView.builder(
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -3289,7 +3727,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               }
               return RefreshIndicator(
                 onRefresh: () async => _loadTransactions(),
-                color: _kFamilyPurple,
+                color: _kFamilyPurpleText,
                 backgroundColor: const Color(0xFF1F1F1F),
                 child: _buildEmptyActivityState(),
               );
@@ -4186,7 +4624,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                         style: GoogleFonts.inter(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.w600,
-                          color: _kFamilyPurple,
+                          color: _kFamilyPurpleText,
                         ),
                       ),
                     ),
@@ -4216,7 +4654,12 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                       style: GoogleFonts.inter(
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w500,
-                        color: const Color(0xFF4E03D0),
+                        // Brand purple #4E03D0 is a FILL colour, not a text
+                        // colour on dark: at 13sp on #1F1F1F it fails contrast
+                        // badly enough that handles were unreadable in practice.
+                        // A78BFA is the established accessible tint used
+                        // elsewhere for purple text on dark surfaces.
+                        color: _kFamilyPurpleText,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -4236,8 +4679,18 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                       if (!isAccepted) ...[
                         SizedBox(width: 8.w),
                         _buildMemberBadge(
-                          member.invitationStatus.name.toUpperCase(),
-                          _kFamilyPurple,
+                          // "LEFT" and "REMOVED" are different facts: one
+                          // walked away, the other was ejected. Both are stored
+                          // as removed because Leave reuses the removal path.
+                          member.invitationStatus == InvitationStatus.removed &&
+                                  member.selfExited
+                              ? 'LEFT'
+                              : member.invitationStatus.name.toUpperCase(),
+                          member.invitationStatus == InvitationStatus.removed &&
+                                  member.selfExited
+                              // Neutral: leaving is not a sanction.
+                              ? const Color(0xFF9CA3AF)
+                              : _invitationStatusColor(member.invitationStatus),
                         ),
                       ],
                     ],
@@ -4269,17 +4722,13 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                         ),
                       ],
                     ),
-                  ] else ...[
-                    SizedBox(height: 6.h),
-                    Text(
-                      'Invitation ${member.invitationStatus.name}',
-                      style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w500,
-                        color: _kFamilyPurple,
-                      ),
-                    ),
                   ],
+                  // The "Invitation pending" line that used to sit here was a
+                  // duplicate: the status is already a badge in the Row above,
+                  // beside the role badge. It also rendered in brand purple on a
+                  // dark card, which was close to unreadable — so the one place
+                  // the state was legible was the badge, and the line beneath it
+                  // only repeated it worse.
                 ],
               ),
             ),
@@ -4320,6 +4769,191 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
 
   /// Small rounded pill used for member role / invitation status, matching
   /// the group-account member card badge style (0.2-alpha tint, 12.r radius).
+  /// Promote a member to admin, or demote an admin back to member.
+  ///
+  /// The server has supported this on UpdateFamilyMember all along — role was
+  /// only ever settable at INVITE time in the app, so a mistaken choice could
+  /// not be corrected without the admin dashboard.
+  ///
+  /// The capability list below is not decorative: it mirrors the gates actually
+  /// enforced in accounts-service, so what the dialog promises is what the
+  /// server will allow. Keep them in step if either changes.
+  void _confirmRoleChange(FamilyAccount account, FamilyMember member) {
+    final promoting = member.role != FamilyMemberRole.admin;
+    final name = member.fullName.isNotEmpty
+        ? member.fullName
+        : (member.username ?? 'This member');
+
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        title: Text(
+          promoting ? 'Make $name an admin?' : 'Remove admin access?',
+          style: TextStyle(color: Colors.white, fontSize: 17.sp),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              promoting
+                  ? 'Admins can do everything you can, except delete the '
+                      'account:'
+                  : '$name will keep their allocation and card, but will no '
+                      'longer be able to:',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.75),
+                fontSize: 13.sp,
+              ),
+            ),
+            SizedBox(height: 10.h),
+            ...[
+              'Invite and remove members',
+              'Allocate funds and set spending limits',
+              'Change distribution mode and account settings',
+              'Freeze and unfreeze the account',
+            ].map((c) => Padding(
+                  padding: EdgeInsets.only(bottom: 4.h),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('•  ',
+                          style: TextStyle(
+                              color: _kFamilyPurpleText, fontSize: 13.sp)),
+                      Expanded(
+                        child: Text(c,
+                            style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.75),
+                                fontSize: 13.sp)),
+                      ),
+                    ],
+                  ),
+                )),
+            if (promoting) ...[
+              SizedBox(height: 8.h),
+              Text(
+                // Stated plainly: promotion is not reversible by the person
+                // being promoted, but it IS reversible by any admin — and the
+                // creator can never be demoted, so the family cannot be seized.
+                'Only you, as the creator, can never be demoted. You can undo '
+                'this at any time.',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  fontSize: 11.sp,
+                ),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text('Cancel',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.7))),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor:
+                  promoting ? const Color(0xFF4E03D0) : const Color(0xFFEF4444),
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              _cubit.updateMember(
+                familyId: widget.familyId,
+                memberId: member.id,
+                role: promoting ? 'admin' : 'member',
+              );
+            },
+            child: Text(promoting ? 'Make admin' : 'Remove access'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Presentation for EVERY account state, in one place.
+  ///
+  /// Exhaustive over FamilyAccountStatus with no default, so adding a state to
+  /// the enum is a compile error here rather than a badge that silently renders
+  /// as something it is not. Colours are chosen to sit on the purple hero card:
+  /// white-on-translucent, since a mid-tone accent disappears against it.
+  (Color, IconData, String) _accountStatePresentation(FamilyAccountStatus s) {
+    switch (s) {
+      case FamilyAccountStatus.active:
+        return (const Color(0xFF10B981), Icons.check_circle, 'Active');
+      case FamilyAccountStatus.frozen:
+        return (const Color(0xFF60A5FA), Icons.ac_unit, 'Frozen');
+      case FamilyAccountStatus.pendingSetup:
+        return (const Color(0xFFFB923C), Icons.settings, 'Setup');
+      case FamilyAccountStatus.closed:
+        return (const Color(0xFFEF4444), Icons.cancel, 'Closed');
+    }
+  }
+
+  /// Compact state badge, sized to sit beside the balance figure.
+  Widget _buildAccountStateBadge(FamilyAccountStatus status) {
+    final (color, icon, label) = _accountStatePresentation(status);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        // Translucent white rather than the state colour as a fill: on the
+        // purple card a solid green/blue chip fights the gradient. The ICON
+        // carries the state colour, which is enough to read at a glance.
+        color: Colors.white.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12.sp, color: color),
+          SizedBox(width: 4.w),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Purple that is legible as TEXT on a dark surface.
+  ///
+  /// The brand purple (#4E03D0) is a fill colour — as 12-13sp text on #1F1F1F it
+  /// fails contrast badly enough that usernames were effectively unreadable.
+  static const Color _kFamilyPurpleText = Color(0xFFA78BFA);
+
+  /// Colour for an invitation state badge.
+  ///
+  /// Every non-accepted state used to render in the same purple, so DECLINED and
+  /// EXPIRED were visually identical to PENDING — three very different facts
+  /// wearing one colour. A declined invite in particular must not read as
+  /// "still waiting", or an admin re-sends nothing and waits on someone who
+  /// already said no.
+  Color _invitationStatusColor(InvitationStatus s) {
+    switch (s) {
+      case InvitationStatus.pending:
+        return const Color(0xFFF59E0B); // amber — awaiting a reply
+      case InvitationStatus.declined:
+        return const Color(0xFFEF4444); // red — they said no
+      case InvitationStatus.expired:
+        return const Color(0xFF9CA3AF); // grey — lapsed, nobody acted
+      case InvitationStatus.removed:
+        return const Color(0xFF6B7280); // darker grey — no longer a member
+      case InvitationStatus.accepted:
+        return const Color(0xFF10B981); // green (badge not normally shown)
+    }
+  }
+
   Widget _buildMemberBadge(String label, Color color) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),

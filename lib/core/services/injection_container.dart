@@ -3861,6 +3861,8 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => UpdateFundDistributionModeUseCase(
       serviceLocator<FamilyAccountRepository>()));
   serviceLocator.registerLazySingleton(() =>
+      UpdateFamilySettingsUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() =>
       GetMyInvitationHistoryUseCase(serviceLocator<FamilyAccountRepository>()));
   serviceLocator.registerLazySingleton(() =>
       GetSentInvitationsUseCase(serviceLocator<FamilyAccountRepository>()));
@@ -3890,6 +3892,7 @@ Future<void> init() async {
       setupFamilyAccount: serviceLocator<SetupFamilyAccountUseCase>(),
       updateFundDistributionMode:
           serviceLocator<UpdateFundDistributionModeUseCase>(),
+      updateFamilySettings: serviceLocator<UpdateFamilySettingsUseCase>(),
       getMyInvitationHistory: serviceLocator<GetMyInvitationHistoryUseCase>(),
       getSentInvitations: serviceLocator<GetSentInvitationsUseCase>(),
     ),

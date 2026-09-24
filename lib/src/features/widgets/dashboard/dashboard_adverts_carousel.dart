@@ -154,25 +154,105 @@ class _AdvertCard extends StatelessWidget {
           ],
         ),
         child: advert.imageUrl.isEmpty
-            ? _defaultCard(advert.title)
-            : CachedNetworkImage(
-                imageUrl: advert.imageUrl,
-                fit: BoxFit.cover,
-                // Fill the card box in both axes so BoxFit.cover crops to a
-                // clean, centered fill (no letterboxing / intrinsic-size gaps),
-                // matching the rounded-clipped 132.h card.
-                width: double.infinity,
-                height: double.infinity,
-                placeholder: (_, __) => _defaultCard(advert.title, dim: true),
-                errorWidget: (_, __, ___) => _defaultCard(advert.title),
+            ? _defaultCard(advert.title, advert.subtitle)
+            : Stack(
+                fit: StackFit.expand,
+                children: [
+                  CachedNetworkImage(
+                    imageUrl: advert.imageUrl,
+                    fit: BoxFit.cover,
+                    // Fill the card box in both axes so BoxFit.cover crops to a
+                    // clean, centered fill (no letterboxing / intrinsic-size
+                    // gaps) against the rounded-clipped card.
+                    width: double.infinity,
+                    height: double.infinity,
+                    placeholder: (_, __) =>
+                        _defaultCard(advert.title, advert.subtitle),
+                    errorWidget: (_, __, ___) =>
+                        _defaultCard(advert.title, advert.subtitle),
+                  ),
+                  // The copy is drawn HERE, over the image, rather than baked
+                  // into the artwork. Until now `title` only ever appeared on
+                  // the fallback card, so every slide that loaded successfully
+                  // showed a picture with no message on it — the one thing a
+                  // promo strip exists to do. Drawing it in Flutter also keeps
+                  // it crisp at every pixel density and lets marketing reword a
+                  // slide from the admin dashboard with no new artwork.
+                  if (advert.title.isNotEmpty) _copyOverlay(),
+                ],
               ),
       ),
     );
   }
 
-  /// A branded gradient promo used as the bundled default and the image
+  /// Headline + supporting line over the artwork.
+  ///
+  /// The scrim is a left-weighted gradient, not a flat wash: the art is authored
+  /// with its motif on the right third and its lightest gradient stop there too,
+  /// so darkening the whole card would dull the image for no contrast gain. This
+  /// darkens only the side the text sits on.
+  Widget _copyOverlay() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            Colors.black.withValues(alpha: 0.45),
+            Colors.black.withValues(alpha: 0.12),
+            Colors.transparent,
+          ],
+          stops: const [0.0, 0.55, 1.0],
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 14.h),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Width-capped and line-capped so a long admin-authored string
+            // wraps and ellipsises inside the card instead of overflowing it or
+            // running under the motif on the right.
+            SizedBox(
+              width: 210.w,
+              child: Text(
+                advert.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15.sp,
+                  height: 1.2,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            if (advert.subtitle.isNotEmpty) ...[
+              SizedBox(height: 4.h),
+              SizedBox(
+                width: 210.w,
+                child: Text(
+                  advert.subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.88),
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// A branded gradient promo used when a slide has no image, and as the image
   /// placeholder/error fallback — so the carousel is never blank or broken.
-  Widget _defaultCard(String title, {bool dim = false}) {
+  Widget _defaultCard(String title, String subtitle) {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -204,18 +284,28 @@ class _AdvertCard extends StatelessWidget {
               children: [
                 Text(
                   title.isNotEmpty ? title : 'Do more with Lazervault',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 16.sp,
+                    fontSize: 15.sp,
+                    height: 1.2,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(height: 6.h),
+                SizedBox(height: 4.h),
                 Text(
-                  'Bills, savings, transfers and more — all in one place',
+                  // The slide's own supporting line when it has one, so the
+                  // fallback card says the same thing the loaded card would
+                  // rather than reverting to generic marketing copy.
+                  subtitle.isNotEmpty
+                      ? subtitle
+                      : 'Bills, savings, transfers and more — all in one place',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.85),
-                    fontSize: 12.sp,
+                    color: Colors.white.withValues(alpha: 0.88),
+                    fontSize: 11.sp,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

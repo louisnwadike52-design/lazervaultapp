@@ -7112,6 +7112,8 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
     $core.String? metadata,
     $core.bool? autoPayoutEnabled,
     $core.bool? autoPayoutEnabledSet,
+    $core.int? totalCycles,
+    $core.bool? totalCyclesSet,
   }) {
     final result = create();
     if (contributionId != null) result.contributionId = contributionId;
@@ -7124,6 +7126,8 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
     if (autoPayoutEnabled != null) result.autoPayoutEnabled = autoPayoutEnabled;
     if (autoPayoutEnabledSet != null)
       result.autoPayoutEnabledSet = autoPayoutEnabledSet;
+    if (totalCycles != null) result.totalCycles = totalCycles;
+    if (totalCyclesSet != null) result.totalCyclesSet = totalCyclesSet;
     return result;
   }
 
@@ -7156,6 +7160,8 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'metadata')
     ..aOB(8, _omitFieldNames ? '' : 'autoPayoutEnabled')
     ..aOB(9, _omitFieldNames ? '' : 'autoPayoutEnabledSet')
+    ..a<$core.int>(10, _omitFieldNames ? '' : 'totalCycles', $pb.PbFieldType.O3)
+    ..aOB(11, _omitFieldNames ? '' : 'totalCyclesSet')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -7267,6 +7273,31 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
   $core.bool hasAutoPayoutEnabledSet() => $_has(8);
   @$pb.TagNumber(9)
   void clearAutoPayoutEnabledSet() => $_clearField(9);
+
+  /// Rotating-savings cycle count. Same explicit-set pattern as the toggle
+  /// above: 0 with total_cycles_set=false means "leave alone", which matters
+  /// because every other caller of this RPC omits it.
+  ///
+  /// The rotation itself loops indefinitely — this drives the "cycle x of y"
+  /// the app shows, and the payout schedule derived from it. Validated
+  /// server-side against the current cycle and the rotation size.
+  @$pb.TagNumber(10)
+  $core.int get totalCycles => $_getIZ(9);
+  @$pb.TagNumber(10)
+  set totalCycles($core.int value) => $_setSignedInt32(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasTotalCycles() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearTotalCycles() => $_clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.bool get totalCyclesSet => $_getBF(10);
+  @$pb.TagNumber(11)
+  set totalCyclesSet($core.bool value) => $_setBool(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasTotalCyclesSet() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearTotalCyclesSet() => $_clearField(11);
 }
 
 class UpdateContributionResponse extends $pb.GeneratedMessage {

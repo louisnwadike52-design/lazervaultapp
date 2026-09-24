@@ -139,14 +139,26 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
   Future<FamilyMemberProto> updateFamilyMember(
       UpdateFamilyMemberRequest req) async {
     try {
+      // "Do not change" is a NEGATIVE value, not 0.
+      //
+      // The proto uses plain doubles, which default to 0 and give no field
+      // presence, so accounts-service adopted `>= 0 means apply` — a negative
+      // value is the only way to say "leave this alone". This layer was sending
+      // 0.0 for every unspecified field, which the server read as "set it to
+      // zero": a partial update (changing only a role, or only a daily limit)
+      // silently WIPED that member's allocated balance and every other limit.
+      //
+      // Callers that pass every field are unaffected; this only changes what an
+      // omitted field means, from "zero it" to "leave it".
+      const unchanged = -1.0;
       final request = family_pb.UpdateFamilyMemberRequest(
         familyId: req.familyId,
         memberId: req.memberId,
-        allocatedBalance: req.allocatedBalance ?? 0.0,
-        dailySpendingLimit: req.dailySpendingLimit ?? 0.0,
-        monthlySpendingLimit: req.monthlySpendingLimit ?? 0.0,
-        perTransactionLimit: req.perTransactionLimit ?? 0.0,
-        allocationPercentageCap: req.allocationPercentageCap ?? 0.0,
+        allocatedBalance: req.allocatedBalance ?? unchanged,
+        dailySpendingLimit: req.dailySpendingLimit ?? unchanged,
+        monthlySpendingLimit: req.monthlySpendingLimit ?? unchanged,
+        perTransactionLimit: req.perTransactionLimit ?? unchanged,
+        allocationPercentageCap: req.allocationPercentageCap ?? unchanged,
         role: req.role ?? '',
       );
 
@@ -485,6 +497,49 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
     }
   }
 
+  /// Change spending visibility and/or the funding policy on an ACTIVE account.
+  ///
+  /// PARTIAL: a null [spendingVisibilityEnabled] and a null [fundingPolicy] each
+  /// mean "leave unchanged". The proto field is `optional`, so leaving it unset
+  /// is distinguishable server-side from an explicit `false` — sending false for
+  /// "unspecified" would silently disable spending visibility for the whole
+  /// family whenever someone only meant to change who can fund the pool.
+  @override
+  Future<FamilyAccountProto> updateFamilySettings({
+    required String familyId,
+    bool? spendingVisibilityEnabled,
+    String? fundingPolicy,
+    List<String> specificMemberIds = const [],
+    /// null = leave unchanged; 0 = clear the override and follow the platform
+    /// default again.
+    int? invitationExpiryDays,
+  }) async {
+    try {
+      final request = family_pb.UpdateFamilySettingsRequest(
+        familyId: familyId,
+        // "" is the server's "leave unchanged" sentinel for this field.
+        fundingPolicy: fundingPolicy ?? '',
+        specificMemberIds: specificMemberIds,
+      );
+      if (invitationExpiryDays != null) {
+        request.invitationExpiryDays = invitationExpiryDays;
+      }
+      // Only set the optional field when the caller actually chose a value —
+      // assigning it at all marks it present on the wire.
+      if (spendingVisibilityEnabled != null) {
+        request.spendingVisibilityEnabled = spendingVisibilityEnabled;
+      }
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response =
+          await _client.updateFamilySettings(request, options: callOptions);
+
+      return _mapFamilyAccountFromProto(response.familyAccount);
+    } on GrpcError catch (e) {
+      throw mapGrpcError(e);
+    }
+  }
+
   family_pb.FundDistributionMode _mapDistributionMode(String mode) {
     switch (mode) {
       case 'shared_pool':
@@ -536,6 +591,10 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       spendingVisibilityEnabled: proto.spendingVisibilityEnabled,
       fundingPolicy:
           proto.fundingPolicy.isNotEmpty ? proto.fundingPolicy : 'any_member',
+      // 0 from the wire means "no per-account override" — the family follows
+      // the platform default. Carried through so the settings sheet can show
+      // whether this family overrides it, rather than guessing.
+      invitationExpiryDays: proto.invitationExpiryDays,
       accountNumber:
           proto.accountNumber.isNotEmpty ? proto.accountNumber : null,
       bankName: proto.bankName.isNotEmpty ? proto.bankName : null,
@@ -569,6 +628,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       invitationExpiresAt: proto.invitationExpiresAt,
       cardLastFour: proto.cardLastFour,
       hasCard: proto.hasCard,
+      canContribute: proto.canContribute,
+      selfExited: proto.selfExited,
       joinedAt: proto.joinedAt,
       createdAt: proto.createdAt,
       updatedAt: proto.updatedAt,

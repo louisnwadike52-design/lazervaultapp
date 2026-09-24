@@ -60,6 +60,16 @@ class FamilyMember extends Equatable {
   final DateTime invitationExpiresAt;
   final String? cardLastFour;
   final bool hasCard;
+
+  /// Whether this member may fund the pool when funding_policy=specific_members.
+  /// Defaults true to match the server column default; the server ignores it for
+  /// the other policies.
+  final bool canContribute;
+
+  /// True when this member LEFT rather than being removed. Both land on
+  /// invitationStatus=removed, so without this the member list can only say
+  /// "removed" for someone who walked away.
+  final bool selfExited;
   final DateTime? joinedAt;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -87,6 +97,8 @@ class FamilyMember extends Equatable {
     required this.invitationExpiresAt,
     this.cardLastFour,
     required this.hasCard,
+    this.canContribute = true,
+    this.selfExited = false,
     this.joinedAt,
     required this.createdAt,
     required this.updatedAt,

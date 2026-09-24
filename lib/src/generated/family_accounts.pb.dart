@@ -9384,6 +9384,199 @@ class UpdateFundDistributionModeResponse extends $pb.GeneratedMessage {
   void clearMessage() => $_clearField(2);
 }
 
+class UpdateFamilySettingsRequest extends $pb.GeneratedMessage {
+  factory UpdateFamilySettingsRequest({
+    $core.String? familyId,
+    $core.bool? spendingVisibilityEnabled,
+    $core.String? fundingPolicy,
+    $core.Iterable<$core.String>? specificMemberIds,
+    $core.int? invitationExpiryDays,
+  }) {
+    final result = create();
+    if (familyId != null) result.familyId = familyId;
+    if (spendingVisibilityEnabled != null)
+      result.spendingVisibilityEnabled = spendingVisibilityEnabled;
+    if (fundingPolicy != null) result.fundingPolicy = fundingPolicy;
+    if (specificMemberIds != null)
+      result.specificMemberIds.addAll(specificMemberIds);
+    if (invitationExpiryDays != null)
+      result.invitationExpiryDays = invitationExpiryDays;
+    return result;
+  }
+
+  UpdateFamilySettingsRequest._();
+
+  factory UpdateFamilySettingsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory UpdateFamilySettingsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'UpdateFamilySettingsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'familyId')
+    ..aOB(2, _omitFieldNames ? '' : 'spendingVisibilityEnabled')
+    ..aOS(3, _omitFieldNames ? '' : 'fundingPolicy')
+    ..pPS(4, _omitFieldNames ? '' : 'specificMemberIds')
+    ..a<$core.int>(
+        5, _omitFieldNames ? '' : 'invitationExpiryDays', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  UpdateFamilySettingsRequest clone() =>
+      UpdateFamilySettingsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  UpdateFamilySettingsRequest copyWith(
+          void Function(UpdateFamilySettingsRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as UpdateFamilySettingsRequest))
+          as UpdateFamilySettingsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UpdateFamilySettingsRequest create() =>
+      UpdateFamilySettingsRequest._();
+  @$core.override
+  UpdateFamilySettingsRequest createEmptyInstance() => create();
+  static $pb.PbList<UpdateFamilySettingsRequest> createRepeated() =>
+      $pb.PbList<UpdateFamilySettingsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateFamilySettingsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<UpdateFamilySettingsRequest>(create);
+  static UpdateFamilySettingsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get familyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set familyId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyId() => $_clearField(1);
+
+  /// PARTIAL UPDATE. Each field is independently optional so a client changing
+  /// one setting cannot silently reset the other — a plain `bool` would send
+  /// false when unset and quietly disable spending visibility for anyone who
+  /// only meant to change the funding policy.
+  @$pb.TagNumber(2)
+  $core.bool get spendingVisibilityEnabled => $_getBF(1);
+  @$pb.TagNumber(2)
+  set spendingVisibilityEnabled($core.bool value) => $_setBool(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasSpendingVisibilityEnabled() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSpendingVisibilityEnabled() => $_clearField(2);
+
+  /// "" = leave unchanged. Same convention SetupFamilyAccount already uses.
+  /// any_member | creator_only | specific_members (normalised server-side).
+  @$pb.TagNumber(3)
+  $core.String get fundingPolicy => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set fundingPolicy($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasFundingPolicy() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearFundingPolicy() => $_clearField(3);
+
+  /// Required when funding_policy=specific_members; ignored otherwise. Replaces
+  /// the whole allow-list, so an empty list with that policy means "nobody but
+  /// the creator" rather than "unchanged".
+  @$pb.TagNumber(4)
+  $pb.PbList<$core.String> get specificMemberIds => $_getList(3);
+
+  /// Per-account invitation lifetime in days. Absent = leave unchanged; 0 = clear
+  /// the override and follow the platform default again. Clamped server-side to
+  /// [1, 90].
+  @$pb.TagNumber(5)
+  $core.int get invitationExpiryDays => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set invitationExpiryDays($core.int value) => $_setSignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasInvitationExpiryDays() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearInvitationExpiryDays() => $_clearField(5);
+}
+
+class UpdateFamilySettingsResponse extends $pb.GeneratedMessage {
+  factory UpdateFamilySettingsResponse({
+    FamilyAccount? familyAccount,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (familyAccount != null) result.familyAccount = familyAccount;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  UpdateFamilySettingsResponse._();
+
+  factory UpdateFamilySettingsResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory UpdateFamilySettingsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'UpdateFamilySettingsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOM<FamilyAccount>(1, _omitFieldNames ? '' : 'familyAccount',
+        subBuilder: FamilyAccount.create)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  UpdateFamilySettingsResponse clone() =>
+      UpdateFamilySettingsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  UpdateFamilySettingsResponse copyWith(
+          void Function(UpdateFamilySettingsResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as UpdateFamilySettingsResponse))
+          as UpdateFamilySettingsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UpdateFamilySettingsResponse create() =>
+      UpdateFamilySettingsResponse._();
+  @$core.override
+  UpdateFamilySettingsResponse createEmptyInstance() => create();
+  static $pb.PbList<UpdateFamilySettingsResponse> createRepeated() =>
+      $pb.PbList<UpdateFamilySettingsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateFamilySettingsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<UpdateFamilySettingsResponse>(create);
+  static UpdateFamilySettingsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  FamilyAccount get familyAccount => $_getN(0);
+  @$pb.TagNumber(1)
+  set familyAccount(FamilyAccount value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyAccount() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyAccount() => $_clearField(1);
+  @$pb.TagNumber(1)
+  FamilyAccount ensureFamilyAccount() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
+}
+
 /// Family Account
 class FamilyAccount extends $pb.GeneratedMessage {
   factory FamilyAccount({
@@ -9411,6 +9604,7 @@ class FamilyAccount extends $pb.GeneratedMessage {
     $core.String? accountNumber,
     $core.String? bankName,
     $core.String? virtualAccountStatus,
+    $core.int? invitationExpiryDays,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -9442,6 +9636,8 @@ class FamilyAccount extends $pb.GeneratedMessage {
     if (bankName != null) result.bankName = bankName;
     if (virtualAccountStatus != null)
       result.virtualAccountStatus = virtualAccountStatus;
+    if (invitationExpiryDays != null)
+      result.invitationExpiryDays = invitationExpiryDays;
     return result;
   }
 
@@ -9491,6 +9687,8 @@ class FamilyAccount extends $pb.GeneratedMessage {
     ..aOS(22, _omitFieldNames ? '' : 'accountNumber')
     ..aOS(23, _omitFieldNames ? '' : 'bankName')
     ..aOS(24, _omitFieldNames ? '' : 'virtualAccountStatus')
+    ..a<$core.int>(
+        25, _omitFieldNames ? '' : 'invitationExpiryDays', $pb.PbFieldType.O3)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -9723,6 +9921,18 @@ class FamilyAccount extends $pb.GeneratedMessage {
   $core.bool hasVirtualAccountStatus() => $_has(23);
   @$pb.TagNumber(24)
   void clearVirtualAccountStatus() => $_clearField(24);
+
+  /// Per-account invitation lifetime override, in days. 0 = no override, this
+  /// family follows the platform default. Sent so the app can show whether the
+  /// family overrides it and what the current window is.
+  @$pb.TagNumber(25)
+  $core.int get invitationExpiryDays => $_getIZ(24);
+  @$pb.TagNumber(25)
+  set invitationExpiryDays($core.int value) => $_setSignedInt32(24, value);
+  @$pb.TagNumber(25)
+  $core.bool hasInvitationExpiryDays() => $_has(24);
+  @$pb.TagNumber(25)
+  void clearInvitationExpiryDays() => $_clearField(25);
 }
 
 /// Family Member
@@ -9754,6 +9964,7 @@ class FamilyMember extends $pb.GeneratedMessage {
     $core.double? allocationPercentageCap,
     $core.double? remainingBalance,
     $core.bool? canContribute,
+    $core.bool? selfExited,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -9787,6 +9998,7 @@ class FamilyMember extends $pb.GeneratedMessage {
       result.allocationPercentageCap = allocationPercentageCap;
     if (remainingBalance != null) result.remainingBalance = remainingBalance;
     if (canContribute != null) result.canContribute = canContribute;
+    if (selfExited != null) result.selfExited = selfExited;
     return result;
   }
 
@@ -9837,6 +10049,7 @@ class FamilyMember extends $pb.GeneratedMessage {
     ..a<$core.double>(
         25, _omitFieldNames ? '' : 'remainingBalance', $pb.PbFieldType.OD)
     ..aOB(26, _omitFieldNames ? '' : 'canContribute')
+    ..aOB(27, _omitFieldNames ? '' : 'selfExited')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -10093,6 +10306,18 @@ class FamilyMember extends $pb.GeneratedMessage {
   $core.bool hasCanContribute() => $_has(25);
   @$pb.TagNumber(26)
   void clearCanContribute() => $_clearField(26);
+
+  /// True when this member LEFT rather than being removed. Both land on
+  /// invitation_status='removed' (Leave reuses the removal path for its
+  /// row-locked refund), so without this the two are indistinguishable.
+  @$pb.TagNumber(27)
+  $core.bool get selfExited => $_getBF(26);
+  @$pb.TagNumber(27)
+  set selfExited($core.bool value) => $_setBool(26, value);
+  @$pb.TagNumber(27)
+  $core.bool hasSelfExited() => $_has(26);
+  @$pb.TagNumber(27)
+  void clearSelfExited() => $_clearField(27);
 }
 
 /// Family Transaction

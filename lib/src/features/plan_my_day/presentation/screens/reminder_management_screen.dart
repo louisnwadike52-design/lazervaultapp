@@ -32,6 +32,15 @@ class ReminderManagementScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: _surface,
         elevation: 0,
+        // The back chevron was very nearly invisible: the title sets its colour
+        // explicitly but the AUTO-GENERATED leading button does not inherit it —
+        // it takes the ambient icon colour, which resolves dark against this
+        // dark surface. The screen looked like it had no way back.
+        //
+        // iconTheme rather than a hand-rolled `leading:` so the platform's own
+        // back affordance and gesture are kept, and any future actions inherit
+        // the same colour.
+        iconTheme: const IconThemeData(color: Colors.white),
         title: Text('Reminders',
             style: GoogleFonts.inter(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w600)),
       ),

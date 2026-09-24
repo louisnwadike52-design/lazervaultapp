@@ -236,6 +236,22 @@ class FamilyAccountsServiceClient extends $grpc.Client {
         options: options);
   }
 
+  /// Update spending visibility and the funding policy on an ACTIVE account.
+  ///
+  /// These were previously settable only through SetupFamilyAccount, which
+  /// refuses to run once the account leaves pending_setup — so a creator who
+  /// picked the wrong option during the wizard could never change it, for the
+  /// life of the account. Both are enforced server-side (visibility gates the
+  /// spend summary, funding policy gates ProcessMemberContribution), so they
+  /// must be changeable through a path that applies the same normalisation the
+  /// wizard does.
+  $grpc.ResponseFuture<$0.UpdateFamilySettingsResponse> updateFamilySettings(
+    $0.UpdateFamilySettingsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$updateFamilySettings, request, options: options);
+  }
+
   /// AuthorizeFamilySpend resolves the family + spending member from the family
   /// virtual account id and verifies the spend against the distribution mode and
   /// per-member limits. Does NOT move money — call before the real debit.
@@ -577,6 +593,11 @@ class FamilyAccountsServiceClient extends $grpc.Client {
       '/accounts.v1.FamilyAccountsService/UpdateFundDistributionMode',
       ($0.UpdateFundDistributionModeRequest value) => value.writeToBuffer(),
       $0.UpdateFundDistributionModeResponse.fromBuffer);
+  static final _$updateFamilySettings = $grpc.ClientMethod<
+          $0.UpdateFamilySettingsRequest, $0.UpdateFamilySettingsResponse>(
+      '/accounts.v1.FamilyAccountsService/UpdateFamilySettings',
+      ($0.UpdateFamilySettingsRequest value) => value.writeToBuffer(),
+      $0.UpdateFamilySettingsResponse.fromBuffer);
   static final _$authorizeFamilySpend = $grpc.ClientMethod<
           $0.AuthorizeFamilySpendRequest, $0.AuthorizeFamilySpendResponse>(
       '/accounts.v1.FamilyAccountsService/AuthorizeFamilySpend',
@@ -906,6 +927,15 @@ abstract class FamilyAccountsServiceBase extends $grpc.Service {
             $0.UpdateFundDistributionModeRequest.fromBuffer(value),
         ($0.UpdateFundDistributionModeResponse value) =>
             value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UpdateFamilySettingsRequest,
+            $0.UpdateFamilySettingsResponse>(
+        'UpdateFamilySettings',
+        updateFamilySettings_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.UpdateFamilySettingsRequest.fromBuffer(value),
+        ($0.UpdateFamilySettingsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.AuthorizeFamilySpendRequest,
             $0.AuthorizeFamilySpendResponse>(
         'AuthorizeFamilySpend',
@@ -1319,6 +1349,15 @@ abstract class FamilyAccountsServiceBase extends $grpc.Service {
   $async.Future<$0.UpdateFundDistributionModeResponse>
       updateFundDistributionMode(
           $grpc.ServiceCall call, $0.UpdateFundDistributionModeRequest request);
+
+  $async.Future<$0.UpdateFamilySettingsResponse> updateFamilySettings_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.UpdateFamilySettingsRequest> $request) async {
+    return updateFamilySettings($call, await $request);
+  }
+
+  $async.Future<$0.UpdateFamilySettingsResponse> updateFamilySettings(
+      $grpc.ServiceCall call, $0.UpdateFamilySettingsRequest request);
 
   $async.Future<$0.AuthorizeFamilySpendResponse> authorizeFamilySpend_Pre(
       $grpc.ServiceCall $call,
