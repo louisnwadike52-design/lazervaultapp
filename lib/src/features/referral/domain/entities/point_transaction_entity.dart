@@ -52,7 +52,8 @@ class PointTransactionEntity extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, userId, points, source, referenceId, description, createdAt];
+  List<Object?> get props =>
+      [id, userId, points, source, referenceId, description, createdAt];
 
   @override
   String toString() {

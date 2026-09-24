@@ -22,7 +22,8 @@ class ReferralTransactionModel extends ReferralTransactionEntity {
   });
 
   /// Create ReferralTransactionModel from protobuf ReferralTransaction
-  factory ReferralTransactionModel.fromProto(proto.ReferralTransaction protoTransaction) {
+  factory ReferralTransactionModel.fromProto(
+      proto.ReferralTransaction protoTransaction) {
     return ReferralTransactionModel(
       id: protoTransaction.id.toInt(),
       referrerUserId: protoTransaction.referrerUserId.toInt(),

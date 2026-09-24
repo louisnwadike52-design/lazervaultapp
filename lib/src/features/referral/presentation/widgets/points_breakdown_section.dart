@@ -133,7 +133,9 @@ class PointsBreakdownSection extends StatelessWidget {
                 // A big total from one large payment reads very differently
                 // from the same total earned steadily, and the count is the
                 // only thing that distinguishes them.
-                item.transactions == 1 ? '1 transaction' : '${item.transactions} transactions',
+                item.transactions == 1
+                    ? '1 transaction'
+                    : '${item.transactions} transactions',
                 style: GoogleFonts.inter(
                   color: Colors.grey[500],
                   fontSize: 11.sp,

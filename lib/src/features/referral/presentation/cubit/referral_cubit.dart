@@ -51,19 +51,25 @@ class ReferralCubit extends Cubit<ReferralState> {
       // Fetch all data in parallel with proper types
       print('[ReferralCubit] Fetching referral code...');
       final codeResult = await _getMyReferralCodeUseCase();
-      print('[ReferralCubit] Code result: ${codeResult.isRight() ? "SUCCESS" : "FAILED"}');
+      print(
+          '[ReferralCubit] Code result: ${codeResult.isRight() ? "SUCCESS" : "FAILED"}');
 
       print('[ReferralCubit] Fetching referral stats...');
       final statsResult = await _getMyReferralStatsUseCase();
-      print('[ReferralCubit] Stats result: ${statsResult.isRight() ? "SUCCESS" : "FAILED"}');
+      print(
+          '[ReferralCubit] Stats result: ${statsResult.isRight() ? "SUCCESS" : "FAILED"}');
 
       print('[ReferralCubit] Fetching leaderboard...');
-      final leaderboardResult = await _getLeaderboardUseCase(limit: 10, period: 'all_time');
-      print('[ReferralCubit] Leaderboard result: ${leaderboardResult.isRight() ? "SUCCESS" : "FAILED"}');
+      final leaderboardResult =
+          await _getLeaderboardUseCase(limit: 10, period: 'all_time');
+      print(
+          '[ReferralCubit] Leaderboard result: ${leaderboardResult.isRight() ? "SUCCESS" : "FAILED"}');
 
       print('[ReferralCubit] Fetching referrals...');
-      final referralsResult = await _getMyReferralsUseCase(page: 1, pageSize: 5);
-      print('[ReferralCubit] Referrals result: ${referralsResult.isRight() ? "SUCCESS" : "FAILED"}');
+      final referralsResult =
+          await _getMyReferralsUseCase(page: 1, pageSize: 5);
+      print(
+          '[ReferralCubit] Referrals result: ${referralsResult.isRight() ? "SUCCESS" : "FAILED"}');
 
       // Handle failures
       if (codeResult.isLeft()) {
@@ -78,7 +84,8 @@ class ReferralCubit extends Cubit<ReferralState> {
         final failure = statsResult.fold((l) => l, (r) => null);
         print('[ReferralCubit] Stats error: ${failure?.message}');
         if (isClosed) return;
-        emit(ReferralError(failure?.message ?? 'Failed to load referral stats'));
+        emit(
+            ReferralError(failure?.message ?? 'Failed to load referral stats'));
         return;
       }
 
@@ -105,7 +112,10 @@ class ReferralCubit extends Cubit<ReferralState> {
       final referrals = referralsResult.fold((l) => null, (r) => r);
 
       print('[ReferralCubit] All data loaded successfully');
-      if (code != null && stats != null && leaderboard != null && referrals != null) {
+      if (code != null &&
+          stats != null &&
+          leaderboard != null &&
+          referrals != null) {
         if (isClosed) return;
         emit(ReferralLoaded(
           myCode: code,
@@ -160,9 +170,10 @@ class ReferralCubit extends Cubit<ReferralState> {
           'Download the app now: https://lazervault.com';
 
       await SharePlus.instance.share(ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),text: message));
+          // iOS: a non-zero popover anchor is required — CGRectZero throws
+          // PlatformException and the share silently fails on iPhone/iPad.
+          sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+          text: message));
     } catch (e) {
       if (isClosed) return;
       emit(ReferralError('Failed to share code: $e'));

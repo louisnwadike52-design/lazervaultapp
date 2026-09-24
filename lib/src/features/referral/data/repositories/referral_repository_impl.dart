@@ -2,7 +2,8 @@ import 'package:dartz/dartz.dart';
 import '../../domain/entities/redemption_entities.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/error/failure.dart';
-import 'package:lazervault/src/core/errors/failures.dart' show friendlyGrpcError;
+import 'package:lazervault/src/core/errors/failures.dart'
+    show friendlyGrpcError;
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/features/referral/domain/entities/referral_code_entity.dart';
 import 'package:lazervault/src/features/referral/domain/entities/referral_transaction_entity.dart';
@@ -41,7 +42,8 @@ class ReferralRepositoryImpl implements IReferralRepository {
   }) async {
     try {
       final request = referral_pb.ValidateReferralCodeRequest(code: code);
-      final response = await _referralServiceClient.validateReferralCode(request);
+      final response =
+          await _referralServiceClient.validateReferralCode(request);
 
       if (response.isValid) {
         return const Right(true);
@@ -54,7 +56,8 @@ class ReferralRepositoryImpl implements IReferralRepository {
         ));
       }
     } on GrpcError catch (e) {
-      print('gRPC Error validating referral code: ${e.codeName} - ${e.message}');
+      print(
+          'gRPC Error validating referral code: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
         message: friendlyGrpcError(e, 'Failed to validate referral code'),
         statusCode: e.code,
@@ -233,7 +236,8 @@ class ReferralRepositoryImpl implements IReferralRepository {
     } on GrpcError catch (e) {
       print('gRPC Error getting country config: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: friendlyGrpcError(e, 'Failed to get country reward configuration'),
+        message:
+            friendlyGrpcError(e, 'Failed to get country reward configuration'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -343,7 +347,8 @@ class ReferralRepositoryImpl implements IReferralRepository {
   }
 
   @override
-  Future<Either<Failure, RedemptionQuoteEntity>> getRedemptionQuote({int points = 0}) async {
+  Future<Either<Failure, RedemptionQuoteEntity>> getRedemptionQuote(
+      {int points = 0}) async {
     try {
       final callOptions = await _callOptionsHelper.withAuth();
       final response = await _referralServiceClient.getRedemptionQuote(
@@ -448,5 +453,4 @@ class ReferralRepositoryImpl implements IReferralRepository {
       ));
     }
   }
-
 }

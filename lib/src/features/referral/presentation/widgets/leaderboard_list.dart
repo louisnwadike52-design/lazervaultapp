@@ -53,7 +53,8 @@ class LeaderboardList extends StatelessWidget {
   }
 
   Widget _buildLeaderboardEntry(LeaderboardEntryEntity entry) {
-    final isCurrentUser = currentUserId != null && entry.userId == currentUserId;
+    final isCurrentUser =
+        currentUserId != null && entry.userId == currentUserId;
     final medal = _getMedalEmoji(entry.rank);
 
     return Container(
@@ -100,7 +101,8 @@ class LeaderboardList extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: Center(
-              child: entry.profilePicture != null && entry.profilePicture!.isNotEmpty
+              child: entry.profilePicture != null &&
+                      entry.profilePicture!.isNotEmpty
                   ? ClipOval(
                       child: Image.network(
                         entry.profilePicture!,
@@ -136,7 +138,8 @@ class LeaderboardList extends StatelessWidget {
                     if (isCurrentUser) ...[
                       SizedBox(width: 6.w),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 6.w, vertical: 2.h),
                         decoration: BoxDecoration(
                           color: const Color(0xFF3B82F6),
                           borderRadius: BorderRadius.circular(4.r),

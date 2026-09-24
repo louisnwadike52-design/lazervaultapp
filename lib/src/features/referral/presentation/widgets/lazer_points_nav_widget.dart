@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/referral/domain/repositories/i_referral_repository.dart';
+import 'package:lazervault/src/features/referral/presentation/widgets/convert_points_sheet.dart';
 
 /// LazerPoints, surfaced where people will actually see them.
 ///
@@ -39,7 +40,8 @@ class _LazerPointsNavWidgetState extends State<LazerPointsNavWidget> {
       if (mounted) setState(() => _failed = true);
       return;
     }
-    final res = await serviceLocator<IReferralRepository>().getMyPointsBalance();
+    final res =
+        await serviceLocator<IReferralRepository>().getMyPointsBalance();
     if (!mounted) return;
     res.fold(
       (_) => setState(() => _failed = true),
@@ -47,6 +49,40 @@ class _LazerPointsNavWidgetState extends State<LazerPointsNavWidget> {
         _balance = b.currentBalance;
         _failed = false;
       }),
+    );
+  }
+
+  /// Open the conversion sheet straight from the card.
+  ///
+  /// The repository is resolved BEFORE the sheet is shown, not inside the
+  /// builder. A throw inside a `showModalBottomSheet` builder renders an
+  /// ErrorWidget, and with `backgroundColor: Colors.transparent` that widget is
+  /// invisible — the sheet "opens" and the user sees nothing at all. Resolving
+  /// first turns that into a message they can read.
+  void _openConvertSheet() {
+    if (!serviceLocator.isRegistered<IReferralRepository>()) {
+      Get.toNamed(AppRoutes.lazerPoints);
+      return;
+    }
+    // Still loading the balance: the sheet needs it to say how many points stay
+    // behind on the remainder. Send them to the screen, which shows its own
+    // loading state, rather than opening a sheet that would understate it.
+    final balance = _balance;
+    if (balance == null) {
+      Get.toNamed(AppRoutes.lazerPoints);
+      return;
+    }
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => ConvertPointsSheet(
+        repository: serviceLocator<IReferralRepository>(),
+        currentBalance: balance,
+        // The card shows the balance, so it has to re-read it — a conversion
+        // that left a stale number on screen would look like it failed.
+        onConverted: _load,
+      ),
     );
   }
 
@@ -82,8 +118,8 @@ class _LazerPointsNavWidgetState extends State<LazerPointsNavWidget> {
                   color: Colors.white.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: Icon(Icons.stars_rounded,
-                    color: Colors.white, size: 24.sp),
+                child:
+                    Icon(Icons.stars_rounded, color: Colors.white, size: 24.sp),
               ),
               SizedBox(width: 12.w),
               Expanded(
@@ -116,21 +152,39 @@ class _LazerPointsNavWidgetState extends State<LazerPointsNavWidget> {
                   ],
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    'Convert to cash',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      fontSize: 11.5.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
+              // "Convert to cash" was a LABEL, not a control: the only tap
+              // handler was the card's, which navigated to the points screen.
+              // Tapping the words that say "convert" gave you an ink ripple and
+              // a screen where you still had to find the real button — which
+              // reads exactly as "the convert button dims and does nothing".
+              //
+              // It now opens the conversion sheet directly. The card tap still
+              // navigates, so the screen is not orphaned.
+              InkWell(
+                onTap: _openConvertSheet,
+                borderRadius: BorderRadius.circular(10.r),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'Convert to cash',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontSize: 11.5.sp,
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.underline,
+                          decorationColor: Colors.white.withValues(alpha: 0.45),
+                        ),
+                      ),
+                      SizedBox(height: 2.h),
+                      Icon(Icons.chevron_right_rounded,
+                          color: Colors.white.withValues(alpha: 0.9),
+                          size: 20.sp),
+                    ],
                   ),
-                  SizedBox(height: 2.h),
-                  Icon(Icons.chevron_right_rounded,
-                      color: Colors.white.withValues(alpha: 0.9), size: 20.sp),
-                ],
+                ),
               ),
             ],
           ),

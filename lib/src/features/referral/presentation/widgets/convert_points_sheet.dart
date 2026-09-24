@@ -242,7 +242,8 @@ class _ConvertPointsSheetState extends State<ConvertPointsSheet> {
             Text(
               _error!,
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp),
+              style:
+                  GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp),
             ),
             SizedBox(height: 12.h),
             TextButton(onPressed: _loadQuote, child: const Text('Try again')),
@@ -268,8 +269,8 @@ class _ConvertPointsSheetState extends State<ConvertPointsSheet> {
             children: [
               Text(
                 'You get',
-                style: GoogleFonts.inter(
-                    color: Colors.grey[500], fontSize: 12.sp),
+                style:
+                    GoogleFonts.inter(color: Colors.grey[500], fontSize: 12.sp),
               ),
               SizedBox(height: 4.h),
               Text(
@@ -283,8 +284,8 @@ class _ConvertPointsSheetState extends State<ConvertPointsSheet> {
               SizedBox(height: 6.h),
               Text(
                 'for ${_points(q.points)} points',
-                style: GoogleFonts.inter(
-                    color: Colors.grey[400], fontSize: 13.sp),
+                style:
+                    GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp),
               ),
             ],
           ),
@@ -324,8 +325,8 @@ class _ConvertPointsSheetState extends State<ConvertPointsSheet> {
                   ? q.reason
                   : 'You cannot convert points right now.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                  color: Colors.grey[300], fontSize: 12.5.sp),
+              style:
+                  GoogleFonts.inter(color: Colors.grey[300], fontSize: 12.5.sp),
             ),
           )
         else
@@ -368,8 +369,8 @@ class _ConvertPointsSheetState extends State<ConvertPointsSheet> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style:
-                  GoogleFonts.inter(color: Colors.grey[500], fontSize: 12.5.sp)),
+              style: GoogleFonts.inter(
+                  color: Colors.grey[500], fontSize: 12.5.sp)),
           Text(value,
               style: GoogleFonts.inter(
                   color: Colors.white,

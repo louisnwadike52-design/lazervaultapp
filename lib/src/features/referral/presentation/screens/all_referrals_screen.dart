@@ -171,8 +171,7 @@ class _AllReferralsScreenState extends State<AllReferralsScreen>
             return Padding(
               padding: EdgeInsets.symmetric(vertical: 16.h),
               child: const Center(
-                child:
-                    LazerVaultLoader.small(),
+                child: LazerVaultLoader.small(),
               ),
             );
           }
@@ -198,9 +197,7 @@ class _AllReferralsScreenState extends State<AllReferralsScreen>
         SizedBox(height: 16.h),
         Center(
           child: Text(
-            tabLabel.isEmpty
-                ? 'No referrals yet'
-                : 'No $tabLabel referrals',
+            tabLabel.isEmpty ? 'No referrals yet' : 'No $tabLabel referrals',
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w600,

@@ -16,7 +16,6 @@ import '../../domain/repositories/i_referral_repository.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 part 'lazer_points_screen_widgets.dart';
 
-
 class LazerPointsScreen extends StatefulWidget {
   const LazerPointsScreen({super.key});
 
@@ -265,8 +264,7 @@ class _LazerPointsScreenState extends State<LazerPointsScreen> {
               icon: Icon(Icons.savings_outlined, size: 18.sp),
               label: Text(
                 'Convert to cash',
-                style: TextStyle(
-                    fontSize: 14.sp, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white.withValues(alpha: 0.15),
@@ -291,6 +289,20 @@ class _LazerPointsScreenState extends State<LazerPointsScreen> {
   /// the threshold. Hiding the button instead would leave someone wondering
   /// whether conversion exists at all.
   void _openConvertSheet(int currentBalance) {
+    // Resolved BEFORE the sheet is shown. A throw inside the builder renders an
+    // ErrorWidget, and the sheet is deliberately transparent, so that widget
+    // would be invisible: the tap would produce an ink ripple and nothing else.
+    if (!serviceLocator.isRegistered<IReferralRepository>()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Conversion is unavailable right now. Please try again '
+              'after restarting the app.'),
+          backgroundColor: Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,

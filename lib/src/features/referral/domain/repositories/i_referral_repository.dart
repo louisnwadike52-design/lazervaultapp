@@ -60,7 +60,8 @@ abstract class IReferralRepository {
 
   /// What converting [points] would be worth. 0 quotes the whole balance,
   /// which is what the screen opens on.
-  Future<Either<Failure, RedemptionQuoteEntity>> getRedemptionQuote({int points});
+  Future<Either<Failure, RedemptionQuoteEntity>> getRedemptionQuote(
+      {int points});
 
   /// Convert points to cash.
   ///

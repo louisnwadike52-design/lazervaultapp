@@ -11,7 +11,7 @@ class HowItWorksCard extends StatelessWidget {
     super.key,
     this.currency = 'GBP',
     this.referrerReward = 10000, // £100 in minor units
-    this.refereeReward = 5000,   // £50 in minor units
+    this.refereeReward = 5000, // £50 in minor units
   });
 
   /// Delegates to the shared resolver.
@@ -73,7 +73,8 @@ class HowItWorksCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStep(String number, String title, String description, IconData icon) {
+  Widget _buildStep(
+      String number, String title, String description, IconData icon) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

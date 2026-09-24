@@ -14,7 +14,8 @@ class CountryRewardConfigModel extends CountryRewardConfigEntity {
   });
 
   /// Create CountryRewardConfigModel from protobuf CountryRewardConfig
-  factory CountryRewardConfigModel.fromProto(proto.CountryRewardConfig protoConfig) {
+  factory CountryRewardConfigModel.fromProto(
+      proto.CountryRewardConfig protoConfig) {
     return CountryRewardConfigModel(
       id: protoConfig.id.toInt(),
       countryCode: protoConfig.countryCode,

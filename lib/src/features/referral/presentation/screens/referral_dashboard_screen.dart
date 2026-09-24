@@ -16,7 +16,8 @@ class ReferralDashboardScreen extends StatefulWidget {
   const ReferralDashboardScreen({super.key});
 
   @override
-  State<ReferralDashboardScreen> createState() => _ReferralDashboardScreenState();
+  State<ReferralDashboardScreen> createState() =>
+      _ReferralDashboardScreenState();
 }
 
 class _ReferralDashboardScreenState extends State<ReferralDashboardScreen> {
@@ -248,8 +249,8 @@ class _ReferralDashboardScreenState extends State<ReferralDashboardScreen> {
                 color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Icon(Icons.stars_rounded,
-                  color: Colors.white, size: 24.sp),
+              child:
+                  Icon(Icons.stars_rounded, color: Colors.white, size: 24.sp),
             ),
             SizedBox(width: 14.w),
             Expanded(
