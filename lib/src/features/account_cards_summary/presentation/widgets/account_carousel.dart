@@ -1183,10 +1183,24 @@ class _AccountCarouselState extends State<AccountCarousel> {
   Widget _buildFamilyAccountCard(
       BuildContext context, AccountSummaryEntity account) {
     final currencySymbol = _getCurrencySymbol(account.currency);
-    // If it's a proper family entity, check its status. If it's a generic family
-    // account (from regular accounts, isFamilyAccount==false), treat as pending setup.
-    final isPendingSetup =
-        account.isFamilyPendingSetup || !account.isFamilyAccount;
+    // Believe familyStatus when the server sent one.
+    //
+    // This used to be `isFamilyPendingSetup || !isFamilyAccount`, and the second
+    // clause is what put "Pending setup" on accounts that had just been created.
+    // A family-typed virtual account surfaces in the REGULAR accounts list
+    // before the family-entity mapping catches up, and in that window
+    // isFamilyAccount is false while familyStatus already says "active" — so a
+    // finished account advertised itself as needing setup, and tapping it went
+    // to the activation flow for an account that was already activated.
+    //
+    // A missing family mapping is only evidence of an un-set-up account when
+    // there is no status AND no family id to go with it.
+    final String familyStatusRaw =
+        (account.familyStatus ?? '').trim().toLowerCase();
+    final isPendingSetup = familyStatusRaw.isNotEmpty
+        ? familyStatusRaw == 'pending_setup'
+        : (!account.isFamilyAccount &&
+            (account.familyAccountId ?? '').trim().isEmpty);
     // Frozen family/pool account → iced-over theme (the freeze rides familyStatus).
     final bool frozen = account.isFrozen;
 
@@ -1223,14 +1237,25 @@ class _AccountCarouselState extends State<AccountCarousel> {
                 end: Alignment.bottomRight,
                 colors: frozen
                     ? const [Color(0xFF2B5876), Color(0xFF4E7A9B)]
-                    : const [Color(0xFF1A1A3E), Color(0xFF2D2B6B)],
+                    // Was navy-on-navy (0xFF1A1A3E → 0xFF2D2B6B): two dark tones
+                    // with no lift between them, so the card read as a grey slab
+                    // next to the business card's violet-700 → violet-950.
+                    //
+                    // Indigo rather than violet keeps it the same BRIGHTNESS as
+                    // the business card without becoming a copy of it — the two
+                    // still have to be tellable apart at a glance in the
+                    // carousel.
+                    : const [
+                        Color(0xFF4F46E5), // indigo-600
+                        Color(0xFF1E1B4B), // indigo-950
+                      ],
               ),
               borderRadius: BorderRadius.circular(20.r),
               boxShadow: [
                 BoxShadow(
                   color: (frozen
                           ? const Color(0xFF2B5876)
-                          : const Color(0xFF1A1A3E))
+                          : const Color(0xFF4F46E5))
                       .withValues(alpha: 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
