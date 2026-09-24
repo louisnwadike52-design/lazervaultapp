@@ -28,11 +28,10 @@ enum ReceiptCopyType {
 
   bool get isRecipient => this == ReceiptCopyType.recipient;
 
-  /// Caption stamped on the PDF so a printed/shared copy is unambiguous.
-  String get label => switch (this) {
-        ReceiptCopyType.sender => "Sender's Copy",
-        ReceiptCopyType.recipient => "Recipient's Copy",
-      };
+  // The `label` getter is gone with the caption it existed for. The picker sheet
+  // writes its own option copy, so nothing else needed it, and leaving a getter
+  // that renders "Sender's Copy" is how the caption finds its way back onto a
+  // receipt later.
 }
 
 /// Output format the user picks for a shareable/downloadable receipt. PNG/JPG
@@ -670,20 +669,15 @@ class TagPayPdfService {
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               _buildInvoiceHeader(logo, generatedDate, isInvoice: false),
-              pw.SizedBox(height: 8),
-              // Which party this copy is for (Sender's / Recipient's Copy).
-              pw.Container(
-                padding:
-                    const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: pw.BoxDecoration(
-                  color: PdfColors.grey100,
-                  borderRadius: pw.BorderRadius.circular(4),
-                ),
-                child: pw.Text(
-                  copyType.label.toUpperCase(),
-                  style: _getTextStyle(fontSize: 9, color: PdfColors.grey700),
-                ),
-              ),
+              // No "SENDER'S COPY" / "RECIPIENT'S COPY" caption.
+              //
+              // It stamped an internal distinction onto a document people send to
+              // each other, and it read as though the receipt were only partially
+              // valid — a receipt is a record of one transfer, not a carbon copy
+              // of a form. The copy TYPE still does real work: the sender's
+              // version itemises the fee they paid and the recipient's shows only
+              // what arrived (see isRecipient below). That difference is visible
+              // in the figures, which is where it belongs.
               pw.SizedBox(height: 16),
 
               // Sender and Summary
@@ -1011,7 +1005,10 @@ class TagPayPdfService {
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
         text:
-            'Lazervault Transfer Receipt (${copyType.label}) - $currencySymbol${_amountFormat.format(amount)} to $recipientName',
+            // The copy type is deliberately absent here too — same reason as
+            // the caption: it is our bookkeeping, not something the person
+            // receiving the file needs in its title.
+            'Lazervault Transfer Receipt - $currencySymbol${_amountFormat.format(amount)} to $recipientName',
         subject: 'Lazervault Transfer Receipt',
         sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
