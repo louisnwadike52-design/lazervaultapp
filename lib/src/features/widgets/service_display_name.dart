@@ -27,7 +27,7 @@ const Map<String, String> _kServiceDisplayNames = {
   // Transfers
   'transfers': 'Transfers',
   'send_funds': 'Send Funds',
-  'lazerbeam': 'LazerBeam',
+  'lazerbeam': 'Lazerbeam',
   'exchange': 'Currency Exchange',
   'rmb': 'RMB Transfers',
   'ai-scan': 'Scan to Pay',

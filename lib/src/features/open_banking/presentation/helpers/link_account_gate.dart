@@ -113,7 +113,7 @@ void showPersonalAccountOnlyLinkDialog(BuildContext context) {
           SizedBox(height: 12.h),
           _altRow(
             icon: Icons.bolt_rounded,
-            title: 'LazerBeam',
+            title: 'Lazerbeam',
             subtitle: 'Move funds from your personal account to here.',
           ),
           SizedBox(height: 18.h),
@@ -572,7 +572,7 @@ Future<void> showLinkingCapacityDialog(BuildContext context) {
           SizedBox(height: 12.h),
           _altRow(
             icon: Icons.bolt_rounded,
-            title: 'LazerBeam',
+            title: 'Lazerbeam',
             subtitle: 'Move funds from your personal account to here.',
           ),
           SizedBox(height: 18.h),
