@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,8 +13,17 @@ import 'package:lazervault/core/shared_widgets/server_refusal_sheet.dart';
 /// dismissed itself before it could be read, and it offered nothing to do next —
 /// so a clear, actionable explanation from the server arrived as a red flash.
 ///
-/// This sheet is for that first kind of message. Transient failures stay in
-/// snackbars, which is what a snackbar is for.
+/// Every error on these screens now comes through this sheet — the classifier
+/// picks the TONE (amber rule vs red breakage), not whether the user gets to read
+/// the message. Two reasons that is better than routing failures to a snackbar:
+///
+///  * a mis-classified refusal used to be downgraded to a three-second flash, and
+///    the classifier is a keyword list, so it will always miss some;
+///  * a refusal can truthfully say "nothing was changed"; a FAILURE cannot — a
+///    dropped response is indistinguishable from a rejected request — and that
+///    difference needs a sentence, which a snackbar has no room for.
+///
+/// Success confirmations are still snackbars. Nothing to read, nothing to decide.
 
 const _realRefusal =
     'This user is already at the 3 family & friends accounts limit. '
@@ -182,9 +193,9 @@ void main() {
       }
     });
 
-    test('transient failures are NOT routed to the sheet', () {
-      // These belong in a snackbar: short, not the user's fault, fixed by a
-      // retry. A modal sheet for a dropped connection is noise.
+    test('transient failures are classified as failures, not refusals', () {
+      // Still shown in the sheet — but in the red failure tone, with copy that
+      // does not claim nothing was changed, and with no one-tap retry.
       for (final m in <String>[
         'Network error',
         'Request timed out',
@@ -197,6 +208,114 @@ void main() {
 
     test('matching is case-insensitive', () {
       expect(looksLikeServerRefusal('ACCOUNT LIMIT REACHED'), isTrue);
+    });
+  });
+
+  group('it cannot stack', () {
+    /// Fires the sheet twice from ONE callback — a cubit emitting the same error
+    /// state twice, which is what a failed retry or a double rebuild looks like.
+    /// Tapping the trigger a second time would not reproduce it: the sheet's
+    /// barrier is over the button and would swallow or dismiss instead.
+    Future<void> pumpDouble(WidgetTester tester) async {
+      await tester.pumpWidget(
+        ScreenUtilInit(
+          designSize: const Size(390, 844),
+          builder: (_, __) => MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => TextButton(
+                  onPressed: () {
+                    showServerRefusal(
+                      context,
+                      title: "Couldn't send that invitation",
+                      message: _realRefusal,
+                    );
+                    showServerRefusal(
+                      context,
+                      title: "Couldn't send that invitation",
+                      message: _realRefusal,
+                    );
+                  },
+                  child: const Text('open'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('two reports in one frame produce one sheet', (tester) async {
+      await pumpDouble(tester);
+      // Two sheets would mean the user dismisses the same sentence twice, and the
+      // one underneath reads as the app having got stuck.
+      expect(find.text(_realRefusal), findsOneWidget);
+      expect(find.text('Got it'), findsOneWidget);
+    });
+
+    testWidgets('dismissing it leaves nothing behind', (tester) async {
+      await pumpDouble(tester);
+      await tester.tap(find.text('Got it'));
+      await tester.pumpAndSettle();
+      expect(find.text(_realRefusal), findsNothing);
+    });
+
+    testWidgets('an abandoned sheet does not silence the next one',
+        (tester) async {
+      // THE LEAK THIS GUARD MUST NOT HAVE. showModalBottomSheet's future
+      // completes on pop, so a tree torn down with the sheet still up never
+      // completes it and never runs the cleanup. A plain boolean would stay set
+      // and every later refusal would silently do nothing — which is strictly
+      // worse than the snackbar this replaced.
+      await pumpSheet(tester, message: _realRefusal);
+      expect(find.text(_realRefusal), findsOneWidget);
+
+      // Discard the tree WITHOUT dismissing — a host screen popped underneath,
+      // a stack replacement, a logout.
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpAndSettle();
+
+      await pumpSheet(tester, message: _realRefusal);
+      expect(find.text(_realRefusal), findsOneWidget,
+          reason: 'the stale flag must self-heal on the unmounted context');
+    });
+  });
+
+  group('the family screens route every error here', () {
+    for (final path in const [
+      'lib/src/features/family_account/presentation/views/'
+          'family_add_member_screen.dart',
+      'lib/src/features/family_account/presentation/views/'
+          'family_invite_member_flow_screen.dart',
+    ]) {
+      test('${path.split('/').last} has no error snackbar left', () {
+        final source = File(path).readAsStringSync();
+        expect(source, contains('ServerRefusalTone.failure'),
+            reason: 'the failure branch must use the sheet, not a red flash');
+        // The only snackbar left is the green success one.
+        expect(source, isNot(contains('backgroundColor: Colors.red')),
+            reason: 'a red error snackbar here means an error path still '
+                'bypasses the sheet');
+        expect(source, contains('Colors.green'),
+            reason: 'success stays a snackbar — there is nothing to read');
+      });
+    }
+
+    test('the failure copy does not claim nothing was changed', () {
+      // The one thing the sheet must not do on a failure: assert an outcome it
+      // cannot know. A dropped response looks exactly like a rejection.
+      final source = File(
+        'lib/src/features/family_account/presentation/views/'
+        'family_add_member_screen.dart',
+      ).readAsStringSync();
+      final idx = source.indexOf('ServerRefusalTone.failure');
+      expect(idx, greaterThan(-1));
+      final branch = source.substring(idx, idx + 700);
+      expect(branch, isNot(contains('Nothing was changed')));
+      expect(branch, contains('will already be there as pending'),
+          reason: 'it should tell the user how to check, since it cannot say');
     });
   });
 }

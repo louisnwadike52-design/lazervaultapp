@@ -10,13 +10,18 @@ import 'package:lazervault/core/utils/friendly_error.dart';
 /// in a three-second red snackbar, which truncates a sentence that length,
 /// dismisses itself before it can be read, and offers nothing to do next.
 ///
-/// A failure ("couldn't reach the server") is the opposite: short, not the user's
-/// fault, and fixed by trying again. Those stay in snackbars, which is what a
-/// snackbar is for.
+/// A failure ("couldn't reach the server") is different in kind: not the user's
+/// fault, and often fixed by trying again — but it still belongs here rather than
+/// in a snackbar, for a reason specific to money flows. A refusal can truthfully
+/// say "nothing was changed". A failure CANNOT: a dropped response is
+/// indistinguishable from a rejected request, so the honest message has to tell
+/// the user how to check what actually happened, and that does not fit a flash.
 ///
-/// So this exists for the first kind: a sheet that stays put until dismissed,
-/// scrolls a long message rather than clipping it, and can carry the one action
-/// that resolves the refusal.
+/// Hence the two tones. Both stay put until dismissed, scroll a long message
+/// rather than clipping it, and can carry the one action that resolves the
+/// situation — but a rule that says no is amber, and a breakage is red.
+///
+/// Success confirmations are still snackbars. Nothing to read, nothing to decide.
 enum ServerRefusalTone {
   /// A business rule said no. The user can usually do something about it.
   refusal,
@@ -24,6 +29,32 @@ enum ServerRefusalTone {
   /// Something went wrong that the user did not cause. Offer a retry.
   failure,
 }
+
+/// True while a refusal sheet is on screen.
+///
+/// Every caller is a BlocListener, and a cubit re-emitting the same error state —
+/// a rebuild, a failed retry, two screens listening to one cubit — would open a
+/// second sheet on top of the first. The user then has to dismiss the same message
+/// twice, and the one underneath looks like the app got stuck.
+///
+/// A module-level flag rather than per-call state, because the sheets stack
+/// globally: the guard has to be the same one for every caller.
+bool _sheetIsOpen = false;
+
+/// The context of the sheet currently believed to be open.
+///
+/// The flag alone is not safe. `showModalBottomSheet`'s future completes when the
+/// sheet is POPPED — so if the tree it lives in is torn down another way (the host
+/// screen popped underneath it, a stack replacement, a logout) that future never
+/// completes, the `finally` below never runs, and the flag stays set for the rest
+/// of the session: every subsequent refusal silently does nothing.
+///
+/// Caught by the tests, which are exactly that scenario — a test that leaves the
+/// sheet up ends by discarding the tree, and every later test then saw no sheet.
+///
+/// So the flag is cross-checked against whether that context is still mounted,
+/// which makes the guard self-healing rather than something that can leak shut.
+BuildContext? _openSheetContext;
 
 /// Shows the refusal sheet. Returns true when the user tapped the action.
 ///
@@ -41,14 +72,21 @@ Future<bool> showServerRefusal(
   String dismissLabel = 'Got it',
   String? hint,
 }) async {
-  final result = await showModalBottomSheet<bool>(
-    context: context,
-    backgroundColor: Colors.transparent,
-    isScrollControlled: true,
-    // Dismissible: this is information, not a decision that must be made. A
-    // barrier-locked sheet on an error is a trap.
-    isDismissible: true,
-    builder: (sheetContext) => _ServerRefusalSheet(
+  if (_sheetIsOpen) {
+    final open = _openSheetContext;
+    // null  → a sheet is opening but has not built yet (two emits in one frame):
+    //         still a duplicate, drop it.
+    // mounted → genuinely on screen: drop it, the user is reading it.
+    if (open == null || open.mounted) return false;
+    // Unmounted: the tree went away without the sheet being popped. The flag is
+    // stale, not a live sheet — clear it and show this one.
+    _sheetIsOpen = false;
+    _openSheetContext = null;
+  }
+  _sheetIsOpen = true;
+  try {
+    return await _present(
+      context,
       title: title,
       message: message,
       tone: tone,
@@ -56,7 +94,48 @@ Future<bool> showServerRefusal(
       onAction: onAction,
       dismissLabel: dismissLabel,
       hint: hint,
-    ),
+    );
+  } finally {
+    // In a finally so a throw from the sheet route cannot leave the guard set.
+    // This is the normal path; the mounted check above is the backstop for the
+    // case where this never runs at all.
+    _sheetIsOpen = false;
+    _openSheetContext = null;
+  }
+}
+
+Future<bool> _present(
+  BuildContext context, {
+  required String title,
+  required String message,
+  required ServerRefusalTone tone,
+  required String dismissLabel,
+  String? actionLabel,
+  VoidCallback? onAction,
+  String? hint,
+}) async {
+  final result = await showModalBottomSheet<bool>(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isScrollControlled: true,
+    // Dismissible: this is information, not a decision that must be made. A
+    // barrier-locked sheet on an error is a trap.
+    isDismissible: true,
+    builder: (sheetContext) {
+      // Recorded so the guard above can tell a live sheet from a stale flag.
+      // Assigned on every build, not just the first, so it always refers to a
+      // context that is currently in the tree.
+      _openSheetContext = sheetContext;
+      return _ServerRefusalSheet(
+        title: title,
+        message: message,
+        tone: tone,
+        actionLabel: actionLabel,
+        onAction: onAction,
+        dismissLabel: dismissLabel,
+        hint: hint,
+      );
+    },
   );
   return result ?? false;
 }

@@ -161,12 +161,22 @@ class _FamilyInviteMemberFlowScreenState
                       'try again once they have room.',
                 );
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.message),
-                    backgroundColor: Colors.red,
-                    duration: const Duration(seconds: 3),
-                  ),
+                // Not a refusal — a failure. The distinction matters in the copy:
+                // a refusal can truthfully say nothing was changed, and a failure
+                // CANNOT, because a dropped response looks identical to a rejected
+                // request. So this says what is actually known, and offers no
+                // "Try again" button — a one-tap resend after an unknown outcome is
+                // exactly how someone receives the same invitation twice. The form
+                // is still filled in behind the sheet if they choose to send again.
+                showServerRefusal(
+                  context,
+                  tone: ServerRefusalTone.failure,
+                  title: "Couldn't send that invitation",
+                  message: state.message,
+                  hint: 'Check your connection and look at the members list '
+                      'before sending again — if the invitation did go out, it '
+                      'will already be there as pending.',
+                  dismissLabel: 'Close',
                 );
               }
             }
