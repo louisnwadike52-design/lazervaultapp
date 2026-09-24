@@ -236,10 +236,26 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
                   hint: '0.00',
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
+                  // Digits and at most one decimal point. The numeric keyboard is
+                  // a hint, not a constraint — a hardware keyboard, a paste or a
+                  // switch to the symbols pad all put letters in here, and the
+                  // only feedback was a failure on submit.
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                    _SingleDecimalPointFormatter(),
+                  ],
+                  // 13 characters is ten digits plus a point and two decimals:
+                  // more than any single sale, and short of overflowing the
+                  // amount column.
+                  maxLength: 13,
                   onChanged: (_) => setState(() {})),
               SizedBox(height: 16.h),
               _label('What did you sell?'),
-              _field(_descCtrl, hint: 'e.g. consulting service', maxLines: 2),
+              // 100 characters, the same limit the transfer narration uses —
+              // this text lands on the sales list and on the receipt PDF, where a
+              // pasted paragraph would either truncate or break the layout.
+              _field(_descCtrl,
+                  hint: 'e.g. consulting service', maxLines: 2, maxLength: 100),
             ] else ...[
               // Nothing chosen yet — REQUIRE an inventory pick (no manual fields).
               Container(
@@ -863,11 +879,18 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
   Widget _field(TextEditingController c,
       {String? hint,
       int maxLines = 1,
+      int? maxLength,
+      List<TextInputFormatter>? inputFormatters,
       TextInputType? keyboardType,
       ValueChanged<String>? onChanged}) {
     return TextField(
       controller: c,
       maxLines: maxLines,
+      // Neither field had a limit. The description reached the server, the sales
+      // list and the PDF receipt at whatever length someone pasted, and the
+      // amount accepted letters that only failed on submit.
+      maxLength: maxLength,
+      inputFormatters: inputFormatters,
       keyboardType: keyboardType,
       onChanged: onChanged,
       style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
@@ -885,5 +908,25 @@ class _RecordSaleScreenState extends State<RecordSaleScreen> {
             borderSide: const BorderSide(color: _accent)),
       ),
     );
+  }
+}
+
+/// Keeps an amount to a single decimal point.
+///
+/// FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')) permits "1.2.3", which
+/// parses to null and fails on submit with nothing to tell the user which
+/// character was the problem. Rejecting the second point as it is typed is the
+/// only feedback that arrives in time to be useful.
+class _SingleDecimalPointFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // Only ever REJECTS — returning oldValue on a second point, never rewriting
+    // the text. A formatter that edits the string has to fix up the selection
+    // too, and getting that wrong moves the caret while someone is typing.
+    final dots = newValue.text.split('.').length - 1;
+    return dots > 1 ? oldValue : newValue;
   }
 }
