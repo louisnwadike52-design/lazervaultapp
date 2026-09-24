@@ -283,6 +283,46 @@ class BusinessDashboardScreen extends StatelessWidget {
     ];
     final maxV =
         bars.map((b) => b.value).fold<double>(0, (a, b) => b > a ? b : a);
+
+    // Nothing recorded yet: an empty state, not two zero-height bars.
+    //
+    // With every figure at 0 this drew a bordered box containing only its axis
+    // labels, under a "Money in vs out" heading — the reported "items not
+    // displaying". A chart that renders nothing reads as broken, where a sentence
+    // reads as "there is nothing here yet", and only one of those is true. The
+    // pie card beside it already did this; the bar chart was the one that did not.
+    if (maxV <= 0) {
+      return Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+            color: _card,
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(color: _border)),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 24.h),
+          child: Center(
+            child: Column(
+              children: [
+                Text('No money in or out yet',
+                    style: GoogleFonts.inter(
+                        color: const Color(0xFF9CA3AF), fontSize: 12.5.sp)),
+                SizedBox(height: 4.h),
+                Text(
+                  // Says which actions fill it, because the figures come from
+                  // sales, payroll, expenses and tax — not from wallet activity,
+                  // so "make a transfer" would be the wrong advice.
+                  'Record a sale, an expense or a pay run and this fills in.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                      color: const Color(0xFF6B7280), fontSize: 11.5.sp),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Container(
       padding: EdgeInsets.fromLTRB(12.w, 18.h, 12.w, 8.h),
       decoration: BoxDecoration(
