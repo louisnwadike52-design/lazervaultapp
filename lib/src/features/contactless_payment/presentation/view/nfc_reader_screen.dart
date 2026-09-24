@@ -118,7 +118,35 @@ class _NfcReaderViewState extends State<_NfcReaderView>
     }
   }
 
-  void _startNfcScan() {
+  Future<void> _startNfcScan() async {
+    // ALWAYS tear down any previous session before opening a new one.
+    //
+    // This is what made retry silently dead on iOS. The plugin's own Swift
+    // refuses a second session outright —
+    //
+    //     if tagSession != nil || vasSession != nil {
+    //       throw FlutterError(code: "session_already_exists", …)
+    //     }
+    //
+    // — and the error and cancel paths used to leave the session standing. So
+    // the retry threw, and because startSession was called without `await` from
+    // a void method the rejection was an unobserved async error: no log, no UI
+    // change, and setState had already painted "Scanning…". The giveaway is the
+    // missing system sheet — on iOS that sheet IS the session, so no sheet means
+    // CoreNFC was never polling and the tap could not have worked.
+    //
+    // Invalidate throws `no_active_sessions` when there is nothing to stop, which
+    // is the normal first-run case, hence the swallow.
+    try {
+      await NfcManager.instance.stopSession();
+      // CoreNFC tears the session down asynchronously; beginning the next one in
+      // the same turn can still observe the old one and throw.
+      await Future<void>.delayed(const Duration(milliseconds: 250));
+    } catch (_) {
+      // No session to stop — expected on the first scan.
+    }
+    if (!mounted) return;
+
     setState(() {
       _isScanning = true;
       _statusMessage = 'Hold your phone near the other device';
@@ -129,60 +157,84 @@ class _NfcReaderViewState extends State<_NfcReaderView>
     _pulseController.repeat(reverse: true);
     _rippleController.repeat();
 
-    NfcManager.instance.startSession(
-      pollingOptions: {NfcPollingOption.iso14443, NfcPollingOption.iso15693},
-      // This is phone-to-phone, not a card terminal. "Payment terminal" sent
-      // iPhone payers looking for hardware that does not exist, and the iPhone
-      // antenna is its TOP EDGE — back-to-back advice is wrong here.
-      alertMessageIos:
-          'Hold the top of your iPhone to the back of the other phone',
-      onDiscovered: (NfcTag tag) async {
-        // Ignore repeat discoveries of the same (or another) tag once one has
-        // already been accepted — the first valid read wins.
-        if (_tagHandled) return;
-        try {
-          final ndef = Ndef.from(tag);
-          if (ndef != null) {
-            // Android reader path: the platform exposes the emulated Type 4
-            // tag as plain NDEF.
-            final message = await ndef.read();
-            if (message == null || message.records.isEmpty) {
-              _handleScanError('No payment data found on this device');
+    await _beginSession();
+  }
+
+  /// Opens the reader session. Separated from [_startNfcScan] only so the await
+  /// and its failure handling read in one piece.
+  Future<void> _beginSession() async {
+    try {
+      await NfcManager.instance.startSession(
+        pollingOptions: {NfcPollingOption.iso14443, NfcPollingOption.iso15693},
+        // This is phone-to-phone, not a card terminal. "Payment terminal" sent
+        // iPhone payers looking for hardware that does not exist, and the iPhone
+        // antenna is its TOP EDGE — back-to-back advice is wrong here.
+        alertMessageIos:
+            'Hold the top of your iPhone to the back of the other phone',
+        onDiscovered: (NfcTag tag) async {
+          // Ignore repeat discoveries of the same (or another) tag once one has
+          // already been accepted — the first valid read wins.
+          if (_tagHandled) return;
+          try {
+            final ndef = Ndef.from(tag);
+            if (ndef != null) {
+              // Android reader path: the platform exposes the emulated Type 4
+              // tag as plain NDEF.
+              final message = await ndef.read();
+              if (message == null || message.records.isEmpty) {
+                _handleScanError('No payment data found on this device');
+                return;
+              }
+              final record = message.records.first;
+              final payloadString = String.fromCharCodes(
+                record.payload.sublist(record.payload[0] + 1),
+              );
+              _handlePayloadString(payloadString);
               return;
             }
-            final record = message.records.first;
-            final payloadString = String.fromCharCodes(
-              record.payload.sublist(record.payload[0] + 1),
-            );
-            _handlePayloadString(payloadString);
-            return;
-          }
 
-          // iOS reader path: CoreNFC surfaces the Android HCE receiver as an
-          // ISO 7816 tag with NO NDEF interface, so we speak the NFC Forum
-          // Type 4 APDU sequence ourselves (select NDEF file → read NLEN →
-          // read the message) and feed the same shared payload pipeline.
-          final payloadString = await _readPayloadViaIso7816(tag);
-          if (payloadString == null) {
-            _handleScanError('Device does not support NDEF format');
-            return;
+            // iOS reader path: CoreNFC surfaces the Android HCE receiver as an
+            // ISO 7816 tag with NO NDEF interface, so we speak the NFC Forum
+            // Type 4 APDU sequence ourselves (select NDEF file → read NLEN →
+            // read the message) and feed the same shared payload pipeline.
+            final payloadString = await _readPayloadViaIso7816(tag);
+            if (payloadString == null) {
+              _handleScanError('Device does not support NDEF format');
+              return;
+            }
+            _handlePayloadString(payloadString);
+          } catch (e) {
+            AppLogger.error('contactless: NFC read failed',
+                fields: {'feature': 'contactless_pay', 'error': '$e'});
+            _handleScanError('Failed to read payment data');
           }
-          _handlePayloadString(payloadString);
-        } catch (e) {
-          AppLogger.error('contactless: NFC read failed',
-              fields: {'feature': 'contactless_pay', 'error': '$e'});
-          _handleScanError('Failed to read payment data');
-        }
-      },
-      onSessionErrorIos: (error) {
-        if (error.code ==
-            NfcReaderErrorCodeIos.readerSessionInvalidationErrorUserCanceled) {
-          _handleScanCancelled();
-        } else {
-          _handleScanError('NFC read failed. Please try again.');
-        }
-      },
-    );
+        },
+        onSessionErrorIos: (error) {
+          if (error.code ==
+              NfcReaderErrorCodeIos
+                  .readerSessionInvalidationErrorUserCanceled) {
+            _handleScanCancelled();
+          } else {
+            _handleScanError('NFC read failed. Please try again.');
+          }
+        },
+      );
+    } catch (e) {
+      // A start that throws must NOT leave the UI claiming "Scanning…". That
+      // false state is what made this bug invisible: the animation ran, the
+      // copy said scanning, and the radio was off.
+      AppLogger.error('contactless: NFC session failed to start',
+          fields: {'feature': 'contactless_pay', 'error': '$e'});
+      if (!mounted) return;
+      setState(() {
+        _isScanning = false;
+        _hasError = true;
+        _statusMessage = 'Could not start the NFC scanner. Tap retry, '
+            'or use the QR code / session ID instead.';
+      });
+      _pulseController.stop();
+      _rippleController.stop();
+    }
   }
 
   /// NFC Forum Type 4 read over raw ISO 7816 APDUs — the iOS leg of the tap.
@@ -343,6 +395,11 @@ class _NfcReaderViewState extends State<_NfcReaderView>
     // on every scan" are diagnosable without a device in hand.
     AppLogger.error('contactless: scan rejected',
         fields: {'feature': 'contactless_pay', 'reason': message});
+    // Release the reader session. Leaving it standing is what made the NEXT
+    // retry throw `session_already_exists` and silently do nothing — see
+    // _startNfcScan. Errors raised from inside onDiscovered arrive with the
+    // session still open, so this is the only place it gets closed.
+    _stopNfcScan();
     if (!mounted) return;
     setState(() {
       _statusMessage = message;
@@ -362,6 +419,10 @@ class _NfcReaderViewState extends State<_NfcReaderView>
   void _handleScanCancelled() {
     AppLogger.info('contactless: scan cancelled by user',
         fields: {'feature': 'contactless_pay'});
+    // iOS has already invalidated the native session at this point, but the
+    // plugin's Dart/Swift side can still be holding the reference. Clearing it
+    // here keeps retry working — see _handleScanError.
+    _stopNfcScan();
     if (!mounted) return;
     setState(() {
       _statusMessage =
@@ -377,9 +438,15 @@ class _NfcReaderViewState extends State<_NfcReaderView>
   }
 
   void _stopNfcScan() {
-    try {
-      NfcManager.instance.stopSession();
-    } catch (_) {}
+    // stopSession returns a Future, so a synchronous try/catch around it catches
+    // nothing — the plugin's `no_active_sessions` throw (raised whenever there is
+    // no live session, which is most calls here) arrived as an UNHANDLED async
+    // error. Attach the handler to the future instead.
+    //
+    // Stays fire-and-forget: every caller is a synchronous teardown path
+    // (dispose, error, cancel) and none can usefully wait. _startNfcScan is the
+    // one place the stop must complete first, and it awaits its own call.
+    NfcManager.instance.stopSession().catchError((_) {});
     _pulseController.stop();
     _rippleController.stop();
   }
@@ -464,29 +531,54 @@ class _NfcReaderViewState extends State<_NfcReaderView>
               child: Column(
                 children: [
                   _buildHeader(),
+                  // SCROLLABLE, and centred only while it fits.
+                  //
+                  // This was a bare Center + Column. A Column that outgrows its
+                  // parent does not clip inside a Center, and the overflow
+                  // stripes that would flag it are debug-only — so in release it
+                  // silently PAINTED OVER the bottom hints. Any of the taller
+                  // states did it: the retry button appearing, a two-line error
+                  // message, or simply a shorter phone.
+                  //
+                  // minHeight + IntrinsicHeight keeps the content vertically
+                  // centred at the common size (so the idle screen looks exactly
+                  // as before) and lets it scroll the moment it needs more room.
                   Expanded(
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (!_showManualEntry) ...[
-                            _buildNfcIndicator(),
-                            SizedBox(height: 40.h),
-                            _buildStatusText(),
-                            SizedBox(height: 32.h),
-                            if ((_hasError || _wasCancelled) && _nfcAvailable)
-                              _buildRetryButton(),
-                            if (!_nfcAvailable && Platform.isAndroid)
-                              _buildOpenSettingsButton(),
-                            SizedBox(height: 16.h),
-                            _buildScanQrButton(),
-                            SizedBox(height: 8.h),
-                            _buildManualEntryToggle(),
-                          ] else ...[
-                            _buildManualEntryForm(),
-                          ],
-                        ],
-                      ),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return SingleChildScrollView(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: constraints.maxHeight,
+                            ),
+                            child: IntrinsicHeight(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (!_showManualEntry) ...[
+                                    _buildNfcIndicator(),
+                                    SizedBox(height: 40.h),
+                                    _buildStatusText(),
+                                    SizedBox(height: 32.h),
+                                    if ((_hasError || _wasCancelled) &&
+                                        _nfcAvailable)
+                                      _buildRetryButton(),
+                                    if (!_nfcAvailable && Platform.isAndroid)
+                                      _buildOpenSettingsButton(),
+                                    SizedBox(height: 16.h),
+                                    _buildScanQrButton(),
+                                    SizedBox(height: 8.h),
+                                    _buildManualEntryToggle(),
+                                  ] else ...[
+                                    _buildManualEntryForm(),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                   _buildBottomHints(),
