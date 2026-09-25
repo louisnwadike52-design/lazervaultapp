@@ -14,7 +14,8 @@ class AccountSummaryModel extends AccountSummaryEntity {
     required super.accountNumberLast4, // Keep entity field name
     super.accountNumber, // Full account number for deposits
     super.bankName, // Bank name for deposits
-    super.accountName, // Account holder name for deposits
+    super.accountName, // The user's label for the wallet
+    super.virtualAccountHolderName, // Holder name from the ACTIVE rail
     super.accountLabel, // Custom display name (e.g., "Kids Allowance")
     super.status = 'active', // active | frozen | suspended | closed
     // Trend percentage is missing in proto, set default or remove from entity
@@ -81,6 +82,9 @@ class AccountSummaryModel extends AccountSummaryEntity {
       accountNumber:
           proto.accountNumber.isNotEmpty ? proto.accountNumber : null,
       accountName: proto.accountName.isNotEmpty ? proto.accountName : null,
+      virtualAccountHolderName: proto.virtualAccountHolderName.isNotEmpty
+          ? proto.virtualAccountHolderName
+          : null,
       accountLabel: proto.accountName.isNotEmpty ? proto.accountName : null,
       bankName: proto.bankName.isNotEmpty ? proto.bankName : null,
       // Account status (active/frozen/suspended/closed) — surfaced so transfer

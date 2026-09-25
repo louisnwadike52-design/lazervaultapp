@@ -1585,6 +1585,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
       // never a mock ("Wema Bank" / "Lazervault Business").
       'bankName': account.bankName ?? '',
       'accountName': account.accountName ?? '',
+      'holderName': account.virtualAccountHolderName ?? '',
     };
 
     return StreamBuilder<String?>(

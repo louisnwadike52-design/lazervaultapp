@@ -62,6 +62,10 @@ Future<void> openAccountDetailsSheet(BuildContext context,
     'accountNumberMasked': '•••• ${acct.accountNumberLast4}',
     'bankName': acct.bankName ?? '',
     'accountName': acct.accountName ?? '',
+    // Holder name from the rail currently issuing the number. Without this the
+    // card falls back to accountName, which after a provider switch is the OLD
+    // rail's name — a Nomba number labelled "Praiz Onah FLW".
+    'holderName': acct.virtualAccountHolderName ?? '',
   };
 
   await Get.bottomSheet(

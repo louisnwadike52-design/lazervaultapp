@@ -57,7 +57,13 @@ class AccountSummaryEntity extends Equatable {
   final String accountNumberLast4; // e.g., "7890"
   final String? accountNumber; // Full NUBAN account number for deposits
   final String? bankName; // Bank name (e.g., "Wema Bank", "VFD MFB")
-  final String? accountName; // Account holder name for deposits
+  final String? accountName; // The USER'S label for the wallet (e.g. "Smith Family")
+  /// Holder name as the CURRENTLY ACTIVE rail issued it — "LAZERVAULT/Praiz
+  /// Onah" on Nomba, "Praiz Onah FLW" on Flutterwave. Separate from
+  /// [accountName], which is the user's own label and must survive a provider
+  /// switch; conflating them left a Nomba number under a Nombank heading still
+  /// showing Flutterwave's holder name.
+  final String? virtualAccountHolderName;
   final double trendPercentage; // e.g., 2.4 or -0.8
   final bool isUp; // Derived from trendPercentage > 0
   final bool isPrimary; // Whether this is the user's primary account
@@ -111,6 +117,7 @@ class AccountSummaryEntity extends Equatable {
     this.accountNumber,
     this.bankName,
     this.accountName,
+    this.virtualAccountHolderName,
     required this.trendPercentage,
     this.isPrimary = false,
     this.accountLabel,
@@ -337,6 +344,7 @@ class AccountSummaryEntity extends Equatable {
     String? accountNumber,
     String? bankName,
     String? accountName,
+    String? virtualAccountHolderName,
     double? trendPercentage,
     bool? isPrimary,
     String? accountLabel,
@@ -364,6 +372,8 @@ class AccountSummaryEntity extends Equatable {
       accountNumber: accountNumber ?? this.accountNumber,
       bankName: bankName ?? this.bankName,
       accountName: accountName ?? this.accountName,
+      virtualAccountHolderName:
+          virtualAccountHolderName ?? this.virtualAccountHolderName,
       trendPercentage: trendPercentage ?? this.trendPercentage,
       isPrimary: isPrimary ?? this.isPrimary,
       accountLabel: accountLabel ?? this.accountLabel,

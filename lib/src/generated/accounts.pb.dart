@@ -436,6 +436,7 @@ class AccountSummary extends $pb.GeneratedMessage {
     $core.String? trendPeriod,
     $core.String? bankName,
     $core.String? bankCode,
+    $core.String? virtualAccountHolderName,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -454,6 +455,8 @@ class AccountSummary extends $pb.GeneratedMessage {
     if (trendPeriod != null) result.trendPeriod = trendPeriod;
     if (bankName != null) result.bankName = bankName;
     if (bankCode != null) result.bankCode = bankCode;
+    if (virtualAccountHolderName != null)
+      result.virtualAccountHolderName = virtualAccountHolderName;
     return result;
   }
 
@@ -492,6 +495,7 @@ class AccountSummary extends $pb.GeneratedMessage {
     ..aOS(13, _omitFieldNames ? '' : 'trendPeriod')
     ..aOS(14, _omitFieldNames ? '' : 'bankName')
     ..aOS(15, _omitFieldNames ? '' : 'bankCode')
+    ..aOS(16, _omitFieldNames ? '' : 'virtualAccountHolderName')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -661,6 +665,15 @@ class AccountSummary extends $pb.GeneratedMessage {
   $core.bool hasBankCode() => $_has(14);
   @$pb.TagNumber(15)
   void clearBankCode() => $_clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get virtualAccountHolderName => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set virtualAccountHolderName($core.String value) => $_setString(15, value);
+  @$pb.TagNumber(16)
+  $core.bool hasVirtualAccountHolderName() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearVirtualAccountHolderName() => $_clearField(16);
 }
 
 /// ===== Get User Accounts Summary (for dashboard carousel) =====
