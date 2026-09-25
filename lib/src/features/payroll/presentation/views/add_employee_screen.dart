@@ -72,18 +72,42 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   // Dynamic step set
   // ---------------------------------------------------------------------------
 
-  List<_WizardStep> get _steps {
-    final steps = <_WizardStep>[
-      _WizardStep('Payout', _buildPayoutStep),
-      _WizardStep('Personal', _buildPersonalInfoStep),
-    ];
-    // A bank destination is only relevant when paying someone who is NOT a
-    // Lazervault user. Internal employees are credited straight to their wallet.
-    if (_payoutType == 'external') {
-      steps.add(_WizardStep('Bank', _buildBankDetailsStep));
-    }
-    steps.add(_WizardStep('Employment', _buildEmploymentStep));
-    return steps;
+  /// TWO steps, on both paths.
+  ///
+  /// It used to be three for an internal employee and FOUR for an external one
+  /// (Payout → Personal → Bank → Employment), which is a long way to walk to
+  /// record one person — and the external employee, the more common case for a
+  /// small business paying casual staff, had the longest walk of all.
+  ///
+  /// The split that survives is the one a user actually thinks in: WHO this
+  /// person is and how the money reaches them, then WHAT they are paid. Payout
+  /// destination and identity were never separate decisions — you pick "bank
+  /// transfer" and immediately want to type the account — so they are one step,
+  /// with the bank fields appearing inline for the external path instead of
+  /// becoming a page of their own.
+  List<_WizardStep> get _steps => <_WizardStep>[
+        _WizardStep('Details', _buildWhoStep),
+        _WizardStep('Pay', _buildEmploymentStep),
+      ];
+
+  /// Step 1: payout destination + identity, with bank details inline when the
+  /// destination is a bank.
+  Widget _buildWhoStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildPayoutStep(),
+        SizedBox(height: 20.h),
+        _buildPersonalInfoStep(),
+        // Only an external employee needs an account to pay into. An internal
+        // one is credited to their Lazervault wallet, so showing bank fields
+        // would be asking for something that is never used.
+        if (_payoutType == 'external') ...[
+          SizedBox(height: 20.h),
+          _buildBankDetailsStep(),
+        ],
+      ],
+    );
   }
 
   bool get _isLastStep => _currentStep >= _steps.length - 1;
@@ -91,8 +115,12 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   void _nextStep() {
     final label = _steps[_currentStep].label;
 
-    // Payout step gates on a chosen type (+ a picked user for internal).
-    if (label == 'Payout') {
+    // The Details step now carries the payout choice AND, for an external
+    // employee, the bank account — so both gates live here. These mirror
+    // validatePayoutFields in payroll-service exactly; letting either through
+    // produces an employee the server will refuse, or worse, one saved with no
+    // way to be paid who is only discovered mid pay run.
+    if (label == 'Details') {
       if (_payoutType == null) {
         _toast('Choose how this employee is paid', isError: true);
         return;
@@ -101,12 +129,12 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
         _toast('Select the Lazervault user to pay', isError: true);
         return;
       }
-    }
-
-    // Bank step gates on a verified account (resolved beneficiary name).
-    if (label == 'Bank' && _bankAccountName.trim().isEmpty) {
-      _toast('Verify the bank account before continuing', isError: true);
-      return;
+      // The resolved beneficiary name is the proof the account exists. Saving
+      // without it is how money is sent to a number nobody verified.
+      if (_payoutType == 'external' && _bankAccountName.trim().isEmpty) {
+        _toast('Verify the bank account before continuing', isError: true);
+        return;
+      }
     }
 
     // Validate the CURRENT step's mounted form fields (email/phone/pay rate…).
@@ -541,7 +569,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('Personal Information'),
+        _buildSectionTitle('Who they are'),
         if (isInternal) ...[
           SizedBox(height: 8.h),
           Text(
@@ -553,6 +581,8 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
           ),
         ],
         SizedBox(height: 16.h),
+        // The ONLY required field here. Everything below is optional, so adding
+        // someone you already know how to pay takes a name and nothing else.
         _buildTextField(
           controller: _nameController,
           label: 'Full Name',
@@ -562,28 +592,38 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
               v == null || v.trim().isEmpty ? 'Full name is required' : null,
         ),
         SizedBox(height: 14.h),
+        // Email is how a payslip reaches them, so it is worth asking for — but
+        // it is NOT how they get paid, and demanding it blocked adding the
+        // market trader or day labourer who has no address. Optional, and
+        // still validated when given so a typo does not silently swallow
+        // payslips.
         _buildTextField(
           controller: _emailController,
-          label: 'Email Address',
-          hint: 'e.g. adebayo@company.com',
+          label: 'Email Address (optional)',
+          hint: 'For payslips — leave blank if they have none',
           icon: Icons.email_outlined,
           keyboardType: TextInputType.emailAddress,
-          validator: (v) => FormValidators.email(v, required: true),
+          validator: (v) => (v == null || v.trim().isEmpty)
+              ? null
+              : FormValidators.email(v, required: false),
         ),
         SizedBox(height: 14.h),
         AppPhoneField(
-          label: 'Phone Number',
-          isRequired: true,
+          label: 'Phone Number (optional)',
+          isRequired: false,
           onChanged: (p) => _phone = p,
         ),
-        SizedBox(height: 14.h),
-        _buildTextField(
-          controller: _ninController,
-          label: 'NIN (National Identification Number)',
-          hint: 'e.g. 12345678901',
-          icon: Icons.badge_outlined,
-          keyboardType: TextInputType.number,
-        ),
+        // NIN is deliberately NOT asked for here.
+        //
+        // Nothing in payroll-service reads it — it is stored, echoed back, and
+        // never used in a calculation, a filing or a payout. Asking every
+        // employer to collect a national identification number for data the
+        // platform does not use creates a real handling obligation for us and a
+        // real hesitation for them, in exchange for nothing.
+        //
+        // The field remains on the model and on the Edit screen, so anything
+        // already captured stays visible and editable, and it can be recorded
+        // deliberately if a tax filing ever needs it.
       ],
     );
   }
@@ -935,16 +975,19 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
         ),
         SizedBox(height: 14.h),
 
+        // Organisational, not operational: neither affects who gets paid, how
+        // much, or where the money goes. Labelled optional so a two-person
+        // business is not invented a department to fill the box in.
         _buildTextField(
           controller: _departmentController,
-          label: 'Department',
+          label: 'Department (optional)',
           hint: 'e.g. Engineering',
           icon: Icons.business_outlined,
         ),
         SizedBox(height: 14.h),
         _buildTextField(
           controller: _jobTitleController,
-          label: 'Job Title',
+          label: 'Job Title (optional)',
           hint: 'e.g. Senior Developer',
           icon: Icons.work_outline,
         ),
