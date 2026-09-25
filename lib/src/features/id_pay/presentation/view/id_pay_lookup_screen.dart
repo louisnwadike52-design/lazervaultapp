@@ -10,6 +10,7 @@ import '../cubit/id_pay_cubit.dart';
 import '../cubit/id_pay_state.dart';
 import '../widgets/id_pay_status_badge.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
 class IDPayLookupScreen extends StatefulWidget {
   const IDPayLookupScreen({super.key});
@@ -93,7 +94,7 @@ class _IDPayLookupScreenState extends State<IDPayLookupScreen> {
                   ),
                   prefixText: 'PAY-',
                   prefixStyle: GoogleFonts.inter(
-                    color: const Color(0xFF9B6DFF),
+                    color: InvoiceThemeColors.primaryPurpleLight,
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -102,7 +103,7 @@ class _IDPayLookupScreenState extends State<IDPayLookupScreen> {
                     child: Container(
                       margin: EdgeInsets.all(8.w),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF9B6DFF),
+                        color: InvoiceThemeColors.primaryPurple,
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Icon(
@@ -217,7 +218,8 @@ class _IDPayLookupScreenState extends State<IDPayLookupScreen> {
                       color: const Color(0xFF1F1F1F),
                       borderRadius: BorderRadius.circular(16.r),
                       border: Border.all(
-                        color: const Color(0xFF9B6DFF).withValues(alpha: 0.3),
+                        color: InvoiceThemeColors.primaryPurpleLight
+                            .withValues(alpha: 0.3),
                       ),
                     ),
                     child: Row(
@@ -226,14 +228,14 @@ class _IDPayLookupScreenState extends State<IDPayLookupScreen> {
                           width: 44.w,
                           height: 44.w,
                           decoration: BoxDecoration(
-                            color:
-                                const Color(0xFF9B6DFF).withValues(alpha: 0.15),
+                            color: InvoiceThemeColors.primaryPurpleLight
+                                .withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                           child: Center(
                             child: Icon(
                               Icons.business,
-                              color: const Color(0xFF9B6DFF),
+                              color: InvoiceThemeColors.primaryPurpleLight,
                               size: 22.sp,
                             ),
                           ),
@@ -287,7 +289,7 @@ class _IDPayLookupScreenState extends State<IDPayLookupScreen> {
                             width: 52.w,
                             height: 52.w,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF9B6DFF)
+                              color: InvoiceThemeColors.primaryPurple
                                   .withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(26.r),
                             ),
@@ -297,7 +299,7 @@ class _IDPayLookupScreenState extends State<IDPayLookupScreen> {
                                     ? idPay.creatorName[0].toUpperCase()
                                     : '?',
                                 style: GoogleFonts.inter(
-                                  color: const Color(0xFF9B6DFF),
+                                  color: InvoiceThemeColors.primaryPurpleLight,
                                   fontSize: 22.sp,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -396,7 +398,7 @@ class _IDPayLookupScreenState extends State<IDPayLookupScreen> {
                       arguments: {'idPay': idPay});
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF9B6DFF),
+                  backgroundColor: InvoiceThemeColors.primaryPurple,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14.r),
                   ),

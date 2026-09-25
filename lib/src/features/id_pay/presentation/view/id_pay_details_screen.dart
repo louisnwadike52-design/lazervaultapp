@@ -18,6 +18,7 @@ import '../widgets/id_pay_status_badge.dart';
 import '../../utils/id_pay_unified_mapper.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/screens/transaction_detail_screen.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
 class IDPayDetailsScreen extends StatefulWidget {
   const IDPayDetailsScreen({super.key});
@@ -240,14 +241,14 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
       padding: EdgeInsets.all(28.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF4C1D95), Color(0xFF9B6DFF)],
+          colors: [Color(0xFF4C1D95), InvoiceThemeColors.primaryPurple],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF9B6DFF).withValues(alpha: 0.3),
+            color: InvoiceThemeColors.primaryPurpleLight.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),

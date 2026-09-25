@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../domain/entities/id_pay_entity.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
 class IDPayStatusBadge extends StatelessWidget {
   final IDPayStatus status;
@@ -31,7 +32,7 @@ class IDPayStatusBadge extends StatelessWidget {
       case IDPayStatus.active:
         return const Color(0xFF10B981).withValues(alpha: 0.15);
       case IDPayStatus.paid:
-        return const Color(0xFF9B6DFF).withValues(alpha: 0.15);
+        return InvoiceThemeColors.primaryPurpleLight.withValues(alpha: 0.15);
       case IDPayStatus.expired:
         return const Color(0xFF9CA3AF).withValues(alpha: 0.15);
       case IDPayStatus.cancelled:
@@ -44,7 +45,7 @@ class IDPayStatusBadge extends StatelessWidget {
       case IDPayStatus.active:
         return const Color(0xFF10B981);
       case IDPayStatus.paid:
-        return const Color(0xFF9B6DFF);
+        return InvoiceThemeColors.primaryPurpleLight;
       case IDPayStatus.expired:
         return const Color(0xFF9CA3AF);
       case IDPayStatus.cancelled:

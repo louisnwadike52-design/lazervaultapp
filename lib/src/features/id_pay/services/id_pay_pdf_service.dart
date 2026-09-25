@@ -22,6 +22,20 @@ class IDPayPdfService {
 
   static String _currencySymbolFor(String code) => receiptCurrencySymbol(code);
 
+  /// Money on a receipt, grouped.
+  ///
+  /// `toStringAsFixed(2)` renders ₦120,000 as "120000.00". On a screen that is
+  /// merely untidy; on a PDF someone forwards to whoever paid them, it is a
+  /// number the reader has to count digits to trust — and this document exists
+  /// precisely to be trusted.
+  ///
+  /// The `0` before the decimal point matters as much as the separator:
+  /// '#,###.00' drops the leading digit entirely, so a ₦0.50 fee prints as
+  /// ".50".
+  static final _money = NumberFormat('#,##0.00');
+
+  static String _amount(double v) => _money.format(v);
+
   static String _currencyNameFor(String code) {
     switch (code.toUpperCase()) {
       case 'NGN':
@@ -79,7 +93,7 @@ class IDPayPdfService {
     final generatedDate = _displayDateFormat.format(DateTime.now());
     final transactionDate = _dateFormat.format(transaction.createdAt);
     final currencySymbol = _currencySymbolFor(transaction.currency);
-    final amount = transaction.amount.toStringAsFixed(2);
+    final amount = _amount(transaction.amount);
 
     pdf.addPage(
       pw.Page(
@@ -354,9 +368,8 @@ class IDPayPdfService {
     required IDPayEntity idPay,
     required String currencySymbol,
   }) {
-    final amountDisplay = idPay.isFixed
-        ? '$currencySymbol${idPay.amount.toStringAsFixed(2)}'
-        : 'Flexible';
+    final amountDisplay =
+        idPay.isFixed ? '$currencySymbol${_amount(idPay.amount)}' : 'Flexible';
 
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -376,11 +389,11 @@ class IDPayPdfService {
               _buildDetailRow('PayID', idPay.displayPayId, isBold: true),
               _buildDetailRow('Amount', amountDisplay, isBold: true),
               if (idPay.isFlexible && idPay.minAmount > 0)
-                _buildDetailRow('Min Amount',
-                    '$currencySymbol${idPay.minAmount.toStringAsFixed(2)}'),
+                _buildDetailRow(
+                    'Min Amount', '$currencySymbol${_amount(idPay.minAmount)}'),
               if (idPay.isFlexible && idPay.maxAmount > 0)
-                _buildDetailRow('Max Amount',
-                    '$currencySymbol${idPay.maxAmount.toStringAsFixed(2)}'),
+                _buildDetailRow(
+                    'Max Amount', '$currencySymbol${_amount(idPay.maxAmount)}'),
               _buildDetailRow('Currency', _currencyNameFor(idPay.currency)),
               _buildDetailRow('Type', idPay.type.displayName),
               _buildDetailRow('Amount Mode', idPay.amountMode.displayName),
@@ -536,7 +549,7 @@ class IDPayPdfService {
           await generatePaymentReceipt(transaction: transaction, idPay: idPay);
 
       final currencySymbol = _currencySymbolFor(transaction.currency);
-      final amount = transaction.amount.toStringAsFixed(2);
+      final amount = _amount(transaction.amount);
 
       await SharePlus.instance.share(ShareParams(
         // iOS: a non-zero popover anchor is required — CGRectZero throws
@@ -576,7 +589,7 @@ class IDPayPdfService {
 
       final currencySymbol = _currencySymbolFor(idPay.currency);
       final amountText = idPay.isFixed
-          ? '$currencySymbol${idPay.amount.toStringAsFixed(2)}'
+          ? '$currencySymbol${_amount(idPay.amount)}'
           : 'Flexible amount';
 
       await SharePlus.instance.share(ShareParams(

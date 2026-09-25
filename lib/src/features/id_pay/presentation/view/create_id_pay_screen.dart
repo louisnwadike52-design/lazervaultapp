@@ -17,6 +17,7 @@ import '../cubit/id_pay_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
 class CreateIDPayScreen extends StatefulWidget {
   const CreateIDPayScreen({super.key});
@@ -251,7 +252,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
               margin: EdgeInsets.symmetric(horizontal: 2.w),
               decoration: BoxDecoration(
                 color: isActive
-                    ? const Color(0xFF9B6DFF)
+                    ? InvoiceThemeColors.primaryPurple
                     : const Color(0xFF2D2D2D),
                 borderRadius: BorderRadius.circular(2.r),
               ),
@@ -322,8 +323,9 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color:
-                isSelected ? const Color(0xFF9B6DFF) : const Color(0xFF2D2D2D),
+            color: isSelected
+                ? InvoiceThemeColors.primaryPurpleLight
+                : const Color(0xFF2D2D2D),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -334,14 +336,15 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
               height: 52.w,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF9B6DFF).withValues(alpha: 0.15)
+                    ? InvoiceThemeColors.primaryPurpleLight
+                        .withValues(alpha: 0.15)
                     : const Color(0xFF2D2D2D),
                 borderRadius: BorderRadius.circular(26.r),
               ),
               child: Icon(
                 icon,
                 color: isSelected
-                    ? const Color(0xFF9B6DFF)
+                    ? InvoiceThemeColors.primaryPurpleLight
                     : const Color(0xFF9CA3AF),
                 size: 26.sp,
               ),
@@ -375,7 +378,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
             if (isSelected)
               Icon(
                 Icons.check_circle,
-                color: const Color(0xFF9B6DFF),
+                color: InvoiceThemeColors.primaryPurpleLight,
                 size: 24.sp,
               ),
           ],
@@ -487,8 +490,9 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color:
-                isSelected ? const Color(0xFF9B6DFF) : const Color(0xFF2D2D2D),
+            color: isSelected
+                ? InvoiceThemeColors.primaryPurpleLight
+                : const Color(0xFF2D2D2D),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -499,14 +503,15 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
               height: 52.w,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF9B6DFF).withValues(alpha: 0.15)
+                    ? InvoiceThemeColors.primaryPurpleLight
+                        .withValues(alpha: 0.15)
                     : const Color(0xFF2D2D2D),
                 borderRadius: BorderRadius.circular(26.r),
               ),
               child: Icon(
                 icon,
                 color: isSelected
-                    ? const Color(0xFF9B6DFF)
+                    ? InvoiceThemeColors.primaryPurpleLight
                     : const Color(0xFF9CA3AF),
                 size: 26.sp,
               ),
@@ -540,7 +545,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
             if (isSelected)
               Icon(
                 Icons.check_circle,
-                color: const Color(0xFF9B6DFF),
+                color: InvoiceThemeColors.primaryPurpleLight,
                 size: 24.sp,
               ),
           ],
@@ -572,7 +577,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
         ),
         prefixText: '${_currencySymbol(_selectedCurrency)} ',
         prefixStyle: GoogleFonts.inter(
-          color: const Color(0xFF9B6DFF),
+          color: InvoiceThemeColors.primaryPurpleLight,
           fontSize: 18.sp,
           fontWeight: FontWeight.w600,
         ),
@@ -671,12 +676,13 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
                       EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? const Color(0xFF9B6DFF).withValues(alpha: 0.2)
+                        ? InvoiceThemeColors.primaryPurpleLight
+                            .withValues(alpha: 0.2)
                         : const Color(0xFF1F1F1F),
                     borderRadius: BorderRadius.circular(10.r),
                     border: Border.all(
                       color: isSelected
-                          ? const Color(0xFF9B6DFF)
+                          ? InvoiceThemeColors.primaryPurpleLight
                           : const Color(0xFF2D2D2D),
                     ),
                   ),
@@ -684,7 +690,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
                     option,
                     style: GoogleFonts.inter(
                       color: isSelected
-                          ? const Color(0xFF9B6DFF)
+                          ? InvoiceThemeColors.primaryPurpleLight
                           : const Color(0xFF9CA3AF),
                       fontSize: 13.sp,
                       fontWeight:
@@ -990,7 +996,8 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
                     onPressed: isLoading ? null : _onBack,
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      side: const BorderSide(color: Color(0xFF9B6DFF)),
+                      side: const BorderSide(
+                          color: InvoiceThemeColors.primaryPurpleLight),
                       padding: EdgeInsets.symmetric(vertical: 14.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
@@ -1012,9 +1019,10 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
                       ? null
                       : (_currentStep == 3 ? _onCreate : _onNext),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF9B6DFF),
-                    disabledBackgroundColor:
-                        const Color(0xFF9B6DFF).withValues(alpha: 0.5),
+                    backgroundColor: InvoiceThemeColors.primaryPurple,
+                    disabledBackgroundColor: InvoiceThemeColors
+                        .primaryPurpleLight
+                        .withValues(alpha: 0.5),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),

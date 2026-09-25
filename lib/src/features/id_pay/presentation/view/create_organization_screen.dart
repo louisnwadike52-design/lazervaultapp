@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../cubit/id_pay_cubit.dart';
 import '../cubit/id_pay_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
 class CreateOrganizationScreen extends StatefulWidget {
   const CreateOrganizationScreen({super.key});
@@ -207,7 +208,7 @@ class _CreateOrganizationScreenState extends State<CreateOrganizationScreen> {
                       child: ElevatedButton(
                         onPressed: isLoading ? null : _onCreate,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF9B6DFF),
+                          backgroundColor: InvoiceThemeColors.primaryPurple,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14.r),
                           ),

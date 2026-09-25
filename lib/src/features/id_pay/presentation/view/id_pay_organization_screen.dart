@@ -8,6 +8,7 @@ import '../../domain/entities/id_pay_organization_entity.dart';
 import '../cubit/id_pay_cubit.dart';
 import '../cubit/id_pay_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
 class IDPayOrganizationScreen extends StatefulWidget {
   const IDPayOrganizationScreen({super.key});
@@ -73,7 +74,7 @@ class _IDPayOrganizationScreenState extends State<IDPayOrganizationScreen> {
             context.read<IDPayCubit>().getMyOrganizations(accountId: accountId);
           }
         },
-        backgroundColor: const Color(0xFF9B6DFF),
+        backgroundColor: InvoiceThemeColors.primaryPurple,
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: BlocConsumer<IDPayCubit, IDPayState>(
@@ -114,7 +115,7 @@ class _IDPayOrganizationScreenState extends State<IDPayOrganizationScreen> {
                     .read<IDPayCubit>()
                     .getMyOrganizations(accountId: accountId);
               },
-              color: const Color(0xFF9B6DFF),
+              color: InvoiceThemeColors.primaryPurpleLight,
               backgroundColor: const Color(0xFF1F1F1F),
               child: ListView.separated(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -164,14 +165,15 @@ class _IDPayOrganizationScreenState extends State<IDPayOrganizationScreen> {
                   width: 44.w,
                   height: 44.w,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF9B6DFF).withValues(alpha: 0.15),
+                    color: InvoiceThemeColors.primaryPurpleLight
+                        .withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Center(
                     child: Text(
                       org.name.isNotEmpty ? org.name[0].toUpperCase() : '?',
                       style: GoogleFonts.inter(
-                        color: const Color(0xFF9B6DFF),
+                        color: InvoiceThemeColors.primaryPurpleLight,
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w700,
                       ),
@@ -227,7 +229,7 @@ class _IDPayOrganizationScreenState extends State<IDPayOrganizationScreen> {
                 _buildStatChip(
                   'Payments',
                   '${org.totalPaymentCount}',
-                  const Color(0xFF9B6DFF),
+                  InvoiceThemeColors.primaryPurpleLight,
                 ),
                 SizedBox(width: 12.w),
                 _buildStatChip(

@@ -17,6 +17,7 @@ import '../../domain/entities/id_pay_entity.dart';
 import '../cubit/id_pay_cubit.dart';
 import '../cubit/id_pay_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
 class IDPayPaymentScreen extends StatefulWidget {
   const IDPayPaymentScreen({super.key});
@@ -417,7 +418,8 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
             width: 52.w,
             height: 52.w,
             decoration: BoxDecoration(
-              color: const Color(0xFF9B6DFF).withValues(alpha: 0.15),
+              color:
+                  InvoiceThemeColors.primaryPurpleLight.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(26.r),
             ),
             child: Center(
@@ -426,7 +428,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
                     ? _idPay.creatorName[0].toUpperCase()
                     : '?',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF9B6DFF),
+                  color: InvoiceThemeColors.primaryPurpleLight,
                   fontSize: 22.sp,
                   fontWeight: FontWeight.w700,
                 ),
@@ -450,7 +452,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
                 Text(
                   _idPay.displayPayId,
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF9B6DFF),
+                    color: InvoiceThemeColors.primaryPurpleLight,
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w500,
                   ),
@@ -547,7 +549,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
             ),
             prefixText: '${_currencySymbol(_idPay.currency)} ',
             prefixStyle: GoogleFonts.inter(
-              color: const Color(0xFF9B6DFF),
+              color: InvoiceThemeColors.primaryPurpleLight,
               fontSize: 24.sp,
               fontWeight: FontWeight.w700,
             ),
@@ -647,7 +649,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
                     child: Text(
                       'Change',
                       style: GoogleFonts.inter(
-                        color: const Color(0xFF9B6DFF),
+                        color: InvoiceThemeColors.primaryPurpleLight,
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
                       ),
@@ -704,9 +706,9 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF9B6DFF).withValues(alpha: 0.1),
+        color: InvoiceThemeColors.primaryPurpleLight.withValues(alpha: 0.1),
         border: Border.all(
-          color: const Color(0xFF9B6DFF),
+          color: InvoiceThemeColors.primaryPurple,
           width: 2,
         ),
         borderRadius: BorderRadius.circular(12.r),
@@ -717,12 +719,13 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
             width: 40.w,
             height: 40.w,
             decoration: BoxDecoration(
-              color: const Color(0xFF9B6DFF).withValues(alpha: 0.2),
+              color:
+                  InvoiceThemeColors.primaryPurpleLight.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20.r),
             ),
             child: Icon(
               Icons.account_balance_wallet,
-              color: const Color(0xFF9B6DFF),
+              color: InvoiceThemeColors.primaryPurpleLight,
               size: 20.sp,
             ),
           ),
@@ -777,7 +780,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
           ),
           Icon(
             Icons.check_circle,
-            color: const Color(0xFF9B6DFF),
+            color: InvoiceThemeColors.primaryPurpleLight,
             size: 24.sp,
           ),
         ],
@@ -887,14 +890,14 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
                           color: !hasSufficientBalance
                               ? const Color(0xFF1F1F1F).withValues(alpha: 0.5)
                               : isSelected
-                                  ? const Color(0xFF9B6DFF)
+                                  ? InvoiceThemeColors.primaryPurpleLight
                                       .withValues(alpha: 0.1)
                                   : const Color(0xFF0A0A0A),
                           border: Border.all(
                             color: !hasSufficientBalance
                                 ? const Color(0xFFEF4444).withValues(alpha: 0.3)
                                 : isSelected
-                                    ? const Color(0xFF9B6DFF)
+                                    ? InvoiceThemeColors.primaryPurpleLight
                                     : const Color(0xFF2D2D2D),
                             width: isSelected ? 2 : 1,
                           ),
@@ -909,7 +912,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
                                 color: !hasSufficientBalance
                                     ? const Color(0xFFEF4444)
                                         .withValues(alpha: 0.2)
-                                    : const Color(0xFF9B6DFF)
+                                    : InvoiceThemeColors.primaryPurpleLight
                                         .withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(20.r),
                               ),
@@ -917,7 +920,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
                                 Icons.account_balance_wallet,
                                 color: !hasSufficientBalance
                                     ? const Color(0xFFEF4444)
-                                    : const Color(0xFF9B6DFF),
+                                    : InvoiceThemeColors.primaryPurpleLight,
                                 size: 20.sp,
                               ),
                             ),
@@ -972,7 +975,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
                             if (isSelected && hasSufficientBalance)
                               Icon(
                                 Icons.check_circle,
-                                color: const Color(0xFF9B6DFF),
+                                color: InvoiceThemeColors.primaryPurpleLight,
                                 size: 24.sp,
                               ),
                           ],
@@ -1085,9 +1088,9 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
       child: ElevatedButton(
         onPressed: _isProcessing ? null : _processPayment,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF9B6DFF),
+          backgroundColor: InvoiceThemeColors.primaryPurple,
           disabledBackgroundColor:
-              const Color(0xFF9B6DFF).withValues(alpha: 0.5),
+              InvoiceThemeColors.primaryPurpleLight.withValues(alpha: 0.5),
           padding: EdgeInsets.symmetric(vertical: 16.h),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14.r),

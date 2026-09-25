@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../domain/entities/id_pay_entity.dart';
 import 'id_pay_status_badge.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
 class IDPayCard extends StatelessWidget {
   final IDPayEntity idPay;
@@ -39,7 +40,7 @@ class IDPayCard extends StatelessWidget {
                       child: Text(
                         idPay.displayPayId,
                         style: TextStyle(
-                          color: const Color(0xFF9B6DFF),
+                          color: InvoiceThemeColors.primaryPurpleLight,
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1.2,

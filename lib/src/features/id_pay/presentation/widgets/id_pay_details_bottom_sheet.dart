@@ -8,6 +8,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/id_pay_entity.dart';
 import '../../services/id_pay_pdf_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
 class IDPayDetailsBottomSheet extends StatefulWidget {
   final IDPayEntity idPay;
@@ -76,7 +77,7 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
     IconData statusIcon;
     String statusText;
     if (idPay.isPaid) {
-      statusColor = const Color(0xFF9B6DFF);
+      statusColor = InvoiceThemeColors.primaryPurpleLight;
       statusIcon = Icons.check_circle;
       statusText = 'PAID';
     } else if (idPay.status == IDPayStatus.cancelled) {
@@ -178,14 +179,14 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
               '${_currencySymbol(idPay.currency)}${idPay.amount.toStringAsFixed(2)}',
               valueColor: idPay.isPaid
                   ? const Color(0xFF10B981)
-                  : const Color(0xFF9B6DFF),
+                  : InvoiceThemeColors.primaryPurpleLight,
               isBold: true,
             ),
           ] else ...[
             _buildDetailRow(
               'Amount',
               'Flexible',
-              valueColor: const Color(0xFF9B6DFF),
+              valueColor: InvoiceThemeColors.primaryPurpleLight,
               isBold: true,
             ),
             if (idPay.minAmount > 0) ...[
@@ -257,15 +258,17 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
                   },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    side:
-                        const BorderSide(color: Color(0xFF9B6DFF), width: 1.5),
+                    side: const BorderSide(
+                        color: InvoiceThemeColors.primaryPurpleLight,
+                        width: 1.5),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                   ),
                   icon: Icon(Icons.copy,
-                      size: 18.sp, color: const Color(0xFF9B6DFF)),
+                      size: 18.sp,
+                      color: InvoiceThemeColors.primaryPurpleLight),
                   label: Text(
                     'Copy ID',
                     style: GoogleFonts.inter(
@@ -318,7 +321,7 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
                     arguments: {'idPay': idPay});
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF9B6DFF),
+                backgroundColor: InvoiceThemeColors.primaryPurple,
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
@@ -380,7 +383,7 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
               },
               child: Icon(
                 Icons.copy,
-                color: const Color(0xFF9B6DFF),
+                color: InvoiceThemeColors.primaryPurpleLight,
                 size: 16.sp,
               ),
             ),

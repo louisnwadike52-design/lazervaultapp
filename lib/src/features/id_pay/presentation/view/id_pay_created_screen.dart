@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/id_pay_entity.dart';
 import '../../domain/entities/id_pay_fee_rule_entity.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
 class IDPayCreatedScreen extends StatelessWidget {
   const IDPayCreatedScreen({super.key});
@@ -98,16 +99,17 @@ class IDPayCreatedScreen extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF9B6DFF).withValues(alpha: 0.08),
+        color: InvoiceThemeColors.primaryPurpleLight.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12.r),
-        border:
-            Border.all(color: const Color(0xFF9B6DFF).withValues(alpha: 0.35)),
+        border: Border.all(
+            color:
+                InvoiceThemeColors.primaryPurpleLight.withValues(alpha: 0.35)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(Icons.info_outline_rounded,
-              color: const Color(0xFF9B6DFF), size: 18.sp),
+              color: InvoiceThemeColors.primaryPurpleLight, size: 18.sp),
           SizedBox(width: 10.w),
           Expanded(
             child: Text(
@@ -147,14 +149,14 @@ class IDPayCreatedScreen extends StatelessWidget {
       padding: EdgeInsets.all(28.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF4C1D95), Color(0xFF9B6DFF)],
+          colors: [Color(0xFF4C1D95), InvoiceThemeColors.primaryPurple],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF9B6DFF).withValues(alpha: 0.3),
+            color: InvoiceThemeColors.primaryPurpleLight.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -353,7 +355,7 @@ class IDPayCreatedScreen extends StatelessWidget {
         child: ElevatedButton(
           onPressed: () => Get.offAllNamed(AppRoutes.idPayHome),
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF9B6DFF),
+            backgroundColor: InvoiceThemeColors.primaryPurple,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14.r),
             ),
