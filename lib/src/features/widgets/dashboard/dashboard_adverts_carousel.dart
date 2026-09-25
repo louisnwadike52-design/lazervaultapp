@@ -191,6 +191,16 @@ class _AdvertCard extends StatelessWidget {
   /// with its motif on the right third and its lightest gradient stop there too,
   /// so darkening the whole card would dull the image for no contrast gain. This
   /// darkens only the side the text sits on.
+  ///
+  /// It is also deliberately LIGHT. Contrast for the copy comes mostly from the
+  /// text's own shadow rather than from the wash, because the two cost very
+  /// different things: a shadow buys legibility in the few pixels around each
+  /// glyph, while a wash pays for the same legibility by dulling the entire
+  /// artwork the advert exists to show. At 0.45 the scrim was washing out
+  /// perfectly good images to protect text that a shadow protects better.
+  ///
+  /// The falloff also ends sooner (0.72 rather than 1.0), so the motif side of
+  /// the card is completely clean instead of carrying a faint veil.
   Widget _copyOverlay() {
     return Container(
       decoration: BoxDecoration(
@@ -198,11 +208,11 @@ class _AdvertCard extends StatelessWidget {
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
           colors: [
-            Colors.black.withValues(alpha: 0.45),
-            Colors.black.withValues(alpha: 0.12),
+            Colors.black.withValues(alpha: 0.28),
+            Colors.black.withValues(alpha: 0.08),
             Colors.transparent,
           ],
-          stops: const [0.0, 0.55, 1.0],
+          stops: const [0.0, 0.45, 0.72],
         ),
       ),
       child: Padding(
@@ -225,6 +235,22 @@ class _AdvertCard extends StatelessWidget {
                   fontSize: 15.sp,
                   height: 1.2,
                   fontWeight: FontWeight.w700,
+                  // Two shadows, not one: a tight dark halo that holds the
+                  // glyph edges against a busy photo, and a wider soft one that
+                  // separates the whole word from a light background. Together
+                  // they keep the copy readable over artwork the lighter scrim
+                  // no longer hides.
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withValues(alpha: 0.75),
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                    Shadow(
+                      color: Colors.black.withValues(alpha: 0.45),
+                      blurRadius: 10,
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -237,9 +263,23 @@ class _AdvertCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.88),
+                    // Brighter than before: the supporting line was dimmed to
+                    // 0.88 to sit politely under a heavy scrim, and against a
+                    // lighter one that reads as washed out rather than quiet.
+                    color: Colors.white.withValues(alpha: 0.95),
                     fontSize: 11.sp,
                     fontWeight: FontWeight.w500,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.7),
+                        blurRadius: 3,
+                        offset: const Offset(0, 1),
+                      ),
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        blurRadius: 8,
+                      ),
+                    ],
                   ),
                 ),
               ),
