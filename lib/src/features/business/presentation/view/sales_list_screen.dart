@@ -344,8 +344,127 @@ class _SalesListScreenState extends State<SalesListScreen>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _SaleDetailSheet(sale: s),
+      builder: (sheetContext) => _SaleDetailSheet(
+        sale: s,
+        onVoid: () => _confirmAndVoid(sheetContext, s),
+      ),
     );
+  }
+
+  /// Confirms, then reverses a sale.
+  ///
+  /// The confirmation is not ceremony. Voiding removes booked revenue and puts
+  /// stock back, and both are invisible from the button alone — so the dialog
+  /// states the amount and the quantity being returned, in words, before
+  /// anything happens.
+  ///
+  /// A reason is required because the backend requires one: this is the only
+  /// operation that removes revenue, and a reversal with no stated cause cannot
+  /// be explained later. Collecting it here means the server's refusal is never
+  /// what the user discovers.
+  Future<void> _confirmAndVoid(BuildContext sheetContext, SaleEntity s) async {
+    final reasonController = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: sheetContext,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: InvoiceThemeColors.secondaryBackground,
+        title: Text('Void this sale?',
+            style: GoogleFonts.inter(
+                color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w700)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              s.quantity > 0
+                  ? '₦${(s.amount / 100).toStringAsFixed(2)} comes off your revenue '
+                      'and ${s.quantity} back into stock.'
+                  : '₦${(s.amount / 100).toStringAsFixed(2)} comes off your revenue.',
+              style: GoogleFonts.inter(
+                  color: InvoiceThemeColors.textGray400, fontSize: 13.sp, height: 1.5),
+            ),
+            SizedBox(height: 14.h),
+            TextField(
+              controller: reasonController,
+              autofocus: true,
+              style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp),
+              decoration: InputDecoration(
+                hintText: 'Reason (e.g. wrong quantity, customer returned it)',
+                hintStyle: GoogleFonts.inter(
+                    color: InvoiceThemeColors.textGray400, fontSize: 12.sp),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: InvoiceThemeColors.borderColor),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide:
+                      BorderSide(color: InvoiceThemeColors.primaryPurpleLight),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text('Keep it',
+                style: GoogleFonts.inter(
+                    color: InvoiceThemeColors.textGray400, fontSize: 13.sp)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text('Void sale',
+                style: GoogleFonts.inter(
+                    color: const Color(0xFFFB923C),
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+
+    final reason = reasonController.text.trim();
+    reasonController.dispose();
+    if (confirmed != true) return;
+
+    if (reason.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Add a reason so the reversal can be explained later.')),
+      );
+      return;
+    }
+
+    try {
+      await SalesService(endpoints: endpointRegistry)
+          .voidSale(saleId: s.id, reason: reason);
+      if (!mounted) return;
+      // Close the sheet showing the now-stale sale, then reload so the list,
+      // the status and the totals all reflect the reversal together.
+      //
+      // sheetContext needs its OWN mounted check: the State can still be alive
+      // while the sheet it belongs to was dismissed during the request, and
+      // popping a dead context throws. The reload below must happen either way —
+      // the void already succeeded on the server, so the list is stale
+      // regardless of whether the sheet is still on screen.
+      if (sheetContext.mounted) {
+        Navigator.of(sheetContext).pop();
+      }
+      await _loadFirst();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sale voided. Stock returned.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      // Surfaces the server's own words — "this sale has already been voided"
+      // is a useful sentence, and flattening it to "failed" is what sends
+      // someone to support over something the screen could have explained.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e is SalesException ? e.message : 'Could not void the sale.')),
+      );
+    }
   }
 
   String _fmtDate(String iso) {

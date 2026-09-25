@@ -130,6 +130,39 @@ class SalesService {
     );
   }
 
+  /// Reverses a sale recorded in error and returns its stock.
+  ///
+  /// POST, not DELETE: the sale survives as VOIDED so the ledger keeps the
+  /// correction visible rather than losing the fact a sale was made and undone.
+  ///
+  /// A reason is REQUIRED by the backend — this is the only operation that
+  /// removes booked revenue, and a reversal with no stated cause is not
+  /// auditable. The server also refuses a second void, so a double-tap returns
+  /// "already been voided" rather than handing back the stock twice.
+  Future<SaleEntity> voidSale({
+    required String saleId,
+    required String reason,
+  }) async {
+    final token = await _token();
+    final resp = await _httpClient
+        .post(
+          Uri.parse('${_endpoints.httpBusiness}/sales/$saleId/void'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode({'reason': reason}),
+        )
+        .timeout(_timeout);
+    final body = _decode(resp);
+    if (body['success'] != true) {
+      throw SalesException(
+          (body['message'] ?? 'Could not void the sale.').toString());
+    }
+    return SaleEntity.fromJson(
+        (body['sale'] as Map?)?.cast<String, dynamic>() ?? {});
+  }
+
   Map<String, dynamic> _decode(http.Response resp) {
     if (resp.statusCode == 401 || resp.statusCode == 403) {
       throw const SalesException('Session expired. Please sign in again.');

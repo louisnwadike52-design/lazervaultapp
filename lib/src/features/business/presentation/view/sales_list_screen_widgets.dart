@@ -2,9 +2,15 @@ part of 'sales_list_screen.dart';
 
 /// Themed bottom sheet showing the full details of a single [SaleEntity].
 class _SaleDetailSheet extends StatelessWidget {
-  const _SaleDetailSheet({required this.sale});
+  const _SaleDetailSheet({required this.sale, this.onVoid});
 
   final SaleEntity sale;
+
+  /// Invoked when the operator confirms voiding this sale. Null hides the
+  /// action entirely — the sheet is also opened from places with no list to
+  /// refresh afterwards, and an action that cannot report its result is worse
+  /// than no action.
+  final Future<void> Function()? onVoid;
 
   static const _card = InvoiceThemeColors.secondaryBackground;
   static const _border = InvoiceThemeColors.borderColor;
@@ -32,10 +38,20 @@ class _SaleDetailSheet extends StatelessWidget {
         .join(' ');
   }
 
+  bool get _isVoided => sale.status == 'VOIDED';
+
+  /// A voided sale must not read as "Unpaid". Unpaid is a receivable somebody
+  /// still owes; voided is a sale that was undone and owes nothing — treating
+  /// them alike would put reversed sales back into the chase-the-customer pile.
+  String get _statusLabel {
+    if (_isVoided) return 'Voided';
+    return sale.status == 'PAID' ? 'Paid' : 'Unpaid';
+  }
+
   @override
   Widget build(BuildContext context) {
     final paid = sale.status == 'PAID';
-    final chipColor = paid ? _green : _amber;
+    final chipColor = _isVoided ? _label : (paid ? _green : _amber);
     final title = sale.itemName.isNotEmpty
         ? sale.itemName
         : (sale.description.isNotEmpty ? sale.description : 'Sale');
@@ -49,7 +65,7 @@ class _SaleDetailSheet extends StatelessWidget {
       _row('Amount', _money(sale.amount), valueColor: _accentText, bold: true),
       _row('Customer', who),
       if (method.isNotEmpty) _row('Payment method', method),
-      _row('Status', paid ? 'Paid' : 'Unpaid', valueColor: chipColor),
+      _row('Status', _statusLabel, valueColor: chipColor),
       if (date.isNotEmpty) _row('Date', date),
       if (sale.reference.isNotEmpty) _row('Reference', sale.reference),
     ];
@@ -114,7 +130,7 @@ class _SaleDetailSheet extends StatelessWidget {
                       color: chipColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
-                    child: Text(paid ? 'Paid' : 'Receivable',
+                    child: Text(_isVoided ? 'Voided' : (paid ? 'Paid' : 'Receivable'),
                         style: GoogleFonts.inter(
                             color: chipColor,
                             fontSize: 11.sp,
@@ -132,6 +148,42 @@ class _SaleDetailSheet extends StatelessWidget {
                 ),
                 child: Column(children: rows),
               ),
+              // Void sits BELOW the figures, never in the header: it is a
+              // correction, not a primary action, and a destructive control
+              // beside the title invites exactly the mis-tap it exists to undo.
+              //
+              // Hidden once voided — the backend refuses a second void, but an
+              // enabled button that can only fail is a worse answer than no
+              // button.
+              if (onVoid != null && !_isVoided) ...[
+                SizedBox(height: 16.h),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => onVoid!(),
+                    icon: Icon(Icons.undo_rounded, size: 18.sp, color: _amber),
+                    label: Text('Void this sale',
+                        style: GoogleFonts.inter(
+                            color: _amber,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600)),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: _amber.withValues(alpha: 0.5)),
+                      padding: EdgeInsets.symmetric(vertical: 13.h),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r)),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                // States both consequences up front. Someone reversing a sale
+                // is usually fixing a mistake in a hurry, and the stock coming
+                // back is the half they are least likely to expect.
+                Text(
+                  'Returns the stock and removes this amount from your revenue.',
+                  style: GoogleFonts.inter(color: _label, fontSize: 11.5.sp),
+                ),
+              ],
             ],
           ),
         ),
