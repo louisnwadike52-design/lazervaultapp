@@ -9,6 +9,8 @@ import '../../domain/entities/split_bill_entity.dart';
 import '../../domain/repositories/split_bill_repository.dart';
 import '../../services/split_bill_pdf_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'dart:async';
+import 'package:lazervault/src/features/account_cards_summary/services/balance_websocket_service.dart';
 
 class SplitBillReceiptScreen extends StatefulWidget {
   const SplitBillReceiptScreen({super.key});
@@ -43,6 +45,7 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
   String? _billId;
   String? _payerUserId;
   bool _refreshing = false;
+  StreamSubscription<BalanceUpdateEvent>? _statusSub;
   // When opened to VIEW an existing payer's receipt (from the detail sheet),
   // Done/back returns to the previous screen instead of resetting to the bills
   // list (which is the correct behavior only after just paying).
@@ -67,6 +70,7 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
     // this same screen doubles as a read-only receipt viewer, where nothing
     // changed and a refetch would be pure noise.
     if (!_viewOnly) refreshPendingActions();
+    _listenForStatusChanges();
 
     // Preferred path: derive every field from the authoritative bill + the
     // target payer's participant record (real paidAt / reference / status /
@@ -124,6 +128,52 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
   /// Pull-to-refresh: re-fetch the bill and update this payer's live status
   /// (e.g. in_progress → paid once the external payout confirms). No-op for
   /// legacy receipts opened without a bill id.
+  /// Re-reads this share the moment the server resolves it.
+  ///
+  /// The page has always had pull-to-refresh, and until now that was the ONLY
+  /// way to learn the outcome: a share paid seconds ago still read "Pending"
+  /// until the user thought to drag the screen, or closed and reopened it.
+  ///
+  /// The event was being sent the whole time. ws-balance-service rejected
+  /// `split_bill_paid` with 400 "Invalid event_type" because it was missing from
+  /// that service's allowlist, so nothing ever arrived to listen to. Both halves
+  /// are fixed: the event is accepted there, and this screen now subscribes.
+  ///
+  /// Filtered by bill id, because the stream carries every balance event for the
+  /// user — an unrelated transfer must not make this receipt refetch.
+  ///
+  /// Pull-to-refresh stays as the backstop. A websocket can be disconnected at
+  /// the moment that matters, and the outcome of a payment is not something to
+  /// leave depending on a live socket.
+  void _listenForStatusChanges() {
+    if (_viewOnly || _billId == null) return;
+    try {
+      _statusSub =
+          serviceLocator<BalanceWebSocketService>().balanceUpdates.listen((e) {
+        const splitBillEvents = {'split_bill_paid', 'split_bill_failed'};
+        if (!splitBillEvents.contains(e.eventType)) return;
+        // transaction_id carries the split-bill reference; match on either it
+        // or the bill id so a change in what the server stamps cannot silently
+        // stop this working.
+        final id = e.transactionId ?? '';
+        final ref = e.reference ?? '';
+        if (!id.contains(_billId!) && !ref.contains(_billId!)) return;
+        if (!mounted) return;
+        _refresh();
+      });
+    } catch (_) {
+      // The socket is an enhancement, not a dependency. If it cannot be
+      // resolved the page still works exactly as it did — pull to refresh.
+    }
+  }
+
+  @override
+  void dispose() {
+    // A live subscription outliving the page would refetch into a dead State.
+    _statusSub?.cancel();
+    super.dispose();
+  }
+
   Future<void> _refresh() async {
     if (_billId == null || _payerUserId == null || _refreshing) return;
     setState(() => _refreshing = true);
@@ -484,14 +534,6 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '$paidCount/$totalParticipants paid',
-                  style: const TextStyle(
-                    color: Color(0xFF9CA3AF),
-                    fontSize: 12,
-                  ),
                 ),
               ],
             ),
