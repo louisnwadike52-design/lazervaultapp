@@ -207,13 +207,30 @@ class AccountNumberChangeWatcher {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.of(ctx).pop();
-                      // Open the details bottom sheet for the account whose
-                      // number changed (the first when several moved at once) —
-                      // the user sees the NEW number with copy/share, instead
-                      // of landing on a settings page. Outer dashboard context:
-                      // it can read the summaries cubit, the dialog ctx can't.
-                      openAccountDetailsSheet(context,
-                          preferAccountId: changes.first.accountId);
+                      // Open the details bottom sheet — the SAME sheet the
+                      // dashboard card's Details chip opens, so the user sees the
+                      // new number with copy/share instead of a settings page.
+                      // Outer dashboard context: it can read the summaries cubit,
+                      // the dialog ctx can't.
+                      //
+                      // Only name an account when exactly ONE moved. A provider
+                      // switch re-mints every wallet at once, and `changes.first`
+                      // is then whichever row the query happened to return first —
+                      // so the sheet opened, say, Savings while the user was
+                      // looking at Personal. Same sheet, different wallet, and
+                      // because the card is tinted per account type (savings is
+                      // blue, personal purple) it read as a second, unrelated
+                      // sheet rather than the one they knew.
+                      //
+                      // With several changed, defer to the opener's own order —
+                      // active account, then personal/primary — which is the
+                      // wallet the user is actually looking at.
+                      openAccountDetailsSheet(
+                        context,
+                        preferAccountId: changes.length == 1
+                            ? changes.first.accountId
+                            : null,
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF4E03D0),
