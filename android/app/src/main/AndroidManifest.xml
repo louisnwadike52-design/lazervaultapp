@@ -134,6 +134,18 @@
                 <!-- Family-account invitations: /family/invite/<token> -->
                 <data android:scheme="https" android:host="lazervault.app"
                       android:pathPrefix="/family/invite/" />
+                <!-- Escrow offer share links: /escrow/offer/<token>.
+                     Was claimed in apple-app-site-association but NOT here —
+                     precisely the drift the comment above warns about, so the
+                     same link opened the app on iOS and a browser on Android. -->
+                <data android:scheme="https" android:host="lazervault.app"
+                      android:pathPrefix="/escrow/offer/" />
+                <!-- Crowdfund campaign funding links: /crowdfund/<id>.
+                     CrowdfundShareService mints these, and NEITHER platform
+                     claimed them, so every shared campaign sent supporters to a
+                     web page instead of into the app where they can donate. -->
+                <data android:scheme="https" android:host="lazervault.app"
+                      android:pathPrefix="/crowdfund/" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'package:lazervault/core/config/feature_flags.dart';
-import 'package:lazervault/src/features/currency_exchange/presentation/widgets/international_payout_unavailable.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 // Pulls in TransactionTypeModeMatch so recentTransactions.where can call
@@ -981,15 +979,6 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                       selectedMode: _mode,
                       onModeChanged: _onModeChanged,
                     ),
-                    // Send Abroad is gated: when international payout is off the
-                    // tab still opens and explains itself, instead of collecting a
-                    // recipient, an amount and a PIN and failing at the provider.
-                    if (_mode == ExchangeMode.sendAbroad &&
-                        !FeatureFlags.intlPayoutAvailable) ...[
-                      const SizedBox(height: 20),
-                      const InternationalPayoutUnavailable(),
-                      const SizedBox(height: 80),
-                    ] else ...[
                     const SizedBox(height: 20),
 
                     // Currency pair selector
@@ -1104,7 +1093,6 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                     }(),
                     // Bottom padding for scroll
                     const SizedBox(height: 80),
-                    ],
                   ],
                 ),
               ),

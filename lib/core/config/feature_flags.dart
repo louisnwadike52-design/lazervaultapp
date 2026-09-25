@@ -40,6 +40,49 @@ class FeatureFlags {
   static const String crowdfundDonationAlertsVisible =
       'crowdfund_donation_alerts_visible';
 
+  // ── International payout (Exchange → Send Abroad) ────────────────────────
+  //
+  // OFF by default, because the Fincra corridor it runs on is not finished.
+  // Left on, the tab collects a recipient, an amount and a PIN and only then
+  // fails at the provider — the worst possible order, since the user has already
+  // committed to a transfer that was never going to complete.
+  //
+  // Defaulting to false also makes a cold start safe: before the first settings
+  // fetch the app assumes unavailable and says so, rather than opening a flow it
+  // cannot finish. Turning it on later needs no app release.
+  static const String intlPayoutEnabled = 'intl_payout_enabled';
+
+  /// Which explanation the Send Abroad tab shows while payout is off:
+  /// 'generic' (default) | 'account' | 'country'.
+  ///
+  /// Separate from the switch because the honest reason changes as the
+  /// integration lands. A corridor live in some countries is not the same as one
+  /// live for nobody, and telling a user "not available for your account" while
+  /// it is off for everyone sends them to support about an account that is fine.
+  static const String intlPayoutUnavailableScope =
+      'intl_payout_unavailable_scope';
+
+  /// Whether Send Abroad can actually complete a transfer right now.
+  ///
+  /// False until an admin turns it on — see the key doc above for why the
+  /// default is closed rather than open.
+  static bool get intlPayoutAvailable =>
+      _prefs?.getBool(intlPayoutEnabled) ?? false;
+
+  /// Normalised unavailability scope. Anything unrecognised — including a value
+  /// written before this app version knew about it — falls back to 'generic',
+  /// which is the only message that is true regardless of why it is off.
+  static String get intlPayoutScope {
+    final raw = _prefs?.getString(intlPayoutUnavailableScope)?.trim().toLowerCase();
+    switch (raw) {
+      case 'account':
+      case 'country':
+        return raw!;
+      default:
+        return 'generic';
+    }
+  }
+
   // African voice-language master gate (admin). OFF by default → the voice/chat
   // assistant is English-only and African languages (yo/ig/ha/pcm) are HIDDEN in
   // the language pickers. The server /voice/languages already filters by this; this
@@ -297,6 +340,7 @@ class FeatureFlags {
       autoBiometricLoginEnabled,
       appUpdateEnabledKey,
       crowdfundDonationAlertsVisible,
+      intlPayoutEnabled,
     ]) {
       final v = remote[key];
       if (v == null) continue;
@@ -322,6 +366,9 @@ class FeatureFlags {
       // Spray layout default is a string enum ('grid'|'sidebar'|'spotlight'),
       // so it is mirrored verbatim here rather than coerced to a bool above.
       spraymeDefaultLayoutMode,
+      // Unavailability scope is a string enum ('generic'|'account'|'country'),
+      // mirrored verbatim; FeatureFlags.intlPayoutScope normalises on read.
+      intlPayoutUnavailableScope,
     ]) {
       final v = remote[key];
       if (v == null) continue;

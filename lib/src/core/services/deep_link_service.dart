@@ -9,6 +9,7 @@ enum DeepLinkType {
   quickAction,
   familyInvite,
   escrowOffer,
+  crowdfundCampaign,
   unknown,
 }
 
@@ -29,6 +30,11 @@ class DeepLinkData {
   /// `lazervault://escrow/offer/<token>` custom-scheme form). Null otherwise.
   final String? escrowOfferToken;
 
+  /// For [DeepLinkType.crowdfundCampaign], the campaign id from
+  /// `https://lazervault.app/crowdfund/<id>` (or the custom-scheme
+  /// `lazervault://crowdfund/<id>` form). Null otherwise.
+  final String? crowdfundCampaignId;
+
   const DeepLinkData({
     required this.type,
     required this.rawUri,
@@ -36,6 +42,7 @@ class DeepLinkData {
     this.path,
     this.familyInviteToken,
     this.escrowOfferToken,
+    this.crowdfundCampaignId,
   });
 
   /// Get a query parameter value
@@ -140,6 +147,15 @@ class DeepLinkService {
     _linkController.add(data);
   }
 
+  /// Parse a URI exactly as an incoming link would be parsed.
+  ///
+  /// Exposed for tests only. Link routing is the kind of logic that is normally
+  /// verified by hand on a device — which is why `/crowdfund/` reached
+  /// production claimed by no platform at all — so it is worth asserting
+  /// directly rather than through a stream that needs platform channels.
+  @visibleForTesting
+  static DeepLinkData parseUriForTest(Uri uri) => instance._parseUri(uri);
+
   DeepLinkData _parseUri(Uri uri) {
     // For custom-scheme URIs like `lazervault://family/invite/<token>`
     // app_links sets `uri.host = 'family'` and `uri.path = '/invite/<token>'`.
@@ -190,6 +206,36 @@ class DeepLinkService {
         path: path,
         escrowOfferToken: token,
       );
+    }
+
+    // Crowdfund campaign share link.
+    //
+    // CrowdfundShareService builds https://lazervault.app/crowdfund/{id}, which
+    // was the ONLY link in the product that no platform claimed: it was absent
+    // from the Android intent filters AND from the iOS association file, so a
+    // funding link always opened a browser instead of the campaign. Someone
+    // sharing their campaign was sending supporters to a web page rather than
+    // into the app, which is where the donation actually happens.
+    //
+    // Both URI shapes, like the two above: the custom scheme
+    // (lazervault://crowdfund/<id>) puts the id in the host's first segment,
+    // while the universal link carries [crowdfund, <id>].
+    final isCrowdfund = (uri.host == 'crowdfund' && segments.isNotEmpty) ||
+        (segments.length >= 2 && segments[0] == 'crowdfund');
+    if (isCrowdfund) {
+      final id = uri.host == 'crowdfund' ? segments[0] : segments[1];
+      // An empty id would route to the campaign screen with nothing to load and
+      // show a permanent spinner, so it falls through to `unknown` instead and
+      // the caller lands on the dashboard.
+      if (id.trim().isNotEmpty) {
+        return DeepLinkData(
+          type: DeepLinkType.crowdfundCampaign,
+          rawUri: uri.toString(),
+          queryParams: queryParams,
+          path: path,
+          crowdfundCampaignId: id,
+        );
+      }
     }
 
     DeepLinkType type;

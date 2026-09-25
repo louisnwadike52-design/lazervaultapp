@@ -809,6 +809,26 @@ class _MyAppState extends State<MyApp> {
           ));
         }
         break;
+      case DeepLinkType.crowdfundCampaign:
+        // Campaign funding link (https://lazervault.app/crowdfund/<id>, or the
+        // lazervault:// form). Routed through PendingDeepLink for the same
+        // reason as the escrow offer above: a supporter opening a shared
+        // campaign is very often NOT logged in — frequently not a user at all
+        // yet — so the target has to survive the login/signup gate and replay
+        // afterwards. A bare Get.toNamed would drop the campaign and leave them
+        // on the dashboard wondering what the link did.
+        //
+        // Only the id is passed. The details screen loads from it
+        // (loadCrowdfundDetails), so it does not need the preloaded entity the
+        // in-app tap path supplies.
+        if (data.crowdfundCampaignId != null &&
+            data.crowdfundCampaignId!.isNotEmpty) {
+          PendingDeepLink.instance.push(NotificationTarget(
+            route: AppRoutes.crowdfundDetails,
+            arguments: {'crowdfundId': data.crowdfundCampaignId},
+          ));
+        }
+        break;
       case DeepLinkType.depositCallback:
       case DeepLinkType.paymentCallback:
       case DeepLinkType.quickAction:

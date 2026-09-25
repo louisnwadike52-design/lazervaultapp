@@ -202,6 +202,82 @@ class _AiChatContentState extends State<AiChatContent>
     }
   }
 
+  /// Shown in the chat when conversation history could not be loaded.
+  ///
+  /// Replaces a snackbar. The snackbar covered the conversation, vanished after
+  /// a few seconds, and left an empty-looking chat with no explanation — so a
+  /// load failure was indistinguishable from having no messages, and retrying
+  /// meant leaving the screen and coming back.
+  ///
+  /// Deliberately NOT an error-red block filling the screen: any messages that
+  /// did load are still usable and the user can still send a new one, so this is
+  /// a strip that explains and offers Retry, not a barrier.
+  Widget _buildHistoryErrorBanner(String message) {
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.fromLTRB(12.w, 8.h, 12.w, 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFF5A3030), width: 1),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.history_toggle_off_rounded,
+              size: 18.sp, color: const Color(0xFFE0A0A0)),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Couldn't load earlier messages",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  // The cubit's message where it is useful, and a plain fallback
+                  // where it is a raw exception string that would mean nothing.
+                  message.trim().isEmpty
+                      ? 'You can still send a new message.'
+                      : '$message You can still send a new message.',
+                  style: TextStyle(
+                    color: const Color(0xFFB6B9C6),
+                    fontSize: 11.5.sp,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: 8.w),
+          TextButton(
+            onPressed: _loadHistory,
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              'Retry',
+              style: TextStyle(
+                color: const Color(0xFFA78BFA),
+                fontSize: 12.5.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _loadHistory() async {
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is AuthenticationSuccess) {
@@ -2396,10 +2472,15 @@ class _AiChatContentState extends State<AiChatContent>
       // Listener now only handles side-effects not directly tied to build
       if (!mounted) return;
 
-      // Handle errors with Snackbars
-      if (state is AIChatHistoryError) {
-        Get.snackbar('Error Loading History', state.message);
-      } else if (state is AIChatMessageError) {
+      // A history-load failure is NOT a snackbar. The snackbar appeared over the
+      // conversation, disappeared after a few seconds, and left the chat looking
+      // empty with no explanation and nothing to press — so the failure was
+      // indistinguishable from "you have no messages yet", and the only way to
+      // retry was to leave the screen and come back.
+      //
+      // It is rendered inline in the chat instead (see _buildHistoryErrorBanner),
+      // where it persists, says what failed, and offers Retry.
+      if (state is AIChatMessageError) {
         Get.snackbar('Error', state.errorMessage,
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.red.withValues(alpha: 0.8),
@@ -2458,6 +2539,11 @@ class _AiChatContentState extends State<AiChatContent>
             body: Column(
               children: [
                 _buildChatHeader(),
+                // Inline, persistent, and dismissible only by succeeding. Sits
+                // above the list rather than inside it so it stays visible while
+                // the user scrolls whatever history DID load.
+                if (state is AIChatHistoryError && !_isPinMode)
+                  _buildHistoryErrorBanner(state.message),
                 // Hide chat history when user is entering a PIN
                 Expanded(
                   child: _isPinMode
