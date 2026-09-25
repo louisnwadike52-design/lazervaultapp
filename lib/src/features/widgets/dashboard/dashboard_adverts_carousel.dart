@@ -201,15 +201,32 @@ class _AdvertCard extends StatelessWidget {
   ///
   /// The falloff also ends sooner (0.72 rather than 1.0), so the motif side of
   /// the card is completely clean instead of carrying a faint veil.
+  ///
+  /// The peak darkness is ADMIN-TUNABLE
+  /// (`dashboard_advert_overlay_percent`, 0-100) and read from the same settings
+  /// response as the adverts themselves. It has to be tunable rather than fixed:
+  /// the right value depends on the artwork somebody uploads, artwork changes
+  /// without an app release, and a wash heavy enough to guarantee legible copy
+  /// over a bright photo is heavy enough to hide a dark one. Fixed in code, every
+  /// new advert risks either unreadable text or an invisible image with a store
+  /// release as the only remedy.
+  ///
+  /// Only the PEAK is tuned. The gradient's shape — where it falls off and where
+  /// it reaches nothing — stays fixed, because that shape encodes where the
+  /// artwork's motif sits, which is a property of how the art is authored and not
+  /// something an operator should have to reason about. The mid stop is derived as
+  /// a fraction of the peak so the falloff keeps its proportions at any setting
+  /// instead of flattening into a band.
   Widget _copyOverlay() {
+    final peak = DashboardAdvertsService.instance.overlayOpacity;
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
           colors: [
-            Colors.black.withValues(alpha: 0.28),
-            Colors.black.withValues(alpha: 0.08),
+            Colors.black.withValues(alpha: peak),
+            Colors.black.withValues(alpha: peak * 0.3),
             Colors.transparent,
           ],
           stops: const [0.0, 0.45, 0.72],

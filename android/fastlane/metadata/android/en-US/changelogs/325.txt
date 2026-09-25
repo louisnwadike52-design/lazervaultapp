@@ -1,0 +1,11 @@
+Improvements and fixes across the app:
+
+• Split a bill and watch each payment confirm in real time
+• Clearer warning when a transfer is under your bank's minimum, before any money is held
+• Convert LazerPoints to cash reliably
+• Use your usual transaction PIN for phone banking
+• Refreshed PayID screens, receipts and PDFs
+• More reliable deposits and withdrawals
+• Better messages when the connection drops
+
+Thank you for using Lazervault.

@@ -109,6 +109,26 @@ class DashboardAdvertsService {
 
   List<DashboardAdvert> get adverts => _adverts;
 
+  /// How dark the wash over an advert image is, 0.0 (none) to 1.0 (solid black).
+  ///
+  /// Admin-tunable because it is a judgement call that depends on the artwork,
+  /// and artwork changes without an app release. A wash heavy enough to guarantee
+  /// legible copy over a bright photo also hides a dark one, so whoever uploads
+  /// the image needs to set the wash with it — otherwise every new advert risks
+  /// either unreadable text or an invisible picture, and the only fix is a store
+  /// release.
+  ///
+  /// Read from the SAME settings response as the adverts themselves, so the
+  /// images and the wash over them can never arrive out of step.
+  double _overlayOpacity = defaultOverlayOpacity;
+
+  /// Deliberately light. Legibility comes mostly from the text's own two shadows,
+  /// which buy contrast in the few pixels around each glyph, where a wash pays for
+  /// the same contrast by dulling the whole image the advert exists to show.
+  static const double defaultOverlayOpacity = 0.10;
+
+  double get overlayOpacity => _overlayOpacity;
+
   Future<List<DashboardAdvert>> ensure() async {
     if (_fetchedAt != null && DateTime.now().difference(_fetchedAt!) < _ttl) {
       return _adverts;
@@ -122,15 +142,22 @@ class DashboardAdvertsService {
         final list = body is Map<String, dynamic> ? body['settings'] : null;
         if (list is List) {
           String? raw;
+          String? overlayRaw;
+          // One pass for both keys. Deliberately NOT two loops with an early
+          // break: breaking on the adverts key would skip the overlay whenever it
+          // happens to be listed after it, which is a difference in ordering the
+          // backend never promised.
           for (final s in list) {
-            if (s is Map &&
-                s['key'] == 'dashboard_adverts' &&
-                s['value'] is String) {
+            if (s is! Map) continue;
+            final key = s['key'];
+            if (key == 'dashboard_adverts' && s['value'] is String) {
               raw = s['value'] as String;
-              break;
+            } else if (key == 'dashboard_advert_overlay_percent') {
+              overlayRaw = s['value']?.toString();
             }
           }
           _adverts = _parse(raw);
+          _overlayOpacity = _parseOverlay(overlayRaw);
           _fetchedAt = DateTime.now();
         }
       }
@@ -138,6 +165,28 @@ class DashboardAdvertsService {
       // Keep last good / empty — the carousel falls back to the bundled default.
     }
     return _adverts;
+  }
+
+  /// Turns the admin percentage (0-100) into an alpha (0.0-1.0).
+  ///
+  /// Clamped rather than trusted. The backend validator already bounds it, but
+  /// this value is also read from a no-auth endpoint and a stale or hand-edited
+  /// row would otherwise be able to paint the whole carousel black — the app
+  /// should not be one bad row away from that.
+  ///
+  /// Anything unparseable falls back to the default instead of 0: a missing or
+  /// malformed setting should leave the carousel looking as designed, not
+  /// silently strip the wash from every advert.
+  double _parseOverlay(String? raw) {
+    final trimmed = raw?.trim();
+    if (trimmed == null || trimmed.isEmpty) return defaultOverlayOpacity;
+    // Accept an int ("12") or a decimal ("12.5"); an admin typing a fraction
+    // ("0.2") gets 0.002 alpha, which is visually nothing — the backend
+    // validator rejects that input, so this only ever sees it from a hand-edited
+    // row, and rendering near-zero is safer than guessing they meant 20%.
+    final pct = double.tryParse(trimmed);
+    if (pct == null) return defaultOverlayOpacity;
+    return (pct / 100.0).clamp(0.0, 1.0);
   }
 
   List<DashboardAdvert> _parse(String? raw) {
