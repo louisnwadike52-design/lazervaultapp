@@ -12,7 +12,7 @@ import 'package:lazervault/src/features/channel_management/domain/entities/chann
 import 'package:lazervault/src/features/channel_management/presentation/widgets/channel_screen_scaffold.dart';
 
 import 'channel_activation_screen.dart';
-import 'channel_pin_setup_screen.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 
 /// Phone Banking — call LazerVault and bank by voice. Its own Quick Service.
 ///
@@ -225,46 +225,68 @@ class _PhoneBankingChannelScreenState extends State<PhoneBankingChannelScreen> {
   }
 
   Widget _securitySection(ChannelRegistration? reg) {
+    // `hasPin` now reports the PROFILE transaction PIN, because that is what
+    // authorises a call. The server resolves telephony to the app PIN, so there
+    // is no phone-only secret to create, change or forget.
     final hasPin = reg?.hasPin ?? false;
+
     return ChannelSection(
       title: 'Security',
-      caption:
-          'A channel PIN authorises money movements started on a call. It is '
-          'separate from your app PIN.',
-      child: InkWell(
-        onTap: () => Get.to(() => ChannelPinSetupScreen(
-              channelType: _channel,
-              isChange: hasPin,
-            )),
-        borderRadius: BorderRadius.circular(14),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              Icon(
-                  hasPin
-                      ? Icons.password_rounded
-                      : Icons.add_moderator_outlined,
-                  color: _accent,
-                  size: 18),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(hasPin ? 'Change phone PIN' : 'Create phone PIN',
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w600)),
+      caption: hasPin
+          ? 'Money moved on a call is authorised by your transaction PIN — the '
+              'same one you use in the app. There is no separate phone PIN.'
+          : 'Money moved on a call is authorised by your transaction PIN. You '
+              'need to set one before you can bank by phone.',
+      child: hasPin
+          // Nothing to do. A control here would invite someone to change a PIN
+          // they came to this screen to read about, not to alter — and the place
+          // to change a transaction PIN is where it was set.
+          ? Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  const Icon(Icons.verified_user_rounded,
+                      color: ChannelScreenTheme.success, size: 18),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Your transaction PIN is set',
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
               ),
-              if (hasPin)
-                const Icon(Icons.check_circle,
-                    color: ChannelScreenTheme.success, size: 16),
-              const SizedBox(width: 8),
-              const Icon(Icons.chevron_right_rounded,
-                  color: ChannelScreenTheme.textMuted, size: 18),
-            ],
-          ),
-        ),
-      ),
+            )
+          // The one case that needs an action, and it leads to the REAL PIN
+          // setup rather than a phone-specific one.
+          : InkWell(
+              onTap: () => Get.toNamed(AppRoutes.transactionPinSetup),
+              borderRadius: BorderRadius.circular(14),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  children: [
+                    Icon(Icons.add_moderator_outlined,
+                        color: _accent, size: 18),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Set up your transaction PIN',
+                        style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded,
+                        color: ChannelScreenTheme.textMuted, size: 18),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 

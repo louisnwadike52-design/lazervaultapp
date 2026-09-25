@@ -113,11 +113,23 @@ class _ChannelActivationScreenState extends State<ChannelActivationScreen> {
                 Get.until((route) =>
                     route.settings.name == AppRoutes.channelManagement ||
                     route.isFirst);
+              } else if (widget.channelType == 'telephony') {
+                // Phone banking is authorised by the PROFILE transaction PIN,
+                // so there is no channel PIN to create — the server refuses one.
+                // Reaching here means the user has no transaction PIN at all,
+                // which is the only thing still standing between them and
+                // banking by phone, so send them to set that.
+                //
+                // Without this branch the activation flow would push a
+                // phone-PIN screen that fails on submit, immediately after
+                // telling the user their line was verified.
+                Get.toNamed(AppRoutes.transactionPinSetup);
               } else {
-                // New channel — guide the user straight into creating its PIN.
-                // Push (not replace) so this activation route stays under it;
-                // when PIN setup finishes it pops all the way back to Banking
-                // Channels, whose reload listener refreshes the PIN status.
+                // A channel that DOES keep its own PIN (WhatsApp) — guide the
+                // user straight into creating it. Push (not replace) so this
+                // activation route stays under it; when PIN setup finishes it
+                // pops all the way back to Banking Channels, whose reload
+                // listener refreshes the PIN status.
                 Get.to(() => ChannelPinSetupScreen(
                       channelType: widget.channelType,
                       isChange: false,
