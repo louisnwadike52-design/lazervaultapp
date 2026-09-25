@@ -2783,10 +2783,12 @@ class RedeemPointsRequest extends $pb.GeneratedMessage {
   factory RedeemPointsRequest({
     $core.int? points,
     $core.String? idempotencyKey,
+    $core.String? pin,
   }) {
     final result = create();
     if (points != null) result.points = points;
     if (idempotencyKey != null) result.idempotencyKey = idempotencyKey;
+    if (pin != null) result.pin = pin;
     return result;
   }
 
@@ -2805,6 +2807,7 @@ class RedeemPointsRequest extends $pb.GeneratedMessage {
       createEmptyInstance: create)
     ..a<$core.int>(1, _omitFieldNames ? '' : 'points', $pb.PbFieldType.O3)
     ..aOS(2, _omitFieldNames ? '' : 'idempotencyKey')
+    ..aOS(3, _omitFieldNames ? '' : 'pin')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2846,6 +2849,16 @@ class RedeemPointsRequest extends $pb.GeneratedMessage {
   $core.bool hasIdempotencyKey() => $_has(1);
   @$pb.TagNumber(2)
   void clearIdempotencyKey() => $_clearField(2);
+
+  /// Raw transaction PIN, verified server-side before any debit.
+  @$pb.TagNumber(3)
+  $core.String get pin => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set pin($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasPin() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPin() => $_clearField(3);
 }
 
 class RedeemPointsResponse extends $pb.GeneratedMessage {

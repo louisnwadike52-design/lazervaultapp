@@ -9,7 +9,18 @@ abstract class DepositState extends Equatable {
 
 class DepositInitial extends DepositState {}
 
+/// A deposit is being SUBMITTED. The user has committed; the screen should stop
+/// accepting new taps until it resolves.
 class DepositLoading extends DepositState {}
+
+/// The list of deposit methods is being FETCHED in the background.
+///
+/// Split out of [DepositLoading] because the two meant opposite things to the
+/// UI and shared one state. Loading the method list disabled every method card
+/// — bank transfer and card included — so opening the deposit screen left the
+/// user tapping dead tiles until an unrelated fetch finished. Nothing about
+/// reading a list should block choosing from it.
+class DepositMethodsLoading extends DepositState {}
 
 class DepositSuccess extends DepositState {
   final DepositDetails depositDetails;

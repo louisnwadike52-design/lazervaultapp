@@ -113,7 +113,10 @@ class DepositCubit extends Cubit<DepositState> {
     required String currency,
   }) async {
     if (isClosed) return;
-    emit(DepositLoading());
+    // NOT DepositLoading: that state means "a deposit is being submitted" and
+    // the screen disables every method card while it holds. Reading the method
+    // list must not disable choosing from it.
+    emit(DepositMethodsLoading());
 
     try {
       final result = await _initiateDepositUseCase.getDepositMethods(

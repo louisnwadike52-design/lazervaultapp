@@ -783,13 +783,14 @@ const RedeemPointsRequest$json = {
   '2': [
     {'1': 'points', '3': 1, '4': 1, '5': 5, '10': 'points'},
     {'1': 'idempotency_key', '3': 2, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    {'1': 'pin', '3': 3, '4': 1, '5': 9, '10': 'pin'},
   ],
 };
 
 /// Descriptor for `RedeemPointsRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List redeemPointsRequestDescriptor = $convert.base64Decode(
     'ChNSZWRlZW1Qb2ludHNSZXF1ZXN0EhYKBnBvaW50cxgBIAEoBVIGcG9pbnRzEicKD2lkZW1wb3'
-    'RlbmN5X2tleRgCIAEoCVIOaWRlbXBvdGVuY3lLZXk=');
+    'RlbmN5X2tleRgCIAEoCVIOaWRlbXBvdGVuY3lLZXkSEAoDcGluGAMgASgJUgNwaW4=');
 
 @$core.Deprecated('Use redeemPointsResponseDescriptor instead')
 const RedeemPointsResponse$json = {

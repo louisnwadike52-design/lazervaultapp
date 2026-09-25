@@ -67,8 +67,13 @@ abstract class IReferralRepository {
   ///
   /// [idempotencyKey] must be stable across retries of the SAME attempt: a
   /// timeout that is retried has to convert once, not twice.
+  /// Converts points to cash.
+  ///
+  /// [pin] is the user's transaction PIN. It is verified SERVER-SIDE before any
+  /// points are debited — the sheet prompts for it, but the app is not the gate.
   Future<Either<Failure, RedemptionResultEntity>> redeemPoints({
     required int points,
     required String idempotencyKey,
+    required String pin,
   });
 }

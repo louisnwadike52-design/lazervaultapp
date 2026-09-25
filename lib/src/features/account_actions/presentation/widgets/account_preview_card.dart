@@ -135,16 +135,34 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
   String get _accountType =>
       (widget.accountArgs['accountType'] as String?) ?? 'Personal';
 
-  /// Real account-holder name for the card face. Prefers an explicit
-  /// `holderName`, then the provisioned `accountName` (NUBAN holder). Returns
-  /// an empty string when neither is set — the card face then simply shows no
-  /// holder rather than a mock ("LAZERVAULT") or the account type.
-  String get _holderName {
-    final holder = (widget.accountArgs['holderName'] as String?)?.trim();
-    if (holder != null && holder.isNotEmpty) return holder;
-    final name = (widget.accountArgs['accountName'] as String?)?.trim();
-    if (name != null && name.isNotEmpty) return name;
-    return '';
+  /// The account-holder name shown on the card face: the name a sender sees at
+  /// their bank when they pay this number.
+  ///
+  /// ONLY `holderName`, which the backend projects from the ACTIVE provider's
+  /// virtual-account row. There is deliberately no fallback.
+  ///
+  /// It used to fall back to `accountName`, and that was wrong because
+  /// `accounts.account_name` is dual-purpose: it is both the wallet's label and,
+  /// for accounts minted before the rail switch, the OLD provider's holder name.
+  /// So a Nomba account rendered "PRAIZ ONAH FLW" — a Flutterwave-era name —
+  /// directly above "Nombank MFB". Two different banks named on one card, and
+  /// the one a payer would check against is the wrong one.
+  ///
+  /// Empty is the honest answer while the projection is loading or absent. The
+  /// card shows no holder line at all, which reads as "not loaded yet"; a stale
+  /// name reads as fact and there is nothing to warn the user it is out of date.
+  String get _holderName =>
+      (widget.accountArgs['holderName'] as String?)?.trim() ?? '';
+
+  /// Whether this account has a REAL provisioned NUBAN.
+  ///
+  /// Not `_fullNumber.isNotEmpty` — that getter returns the words "Being set up…"
+  /// for an un-provisioned account, which is non-empty and would leave a holder
+  /// skeleton shimmering forever on an account that has no holder to load.
+  bool get _hasProvisionedNumber {
+    final raw = (widget.accountArgs['accountNumber'] as String?) ?? '';
+    if (raw.contains('•')) return false;
+    return raw.replaceAll(RegExp(r'[^0-9]'), '').length >= 6;
   }
 
   String get _money =>
@@ -503,6 +521,23 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 1.0,
+              ),
+            )
+          // A number with no holder name yet means the projection is still in
+          // flight — an account that HAS a NUBAN always has a name at the bank.
+          // Hold the line's space with a placeholder so the bank name does not
+          // jump upward and then back down when the name arrives, and so the
+          // gap reads as "loading" rather than "this account has no holder".
+          //
+          // No number means no virtual account at all, and there is genuinely
+          // nothing to show — no placeholder in that case.
+          else if (_hasProvisionedNumber)
+            Container(
+              width: 140.w,
+              height: 12.sp,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(3.r),
               ),
             ),
           if (_bankName.isNotEmpty) ...[

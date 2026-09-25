@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/referral/domain/entities/redemption_entities.dart';
 import 'package:lazervault/src/features/referral/domain/repositories/i_referral_repository.dart';
+import 'package:lazervault/src/features/transaction_pin/widgets/transaction_pin_modal.dart';
 import 'package:lazervault/src/features/referral/presentation/screens/points_conversion_receipt_screen.dart';
 
 /// Turning LazerPoints into money.
@@ -133,10 +134,34 @@ class _ConvertPointsSheetState extends State<ConvertPointsSheet> {
       if (!mounted) return;
     }
 
+    // Transaction PIN, the same sheet Send Funds and Batch Transfer use.
+    //
+    // This is a cash-out: the rewards wallet pays real money into the user's
+    // account, and it was the only money-out path in the product that asked for
+    // nothing. referral-service verifies the PIN before debiting anything, so
+    // this prompt is the user's half of a check that is actually enforced on the
+    // server — not a confirmation dialog dressed up as security.
+    //
+    // Prompted BEFORE the spinner starts: showing "converting" and then asking
+    // for a PIN reads as though the conversion has already happened.
+    final pin = await showTransactionPinModal(
+      context,
+      title: 'Convert to cash',
+      message: 'Convert ${_points(q.points)} points',
+      amount: q.cashMinor / 100,
+      currency: q.currency,
+      currencySymbol: q.currency == 'NGN' ? '₦' : '',
+    );
+    // Null is a deliberate cancel — no error, no snackbar. The key is kept so a
+    // later attempt is still the same attempt.
+    if (pin == null || pin.length != 4) return;
+    if (!mounted) return;
+
     setState(() => _converting = true);
     final res = await widget.repository.redeemPoints(
       points: q.points,
       idempotencyKey: _idempotencyKey!,
+      pin: pin,
     );
     if (!mounted) return;
 

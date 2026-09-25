@@ -60,29 +60,55 @@ class AccountNumberChangeWatcher {
       final changes = <_AccountNumberChange>[];
 
       for (final a in accounts) {
-        final current = (a.accountNumber ?? '').trim();
-        if (current.isEmpty) continue;
+        final currentNumber = (a.accountNumber ?? '').trim();
+        if (currentNumber.isEmpty) continue;
+
+        final currentBank = (a.bankName ?? '').trim();
+        final currentHolder = (a.virtualAccountHolderName ?? '').trim();
 
         final id = a.id.toString();
         final key = _key(userId, id);
-        final previous = prefs.getString(key);
+        final previousRaw = prefs.getString(key);
 
-        if (previous == null) {
-          // First sighting on this device. There is no change to report yet;
-          // record the baseline so a later switch is detectable.
-          await prefs.setString(key, current);
+        if (previousRaw == null) {
+          await prefs.setString(
+              key, _snapshot(currentNumber, currentBank, currentHolder));
           continue;
         }
-        if (previous == current) continue;
+
+        // The baseline used to be the bare account number, so an existing
+        // install has a plain number stored here. Parsed leniently: an old
+        // baseline yields an unknown bank and holder, which are then treated as
+        // "not changed" rather than announcing a change that may not have
+        // happened. Those fields become comparable from the next load onward.
+        final prev = _parseSnapshot(previousRaw);
+
+        final numberMoved = prev.number != currentNumber;
+        final bankMoved = prev.bank != null &&
+            currentBank.isNotEmpty &&
+            prev.bank != currentBank;
+        final holderMoved = prev.holder != null &&
+            currentHolder.isNotEmpty &&
+            prev.holder != currentHolder;
+
+        // Persist the new baseline whatever we decide to show, so a change is
+        // announced once rather than on every load.
+        await prefs.setString(
+            key, _snapshot(currentNumber, currentBank, currentHolder));
+
+        if (!numberMoved && !bankMoved && !holderMoved) continue;
 
         changes.add(_AccountNumberChange(
           accountId: id,
           label: _labelFor(a),
-          previous: previous,
-          current: current,
-          bankName: (a.bankName ?? '').trim(),
+          previous: prev.number,
+          current: currentNumber,
+          numberChanged: numberMoved,
+          bankName: currentBank,
+          previousBankName: bankMoved ? (prev.bank ?? '') : '',
+          holderName: currentHolder,
+          previousHolderName: holderMoved ? (prev.holder ?? '') : '',
         ));
-        await prefs.setString(key, current);
       }
 
       if (changes.isEmpty || !context.mounted) return false;
@@ -93,6 +119,36 @@ class AccountNumberChangeWatcher {
       // Never break the dashboard over an announcement.
       return false;
     }
+  }
+
+  /// Encodes the three details a payer reads back, as one stored baseline.
+  ///
+  /// A provider switch moves all three together — number, bank and the holder
+  /// name the sending bank will display — and announcing only the number left
+  /// the other two to change silently underneath the user. Someone who had
+  /// saved "Praiz Onah FLW / Flutterwave MFB" would be told their number moved
+  /// while the name on it quietly became something else.
+  ///
+  /// Tab-separated because none of the three can contain a tab, and it keeps
+  /// the value readable in storage. Deliberately NOT JSON: this key already
+  /// exists on every install holding a bare account number, and a parser that
+  /// throws on the old format would suppress announcements for existing users.
+  static String _snapshot(String number, String bank, String holder) =>
+      [number, bank, holder].join('\t');
+
+  /// Reads a baseline written by [_snapshot], tolerating the legacy bare number.
+  ///
+  /// A missing field comes back as null rather than '' — the difference matters.
+  /// Null means "this device never recorded it", which must NOT be reported as a
+  /// change; '' means it was recorded as absent.
+  static ({String number, String? bank, String? holder}) _parseSnapshot(
+      String raw) {
+    final parts = raw.split('\t');
+    return (
+      number: parts.isNotEmpty ? parts[0] : '',
+      bank: parts.length > 1 ? parts[1] : null,
+      holder: parts.length > 2 ? parts[2] : null,
+    );
   }
 
   /// How an account should be NAMED in the modal.
@@ -176,9 +232,18 @@ class AccountNumberChangeWatcher {
                 ),
                 SizedBox(height: 18.h),
                 Text(
-                  changes.length == 1
-                      ? 'Your account number has changed'
-                      : 'Your account numbers have changed',
+                  // The headline follows what actually moved. A switch can
+                  // re-issue the same NUBAN under a new sponsor bank, changing
+                  // the name and bank but not the number — announcing "your
+                  // account number has changed" then sends people to re-check a
+                  // number that is still correct.
+                  !changes.any((c) => c.numberChanged)
+                      ? (changes.length == 1
+                          ? 'Your account details have changed'
+                          : 'Your account details have changed')
+                      : (changes.length == 1
+                          ? 'Your account number has changed'
+                          : 'Your account numbers have changed'),
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     color: Colors.white,
@@ -190,8 +255,9 @@ class AccountNumberChangeWatcher {
                 SizedBox(height: 10.h),
                 Text(
                   'We upgraded the banking partner behind your wallet. Your '
-                  'balance and history are untouched. Only the number you '
-                  'share to receive money is new.',
+                  'balance and history are untouched — only the details you '
+                  'share to receive money have changed. Update them anywhere '
+                  'you have them saved.',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     color: const Color(0xFFB6B9C6),
@@ -290,32 +356,66 @@ class AccountNumberChangeWatcher {
             ),
           ),
           SizedBox(height: 8.h),
-          Row(
-            children: [
-              Text(
-                c.previous,
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF6B7280),
-                  fontSize: 14.sp,
-                  decoration: TextDecoration.lineThrough,
-                ),
-              ),
-              SizedBox(width: 8.w),
-              Icon(Icons.arrow_forward_rounded,
-                  size: 14.sp, color: const Color(0xFF9CA3AF)),
-              SizedBox(width: 8.w),
-              Text(
-                c.current,
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
+          // Only the details that actually moved are shown as before → after.
+          // A provider switch usually moves all three, but not always, and
+          // striking through a value that did not change would tell the user
+          // something untrue about their own account.
+          if (c.numberChanged)
+            _beforeAfter(c.previous, c.current, emphasise: true),
+          if (c.previousHolderName.isNotEmpty) ...[
+            SizedBox(height: 6.h),
+            _beforeAfter(c.previousHolderName, c.holderName),
+          ],
+          if (c.previousBankName.isNotEmpty) ...[
+            SizedBox(height: 6.h),
+            _beforeAfter(c.previousBankName, c.bankName),
+          ],
         ],
       ),
+    );
+  }
+
+  /// One "old → new" line.
+  ///
+  /// [emphasise] is for the account number, which is the detail someone is most
+  /// likely to have saved with their bank; the name and bank are supporting
+  /// context and are set smaller so the number still leads.
+  Widget _beforeAfter(String before, String after, {bool emphasise = false}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Flexible(
+          child: Text(
+            before,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+              color: const Color(0xFF6B7280),
+              fontSize: emphasise ? 14.sp : 12.sp,
+              decoration: TextDecoration.lineThrough,
+            ),
+          ),
+        ),
+        SizedBox(width: 8.w),
+        Padding(
+          padding: EdgeInsets.only(top: emphasise ? 2.h : 1.h),
+          child: Icon(Icons.arrow_forward_rounded,
+              size: emphasise ? 14.sp : 12.sp, color: const Color(0xFF9CA3AF)),
+        ),
+        SizedBox(width: 8.w),
+        Flexible(
+          child: Text(
+            after,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: emphasise ? 15.sp : 12.5.sp,
+              fontWeight: emphasise ? FontWeight.w700 : FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -325,13 +425,28 @@ class _AccountNumberChange {
   final String label;
   final String previous;
   final String current;
+
+  /// False when the number itself held steady and only the name or bank moved —
+  /// which happens when a provider re-issues the same NUBAN under a new sponsor.
+  final bool numberChanged;
+
   final String bankName;
+  final String holderName;
+
+  /// Empty means "did not change" (or was never recorded on this device), so the
+  /// row is omitted rather than rendered as a change from nothing.
+  final String previousBankName;
+  final String previousHolderName;
 
   const _AccountNumberChange({
     required this.accountId,
     required this.label,
     required this.previous,
     required this.current,
+    required this.numberChanged,
     required this.bankName,
+    required this.holderName,
+    required this.previousBankName,
+    required this.previousHolderName,
   });
 }

@@ -420,6 +420,7 @@ class ReferralRepositoryImpl implements IReferralRepository {
   Future<Either<Failure, RedemptionResultEntity>> redeemPoints({
     required int points,
     required String idempotencyKey,
+    required String pin,
   }) async {
     try {
       final callOptions = await _callOptionsHelper.withAuth();

@@ -915,7 +915,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                 child: BlocConsumer<DepositCubit, DepositState>(
                   listener: _blocListener,
                   builder: (context, state) {
-                    final isLoading = state is DepositLoading;
+                    // SUBMITTING, not "busy". Only a deposit actually in flight
+                    // should stop the user choosing a method — fetching the
+                    // method list used to emit the same state, which left every
+                    // tile dead on arrival while an unrelated read completed.
+                    final isSubmitting = state is DepositLoading;
                     final openBankingState =
                         context.watch<OpenBankingCubit>().state;
                     final isOpenBankingLoading =
@@ -958,8 +962,17 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                                 ),
                               ),
                               SizedBox(height: 16.h),
-                              _buildMethodList(
-                                  isLoading || isOpenBankingLoading),
+                              // Gated on SUBMIT only.
+                              //
+                              // `isOpenBankingLoading` used to be OR-ed in here,
+                              // so while the linked-bank list was being fetched
+                              // every method tile — bank transfer, card, the
+                              // lot — was untappable. Those methods do not
+                              // depend on linked accounts in any way; the fetch
+                              // belongs to the carousel above, which shows its
+                              // own loading state. One section's load should
+                              // never freeze the rest of the screen.
+                              _buildMethodList(isSubmitting),
                             ],
                           ),
                         ),
@@ -1504,6 +1517,17 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   /// has an active mandate (reusable with no re-auth via Mono DebitMandate).
   /// Tapping opens a deposit-amount sheet; the overflow menu offers manage +
   /// unlink. "View all" lists them all in a modal.
+  /// One placeholder bar for the skeleton cards.
+  Widget _skeletonBar({required double width, required double height}) =>
+      Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(4.r),
+        ),
+      );
+
   Widget _buildSavedBanksCarousel(BuildContext context, bool isLoading) {
     // While the open-banking cubit is fetching for the first time, the
     // accounts list is still empty — render a labelled loading row in
@@ -1519,19 +1543,41 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
             ),
           );
       if (isLoading || _linkedAccountsLoading) {
+        // A SKELETON in the shape of the cards that are coming, not a spinner.
+        //
+        // The carousel is horizontal, so a centred spinner collapsed the row to
+        // a different height and the whole page shifted when the real cards
+        // arrived. Placeholder cards hold the exact footprint, so nothing below
+        // moves, and the shape itself tells the user what is loading.
+        //
+        // The rest of the screen stays live throughout — this section loading
+        // is not a reason to freeze the deposit methods below it.
         return Container(
           margin: EdgeInsets.only(bottom: 24.h),
-          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
-          decoration: sectionBox(),
-          child: LazerVaultLoadingRow(
-            label: 'Loading linked accounts',
-            padding: EdgeInsets.zero,
-            labelStyle: TextStyle(
-              color: Colors.white.withValues(alpha: 0.85),
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w500,
+          padding: EdgeInsets.symmetric(vertical: 4.h),
+          child: SizedBox(
+            height: 92.h,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              itemCount: 2,
+              separatorBuilder: (_, __) => SizedBox(width: 12.w),
+              itemBuilder: (_, __) => Container(
+                width: 180.w,
+                padding: EdgeInsets.all(14.w),
+                decoration: sectionBox(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _skeletonBar(width: 110.w, height: 12.h),
+                    SizedBox(height: 10.h),
+                    _skeletonBar(width: 70.w, height: 10.h),
+                  ],
+                ),
+              ),
             ),
-            loaderSize: 22,
           ),
         );
       }
