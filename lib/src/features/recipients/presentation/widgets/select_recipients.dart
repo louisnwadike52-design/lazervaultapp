@@ -43,6 +43,7 @@ import 'package:lazervault/src/features/recipients/presentation/widgets/enhanced
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/repositories/p2p_chat_repository.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/widgets/p2p_chat_icon.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/saved_recipients_rail.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_cubit.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_state.dart';
 import 'package:lazervault/src/features/split_bills/presentation/cubit/split_bill_count_cubit.dart';
@@ -175,6 +176,15 @@ class _SelectRecipientsState extends State<SelectRecipients>
 
   // Scroll controller for recipients list
   final ScrollController _recipientsScrollController = ScrollController();
+
+  /// Saved-recipients layout. Defaults to the scrollable rail: it shows more
+  /// people in less vertical space, which keeps the send action on screen.
+  SavedRecipientsView _savedView = SavedRecipientsView.rail;
+
+  /// Scopes the stored preference. Empty until resolved — two people sharing a
+  /// device must not inherit each other's layout, and an unscoped key would do
+  /// exactly that.
+  String _savedViewUserId = '';
 
   // Recurring-transfers cubit. Held as a field rather than read from the
   // tree because this screen is the only consumer and we want a fresh
@@ -329,6 +339,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
 
     // Add scroll listener for pagination
     _recipientsScrollController.addListener(_onRecipientsScroll);
+    // ignore: discarded_futures
+    _loadSavedViewPreference();
 
     // Load P2P conversations so the badge shows unread count
     serviceLocator<P2PConversationsCubit>().loadConversations();
@@ -1759,6 +1771,24 @@ class _SelectRecipientsState extends State<SelectRecipients>
                     ),
                   ),
                 ),
+                // Layout toggle, next to the section it controls rather than
+                // buried in settings — the same place the Lifestyle tab puts
+                // its view switch, so the gesture is already learned.
+                if (saved.isNotEmpty)
+                  InkWell(
+                    borderRadius: BorderRadius.circular(20.r),
+                    onTap: _toggleSavedView,
+                    child: Padding(
+                      padding: EdgeInsets.all(4.w),
+                      child: Icon(
+                        _savedView == SavedRecipientsView.rail
+                            ? Icons.view_list_rounded
+                            : Icons.view_carousel_rounded,
+                        size: 18.sp,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
                 const Spacer(),
                 if (saved.isNotEmpty)
                   InkWell(
@@ -2000,19 +2030,69 @@ class _SelectRecipientsState extends State<SelectRecipients>
         ),
       );
     }
-    // Both tabs show the first 3 saved recipients inline; the rest live behind
-    // the header "View all" sheet (and the filter icon narrows them).
-    const previewCount = 3;
+    // Two layouts over ONE already-fetched list; the rest live behind the
+    // header "View all" sheet (and the filter icon narrows them).
+    //
+    // The rail scrolls so it can show more; the stacked list cannot, because
+    // beyond three rows the send action is pushed off-screen. Both slice the
+    // same `ordered` list, so switching costs no round trip.
+    final previewCount = _savedView == SavedRecipientsView.rail
+        ? SavedRecipientsViewCounts.rail
+        : SavedRecipientsViewCounts.list;
+    final preview = ordered.take(previewCount).toList();
+
     return Padding(
       // Lazervault-user tab sits a little lower for breathing room under the
       // tab toggle above.
       padding: EdgeInsets.only(top: wantInternal ? 14.h : 0),
-      child: Column(
-        children: [
-          for (final r in ordered.take(previewCount)) _buildRecipientItem(r),
-        ],
-      ),
+      child: _savedView == SavedRecipientsView.rail
+          ? SavedRecipientsRail(
+              recipients: preview,
+              onTap: _onRecipientTapped,
+              onMore: _showRecipientOptionsSheet,
+            )
+          : Column(
+              children: [
+                for (final r in preview) _buildRecipientItem(r),
+              ],
+            ),
     );
+  }
+
+  /// Restores the saved-recipients layout for this user.
+  ///
+  /// Best effort: a preference that cannot be read leaves the default in place
+  /// rather than blocking the screen. Guarded on `mounted` because this resolves
+  /// the user id from storage and the screen can be popped before it returns.
+  Future<void> _loadSavedViewPreference() async {
+    try {
+      final userId =
+          await serviceLocator<SecureStorageService>().getUserId() ?? '';
+      if (!mounted || userId.isEmpty) return;
+      final view = await SavedRecipientsViewPreference.load(userId);
+      if (!mounted) return;
+      setState(() {
+        _savedViewUserId = userId;
+        _savedView = view;
+      });
+    } catch (_) {
+      // Default layout stands.
+    }
+  }
+
+  /// Flips the saved-recipients layout and remembers it.
+  ///
+  /// Persisted per user, so the choice survives leaving the screen — a display
+  /// preference that has to be re-made every visit is not a preference.
+  void _toggleSavedView() {
+    final next = _savedView == SavedRecipientsView.rail
+        ? SavedRecipientsView.list
+        : SavedRecipientsView.rail;
+    setState(() => _savedView = next);
+    // Fire-and-forget: the UI has already switched, and a preference that fails
+    // to save is not worth interrupting a send for.
+    // ignore: discarded_futures
+    SavedRecipientsViewPreference.save(_savedViewUserId, next);
   }
 
   /// Saved-recipients picker: an 85%-height bottom sheet with search over the
