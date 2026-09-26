@@ -1624,62 +1624,64 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
     );
   }
 
-  void _showCreateTaskBottomSheet() {
-    showModalBottomSheet(
+  /// Opens a sheet with this screen's PlanMyDayCubit re-provided.
+  ///
+  /// showModalBottomSheet builds its child under the NAVIGATOR, not under this
+  /// screen, so the BlocProvider created in build() is NOT an ancestor of the
+  /// sheet. Any `context.read<PlanMyDayCubit>()` inside the sheet — or inside a
+  /// builder that shadows `context` with the modal's own — threw
+  /// ProviderNotFoundException, the sheet failed to build, and the user landed
+  /// on a blank screen. That was "adding a task goes nowhere".
+  ///
+  /// The cubit is read HERE, from the screen's context, where the provider is
+  /// visible, then handed down with BlocProvider.value so the sheet's own reads
+  /// resolve too. `.value` and not `create:` — the cubit belongs to the screen
+  /// and must not be disposed when the sheet closes.
+  Future<T?> _showPlanSheet<T>(Widget Function(PlanMyDayCubit cubit) build) {
+    final cubit = context.read<PlanMyDayCubit>();
+    return showModalBottomSheet<T>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => CreateTaskBottomSheet(
-        selectedDate: _selectedDate,
-        categories: context.read<PlanMyDayCubit>().state is PlanMyDayLoaded
-            ? (context.read<PlanMyDayCubit>().state as PlanMyDayLoaded)
-                .categories
-            : [],
-        onTaskCreated: () {
-          context.read<PlanMyDayCubit>().loadDayData(_selectedDate);
-        },
+      builder: (_) => BlocProvider<PlanMyDayCubit>.value(
+        value: cubit,
+        child: build(cubit),
       ),
     );
+  }
+
+  void _showCreateTaskBottomSheet() {
+    _showPlanSheet((cubit) {
+      final state = cubit.state;
+      return CreateTaskBottomSheet(
+        selectedDate: _selectedDate,
+        categories: state is PlanMyDayLoaded ? state.categories : [],
+        onTaskCreated: () => cubit.loadDayData(_selectedDate),
+      );
+    });
   }
 
   void _showCreateEventBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => CreateEventBottomSheet(
+    _showPlanSheet((cubit) {
+      final state = cubit.state;
+      return CreateEventBottomSheet(
         selectedDate: _selectedDate,
-        categories: context.read<PlanMyDayCubit>().state is PlanMyDayLoaded
-            ? (context.read<PlanMyDayCubit>().state as PlanMyDayLoaded)
-                .categories
-            : [],
-        onEventCreated: () {
-          context.read<PlanMyDayCubit>().loadDayData(_selectedDate);
-        },
-      ),
-    );
+        categories: state is PlanMyDayLoaded ? state.categories : [],
+        onEventCreated: () => cubit.loadDayData(_selectedDate),
+      );
+    });
   }
 
   void _showCreateTimeBlockBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) {
-        final state = context.read<PlanMyDayCubit>().state;
-        final tasks = state is PlanMyDayLoaded ? state.tasks : <Task>[];
-        final events = state is PlanMyDayLoaded ? state.events : <Event>[];
-
-        return CreateTimeBlockBottomSheet(
-          selectedDate: _selectedDate,
-          tasks: tasks,
-          events: events,
-          onTimeBlockCreated: () {
-            context.read<PlanMyDayCubit>().loadDayData(_selectedDate);
-          },
-        );
-      },
-    );
+    _showPlanSheet((cubit) {
+      final state = cubit.state;
+      return CreateTimeBlockBottomSheet(
+        selectedDate: _selectedDate,
+        tasks: state is PlanMyDayLoaded ? state.tasks : <Task>[],
+        events: state is PlanMyDayLoaded ? state.events : <Event>[],
+        onTimeBlockCreated: () => cubit.loadDayData(_selectedDate),
+      );
+    });
   }
 
   void _showTaskDetailBottomSheet(Task task) {
