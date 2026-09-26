@@ -649,6 +649,24 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
   }
 
   /// When an incoming gift/spray is addressed to US (the recipient — an empty
+  /// Whether the money would land back on the person sending it.
+  ///
+  /// Spray and gifts default to the HOST as recipient, so the host spraying in
+  /// their own room is paying themselves. sprayme-service refuses this
+  /// ("cannot spray money to yourself"), and this mirrors the rule client-side
+  /// so the UI can decline BEFORE it animates anything — the room sprays
+  /// optimistically, so without this the sender watches the celebration and
+  /// then receives an error.
+  ///
+  /// Unknown identity returns false: if we cannot tell who we are, let the
+  /// server decide rather than blocking a legitimate spray.
+  bool get isSelfSpray {
+    final me = _currentUserId;
+    if (me == null || me.isEmpty) return false;
+    final hostId = state.session?.hostUserId ?? '';
+    return hostId.isNotEmpty && hostId == me;
+  }
+
   /// recipient means the host), pull the authoritative wallet so our EARNINGS
   /// balance updates live in-room. Skips our own echoed events (as the sender
   /// our spendable was already updated by the action path). This is the

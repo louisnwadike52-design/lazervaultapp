@@ -40,8 +40,11 @@ import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_layout_mode.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/sprayme/presentation/widgets/nova_typing_indicator.dart';
+import 'package:lazervault/src/features/sprayme/presentation/widgets/tag_people_action.dart';
+
 part 'spray_room_screen_part1.dart';
 part 'spray_room_screen_part2.dart';
+part 'spray_room_screen_part3.dart';
 
 class _SprayRoomViewState extends State<_SprayRoomView>
     with TickerProviderStateMixin {
@@ -607,6 +610,29 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     final st = cubit.state;
     if (st.sessionEnded || !st.isConnected) return;
 
+    // You cannot spray yourself — checked HERE, before anything animates.
+    //
+    // sprayme-service already refuses it ("cannot spray money to yourself"),
+    // but the room sprays optimistically: the note flies, the counter ticks,
+    // and the rejection arrives afterwards as a snackbar. The host therefore
+    // saw their money celebrated and then an error, which reads as "it worked,
+    // then something broke" rather than "that is not a thing you can do".
+    //
+    // Checking first means the message is the only thing that happens.
+    if (cubit.isSelfSpray) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text("You can't spray yourself"),
+            backgroundColor: Color(0xFFFB923C),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      setState(() => _isSprayMode = false);
+      return;
+    }
+
     // Debounce rapid taps to prevent API flood
     final now = DateTime.now();
     if (_lastSprayTapTime != null &&
@@ -634,8 +660,11 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     }
 
     final denom = st.selectedDenomination!;
+    // Haptic only. The per-tap spray sound is deliberately gone: spraying is a
+    // rapid repeated tap, so it fired several times a second and turned into a
+    // rattle over whatever audio the room itself is playing. Gift sounds still
+    // play — those are occasional and are the moment worth hearing.
     HapticFeedback.lightImpact();
-    _soundService.playSpraySound();
     cubit.sprayMoney();
     _sprayTapCount++;
     _addSprayNote(denom);
@@ -1466,7 +1495,35 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                   ],
                 ),
               )),
+          SizedBox(width: 6.w),
+          _buildRoomOverflowButton(state),
         ],
+      ),
+    );
+  }
+
+  /// The three-dot menu.
+  ///
+  /// Every capability behind it already existed and still works — goLive,
+  /// stopLive, toggleCamera, flipCamera, toggleRecording, inviteCoHost,
+  /// loadLeaderboard, endSession, and tagging people. What went missing was the
+  /// way IN: each was reachable only from a control that renders under narrow
+  /// conditions (host-only, live-only, a particular panel being open), so on an
+  /// ordinary room none of them were on screen and the features looked deleted.
+  ///
+  /// Collecting them here makes the set visible and stable regardless of state,
+  /// and each entry is enabled only when it can actually do something — a menu
+  /// that lists an action and then fails is worse than one that greys it out.
+  Widget _buildRoomOverflowButton(SprayRoomState state) {
+    return GestureDetector(
+      onTap: () => _showRoomOverflowSheet(state),
+      child: Container(
+        padding: EdgeInsets.all(8.w),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.4),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(Icons.more_vert, color: Colors.white, size: 20.sp),
       ),
     );
   }
@@ -2795,7 +2852,25 @@ class _SprayRoomViewState extends State<_SprayRoomView>
           _showBuyGiftSheet(state);
         },
         onSendGift: (gift, quantity) {
-          context.read<SprayRoomCubit>().sendGift(gift.id, quantity: quantity);
+          final roomCubit = context.read<SprayRoomCubit>();
+          // Same rule as spraying: a gift defaults to the host as recipient, so
+          // the host sending one is paying themselves. Refused before the
+          // animation — the gift credit has already been bought by this point,
+          // so a celebration followed by an error is especially misleading.
+          if (roomCubit.isSelfSpray) {
+            Navigator.of(context).pop();
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                const SnackBar(
+                  content: Text("You can't send a gift to yourself"),
+                  backgroundColor: Color(0xFFFB923C),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            return;
+          }
+          roomCubit.sendGift(gift.id, quantity: quantity);
           // Trigger local animation immediately with category for sound
           _triggerGiftAnimation(gift.emoji, gift.animationType, quantity,
               category: gift.category);

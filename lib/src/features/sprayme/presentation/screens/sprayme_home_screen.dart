@@ -254,11 +254,19 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
                 children: [
                   _buildHeader(),
                   SizedBox(height: 20.h),
-                  // Sits ABOVE the wallet, because a session you are still
-                  // live in outranks everything else on this page.
-                  _buildResumeBanner(),
+                  // Wallet first, live sessions directly beneath it.
+                  //
+                  // The banner used to sit above the wallet on the reasoning
+                  // that a live session outranks everything — but it pushed the
+                  // balance off the top of the page, and the same sessions were
+                  // ALSO listed under "Live now" in My Sessions further down, so
+                  // every live session appeared twice on one scroll. The card is
+                  // the fixed landmark people open this page for; the green live
+                  // rows read as a continuation of it directly below.
                   _buildWalletCard(),
-                  SizedBox(height: 20.h),
+                  SizedBox(height: 16.h),
+                  _buildResumeBanner(),
+                  SizedBox(height: 4.h),
                   _buildQuickActions(),
                   SizedBox(height: 24.h),
                   // Invitations, directly under the funds card and above your
@@ -870,12 +878,14 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (active.isNotEmpty) ...[
-          _buildSessionGroupLabel('Live now', const Color(0xFF10B981)),
-          ...active.map(_buildSessionTile),
-        ],
+        // Live sessions are NOT repeated here.
+        //
+        // The resume banner directly under the wallet card already shows every
+        // active session, with a bigger target and the rejoin CTA. Listing them
+        // again a few hundred pixels further down rendered each one twice on a
+        // single scroll, which is what made the page look duplicated. This
+        // section is now what its "View all" promises: the finished ones.
         if (shownPast.isNotEmpty) ...[
-          if (active.isNotEmpty) SizedBox(height: 14.h),
           _buildSessionGroupLabel('Ended', const Color(0xFF6B7280)),
           ...shownPast.map(_buildSessionTile),
         ],
