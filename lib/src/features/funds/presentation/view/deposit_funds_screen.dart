@@ -3543,10 +3543,29 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
         widget.selectedCard['accountNumber'] ??
         widget.selectedCard['account_number'] ??
         '') as String;
-    final accountName = (_provisionedAccountName ??
-        widget.selectedCard['accountName'] ??
-        widget.selectedCard['account_name'] ??
+    // The HOLDER name wins over the wallet label.
+    //
+    // This card is what a payer reads back before sending money, so the name on
+    // it has to be the one their bank will show on the name enquiry. That is the
+    // holder name from the rail currently issuing the number — NOT
+    // `accountName`, which is dual-purpose: it is also the user's own label for
+    // the wallet, and on accounts minted before a rail switch it still holds the
+    // OLD provider's holder name. A Nomba number was being shown under
+    // "Praiz Onah FLW", a Flutterwave-era name, which is exactly the mismatch
+    // that makes a payer abandon a transfer.
+    //
+    // Falls back to the label only when no holder name has been projected yet,
+    // which is better than showing nothing at all on this particular card.
+    final holderName = (widget.selectedCard['holderName'] ??
+        widget.selectedCard['virtualAccountHolderName'] ??
+        widget.selectedCard['virtual_account_holder_name'] ??
         '') as String;
+    final accountName = holderName.trim().isNotEmpty
+        ? holderName
+        : (_provisionedAccountName ??
+            widget.selectedCard['accountName'] ??
+            widget.selectedCard['account_name'] ??
+            '') as String;
     final bankName = (_provisionedBankName ??
         widget.selectedCard['bankName'] ??
         widget.selectedCard['bank_name'] ??

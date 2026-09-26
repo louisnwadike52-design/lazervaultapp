@@ -727,7 +727,16 @@ class _AccountCarouselState extends State<AccountCarousel> {
       // never the account TYPE masquerading as the holder name.
       'bankName': account.bankName ?? '', // Partner bank name (real or empty)
       'accountName':
-          account.accountName ?? '', // NUBAN holder name (real or empty)
+          account.accountName ?? '', // the user's LABEL for this wallet
+      // The NUBAN holder name, projected from the rail currently issuing the
+      // number. Carried separately from accountName because that column is
+      // dual-purpose — it is also the wallet's label, and on accounts minted
+      // before a rail switch it still holds the previous provider's holder
+      // name. This map feeds the Deposit and Withdraw screens, which show the
+      // name a payer verifies against at their bank; the details-sheet map
+      // below already passed it, so the two were disagreeing about the same
+      // account.
+      'holderName': account.virtualAccountHolderName ?? '',
       'trend':
           '${account.trendPercentage > 0 ? '+' : ''}${account.trendPercentage.toStringAsFixed(1)}%',
       'isUp': isUp,

@@ -49,6 +49,7 @@ class Account extends $pb.GeneratedMessage {
     $core.double? reservedBalance,
     $core.int? kycTier,
     $core.bool? allowInternationalTransfers,
+    $core.String? virtualAccountHolderName,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -82,6 +83,8 @@ class Account extends $pb.GeneratedMessage {
     if (kycTier != null) result.kycTier = kycTier;
     if (allowInternationalTransfers != null)
       result.allowInternationalTransfers = allowInternationalTransfers;
+    if (virtualAccountHolderName != null)
+      result.virtualAccountHolderName = virtualAccountHolderName;
     return result;
   }
 
@@ -133,6 +136,7 @@ class Account extends $pb.GeneratedMessage {
         27, _omitFieldNames ? '' : 'reservedBalance', $pb.PbFieldType.OD)
     ..a<$core.int>(28, _omitFieldNames ? '' : 'kycTier', $pb.PbFieldType.O3)
     ..aOB(29, _omitFieldNames ? '' : 'allowInternationalTransfers')
+    ..aOS(30, _omitFieldNames ? '' : 'virtualAccountHolderName')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -415,6 +419,16 @@ class Account extends $pb.GeneratedMessage {
   $core.bool hasAllowInternationalTransfers() => $_has(28);
   @$pb.TagNumber(29)
   void clearAllowInternationalTransfers() => $_clearField(29);
+
+  /// Holder name from the rail currently issuing this account's number.
+  @$pb.TagNumber(30)
+  $core.String get virtualAccountHolderName => $_getSZ(29);
+  @$pb.TagNumber(30)
+  set virtualAccountHolderName($core.String value) => $_setString(29, value);
+  @$pb.TagNumber(30)
+  $core.bool hasVirtualAccountHolderName() => $_has(29);
+  @$pb.TagNumber(30)
+  void clearVirtualAccountHolderName() => $_clearField(30);
 }
 
 /// ===== Account Summary Model (for carousel/list views) =====
