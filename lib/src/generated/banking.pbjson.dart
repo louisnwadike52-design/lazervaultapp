@@ -951,6 +951,20 @@ const IdentityVerification$json = {
       '6': '.google.protobuf.Timestamp',
       '10': 'verifiedAt'
     },
+    {'1': 'nin', '3': 12, '4': 1, '5': 9, '10': 'nin'},
+    {'1': 'address', '3': 13, '4': 1, '5': 9, '10': 'address'},
+    {'1': 'address_line1', '3': 14, '4': 1, '5': 9, '10': 'addressLine1'},
+    {'1': 'address_city', '3': 15, '4': 1, '5': 9, '10': 'addressCity'},
+    {'1': 'address_state', '3': 16, '4': 1, '5': 9, '10': 'addressState'},
+    {'1': 'address_lga', '3': 17, '4': 1, '5': 9, '10': 'addressLga'},
+    {
+      '1': 'address_postal_code',
+      '3': 18,
+      '4': 1,
+      '5': 9,
+      '10': 'addressPostalCode'
+    },
+    {'1': 'country', '3': 19, '4': 1, '5': 9, '10': 'country'},
   ],
 };
 
@@ -962,7 +976,12 @@ final $typed_data.Uint8List identityVerificationDescriptor = $convert.base64Deco
     '9vZl9iaXJ0aBgGIAEoCVILZGF0ZU9mQmlydGgSIQoMcGhvbmVfbnVtYmVyGAcgASgJUgtwaG9u'
     'ZU51bWJlchIWCgZnZW5kZXIYCCABKAlSBmdlbmRlchIWCgZzdGF0dXMYCSABKAlSBnN0YXR1cx'
     'IaCghwcm92aWRlchgKIAEoCVIIcHJvdmlkZXISOwoLdmVyaWZpZWRfYXQYCyABKAsyGi5nb29n'
-    'bGUucHJvdG9idWYuVGltZXN0YW1wUgp2ZXJpZmllZEF0');
+    'bGUucHJvdG9idWYuVGltZXN0YW1wUgp2ZXJpZmllZEF0EhAKA25pbhgMIAEoCVIDbmluEhgKB2'
+    'FkZHJlc3MYDSABKAlSB2FkZHJlc3MSIwoNYWRkcmVzc19saW5lMRgOIAEoCVIMYWRkcmVzc0xp'
+    'bmUxEiEKDGFkZHJlc3NfY2l0eRgPIAEoCVILYWRkcmVzc0NpdHkSIwoNYWRkcmVzc19zdGF0ZR'
+    'gQIAEoCVIMYWRkcmVzc1N0YXRlEh8KC2FkZHJlc3NfbGdhGBEgASgJUgphZGRyZXNzTGdhEi4K'
+    'E2FkZHJlc3NfcG9zdGFsX2NvZGUYEiABKAlSEWFkZHJlc3NQb3N0YWxDb2RlEhgKB2NvdW50cn'
+    'kYEyABKAlSB2NvdW50cnk=');
 
 @$core.Deprecated('Use getProviderStatusRequestDescriptor instead')
 const GetProviderStatusRequest$json = {
@@ -3999,14 +4018,15 @@ const CalculateWithdrawalFeeRequest$json = {
   '1': 'CalculateWithdrawalFeeRequest',
   '2': [
     {'1': 'amount', '3': 1, '4': 1, '5': 3, '10': 'amount'},
+    {'1': 'source_account_id', '3': 2, '4': 1, '5': 9, '10': 'sourceAccountId'},
   ],
 };
 
 /// Descriptor for `CalculateWithdrawalFeeRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List calculateWithdrawalFeeRequestDescriptor =
     $convert.base64Decode(
-        'Ch1DYWxjdWxhdGVXaXRoZHJhd2FsRmVlUmVxdWVzdBIWCgZhbW91bnQYASABKANSBmFtb3VudA'
-        '==');
+        'Ch1DYWxjdWxhdGVXaXRoZHJhd2FsRmVlUmVxdWVzdBIWCgZhbW91bnQYASABKANSBmFtb3VudB'
+        'IqChFzb3VyY2VfYWNjb3VudF9pZBgCIAEoCVIPc291cmNlQWNjb3VudElk');
 
 @$core.Deprecated('Use calculateWithdrawalFeeResponseDescriptor instead')
 const CalculateWithdrawalFeeResponse$json = {

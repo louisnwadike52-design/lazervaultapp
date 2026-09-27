@@ -3951,6 +3951,14 @@ class IdentityVerification extends $pb.GeneratedMessage {
     $core.String? status,
     $core.String? provider,
     $1.Timestamp? verifiedAt,
+    $core.String? nin,
+    $core.String? address,
+    $core.String? addressLine1,
+    $core.String? addressCity,
+    $core.String? addressState,
+    $core.String? addressLga,
+    $core.String? addressPostalCode,
+    $core.String? country,
   }) {
     final result = create();
     if (userId != null) result.userId = userId;
@@ -3964,6 +3972,14 @@ class IdentityVerification extends $pb.GeneratedMessage {
     if (status != null) result.status = status;
     if (provider != null) result.provider = provider;
     if (verifiedAt != null) result.verifiedAt = verifiedAt;
+    if (nin != null) result.nin = nin;
+    if (address != null) result.address = address;
+    if (addressLine1 != null) result.addressLine1 = addressLine1;
+    if (addressCity != null) result.addressCity = addressCity;
+    if (addressState != null) result.addressState = addressState;
+    if (addressLga != null) result.addressLga = addressLga;
+    if (addressPostalCode != null) result.addressPostalCode = addressPostalCode;
+    if (country != null) result.country = country;
     return result;
   }
 
@@ -3992,6 +4008,14 @@ class IdentityVerification extends $pb.GeneratedMessage {
     ..aOS(10, _omitFieldNames ? '' : 'provider')
     ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'verifiedAt',
         subBuilder: $1.Timestamp.create)
+    ..aOS(12, _omitFieldNames ? '' : 'nin')
+    ..aOS(13, _omitFieldNames ? '' : 'address')
+    ..aOS(14, _omitFieldNames ? '' : 'addressLine1')
+    ..aOS(15, _omitFieldNames ? '' : 'addressCity')
+    ..aOS(16, _omitFieldNames ? '' : 'addressState')
+    ..aOS(17, _omitFieldNames ? '' : 'addressLga')
+    ..aOS(18, _omitFieldNames ? '' : 'addressPostalCode')
+    ..aOS(19, _omitFieldNames ? '' : 'country')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -4116,6 +4140,95 @@ class IdentityVerification extends $pb.GeneratedMessage {
   void clearVerifiedAt() => $_clearField(11);
   @$pb.TagNumber(11)
   $1.Timestamp ensureVerifiedAt() => $_ensure(10);
+
+  /// Fields 12+ added 2026-09-22 so another service can PREFILL a KYC form from
+  /// an identity this user already proved, instead of asking them to retype what
+  /// Mono verified. Purely additive — every existing client keeps working and
+  /// ignores what it does not know.
+  ///
+  /// The concrete need: Fincra's foreign-currency virtual-account request wants
+  /// ~24 fields including a DECOMPOSED address (state / city / street / zip as
+  /// separate values). Without these, accounts-service could read a name and a
+  /// date of birth and nothing else, and the user re-entered an address they had
+  /// already given us.
+  ///
+  /// PII NOTE: nin and the address components are personal data. This RPC is
+  /// reachable inside the mesh (OpportunisticAuthMethods) and by the owning user
+  /// through banking-gateway. Do not widen its exposure without revisiting that.
+  @$pb.TagNumber(12)
+  $core.String get nin => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set nin($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasNin() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearNin() => $_clearField(12);
+
+  /// address is the composed single line (", "-joined) used for Mono mandate and
+  /// DirectPay. The components below are the SAME address un-joined; they are not
+  /// an alternative source, and either may be empty.
+  @$pb.TagNumber(13)
+  $core.String get address => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set address($core.String value) => $_setString(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasAddress() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearAddress() => $_clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get addressLine1 => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set addressLine1($core.String value) => $_setString(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasAddressLine1() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearAddressLine1() => $_clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.String get addressCity => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set addressCity($core.String value) => $_setString(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasAddressCity() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearAddressCity() => $_clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get addressState => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set addressState($core.String value) => $_setString(15, value);
+  @$pb.TagNumber(16)
+  $core.bool hasAddressState() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearAddressState() => $_clearField(16);
+
+  @$pb.TagNumber(17)
+  $core.String get addressLga => $_getSZ(16);
+  @$pb.TagNumber(17)
+  set addressLga($core.String value) => $_setString(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasAddressLga() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearAddressLga() => $_clearField(17);
+
+  @$pb.TagNumber(18)
+  $core.String get addressPostalCode => $_getSZ(17);
+  @$pb.TagNumber(18)
+  set addressPostalCode($core.String value) => $_setString(17, value);
+  @$pb.TagNumber(18)
+  $core.bool hasAddressPostalCode() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearAddressPostalCode() => $_clearField(18);
+
+  @$pb.TagNumber(19)
+  $core.String get country => $_getSZ(18);
+  @$pb.TagNumber(19)
+  set country($core.String value) => $_setString(18, value);
+  @$pb.TagNumber(19)
+  $core.bool hasCountry() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearCountry() => $_clearField(19);
 }
 
 class GetProviderStatusRequest extends $pb.GeneratedMessage {
@@ -16819,9 +16932,11 @@ class WithdrawalsResponse extends $pb.GeneratedMessage {
 class CalculateWithdrawalFeeRequest extends $pb.GeneratedMessage {
   factory CalculateWithdrawalFeeRequest({
     $fixnum.Int64? amount,
+    $core.String? sourceAccountId,
   }) {
     final result = create();
     if (amount != null) result.amount = amount;
+    if (sourceAccountId != null) result.sourceAccountId = sourceAccountId;
     return result;
   }
 
@@ -16839,6 +16954,7 @@ class CalculateWithdrawalFeeRequest extends $pb.GeneratedMessage {
       package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
       createEmptyInstance: create)
     ..aInt64(1, _omitFieldNames ? '' : 'amount')
+    ..aOS(2, _omitFieldNames ? '' : 'sourceAccountId')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -16874,6 +16990,19 @@ class CalculateWithdrawalFeeRequest extends $pb.GeneratedMessage {
   $core.bool hasAmount() => $_has(0);
   @$pb.TagNumber(1)
   void clearAmount() => $_clearField(1);
+
+  /// The wallet the withdrawal will debit. Each rail's payout cost differs,
+  /// and a wallet's withdrawals are carried by the provider that owns it, so
+  /// the QUOTE has to be computed against the same rail the CHARGE will use.
+  /// Optional for older clients: absent falls back to the default rail.
+  @$pb.TagNumber(2)
+  $core.String get sourceAccountId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set sourceAccountId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasSourceAccountId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSourceAccountId() => $_clearField(2);
 }
 
 class CalculateWithdrawalFeeResponse extends $pb.GeneratedMessage {

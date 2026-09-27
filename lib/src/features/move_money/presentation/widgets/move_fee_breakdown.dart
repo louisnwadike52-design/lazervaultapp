@@ -44,13 +44,25 @@ class MoveFeeBreakdown extends StatelessWidget {
 
           // Itemized fee legs so the user knows exactly what they're paying, then
           // ONE aggregated Total fee. Each leg is admin-tunable + split at settlement
-          // (Mono debit → MONO_COST, Flutterwave payout → FLUTTERWAVE_COST, stamp duty
-          // → STAMP_DUTY remittance, service fee → REVENUE).
+          // (Mono debit → MONO_COST, payout → the CARRYING rail's cost wallet,
+          // stamp duty → STAMP_DUTY remittance, service fee → REVENUE).
           if (feeCalculation.debitFee > 0)
             _buildRow('Bank debit (Mono)', feeCalculation.debitFee / 100.0),
+          // Deliberately does NOT name the payout provider.
+          //
+          // It used to read "Payout (Flutterwave)", which is simply wrong for a
+          // Nomba-carried payout — and the quote cannot know the carrier anyway,
+          // because the rail is resolved from the destination bank at initiate
+          // time, after this is drawn. Naming a provider here would be a guess
+          // rendered as fact.
+          //
+          // Which provider we use to move the money is also our commercial
+          // arrangement rather than a line item the sender has any use for —
+          // the same reasoning the withdrawal screen already applies. The split
+          // is still recorded on the transaction and surfaced in the admin
+          // fee-audit view.
           if (feeCalculation.transferFee > 0)
-            _buildRow(
-                'Payout (Flutterwave)', feeCalculation.transferFee / 100.0),
+            _buildRow('Bank payout', feeCalculation.transferFee / 100.0),
           if (feeCalculation.stampDuty > 0)
             _buildRow('Stamp duty (EMTL)', feeCalculation.stampDuty / 100.0),
           if (feeCalculation.serviceFee > 0)

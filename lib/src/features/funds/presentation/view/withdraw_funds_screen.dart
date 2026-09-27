@@ -332,8 +332,13 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     if (amount <= 0) return;
     final amountKobo = (amount * 100).round();
     try {
+      // Send the source wallet so the quote is computed against the rail that
+      // will actually carry the payout. Each rail's payout cost differs, and
+      // the charge path has always used the wallet's own provider — without
+      // this the user is quoted one fee and charged another.
       final req = banking_pb.CalculateWithdrawalFeeRequest()
-        ..amount = Int64(amountKobo);
+        ..amount = Int64(amountKobo)
+        ..sourceAccountId = _sourceAccountId;
       final callOptions =
           await serviceLocator<GrpcCallOptionsHelper>().withAuth();
       final client = serviceLocator<banking_grpc.BankingServiceClient>();
