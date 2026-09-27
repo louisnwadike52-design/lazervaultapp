@@ -6,7 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
-import 'package:lazervault/src/features/p2p_chat/domain/repositories/p2p_chat_repository.dart';
+import 'package:lazervault/src/features/recipients/data/repositories/unified_user_search_repository.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/session_invite.dart';
 
 /// Picking people to tag into a Lazerspray session.
@@ -87,9 +87,32 @@ class _TagPeopleSheetState extends State<TagPeopleSheet> {
       _error = null;
     });
     try {
-      final users =
-          await serviceLocator<P2PChatRepository>().searchUsers(query);
+      // The SAME search Select Recipients uses.
+      //
+      // This sheet had its own via P2PChatRepository.searchUsers, which looks at
+      // chat contacts rather than the platform directory — so the people a host
+      // could tag were a different, smaller set than the people they could send
+      // money to, for no reason a user could infer. One directory, one ranking,
+      // one set of results.
+      //
+      // internalOnly: a tagged person has to be able to OPEN the session on
+      // their own Lazerspray page, which an external bank recipient cannot do.
+      final page = await serviceLocator<UnifiedUserSearchRepository>()
+          .search(query, internalOnly: true);
       if (!mounted) return;
+      final users = [
+        for (final r in [...page.local, ...page.global])
+          if (r.userId.isNotEmpty)
+            <String, dynamic>{
+              'user_id': r.userId,
+              'id': r.userId,
+              'full_name': r.displayName.isNotEmpty ? r.displayName : r.name,
+              'name': r.name,
+              'username': r.username,
+              'email': r.email,
+              'profile_picture': r.profilePicture,
+            },
+      ];
       setState(() {
         _results = users;
         _searching = false;

@@ -1,0 +1,10 @@
+Improvements and fixes across the app:
+
+• Your account name now shows correctly everywhere, including on the deposit screen
+• Adding a task in Plan My Day no longer opens a blank screen
+• Lazerspray: the room menu is back — statistics, live video, camera, mic, recording and comments
+• Lazerspray: tag friends from inside a room
+• Lazerspray: clearer message when you spray yourself, and no tap sound
+• Lazerspray: your wallet card leads the page
+
+Thank you for using Lazervault.

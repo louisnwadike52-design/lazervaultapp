@@ -44,7 +44,6 @@ import 'package:lazervault/src/features/sprayme/presentation/widgets/tag_people_
 
 part 'spray_room_screen_part1.dart';
 part 'spray_room_screen_part2.dart';
-part 'spray_room_screen_part3.dart';
 
 class _SprayRoomViewState extends State<_SprayRoomView>
     with TickerProviderStateMixin {
@@ -678,6 +677,19 @@ class _SprayRoomViewState extends State<_SprayRoomView>
   // ─── Tap-to-Like ───────────────────────────────────────────
 
   void _onTapLike(Offset position) {
+    // Keyboard up? The tap dismisses it instead of liking.
+    //
+    // Tapping the screen IS the like gesture here, so a blanket
+    // "tap anywhere to dismiss" would swallow every like. Treating the first
+    // tap as a dismiss only while the keyboard is open gives the expected
+    // behaviour — type a comment, tap away, the keyboard goes — without
+    // costing a like at any other time.
+    final insets = MediaQuery.of(context).viewInsets.bottom;
+    if (insets > 0) {
+      FocusScope.of(context).unfocus();
+      return;
+    }
+
     // Optimistic UI: Increment counter immediately, show visual feedback
     final cubit = context.read<SprayRoomCubit>();
     cubit.incrementLikesOptimistically();
@@ -687,7 +699,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
 
     // Haptic and sound for every tap
     HapticFeedback.lightImpact();
-    _soundService.playLikeSound();
+    if (FeatureFlags.spraymeLikeSoundEnabled) _soundService.playLikeSound();
 
     // Track pending likes and batch API calls
     _pendingLikeCount++;
@@ -1495,35 +1507,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                   ],
                 ),
               )),
-          SizedBox(width: 6.w),
-          _buildRoomOverflowButton(state),
         ],
-      ),
-    );
-  }
-
-  /// The three-dot menu.
-  ///
-  /// Every capability behind it already existed and still works — goLive,
-  /// stopLive, toggleCamera, flipCamera, toggleRecording, inviteCoHost,
-  /// loadLeaderboard, endSession, and tagging people. What went missing was the
-  /// way IN: each was reachable only from a control that renders under narrow
-  /// conditions (host-only, live-only, a particular panel being open), so on an
-  /// ordinary room none of them were on screen and the features looked deleted.
-  ///
-  /// Collecting them here makes the set visible and stable regardless of state,
-  /// and each entry is enabled only when it can actually do something — a menu
-  /// that lists an action and then fails is worse than one that greys it out.
-  Widget _buildRoomOverflowButton(SprayRoomState state) {
-    return GestureDetector(
-      onTap: () => _showRoomOverflowSheet(state),
-      child: Container(
-        padding: EdgeInsets.all(8.w),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.4),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(Icons.more_vert, color: Colors.white, size: 20.sp),
       ),
     );
   }
@@ -1557,7 +1541,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
         LikeCounterOverlay(
           totalLikes: state.totalLikeTaps,
           onLikeTap: () {
-            _soundService.playLikeSound();
+            if (FeatureFlags.spraymeLikeSoundEnabled) _soundService.playLikeSound();
             context.read<SprayRoomCubit>().sendLike();
           },
         ),
@@ -1885,6 +1869,20 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                       const Color(0xFF10B981), () {
                     Navigator.pop(sheetCtx);
                     _showGuestsSheet(state);
+                  }),
+                  // Tag people — the one action this menu never had.
+                  //
+                  // TagPeopleAction was reachable from the CREATE screen and
+                  // from nowhere inside the room, so tagging someone mid-party
+                  // had no entry point rather than a broken one. Tagged people
+                  // see the celebration on their own Lazerspray page and can
+                  // join from there.
+                  _moreTile(Icons.person_add_alt_1_rounded, 'Tag people',
+                      const Color(0xFFD946EF), () async {
+                    Navigator.pop(sheetCtx);
+                    final id = state.session?.id ?? '';
+                    if (id.isEmpty) return;
+                    await TagPeopleAction.pickAndSend(context, sessionId: id);
                   }),
                   _moreTile(Icons.bar_chart, 'Stats', const Color(0xFF3B82F6),
                       () {

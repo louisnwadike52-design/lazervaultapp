@@ -120,6 +120,10 @@ class FeatureFlags {
   //   core-payments-service SendFunds. Default ON for safety.
   static const String sendFundsPinRequired = 'send_funds_pin_required';
 
+  // spraymeLikeSoundKey: false (DEFAULT) = tapping to like in a Lazerspray room
+  //   is silent. Admin-tunable so the sound can be restored without a release.
+  static const String spraymeLikeSoundKey = 'sprayme_like_sound_enabled';
+
   // ── Batch-transfer flow config (admin-toggled, mirrors send-funds) ────────
   // batchTransferShortFlowEnabled: false (DEFAULT) = current long flow
   //   (entry → multiselect → review → processing → receipt); true = the
@@ -449,6 +453,19 @@ class FeatureFlags {
   /// read — call after [init].
   static bool get voiceChatAssistantVisible {
     return _prefs?.getBool(voiceChatAssistantSectionVisible) ?? true;
+  }
+
+  /// Whether tapping the screen to like in a Lazerspray room plays a sound.
+  ///
+  /// Defaults to FALSE. Liking is a rapid repeated tap, so the sound fired
+  /// several times a second and became a rattle over the room's own audio —
+  /// the host's voice and music, which is what the live is actually for. The
+  /// haptic and the floating hearts already confirm the tap landed.
+  ///
+  /// Kept as an admin dial rather than deleted outright so it can come back
+  /// without an app release if people miss it.
+  static bool get spraymeLikeSoundEnabled {
+    return _prefs?.getBool(spraymeLikeSoundKey) ?? false;
   }
 
   /// Whether the crowdfund "Donation alerts" menu entry is shown.
