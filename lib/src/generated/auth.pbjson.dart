@@ -1514,6 +1514,19 @@ const UpdateProfileRequest$json = {
     {'1': 'username', '3': 4, '4': 1, '5': 9, '10': 'username'},
     {'1': 'phone', '3': 5, '4': 1, '5': 9, '10': 'phone'},
     {'1': 'profile_picture', '3': 6, '4': 1, '5': 9, '10': 'profilePicture'},
+    {'1': 'address_line1', '3': 7, '4': 1, '5': 9, '10': 'addressLine1'},
+    {'1': 'address_line2', '3': 8, '4': 1, '5': 9, '10': 'addressLine2'},
+    {'1': 'address_city', '3': 9, '4': 1, '5': 9, '10': 'addressCity'},
+    {'1': 'address_state', '3': 10, '4': 1, '5': 9, '10': 'addressState'},
+    {
+      '1': 'address_postal_code',
+      '3': 11,
+      '4': 1,
+      '5': 9,
+      '10': 'addressPostalCode'
+    },
+    {'1': 'address_country', '3': 12, '4': 1, '5': 9, '10': 'addressCountry'},
+    {'1': 'update_address', '3': 13, '4': 1, '5': 8, '10': 'updateAddress'},
   ],
 };
 
@@ -1522,7 +1535,12 @@ final $typed_data.Uint8List updateProfileRequestDescriptor = $convert.base64Deco
     'ChRVcGRhdGVQcm9maWxlUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQSHQoKZmlyc3'
     'RfbmFtZRgCIAEoCVIJZmlyc3ROYW1lEhsKCWxhc3RfbmFtZRgDIAEoCVIIbGFzdE5hbWUSGgoI'
     'dXNlcm5hbWUYBCABKAlSCHVzZXJuYW1lEhQKBXBob25lGAUgASgJUgVwaG9uZRInCg9wcm9maW'
-    'xlX3BpY3R1cmUYBiABKAlSDnByb2ZpbGVQaWN0dXJl');
+    'xlX3BpY3R1cmUYBiABKAlSDnByb2ZpbGVQaWN0dXJlEiMKDWFkZHJlc3NfbGluZTEYByABKAlS'
+    'DGFkZHJlc3NMaW5lMRIjCg1hZGRyZXNzX2xpbmUyGAggASgJUgxhZGRyZXNzTGluZTISIQoMYW'
+    'RkcmVzc19jaXR5GAkgASgJUgthZGRyZXNzQ2l0eRIjCg1hZGRyZXNzX3N0YXRlGAogASgJUgxh'
+    'ZGRyZXNzU3RhdGUSLgoTYWRkcmVzc19wb3N0YWxfY29kZRgLIAEoCVIRYWRkcmVzc1Bvc3RhbE'
+    'NvZGUSJwoPYWRkcmVzc19jb3VudHJ5GAwgASgJUg5hZGRyZXNzQ291bnRyeRIlCg51cGRhdGVf'
+    'YWRkcmVzcxgNIAEoCFINdXBkYXRlQWRkcmVzcw==');
 
 @$core.Deprecated('Use updateProfileResponseDescriptor instead')
 const UpdateProfileResponse$json = {
@@ -2832,6 +2850,18 @@ const User$json = {
       '10': 'preferredLoginMethod'
     },
     {'1': 'has_password', '3': 27, '4': 1, '5': 8, '10': 'hasPassword'},
+    {'1': 'address_line1', '3': 28, '4': 1, '5': 9, '10': 'addressLine1'},
+    {'1': 'address_line2', '3': 29, '4': 1, '5': 9, '10': 'addressLine2'},
+    {'1': 'address_city', '3': 30, '4': 1, '5': 9, '10': 'addressCity'},
+    {'1': 'address_state', '3': 31, '4': 1, '5': 9, '10': 'addressState'},
+    {
+      '1': 'address_postal_code',
+      '3': 32,
+      '4': 1,
+      '5': 9,
+      '10': 'addressPostalCode'
+    },
+    {'1': 'address_country', '3': 33, '4': 1, '5': 9, '10': 'addressCountry'},
   ],
 };
 
@@ -2853,7 +2883,12 @@ final $typed_data.Uint8List userDescriptor = $convert.base64Decode(
     'RpZXIYFSABKAVSB2t5Y1RpZXISHQoKa3ljX3N0YXR1cxgWIAEoCVIJa3ljU3RhdHVzEhQKBXJv'
     'bGVzGBcgAygJUgVyb2xlcxISCgRyb2xlGBggASgJUgRyb2xlEhsKCWF1dGhfdHlwZRgZIAEoCV'
     'IIYXV0aFR5cGUSNAoWcHJlZmVycmVkX2xvZ2luX21ldGhvZBgaIAEoCVIUcHJlZmVycmVkTG9n'
-    'aW5NZXRob2QSIQoMaGFzX3Bhc3N3b3JkGBsgASgIUgtoYXNQYXNzd29yZA==');
+    'aW5NZXRob2QSIQoMaGFzX3Bhc3N3b3JkGBsgASgIUgtoYXNQYXNzd29yZBIjCg1hZGRyZXNzX2'
+    'xpbmUxGBwgASgJUgxhZGRyZXNzTGluZTESIwoNYWRkcmVzc19saW5lMhgdIAEoCVIMYWRkcmVz'
+    'c0xpbmUyEiEKDGFkZHJlc3NfY2l0eRgeIAEoCVILYWRkcmVzc0NpdHkSIwoNYWRkcmVzc19zdG'
+    'F0ZRgfIAEoCVIMYWRkcmVzc1N0YXRlEi4KE2FkZHJlc3NfcG9zdGFsX2NvZGUYICABKAlSEWFk'
+    'ZHJlc3NQb3N0YWxDb2RlEicKD2FkZHJlc3NfY291bnRyeRghIAEoCVIOYWRkcmVzc0NvdW50cn'
+    'k=');
 
 @$core.Deprecated('Use signupStepProgressDescriptor instead')
 const SignupStepProgress$json = {

@@ -637,7 +637,6 @@ import 'package:lazervault/src/features/transaction_history/presentation/cubit/t
 import 'package:lazervault/src/features/transaction_history/presentation/screens/dashboard_transaction_history_screen.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/screens/service_transaction_history_screen.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/screens/statement_export_screen.dart';
-import 'package:lazervault/src/features/account_actions/presentation/cubit/account_actions_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import '../gift_cards/presentation/view/gift_card_sale_receipt_screen.dart';
 // Notification destinations — see the GetPages at the end of this list.
@@ -1633,14 +1632,10 @@ class AppRouter {
         final initialAccountId = args is Map<String, dynamic>
             ? args['accountId'] as String?
             : (args is String ? args : null);
-        return MultiBlocProvider(
-          providers: [
-            BlocProvider(create: (_) => serviceLocator<AccountActionsCubit>()),
-            BlocProvider(
-                create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
-          ],
-          child: StatementExportScreen(initialAccountId: initialAccountId),
-        );
+        // No providers here: StatementExportScreen wraps itself in
+        // StatementExportHost, which is the single place the statement
+        // cubits are wired for every surface.
+        return StatementExportScreen(initialAccountId: initialAccountId);
       },
       transition: Transition.rightToLeft,
     ),

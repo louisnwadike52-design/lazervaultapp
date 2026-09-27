@@ -5883,6 +5883,13 @@ class UpdateProfileRequest extends $pb.GeneratedMessage {
     $core.String? username,
     $core.String? phone,
     $core.String? profilePicture,
+    $core.String? addressLine1,
+    $core.String? addressLine2,
+    $core.String? addressCity,
+    $core.String? addressState,
+    $core.String? addressPostalCode,
+    $core.String? addressCountry,
+    $core.bool? updateAddress,
   }) {
     final result = create();
     if (userId != null) result.userId = userId;
@@ -5891,6 +5898,13 @@ class UpdateProfileRequest extends $pb.GeneratedMessage {
     if (username != null) result.username = username;
     if (phone != null) result.phone = phone;
     if (profilePicture != null) result.profilePicture = profilePicture;
+    if (addressLine1 != null) result.addressLine1 = addressLine1;
+    if (addressLine2 != null) result.addressLine2 = addressLine2;
+    if (addressCity != null) result.addressCity = addressCity;
+    if (addressState != null) result.addressState = addressState;
+    if (addressPostalCode != null) result.addressPostalCode = addressPostalCode;
+    if (addressCountry != null) result.addressCountry = addressCountry;
+    if (updateAddress != null) result.updateAddress = updateAddress;
     return result;
   }
 
@@ -5913,6 +5927,13 @@ class UpdateProfileRequest extends $pb.GeneratedMessage {
     ..aOS(4, _omitFieldNames ? '' : 'username')
     ..aOS(5, _omitFieldNames ? '' : 'phone')
     ..aOS(6, _omitFieldNames ? '' : 'profilePicture')
+    ..aOS(7, _omitFieldNames ? '' : 'addressLine1')
+    ..aOS(8, _omitFieldNames ? '' : 'addressLine2')
+    ..aOS(9, _omitFieldNames ? '' : 'addressCity')
+    ..aOS(10, _omitFieldNames ? '' : 'addressState')
+    ..aOS(11, _omitFieldNames ? '' : 'addressPostalCode')
+    ..aOS(12, _omitFieldNames ? '' : 'addressCountry')
+    ..aOB(13, _omitFieldNames ? '' : 'updateAddress')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -5990,6 +6011,78 @@ class UpdateProfileRequest extends $pb.GeneratedMessage {
   $core.bool hasProfilePicture() => $_has(5);
   @$pb.TagNumber(6)
   void clearProfilePicture() => $_clearField(6);
+
+  /// Postal address. An account statement is only accepted as proof of
+  /// residence when it carries one, which is the main reason anyone exports
+  /// one. Replaced as a BLOCK, never merged field-by-field: the client sends
+  /// a whole form, so an emptied line must clear rather than silently keep
+  /// the old value.
+  @$pb.TagNumber(7)
+  $core.String get addressLine1 => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set addressLine1($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasAddressLine1() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearAddressLine1() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get addressLine2 => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set addressLine2($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasAddressLine2() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearAddressLine2() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get addressCity => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set addressCity($core.String value) => $_setString(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasAddressCity() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearAddressCity() => $_clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get addressState => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set addressState($core.String value) => $_setString(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasAddressState() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearAddressState() => $_clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get addressPostalCode => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set addressPostalCode($core.String value) => $_setString(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasAddressPostalCode() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearAddressPostalCode() => $_clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get addressCountry => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set addressCountry($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasAddressCountry() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearAddressCountry() => $_clearField(12);
+
+  /// Must be true for the six fields above to be applied. Without it an
+  /// all-empty address block is indistinguishable from a request that simply
+  /// did not touch the address — and every existing caller (which sends none
+  /// of these) would wipe the stored address on its next profile edit.
+  @$pb.TagNumber(13)
+  $core.bool get updateAddress => $_getBF(12);
+  @$pb.TagNumber(13)
+  set updateAddress($core.bool value) => $_setBool(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasUpdateAddress() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearUpdateAddress() => $_clearField(13);
 }
 
 class UpdateProfileResponse extends $pb.GeneratedMessage {
@@ -11742,6 +11835,12 @@ class User extends $pb.GeneratedMessage {
     $core.String? authType,
     $core.String? preferredLoginMethod,
     $core.bool? hasPassword,
+    $core.String? addressLine1,
+    $core.String? addressLine2,
+    $core.String? addressCity,
+    $core.String? addressState,
+    $core.String? addressPostalCode,
+    $core.String? addressCountry,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -11773,6 +11872,12 @@ class User extends $pb.GeneratedMessage {
     if (preferredLoginMethod != null)
       result.preferredLoginMethod = preferredLoginMethod;
     if (hasPassword != null) result.hasPassword = hasPassword;
+    if (addressLine1 != null) result.addressLine1 = addressLine1;
+    if (addressLine2 != null) result.addressLine2 = addressLine2;
+    if (addressCity != null) result.addressCity = addressCity;
+    if (addressState != null) result.addressState = addressState;
+    if (addressPostalCode != null) result.addressPostalCode = addressPostalCode;
+    if (addressCountry != null) result.addressCountry = addressCountry;
     return result;
   }
 
@@ -11816,6 +11921,12 @@ class User extends $pb.GeneratedMessage {
     ..aOS(25, _omitFieldNames ? '' : 'authType')
     ..aOS(26, _omitFieldNames ? '' : 'preferredLoginMethod')
     ..aOB(27, _omitFieldNames ? '' : 'hasPassword')
+    ..aOS(28, _omitFieldNames ? '' : 'addressLine1')
+    ..aOS(29, _omitFieldNames ? '' : 'addressLine2')
+    ..aOS(30, _omitFieldNames ? '' : 'addressCity')
+    ..aOS(31, _omitFieldNames ? '' : 'addressState')
+    ..aOS(32, _omitFieldNames ? '' : 'addressPostalCode')
+    ..aOS(33, _omitFieldNames ? '' : 'addressCountry')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -12078,6 +12189,63 @@ class User extends $pb.GeneratedMessage {
   $core.bool hasHasPassword() => $_has(26);
   @$pb.TagNumber(27)
   void clearHasPassword() => $_clearField(27);
+
+  /// Postal address, for statements and the confirmation / proof-of-funds
+  /// letters. May be filled from KYC when a provider returns one; never
+  /// overwrites what the user typed.
+  @$pb.TagNumber(28)
+  $core.String get addressLine1 => $_getSZ(27);
+  @$pb.TagNumber(28)
+  set addressLine1($core.String value) => $_setString(27, value);
+  @$pb.TagNumber(28)
+  $core.bool hasAddressLine1() => $_has(27);
+  @$pb.TagNumber(28)
+  void clearAddressLine1() => $_clearField(28);
+
+  @$pb.TagNumber(29)
+  $core.String get addressLine2 => $_getSZ(28);
+  @$pb.TagNumber(29)
+  set addressLine2($core.String value) => $_setString(28, value);
+  @$pb.TagNumber(29)
+  $core.bool hasAddressLine2() => $_has(28);
+  @$pb.TagNumber(29)
+  void clearAddressLine2() => $_clearField(29);
+
+  @$pb.TagNumber(30)
+  $core.String get addressCity => $_getSZ(29);
+  @$pb.TagNumber(30)
+  set addressCity($core.String value) => $_setString(29, value);
+  @$pb.TagNumber(30)
+  $core.bool hasAddressCity() => $_has(29);
+  @$pb.TagNumber(30)
+  void clearAddressCity() => $_clearField(30);
+
+  @$pb.TagNumber(31)
+  $core.String get addressState => $_getSZ(30);
+  @$pb.TagNumber(31)
+  set addressState($core.String value) => $_setString(30, value);
+  @$pb.TagNumber(31)
+  $core.bool hasAddressState() => $_has(30);
+  @$pb.TagNumber(31)
+  void clearAddressState() => $_clearField(31);
+
+  @$pb.TagNumber(32)
+  $core.String get addressPostalCode => $_getSZ(31);
+  @$pb.TagNumber(32)
+  set addressPostalCode($core.String value) => $_setString(31, value);
+  @$pb.TagNumber(32)
+  $core.bool hasAddressPostalCode() => $_has(31);
+  @$pb.TagNumber(32)
+  void clearAddressPostalCode() => $_clearField(32);
+
+  @$pb.TagNumber(33)
+  $core.String get addressCountry => $_getSZ(32);
+  @$pb.TagNumber(33)
+  set addressCountry($core.String value) => $_setString(32, value);
+  @$pb.TagNumber(33)
+  $core.bool hasAddressCountry() => $_has(32);
+  @$pb.TagNumber(33)
+  void clearAddressCountry() => $_clearField(33);
 }
 
 /// Individual signup step progress

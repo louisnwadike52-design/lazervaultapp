@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:lazervault/core/auth/jwt_payload.dart';
 import 'package:lazervault/core/types/typedef.dart';
+import 'package:lazervault/src/features/authentication/domain/entities/postal_address.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/generated/auth.pb.dart' as auth_pb;
 import 'package:lazervault/src/generated/common.pb.dart' as common_pb;
@@ -44,6 +45,7 @@ class UserModel extends User {
     super.twoFactorEnabled = false,
     super.twoFactorMethod,
     super.dateOfBirth,
+    super.address,
   });
 
   static final UserModel empty = UserModel(
@@ -99,6 +101,14 @@ class UserModel extends User {
           protoUser.hasProfilePicture() && protoUser.profilePicture.isNotEmpty
               ? protoUser.profilePicture
               : null,
+      address: PostalAddress(
+        line1: protoUser.addressLine1,
+        line2: protoUser.addressLine2,
+        city: protoUser.addressCity,
+        state: protoUser.addressState,
+        postalCode: protoUser.addressPostalCode,
+        country: protoUser.addressCountry,
+      ),
       // NB: common_pb.User has no date_of_birth field — DOB is carried by the
       // auth proto (see fromAuthProto), which is what the profile/GetMe path uses.
     );
@@ -130,6 +140,14 @@ class UserModel extends User {
           ? user.preferredLoginMethod
           : null,
       dateOfBirth: user.dateOfBirth.isNotEmpty ? user.dateOfBirth : null,
+      address: PostalAddress(
+        line1: user.addressLine1,
+        line2: user.addressLine2,
+        city: user.addressCity,
+        state: user.addressState,
+        postalCode: user.addressPostalCode,
+        country: user.addressCountry,
+      ),
     );
   }
 
@@ -165,6 +183,7 @@ class UserModel extends User {
       hasPassword: hasPassword,
       preferredLoginMethod: preferredLoginMethod,
       dateOfBirth: dateOfBirth,
+      address: address,
     );
   }
 
@@ -197,6 +216,7 @@ class UserModel extends User {
     bool? twoFactorEnabled,
     String? twoFactorMethod,
     String? dateOfBirth,
+    PostalAddress? address,
   }) {
     return UserModel(
         id: id ?? this.id,
@@ -225,7 +245,8 @@ class UserModel extends User {
         preferredLoginMethod: preferredLoginMethod ?? this.preferredLoginMethod,
         twoFactorEnabled: twoFactorEnabled ?? this.twoFactorEnabled,
         twoFactorMethod: twoFactorMethod ?? this.twoFactorMethod,
-        dateOfBirth: dateOfBirth ?? this.dateOfBirth);
+        dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+        address: address ?? this.address);
   }
 
   UserModel.fromMap(DataMap map)

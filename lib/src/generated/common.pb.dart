@@ -41,6 +41,12 @@ class User extends $pb.GeneratedMessage {
     $core.String? profilePicture,
     $core.Iterable<$core.String>? roles,
     $core.String? userId,
+    $core.String? addressLine1,
+    $core.String? addressLine2,
+    $core.String? addressCity,
+    $core.String? addressState,
+    $core.String? addressPostalCode,
+    $core.String? addressCountry,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -60,6 +66,12 @@ class User extends $pb.GeneratedMessage {
     if (profilePicture != null) result.profilePicture = profilePicture;
     if (roles != null) result.roles.addAll(roles);
     if (userId != null) result.userId = userId;
+    if (addressLine1 != null) result.addressLine1 = addressLine1;
+    if (addressLine2 != null) result.addressLine2 = addressLine2;
+    if (addressCity != null) result.addressCity = addressCity;
+    if (addressState != null) result.addressState = addressState;
+    if (addressPostalCode != null) result.addressPostalCode = addressPostalCode;
+    if (addressCountry != null) result.addressCountry = addressCountry;
     return result;
   }
 
@@ -96,6 +108,12 @@ class User extends $pb.GeneratedMessage {
     ..aOS(15, _omitFieldNames ? '' : 'profilePicture')
     ..pPS(16, _omitFieldNames ? '' : 'roles')
     ..aOS(17, _omitFieldNames ? '' : 'userId')
+    ..aOS(18, _omitFieldNames ? '' : 'addressLine1')
+    ..aOS(19, _omitFieldNames ? '' : 'addressLine2')
+    ..aOS(20, _omitFieldNames ? '' : 'addressCity')
+    ..aOS(21, _omitFieldNames ? '' : 'addressState')
+    ..aOS(22, _omitFieldNames ? '' : 'addressPostalCode')
+    ..aOS(23, _omitFieldNames ? '' : 'addressCountry')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -271,6 +289,62 @@ class User extends $pb.GeneratedMessage {
   $core.bool hasUserId() => $_has(16);
   @$pb.TagNumber(17)
   void clearUserId() => $_clearField(17);
+
+  /// Postal address, as stored on the user record. Read back so the edit
+  /// form can render what is saved rather than starting empty every time.
+  @$pb.TagNumber(18)
+  $core.String get addressLine1 => $_getSZ(17);
+  @$pb.TagNumber(18)
+  set addressLine1($core.String value) => $_setString(17, value);
+  @$pb.TagNumber(18)
+  $core.bool hasAddressLine1() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearAddressLine1() => $_clearField(18);
+
+  @$pb.TagNumber(19)
+  $core.String get addressLine2 => $_getSZ(18);
+  @$pb.TagNumber(19)
+  set addressLine2($core.String value) => $_setString(18, value);
+  @$pb.TagNumber(19)
+  $core.bool hasAddressLine2() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearAddressLine2() => $_clearField(19);
+
+  @$pb.TagNumber(20)
+  $core.String get addressCity => $_getSZ(19);
+  @$pb.TagNumber(20)
+  set addressCity($core.String value) => $_setString(19, value);
+  @$pb.TagNumber(20)
+  $core.bool hasAddressCity() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearAddressCity() => $_clearField(20);
+
+  @$pb.TagNumber(21)
+  $core.String get addressState => $_getSZ(20);
+  @$pb.TagNumber(21)
+  set addressState($core.String value) => $_setString(20, value);
+  @$pb.TagNumber(21)
+  $core.bool hasAddressState() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearAddressState() => $_clearField(21);
+
+  @$pb.TagNumber(22)
+  $core.String get addressPostalCode => $_getSZ(21);
+  @$pb.TagNumber(22)
+  set addressPostalCode($core.String value) => $_setString(21, value);
+  @$pb.TagNumber(22)
+  $core.bool hasAddressPostalCode() => $_has(21);
+  @$pb.TagNumber(22)
+  void clearAddressPostalCode() => $_clearField(22);
+
+  @$pb.TagNumber(23)
+  $core.String get addressCountry => $_getSZ(22);
+  @$pb.TagNumber(23)
+  set addressCountry($core.String value) => $_setString(22, value);
+  @$pb.TagNumber(23)
+  $core.bool hasAddressCountry() => $_has(22);
+  @$pb.TagNumber(23)
+  void clearAddressCountry() => $_clearField(23);
 }
 
 class Data extends $pb.GeneratedMessage {

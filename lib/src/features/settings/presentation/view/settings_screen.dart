@@ -59,7 +59,6 @@ import 'package:lazervault/src/features/profile/presentation/widgets/edit_profil
 import 'package:lazervault/src/features/settings/presentation/view/biometric_login_screen.dart';
 import 'package:lazervault/src/features/settings/presentation/view/card_settings_screen.dart';
 import 'package:lazervault/src/features/settings/presentation/widgets/panic_balance_settings.dart';
-import 'package:lazervault/src/features/statements/presentation/cubit/statement_cubit.dart';
 import 'package:lazervault/src/features/statements/presentation/view/download_statements_screen.dart';
 import 'package:lazervault/src/features/voice/cubit/per_service_voice_settings_cubit.dart';
 import 'package:lazervault/src/features/voice/screens/per_service_voice_settings_screen.dart';
@@ -1905,18 +1904,11 @@ class _SettingsViewState extends State<_SettingsView> {
         onTap: () {
           Navigator.push(
             context,
+            // DownloadStatementsScreen wires its own cubits through
+            // StatementExportHost — the same wiring every other statement
+            // surface uses.
             MaterialPageRoute(
-              builder: (_) => MultiBlocProvider(
-                providers: [
-                  BlocProvider(
-                    create: (_) => serviceLocator<StatementCubit>(),
-                  ),
-                  BlocProvider(
-                    create: (_) => serviceLocator<AccountCardsSummaryCubit>(),
-                  ),
-                ],
-                child: const DownloadStatementsScreen(),
-              ),
+              builder: (_) => const DownloadStatementsScreen(),
             ),
           );
         },

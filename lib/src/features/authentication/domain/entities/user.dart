@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:lazervault/src/features/authentication/domain/entities/postal_address.dart';
 
 /// Represents a user entity in the application.
 class User extends Equatable {
@@ -51,6 +52,12 @@ class User extends Equatable {
   /// celebration on the Settings page.
   final String? dateOfBirth;
 
+  /// The holder's postal address (mirrors the `address_*` columns on the
+  /// backend). Defaults to [PostalAddress.empty] rather than null so callers
+  /// never have to null-check before reading a line — "not set" and "set to
+  /// nothing" are the same thing for an address.
+  final PostalAddress address;
+
   const User({
     required this.id,
     required this.firstName,
@@ -77,6 +84,7 @@ class User extends Equatable {
     this.twoFactorEnabled = false,
     this.twoFactorMethod,
     this.dateOfBirth,
+    this.address = PostalAddress.empty,
   });
 
   /// An empty user which represents an unauthenticated user.
@@ -106,6 +114,7 @@ class User extends Equatable {
     twoFactorEnabled: false,
     twoFactorMethod: null,
     dateOfBirth: null,
+    address: PostalAddress.empty,
   );
 
   /// Convenience getter to determine whether the current user is empty.
@@ -143,6 +152,7 @@ class User extends Equatable {
     bool? twoFactorEnabled,
     String? twoFactorMethod,
     String? dateOfBirth,
+    PostalAddress? address,
   }) {
     return User(
       id: id ?? this.id,
@@ -172,6 +182,7 @@ class User extends Equatable {
       twoFactorEnabled: twoFactorEnabled ?? this.twoFactorEnabled,
       twoFactorMethod: twoFactorMethod ?? this.twoFactorMethod,
       dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      address: address ?? this.address,
     );
   }
 
@@ -202,6 +213,7 @@ class User extends Equatable {
         twoFactorEnabled,
         twoFactorMethod,
         dateOfBirth,
+        address,
       ];
 }
 

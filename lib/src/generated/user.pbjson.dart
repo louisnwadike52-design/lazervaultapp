@@ -173,6 +173,19 @@ const UpdateUserProfileRequest$json = {
     {'1': 'currency', '3': 6, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'country', '3': 7, '4': 1, '5': 9, '10': 'country'},
     {'1': 'profile_picture', '3': 8, '4': 1, '5': 9, '10': 'profilePicture'},
+    {'1': 'address_line1', '3': 9, '4': 1, '5': 9, '10': 'addressLine1'},
+    {'1': 'address_line2', '3': 10, '4': 1, '5': 9, '10': 'addressLine2'},
+    {'1': 'address_city', '3': 11, '4': 1, '5': 9, '10': 'addressCity'},
+    {'1': 'address_state', '3': 12, '4': 1, '5': 9, '10': 'addressState'},
+    {
+      '1': 'address_postal_code',
+      '3': 13,
+      '4': 1,
+      '5': 9,
+      '10': 'addressPostalCode'
+    },
+    {'1': 'address_country', '3': 14, '4': 1, '5': 9, '10': 'addressCountry'},
+    {'1': 'update_address', '3': 15, '4': 1, '5': 8, '10': 'updateAddress'},
   ],
 };
 
@@ -182,7 +195,12 @@ final $typed_data.Uint8List updateUserProfileRequestDescriptor = $convert.base64
     '1lEhsKCWxhc3RfbmFtZRgCIAEoCVIIbGFzdE5hbWUSGgoIdXNlcm5hbWUYAyABKAlSCHVzZXJu'
     'YW1lEiEKDHBob25lX251bWJlchgEIAEoCVILcGhvbmVOdW1iZXISGgoIbGFuZ3VhZ2UYBSABKA'
     'lSCGxhbmd1YWdlEhoKCGN1cnJlbmN5GAYgASgJUghjdXJyZW5jeRIYCgdjb3VudHJ5GAcgASgJ'
-    'Ugdjb3VudHJ5EicKD3Byb2ZpbGVfcGljdHVyZRgIIAEoCVIOcHJvZmlsZVBpY3R1cmU=');
+    'Ugdjb3VudHJ5EicKD3Byb2ZpbGVfcGljdHVyZRgIIAEoCVIOcHJvZmlsZVBpY3R1cmUSIwoNYW'
+    'RkcmVzc19saW5lMRgJIAEoCVIMYWRkcmVzc0xpbmUxEiMKDWFkZHJlc3NfbGluZTIYCiABKAlS'
+    'DGFkZHJlc3NMaW5lMhIhCgxhZGRyZXNzX2NpdHkYCyABKAlSC2FkZHJlc3NDaXR5EiMKDWFkZH'
+    'Jlc3Nfc3RhdGUYDCABKAlSDGFkZHJlc3NTdGF0ZRIuChNhZGRyZXNzX3Bvc3RhbF9jb2RlGA0g'
+    'ASgJUhFhZGRyZXNzUG9zdGFsQ29kZRInCg9hZGRyZXNzX2NvdW50cnkYDiABKAlSDmFkZHJlc3'
+    'NDb3VudHJ5EiUKDnVwZGF0ZV9hZGRyZXNzGA8gASgIUg11cGRhdGVBZGRyZXNz');
 
 @$core.Deprecated('Use updateUserProfileResponseDescriptor instead')
 const UpdateUserProfileResponse$json = {

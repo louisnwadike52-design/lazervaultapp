@@ -408,6 +408,13 @@ class UpdateUserProfileRequest extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.String? country,
     $core.String? profilePicture,
+    $core.String? addressLine1,
+    $core.String? addressLine2,
+    $core.String? addressCity,
+    $core.String? addressState,
+    $core.String? addressPostalCode,
+    $core.String? addressCountry,
+    $core.bool? updateAddress,
   }) {
     final result = create();
     if (firstName != null) result.firstName = firstName;
@@ -418,6 +425,13 @@ class UpdateUserProfileRequest extends $pb.GeneratedMessage {
     if (currency != null) result.currency = currency;
     if (country != null) result.country = country;
     if (profilePicture != null) result.profilePicture = profilePicture;
+    if (addressLine1 != null) result.addressLine1 = addressLine1;
+    if (addressLine2 != null) result.addressLine2 = addressLine2;
+    if (addressCity != null) result.addressCity = addressCity;
+    if (addressState != null) result.addressState = addressState;
+    if (addressPostalCode != null) result.addressPostalCode = addressPostalCode;
+    if (addressCountry != null) result.addressCountry = addressCountry;
+    if (updateAddress != null) result.updateAddress = updateAddress;
     return result;
   }
 
@@ -442,6 +456,13 @@ class UpdateUserProfileRequest extends $pb.GeneratedMessage {
     ..aOS(6, _omitFieldNames ? '' : 'currency')
     ..aOS(7, _omitFieldNames ? '' : 'country')
     ..aOS(8, _omitFieldNames ? '' : 'profilePicture')
+    ..aOS(9, _omitFieldNames ? '' : 'addressLine1')
+    ..aOS(10, _omitFieldNames ? '' : 'addressLine2')
+    ..aOS(11, _omitFieldNames ? '' : 'addressCity')
+    ..aOS(12, _omitFieldNames ? '' : 'addressState')
+    ..aOS(13, _omitFieldNames ? '' : 'addressPostalCode')
+    ..aOS(14, _omitFieldNames ? '' : 'addressCountry')
+    ..aOB(15, _omitFieldNames ? '' : 'updateAddress')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -538,6 +559,77 @@ class UpdateUserProfileRequest extends $pb.GeneratedMessage {
   $core.bool hasProfilePicture() => $_has(7);
   @$pb.TagNumber(8)
   void clearProfilePicture() => $_clearField(8);
+
+  /// Postal address. Needed on account statements, confirmation letters and
+  /// proof-of-funds letters — without it none of those is accepted as proof of
+  /// residence, which is why most people export one.
+  ///
+  /// Applied as a BLOCK, and only when update_address is true: proto3 cannot
+  /// tell an all-empty address from an absent one, so without the flag every
+  /// profile edit that does not touch the address (a name change, a new
+  /// profile picture) would clear it.
+  @$pb.TagNumber(9)
+  $core.String get addressLine1 => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set addressLine1($core.String value) => $_setString(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasAddressLine1() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearAddressLine1() => $_clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get addressLine2 => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set addressLine2($core.String value) => $_setString(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasAddressLine2() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearAddressLine2() => $_clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get addressCity => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set addressCity($core.String value) => $_setString(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasAddressCity() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearAddressCity() => $_clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get addressState => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set addressState($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasAddressState() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearAddressState() => $_clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get addressPostalCode => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set addressPostalCode($core.String value) => $_setString(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasAddressPostalCode() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearAddressPostalCode() => $_clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get addressCountry => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set addressCountry($core.String value) => $_setString(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasAddressCountry() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearAddressCountry() => $_clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.bool get updateAddress => $_getBF(14);
+  @$pb.TagNumber(15)
+  set updateAddress($core.bool value) => $_setBool(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasUpdateAddress() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearUpdateAddress() => $_clearField(15);
 }
 
 class UpdateUserProfileResponse extends $pb.GeneratedMessage {

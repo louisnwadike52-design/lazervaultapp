@@ -610,6 +610,33 @@ class _MyAccountViewState extends State<_MyAccountView> {
             }
           },
         ),
+        // Address. Surfaced here, not buried in the edit dialog, because a
+        // user is normally sent looking for it by an exported statement that
+        // came out without one — and "Not set" has to be visible for them to
+        // know that is what happened.
+        _buildSettingsTile(
+          icon: Icons.home_outlined,
+          title: 'Address',
+          subtitle: (user?.address.isSet ?? false)
+              ? user!.address.singleLine
+              : 'Not set — needed on statements',
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            size: 16.sp,
+            color: const Color(0xFF9CA3AF),
+          ),
+          onTap: () {
+            if (user != null) {
+              showDialog(
+                context: context,
+                builder: (dialogContext) => BlocProvider.value(
+                  value: context.read<ProfileCubit>(),
+                  child: EditProfileDialog(user: user),
+                ),
+              );
+            }
+          },
+        ),
       ],
     );
   }

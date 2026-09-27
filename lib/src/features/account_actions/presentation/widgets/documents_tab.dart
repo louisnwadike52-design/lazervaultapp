@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:lazervault/core/types/app_routes.dart';
-import 'package:lazervault/src/features/account_actions/domain/entities/document_entity.dart';
 import 'package:lazervault/src/features/account_actions/presentation/cubit/account_actions_cubit.dart';
-import 'package:lazervault/src/features/transaction_history/presentation/screens/statement_export_screen.dart';
+import 'package:lazervault/src/features/statements/data/services/statement_recent_store.dart';
+import 'package:lazervault/src/features/statements/domain/entities/statement_entity.dart';
+import 'package:lazervault/src/features/statements/presentation/widgets/statement_export_host.dart';
 import 'package:lazervault/core/utils/edge_case_validator.dart';
 
 /// Documents Tab - Download statements and other documents
@@ -65,10 +66,9 @@ class DocumentsTab extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
 
-          // Account Statement — backend-rendered PDF/CSV.
-          // Routes to the dedicated StatementExportScreen rather than
-          // the legacy inline date-picker dialog so the user sees the
-          // full picker + format + recents UX.
+          // Account Statement — the same export panel the settings screen
+          // and the dashboard's export route render, opened as a sheet over
+          // this one with THIS account already pinned.
           _buildDocumentButton(
             context,
             icon: Icons.receipt_long_outlined,
@@ -101,62 +101,11 @@ class DocumentsTab extends StatelessWidget {
           ),
           SizedBox(height: 32.h),
 
-          // Recent statements (in-memory list maintained by
-          // StatementExportScreen). Empty on first visit; once the user
-          // generates one, this surface mirrors the success card so they
-          // can re-open from inside the account-actions sheet.
-          if (getRecentStatements().isNotEmpty) ...[
-            Text(
-              'Recent statements',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            SizedBox(height: 10.h),
-            for (final doc in getRecentStatements().take(3)) ...[
-              Container(
-                margin: EdgeInsets.only(bottom: 8.h),
-                padding: EdgeInsets.all(12.w),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1F1F1F),
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      doc.format == DocumentFormat.csv
-                          ? Icons.table_chart_outlined
-                          : Icons.picture_as_pdf_outlined,
-                      color: const Color(0xFF3B82F6),
-                      size: 20.sp,
-                    ),
-                    SizedBox(width: 10.w),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(doc.title,
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w600)),
-                          Text(
-                            '${doc.format.name.toUpperCase()} • ${doc.transactionCount ?? 0} txns',
-                            style: TextStyle(
-                                color: const Color(0xFF9CA3AF),
-                                fontSize: 11.sp),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-            SizedBox(height: 16.h),
-          ],
+          // Recent statements, from the same persisted store the export
+          // panel writes. Previously this read an in-memory list owned by the
+          // export screen, which was empty the moment that screen was
+          // disposed — so this section was permanently blank in practice.
+          _RecentStatements(accountId: accountArgs['id']?.toString()),
 
           // Help text
           Container(
@@ -274,14 +223,11 @@ class DocumentsTab extends StatelessWidget {
       );
       return;
     }
-    // Close the account-actions bottom sheet first so the new screen
-    // doesn't stack on top of it (Get.back closes the modal, leaving
-    // the underlying dashboard route as the parent).
-    Get.back();
-    Get.toNamed(
-      AppRoutes.statementExport,
-      arguments: {'accountId': accountId},
-    );
+    // Opened OVER this sheet rather than replacing it. Closing the
+    // account-actions sheet to push a route meant that finishing an export
+    // dropped the user back on the dashboard, several taps from the account
+    // they were looking at.
+    showStatementExportSheet(context, accountId: accountId);
   }
 
   void _onDownloadConfirmation(BuildContext context) {
@@ -407,6 +353,126 @@ class DocumentsTab extends StatelessWidget {
             ],
           ),
         ),
+      ],
+    );
+  }
+}
+
+/// The last few statements generated for this account, newest first.
+///
+/// Tapping one re-opens the export sheet with that request pre-filled rather
+/// than silently re-downloading: the signed URL has long expired, and a
+/// download starting with no confirmation is the kind of surprise that makes
+/// people think they were charged for something.
+class _RecentStatements extends StatefulWidget {
+  final String? accountId;
+
+  const _RecentStatements({this.accountId});
+
+  @override
+  State<_RecentStatements> createState() => _RecentStatementsState();
+}
+
+class _RecentStatementsState extends State<_RecentStatements> {
+  final StatementRecentStore _store = StatementRecentStore();
+  List<StatementRecentEntry> _entries = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final all = await _store.load();
+    if (!mounted) return;
+    final id = widget.accountId;
+    setState(() {
+      // Scoped to this account: a statement for a different wallet listed
+      // inside this account's sheet reads as this account's history.
+      _entries = (id == null || id.isEmpty)
+          ? all
+          : all.where((e) => e.accountId == id).toList();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_entries.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Recent statements',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        SizedBox(height: 10.h),
+        for (final entry in _entries.take(3))
+          Container(
+            margin: EdgeInsets.only(bottom: 8.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(10.r),
+                onTap: () => showStatementExportSheet(
+                  context,
+                  accountId: entry.accountId,
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(12.w),
+                  child: Row(
+                    children: [
+                      Icon(
+                        entry.format == StatementFormat.csv
+                            ? Icons.table_chart_outlined
+                            : Icons.picture_as_pdf_outlined,
+                        color: const Color(0xFF3B82F6),
+                        size: 20.sp,
+                      ),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Statement '
+                              '(${entry.format == StatementFormat.csv ? 'CSV' : 'PDF'})',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(height: 2.h),
+                            Text(
+                              '${DateFormat('MMM dd, yyyy').format(entry.startDate)}'
+                              ' - '
+                              '${DateFormat('MMM dd, yyyy').format(entry.endDate)}',
+                              style: TextStyle(
+                                color: const Color(0xFF9CA3AF),
+                                fontSize: 11.sp,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.chevron_right,
+                          color: const Color(0xFF9CA3AF), size: 18.sp),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        SizedBox(height: 16.h),
       ],
     );
   }

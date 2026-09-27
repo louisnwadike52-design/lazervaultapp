@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:dartz/dartz.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/error/failure.dart';
+import 'package:lazervault/src/features/authentication/domain/entities/postal_address.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/features/authentication/data/models/user_model.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
@@ -111,6 +112,7 @@ class ProfileRepositoryImpl implements IProfileRepository {
     String? currency,
     String? country,
     String? profilePicture,
+    PostalAddress? address,
   }) async {
     try {
       final callOptions = await _callOptionsHelper.withAuth();
@@ -123,6 +125,17 @@ class ProfileRepositoryImpl implements IProfileRepository {
         currency: currency ?? '',
         country: country ?? '',
         profilePicture: profilePicture ?? '',
+        // updateAddress is what makes an empty field mean "clear this line"
+        // instead of "leave it alone". Without the flag the backend cannot
+        // tell a deliberate deletion from a request that never mentioned the
+        // address — and every other profile save would wipe it.
+        updateAddress: address != null,
+        addressLine1: address?.line1 ?? '',
+        addressLine2: address?.line2 ?? '',
+        addressCity: address?.city ?? '',
+        addressState: address?.state ?? '',
+        addressPostalCode: address?.postalCode ?? '',
+        addressCountry: address?.country ?? '',
       );
       final response = await _userServiceClient.updateUserProfile(
         request,

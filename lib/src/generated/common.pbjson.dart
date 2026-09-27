@@ -137,6 +137,18 @@ const User$json = {
     {'1': 'profile_picture', '3': 15, '4': 1, '5': 9, '10': 'profilePicture'},
     {'1': 'roles', '3': 16, '4': 3, '5': 9, '10': 'roles'},
     {'1': 'user_id', '3': 17, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'address_line1', '3': 18, '4': 1, '5': 9, '10': 'addressLine1'},
+    {'1': 'address_line2', '3': 19, '4': 1, '5': 9, '10': 'addressLine2'},
+    {'1': 'address_city', '3': 20, '4': 1, '5': 9, '10': 'addressCity'},
+    {'1': 'address_state', '3': 21, '4': 1, '5': 9, '10': 'addressState'},
+    {
+      '1': 'address_postal_code',
+      '3': 22,
+      '4': 1,
+      '5': 9,
+      '10': 'addressPostalCode'
+    },
+    {'1': 'address_country', '3': 23, '4': 1, '5': 9, '10': 'addressCountry'},
   ],
 };
 
@@ -151,7 +163,12 @@ final $typed_data.Uint8List userDescriptor = $convert.base64Decode(
     'CyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgl1cGRhdGVkQXQSGgoIbGFuZ3VhZ2'
     'UYDCABKAlSCGxhbmd1YWdlEhoKCGN1cnJlbmN5GA0gASgJUghjdXJyZW5jeRIYCgdjb3VudHJ5'
     'GA4gASgJUgdjb3VudHJ5EicKD3Byb2ZpbGVfcGljdHVyZRgPIAEoCVIOcHJvZmlsZVBpY3R1cm'
-    'USFAoFcm9sZXMYECADKAlSBXJvbGVzEhcKB3VzZXJfaWQYESABKAlSBnVzZXJJZA==');
+    'USFAoFcm9sZXMYECADKAlSBXJvbGVzEhcKB3VzZXJfaWQYESABKAlSBnVzZXJJZBIjCg1hZGRy'
+    'ZXNzX2xpbmUxGBIgASgJUgxhZGRyZXNzTGluZTESIwoNYWRkcmVzc19saW5lMhgTIAEoCVIMYW'
+    'RkcmVzc0xpbmUyEiEKDGFkZHJlc3NfY2l0eRgUIAEoCVILYWRkcmVzc0NpdHkSIwoNYWRkcmVz'
+    'c19zdGF0ZRgVIAEoCVIMYWRkcmVzc1N0YXRlEi4KE2FkZHJlc3NfcG9zdGFsX2NvZGUYFiABKA'
+    'lSEWFkZHJlc3NQb3N0YWxDb2RlEicKD2FkZHJlc3NfY291bnRyeRgXIAEoCVIOYWRkcmVzc0Nv'
+    'dW50cnk=');
 
 @$core.Deprecated('Use dataDescriptor instead')
 const Data$json = {

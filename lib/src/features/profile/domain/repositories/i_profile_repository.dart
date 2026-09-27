@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:dartz/dartz.dart';
 import 'package:lazervault/core/error/failure.dart';
+import 'package:lazervault/src/features/authentication/domain/entities/postal_address.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 import '../entities/user_preferences.dart';
@@ -21,6 +22,10 @@ abstract class IProfileRepository {
     String? currency,
     String? country,
     String? profilePicture,
+    // Non-null means "replace the whole stored address with this". Null means
+    // the caller is not touching it — the distinction matters because a name
+    // change must not clear an address the user set weeks ago.
+    PostalAddress? address,
   });
 
   // Update password

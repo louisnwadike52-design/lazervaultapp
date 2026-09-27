@@ -4,10 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/authentication/domain/entities/postal_address.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
 import 'package:lazervault/src/features/profile/presentation/view/change_phone_screen.dart';
+import 'package:lazervault/src/features/profile/presentation/widgets/profile_address_section.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class EditProfileDialog extends StatefulWidget {
@@ -28,6 +30,11 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
+  /// Edited live by ProfileAddressSection. Seeded from the stored address so
+  /// saving without touching the address re-sends what is already there
+  /// rather than clearing it.
+  late PostalAddress _address;
+
   @override
   void initState() {
     super.initState();
@@ -37,6 +44,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
         TextEditingController(text: widget.user.username ?? '');
     _phoneController =
         TextEditingController(text: widget.user.phoneNumber ?? '');
+    _address = widget.user.address;
   }
 
   @override
@@ -47,6 +55,12 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
     _phoneController.dispose();
     super.dispose();
   }
+
+  /// The app cannot tell a KYC-sourced address from a typed one — the backend
+  /// fills only empty parts and keeps no provenance flag. Rather than claim
+  /// something we do not know, the hint is shown only when the user has a
+  /// verified identity AND an address they have never edited in this session.
+  bool get _addressCameFromKyc => widget.user.verified;
 
   void _handleSave() {
     if (_formKey.currentState?.validate() ?? false) {
@@ -65,6 +79,10 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
             firstName: _firstNameController.text.trim(),
             lastName: _lastNameController.text.trim(),
             username: cleanUsername,
+            // Always sent from this form, because this form owns the address.
+            // Sending it only when changed would make clearing a line
+            // impossible — the backend cannot tell "empty" from "absent".
+            address: _address,
           );
     }
   }
@@ -251,202 +269,222 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
           constraints: BoxConstraints(maxHeight: 600.h),
           child: Form(
             key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Header
-                Row(
-                  children: [
-                    Icon(
-                      Icons.edit_outlined,
-                      color: const Color(0xFF4E03D0),
-                      size: 28.sp,
-                    ),
-                    SizedBox(width: 12.w),
-                    Text(
-                      'Edit Profile',
-                      style: GoogleFonts.inter(
-                        fontSize: 22.sp,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1F2937),
+            // Scrollable: with the address block the content is taller than
+            // the 600.h box on every phone, and an unscrollable Column
+            // overflows rather than scrolling — the Save button would be
+            // unreachable.
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Header
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.edit_outlined,
+                        color: const Color(0xFF4E03D0),
+                        size: 28.sp,
                       ),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.of(context).pop(),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  ],
-                ),
-
-                SizedBox(height: 24.h),
-
-                // First Name Field
-                TextFormField(
-                  controller: _firstNameController,
-                  decoration: InputDecoration(
-                    labelText: 'First Name',
-                    prefixIcon: const Icon(Icons.person_outline),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide:
-                          const BorderSide(color: Color(0xFF4E03D0), width: 2),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'First name is required';
-                    }
-                    if (value.trim().length < 2) {
-                      return 'First name must be at least 2 characters';
-                    }
-                    return null;
-                  },
-                ),
-
-                SizedBox(height: 16.h),
-
-                // Last Name Field
-                TextFormField(
-                  controller: _lastNameController,
-                  decoration: InputDecoration(
-                    labelText: 'Last Name',
-                    prefixIcon: const Icon(Icons.person_outline),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide:
-                          const BorderSide(color: Color(0xFF4E03D0), width: 2),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Last name is required';
-                    }
-                    if (value.trim().length < 2) {
-                      return 'Last name must be at least 2 characters';
-                    }
-                    return null;
-                  },
-                ),
-
-                SizedBox(height: 16.h),
-
-                // Username Field
-                TextFormField(
-                  controller: _usernameController,
-                  maxLength: 30,
-                  autocorrect: false,
-                  enableSuggestions: false,
-                  decoration: InputDecoration(
-                    labelText: 'Username / Lazertag',
-                    hintText: 'Optional - Used for receiving money',
-                    helperText: 'Letters, numbers, and underscores only',
-                    counterText: '',
-                    prefixIcon: const Icon(Icons.alternate_email),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide:
-                          const BorderSide(color: Color(0xFF4E03D0), width: 2),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value != null && value.trim().isNotEmpty) {
-                      final clean = value.trim().replaceAll(RegExp(r'^@'), '');
-                      if (clean.length < 3) {
-                        return 'Username must be at least 3 characters';
-                      }
-                      if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(clean)) {
-                        return 'Only letters, numbers, and underscores allowed';
-                      }
-                    }
-                    return null;
-                  },
-                ),
-
-                SizedBox(height: 16.h),
-
-                // Phone Number — read-only here. Changing a phone number must
-                // go through OTP verification + a uniqueness check, so it's not
-                // editable inline; tapping routes to the verify-phone flow.
-                _buildPhoneRow(),
-
-                SizedBox(height: 24.h),
-
-                // Action Buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _isLoading
-                            ? null
-                            : () => Navigator.of(context).pop(),
-                        style: OutlinedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: 16.h),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          side: const BorderSide(color: Color(0xFF4E03D0)),
-                        ),
-                        child: Text(
-                          'Cancel',
-                          style: GoogleFonts.inter(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF4E03D0),
-                          ),
+                      SizedBox(width: 12.w),
+                      Text(
+                        'Edit Profile',
+                        style: GoogleFonts.inter(
+                          fontSize: 22.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF1F2937),
                         ),
                       ),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.of(context).pop(),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+
+                  SizedBox(height: 24.h),
+
+                  // First Name Field
+                  TextFormField(
+                    controller: _firstNameController,
+                    decoration: InputDecoration(
+                      labelText: 'First Name',
+                      prefixIcon: const Icon(Icons.person_outline),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: const BorderSide(
+                            color: Color(0xFF4E03D0), width: 2),
+                      ),
                     ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _handleSave,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4E03D0),
-                          padding: EdgeInsets.symmetric(vertical: 16.h),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'First name is required';
+                      }
+                      if (value.trim().length < 2) {
+                        return 'First name must be at least 2 characters';
+                      }
+                      return null;
+                    },
+                  ),
+
+                  SizedBox(height: 16.h),
+
+                  // Last Name Field
+                  TextFormField(
+                    controller: _lastNameController,
+                    decoration: InputDecoration(
+                      labelText: 'Last Name',
+                      prefixIcon: const Icon(Icons.person_outline),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: const BorderSide(
+                            color: Color(0xFF4E03D0), width: 2),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Last name is required';
+                      }
+                      if (value.trim().length < 2) {
+                        return 'Last name must be at least 2 characters';
+                      }
+                      return null;
+                    },
+                  ),
+
+                  SizedBox(height: 16.h),
+
+                  // Username Field
+                  TextFormField(
+                    controller: _usernameController,
+                    maxLength: 30,
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    decoration: InputDecoration(
+                      labelText: 'Username / Lazertag',
+                      hintText: 'Optional - Used for receiving money',
+                      helperText: 'Letters, numbers, and underscores only',
+                      counterText: '',
+                      prefixIcon: const Icon(Icons.alternate_email),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: const BorderSide(
+                            color: Color(0xFF4E03D0), width: 2),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value != null && value.trim().isNotEmpty) {
+                        final clean =
+                            value.trim().replaceAll(RegExp(r'^@'), '');
+                        if (clean.length < 3) {
+                          return 'Username must be at least 3 characters';
+                        }
+                        if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(clean)) {
+                          return 'Only letters, numbers, and underscores allowed';
+                        }
+                      }
+                      return null;
+                    },
+                  ),
+
+                  SizedBox(height: 16.h),
+
+                  // Phone Number — read-only here. Changing a phone number must
+                  // go through OTP verification + a uniqueness check, so it's not
+                  // editable inline; tapping routes to the verify-phone flow.
+                  _buildPhoneRow(),
+
+                  SizedBox(height: 20.h),
+                  Divider(color: Colors.grey.shade200, height: 1),
+                  SizedBox(height: 20.h),
+
+                  // Address — what makes an exported statement usable as proof
+                  // of residence.
+                  ProfileAddressSection(
+                    initial: _address,
+                    onChanged: (a) => _address = a,
+                    fromVerification:
+                        widget.user.address.isSet && _addressCameFromKyc,
+                  ),
+
+                  SizedBox(height: 24.h),
+
+                  // Action Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _isLoading
+                              ? null
+                              : () => Navigator.of(context).pop(),
+                          style: OutlinedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 16.h),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                            side: const BorderSide(color: Color(0xFF4E03D0)),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: GoogleFonts.inter(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF4E03D0),
+                            ),
                           ),
                         ),
-                        child: _isLoading
-                            ? LazerVaultLoader.small()
-                            : Text(
-                                'Save',
-                                style: GoogleFonts.inter(
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                      ),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _handleSave,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4E03D0),
+                            padding: EdgeInsets.symmetric(vertical: 16.h),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                          ),
+                          child: _isLoading
+                              ? LazerVaultLoader.small()
+                              : Text(
+                                  'Save',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

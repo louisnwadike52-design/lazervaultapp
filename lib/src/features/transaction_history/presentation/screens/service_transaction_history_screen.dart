@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/transaction_history/utils/transaction_re
 import 'package:lazervault/src/features/transaction_history/presentation/widgets/transaction_filters.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/widgets/transaction_states.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/statements/presentation/widgets/statement_export_host.dart';
 
 /// Revolut-style service-specific transaction history
 class ServiceTransactionHistoryScreen extends StatefulWidget {
@@ -163,14 +164,30 @@ class _ServiceTransactionHistoryScreenState
             ),
           ),
           SizedBox(width: 10.w),
-          Text(
-            widget.serviceType.displayName,
-            style: TextStyle(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-              fontFamily: 'Inter',
+          Expanded(
+            child: Text(
+              widget.serviceType.displayName,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                fontFamily: 'Inter',
+              ),
             ),
+          ),
+          // Official statement, the same export panel as everywhere else.
+          // This screen had no export at all, so a user looking at one
+          // service's history had to go back to the dashboard (or into
+          // settings) to get a document covering it.
+          IconButton(
+            onPressed: () => showStatementExportSheet(context),
+            icon: Icon(
+              Icons.cloud_download_outlined,
+              color: Colors.white,
+              size: 20.sp,
+            ),
+            tooltip: 'Export official statement',
           ),
         ],
       ),

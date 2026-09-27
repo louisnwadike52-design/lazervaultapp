@@ -10,6 +10,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
+import 'package:lazervault/src/features/authentication/domain/entities/postal_address.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
 import 'package:lazervault/core/utils/user_search_query.dart';
 import 'package:lazervault/src/features/profile/domain/repositories/i_profile_repository.dart';
@@ -86,6 +87,7 @@ class ProfileCubit extends Cubit<ProfileState> {
     String? currency,
     String? country,
     String? profilePicture,
+    PostalAddress? address,
   }) async {
     if (state is! ProfileLoaded) return;
 
@@ -100,6 +102,7 @@ class ProfileCubit extends Cubit<ProfileState> {
       currency: currency,
       country: country,
       profilePicture: profilePicture,
+      address: address,
     );
 
     if (isClosed) return;
