@@ -25,6 +25,14 @@ class SprayRoomState {
   final bool isConnected;
   final bool isLoading;
   final bool sessionEnded;
+
+  /// Seconds until the room closes because the host left, or null when no
+  /// countdown is running.
+  ///
+  /// Distinct from [sessionEnded]: the room is still fully usable during the
+  /// countdown — people can keep spraying, and the host coming back cancels it.
+  /// Collapsing the two would freeze a room that has not ended.
+  final int? endingInSeconds;
   final bool connectionFailed; // true when WebSocket gave up reconnecting
   final bool walletLoadFailed; // true when wallet failed to load
   final bool actionInProgress; // true when a gift/spray/comment is in-flight
@@ -54,6 +62,7 @@ class SprayRoomState {
     this.isConnected = false,
     this.isLoading = false,
     this.sessionEnded = false,
+    this.endingInSeconds,
     this.connectionFailed = false,
     this.walletLoadFailed = false,
     this.actionInProgress = false,
@@ -82,6 +91,8 @@ class SprayRoomState {
     bool? isConnected,
     bool? isLoading,
     bool? sessionEnded,
+    int? endingInSeconds,
+    bool clearEndingCountdown = false,
     bool? connectionFailed,
     bool? walletLoadFailed,
     bool? actionInProgress,
@@ -109,6 +120,9 @@ class SprayRoomState {
       isConnected: isConnected ?? this.isConnected,
       isLoading: isLoading ?? this.isLoading,
       sessionEnded: sessionEnded ?? this.sessionEnded,
+      endingInSeconds: clearEndingCountdown
+          ? null
+          : (endingInSeconds ?? this.endingInSeconds),
       connectionFailed: connectionFailed ?? this.connectionFailed,
       walletLoadFailed: walletLoadFailed ?? this.walletLoadFailed,
       actionInProgress: actionInProgress ?? this.actionInProgress,

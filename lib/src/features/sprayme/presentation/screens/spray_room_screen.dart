@@ -1009,6 +1009,13 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                       _immersive
                           ? _buildImmersiveBackBar()
                           : _buildTopBar(state),
+                // The host has left and the gateway is counting the room down.
+                // Shown to EVERYONE, host included: the host may have backed
+                // out by accident, and this is how they learn returning saves
+                // it. Disappears if they do — the gateway cancels the
+                // countdown and the state clears.
+                if (state.endingInSeconds != null && !state.sessionEnded)
+                  _buildEndingCountdownBanner(state.endingInSeconds!),
 
                       const Spacer(),
 
@@ -1349,6 +1356,42 @@ class _SprayRoomViewState extends State<_SprayRoomView>
             child: Icon(Icons.arrow_back, color: Colors.white, size: 20.sp),
           ),
         ),
+      ),
+    );
+  }
+
+  /// "Host left — live ends in Ns" strip.
+  ///
+  /// A banner rather than a modal on purpose: the room is still fully usable
+  /// during the countdown and people can keep spraying, so blocking the screen
+  /// would end the party a minute early by making it unusable.
+  Widget _buildEndingCountdownBanner(int seconds) {
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.fromLTRB(12.w, 0, 12.w, 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEF4444).withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(10.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.timer_outlined, color: Colors.white, size: 15.sp),
+          SizedBox(width: 8.w),
+          Flexible(
+            child: Text(
+              'Host left — this live ends in ${seconds}s',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12.5.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

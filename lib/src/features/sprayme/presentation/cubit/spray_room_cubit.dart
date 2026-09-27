@@ -334,6 +334,26 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
           ),
         );
         loadParticipants();
+      // The host has been gone past the grace period; the gateway is
+      // counting down. The room stays usable — this only warns.
+      case 'session_ending':
+        emit(
+          state.copyWith(
+            recentEvents: updatedEvents,
+            endingInSeconds:
+                (event.data['ends_in_seconds'] as num?)?.toInt() ?? 60,
+          ),
+        );
+      // The host came back inside the grace. Clearing this matters: a viewer
+      // left staring at a countdown that silently stopped has no idea whether
+      // the room survived.
+      case 'session_ending_cancelled':
+        emit(
+          state.copyWith(
+            recentEvents: updatedEvents,
+            clearEndingCountdown: true,
+          ),
+        );
       case 'session_ended':
         emit(
           state.copyWith(
