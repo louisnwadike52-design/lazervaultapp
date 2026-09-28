@@ -210,13 +210,81 @@ class SprayLiveCubit extends Cubit<SprayLiveState> {
 
   /// Accept a co-host invite addressed to the current user — re-requests a token,
   /// which now carries publish grants (the server promoted us).
-  Future<void> acceptCoHostInvite() async {
-    if (!state.coHostInvitePending) return;
+  ///
+  /// Returns null on success, else a message to show IN THE BANNER.
+  ///
+  /// Two things this had to stop doing. It returned void, so every way it
+  /// could fail was silent: the guest tapped "Join", the banner sat there
+  /// unchanged, and the real reason — the stage is full at 8 seats, the host
+  /// is no longer live, they were un-invited — never reached them. And it
+  /// delegated straight to [watch], whose error path replaces the phase with
+  /// [SprayLivePhase.error]; a guest who was already watching the stream lost
+  /// it because a co-host promotion failed. Accepting an invite is an
+  /// enhancement to what you are already doing, so failing it must leave you
+  /// exactly where you were.
+  Future<String?> acceptCoHostInvite() async {
+    if (!state.coHostInvitePending || state.coHostBusy) return null;
+
+    final priorPhase = state.phase;
+    final priorRole = state.role;
+    emit(state.copyWith(coHostBusy: true, clearCoHostError: true));
+
     await watch();
+
+    // watch() owns the connection; read the outcome from the phase it landed
+    // on rather than from an exception it already swallowed.
+    if (state.phase == SprayLivePhase.error) {
+      final reason = state.error;
+      // Put the guest back where they were. They came in watching (or idle)
+      // and the promotion failed — that is not a reason to tear down the
+      // stream they can still perfectly well watch.
+      emit(state.copyWith(
+        phase: priorPhase,
+        role: priorRole,
+        coHostBusy: false,
+        coHostInvitePending: true, // still invited; they can retry
+        coHostError: (reason == null || reason.isEmpty)
+            ? 'Could not join the stage. Please try again.'
+            : reason,
+        clearError: true,
+      ));
+      return state.coHostError;
+    }
+
+    // watch() clears coHostInvitePending itself on a publishing join. If the
+    // server handed back a viewer token anyway (invite revoked, seats taken
+    // between the invite and the tap), say so rather than leaving a banner
+    // that looks like it did nothing.
+    if (state.role != 'host' && state.role != 'cohost') {
+      const msg =
+          'The stage is full or the invite is no longer valid — you joined as a viewer.';
+      emit(state.copyWith(
+          coHostBusy: false, coHostInvitePending: false, coHostError: msg));
+      return msg;
+    }
+
+    emit(state.copyWith(
+        coHostBusy: false,
+        coHostInvitePending: false,
+        clearCoHostError: true));
+    return null;
   }
 
   void declineCoHostInvite() {
-    emit(state.copyWith(coHostInvitePending: false));
+    // Local-only by design: there is no server-side decline, and the host's
+    // invite simply goes unused (the seat frees when they revoke or the live
+    // ends). Clearing the flag is what the guest asked for — the banner goes
+    // away and stays away for this session.
+    emit(state.copyWith(
+        coHostInvitePending: false,
+        coHostBusy: false,
+        clearCoHostError: true));
+  }
+
+  /// Dismiss the inline co-host error without dismissing the invite.
+  void clearCoHostError() {
+    if (state.coHostError == null) return;
+    emit(state.copyWith(clearCoHostError: true));
   }
 
   // ─── Host controls over other broadcasters ─────────────────────

@@ -2206,36 +2206,103 @@ class _SprayRoomViewState extends State<_SprayRoomView>
 
   Widget _buildCoHostInviteBanner(BuildContext context) {
     final cubit = context.read<SprayLiveCubit>();
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 24.w),
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: const Color(0xFFFFD700)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.videocam, color: Color(0xFFFFD700)),
-          SizedBox(width: 10.w),
-          Expanded(
-            child: Text(
-              'The host invited you to co-host. Go live with your camera?',
-              style: TextStyle(color: Colors.white, fontSize: 12.sp),
-            ),
+    // Rebuilt on the co-host fields so the busy spinner and the inline reason
+    // actually appear. Previously the banner was static: a guest tapped
+    // "Join", and whether it was working, had failed because the stage was
+    // full, or had done nothing at all looked identical.
+    return BlocBuilder<SprayLiveCubit, SprayLiveState>(
+      buildWhen: (p, c) =>
+          p.coHostBusy != c.coHostBusy || p.coHostError != c.coHostError,
+      builder: (context, live) {
+        final busy = live.coHostBusy;
+        return Container(
+          margin: EdgeInsets.symmetric(horizontal: 24.w),
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(
+                color: live.coHostError != null
+                    ? const Color(0xFFEF4444)
+                    : const Color(0xFFFFD700)),
           ),
-          TextButton(
-            onPressed: () => cubit.declineCoHostInvite(),
-            child:
-                const Text('Later', style: TextStyle(color: Color(0xFF9CA3AF))),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.videocam, color: Color(0xFFFFD700)),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text(
+                      'The host invited you to co-host. Go live with your camera?',
+                      style:
+                          TextStyle(color: Colors.white, fontSize: 12.sp),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed:
+                        busy ? null : () => cubit.declineCoHostInvite(),
+                    child: Text('Later',
+                        style: TextStyle(
+                            color: busy
+                                ? const Color(0xFF4B5563)
+                                : const Color(0xFF9CA3AF))),
+                  ),
+                  if (busy)
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12.w),
+                      child: SizedBox(
+                        width: 16.w,
+                        height: 16.w,
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              Color(0xFF3B82F6)),
+                        ),
+                      ),
+                    )
+                  else
+                    TextButton(
+                      onPressed: () => cubit.acceptCoHostInvite(),
+                      child: Text(
+                          live.coHostError != null ? 'Retry' : 'Join',
+                          style:
+                              const TextStyle(color: Color(0xFF3B82F6))),
+                    ),
+                ],
+              ),
+              // The limit the server enforced, in the guest's own words:
+              // the stage caps at 8 boxes and the host must be live, and
+              // both refusals used to vanish silently.
+              if (live.coHostError != null) ...[
+                SizedBox(height: 8.h),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline,
+                        size: 14.sp, color: const Color(0xFFEF4444)),
+                    SizedBox(width: 6.w),
+                    Expanded(
+                      child: Text(
+                        live.coHostError!,
+                        style: TextStyle(
+                            color: const Color(0xFFFCA5A5),
+                            fontSize: 11.sp),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: cubit.clearCoHostError,
+                      child: Icon(Icons.close,
+                          size: 14.sp, color: const Color(0xFF9CA3AF)),
+                    ),
+                  ],
+                ),
+              ],
+            ],
           ),
-          TextButton(
-            onPressed: () => cubit.acceptCoHostInvite(),
-            child:
-                const Text('Join', style: TextStyle(color: Color(0xFF3B82F6))),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 

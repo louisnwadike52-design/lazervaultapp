@@ -371,6 +371,8 @@ import 'package:lazervault/src/features/contactless_payment/domain/repositories/
 
 // Crowdfund imports
 import 'package:lazervault/src/features/crowdfund/presentation/cubit/crowdfund_cubit.dart';
+import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_cubit.dart';
+import 'package:lazervault/src/features/sprayme/presentation/screens/join_session_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_home_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_list_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_details_screen.dart';
@@ -3082,6 +3084,22 @@ class AppRouter {
         create: (context) => serviceLocator<EscrowCubit>(),
         child: const EscrowOfferViewScreen(),
       ),
+      transition: Transition.rightToLeft,
+    ),
+    // LazerSpray join-by-link. The room screen shares
+    // https://lazervault.app/lazerspray/join?code=XXXXXX; this is where that
+    // lands. LazerSpray previously had no named route, so the link had
+    // nowhere to go even once the OS handed it to the app.
+    GetPage(
+      name: AppRoutes.lazerSprayJoin,
+      page: () {
+        final args = Get.arguments;
+        final code = args is Map ? args['code'] as String? : args as String?;
+        return BlocProvider(
+          create: (_) => serviceLocator<SprayMeCubit>(),
+          child: JoinSessionScreen(initialCode: code),
+        );
+      },
       transition: Transition.rightToLeft,
     ),
     GetPage(

@@ -601,6 +601,13 @@ abstract class AppRoutes {
   // Two-sided offers: the listing page (args offerId/shareToken; the
   // '/:shareToken' variant serves web/universal-link handoffs).
   static const String escrowOfferView = '/escrow/offer';
+
+  /// LazerSpray session join, reachable by shared link
+  /// (https://lazervault.app/lazerspray/join?code=XXXXXX). LazerSpray had no
+  /// named routes at all, which is why nothing — not a notification, not a
+  /// deep link — could open it; the share link 404'd on the web and had
+  /// nowhere to land in the app.
+  static const String lazerSprayJoin = '/lazerspray/join';
   // NOT '/escrow/offer/create' — that would be captured by the
   // '/escrow/offer/:shareToken' param route as a bogus token.
   static const String escrowOfferCreate = '/escrow/create-offer';

@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
+
+import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:flutter/foundation.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:speech_to_text/speech_recognition_result.dart';
@@ -64,7 +66,13 @@ class SprayLazerAiService {
       return null;
     } catch (e) {
       _lastSummon = DateTime.fromMillisecondsSinceEpoch(0); // allow retry
-      return e.toString().replaceAll('Exception: ', '');
+      // NEVER the raw exception. This returned e.toString(), and the caller
+      // interpolates it straight into a snackbar — so a 500 from the
+      // voice-agent gateway put a full DioException, URL and stack summary on
+      // screen in front of a room of guests. transportFailureMessage is the
+      // canonical classifier: a 5xx says "our servers", a socket error says
+      // "your connection", and anything ambiguous says neither.
+      return transportFailureMessage(e);
     }
   }
 

@@ -58,6 +58,19 @@ class SprayLiveState {
   // A co-host invite addressed to the current user (awaiting accept).
   final bool coHostInvitePending;
 
+  /// True while an accept is in flight. The banner disables its buttons and
+  /// shows a spinner — without it a guest taps "Join", nothing visibly
+  /// happens for the length of a token round-trip and a LiveKit connect, and
+  /// they tap again.
+  final bool coHostBusy;
+
+  /// Why the last accept failed, shown inside the banner.
+  ///
+  /// Separate from [error], which is the LIVE-STREAM error and drives the
+  /// full-screen error phase. A co-host invite that fails because the stage
+  /// is full must not blank the stream the guest is currently watching.
+  final String? coHostError;
+
   /// The broadcast is LIVE but carrying audio only — the host's camera is off.
   ///
   /// Without this the viewer cannot tell "camera deliberately off" from "video
@@ -93,6 +106,8 @@ class SprayLiveState {
     this.isRecording = false,
     this.isPaused = false,
     this.coHostInvitePending = false,
+    this.coHostBusy = false,
+    this.coHostError,
     this.error,
   });
 
@@ -116,6 +131,9 @@ class SprayLiveState {
     bool? isRecording,
     bool? isPaused,
     bool? coHostInvitePending,
+    bool? coHostBusy,
+    String? coHostError,
+    bool clearCoHostError = false,
     String? error,
     bool clearError = false,
   }) {
@@ -132,6 +150,9 @@ class SprayLiveState {
       isRecording: isRecording ?? this.isRecording,
       isPaused: isPaused ?? this.isPaused,
       coHostInvitePending: coHostInvitePending ?? this.coHostInvitePending,
+      coHostBusy: coHostBusy ?? this.coHostBusy,
+      coHostError:
+          clearCoHostError ? null : (coHostError ?? this.coHostError),
       error: clearError ? null : (error ?? this.error),
     );
   }

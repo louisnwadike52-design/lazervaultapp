@@ -146,6 +146,14 @@
                      web page instead of into the app where they can donate. -->
                 <data android:scheme="https" android:host="lazervault.app"
                       android:pathPrefix="/crowdfund/" />
+                <!-- LazerSpray session join links: /lazerspray/join?code=XXXXXX.
+                     The code rides in the QUERY string, so the prefix is the
+                     path alone; Android preserves the query and the app reads
+                     `code` from it. Unclaimed until now, and with no website
+                     route either the link simply 404'd — a host sharing a live
+                     room was sending guests to a dead page. -->
+                <data android:scheme="https" android:host="lazervault.app"
+                      android:pathPrefix="/lazerspray/join" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

@@ -10,6 +10,7 @@ enum DeepLinkType {
   familyInvite,
   escrowOffer,
   crowdfundCampaign,
+  lazerSprayJoin,
   unknown,
 }
 
@@ -35,6 +36,16 @@ class DeepLinkData {
   /// `lazervault://crowdfund/<id>` form). Null otherwise.
   final String? crowdfundCampaignId;
 
+  /// For [DeepLinkType.lazerSprayJoin], the 6-character session code from
+  /// `https://lazervault.app/lazerspray/join?code=<CODE>` (or the
+  /// `lazervault://lazerspray/join?code=<CODE>` form). Null otherwise.
+  ///
+  /// Carried in the QUERY string, not the path — that is how the room screen
+  /// builds the share link, and changing the shape would break links already
+  /// sent. Uppercased here because codes are displayed and compared in upper
+  /// case but a URL travels through anything.
+  final String? lazerSprayCode;
+
   const DeepLinkData({
     required this.type,
     required this.rawUri,
@@ -43,6 +54,7 @@ class DeepLinkData {
     this.familyInviteToken,
     this.escrowOfferToken,
     this.crowdfundCampaignId,
+    this.lazerSprayCode,
   });
 
   /// Get a query parameter value
@@ -234,6 +246,42 @@ class DeepLinkService {
           queryParams: queryParams,
           path: path,
           crowdfundCampaignId: id,
+        );
+      }
+    }
+
+    // LazerSpray session join link.
+    //
+    // The room screen shares https://lazervault.app/lazerspray/join?code=XXXXXX
+    // and nothing claimed it: no website route (the link 404'd), no AASA path,
+    // and no branch here. A host sharing their room was sending guests to a
+    // dead page — the one link whose entire purpose is to get someone INTO a
+    // live session.
+    //
+    // Unlike the links above, the payload is a query parameter, so both URI
+    // shapes converge once the path is matched: custom scheme gives
+    // host=='lazerspray' + segments [join]; the universal link gives
+    // segments [lazerspray, join].
+    final isSprayJoin = (uri.host == 'lazerspray' &&
+            segments.isNotEmpty &&
+            segments[0] == 'join') ||
+        (segments.length >= 2 &&
+            segments[0] == 'lazerspray' &&
+            segments[1] == 'join');
+    if (isSprayJoin) {
+      final code =
+          (queryParams['code'] ?? '').trim().toUpperCase();
+      // An empty or malformed code would open the join screen with nothing to
+      // submit. Better to fall through to the manual-entry screen (below,
+      // via `unknown` -> dashboard) than to auto-submit garbage and show the
+      // user a server error they did not cause.
+      if (code.isNotEmpty) {
+        return DeepLinkData(
+          type: DeepLinkType.lazerSprayJoin,
+          rawUri: uri.toString(),
+          queryParams: queryParams,
+          path: path,
+          lazerSprayCode: code,
         );
       }
     }

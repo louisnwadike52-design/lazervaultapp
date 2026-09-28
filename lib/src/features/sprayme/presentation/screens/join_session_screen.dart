@@ -15,7 +15,15 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'join_session_screen_widgets.dart';
 
 class JoinSessionScreen extends StatefulWidget {
-  const JoinSessionScreen({super.key});
+  /// Session code to prefill, from a shared join link
+  /// (https://lazervault.app/lazerspray/join?code=XXXXXX).
+  ///
+  /// The code is shown in the boxes rather than submitted invisibly: the guest
+  /// sees what they are joining with, and a wrong or expired code fails on a
+  /// screen where they can correct it instead of on a blank one.
+  final String? initialCode;
+
+  const JoinSessionScreen({super.key, this.initialCode});
 
   @override
   State<JoinSessionScreen> createState() => _JoinSessionScreenState();
@@ -33,6 +41,25 @@ class _JoinSessionScreenState extends State<JoinSessionScreen> {
   void initState() {
     super.initState();
     _loadRecentSessions();
+
+    // A code arrived with the link — fill the boxes and join, so the guest
+    // goes from tapping a shared link to being in the room without retyping
+    // six characters they were never shown.
+    final prefill = (widget.initialCode ?? '')
+        .trim()
+        .toUpperCase()
+        .replaceAll(RegExp(r'[^A-Z0-9]'), '');
+    if (prefill.length == 6) {
+      for (var i = 0; i < 6; i++) {
+        _codeControllers[i].text = prefill[i];
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _onJoin();
+      });
+      return;
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNodes[0].requestFocus();
     });

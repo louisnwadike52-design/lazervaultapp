@@ -829,6 +829,19 @@ class _MyAppState extends State<MyApp> {
           ));
         }
         break;
+      case DeepLinkType.lazerSprayJoin:
+        // Shared session link. Through PendingDeepLink for the same reason as
+        // the escrow and crowdfund links: a guest tapping a host's spray link
+        // is very often signed out — the target has to survive the login gate
+        // and replay, or they sign in and land on the dashboard while the
+        // session they were invited to carries on without them.
+        if (data.lazerSprayCode != null && data.lazerSprayCode!.isNotEmpty) {
+          PendingDeepLink.instance.push(NotificationTarget(
+            route: AppRoutes.lazerSprayJoin,
+            arguments: {'code': data.lazerSprayCode},
+          ));
+        }
+        break;
       case DeepLinkType.depositCallback:
       case DeepLinkType.paymentCallback:
       case DeepLinkType.quickAction:
