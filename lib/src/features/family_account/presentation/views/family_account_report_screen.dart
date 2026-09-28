@@ -12,6 +12,7 @@ import 'package:printing/printing.dart';
 
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/core/utils/receipt_fonts.dart';
 import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
@@ -50,31 +51,16 @@ class _FamilyAccountReportScreenState extends State<FamilyAccountReportScreen> {
   String _money(double v) =>
       '${CurrencySymbols.currentSymbol}${v.toStringAsFixed(2)}';
 
-  /// ASCII-safe currency label for the SHARED PDF. The default PDF font
-  /// (Helvetica) has no glyph for '₦', so a naira symbol renders as tofu/□ in
-  /// the exported statement. Use the ISO code prefix (e.g. "NGN ") instead —
-  /// mirrors group_contribution_pdf_service._currencySymbolFor. On-screen widgets
-  /// keep the real symbol (Flutter fonts render it fine).
-  static String _pdfCurrencyLabel(String code) {
-    switch (code.toUpperCase()) {
-      case 'NGN':
-        return 'NGN ';
-      case 'GBP':
-        return 'GBP ';
-      case 'EUR':
-        return 'EUR ';
-      case 'USD':
-        return 'USD ';
-      case 'ZAR':
-        return 'ZAR ';
-      case 'GHS':
-        return 'GHS ';
-      case 'KES':
-        return 'KES ';
-      default:
-        return '$code ';
-    }
-  }
+  /// Currency label for the SHARED PDF.
+  ///
+  /// This used to hardcode the ISO prefix ("NGN ") to dodge tofu, on the
+  /// premise that the PDF font is always Helvetica — true only because this
+  /// screen never loaded a font. The app ships Inter for exactly this
+  /// (assets/fonts), and [receiptCurrencySymbol] picks the real glyph when a
+  /// TrueType face is embedded and falls back to the ISO code when it is not.
+  /// So the statement now prints the same "₦" the user sees on screen, and
+  /// still degrades safely if the font fails to load.
+  static String _pdfCurrencyLabel(String code) => receiptCurrencySymbol(code);
 
   Future<void> _share(List<FamilyTransaction> txns) async {
     final bytes = await _buildPdf(txns);
@@ -87,9 +73,18 @@ class _FamilyAccountReportScreenState extends State<FamilyAccountReportScreen> {
 
   Future<Uint8List> _buildPdf(List<FamilyTransaction> txns) async {
     final a = widget.account;
-    final doc = pw.Document();
-    // ASCII-safe currency label so the naira symbol doesn't render as tofu in the
-    // exported PDF (default Helvetica has no '₦' glyph).
+    // Load the receipt typeface BEFORE anything reads the currency symbol —
+    // receiptCurrencySymbol branches on whether a real face is embedded, and
+    // asking before the load always answers "not embedded".
+    await ReceiptFonts.load();
+    final doc = pw.Document(
+      theme: ReceiptFonts.embedded
+          ? pw.ThemeData.withFont(
+              base: ReceiptFonts.regular!,
+              bold: ReceiptFonts.bold!,
+            )
+          : null,
+    );
     final sym = _pdfCurrencyLabel(CurrencySymbols.currentCurrency);
     final df = DateFormat('d MMM y, HH:mm');
     String m(double v) => '$sym${v.toStringAsFixed(2)}';

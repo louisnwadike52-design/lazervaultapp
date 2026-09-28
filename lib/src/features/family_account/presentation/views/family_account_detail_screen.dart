@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:lazervault/core/shared_widgets/account_details_share_sheet.dart';
+import 'package:lazervault/src/features/family_account/services/family_receipt_pdf_service.dart';
 import 'package:flutter/services.dart';
 
 import 'package:flutter/material.dart';
@@ -9,9 +10,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
@@ -4315,8 +4313,12 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     // The family account this transaction belongs to — threaded onto the
     // receipt so it's clear which family & friends account it came from.
     final familyName = _loadedAccount?.name.trim() ?? '';
+    // Falls back to a WORD, not a dash. The old '—' (U+2014) is the exact
+    // character the receipt could not draw, and even where it can, "Not
+    // recorded" tells the reader the transaction is fine and only this field
+    // is absent.
     final reference = transaction.transactionId ??
-        (transaction.metadata?['payment_ref']?.toString() ?? '—');
+        (transaction.metadata?['payment_ref']?.toString() ?? 'Not recorded');
     final d = transaction.createdAt;
     final dateStr = '${_shortDate(d)}, ${d.year} · '
         '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
@@ -4433,31 +4435,15 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     );
   }
 
-  /// ASCII-safe currency label for a shared PDF (default Helvetica has no '₦'
-  /// glyph → tofu). Mirrors the family statement's PDF label.
-  static String _pdfCurrency(String code) {
-    switch (code.toUpperCase()) {
-      case 'NGN':
-        return 'NGN ';
-      case 'GBP':
-        return 'GBP ';
-      case 'EUR':
-        return 'EUR ';
-      case 'USD':
-        return 'USD ';
-      case 'ZAR':
-        return 'ZAR ';
-      case 'GHS':
-        return 'GHS ';
-      case 'KES':
-        return 'KES ';
-      default:
-        return '$code ';
-    }
-  }
 
-  /// Renders a single Family & Friends transaction to a shareable one-page PDF
-  /// receipt. Reuses the same ASCII-safe currency handling as the full statement.
+  /// Shares a single Family & Friends transaction as a PDF receipt.
+  ///
+  /// Delegates to [FamilyReceiptPdfService], which draws it with the app's
+  /// embedded receipt typeface and the same A4 layout as every other receipt.
+  /// The builder that used to live here loaded no font, so the pdf package
+  /// fell back to built-in Helvetica — that is why the reference rendered as
+  /// a tofu box (the em-dash fallback has no glyph in that face) and why the
+  /// amount had to print "NGN " instead of the naira sign.
   Future<void> _shareTransactionReceipt(
     FamilyTransaction transaction, {
     required String familyName,
@@ -4466,76 +4452,12 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     required String dateStr,
   }) async {
     try {
-      final cur = _pdfCurrency(CurrencySymbols.currentCurrency);
-      final isCredit = transaction.type == FamilyTransactionType.allocation ||
-          transaction.type == FamilyTransactionType.refund ||
-          transaction.type == FamilyTransactionType.contribution;
-      final amountStr =
-          '${isCredit ? '+' : '-'}$cur${transaction.amount.abs().toStringAsFixed(2)}';
-
-      final doc = pw.Document();
-      pw.Widget row(String k, String v) => pw.Padding(
-            padding: const pw.EdgeInsets.symmetric(vertical: 4),
-            child: pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text(k,
-                    style: const pw.TextStyle(
-                        fontSize: 11, color: PdfColors.grey700)),
-                pw.Text(v,
-                    style: pw.TextStyle(
-                        fontSize: 11, fontWeight: pw.FontWeight.bold)),
-              ],
-            ),
-          );
-
-      doc.addPage(
-        pw.Page(
-          pageFormat: PdfPageFormat.a5,
-          build: (ctx) => pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text('Family & Friends Receipt',
-                  style: pw.TextStyle(
-                      fontSize: 18, fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 4),
-              if (familyName.isNotEmpty)
-                pw.Text(familyName,
-                    style: const pw.TextStyle(
-                        fontSize: 12, color: PdfColors.grey700)),
-              pw.SizedBox(height: 16),
-              pw.Center(
-                child: pw.Text(amountStr,
-                    style: pw.TextStyle(
-                        fontSize: 26, fontWeight: pw.FontWeight.bold)),
-              ),
-              pw.SizedBox(height: 16),
-              pw.Divider(),
-              row('Type', transaction.type.displayName),
-              row('By', memberName),
-              if ((transaction.merchantName?.isNotEmpty ?? false) &&
-                  transaction.type == FamilyTransactionType.spending)
-                row('Recipient', transaction.merchantName!),
-              if ((transaction.merchantCategory?.isNotEmpty ?? false) &&
-                  transaction.merchantCategory!.toLowerCase() != 'general' &&
-                  transaction.type == FamilyTransactionType.spending)
-                row('Category', transaction.merchantCategory!),
-              row('Date', dateStr),
-              row('Reference', reference),
-              pw.SizedBox(height: 24),
-              pw.Text('Generated by Lazervault',
-                  style: const pw.TextStyle(
-                      fontSize: 9, color: PdfColors.grey600)),
-            ],
-          ),
-        ),
-      );
-
-      final bytes = await doc.save();
-      await Printing.sharePdf(
-        bytes: bytes,
-        filename:
-            'family-receipt-${reference.replaceAll(RegExp(r'[^A-Za-z0-9]'), '')}.pdf',
+      await FamilyReceiptPdfService.share(
+        transaction,
+        familyName: familyName,
+        memberName: memberName,
+        reference: reference,
+        currencyCode: CurrencySymbols.currentCurrency,
       );
     } catch (e) {
       if (!mounted) return;
@@ -4546,8 +4468,9 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           backgroundColor: const Color(0xFF1F1F1F),
           title: const Text('Could not create receipt',
               style: TextStyle(color: Colors.white)),
-          content: Text('Please try again.\n\n$e',
-              style: const TextStyle(color: Colors.white70)),
+          content: const Text(
+              'We could not build the receipt just now. Please try again.',
+              style: TextStyle(color: Colors.white70)),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
