@@ -1,4 +1,5 @@
 import 'package:fl_chart/fl_chart.dart';
+import 'package:lazervault/core/shared_widgets/account_details_share_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -189,9 +190,51 @@ class BusinessDashboardScreen extends StatelessWidget {
           SizedBox(height: 8.h),
           if (account?.accountNumber != null &&
               account!.accountNumber!.isNotEmpty)
-            Text(
-              '${account.bankName ?? ''} · ${account.accountNumber}'.trim(),
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 12.sp),
+            // Tappable. This was a line of dead text: the business NUBAN was on
+            // screen but there was no way to copy or share it, so anyone being
+            // paid had to retype ten digits read off a phone — which is how
+            // money reaches the wrong account. Personal accounts have had a
+            // copy/share surface all along; this brings business in line with
+            // the same sheet and the same share message.
+            Builder(
+              builder: (rowContext) => InkWell(
+                onTap: () => AccountDetailsShareSheet.show(
+                  rowContext,
+                  title: 'Business account details',
+                  subtitle: 'Share these to receive money into this business',
+                  accountName: (account.virtualAccountHolderName?.trim().isNotEmpty ??
+                          false)
+                      ? account.virtualAccountHolderName!.trim()
+                      : (account.accountName?.trim().isNotEmpty ?? false)
+                          ? account.accountName!.trim()
+                          : account.displayName,
+                  accountNameLabel: 'Business name',
+                  bankName: account.bankName ?? '',
+                  accountNumber: account.accountNumber ?? '',
+                ),
+                borderRadius: BorderRadius.circular(8.r),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 2.h),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          '${account.bankName ?? ''} · ${account.accountNumber}'
+                              .trim(),
+                          style: GoogleFonts.inter(
+                              color: Colors.white70, fontSize: 12.sp),
+                        ),
+                      ),
+                      SizedBox(width: 6.w),
+                      // A visible affordance: without it the row reads as a
+                      // caption and nobody discovers it is tappable.
+                      Icon(Icons.copy_rounded,
+                          size: 13.sp, color: Colors.white70),
+                    ],
+                  ),
+                ),
+              ),
             )
           else
             Text('Virtual account pending — complete business KYC to activate',

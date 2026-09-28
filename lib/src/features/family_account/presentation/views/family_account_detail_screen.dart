@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:lazervault/core/shared_widgets/account_details_share_sheet.dart';
+import 'package:flutter/services.dart';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -1797,7 +1799,12 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         policyLine = 'Any member can add money';
     }
 
-    Widget row(IconData icon, String label, String value) => Padding(
+    // copyValue makes a row copyable on its own. Copying the whole block is
+    // right for pasting into a chat; it is wrong when a bank form wants only
+    // the digits, and making someone edit a pasted blob is how a stray space
+    // ends up inside an account number.
+    Widget row(IconData icon, String label, String value, {String? copyValue}) =>
+        Padding(
           padding: EdgeInsets.symmetric(vertical: 6.h),
           child: Row(
             children: [
@@ -1818,6 +1825,26 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w600)),
               ),
+              if (copyValue != null && copyValue.trim().isNotEmpty) ...[
+                SizedBox(width: 6.w),
+                InkWell(
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: copyValue.trim()));
+                    Get.snackbar('Copied', '$label copied to clipboard',
+                        backgroundColor: const Color(0xFF10B981),
+                        colorText: Colors.white,
+                        snackPosition: SnackPosition.TOP,
+                        duration: const Duration(seconds: 2));
+                  },
+                  borderRadius: BorderRadius.circular(6.r),
+                  child: Padding(
+                    padding: EdgeInsets.all(4.w),
+                    child: Icon(Icons.copy_rounded,
+                        size: 14.sp,
+                        color: Colors.white.withValues(alpha: 0.7)),
+                  ),
+                ),
+              ],
             ],
           ),
         );
@@ -1866,8 +1893,43 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             )
           else if (hasNuban) ...[
             row(Icons.account_balance_outlined, 'Bank',
-                account.bankName?.isNotEmpty == true ? account.bankName! : '—'),
-            row(Icons.numbers, 'Account number', account.accountNumber!),
+                account.bankName?.isNotEmpty == true ? account.bankName! : '—',
+                copyValue: account.bankName),
+            row(Icons.numbers, 'Account number', account.accountNumber!,
+                copyValue: account.accountNumber),
+            SizedBox(height: 6.h),
+            // The pool had no way to share its details at all, so a member
+            // being asked to contribute had to read ten digits aloud. Opens
+            // the same sheet, with the same share message, that personal and
+            // business accounts use.
+            Builder(
+              builder: (shareContext) => SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => AccountDetailsShareSheet.show(
+                    shareContext,
+                    title: 'Pool account details',
+                    subtitle: 'Share these so members can fund ${account.name}',
+                    accountName: account.name,
+                    accountNameLabel: 'Pool name',
+                    bankName: account.bankName ?? '',
+                    accountNumber: account.accountNumber ?? '',
+                  ),
+                  icon: Icon(Icons.ios_share, size: 15.sp),
+                  label: Text('View & share details',
+                      style: TextStyle(
+                          fontSize: 12.5.sp, fontWeight: FontWeight.w600)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: BorderSide(
+                        color: Colors.white.withValues(alpha: 0.22)),
+                    padding: EdgeInsets.symmetric(vertical: 10.h),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.r)),
+                  ),
+                ),
+              ),
+            ),
           ],
           row(Icons.group_outlined, 'Funding', policyLine),
         ],
