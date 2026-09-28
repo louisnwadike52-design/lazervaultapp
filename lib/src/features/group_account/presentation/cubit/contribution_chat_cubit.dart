@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../p2p_chat/data/services/p2p_chat_media_upload_service.dart';
 import '../../data/datasources/contribution_chat_remote_data_source.dart';
 
 part 'contribution_chat_media.dart';
@@ -27,13 +28,23 @@ class ContributionChatCubit extends ChangeNotifier {
     required this.currentUserId,
     required String Function() tokenProvider,
     ContributionChatRemoteDataSource? dataSource,
+    P2PChatMediaUploadService? mediaUploader,
   })  : _token = tokenProvider,
-        _ds = dataSource ?? ContributionChatRemoteDataSource();
+        _ds = dataSource ?? ContributionChatRemoteDataSource(),
+        _mediaUploader = mediaUploader ?? P2PChatMediaUploadService();
 
   final String contributionId;
   final String currentUserId;
   final String Function() _token;
   final ContributionChatRemoteDataSource _ds;
+
+  /// The SAME uploader the 1:1 chat uses (core-gateway's chat-media proxy →
+  /// storage-service signed PUT). Shared deliberately: the group-native
+  /// multipart route it replaced is unreachable from the app, and a second
+  /// upload pipeline is a second thing to keep allowlisted, routed and
+  /// MIME-configured.
+  final P2PChatMediaUploadService _mediaUploader;
+
   final _uuid = const Uuid();
 
   // ── Polling cadences ──────────────────────────────────────────────────

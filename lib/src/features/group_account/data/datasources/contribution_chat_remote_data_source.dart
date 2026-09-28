@@ -298,6 +298,20 @@ class ContributionChatRemoteDataSource {
   /// envelope. group-accounts routes the file to storage-service, so where it
   /// physically lands follows the platform's active storage provider and the
   /// URL returned here is absolute and durable — it keeps resolving even after
+  /// UNREACHABLE FROM THE APP — do not wire this up again.
+  ///
+  /// This POSTs multipart to `{financial-gateway}/v1/contributions/{id}/
+  /// messages/media`, but that route is registered only on
+  /// group-accounts-service's OWN http mux (cmd/server/main.go). The
+  /// financial-gateway proxies gRPC and its grpc-gateway has no pattern that
+  /// matches it, so every call 404s. That is why no voice note or image had
+  /// ever reached the database.
+  ///
+  /// Media now uploads through P2PChatMediaUploadService (core-gateway's
+  /// chat-media proxy → storage-service), the same path the 1:1 chat uses.
+  /// Kept only because the service-side endpoint and its e2e test still
+  /// exist; reachable from a direct group-accounts host, not from the app.
+
   /// an admin switches providers.
   Future<({String mediaUrl, int durationMs})> uploadMedia({
     required String token,

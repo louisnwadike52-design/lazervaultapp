@@ -9,9 +9,22 @@ part of 'contribution_chat_cubit.dart';
 /// deliberately identical to [ContributionChatCubit.send], so a media bubble
 /// behaves exactly like a text one.
 ///
-/// Where the bytes land is not this layer's concern: group-accounts routes the
-/// upload to storage-service, so the active storage provider decides, and the
-/// URL returned is absolute and keeps resolving after a provider switch.
+/// Upload route: core-gateway's `chat-media` proxy, via the SAME
+/// [P2PChatMediaUploadService] the 1:1 chat uses.
+///
+/// It used to POST multipart to `{financial-gateway}/v1/contributions/{id}/
+/// messages/media`. That route exists only on group-accounts-service's own
+/// HTTP mux — financial-gateway proxies gRPC, and its grpc-gateway has no
+/// pattern that can match it — so every upload 404'd, `send` was never
+/// reached, and NO voice note or image had ever been written to the database
+/// (verified in production: contribution_messages held two rows, both text).
+///
+/// Reusing the P2P uploader fixes it with one change instead of three: no new
+/// gateway route, no storage-service allowlist entry for group-accounts, and
+/// no STORAGE_SERVICE_URL to set. The `chat-media` keyspace is user-scoped
+/// (`users/{uid}/chat-media/...`), not conversation-scoped, so it already
+/// serves both chats, and its MIME allowlist already covers the voice-note
+/// audio types.
 extension ContributionChatMedia on ContributionChatCubit {
   /// Sends an image. [file] is a local file already chosen by the picker.
   Future<void> sendImage(File file) =>
@@ -59,13 +72,7 @@ extension ContributionChatMedia on ContributionChatCubit {
     _safeNotify();
 
     try {
-      final uploaded = await _ds.uploadMedia(
-        token: _token(),
-        contributionId: contributionId,
-        file: file,
-        kind: kind,
-        durationMs: durationMs,
-      );
+      final uploaded = await _mediaUploader.uploadFromFile(file);
 
       final saved = await _ds.send(
         token: _token(),
@@ -73,8 +80,12 @@ extension ContributionChatMedia on ContributionChatCubit {
         body: '',
         clientMessageId: clientId,
         kind: kind,
-        mediaUrl: uploaded.mediaUrl,
-        durationMs: uploaded.durationMs,
+        // Always absolute (storage-service public URL), so the bubble's
+        // local-vs-remote test cannot misread it as an on-device path.
+        mediaUrl: uploaded.publicUrl,
+        // The recorder's own measurement. The uploader deals in bytes and has
+        // no notion of duration, so it is carried through from the caller.
+        durationMs: durationMs,
         replyToMessageId: reply?.id ?? '',
       );
 
@@ -125,21 +136,20 @@ extension ContributionChatMedia on ContributionChatCubit {
     _safeNotify();
 
     try {
-      final uploaded = await _ds.uploadMedia(
-        token: _token(),
-        contributionId: contributionId,
-        file: local,
-        kind: failed.kind,
-        durationMs: failed.durationMs,
-      );
+      // Same uploader as the first attempt — retrying through the old
+      // group-native multipart route would 404 exactly as the original send
+      // did, so Retry would spin forever.
+      final uploaded = await _mediaUploader.uploadFromFile(local);
       final saved = await _ds.send(
         token: _token(),
         contributionId: contributionId,
         body: '',
+        // Unchanged client id: the send is idempotent on it, so a retry that
+        // races a slow first attempt cannot post the same media twice.
         clientMessageId: failed.clientMessageId,
         kind: failed.kind,
-        mediaUrl: uploaded.mediaUrl,
-        durationMs: uploaded.durationMs,
+        mediaUrl: uploaded.publicUrl,
+        durationMs: failed.durationMs,
         replyToMessageId: failed.replyToMessageId,
       );
       final j = messages.indexWhere(

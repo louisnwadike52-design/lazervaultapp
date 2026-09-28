@@ -10,6 +10,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+import 'package:lazervault/core/services/endpoint_registry.dart';
+import 'package:lazervault/src/features/ai_chats/presentation/widgets/fullscreen_image_viewer.dart';
 import '../../data/datasources/contribution_chat_remote_data_source.dart';
 import '../cubit/contribution_chat_cubit.dart';
 import '../../utils/mention_text.dart';
@@ -974,7 +976,51 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
   /// upload completes.
   Widget _imageBubble(ContributionMessage m) {
     final url = m.mediaUrl;
-    final isLocal = !url.startsWith('http');
+    // A remote URL is http(s); anything else is the local file the optimistic
+    // bubble renders while the upload is in flight.
+    //
+    // This test also has to survive a RELATIVE stored URL ("/media/voice/x.m4a"),
+    // which group-accounts' local media backend writes when STORAGE_SERVICE_URL
+    // is unset. Treating that as a device path made it an Image.file that could
+    // never resolve — a permanent broken-image icon. A leading slash is a
+    // server path, so it is resolved against the API host instead.
+    final isLocal = !url.startsWith('http') && !url.startsWith('/');
+    final resolved = _resolveMediaUrl(url);
+    // Hero tag must be stable and unique per message so two images in the same
+    // conversation cannot animate into each other.
+    final heroTag = 'contribution-media-${m.id.isNotEmpty ? m.id : m.clientMessageId}';
+
+    return GestureDetector(
+      // Tap to view full screen. The bubble previously had only a long-press
+      // (the actions sheet), so an image in a group chat could be seen at
+      // thumbnail size and no larger.
+      onTap: () => FullScreenImageViewer.open(
+        context,
+        mediaUrl: isLocal ? null : resolved,
+        localPath: isLocal ? url : null,
+        heroTag: heroTag,
+      ),
+      child: Hero(
+        tag: heroTag,
+        child: _imageBubbleBody(m, resolved, isLocal),
+      ),
+    );
+  }
+
+  /// Resolves a stored media URL to something loadable.
+  ///
+  /// Absolute URLs pass through. A relative path is joined to the API host —
+  /// group-accounts' local media backend stores `/media/<kind>/<name>` when no
+  /// public base is configured, and that is a server path, not a device one.
+  String _resolveMediaUrl(String url) {
+    if (url.isEmpty || url.startsWith('http')) return url;
+    if (!url.startsWith('/')) return url; // a device path
+    final base = EndpointRegistry.instance.httpFinancial
+        .replaceAll(RegExp(r'/api/v1/?$'), '');
+    return '$base$url';
+  }
+
+  Widget _imageBubbleBody(ContributionMessage m, String url, bool isLocal) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(10.r),
       child: ConstrainedBox(
@@ -1048,8 +1094,15 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
         return;
       }
       await _voicePlayer.stop();
-      if (url.startsWith('http')) {
-        await _voicePlayer.setUrl(url);
+      // Same classification as the image bubble: http(s) is remote, a leading
+      // slash is a SERVER path (group-accounts' local media backend writes
+      // "/media/voice/x.m4a" when no public base is configured) and must be
+      // resolved against the API host — treating it as a device file is what
+      // produced "Could not play that voice note" for a perfectly good
+      // recording. Anything else is the on-device temp file.
+      final resolved = _resolveMediaUrl(url);
+      if (resolved.startsWith('http')) {
+        await _voicePlayer.setUrl(resolved);
       } else {
         await _voicePlayer.setFilePath(url);
       }
