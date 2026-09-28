@@ -52,7 +52,15 @@ AppService notificationServiceFor(String type) {
   if (has('autosave') || has('auto_save')) {
     return of(AppServiceName.autoSave, AppServiceImg.autoSave);
   }
-  if (has('lock_funds') || has('piggyvault')) {
+  // `interest_payout` / `upfront_interest` are PiggyVault money too. They
+  // carry no "lock" in the slug, so they fell through to the generic icon —
+  // the ROI payout, the one notification a saver most wants to recognise at
+  // a glance, arrived looking like nothing in particular.
+  if (has('lock_funds') ||
+      has('piggyvault') ||
+      has('interest_payout') ||
+      has('upfront_interest') ||
+      has('interest_accrual')) {
     return of(AppServiceName.lockFunds, AppServiceImg.lockFunds);
   }
   if (has('crowdfund') || has('donation')) {

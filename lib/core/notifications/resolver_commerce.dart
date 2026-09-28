@@ -187,9 +187,14 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
   if (_is(type, 'autosave') || _is(type, 'auto_save')) {
     return _landing(AppRoutes.autoSaveDashboard);
   }
+  // Interest categories are PiggyVault events without "lock" in the slug —
+  // tapping an ROI payout must land on the plan list, not nowhere.
   if (_is(type, 'lock_funds') ||
       _is(type, 'piggyvault') ||
-      _is(type, 'piggy')) {
+      _is(type, 'piggy') ||
+      _is(type, 'interest_payout') ||
+      _is(type, 'upfront_interest') ||
+      _is(type, 'interest_accrual')) {
     return _landing(AppRoutes.lockFunds);
   }
   if (_is(type, 'goal') || _is(type, 'financial_goal')) {
