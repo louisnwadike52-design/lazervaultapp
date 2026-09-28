@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/config/feature_flags.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -288,10 +289,28 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
   /// already holds keeps working and the countdown simply restarts from the
   /// new lifetime it returns. Refusals (cooldown, resend cap) arrive as
   /// AuthenticationError with a stable code and are handled there.
-  // "Skip for now" was removed entirely (product decision 2026-09-07): a
-  // step-up gate offers exactly two honest paths — verify the code, or leave
-  // via "Use a different account". A third soft-exit read as an invitation to
-  // dodge verification, even though the device stayed 'pending' server-side.
+  // "Skip for now" was removed entirely in 2026-09 on the reasoning that a
+  // step-up gate offers exactly two honest paths — verify, or leave via "Use a
+  // different account" — and a third soft-exit read as an invitation to dodge
+  // verification.
+  //
+  // It is back, but ONLY when an admin has explicitly turned email verification
+  // off, and it is hidden by default. Two things make that safe, and they are
+  // the same two that were true when it was removed:
+  //   * leaving is not a bypass. The backend keeps the device 'pending' until
+  //     an OTP is verified, so the very next login re-issues this challenge.
+  //   * the default is REQUIRED. A fresh install, a cleared cache or an
+  //     unreachable backend all render no skip, so being wrong fails towards
+  //     asking for the code.
+  // The operator who switches it off is making a deliberate, server-side,
+  // reversible choice — which is what "admin-tunable" has to mean to be worth
+  // anything.
+  void _onSkipDeviceVerification() {
+    _ticker?.cancel();
+    // Same exit as the labelled escape hatch: replace the stack, because the
+    // PopScope(canPop:false) on this gate vetoes pops.
+    Get.offAllNamed(AppRoutes.freshLoginEntry);
+  }
 
   Future<void> _requestNewCode() async {
     if (_resending) return;
@@ -480,6 +499,22 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
                       fontWeight: FontWeight.w600),
                 ),
               ),
+              // Shown only when an admin has turned email verification off.
+              // FeatureFlags defaults this to REQUIRED, so the control is
+              // absent unless the server has said otherwise.
+              if (!FeatureFlags.isEmailVerificationRequired)
+                TextButton(
+                  onPressed: (_submitting || _resending)
+                      ? null
+                      : _onSkipDeviceVerification,
+                  child: Text(
+                    'Skip for now',
+                    style: TextStyle(
+                        color: _textSecondary,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ),
             ],
           ),
         ),

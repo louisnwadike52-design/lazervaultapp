@@ -986,10 +986,19 @@ class FeatureFlags {
   }
 
   /// Whether onboarding email verification is required (admin toggle). When true
-  /// the verify-email step is not skippable and the backend gates login on it.
-  /// Defaults to false (skippable). Synchronous — call after [init].
+  /// the verify-email step is not skippable.
+  ///
+  /// Defaults to TRUE — required. This is the value used before the app has ever
+  /// reached the server, and on a fresh install that is exactly the moment a
+  /// skip button must not appear. Defaulting to false meant a first run, a
+  /// cleared cache or an unreachable backend all silently offered the escape
+  /// hatch on a security step.
+  ///
+  /// An admin turning verification off is an explicit, server-side decision; it
+  /// arrives with the auth config and overwrites this. Synchronous — call after
+  /// [init].
   static bool get isEmailVerificationRequired {
-    return _prefs?.getBool(emailVerificationRequired) ?? false;
+    return _prefs?.getBool(emailVerificationRequired) ?? true;
   }
 
   /// Whether onboarding phone verification is required (admin toggle).

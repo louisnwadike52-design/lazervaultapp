@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
-import 'package:lazervault/src/core/config/app_environment.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/phone_passcode_cubit.dart';
@@ -145,13 +144,20 @@ class _PhoneEmailVerificationScreenState
           primaryLabel: inCode ? 'Verify' : 'Continue',
           isLoading: isLoading,
           onPrimary: isLoading ? null : _onPrimary,
-          // Skip is only offered once the account exists (code phase) and only
-          // when the admin hasn't made email verification mandatory. Hidden on
-          // PROD builds: email verification is mandatory in production, so the
-          // "Skip for now" escape hatch is dev/staging only.
-          secondaryAction: (inCode &&
-                  !_required &&
-                  !currentAppEnvironment.isProduction)
+          // Skip is offered once the account exists (code phase) and ONLY when
+          // an admin has explicitly turned the requirement off.
+          //
+          // The build-flavour check that used to sit here is gone. It hard-wired
+          // "mandatory in production", which meant the admin toggle was inert
+          // exactly where it matters — an operator could switch verification off
+          // and nothing changed for a single real user. The toggle is now the
+          // single source of truth in every flavour.
+          //
+          // What replaces that safety is the DEFAULT: _required is true unless
+          // the server has said otherwise, so a fresh install, a cleared cache
+          // or an unreachable backend all show no skip. Being wrong now fails
+          // towards asking for verification rather than away from it.
+          secondaryAction: (inCode && !_required)
               ? Center(
                   child: TextButton(
                     onPressed: isLoading ? null : _onSkip,
