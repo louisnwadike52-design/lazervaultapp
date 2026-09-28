@@ -527,14 +527,71 @@ class _AIChatSheetState extends State<_AIChatSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    message.text,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      fontSize: 13.sp,
-                      height: 1.4,
+                  // Nova answers in markdown — she writes amounts as **NGN 100**
+                  // and uses lists and links — so a plain Text renders the
+                  // syntax literally ("**NGN 100**" with the asterisks showing).
+                  // The user's own messages are typed plain text and stay plain:
+                  // running them through a markdown parser would let stray
+                  // asterisks or underscores silently restyle what they wrote.
+                  //
+                  // Same renderer and styling as the per-service chatbot
+                  // (microservice_chat_content.dart), scaled to this sheet's
+                  // smaller type.
+                  if (message.isBot)
+                    MarkdownBody(
+                      data: message.text,
+                      selectable: true,
+                      styleSheet:
+                          MarkdownStyleSheet.fromTheme(Theme.of(context))
+                              .copyWith(
+                        p: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontSize: 13.sp,
+                          height: 1.4,
+                        ),
+                        strong: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13.sp,
+                          height: 1.4,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        em: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.85),
+                          fontSize: 13.sp,
+                          height: 1.4,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        listBullet: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.75),
+                          fontSize: 13.sp,
+                          height: 1.4,
+                        ),
+                        a: TextStyle(
+                          color: const Color(0xFF7C3AED),
+                          fontSize: 13.sp,
+                          height: 1.4,
+                          decoration: TextDecoration.underline,
+                        ),
+                        code: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12.sp,
+                          backgroundColor: const Color(0xFF2D2D2D),
+                        ),
+                        // The sheet is short; block spacing that suits a full
+                        // chat screen wastes most of it here.
+                        blockSpacing: 6.h,
+                        pPadding: EdgeInsets.zero,
+                      ),
+                    )
+                  else
+                    Text(
+                      message.text,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        fontSize: 13.sp,
+                        height: 1.4,
+                      ),
                     ),
-                  ),
                   // Say so when the answer came from the device rather than
                   // Nova, so the user can tell a live answer from a fallback.
                   if (message.isOffline) ...[

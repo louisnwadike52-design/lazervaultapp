@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'package:lazervault/src/features/sprayme/presentation/cubit/spray_room_cubit.dart';
@@ -1123,7 +1124,21 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                     // the column being clipped.
                     top: MediaQuery.of(context).padding.top + 76.h,
                     bottom: 160.h,
+                    // reverse: true anchors the rail to the BOTTOM.
+                    //
+                    // Making it scrollable stopped the overflow exception but did
+                    // not make the controls reachable: the column stayed
+                    // top-anchored, so on a full rail (host, with Go live / End)
+                    // Share, End and More sat below the fold with nothing on
+                    // screen suggesting the rail scrolls. They were reported
+                    // missing, which is exactly how it looks.
+                    //
+                    // Anchoring to the bottom puts the ACTIONS in thumb reach and
+                    // lets the host avatar — the one decorative item — be the
+                    // thing that scrolls out of view instead. Same convention as
+                    // every other live rail.
                     child: SingleChildScrollView(
+                      reverse: true,
                       physics: const BouncingScrollPhysics(),
                       child: _buildActionColumn(state),
                     ),
@@ -1561,21 +1576,32 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Host avatar
-        Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFFFFD700), width: 2),
-          ),
-          child: CircleAvatar(
-            radius: 22.r,
-            backgroundColor: const Color(0xFF2D2D2D),
-            backgroundImage: state.session?.hostAvatarUrl.isNotEmpty == true
-                ? NetworkImage(state.session!.hostAvatarUrl)
-                : null,
-            child: state.session?.hostAvatarUrl.isEmpty != false
-                ? Icon(Icons.person, size: 22.sp, color: Colors.white)
-                : null,
+        // Host avatar — tappable. It sits at the head of the action rail and
+        // reads as a control, so doing nothing on tap is its own bug: people
+        // press it expecting to see who is here. Opens the same viewers sheet as
+        // the header's viewer count.
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => _showViewersSheet(state),
+          child: Semantics(
+            button: true,
+            label: 'View participants',
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFFFD700), width: 2),
+              ),
+              child: CircleAvatar(
+                radius: 22.r,
+                backgroundColor: const Color(0xFF2D2D2D),
+                backgroundImage: state.session?.hostAvatarUrl.isNotEmpty == true
+                    ? NetworkImage(state.session!.hostAvatarUrl)
+                    : null,
+                child: state.session?.hostAvatarUrl.isEmpty != false
+                    ? Icon(Icons.person, size: 22.sp, color: Colors.white)
+                    : null,
+              ),
+            ),
           ),
         ),
         SizedBox(height: 20.h),
