@@ -146,6 +146,21 @@ const LockFund$json = {
       '10': 'destinationAccountId'
     },
     {'1': 'config_id', '3': 26, '4': 1, '5': 9, '10': 'configId'},
+    {
+      '1': 'interest_paid_out',
+      '3': 27,
+      '4': 1,
+      '5': 1,
+      '10': 'interestPaidOut'
+    },
+    {
+      '1': 'interest_paid_through',
+      '3': 28,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'interestPaidThrough'
+    },
   ],
 };
 
@@ -170,7 +185,9 @@ final $typed_data.Uint8List lockFundDescriptor = $convert.base64Decode(
     'FiABKAFSCnRvdGFsVmFsdWUSKAoQY2FuX3VubG9ja19lYXJseRgXIAEoCFIOY2FuVW5sb2NrRW'
     'FybHkSKgoRc291cmNlX2FjY291bnRfaWQYGCABKAlSD3NvdXJjZUFjY291bnRJZBI0ChZkZXN0'
     'aW5hdGlvbl9hY2NvdW50X2lkGBkgASgJUhRkZXN0aW5hdGlvbkFjY291bnRJZBIbCgljb25maW'
-    'dfaWQYGiABKAlSCGNvbmZpZ0lk');
+    'dfaWQYGiABKAlSCGNvbmZpZ0lkEioKEWludGVyZXN0X3BhaWRfb3V0GBsgASgBUg9pbnRlcmVz'
+    'dFBhaWRPdXQSTgoVaW50ZXJlc3RfcGFpZF90aHJvdWdoGBwgASgLMhouZ29vZ2xlLnByb3RvYn'
+    'VmLlRpbWVzdGFtcFITaW50ZXJlc3RQYWlkVGhyb3VnaA==');
 
 @$core.Deprecated('Use lockTransactionDescriptor instead')
 const LockTransaction$json = {

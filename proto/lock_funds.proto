@@ -60,6 +60,15 @@ message LockFund {
   // Stable plan identity (PiggyVaultConfig UUID). lock_type is a
   // legacy display enum. Empty for legacy rows.
   string config_id = 26;
+  // Lifetime ROI already PAID OUT on this lock (an ROI-only withdrawal
+  // moves interest to the wallet while the principal keeps running).
+  // `accrued_interest` above is the UNPAID remainder, so the two are
+  // disjoint and `total_value` = amount + accrued_interest stays equal to
+  // what an unlock would actually pay today.
+  double interest_paid_out = 27;
+  // Instant through which interest has already been paid. Accrual for the
+  // next payout restarts here, not at locked_at.
+  google.protobuf.Timestamp interest_paid_through = 28;
 }
 
 // Lock transaction message

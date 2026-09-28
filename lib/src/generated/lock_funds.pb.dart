@@ -51,6 +51,8 @@ class LockFund extends $pb.GeneratedMessage {
     $core.String? sourceAccountId,
     $core.String? destinationAccountId,
     $core.String? configId,
+    $core.double? interestPaidOut,
+    $1.Timestamp? interestPaidThrough,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -81,6 +83,9 @@ class LockFund extends $pb.GeneratedMessage {
     if (destinationAccountId != null)
       result.destinationAccountId = destinationAccountId;
     if (configId != null) result.configId = configId;
+    if (interestPaidOut != null) result.interestPaidOut = interestPaidOut;
+    if (interestPaidThrough != null)
+      result.interestPaidThrough = interestPaidThrough;
     return result;
   }
 
@@ -141,6 +146,10 @@ class LockFund extends $pb.GeneratedMessage {
     ..aOS(24, _omitFieldNames ? '' : 'sourceAccountId')
     ..aOS(25, _omitFieldNames ? '' : 'destinationAccountId')
     ..aOS(26, _omitFieldNames ? '' : 'configId')
+    ..a<$core.double>(
+        27, _omitFieldNames ? '' : 'interestPaidOut', $pb.PbFieldType.OD)
+    ..aOM<$1.Timestamp>(28, _omitFieldNames ? '' : 'interestPaidThrough',
+        subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -407,6 +416,33 @@ class LockFund extends $pb.GeneratedMessage {
   $core.bool hasConfigId() => $_has(25);
   @$pb.TagNumber(26)
   void clearConfigId() => $_clearField(26);
+
+  /// Lifetime ROI already PAID OUT on this lock (an ROI-only withdrawal
+  /// moves interest to the wallet while the principal keeps running).
+  /// `accrued_interest` above is the UNPAID remainder, so the two are
+  /// disjoint and `total_value` = amount + accrued_interest stays equal to
+  /// what an unlock would actually pay today.
+  @$pb.TagNumber(27)
+  $core.double get interestPaidOut => $_getN(26);
+  @$pb.TagNumber(27)
+  set interestPaidOut($core.double value) => $_setDouble(26, value);
+  @$pb.TagNumber(27)
+  $core.bool hasInterestPaidOut() => $_has(26);
+  @$pb.TagNumber(27)
+  void clearInterestPaidOut() => $_clearField(27);
+
+  /// Instant through which interest has already been paid. Accrual for the
+  /// next payout restarts here, not at locked_at.
+  @$pb.TagNumber(28)
+  $1.Timestamp get interestPaidThrough => $_getN(27);
+  @$pb.TagNumber(28)
+  set interestPaidThrough($1.Timestamp value) => $_setField(28, value);
+  @$pb.TagNumber(28)
+  $core.bool hasInterestPaidThrough() => $_has(27);
+  @$pb.TagNumber(28)
+  void clearInterestPaidThrough() => $_clearField(28);
+  @$pb.TagNumber(28)
+  $1.Timestamp ensureInterestPaidThrough() => $_ensure(27);
 }
 
 /// Lock transaction message

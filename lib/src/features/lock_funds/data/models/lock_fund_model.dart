@@ -28,6 +28,12 @@ class LockFundModel {
       daysRemaining: proto.daysRemaining,
       progressPercent: proto.progressPercent,
       totalValue: proto.totalValue,
+      interestPaidOut: proto.interestPaidOut,
+      // hasInterestPaidThrough distinguishes "never paid" from the epoch
+      // default a bare toDateTime() would hand back.
+      interestPaidThrough: proto.hasInterestPaidThrough()
+          ? proto.interestPaidThrough.toDateTime()
+          : null,
       canUnlockEarly: proto.canUnlockEarly,
       sourceAccountId:
           proto.sourceAccountId.isEmpty ? null : proto.sourceAccountId,

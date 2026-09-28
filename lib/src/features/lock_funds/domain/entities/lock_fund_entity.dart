@@ -41,6 +41,18 @@ class LockFund {
   final int daysRemaining;
   final double progressPercent;
   final double totalValue;
+
+  /// Lifetime ROI already PAID OUT of this plan into the wallet.
+  ///
+  /// Disjoint from [accruedInterest], which is the UNPAID remainder still
+  /// riding on the plan. Keeping them apart is what stops the screen from
+  /// showing interest the user has already banked as if it were still theirs
+  /// to collect — [totalValue] counts only the unpaid half, because that is
+  /// all an unlock would actually pay today.
+  final double interestPaidOut;
+
+  /// Instant through which interest has been paid out; null when none has.
+  final DateTime? interestPaidThrough;
   final bool canUnlockEarly;
 
   // Account tracking
@@ -77,6 +89,8 @@ class LockFund {
     this.daysRemaining = 0,
     this.progressPercent = 0,
     this.totalValue = 0,
+    this.interestPaidOut = 0,
+    this.interestPaidThrough,
     this.canUnlockEarly = false,
     this.sourceAccountId,
     this.destinationAccountId,
@@ -106,6 +120,8 @@ class LockFund {
     int? daysRemaining,
     double? progressPercent,
     double? totalValue,
+    double? interestPaidOut,
+    DateTime? interestPaidThrough,
     bool? canUnlockEarly,
     String? sourceAccountId,
     String? destinationAccountId,
@@ -135,6 +151,8 @@ class LockFund {
       daysRemaining: daysRemaining ?? this.daysRemaining,
       progressPercent: progressPercent ?? this.progressPercent,
       totalValue: totalValue ?? this.totalValue,
+      interestPaidOut: interestPaidOut ?? this.interestPaidOut,
+      interestPaidThrough: interestPaidThrough ?? this.interestPaidThrough,
       canUnlockEarly: canUnlockEarly ?? this.canUnlockEarly,
       sourceAccountId: sourceAccountId ?? this.sourceAccountId,
       destinationAccountId: destinationAccountId ?? this.destinationAccountId,
@@ -162,6 +180,29 @@ class LockFund {
   /// Formatted interest earned with currency symbol
   String get formattedInterest =>
       '+${currency_formatter.CurrencySymbols.formatAmountWithCurrency(accruedInterest, currency)}';
+
+  /// Formatted lifetime ROI already paid out of the plan.
+  String get formattedInterestPaidOut =>
+      currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+          interestPaidOut, currency);
+
+  /// True when any ROI has been withdrawn from this plan. Drives the
+  /// "already paid out" line — without it a plan whose ROI was just banked
+  /// reads as having earned nothing at all.
+  bool get hasPaidOutInterest => interestPaidOut > 0;
+
+  /// Lifetime ROI: what is still riding on the plan plus what has already
+  /// been banked. This is the honest answer to "what has this plan earned
+  /// me?", which neither half answers alone.
+  double get lifetimeInterest => accruedInterest + interestPaidOut;
+
+  String get formattedLifetimeInterest =>
+      '+${currency_formatter.CurrencySymbols.formatAmountWithCurrency(lifetimeInterest, currency)}';
+
+  /// True for a plan with no maturity date — a flex plan runs until the user
+  /// ends it, so a term progress bar has nothing to measure and would sit
+  /// empty forever.
+  bool get isFlexibleTerm => lockDurationDays <= 0;
 
   /// Formatted interest rate
   String get formattedInterestRate =>

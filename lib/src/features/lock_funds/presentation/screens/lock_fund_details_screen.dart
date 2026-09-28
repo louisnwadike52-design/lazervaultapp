@@ -32,9 +32,26 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
+  /// The lock this screen renders.
+  ///
+  /// Seeded from the navigation argument so the first frame has real content,
+  /// then REPLACED by whatever loadLockFundDetails returns. It used to read
+  /// `_lock` everywhere, which is an immutable snapshot taken when
+  /// the list was last built — so the detail screen refetched the lock on
+  /// entry and then ignored the answer. After an ROI withdrawal that showed
+  /// the pre-withdrawal figures indefinitely: the money had moved, the
+  /// backend knew, and the screen was rendering a stale copy.
+  late LockFund _lock;
+
+  /// True while a refetch is in flight over content we are already showing —
+  /// drives a thin bar rather than blanking the screen, since provisioning
+  /// and payout figures update in the background.
+  bool _refreshing = false;
+
   @override
   void initState() {
     super.initState();
+    _lock = widget.lockFund;
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
@@ -43,7 +60,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
     _animationController.forward();
-    context.read<LockFundsCubit>().loadLockFundDetails(widget.lockFund.id);
+    context.read<LockFundsCubit>().loadLockFundDetails(_lock.id);
   }
 
   @override
@@ -56,16 +73,36 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
   Widget build(BuildContext context) {
     return BlocListener<LockFundsCubit, LockFundsState>(
       listener: (context, state) {
-        if (state is LockFundUnlocked) {
+        if (state is LockFundDetailsLoaded &&
+            state.lockFund.id == _lock.id) {
+          // Adopt the server's copy — the whole point of the refetch.
+          setState(() {
+            _lock = state.lockFund;
+            _refreshing = false;
+          });
+        } else if (state is LockFundsLoading) {
+          if (!_refreshing) setState(() => _refreshing = true);
+        } else if (state is LockFundUnlocked) {
           Get.back();
           Get.snackbar(
-            'Withdrawal Successful',
-            'Your funds have been withdrawn to your account',
+            // An ROI-only payout leaves the principal running. Saying
+            // "your funds have been withdrawn" about a plan the user still
+            // has money in is wrong, and it is the message they see right
+            // after choosing "ROI only — keep saving".
+            state.interestOnly ? 'ROI Paid Out' : 'Withdrawal Successful',
+            state.interestOnly
+                ? 'Your interest is in your wallet. The plan keeps running.'
+                : 'Your funds have been withdrawn to your account',
             backgroundColor: const Color(0xFF10B981),
             colorText: Colors.white,
             snackPosition: SnackPosition.TOP,
           );
+          // Pull the post-payout figures. Without this the screen keeps the
+          // pre-withdrawal total and the payout looks like it did nothing.
+          setState(() => _refreshing = true);
+          context.read<LockFundsCubit>().loadLockFundDetails(_lock.id);
         } else if (state is LockFundsError) {
+          if (_refreshing) setState(() => _refreshing = false);
           Get.snackbar(
             'Error',
             state.message,
@@ -95,6 +132,21 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
               child: Column(
                 children: [
                   _buildHeader(),
+                  // Background refresh over content already on screen —
+                  // after an ROI payout the figures below are a moment
+                  // stale, and a 2px bar says "updating" without blanking
+                  // the plan the user is looking at.
+                  SizedBox(
+                    height: 2.h,
+                    child: _refreshing
+                        ? const LinearProgressIndicator(
+                            minHeight: 2,
+                            backgroundColor: Colors.transparent,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Color(0xFF8B5CF6)),
+                          )
+                        : null,
+                  ),
                   Expanded(
                     child: SingleChildScrollView(
                       padding: EdgeInsets.all(20.w),
@@ -152,7 +204,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.lockFund.displayName,
+                  _lock.displayName,
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 20.sp,
@@ -163,12 +215,12 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                 Row(
                   children: [
                     Text(
-                      widget.lockFund.lockType.icon,
+                      _lock.lockType.icon,
                       style: TextStyle(fontSize: 14.sp),
                     ),
                     SizedBox(width: 6.w),
                     Text(
-                      widget.lockFund.lockType.displayName,
+                      _lock.lockType.displayName,
                       style: GoogleFonts.inter(
                         color: const Color(0xFFB7ABDA),
                         fontSize: 14.sp,
@@ -179,7 +231,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
               ],
             ),
           ),
-          _buildStatusBadge(widget.lockFund.status),
+          _buildStatusBadge(_lock.status),
         ],
       ),
     );
@@ -196,7 +248,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
   /// with a maturity hint until then. Terminal locks (already unlocked/
   /// cancelled) show only the receipt.
   Widget _buildFooterActions() {
-    final lock = widget.lockFund;
+    final lock = _lock;
     // Flex / no-term: no unlock date (epoch sentinel) or zero term. Use BOTH
     // signals so a stale lock_duration_days can't misclassify a dated lock.
     final isFlex = lock.unlockAt.year <= 1971 || lock.lockDurationDays <= 0;
@@ -348,7 +400,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
   /// is identical — no second receipt implementation.
   void _openReceipt() {
     Get.toNamed(AppRoutes.lockFundReceipt, arguments: {
-      'lockFund': widget.lockFund,
+      'lockFund': _lock,
       // The post-create wizard's interestCalculation isn't
       // available from this surface (it lives on CreateLockCubit
       // for one wizard run only). The receipt screen tolerates a
@@ -425,7 +477,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
           ),
           SizedBox(height: 8.h),
           Text(
-            widget.lockFund.formattedTotalValue,
+            _lock.formattedTotalValue,
             style: GoogleFonts.inter(
               fontSize: 36.sp,
               fontWeight: FontWeight.w700,
@@ -449,7 +501,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                 ),
                 SizedBox(width: 6.w),
                 Text(
-                  widget.lockFund.formattedInterest,
+                  _lock.formattedInterest,
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
                     color: Colors.white,
@@ -458,7 +510,13 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                 ),
                 SizedBox(width: 8.w),
                 Text(
-                  'interest earned',
+                  // Once ROI has been withdrawn, this chip is only the part
+                  // still riding on the plan — say so, or a user who just
+                  // banked their interest reads a smaller number as the plan
+                  // having lost it.
+                  _lock.hasPaidOutInterest
+                      ? 'still accruing'
+                      : 'interest earned',
                   style: GoogleFonts.inter(
                     fontSize: 12.sp,
                     color: Colors.white.withValues(alpha: 0.8),
@@ -467,6 +525,35 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
               ],
             ),
           ),
+          // The other half of the ROI story. "Total Value" is principal plus
+          // UNPAID interest, because that is what an unlock pays today — so
+          // interest already withdrawn correctly drops out of it. Without this
+          // line the money looks like it evaporated: the user withdrew ROI,
+          // the wallet went up, and the plan simply showed a smaller number
+          // with no explanation.
+          if (_lock.hasPaidOutInterest) ...[
+            SizedBox(height: 10.h),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.check_circle_outline_rounded,
+                    size: 13.sp, color: Colors.white.withValues(alpha: 0.85)),
+                SizedBox(width: 6.w),
+                Flexible(
+                  child: Text(
+                    '${_lock.formattedInterestPaidOut} ROI already paid to your wallet',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 11.5.sp,
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -482,8 +569,43 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
     return DateFormat('MMM dd, yyyy').format(lock.unlockAt);
   }
 
+  /// One stat tile for the flex-plan progress card.
+  Widget _flexStat({
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(10.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: GoogleFonts.inter(
+                  fontSize: 11.sp, color: const Color(0xFFB7ABDA))),
+          SizedBox(height: 4.h),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(value,
+                style: GoogleFonts.inter(
+                    fontSize: 15.sp,
+                    color: color,
+                    fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildProgressSection() {
-    final lock = widget.lockFund;
+    final lock = _lock;
+    final isFlexible = lock.isFlexibleTerm;
+    final daysRunning = DateTime.now().difference(lock.lockedAt).inDays + 1;
     final progressColor = lock.status == LockStatus.active
         ? const Color(0xFF6366F1)
         : lock.status == LockStatus.matured
@@ -503,7 +625,10 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Lock Progress',
+                // A flex plan has no term, so there is no "lock progress" to
+                // report — calling it that and then printing 0% forever reads
+                // as a broken screen rather than as the product working.
+                isFlexible ? 'Savings Progress' : 'Lock Progress',
                 style: GoogleFonts.inter(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
@@ -511,7 +636,9 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                 ),
               ),
               Text(
-                '${lock.progressPercent.toStringAsFixed(0)}%',
+                isFlexible
+                    ? (daysRunning == 1 ? 'Day 1' : 'Day $daysRunning')
+                    : '${lock.progressPercent.toStringAsFixed(0)}%',
                 style: GoogleFonts.inter(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w700,
@@ -521,32 +648,57 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
             ],
           ),
           SizedBox(height: 16.h),
-          Stack(
-            children: [
-              Container(
-                height: 8.h,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(4.r),
+          if (isFlexible) ...[
+            // No maturity, so nothing can fill a term bar. What DOES move on
+            // a flex plan is the money: show principal and ROI-to-date side
+            // by side instead of a rail that is empty by construction.
+            Row(
+              children: [
+                Expanded(
+                  child: _flexStat(
+                    label: 'Saved',
+                    value: lock.formattedAmount,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              FractionallySizedBox(
-                widthFactor: lock.progressPercent / 100,
-                child: Container(
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: _flexStat(
+                    label: 'ROI to date',
+                    value: lock.formattedLifetimeInterest,
+                    color: const Color(0xFF10B981),
+                  ),
+                ),
+              ],
+            ),
+          ] else ...[
+            Stack(
+              children: [
+                Container(
                   height: 8.h,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        progressColor,
-                        progressColor.withValues(alpha: 0.7)
-                      ],
-                    ),
+                    color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4.r),
                   ),
                 ),
-              ),
-            ],
-          ),
+                FractionallySizedBox(
+                  widthFactor: (lock.progressPercent / 100).clamp(0.0, 1.0),
+                  child: Container(
+                    height: 8.h,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          progressColor,
+                          progressColor.withValues(alpha: 0.7)
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
           SizedBox(height: 16.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -631,7 +783,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
   }
 
   Widget _buildDetailsCard() {
-    final lock = widget.lockFund;
+    final lock = _lock;
 
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -695,7 +847,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
   }
 
   Widget _buildInterestCard() {
-    final lock = widget.lockFund;
+    final lock = _lock;
 
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -896,7 +1048,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                   compact: true,
                   title: 'No activity yet',
                   subtitle:
-                      'Top-ups, interest accruals and unlocks will show up here.',
+                      'Top-ups, auto-saves, ROI payouts and unlocks will show up here.',
                 ),
               ] else ...[
                 for (final tx in txs) _buildActivityRow(tx),
@@ -908,10 +1060,42 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
     );
   }
 
+  /// Does this row put money back INTO the wallet?
+  ///
+  /// The old test was a substring sweep for credit/interest/payout, which got
+  /// `unlock_funds` — the single largest credit a plan ever makes — wrong, and
+  /// rendered the user's own principal coming home as an orange debit.
+  bool _isCreditActivity(String slug) {
+    switch (slug.toLowerCase()) {
+      case 'unlock':
+      case 'unlocked':
+      case 'unlock_funds':
+      case 'interest':
+      case 'interest_payout':
+      case 'interest_only_withdrawal':
+      case 'roi paid out':
+      case 'upfront_interest':
+      case 'upfront interest':
+      case 'maturity payout':
+      case 'maturity_payout':
+        return true;
+      case 'lock_funds':
+      case 'lock':
+      case 'lock_funds_topup':
+      case 'lock_funds_autosave':
+      case 'topup':
+      case 'top_up':
+      case 'penalty':
+      case 'lockfund_penalty':
+        return false;
+      default:
+        final s = slug.toLowerCase();
+        return s.contains('credit') || s.contains('payout');
+    }
+  }
+
   Widget _buildActivityRow(LockTransaction tx) {
-    final isCredit = tx.transactionType.toLowerCase().contains('credit') ||
-        tx.transactionType.toLowerCase().contains('interest') ||
-        tx.transactionType.toLowerCase().contains('payout');
+    final isCredit = _isCreditActivity(tx.transactionType);
     final amountColor =
         isCredit ? const Color(0xFF10B981) : const Color(0xFFFB923C);
     final sign = isCredit ? '+' : '-';
@@ -959,7 +1143,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
             ),
           ),
           Text(
-            '$sign${CurrencySymbols.getSymbol(widget.lockFund.currency)}${tx.amount.toStringAsFixed(2)}',
+            '$sign${CurrencySymbols.getSymbol(_lock.currency)}${tx.amount.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
                 color: amountColor,
                 fontSize: 13.sp,
@@ -979,23 +1163,46 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
       case 'lock':
         return 'Funds locked';
       case 'upfront_interest':
+      case 'upfront interest':
         return 'Upfront interest';
       case 'interest':
       case 'interest_payout':
-        return 'Interest payout';
+      case 'interest_only_withdrawal':
+      case 'roi paid out':
+        return 'ROI paid out';
+      case 'interest_accrual':
+        return 'Interest accrued';
+      // The wallet categories accounts-service actually writes. Only
+      // `lock_funds` was mapped, so every other row on this list rendered as
+      // a shouty slug ("LOCK FUNDS TOPUP") from the default branch.
       case 'topup':
       case 'top_up':
+      case 'lock_funds_topup':
         return 'Top-up';
+      case 'lock_funds_autosave':
+        return 'Auto-save';
       case 'unlock':
       case 'unlocked':
+      case 'unlock_funds':
         return 'Unlocked';
+      case 'maturity payout':
+      case 'maturity_payout':
+        return 'Maturity payout';
+      case 'plan renewed':
+      case 'renewal':
+        return 'Plan renewed';
       case 'cancelled':
       case 'cancel':
         return 'Cancelled';
       case 'penalty':
+      case 'lockfund_penalty':
         return 'Early-withdrawal penalty';
       default:
-        return slug.replaceAll('_', ' ').toUpperCase();
+        // Sentence case, not SHOUTING — an unmapped slug should read as a
+        // label we haven't styled yet, not as an error.
+        final words = slug.replaceAll('_', ' ').trim();
+        if (words.isEmpty) return 'Activity';
+        return words[0].toUpperCase() + words.substring(1).toLowerCase();
     }
   }
 
@@ -1011,7 +1218,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
           // lock, so this is an explicit hint (breakable term, pre-maturity),
           // not the sole source of truth.
           child: LockWithdrawalScreen(
-              lockFund: widget.lockFund, isEarlyWithdrawal: early),
+              lockFund: _lock, isEarlyWithdrawal: early),
         ),
       ),
     );

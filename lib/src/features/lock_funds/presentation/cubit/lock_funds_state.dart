@@ -64,14 +64,20 @@ class LockFundUnlocked extends LockFundsState {
   final double penaltyAmount;
   final double interestEarned;
 
+  /// True when only ROI was paid out and the principal is still locked.
+  /// Listeners must not tell the user their plan closed when it did not.
+  final bool interestOnly;
+
   const LockFundUnlocked({
     required this.amountReturned,
     required this.penaltyAmount,
     required this.interestEarned,
+    this.interestOnly = false,
   });
 
   @override
-  List<Object?> get props => [amountReturned, penaltyAmount, interestEarned];
+  List<Object?> get props =>
+      [amountReturned, penaltyAmount, interestEarned, interestOnly];
 }
 
 class InterestCalculated extends LockFundsState {

@@ -168,17 +168,73 @@ class BusinessDashboardScreen extends StatelessWidget {
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w600)),
               const Spacer(),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-                decoration: BoxDecoration(
-                    color: Colors.white24,
-                    borderRadius: BorderRadius.circular(20.r)),
-                child: Text('PRO',
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.w700)),
-              ),
+              // The badge slot is the CTA. "PRO" was a decoration that told the
+              // owner nothing they did not know; this is the one thing they
+              // come to this card to get — the number to be paid into.
+              // Top-right of the hero is where the eye already goes, so the
+              // details are one tap from the landing screen rather than buried.
+              if (account?.accountNumber != null &&
+                  account!.accountNumber!.isNotEmpty)
+                Builder(
+                  builder: (badgeContext) => GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => AccountDetailsShareSheet.show(
+                      badgeContext,
+                      title: 'Business account details',
+                      subtitle:
+                          'Share these to receive money into this business',
+                      accountName:
+                          (account.virtualAccountHolderName?.trim().isNotEmpty ??
+                                  false)
+                              ? account.virtualAccountHolderName!.trim()
+                              : (account.accountName?.trim().isNotEmpty ?? false)
+                                  ? account.accountName!.trim()
+                                  : account.displayName,
+                      accountNameLabel: 'Business name',
+                      bankName: account.bankName ?? '',
+                      accountNumber: account.accountNumber ?? '',
+                    ),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 10.w, vertical: 5.h),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20.r),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.35)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.account_balance_wallet_outlined,
+                              size: 12.sp, color: Colors.white),
+                          SizedBox(width: 5.w),
+                          Text('Account details',
+                              style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 10.5.sp,
+                                  fontWeight: FontWeight.w700)),
+                          SizedBox(width: 2.w),
+                          Icon(Icons.chevron_right_rounded,
+                              size: 13.sp, color: Colors.white),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+              else
+                Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                  decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(20.r)),
+                  child: Text('PRO',
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.w700)),
+                ),
             ],
           ),
           SizedBox(height: 10.h),
@@ -213,8 +269,23 @@ class BusinessDashboardScreen extends StatelessWidget {
                   accountNumber: account.accountNumber ?? '',
                 ),
                 borderRadius: BorderRadius.circular(8.r),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 2.h),
+                child: Container(
+                  // A PILL, not a caption with an icon beside it.
+                  //
+                  // The first attempt made the existing line tappable and put a
+                  // small copy glyph next to it. That was still reported as
+                  // "I can't see where to click": on a dark gradient a 13sp
+                  // icon beside grey text reads as decoration, and nothing about
+                  // the row says it does anything. A bordered pill with a label
+                  // and a chevron is unambiguous at a glance, which is the whole
+                  // job of an affordance.
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(20.r),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.28)),
+                  ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -222,15 +293,25 @@ class BusinessDashboardScreen extends StatelessWidget {
                         child: Text(
                           '${account.bankName ?? ''} · ${account.accountNumber}'
                               .trim(),
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.inter(
-                              color: Colors.white70, fontSize: 12.sp),
+                              color: Colors.white,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w600),
                         ),
                       ),
-                      SizedBox(width: 6.w),
-                      // A visible affordance: without it the row reads as a
-                      // caption and nobody discovers it is tappable.
-                      Icon(Icons.copy_rounded,
-                          size: 13.sp, color: Colors.white70),
+                      SizedBox(width: 8.w),
+                      Container(width: 1, height: 12.h,
+                          color: Colors.white.withValues(alpha: 0.3)),
+                      SizedBox(width: 8.w),
+                      Text('View',
+                          style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 11.5.sp,
+                              fontWeight: FontWeight.w700)),
+                      SizedBox(width: 2.w),
+                      Icon(Icons.chevron_right_rounded,
+                          size: 15.sp, color: Colors.white),
                     ],
                   ),
                 ),
