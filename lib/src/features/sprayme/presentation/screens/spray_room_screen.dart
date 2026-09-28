@@ -41,6 +41,7 @@ import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_layout_mode.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/sprayme/presentation/widgets/nova_typing_indicator.dart';
+import 'package:lazervault/src/features/sprayme/presentation/widgets/spray_hearts_layer.dart';
 import 'package:lazervault/src/features/sprayme/presentation/widgets/tag_people_action.dart';
 
 part 'spray_room_screen_part1.dart';
@@ -132,6 +133,13 @@ class _SprayRoomViewState extends State<_SprayRoomView>
       _layoutOverride ??
       sprayLayoutModeFromSetting(FeatureFlags.spraymeLayoutMode);
 
+  /// Drives the floating hearts, which are rendered OUTSIDE the action rail
+  /// (see SprayHeartsLayer). The rail lives in a clipping SingleChildScrollView,
+  /// so hearts inside it had to be paid for in reserved layout height — 300pt
+  /// of it, for a 40pt button, in a column that also has to fit the avatar and
+  /// seven controls. That is what pushed the host's "End" off the bottom.
+  final SprayHeartsController _heartsController = SprayHeartsController();
+
   @override
   void initState() {
     super.initState();
@@ -221,6 +229,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     // player, which is lazily recreated on the next play.
     _soundService.stopAll();
     _soundService.dispose();
+    _heartsController.dispose();
     super.dispose();
   }
 
@@ -1144,6 +1153,21 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                     ),
                   ),
 
+                // Floating hearts, over the rail rather than inside it.
+                //
+                // Same column, taller box, and crucially OUTSIDE the rail's
+                // scroll view so the rise is not clipped and costs the
+                // controls no layout height. Bottom-aligned with the like
+                // button so hearts appear to leave it. IgnorePointer inside,
+                // so the buttons underneath stay tappable.
+                Positioned(
+                  right: 0,
+                  width: 80.w,
+                  bottom: 160.h,
+                  top: MediaQuery.of(context).padding.top + 76.h,
+                  child: SprayHeartsLayer(controller: _heartsController),
+                ),
+
                 // Spray mode tap area — covers screen EXCEPT the right action column
                 if (_isSprayMode)
                   Positioned(
@@ -1592,29 +1616,37 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                 border: Border.all(color: const Color(0xFFFFD700), width: 2),
               ),
               child: CircleAvatar(
-                radius: 22.r,
+                radius: 18.r,
                 backgroundColor: const Color(0xFF2D2D2D),
                 backgroundImage: state.session?.hostAvatarUrl.isNotEmpty == true
                     ? NetworkImage(state.session!.hostAvatarUrl)
                     : null,
                 child: state.session?.hostAvatarUrl.isEmpty != false
-                    ? Icon(Icons.person, size: 22.sp, color: Colors.white)
+                    ? Icon(Icons.person, size: 18.sp, color: Colors.white)
                     : null,
               ),
             ),
           ),
         ),
-        SizedBox(height: 20.h),
+        // 20 put a visible hole between the host avatar and the controls
+        // while every other gap was 16 — the avatar read as detached from
+        // the rail rather than as the top of it. Matches the rest now.
+        SizedBox(height: 10.h),
 
         // Like button with counter
         LikeCounterOverlay(
+          // Detached: the button alone lives in the rail and costs it only
+          // its own height; the hearts are drawn by the SprayHeartsLayer in
+          // the room's Stack, which is not clipped by the rail's scroll view.
+          heartsController: _heartsController,
+          buttonSize: 40,
           totalLikes: state.totalLikeTaps,
           onLikeTap: () {
             if (FeatureFlags.spraymeLikeSoundEnabled) _soundService.playLikeSound();
             context.read<SprayRoomCubit>().sendLike();
           },
         ),
-        SizedBox(height: 16.h),
+        SizedBox(height: 10.h),
 
         // Nova — the assistant is a PRIMARY control, not buried in More.
         // Comments moved the other way, into the More sheet: asking Nova about
@@ -1633,7 +1665,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
             onTap: () => _showAIChatSheet(state),
           ),
         ),
-        SizedBox(height: 16.h),
+        SizedBox(height: 10.h),
 
         // Gift button
         _buildActionButton(
@@ -1643,7 +1675,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
           onTap: () => _showGiftShop(state),
           disabled: state.sessionEnded || !state.isConnected,
         ),
-        SizedBox(height: 16.h),
+        SizedBox(height: 10.h),
 
         // Spray money button
         _buildActionButton(
@@ -1653,7 +1685,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
           onTap: () => _showMoneySpraySheet(state),
           disabled: state.sessionEnded || !state.isConnected,
         ),
-        SizedBox(height: 16.h),
+        SizedBox(height: 10.h),
 
         // Share the live (deep link)
         _buildActionButton(
@@ -1662,7 +1694,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
           color: Colors.white,
           onTap: () => _shareLive(state),
         ),
-        SizedBox(height: 16.h),
+        SizedBox(height: 10.h),
 
         // Host: Go live / End live — a primary control, NOT hidden in More.
         if (_isHost(state)) ...[
@@ -1680,7 +1712,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
               );
             },
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 10.h),
 
           // Host: End the whole session — also a primary control.
           _buildActionButton(
@@ -1689,7 +1721,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
             color: const Color(0xFFEF4444),
             onTap: () => _showEndSessionConfirmation(),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 10.h),
         ],
 
         // More (3-dots) — secondary items open in an UPWARD sheet (Stats, AI,
@@ -1923,7 +1955,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                   ),
                 ),
               ),
-              SizedBox(height: 16.h),
+              SizedBox(height: 10.h),
               Text('More',
                   style: TextStyle(
                       color: Colors.white,
@@ -2032,7 +2064,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(height: 16.h),
+                          SizedBox(height: 10.h),
                           const Divider(color: Color(0xFF2D2D2D)),
                           SizedBox(height: 8.h),
                           Text('Broadcast controls',
@@ -2688,7 +2720,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                       style: TextStyle(
                           color: const Color(0xFF9CA3AF), fontSize: 12.sp),
                     ),
-                    SizedBox(height: 16.h),
+                    SizedBox(height: 10.h),
                     SizedBox(
                       width: double.infinity,
                       height: 46.h,
@@ -2825,8 +2857,12 @@ class _SprayRoomViewState extends State<_SprayRoomView>
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 48.w,
-              height: 48.w,
+              // 40, not 48. The host rail carries eight controls plus the
+              // avatar; at 48 with 16pt gaps the column ran past the bottom
+              // of the screen, which is why "End" was not visible without
+              // scrolling a rail nobody thinks to scroll.
+              width: 40.w,
+              height: 40.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 // Active fills the disc in the control's own colour and adds a
@@ -2849,14 +2885,16 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                       ]
                     : null,
               ),
-              child: Icon(icon, color: effectiveColor, size: 24.sp),
+              child: Icon(icon, color: effectiveColor, size: 20.sp),
             ),
-            SizedBox(height: 4.h),
+            SizedBox(height: 3.h),
             Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: disabled ? Colors.white38 : Colors.white,
-                fontSize: 10.sp,
+                fontSize: 9.sp,
                 fontWeight: FontWeight.w600,
                 shadows: const [Shadow(color: Colors.black54, blurRadius: 4)],
               ),
