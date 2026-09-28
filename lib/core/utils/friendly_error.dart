@@ -28,6 +28,23 @@ const String unreachableErrorMessage =
     'We could not reach LazerVault. Check your connection, or try again in a '
     'moment.';
 
+/// Shown when a PAYMENT PROVIDER refuses us — an IP allowlist, a revoked
+/// resource entitlement, expired credentials, a merchant-account block.
+///
+/// These are failures of OUR arrangement with a partner. The user cannot act
+/// on them and must never be shown the provider's own words: "You are not
+/// whitelisted to access this resource" and "Your Request Seems to be coming
+/// from an unknown source" are meaningless to the person sending money, and
+/// they describe our infrastructure to someone who should never see it.
+///
+/// Deliberately does not blame the user's connection — the same reasoning as
+/// [serverErrorMessage]. Telling someone to check their wifi when our IP fell
+/// off a provider's allowlist sends them to restart a router that was never
+/// the problem.
+const String providerUnavailableMessage =
+    'We couldn’t reach our payment partner right now. This is not your '
+    'connection — please try again shortly.';
+
 /// The single, canonical message shown when a money-moving flow is refused
 /// because the source account is frozen/suspended. accounts-service is the
 /// single source of truth for balances and blocks EVERY debit/hold/transfer on
@@ -63,6 +80,19 @@ bool isFraudBlockError(Object? error) {
           ? error
           : error.toString();
   return raw.toLowerCase().contains('blocked for your security');
+}
+
+/// True when [error] carries a provider's refusal of our integration (an IP
+/// allowlist, a revoked resource, bad merchant credentials) rather than
+/// anything the user did.
+bool isProviderRefusalError(Object? error) {
+  if (error == null) return false;
+  final raw = error is GrpcError
+      ? (error.message ?? '')
+      : error is String
+          ? error
+          : error.toString();
+  return messageLooksLikeProviderRefusal(raw);
 }
 
 /// Shared substring detector for the frozen/suspended-account server error.
@@ -222,6 +252,54 @@ bool looksTechnical(String? msg) {
   return _messageLooksLikeNetwork(m);
 }
 
+/// True when the text is a PROVIDER refusing our integration rather than
+/// anything about this user's request.
+///
+/// Motivating case: Nomba's IP allowlist stopped matching this host, so every
+/// authenticated call returned
+/// `403 "Your Request Seems to be coming from an unknown source"`. Our own Go
+/// clients format failures as
+/// `nomba transfer failed: http 403 code=403 desc=<provider text>`, and that
+/// string clears every other filter here — it has no "exception", no JSON, and
+/// the 5xx pattern does not match a 403. It would have been shown verbatim.
+///
+/// Matches the refusal VOCABULARY rather than provider names: a message that
+/// legitimately names a provider ("payouts are paused") is fine to show, while
+/// "not whitelisted" is not, whoever said it.
+bool messageLooksLikeProviderRefusal(String? raw) {
+  if (raw == null || raw.isEmpty) return false;
+  final m = raw.toLowerCase();
+
+  const refusalPhrases = <String>[
+    'not whitelisted',
+    'whitelist',
+    'allowlist',
+    'allow list',
+    'unknown source',
+    'access denied',
+    'not authorized to access',
+    'not authorised to access',
+    'forbidden error',
+    'request forbidden',
+    'ip address is not',
+    'invalid api key',
+    'invalid credentials for',
+    'merchant not',
+    'service not authorized',
+  ];
+  for (final phrase in refusalPhrases) {
+    if (m.contains(phrase)) return true;
+  }
+
+  // Our own client formatting: "... http 403 code=403 desc=...". A 401/403
+  // surfaced from a PROVIDER call is never something the user can fix; the
+  // app's own auth failures arrive as a gRPC status, not as this text shape.
+  if (m.contains('desc=') && (m.contains('403') || m.contains('401'))) {
+    return true;
+  }
+  return false;
+}
+
 /// Matches raw "HTTP 5xx" transport text (any 5xx, so Cloudflare's 520-527 and
 /// 530 are covered alongside 500/502/503/504).
 final RegExp _httpServerStatusPattern = RegExp(r'http[^0-9a-z]{0,3}5\d\d');
@@ -291,6 +369,18 @@ String friendlyError(Object? error, {String? context}) {
       ? generic
       : 'We couldn’t $context right now. Please try again.';
 
+  // --- provider refused OUR integration -------------------------------------
+  // FIRST, ahead of even the connectivity check. A provider 403 can surface as
+  // Internal, Unavailable, FailedPrecondition or Unknown depending on which
+  // service wrapped it, and gRPC Unavailable would otherwise be read as a
+  // transport failure and reported as "our servers are having a problem".
+  // That is safe but wrong: nothing is down, a partner is refusing us, and
+  // saying so is both more accurate and more useful to whoever reads the
+  // support ticket.
+  if (isProviderRefusalError(error)) {
+    return providerUnavailableMessage;
+  }
+
   // --- connectivity / transport-level failures (network error) --------------
   // Caught first so a no-internet / unreachable-server / 5xx situation always
   // reads as a network error, never as raw transport text or a wrong-credential
@@ -355,6 +445,11 @@ String sanitizeUserFacingError(String? message) {
   final msg = message?.trim() ?? '';
   if (msg.isEmpty) return 'Something went wrong. Please try again.';
   final lower = msg.toLowerCase();
+  // A provider refusing OUR integration comes first: its text can contain
+  // words the transport matchers also claim ("unreachable", a 5xx), and
+  // "our servers are having a problem" would be a wrong diagnosis when
+  // nothing of ours is down.
+  if (messageLooksLikeProviderRefusal(msg)) return providerUnavailableMessage;
   if (_messageLooksLikeServerFailure(lower)) return serverErrorMessage;
   if (_messageLooksLikeTransportFailure(lower)) return networkErrorMessage;
   if (lower.contains('status code')) return unreachableErrorMessage;

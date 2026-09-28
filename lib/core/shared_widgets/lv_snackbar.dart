@@ -60,9 +60,23 @@ class LVSnackbar {
     SnackPosition? position,
   }) {
     Get.closeAllSnackbars();
+    // Sanitised at the SINK, not just at showErrorFor.
+    //
+    // Most callers pass a server-supplied string straight through
+    // (`message: state.message`), so a provider's own words could reach the
+    // user down any of them. Nomba's IP allowlist produced exactly that:
+    // "Your Request Seems to be coming from an unknown source" — meaningless
+    // to someone sending money, and a description of our infrastructure to a
+    // person who should never see it.
+    //
+    // sanitizeUserFacingError is built for this position (its docstring says
+    // so): genuine business copy like "Insufficient balance" passes through
+    // untouched, while provider refusals, raw transport text and JSON blobs
+    // collapse to a friendly line. Doing it here means a new screen cannot
+    // reintroduce the leak by forgetting to call friendlyError.
     Get.snackbar(
       title,
-      message,
+      sanitizeUserFacingError(message),
       snackPosition: position ?? SnackPosition.BOTTOM,
       backgroundColor: Colors.red.withValues(alpha: 0.8),
       colorText: Colors.white,
