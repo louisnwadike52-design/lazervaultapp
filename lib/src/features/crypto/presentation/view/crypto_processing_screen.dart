@@ -110,6 +110,11 @@ class _CryptoProcessingScreenState extends State<CryptoProcessingScreen>
           setState(() {
             _state = ProcessingState.success;
             _transactionId = state.transaction.id;
+            // The BACKEND's status, not our own verdict. CryptoTransaction
+            // Success means the order was ACCEPTED, which for a buy is a long
+            // way from settled: it goes swap_pending → completed/delivered via
+            // Quidax and a reconciler, and it can still end up failed.
+            _backendStatus = state.transaction.status;
           });
           _rotationController.stop();
           // Navigate to receipt after brief delay
@@ -141,6 +146,11 @@ class _CryptoProcessingScreenState extends State<CryptoProcessingScreen>
       }
     }
   }
+
+  /// Raw backend status captured at acceptance. Empty until the submit
+  /// returns, which is why the receipt defaults to pending rather than
+  /// completed — see _navigateToReceipt.
+  String _backendStatus = '';
 
   void _navigateToReceipt() {
     if (_transactionId == null) return;
@@ -186,7 +196,35 @@ class _CryptoProcessingScreenState extends State<CryptoProcessingScreen>
       transactionId: _transactionId!,
       transactionDetails: transactionDetails,
       timestamp: DateTime.now(),
-      status: CryptoTransactionStatus.completed,
+      // WAS: a hardcoded `completed`.
+      //
+      // The submit returning success means the order was ACCEPTED, not that it
+      // settled. A buy then runs swap_pending → completed/delivered through
+      // Quidax and a reconciler — five minutes in the case that surfaced this,
+      // and it can end in `failed`. So the receipt announced a completed trade
+      // the user did not yet have, while the history list, reading the real
+      // backend status, correctly showed Processing. Two screens, one
+      // transaction, opposite claims — and the wrong one was the reassuring one.
+      //
+      // It also disabled the fix for this. CryptoReceiptScreen polls every 4s
+      // until the swap resolves, but it computes `_terminal` from the status it
+      // is HANDED: a receipt born "completed" is terminal at birth, so the
+      // poller never started and the badge could never correct itself. The
+      // receipt's own comment names this symptom — "exactly the 'receipt says
+      // one thing, history says another' mismatch".
+      //
+      // Passing the real status fixes both: the badge tells the truth now, and
+      // because it is non-terminal the poller runs, flips the badge when the
+      // trade resolves, and refreshes holdings + history so every surface
+      // agrees. Same shape crypto_confirmation_screen and swap_flow_dispatcher
+      // already use, through the one canonical mapper.
+      //
+      // Defaults to PENDING, never completed: an unset status means we have not
+      // heard, and the mapper's own rule is that an unknown state must not show
+      // a misleading green badge.
+      status: _backendStatus.isEmpty
+          ? CryptoTransactionStatus.pending
+          : mapBackendCryptoTxStatus(_backendStatus),
     );
 
     Get.off(() => CryptoReceiptScreen(receipt: receipt));
