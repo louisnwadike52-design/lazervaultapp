@@ -154,7 +154,7 @@ class IntlAirtimePdfService {
                 if (logo != null)
                   pw.Image(logo, width: 120)
                 else
-                  pw.Text('LazerVault',
+                  pw.Text('Lazervault',
                       style: _style(fontSize: 20, isBold: true)),
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.end,
@@ -304,7 +304,7 @@ class IntlAirtimePdfService {
           '${_money(data.senderCurrency, data.amountPaid)} to '
           '${_ascii(data.phoneNumber)}$destination. '
           'Ref ${_ascii(data.displayReference)}',
-      subject: 'LazerVault International Airtime Receipt',
+      subject: 'Lazervault International Airtime Receipt',
     ));
   }
 }

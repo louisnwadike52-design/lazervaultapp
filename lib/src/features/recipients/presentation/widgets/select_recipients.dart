@@ -1,3 +1,4 @@
+import 'package:lazervault/core/utils/brand_bank.dart';
 import 'dart:async';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 
@@ -3638,7 +3639,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
         id: user.userId,
         name: user.fullName,
         accountNumber: user.primaryAccountId ?? user.username,
-        bankName: 'LazerVault',
+        bankName: BrandBank.displayName,
         sortCode: '',
         isFavorite: isFavorite,
         isSaved: isSaved,
@@ -4815,7 +4816,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
             id: matchedUser.userId,
             name: matchedUser.fullName,
             accountNumber: matchedUser.username,
-            bankName: 'LazerVault',
+            bankName: BrandBank.displayName,
             sortCode: '',
             isFavorite: false,
             isSaved: false,

@@ -1,3 +1,4 @@
+import 'package:lazervault/core/utils/brand_bank.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -142,7 +143,7 @@ class _FinancialConnectionsScreenState
           // Filter to only internal (LazerVault) recipients with internalUserId
           final internalRecipients = recipients
               .where((r) =>
-                  r.bankName == 'LazerVault' &&
+                  BrandBank.isOurs(r.bankName) &&
                   r.internalUserId != null &&
                   r.internalUserId!.isNotEmpty)
               .toList();

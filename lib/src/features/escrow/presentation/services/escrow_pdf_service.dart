@@ -252,8 +252,8 @@ class EscrowPdfService {
     final tempPath = await generateReceipt(deal, kind);
     await SharePlus.instance.share(ShareParams(
       files: [XFile(tempPath)],
-      text: 'LazerVault Escrow Receipt - ${deal.reference}',
-      subject: 'LazerVault ${_kindTitle(kind)}',
+      text: 'Lazervault Escrow Receipt - ${deal.reference}',
+      subject: 'Lazervault ${_kindTitle(kind)}',
       sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
     ));
   }
@@ -368,8 +368,8 @@ class EscrowPdfService {
     final tempPath = await generateAgreement(deal);
     await SharePlus.instance.share(ShareParams(
       files: [XFile(tempPath)],
-      text: 'LazerVault Escrow Agreement - ${deal.reference}',
-      subject: 'LazerVault Escrow Agreement',
+      text: 'Lazervault Escrow Agreement - ${deal.reference}',
+      subject: 'Lazervault Escrow Agreement',
       sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
     ));
   }

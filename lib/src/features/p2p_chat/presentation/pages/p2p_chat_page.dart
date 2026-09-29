@@ -1,3 +1,4 @@
+import 'package:lazervault/core/utils/brand_bank.dart';
 import 'dart:async';
 
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
@@ -754,7 +755,7 @@ class _P2PChatPageState extends State<P2PChatPage>
       name:
           _otherUserName.trim().isNotEmpty ? _otherUserName : 'Lazervault User',
       accountNumber: _otherUserId,
-      bankName: 'LazerVault',
+      bankName: BrandBank.displayName,
       sortCode: '',
       isFavorite: false,
       isSaved: false,

@@ -600,7 +600,7 @@ class ElectricityBillPdfService {
             'Provider: ${payment.providerName}\n'
             'Meter: ${payment.meterNumber}\n'
             'Amount: $currencySymbol$amount'),
-        subject: 'LazerVault electricity receipt',
+        subject: 'Lazervault electricity receipt',
       ));
     } catch (e) {
       throw Exception('Failed to share receipt: $e');

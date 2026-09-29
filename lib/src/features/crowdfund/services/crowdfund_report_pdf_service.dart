@@ -76,7 +76,7 @@ class CrowdfundReportPdfService {
 
     final doc = pw.Document(
       title: '${crowdfund.title} — Campaign Report',
-      author: 'LazerVault',
+      author: 'Lazervault',
       subject: 'Crowdfunding campaign report',
     );
 
@@ -149,7 +149,7 @@ class CrowdfundReportPdfService {
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text('LazerVault',
+            pw.Text('Lazervault',
                 style: pw.TextStyle(
                     fontSize: 11,
                     fontWeight: pw.FontWeight.bold,

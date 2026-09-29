@@ -755,7 +755,7 @@ class _EscrowReceiptScreenState extends State<EscrowReceiptScreen>
         // PlatformException and the share silently fails on iPhone/iPad.
         sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         files: [XFile(file.path)],
-        text: 'LazerVault Escrow Receipt - $_reference',
+        text: 'Lazervault Escrow Receipt - $_reference',
       ),
     );
   }

@@ -154,7 +154,7 @@ class IntlDataPdfService {
                 if (logo != null)
                   pw.Image(logo, width: 120)
                 else
-                  pw.Text('LazerVault',
+                  pw.Text('Lazervault',
                       style: _style(fontSize: 20, isBold: true)),
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.end,
@@ -262,7 +262,7 @@ class IntlDataPdfService {
       ShareParams(
         files: [XFile(file.path)],
         text: summary.toString(),
-        subject: 'LazerVault international data receipt',
+        subject: 'Lazervault international data receipt',
         sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       ),
     );

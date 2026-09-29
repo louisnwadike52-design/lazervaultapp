@@ -1324,8 +1324,8 @@ class TagPayPdfService {
     await SharePlus.instance.share(ShareParams(
       files: [XFile(file.path)],
       text:
-          'LazerVault Crypto Receipt - ${transaction.title} (${transaction.transactionReference ?? transaction.id})',
-      subject: 'LazerVault Crypto Receipt',
+          'Lazervault Crypto Receipt - ${transaction.title} (${transaction.transactionReference ?? transaction.id})',
+      subject: 'Lazervault Crypto Receipt',
       sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
     ));
   }

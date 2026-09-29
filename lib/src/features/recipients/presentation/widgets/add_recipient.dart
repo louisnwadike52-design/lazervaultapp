@@ -1,3 +1,4 @@
+import 'package:lazervault/core/utils/brand_bank.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -1193,7 +1194,7 @@ class _AddRecipientState extends State<AddRecipient>
       id: selectedUser.userId,
       name: selectedUser.fullName,
       accountNumber: accountNumber ?? '@${selectedUser.username}',
-      bankName: 'LazerVault',
+      bankName: BrandBank.displayName,
       sortCode: '',
       isFavorite: isFavorite,
       isSaved: isSaved,
@@ -1456,7 +1457,7 @@ class _AddRecipientState extends State<AddRecipient>
       id: _selectedUser!.userId,
       name: _selectedUser!.fullName,
       accountNumber: '@${_selectedUser!.username}',
-      bankName: 'LazerVault',
+      bankName: BrandBank.displayName,
       sortCode: '',
       isFavorite: false,
       isSaved: false,
@@ -2499,7 +2500,7 @@ class _AddRecipientState extends State<AddRecipient>
       name: matchedUser.name,
       accountNumber:
           '@${matchedUser.username}', // Use username as account identifier
-      bankName: 'LazerVault',
+      bankName: BrandBank.displayName,
       sortCode: '',
       isFavorite: false,
       isSaved: false,

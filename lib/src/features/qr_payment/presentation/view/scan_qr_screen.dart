@@ -1,3 +1,4 @@
+import 'package:lazervault/core/utils/brand_bank.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -436,7 +437,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
       id: recipientId,
       name: name.isNotEmpty ? name : username,
       accountNumber: username,
-      bankName: 'LazerVault',
+      bankName: BrandBank.displayName,
       sortCode: '',
       isFavorite: false,
       isSaved: false,

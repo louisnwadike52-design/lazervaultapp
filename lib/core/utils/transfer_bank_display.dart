@@ -9,6 +9,8 @@
 /// This is the single source of truth for that decision so the receipt, the
 /// dashboard history, the recipient history and the select-recipients sheet
 /// cannot disagree about the same transaction.
+import 'package:lazervault/core/utils/brand_bank.dart';
+
 class TransferBankDisplay {
   /// Display name of the destination institution ("Access Bank", "LazerVault").
   final String name;
@@ -26,7 +28,7 @@ class TransferBankDisplay {
     required this.isLazerVault,
   });
 
-  static const String lazerVaultName = 'LazerVault';
+  static const String lazerVaultName = BrandBank.displayName;
 
   /// Short badge label. "LV" is the compact mark used where a full name will
   /// not fit (history rows, list tiles).

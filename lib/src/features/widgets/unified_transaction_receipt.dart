@@ -685,6 +685,18 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       'provider_fee_minor',
       'provider_fee_minor_actual',
       'provider_fee_minor_estimate',
+      // Added with the Nomba deposit split — same reasoning as the keys above,
+      // and it rendered raw for the same reason ("Provider fee expected kobo
+      // 1000"), because the humanizer only formats keys containing "minor".
+      'provider_fee_expected_kobo',
+      // PROVIDER PLUMBING, NOT A CUSTOMER REFERENCE.
+      //
+      // `alias_ref` is Nomba's AliasAccountReference — the id it uses to
+      // resolve which virtual account a credit landed on, carried so the
+      // deposit reconciler can match. It is meaningless to the customer and
+      // sat directly above the reference they SHOULD quote, inviting them to
+      // read out the wrong one to support.
+      'alias_ref',
     };
     // Swap/send legs are already rendered as first-class rows above (From/To/
     // Currency + the To counterparty), so the raw metadata keys would repeat
@@ -1252,7 +1264,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       await SharePlus.instance.share(
         ShareParams(
           files: [XFile(file.path)],
-          text: 'LazerVault Receipt - $_reference',
+          text: 'Lazervault Receipt - $_reference',
           // share_plus on iPad REQUIRES a non-zero origin rect or it throws a
           // native PlatformException; derive it from this widget's render box.
           sharePositionOrigin: _shareOrigin(),

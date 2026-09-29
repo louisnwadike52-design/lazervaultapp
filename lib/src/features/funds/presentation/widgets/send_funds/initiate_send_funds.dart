@@ -16,6 +16,7 @@ import 'package:lazervault/src/features/account_cards_summary/domain/entities/ac
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/core/utils/kyc_error_handler.dart';
+import 'package:lazervault/core/utils/brand_bank.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_state.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_prediction_cubit.dart';
@@ -133,7 +134,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
 
   // Informational, READ-ONLY transfer success prediction (non-blocking).
   // Owned by this screen so it survives the confirmation dialog's lifecycle.
-  // Driven only for EXTERNAL transfers (recipient bank != 'LazerVault').
+  // Driven only for EXTERNAL transfers (recipient bank is not Lazervault).
   final TransferPredictionCubit _predictionCubit =
       serviceLocator<TransferPredictionCubit>();
 
@@ -1115,7 +1116,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     // For external transfers, estimate fee for pre-validation
     // The exact fee will be fetched later, but we use a cached/estimated fee here
     final bool isExternalTransfer =
-        _recipient != null && _recipient!.bankName != 'LazerVault';
+        _recipient != null && !BrandBank.isOurs(_recipient!.bankName);
     final transferCubitState = context.read<TransferCubit>().state;
     double estimatedFee = 0.0;
     if (isExternalTransfer && transferCubitState is TransferFeeLoaded) {
@@ -1166,7 +1167,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     }
 
     // Additional validation for external transfers
-    if (_recipient!.bankName != 'LazerVault' &&
+    if (!BrandBank.isOurs(_recipient!.bankName) &&
         (_recipient!.sortCode.trim().isEmpty ||
             _recipient!.bankName.trim().isEmpty)) {
       Get.snackbar(
@@ -1299,7 +1300,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     }
 
     // Determine transfer type based on recipient
-    final bool isInternalTransfer = _recipient!.bankName == 'LazerVault';
+    final bool isInternalTransfer = BrandBank.isOurs(_recipient!.bankName);
     final String transferType = isInternalTransfer ? 'internal' : 'domestic';
 
     // Get source card details
@@ -1725,8 +1726,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                           // the cache only when it matches this amount+type and
                                           // otherwise re-quote. Internal transfers resolve to free.
                                           final bool longIsInternal =
-                                              _recipient!.bankName ==
-                                                  'LazerVault';
+                                              BrandBank.isOurs(_recipient!.bankName);
                                           final longFeeQuote = await context
                                               .read<TransferCubit>()
                                               .ensureFeeForAmount(
@@ -2044,7 +2044,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     print(
         "_executeTransferWithPin: fromAccountId=$fromAccountId, toAccountNumber=$toAccountNumber, amount=$amountMajor");
     final transferType = (_recipient!.type == 'internal' ||
-            _recipient!.bankName.toLowerCase() == 'lazervault')
+            BrandBank.isOurs(_recipient!.bankName))
         ? 'internal'
         : 'external';
     context.read<TransferCubit>().sendFunds(
@@ -2158,10 +2158,10 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       'providerReference': transferState.response.providerReference,
       'internalReference': transferState.response.internalReference,
       'status': transferState.response.status,
-      'network': _recipient!.bankName == 'LazerVault'
+      'network': BrandBank.isOurs(_recipient!.bankName)
           ? 'Lazervault Internal Transfer'
           : 'External Bank Transfer',
-      'transferType': _recipient!.bankName == 'LazerVault'
+      'transferType': BrandBank.isOurs(_recipient!.bankName)
           ? 'Internal Transfer'
           : 'Domestic Transfer',
       if (scheduledDate != null) 'scheduledAt': scheduledDate,
@@ -2641,7 +2641,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
             if (_recipient != null &&
                 _recipient!.internalUserId != null &&
                 _recipient!.internalUserId!.isNotEmpty &&
-                _recipient!.bankName == 'LazerVault') {
+                BrandBank.isOurs(_recipient!.bankName)) {
               // Sender's own real name seeds the RECEIVER's view of us so their
               // connection isn't left as "Unknown User" (same source the receipt
               // uses at line ~1815).
@@ -2743,10 +2743,10 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                 'providerReference': transferState.response.providerReference,
                 'internalReference': transferState.response.internalReference,
                 'status': transferState.response.status,
-                'network': _recipient!.bankName == 'LazerVault'
+                'network': BrandBank.isOurs(_recipient!.bankName)
                     ? 'Lazervault Internal Transfer'
                     : 'External Bank Transfer',
-                'transferType': _recipient!.bankName == 'LazerVault'
+                'transferType': BrandBank.isOurs(_recipient!.bankName)
                     ? 'Internal Transfer'
                     : 'Domestic Transfer',
                 if (scheduledDate != null) 'scheduledAt': scheduledDate,

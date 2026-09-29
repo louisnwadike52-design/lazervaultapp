@@ -1,3 +1,4 @@
+import 'package:lazervault/core/utils/brand_bank.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -378,7 +379,7 @@ mixin BankScanFlowMixin<T extends StatefulWidget> on State<T> {
       id: '',
       name: username,
       accountNumber: username,
-      bankName: 'LazerVault',
+      bankName: BrandBank.displayName,
       sortCode: '',
       isFavorite: false,
       isSaved: false,
@@ -416,7 +417,7 @@ mixin BankScanFlowMixin<T extends StatefulWidget> on State<T> {
       accountNumber: action.resolvedAccountId ??
           action.username ??
           (action.resolvedUserId ?? ''),
-      bankName: 'LazerVault',
+      bankName: BrandBank.displayName,
       sortCode: '',
       isFavorite: false,
       isSaved: false,

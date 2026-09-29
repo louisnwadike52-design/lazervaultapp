@@ -13,6 +13,7 @@
 /// outright. See [recipientFrom].
 library;
 
+import 'package:lazervault/core/utils/brand_bank.dart';
 import '../../funds/presentation/send_funds_launcher.dart';
 import '../../recipients/data/models/recipient_model.dart';
 
@@ -64,7 +65,7 @@ class RepeatTransfer {
       id: '',
       name: counterpartyName,
       accountNumber: counterpartyAccount,
-      bankName: isExternal ? bankName : 'LazerVault',
+      bankName: isExternal ? bankName : BrandBank.displayName,
       isFavorite: false,
       sortCode: isExternal ? bankCode : '',
       type: isExternal ? 'external' : 'internal',

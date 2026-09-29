@@ -1,3 +1,4 @@
+import 'package:lazervault/core/utils/brand_bank.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../data/datasources/ai_scan_session_store.dart';
@@ -475,7 +476,7 @@ class AiScanCubit extends Cubit<AiScanState> {
           recipientName:
               txn.recipientName.isNotEmpty ? txn.recipientName : (intent.title),
           accountNumber: txn.recipientUsername,
-          bankName: 'LazerVault',
+          bankName: BrandBank.displayName,
           amount: txn.amount,
           currency: txn.currency,
           status: txn.status.name,
@@ -584,7 +585,7 @@ class AiScanCubit extends Cubit<AiScanState> {
         reference: result.reference ?? transactionId,
         recipientName: result.recipientName ?? intent.title,
         accountNumber: toAccountNumber,
-        bankName: 'LazerVault',
+        bankName: BrandBank.displayName,
         amount: amount,
         currency: intent.currency,
         status: result.status ?? 'completed',

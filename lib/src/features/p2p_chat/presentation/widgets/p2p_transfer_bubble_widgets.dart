@@ -1,3 +1,4 @@
+
 part of 'p2p_transfer_bubble.dart';
 
 /// Stateful button that async-resolves the recipient before navigating.
@@ -114,7 +115,7 @@ class _SendAgainButtonState extends State<_SendAgainButton> {
             }
           }
           for (final r in recipients) {
-            if (r.bankName == 'LazerVault' &&
+            if (BrandBank.isOurs(r.bankName) &&
                 r.name.toLowerCase() == widget.otherUserName.toLowerCase() &&
                 r.accountNumber.isNotEmpty) {
               return r;
@@ -144,7 +145,7 @@ class _SendAgainButtonState extends State<_SendAgainButton> {
           id: '',
           name: widget.otherUserName,
           accountNumber: account.accountNumber,
-          bankName: 'LazerVault',
+          bankName: BrandBank.displayName,
           sortCode: '',
           isFavorite: false,
           isSaved: false,

@@ -1,3 +1,4 @@
+import 'package:lazervault/core/utils/brand_bank.dart';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -794,7 +795,7 @@ class BatchTransferFormState extends State<BatchTransferForm>
         destinationBankCode: item.bankCode,
         beneficiaryName: recipientName,
         destinationBankName: item.bankName ??
-            (item.recipient.type == 'internal' ? 'LazerVault' : null),
+            (item.recipient.type == 'internal' ? BrandBank.displayName : null),
       );
     }).toList();
 
@@ -1594,7 +1595,7 @@ class BatchTransferFormState extends State<BatchTransferForm>
   Widget _buildRecipientCard(int index) {
     final recipientItem = _selectedRecipients[index];
     final recipient = recipientItem.recipient;
-    final isLazerTag = recipient.bankName == 'LazerVault';
+    final isLazerTag = BrandBank.isOurs(recipient.bankName);
 
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),

@@ -1,3 +1,4 @@
+
 part of 'transfer_history_bottom_sheet.dart';
 
 class TransferHistoryItem extends StatelessWidget {
@@ -343,7 +344,7 @@ class TransferHistoryItem extends StatelessWidget {
                           id: '',
                           name: transaction.counterpartyName!,
                           accountNumber: transaction.counterpartyAccount ?? '',
-                          bankName: 'LazerVault',
+                          bankName: BrandBank.displayName,
                           isFavorite: false,
                           sortCode: '',
                           type: 'internal',
