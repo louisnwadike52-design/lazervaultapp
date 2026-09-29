@@ -797,7 +797,13 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       selectedCategory: selectedCategory,
     );
     if (result != null && mounted) {
-      setState(() => selectedCategory = result);
+      setState(() {
+        selectedCategory = result;
+        // EITHER a category OR your own words. Same rule as the short sheet,
+        // and as ServiceCategory.buildTransferNarration, so a transfer is
+        // described once however it was started.
+        _referenceController.clear();
+      });
     }
   }
 
@@ -3305,6 +3311,19 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                               child: TextField(
                                                 controller:
                                                     _referenceController,
+                                                // Mirror of _showCategoryPicker:
+                                                // typing your own narration
+                                                // drops the category, so only
+                                                // one description survives.
+                                                onChanged: (v) {
+                                                  if (selectedCategory !=
+                                                          null &&
+                                                      v.trim().isNotEmpty) {
+                                                    setState(() =>
+                                                        selectedCategory =
+                                                            null);
+                                                  }
+                                                },
                                                 style: const TextStyle(
                                                   color: Colors.white,
                                                   fontSize: 14,
@@ -3313,7 +3332,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                                     const InputDecoration(
                                                   border: InputBorder.none,
                                                   hintText:
-                                                      'Add narration (optional)',
+                                                      'Or type your own narration…',
                                                   hintStyle: TextStyle(
                                                     color: Colors.white70,
                                                     fontSize: 14,

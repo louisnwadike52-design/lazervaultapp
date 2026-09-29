@@ -108,7 +108,17 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
       categories: ServiceCategory.commonTransferCategories,
       selectedCategory: _category,
     );
-    if (picked != null && mounted) setState(() => _category = picked);
+    if (picked != null && mounted) {
+      setState(() {
+        _category = picked;
+        // A payment is described EITHER by a category OR by the user's own
+        // words, never both. Two descriptions for one payment is not a richer
+        // record — it is an ambiguous one, and downstream (receipt, recipient
+        // narration, budgeting) each surface would have to pick a winner on
+        // its own and they would not agree.
+        _narrationController.clear();
+      });
+    }
   }
 
   /// One entry point for BOTH one-off scheduling and recurring — opens the
@@ -275,6 +285,10 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
           : 'Amount exceeds your available balance');
       return;
     }
+    // Pass the raw note. Turning a category into narration is
+    // ServiceCategory.buildTransferNarration's job — it is shared with the
+    // long flow, so doing it here too would give the two flows two different
+    // answers the day either one changed.
     final note = _narrationController.text.trim();
     Navigator.of(context).pop(SendFundsAmountResult(
       amountMinor: minor,
@@ -600,6 +614,16 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
                           textInputAction: TextInputAction.done,
                           textCapitalization: TextCapitalization.sentences,
                           maxLength: 100,
+                          // The mirror of _pickCategory: typing your own words
+                          // drops the category, so only one description of the
+                          // payment ever survives. setState only when the
+                          // category is actually set, so ordinary typing does
+                          // not rebuild the sheet on every keystroke.
+                          onChanged: (v) {
+                            if (_category != null && v.trim().isNotEmpty) {
+                              setState(() => _category = null);
+                            }
+                          },
                           style: GoogleFonts.inter(
                             color: SendFundsAmountSheet._textPrimary,
                             fontSize: 13.sp,
@@ -607,7 +631,7 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
                           decoration: InputDecoration(
                             isDense: true,
                             counterText: '',
-                            hintText: "What's this for? (optional)",
+                            hintText: 'Or type your own narration…',
                             hintStyle: GoogleFonts.inter(
                                 color: SendFundsAmountSheet._textSecondary,
                                 fontSize: 13.sp),

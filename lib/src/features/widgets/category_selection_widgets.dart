@@ -84,14 +84,27 @@ class ServiceCategory {
     String? note,
     required String defaultNarration,
   }) {
+    // EITHER a category OR the user's own words — never both.
+    //
+    // This used to return "<Category>: <note>", which produced two problems.
+    // With a note it double-described one payment ("Food & Dining: lunch"),
+    // and with no note it invented filler ("Food & Dining: Transfer") that
+    // reached the recipient's bank narration and the receipt. The sheets now
+    // enforce the choice in the UI — picking a category clears the note and
+    // typing a note clears the category — and this is the matching rule for
+    // whatever still arrives with both set (an older client, a chat or voice
+    // agent, a scheduled transfer created before this change).
+    //
+    // The user's OWN words win when present: they are more specific than a
+    // taxonomy bucket, and the category still travels separately for
+    // budgeting, so nothing is lost by not concatenating it here.
     final trimmedNote = (note ?? '').trim();
+    if (trimmedNote.isNotEmpty) return trimmedNote;
+
     final label = category?.analyticsLabel.trim() ?? '';
-    if (category != null && label.isNotEmpty) {
-      final detail = trimmedNote.isNotEmpty ? trimmedNote : 'Transfer';
-      return '$label: $detail';
-    }
-    // No category (or a category with a blank label) → note, else the default.
-    return trimmedNote.isNotEmpty ? trimmedNote : defaultNarration;
+    if (label.isNotEmpty) return label;
+
+    return defaultNarration;
   }
 
   static String _defaultIconForCategory(String subCategory) {
