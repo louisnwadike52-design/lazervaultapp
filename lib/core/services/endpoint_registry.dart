@@ -80,6 +80,15 @@ class EndpointRegistry {
     // grouping is a task property. Both destinations are real, so this is a
     // visibility choice an admin can reverse, not a stub.
     'plan_my_day_duplicate_shortcuts_visible',
+    // Locale gating: what remains available outside NGN. Cached with the other
+    // admin knobs so the dashboard decides on its FIRST frame — a grid that
+    // renders every service and then drops to one is worse than one that was
+    // only ever correct, and here the removed tiles lead to flows that cannot
+    // complete in that region.
+    'locale_gating_enabled',
+    'locale_non_ngn_services',
+    'locale_non_ngn_nav_disabled',
+    'locale_non_ngn_ai_scopes',
     // Bulk SMS service visibility (hidden by default; admin can restore).
     'bulk_sms_visible',
     // African voice-language master gate (English-only when off). Cached so the

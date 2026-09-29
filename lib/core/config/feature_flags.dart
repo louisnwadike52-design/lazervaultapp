@@ -228,6 +228,28 @@ class FeatureFlags {
   /// of true would show it every cold start until the network answered.
   static const String insuranceEnabled = 'insurance_enabled';
 
+  // ── Locale gating ────────────────────────────────────────────────────────
+  //
+  // Outside Nigeria the platform is not fully operational: there is no deposit
+  // rail (the provider cannot issue per-customer foreign-currency virtual
+  // accounts), so most services have nothing to move money with. Rather than
+  // let a user in another region walk into flows that cannot complete, the
+  // dashboard shows only what genuinely works there.
+  //
+  // Every part of it is admin-tunable, because "what works outside NGN" is a
+  // commercial fact that changes when a corridor opens — and it must change
+  // without an app release.
+  static const String localeGatingEnabled = 'locale_gating_enabled';
+
+  /// CSV of AppServiceName values that remain visible outside NGN.
+  static const String localeNonNgnServices = 'locale_non_ngn_services';
+
+  /// CSV of bottom-nav tab labels disabled outside NGN.
+  static const String localeNonNgnNavDisabled = 'locale_non_ngn_nav_disabled';
+
+  /// CSV of AI-insights scopes enabled outside NGN.
+  static const String localeNonNgnAiScopes = 'locale_non_ngn_ai_scopes';
+
   // Whether the Bulk SMS service tile is visible anywhere in the app.
   // Hidden by default (product decision 2026-09-07); an admin can restore it
   // from the dashboard Feature Flags tab without a release.
@@ -332,6 +354,7 @@ class FeatureFlags {
       bvnSignupScreenEnabled,
       insuranceHostedEntrypointsEnabled,
       insuranceEnabled,
+      localeGatingEnabled,
       bulkSmsVisibleKey,
       cardAcceptanceVisibleKey,
       airtimeTabBuyEnabled,
@@ -373,6 +396,10 @@ class FeatureFlags {
       // Unavailability scope is a string enum ('generic'|'account'|'country'),
       // mirrored verbatim; FeatureFlags.intlPayoutScope normalises on read.
       intlPayoutUnavailableScope,
+      // Locale gating lists are CSVs, stored verbatim and parsed on read.
+      localeNonNgnServices,
+      localeNonNgnNavDisabled,
+      localeNonNgnAiScopes,
     ]) {
       final v = remote[key];
       if (v == null) continue;
@@ -419,6 +446,51 @@ class FeatureFlags {
   static bool get insuranceVisible {
     return _prefs?.getBool(insuranceEnabled) ?? false;
   }
+
+  // ── Locale gating readers ────────────────────────────────────────────────
+
+  /// Master switch for restricting the product outside NGN.
+  ///
+  /// Defaults to TRUE, which is the opposite of the other admin gates here and
+  /// deliberate: the restriction exists because those flows genuinely cannot
+  /// complete outside Nigeria, so the safe state before the admin snapshot
+  /// resolves is the restricted one. Defaulting open would show a user in
+  /// another region a dashboard full of services that dead-end.
+  static bool get localeGatingOn =>
+      _prefs?.getBool(localeGatingEnabled) ?? true;
+
+  static Set<String> _csv(String key, String fallback) {
+    final raw = (_prefs?.getString(key) ?? '').trim();
+    final source = raw.isEmpty ? fallback : raw;
+    return source
+        .split(',')
+        .map((e) => e.trim().toLowerCase())
+        .where((e) => e.isNotEmpty)
+        .toSet();
+  }
+
+  /// Quick services that stay available outside NGN.
+  ///
+  /// Exchange only by default: it is the one flow that does not need a local
+  /// deposit or payout rail to be useful.
+  static Set<String> get localeNonNgnServiceNames =>
+      _csv(localeNonNgnServices, 'exchange');
+
+  /// Bottom-nav destinations disabled outside NGN, by label (lower-cased).
+  ///
+  /// Disabled rather than removed: the nav is addressed by INDEX (deep links
+  /// and receipt returns pass `initialTab`), so dropping entries would
+  /// silently retarget those links at the wrong screen.
+  static Set<String> get localeNonNgnDisabledNav =>
+      _csv(localeNonNgnNavDisabled, 'beam,lifestyle');
+
+  /// AI-insights scopes enabled outside NGN.
+  ///
+  /// LazerVault wallets only by default. Linked-bank insights come from open
+  /// banking, which is a Nigeria-only rail, so those scopes have no data to
+  /// show in another region.
+  static Set<String> get localeNonNgnAiScopeNames =>
+      _csv(localeNonNgnAiScopes, 'lazervault');
 
   // ── Bulk SMS visibility ──────────────────────────────────────────────────
   /// Whether the Bulk SMS service is visible anywhere in the app.

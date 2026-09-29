@@ -39,6 +39,7 @@ import 'package:lazervault/src/features/pending_actions/domain/pending_action.da
 import 'package:lazervault/src/features/pending_actions/presentation/cubit/pending_actions_cubit.dart';
 import 'package:lazervault/src/features/pending_actions/presentation/widgets/pending_payments_prompt_sheet.dart';
 import 'package:lazervault/src/features/presentation/views/dashboard/dashboard_tabs.dart';
+import 'package:lazervault/core/config/locale_gating.dart';
 
 /// Set to `true` to show the voice banking setup bottom sheet when the dashboard loads.
 const bool _kShowVoiceSetupDashboardPrompt = false;
@@ -78,6 +79,17 @@ class _DashboardScreenState extends State<DashboardScreen>
   final ValueNotifier<int> _activeTab = ValueNotifier<int>(0);
 
   void _handleOnTabChange(int index) {
+    // Refuse a destination this region cannot use.
+    //
+    // Guarding HERE rather than only on the nav button covers every way a tab
+    // can be entered — a nav tap, a deep link's `initialTab`, and the
+    // "return to Beam" a receipt screen performs on close. Blocking only the
+    // button would leave those other routes walking straight into a screen
+    // with no working rail behind it.
+    if (!LocaleGating.navAllowed(dashboardTabLabel(index))) {
+      _showRegionUnavailable(dashboardTabLabel(index));
+      return;
+    }
     setState(() {
       _currentIndex = index;
       activeScreen = Screen(name: DashboardScreen.tabItems[index].name);
@@ -730,7 +742,15 @@ class _DashboardScreenState extends State<DashboardScreen>
             animationCurve: Curves.easeInOut,
             animationDuration: Duration(milliseconds: 300),
             onTap: _handleOnTabChange,
-            letIndexChange: (index) => true,
+            // Refuse the visual move for a destination this region cannot use.
+            //
+            // _handleOnTabChange already blocks the navigation, but without
+            // this the curved bar still slides its highlight onto the tab it
+            // did not open — the indicator ends up on Beam while Lifestyle is
+            // still on screen, which looks like a broken nav rather than a
+            // withheld feature.
+            letIndexChange: (index) =>
+                LocaleGating.navAllowed(dashboardTabLabel(index)),
           ),
         ),
       );
@@ -744,24 +764,49 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildCurvedNavItem(int index) {
+    // A destination this region cannot use is shown DIMMED with a small lock,
+    // not hidden.
+    //
+    // Hidden would be cleaner-looking and worse: the nav is addressed by index
+    // (deep links and receipt returns pass `initialTab`), so removing an entry
+    // would silently retarget those links at whatever slid into its place. And
+    // a user who had been using Beam needs to see that it still exists and is
+    // withheld here, rather than conclude the app lost it.
+    final enabled = LocaleGating.navAllowed(_getTabLabel(index));
+    final baseColor = index == _currentIndex
+        ? Colors.blue
+        : Colors.white.withValues(alpha: 0.7);
+    final color = enabled ? baseColor : Colors.white.withValues(alpha: 0.28);
+
     return Container(
       padding: EdgeInsets.symmetric(vertical: 8),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            _getIconData(index),
-            size: 24,
-            color: index == _currentIndex
-                ? Colors.blue
-                : Colors.white.withValues(alpha: 0.7),
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Icon(_getIconData(index), size: 24, color: color),
+              if (!enabled)
+                Positioned(
+                  right: -5,
+                  top: -3,
+                  child: Icon(
+                    Icons.lock_rounded,
+                    size: 11,
+                    color: Colors.white.withValues(alpha: 0.45),
+                  ),
+                ),
+            ],
           ),
           if (index != _currentIndex) ...[
             SizedBox(height: 4),
             Text(
               _getTabLabel(index),
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: enabled
+                    ? Colors.white.withValues(alpha: 0.7)
+                    : Colors.white.withValues(alpha: 0.28),
                 fontSize: 10,
               ),
             ),
@@ -772,6 +817,25 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   IconData _getIconData(int index) => dashboardTabIcon(index);
+
+  /// Explains why a destination is unavailable in this region.
+  ///
+  /// A snack bar rather than silence: a nav item that simply does not respond
+  /// reads as the app being broken, and the user has no way to learn that
+  /// switching back to their Naira account is the fix.
+  void _showRegionUnavailable(String what) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(LocaleGating.reasonFor(what)),
+          backgroundColor: const Color(0xFF1E1E1E),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+  }
 
   Widget _buildLifestyleTab() {
     return NewLifestyleScreen(onSwitchTab: _handleOnTabChange);

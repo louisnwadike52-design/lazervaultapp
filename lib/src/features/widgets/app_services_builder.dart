@@ -6,6 +6,8 @@ import 'package:lazervault/core/services/service_order_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/config/locale_gating.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/dashboard_state_manager.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
@@ -51,6 +53,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   final DashboardStateManager _stateManager =
       serviceLocator<DashboardStateManager>();
   final AccountManager _accountManager = serviceLocator<AccountManager>();
+  StreamSubscription<String>? _currencySubscription;
   StreamSubscription<String?>? _accountSubscription;
   VirtualAccountType? _activeAccountType;
   bool _isFamilyPendingSetup = false;
@@ -336,7 +339,48 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     if (!FeatureFlags.cardAcceptanceVisible) {
       hidden.add(AppServiceName.cardAcceptance);
     }
+    // Outside NGN, hide every service the region cannot actually complete.
+    //
+    // This is an allow-list rather than a deny-list on purpose: a service
+    // added later is unavailable in a new region until someone deliberately
+    // says otherwise, which is the safe direction. A deny-list would expose
+    // each new service everywhere by default and only fail when a user in
+    // another region tapped into a flow with no rail behind it.
+    //
+    // Doing it HERE rather than by editing the per-account service lists keeps
+    // the grid and the swipe-down search corpus consistent by construction —
+    // the same reason the insurance and bulk-SMS gates live here.
+    if (LocaleGating.restricted) {
+      final allowed = FeatureFlags.localeNonNgnServiceNames;
+      for (final s in getAllServicesUnfiltered()) {
+        if (!allowed.contains(s.serviceName.name.toLowerCase())) {
+          hidden.add(s.serviceName);
+        }
+      }
+    }
     return hidden;
+  }
+
+  /// Every declared service, with NO visibility filtering applied.
+  ///
+  /// Separate from [getAllServices] because that one filters by
+  /// [_effectiveHiddenServices], and the locale gate inside that getter needs
+  /// the full corpus to decide what to hide. Calling the filtered version from
+  /// there would recurse.
+  static List<AppService> getAllServicesUnfiltered() {
+    final seen = <AppServiceName>{};
+    final out = <AppService>[];
+    for (final s in [
+      ..._personalServices,
+      ..._businessServices,
+      ..._savingsServices,
+      ..._investmentServices,
+      ..._multiCurrencyServices,
+      ..._familyServices,
+    ]) {
+      if (seen.add(s.serviceName)) out.add(s);
+    }
+    return out;
   }
 
   /// Every service across all account types, deduped by name — the corpus the
@@ -606,6 +650,22 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     _accountSubscription = _accountManager.accountIdStream.listen((_) {
       _checkActiveAccountType();
     });
+    // Re-resolve the grid when the region changes.
+    //
+    // Which services exist now depends on the active currency (see
+    // LocaleGating), and switching region does NOT change the active account
+    // id — so without this the user switches to a USD region and keeps looking
+    // at the full Naira grid until something else happens to rebuild it.
+    try {
+      _currencySubscription =
+          serviceLocator<LocaleManager>().currencyStream.listen((_) {
+        if (mounted) setState(() {});
+      });
+    } catch (_) {
+      // Locale service unavailable (early startup, widget test): the grid
+      // simply does not react to a region change, which is the pre-existing
+      // behaviour and never worth failing a dashboard build over.
+    }
     // Adaptive ordering: load THIS user's local tally (also re-loads after a
     // user switch) and re-sort the grid once it's ready, then merge the
     // server's cross-device counts. Best-effort; never blocks the dashboard.
@@ -631,6 +691,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   @override
   void dispose() {
     _accountSubscription?.cancel();
+    _currencySubscription?.cancel();
     super.dispose();
   }
 

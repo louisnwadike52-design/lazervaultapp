@@ -31,6 +31,7 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/linked_banks_widget.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/bank_scope_pills.dart';
+import 'package:lazervault/core/config/locale_gating.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/financial_health_score_card.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/cash_flow_insights_card.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/failed_transactions_card.dart';
@@ -1492,6 +1493,10 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
   /// EVERY number on the page is narrowed to a single bank. Picking a pill
   /// re-scopes the whole page via [_applyBankFilter].
   Widget _buildBankScopeChips() {
+    // Linked-bank scoping comes from open banking, which is a Nigeria-only
+    // rail — outside NGN there are no linked banks to scope BY, so the pills
+    // would render an empty filter the user cannot populate.
+    if (!LocaleGating.aiScopeAllowed('banks')) return const SizedBox.shrink();
     return BlocBuilder<OpenBankingCubit, OpenBankingState>(
       buildWhen: (prev, curr) =>
           curr is LinkedAccountsLoaded ||
@@ -2323,6 +2328,9 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
   }
 
   Widget _buildLinkedBanksSection() {
+    // Same reason as the scope chips: no open-banking rail outside NGN, so
+    // this section could only ever offer a "link a bank" action that fails.
+    if (!LocaleGating.aiScopeAllowed('banks')) return const SizedBox.shrink();
     return BlocBuilder<OpenBankingCubit, OpenBankingState>(
       buildWhen: (prev, curr) =>
           curr is LinkedAccountsLoaded ||
