@@ -1059,7 +1059,15 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
           ServiceVoiceButton(serviceName: 'transfers', iconColor: Colors.white),
           SizedBox(width: 8.w),
           MicroserviceChatIcon(
-              serviceName: 'Batch Transfer', sourceContext: 'transfers'),
+            serviceName: 'Batch Transfer',
+            sourceContext: 'transfers',
+            // Declare the screen's own context. Without it the agent only
+            // loads its batch toolset when the message happens to trip a
+            // comma/keyword heuristic, because the Go proxy this chat routes
+            // through does not classify intent. "Pay my team" from the batch
+            // screen would otherwise get single-transfer tools.
+            seedEntities: const {'_mentioned_batch': true},
+          ),
         ],
       ),
     );

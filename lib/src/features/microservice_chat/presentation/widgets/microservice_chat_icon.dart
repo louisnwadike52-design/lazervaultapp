@@ -25,6 +25,18 @@ class MicroserviceChatIcon extends StatelessWidget {
   /// Falls back to [iconColor] if not set.
   final Color? chatAccentColor;
 
+  /// Scoped context seeded into the agent's entities on every turn of this
+  /// chat — the screen telling the agent what it is looking at.
+  ///
+  /// The batch-transfer screen needs it: the agent loads its batch toolset
+  /// from the gateway's `_intent`, but per-service chat goes through the Go
+  /// proxy, which routes by source_context and never runs intent
+  /// classification. So a user standing ON the batch screen and saying "pay
+  /// my team" — no commas, no keyword — fell through every heuristic and got
+  /// the single-transfer tools. The screen knows what it is; this lets it say
+  /// so.
+  final Map<String, dynamic>? seedEntities;
+
   const MicroserviceChatIcon({
     super.key,
     required this.serviceName,
@@ -37,6 +49,7 @@ class MicroserviceChatIcon extends StatelessWidget {
     this.iconSize,
     this.useDarkInner = false,
     this.chatAccentColor,
+    this.seedEntities,
   });
 
   @override
@@ -52,6 +65,7 @@ class MicroserviceChatIcon extends StatelessWidget {
               iconColor ??
               const Color.fromARGB(255, 78, 3, 208),
           isDirect: isDirect,
+          extraMetadata: seedEntities,
         );
       },
       child: Container(

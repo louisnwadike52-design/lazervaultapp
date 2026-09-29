@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
@@ -77,6 +78,8 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
   String? _liveStatus;
   StreamSubscription<TransferStatusEvent>? _wsSub;
   StreamSubscription<void>? _reconnectSub;
+  bool _socketLive = false;
+  StreamSubscription<TransferWebSocketConnectionState>? _connSub;
   Timer? _statusTimer;
   int _statusPolls = 0;
   bool _statusFetching = false;
@@ -104,6 +107,7 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
   void dispose() {
     _wsSub?.cancel();
     _reconnectSub?.cancel();
+    _connSub?.cancel();
     _statusTimer?.cancel();
     super.dispose();
   }
@@ -118,12 +122,37 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
     final type = _s('transaction_type').toLowerCase();
     if (type.isNotEmpty && !type.contains('transfer')) return;
 
-    unawaited(_subscribeSocket(ref));
-
-    _statusTimer = Timer.periodic(_statusInterval, (_) => _refreshStatus());
-    // Check once immediately: reopening an old chat should correct a stale
-    // card now, not six seconds from now.
+    // One read now, regardless of transport: reopening an old chat should
+    // correct a stale card immediately, not on the next tick.
     unawaited(_refreshStatus());
+
+    // Then the socket, and the poll ONLY if the socket does not come up.
+    //
+    // This ordering matters most for BATCH. A batch receipt renders one of
+    // these cards per recipient (ChatReceiptCardV2List), so a 20-recipient
+    // payout would otherwise start 20 periodic polls off a single chat
+    // message — roughly 200 status requests a minute for one send. The
+    // socket is already shared and idempotent across every card, so when it
+    // connects the polling is pure duplication.
+    unawaited(_subscribeSocket(ref).then((_) {
+      if (!mounted || _statusTimer != null) return;
+      if (_socketLive) return; // the socket has it covered
+      _startPollFallback();
+    }));
+  }
+
+  /// Periodic polling, used only when the socket is unavailable.
+  ///
+  /// The first tick is jittered so a batch's cards do not all fire in the
+  /// same instant and arrive at the gateway as a burst.
+  void _startPollFallback() {
+    if (_statusTimer != null || !mounted) return;
+    final jitterMs = math.Random().nextInt(_statusInterval.inMilliseconds);
+    _statusTimer = Timer(Duration(milliseconds: jitterMs), () {
+      if (!mounted) return;
+      _statusTimer = Timer.periodic(_statusInterval, (_) => _refreshStatus());
+      unawaited(_refreshStatus());
+    });
   }
 
   Future<void> _subscribeSocket(String ref) async {
@@ -135,13 +164,28 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
         _applyStatus(e.status);
         if (e.isTerminal) {
           _statusTimer?.cancel();
+          _statusTimer = null;
           _wsSub?.cancel();
           _reconnectSub?.cancel();
+          _connSub?.cancel();
         }
       });
       // Anything that changed while the socket was down was MISSED, not
       // queued — so a reconnect has to be followed by a read, or a card can
       // sit on a status that settled during the gap.
+      // If the socket drops, polling takes over until it returns.
+      _connSub = ws.connectionState.listen((st) {
+        if (!mounted) return;
+        final up = st == TransferWebSocketConnectionState.connected;
+        _socketLive = up;
+        if (!up) {
+          _startPollFallback();
+        } else {
+          _statusTimer?.cancel();
+          _statusTimer = null;
+        }
+      });
+
       _reconnectSub = ws.onReconnected.listen((_) {
         if (!mounted) return;
         // Give the re-sync its own budget: a reconnect is exactly when the
@@ -154,11 +198,19 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
       final userId = await storage.getCurrentUserId() ?? await storage.getUserId();
       final token = await storage.getAccessToken();
       if (userId != null && token != null && userId.isNotEmpty && token.isNotEmpty) {
-        // Idempotent: the shared service early-returns when already connected.
+        // Idempotent and shared: the service early-returns when already
+        // connected, so N cards cost one socket.
         await ws.connect(userId: userId, accessToken: token);
       }
+      _socketLive = ws.isConnected;
+      if (_socketLive) {
+        // Live push — retire any fallback poll this card had started.
+        _statusTimer?.cancel();
+        _statusTimer = null;
+      }
     } catch (_) {
-      // The socket is an optimisation. The poll below is the guarantee.
+      // The socket is an optimisation; the poll is the guarantee.
+      _socketLive = false;
     }
   }
 

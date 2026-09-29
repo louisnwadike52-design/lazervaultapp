@@ -4259,7 +4259,16 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
 
     Widget? receiptWidget;
     final rc = result['receipt_card'];
-    if (rc is Map) {
+    if (rc is List && rc.isNotEmpty) {
+      // BATCH. _execute_batch_transfer emits one ReceiptCard per recipient,
+      // so `receipt_card` arrives as a LIST — the same shape general and
+      // per-service chat render through ChatReceiptCardV2List. Voice only
+      // tested `is Map`, so a batch fell past both branches and the user got
+      // a bare "Transfer completed!" snackbar after paying twenty people:
+      // no per-recipient outcome, no reference, no way to see which of them
+      // actually went through.
+      receiptWidget = ChatReceiptCardV2List(payloads: rc);
+    } else if (rc is Map) {
       receiptWidget = ChatReceiptCardV2(payload: Map<String, dynamic>.from(rc));
     } else if (result['type'] != null ||
         result['amount_display'] != null ||
