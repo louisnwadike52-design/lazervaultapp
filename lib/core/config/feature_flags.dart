@@ -250,6 +250,10 @@ class FeatureFlags {
   /// CSV of AI-insights scopes enabled outside NGN.
   static const String localeNonNgnAiScopes = 'locale_non_ngn_ai_scopes';
 
+  /// CSV of discovery sections on the dashboard shown outside NGN.
+  static const String localeNonNgnDashboardSections =
+      'locale_non_ngn_dashboard_sections';
+
   // Whether the Bulk SMS service tile is visible anywhere in the app.
   // Hidden by default (product decision 2026-09-07); an admin can restore it
   // from the dashboard Feature Flags tab without a release.
@@ -400,6 +404,7 @@ class FeatureFlags {
       localeNonNgnServices,
       localeNonNgnNavDisabled,
       localeNonNgnAiScopes,
+      localeNonNgnDashboardSections,
     ]) {
       final v = remote[key];
       if (v == null) continue;
@@ -501,6 +506,15 @@ class FeatureFlags {
   /// show in another region.
   static Set<String> get localeNonNgnAiScopeNames =>
       _csv(localeNonNgnAiScopes, 'lazervault');
+
+  /// Dashboard discovery sections shown outside NGN.
+  ///
+  /// EMPTY by default — neither Trending crowdfunds nor Public groups appears
+  /// in a non-Naira region. Both are NGN-denominated communal pots: a user on
+  /// a USD account cannot contribute to or withdraw from one, so the rail is a
+  /// scroll of things they can look at and not join.
+  static Set<String> get localeNonNgnDashboardSectionNames =>
+      _csv(localeNonNgnDashboardSections, '');
 
   // ── Bulk SMS visibility ──────────────────────────────────────────────────
   /// Whether the Bulk SMS service is visible anywhere in the app.

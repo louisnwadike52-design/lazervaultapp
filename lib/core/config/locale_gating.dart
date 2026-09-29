@@ -74,6 +74,17 @@ class LocaleGating {
     return FeatureFlags.localeNonNgnAiScopeNames.contains(scope.toLowerCase());
   }
 
+  /// Whether a dashboard discovery section belongs in the current region.
+  ///
+  /// Crowdfunds and public groups are NGN-denominated communal pots — a user
+  /// on a USD account cannot contribute to or withdraw from one — so showing
+  /// the rail offers a scroll of things they can look at and not join.
+  static bool sectionAllowed(String section) {
+    if (!restricted) return true;
+    return FeatureFlags.localeNonNgnDashboardSectionNames
+        .contains(section.toLowerCase());
+  }
+
   /// One sentence explaining the restriction, for the UI to show.
   ///
   /// Names the currency rather than saying "your region", because a user who

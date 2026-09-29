@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:showcaseview/showcaseview.dart' show TooltipPosition;
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/config/locale_gating.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -372,16 +373,31 @@ class _DashboardState extends State<Dashboard> {
                         position: TooltipPosition.top,
                         child: RecentHistory(),
                       ),
-                      SizedBox(height: 16.0.h),
-                      BlocProvider(
-                        create: (_) => serviceLocator<LeaderboardCubit>(),
-                        child: const TrendingCrowdfunds(),
-                      ),
-                      SizedBox(height: 16.0.h),
-                      BlocProvider.value(
-                        value: serviceLocator<GroupAccountCubit>(),
-                        child: const PublicGroups(),
-                      ),
+                      // Discovery rails are NGN-only.
+                      //
+                      // Crowdfunds and public groups are NGN-denominated
+                      // communal pots: a user on a USD/GBP/EUR account cannot
+                      // contribute to one or take a payout from it, so the
+                      // rail would be a scroll of things they can look at and
+                      // never join. Guarding the whole block (rather than the
+                      // child widget) also means the cubits are never
+                      // constructed, so the dashboard does not fire the
+                      // trending/public-groups fetches in a region whose
+                      // results it will not show.
+                      if (LocaleGating.sectionAllowed('crowdfunds')) ...[
+                        SizedBox(height: 16.0.h),
+                        BlocProvider(
+                          create: (_) => serviceLocator<LeaderboardCubit>(),
+                          child: const TrendingCrowdfunds(),
+                        ),
+                      ],
+                      if (LocaleGating.sectionAllowed('public_groups')) ...[
+                        SizedBox(height: 16.0.h),
+                        BlocProvider.value(
+                          value: serviceLocator<GroupAccountCubit>(),
+                          child: const PublicGroups(),
+                        ),
+                      ],
                       // Cards section: force-hidden in the view layer
                       // regardless of the admin flag. The widget + its
                       // routes/repository + `FeatureFlags.dashboardCardsVisible`
