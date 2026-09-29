@@ -9,6 +9,39 @@ import 'package:lazervault/src/features/funds_transfer/services/transfer_websock
 /// consumer failed to decode every message), so nothing here was ever
 /// exercised against a real event.
 void main() {
+  group('isTrackableReceiptType', () {
+    test('tracks the types whose reference GetTransferStatus can resolve', () {
+      // core-payments' handler falls back to `payments WHERE reference = ?`,
+      // and TagPay writes a payments row on its own TPTAG- reference. These
+      // were excluded by a `contains("transfer")` test, so a pending TagPay
+      // or split-bill card could never settle.
+      for (final t in [
+        'transfer',
+        'batch_transfer',
+        'tagpay_pay',
+        'tagpay_send',
+        'tagpay_accept',
+        'split_bill_pay',
+        'TAGPAY_SEND',
+        '',
+      ]) {
+        expect(isTrackableReceiptType(t), isTrue, reason: '$t should track');
+      }
+    });
+
+    test('does not track types this endpoint cannot resolve', () {
+      // Polling these would be 20 guaranteed misses per card.
+      for (final t in [
+        'crypto_buy',
+        'crypto_send',
+        'insurance_buy',
+        'exchange_convert',
+      ]) {
+        expect(isTrackableReceiptType(t), isFalse, reason: '$t should NOT track');
+      }
+    });
+  });
+
   group('TransferStatusEvent.fromJson', () {
     test('reads the gateway payload including reference', () {
       final e = TransferStatusEvent.fromJson({

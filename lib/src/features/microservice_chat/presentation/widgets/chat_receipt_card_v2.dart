@@ -118,9 +118,9 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
     final ref = _s('reference');
     if (ref.isEmpty) return;
     if (_isTerminalStatus(_s('status'))) return;
-    // Transfers are the only kind this feed reports on.
-    final type = _s('transaction_type').toLowerCase();
-    if (type.isNotEmpty && !type.contains('transfer')) return;
+    // Only types whose reference GetTransferStatus can actually resolve —
+    // transfers, TagPay and split-bill. See isTrackableReceiptType.
+    if (!isTrackableReceiptType(_s('transaction_type'))) return;
 
     // One read now, regardless of transport: reopening an old chat should
     // correct a stale card immediately, not on the next tick.

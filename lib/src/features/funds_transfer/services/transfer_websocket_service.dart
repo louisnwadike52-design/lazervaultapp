@@ -39,6 +39,31 @@ bool isTerminalTransferStatus(String status) {
   }
 }
 
+/// True when a receipt card's transaction type has a status that
+/// `GetTransferStatus(reference)` can actually resolve.
+///
+/// The first cut tested `transaction_type.contains('transfer')`, which quietly
+/// excluded every TagPay and split-bill receipt: those emit `tagpay_pay`,
+/// `tagpay_send`, `tagpay_accept` and `split_bill_pay`. Their saga status is
+/// NOT always terminal — commerce_agent resolves it from the payment/txn row
+/// and it can come back `pending`, `processing` or `manual_review` — so those
+/// cards could sit on a stale status forever.
+///
+/// They resolve fine: core-payments' GetTransferStatus handler falls back to
+/// `payments WHERE reference = ?`, and TagPay writes a payments row keyed on
+/// its own `TPTAG-…` reference (the handler's own comment notes split-bill
+/// payouts land there too).
+///
+/// An allowlist rather than a substring test, because the types NOT here —
+/// crypto, insurance, exchange — carry references this endpoint cannot
+/// resolve, and polling them would be 20 guaranteed misses per card.
+bool isTrackableReceiptType(String transactionType) {
+  final t = transactionType.toLowerCase().trim();
+  if (t.isEmpty) return true; // unlabelled: let the reference decide
+  if (t.contains('transfer')) return true; // transfer, batch_transfer, …
+  return t.startsWith('tagpay') || t == 'split_bill_pay';
+}
+
 /// Transfer status event received from WebSocket.
 ///
 /// [reference] is the field that makes this feed usable to anything that has
