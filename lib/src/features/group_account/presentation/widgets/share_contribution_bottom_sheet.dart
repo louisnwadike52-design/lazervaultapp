@@ -533,7 +533,20 @@ Deadline: ${dateFormat.format(c.deadline)}
 Members: ${widget.members.length}
 
 Join us on LazerVault to contribute!
-https://lazervault.app/groups''';
+${_groupShareUrl()}''';
+  }
+
+  /// The link that opens THIS group in the app.
+  ///
+  /// This used to be a bare `https://lazervault.app/groups` — no id — so a
+  /// contributor who tapped it had no way to reach the group they were
+  /// invited to, even once the route existed. The report screen already
+  /// shared the id-bearing form; this one did not.
+  String _groupShareUrl() {
+    final id = widget.contribution.groupId.trim();
+    return id.isEmpty
+        ? 'https://lazervault.app/groups'
+        : 'https://lazervault.app/groups/$id';
   }
 
   Future<void> _shareToPlatform(

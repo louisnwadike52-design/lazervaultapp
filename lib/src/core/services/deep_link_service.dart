@@ -11,6 +11,7 @@ enum DeepLinkType {
   escrowOffer,
   crowdfundCampaign,
   lazerSprayJoin,
+  groupAccount,
   unknown,
 }
 
@@ -46,6 +47,11 @@ class DeepLinkData {
   /// case but a URL travels through anything.
   final String? lazerSprayCode;
 
+  /// For [DeepLinkType.groupAccount], the group id from
+  /// `https://lazervault.app/groups/<id>` (or the `lazervault://groups/<id>`
+  /// custom-scheme form). Null otherwise.
+  final String? groupAccountId;
+
   const DeepLinkData({
     required this.type,
     required this.rawUri,
@@ -55,6 +61,7 @@ class DeepLinkData {
     this.escrowOfferToken,
     this.crowdfundCampaignId,
     this.lazerSprayCode,
+    this.groupAccountId,
   });
 
   /// Get a query parameter value
@@ -282,6 +289,34 @@ class DeepLinkService {
           queryParams: queryParams,
           path: path,
           lazerSprayCode: code,
+        );
+      }
+    }
+
+    // Group / joint-funds share link.
+    //
+    // group_details_screen shares https://lazervault.app/groups/<id> from the
+    // report screen, and nothing claimed it: no website route, no AASA path,
+    // no intent filter, and no branch here. Someone sharing their group's
+    // report was sending contributors to a "page not found".
+    //
+    // Both URI shapes, as with the links above: the custom scheme gives
+    // host=='groups' + segments [<id>]; the universal link gives
+    // segments [groups, <id>].
+    final isGroup = (uri.host == 'groups' && segments.isNotEmpty) ||
+        (segments.length >= 2 && segments[0] == 'groups');
+    if (isGroup) {
+      final gid = uri.host == 'groups' ? segments[0] : segments[1];
+      // A bare /groups with no id would open the details screen with nothing
+      // to load and spin forever, so it falls through to the dashboard
+      // instead. (The contribution share sheet used to emit exactly that.)
+      if (gid.trim().isNotEmpty) {
+        return DeepLinkData(
+          type: DeepLinkType.groupAccount,
+          rawUri: uri.toString(),
+          queryParams: queryParams,
+          path: path,
+          groupAccountId: gid.trim(),
         );
       }
     }

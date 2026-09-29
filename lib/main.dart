@@ -842,6 +842,18 @@ class _MyAppState extends State<MyApp> {
           ));
         }
         break;
+      case DeepLinkType.groupAccount:
+        // Group / joint-funds share link. Through PendingDeepLink like the
+        // others: a contributor opening a shared group report is very often
+        // signed out, so the target has to survive the login gate and replay
+        // rather than dumping them on the dashboard.
+        if (data.groupAccountId != null && data.groupAccountId!.isNotEmpty) {
+          PendingDeepLink.instance.push(NotificationTarget(
+            route: AppRoutes.groupDetails,
+            arguments: data.groupAccountId,
+          ));
+        }
+        break;
       case DeepLinkType.depositCallback:
       case DeepLinkType.paymentCallback:
       case DeepLinkType.quickAction:

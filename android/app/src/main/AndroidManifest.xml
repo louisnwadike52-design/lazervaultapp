@@ -154,6 +154,12 @@
                      room was sending guests to a dead page. -->
                 <data android:scheme="https" android:host="lazervault.app"
                       android:pathPrefix="/lazerspray/join" />
+                <!-- Group / joint-funds share links: /groups/<id>. Shared from
+                     the group report screen; unclaimed until now, so a
+                     contributor tapping one got a browser 404 instead of the
+                     group. -->
+                <data android:scheme="https" android:host="lazervault.app"
+                      android:pathPrefix="/groups/" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
