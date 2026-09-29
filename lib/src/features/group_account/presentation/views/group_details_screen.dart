@@ -120,6 +120,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
           buildWhen: (previous, current) =>
               current is GroupAccountLoading ||
               current is GroupAccountGroupLoaded ||
+              current is GroupAccountAwaitingApproval ||
               current is GroupAccountError,
           listener: (context, state) {
             if (state is GroupAccountError) {
@@ -218,11 +219,122 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
             }
             if (state is GroupAccountLoading) {
               return _buildLoadingView();
+            } else if (state is GroupAccountAwaitingApproval) {
+              return _buildAwaitingApprovalView(state);
             } else if (state is GroupAccountError) {
               return _buildErrorView(state.message);
             }
             return _buildLoadingView();
           },
+        ),
+      ),
+    );
+  }
+
+  /// Shown when the backend refuses the group reads because this user is not
+  /// a member yet.
+  ///
+  /// Replaces a red "Failed to load group details: … not authorized" snack bar
+  /// over an empty screen. That told a user who had asked to join, correctly,
+  /// that something had broken — and gave them nothing to do about it.
+  Widget _buildAwaitingApprovalView(GroupAccountAwaitingApproval state) {
+    final pending = state.awaitingApproval;
+    final name = state.group?.name;
+    return Center(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 32.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 76.w,
+              height: 76.w,
+              decoration: BoxDecoration(
+                color: (pending
+                        ? const Color(0xFFF59E0B)
+                        : const Color(0xFF581CD9))
+                    .withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                pending ? Icons.hourglass_top_rounded : Icons.lock_outline,
+                color: pending
+                    ? const Color(0xFFF59E0B)
+                    : const Color(0xFF8E8E93),
+                size: 34.sp,
+              ),
+            ),
+            SizedBox(height: 20.h),
+            Text(
+              pending ? 'Waiting for approval' : 'Members only',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 19.sp,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(height: 10.h),
+            Text(
+              pending
+                  ? 'Your request to join${name != null ? ' $name' : ''} has been '
+                      'sent. An admin needs to approve it before you can see '
+                      'members and contributions.'
+                  : 'Only members can see this group\'s members and '
+                      'contributions. Ask to join and an admin will review your '
+                      'request.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                height: 1.5,
+                color: const Color(0xFF8E8E93),
+              ),
+            ),
+            SizedBox(height: 28.h),
+            // Re-checking is the only useful action while a request is
+            // outstanding, so it is the primary one. There is deliberately no
+            // "request again" button: a second request on a pending one is
+            // rejected by the backend as a duplicate, and offering it would
+            // invite the user to press something that cannot work.
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => context
+                    .read<GroupAccountCubit>()
+                    .loadGroupDetails(state.groupId),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF581CD9),
+                  padding: EdgeInsets.symmetric(vertical: 15.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                child: Text(
+                  'Check again',
+                  style: GoogleFonts.inter(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 10.h),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () => Navigator.of(context).maybePop(),
+                child: Text(
+                  'Back to groups',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF8E8E93),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -335,6 +335,10 @@ class _SettingsViewState extends State<_SettingsView> {
         await _loadSignupFlow();
       },
       child: SingleChildScrollView(
+        // Scrolling away from the search field puts the keyboard down too.
+        // Same reason as the switch tiles: a lingering keyboard silently eats
+        // the first back press.
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         physics: const AlwaysScrollableScrollPhysics(
             parent: BouncingScrollPhysics()),
         child: Column(
@@ -2515,7 +2519,19 @@ class _SettingsViewState extends State<_SettingsView> {
         onTap: null,
         trailing: Switch(
           value: value,
-          onChanged: onChanged,
+          // Drop keyboard focus before running the change.
+          //
+          // This page has a settings SEARCH field, and toggling a switch does
+          // not take focus away from it. So after changing a setting the
+          // keyboard is usually still up, and the first back press only
+          // dismisses it — the user has to press back twice to actually leave
+          // Settings, which reads as the back button being broken. Unfocusing
+          // as part of the change means one press does what it looks like it
+          // should.
+          onChanged: (v) {
+            FocusManager.instance.primaryFocus?.unfocus();
+            onChanged(v);
+          },
           activeThumbColor: _kBrand,
         ),
       ),

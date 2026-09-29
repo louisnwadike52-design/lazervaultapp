@@ -78,6 +78,32 @@ class GroupAccountGroupCreated extends GroupAccountState {
   List<Object?> get props => [group];
 }
 
+/// The group exists, but this user may not read it yet.
+///
+/// Distinct from [GroupAccountError] because it is not a failure: the user
+/// asked to join a public group and is waiting on an admin. The backend can
+/// only answer the members/contributions reads with PermissionDenied, and
+/// rendering that as a red "not authorized" error told a user who had done
+/// everything right that something had gone wrong.
+///
+/// [awaitingApproval] separates "you have asked and nobody has decided yet"
+/// from "you are simply not a member", because those need different words and
+/// a different call to action.
+class GroupAccountAwaitingApproval extends GroupAccountState {
+  final String groupId;
+  final GroupAccount? group;
+  final bool awaitingApproval;
+
+  const GroupAccountAwaitingApproval({
+    required this.groupId,
+    this.group,
+    this.awaitingApproval = true,
+  });
+
+  @override
+  List<Object?> get props => [groupId, group, awaitingApproval];
+}
+
 class GroupAccountError extends GroupAccountState {
   final String message;
 

@@ -453,10 +453,59 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         return;
       }
       if (!silent) {
+        // A permission denial here is usually not an error at all: the user
+        // opened a PUBLIC group they have asked to join and an admin has not
+        // decided yet. The members/contributions reads can only answer
+        // PermissionDenied, so without this the app told a user who had done
+        // everything right that something had gone wrong, in red.
+        if (_isNotAuthorized(e)) {
+          emit(await _resolveAccessState(groupId));
+          return;
+        }
         emit(
             GroupAccountError('Failed to load group details: ${e.toString()}'));
       }
     }
+  }
+
+  /// True when the backend refused the read for authorisation reasons.
+  ///
+  /// Matches on the gRPC status code first and only falls back to the message
+  /// text, because the wording is a server-side string that can change without
+  /// anyone thinking to look here.
+  bool _isNotAuthorized(Object e) {
+    if (e is GrpcError) {
+      return e.code == StatusCode.permissionDenied;
+    }
+    final s = e.toString().toLowerCase();
+    return s.contains('not authorized') ||
+        s.contains('not authorised') ||
+        s.contains('permission denied');
+  }
+
+  /// Work out WHY the read was refused, so the screen can say something true.
+  ///
+  /// The public-group endpoint is readable without membership and carries
+  /// `hasPendingJoinRequest`, which is the only thing that distinguishes "your
+  /// request is waiting" from "you are not a member". If even that call fails
+  /// we still return the awaiting state rather than an error: the user cannot
+  /// act on a gRPC failure, and "waiting for approval" is both the far more
+  /// likely case and the one that does not accuse them of anything.
+  Future<GroupAccountState> _resolveAccessState(String groupId) async {
+    try {
+      final pub = await getPublicGroup?.call(groupId);
+      if (pub != null) {
+        return GroupAccountAwaitingApproval(
+          groupId: groupId,
+          group: pub.group,
+          awaitingApproval: pub.group.hasPendingJoinRequest,
+        );
+      }
+    } catch (e) {
+      debugPrint(
+          '[GroupAccountCubit] could not resolve access state for $groupId: $e');
+    }
+    return GroupAccountAwaitingApproval(groupId: groupId);
   }
 
   Future<void> createNewGroup({

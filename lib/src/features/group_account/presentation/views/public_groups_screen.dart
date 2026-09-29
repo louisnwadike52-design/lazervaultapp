@@ -435,9 +435,20 @@ class _PublicGroupsScreenState extends State<PublicGroupsScreen> {
           color: const Color(0xFF3B82F6),
           borderRadius: BorderRadius.circular(8.r),
         ),
-        child: isJoining
-            ? LazerVaultLoader.tiny()
-            : Text(
+        // The label stays in the tree while joining, just invisible, and the
+        // loader sits on top of it.
+        //
+        // Swapping the Text OUT for the loader let the pill resize to whatever
+        // the loader measured, so the moment you tapped Join the button
+        // visibly shrank and its padding collapsed. Keeping the widest child
+        // mounted pins the geometry, so the button holds its exact shape and
+        // only the contents change.
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Opacity(
+              opacity: isJoining ? 0.0 : 1.0,
+              child: Text(
                 'Join',
                 style: GoogleFonts.inter(
                   color: Colors.white,
@@ -445,6 +456,13 @@ class _PublicGroupsScreenState extends State<PublicGroupsScreen> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
+            ),
+            if (isJoining)
+              Positioned.fill(
+                child: Center(child: LazerVaultLoader.tiny()),
+              ),
+          ],
+        ),
       ),
     );
   }

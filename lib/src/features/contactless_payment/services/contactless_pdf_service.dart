@@ -445,9 +445,12 @@ class ContactlessPdfService {
               if (transaction.category != null &&
                   transaction.category!.isNotEmpty)
                 _buildDetailRow('Category', transaction.category!),
+              // Reference alone identifies the payment on a receipt. The
+              // "Transaction ID" row beside it was a TRUNCATED internal uuid
+              // (first 8 chars), which is not something support or the user
+              // can look anything up by, and having two id-looking fields
+              // invites quoting the wrong one.
               _buildDetailRow('Reference', transaction.referenceNumber),
-              _buildDetailRow('Transaction ID',
-                  transaction.id.substring(0, 8).toUpperCase()),
               _buildDetailRow('Date/Time',
                   _fullDateTimeFormat.format(transaction.createdAt)),
               _buildDetailRow('Method', 'NFC Contactless'),

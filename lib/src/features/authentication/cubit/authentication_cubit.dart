@@ -416,12 +416,21 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         isSocial: loginMethodNow == 'social',
       );
 
-      // Reset locale/currency from registration country (in-memory, derived)
-      final localeManager = serviceLocator<LocaleManager>();
-      final country = profile.user.country;
-      if (country != null && country.isNotEmpty) {
-        localeManager.resetToCountry(country.toUpperCase());
-      }
+      // EVERY login lands on the NGN locale, unconditionally.
+      //
+      // LocaleManager is a DI singleton holding the locale purely in memory,
+      // and logging out does not recreate it — the process keeps running. The
+      // reset here used to be conditional on the profile carrying a country, so
+      // whenever it was null or empty NOTHING reset and the region the previous
+      // user had switched to survived straight into the next session: a fresh
+      // login could open on a locale nobody had chosen, scoping dashboards,
+      // budgets and group data to the wrong region.
+      //
+      // NGN rather than the registration country because it is the only region
+      // where the platform is fully operational; every other locale currently
+      // offers exchange alone. A user whose profile says GB must still land
+      // somewhere that works, and can switch region deliberately afterwards.
+      serviceLocator<LocaleManager>().resetToDefault();
 
       // Resolve + pin the Send Funds flow (short vs long) ONCE per session, right
       // beside the login-flow resolution above. Every send ENTRY point then reads
@@ -482,6 +491,18 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     _currentProfile = null;
   }
 
+  /// LocaleManager if it is registered. Teardown runs in paths where the DI
+  /// container may not be fully wired (widget tests, a failure during startup),
+  /// and a missing locale service must never be what stops a session from being
+  /// cleared.
+  LocaleManager? _localeManagerOrNull() {
+    try {
+      return serviceLocator<LocaleManager>();
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> _clearSession({bool preserveRefreshToken = false}) async {
     // Drop any notification destination stashed for the outgoing user. These
     // targets are account-specific (an invoice id, a chat with a contact) and
@@ -493,6 +514,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     // through, including the auto-login path that clears a definitively
     // rejected refresh token without the user ever pressing Log out.
     PendingDeepLink.instance.clear();
+    // Region is per-session, and LocaleManager is a process-lifetime singleton,
+    // so a teardown that leaves it set hands the outgoing user's region to
+    // whoever logs in next — including on the pre-login screens, before any
+    // profile has loaded. Cleared at the same chokepoint as the active account
+    // and the deep-link stash, for the same reason.
+    _localeManagerOrNull()?.resetToDefault();
     try {
       await _storage.delete(key: _accessTokenKey);
       // preserveRefreshToken: biometric-enabled logout keeps the device-bound
