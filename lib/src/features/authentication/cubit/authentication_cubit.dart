@@ -719,6 +719,33 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     );
   }
 
+  /// Completes sign-in without the code when the operator allows it.
+  ///
+  /// Emits the SAME AuthenticationSuccess a verify does, so the OTP screen's
+  /// existing listener lands the user on the dashboard. Previously "Skip for
+  /// now" had no server path at all and the screen replaced the stack with the
+  /// login page — the user was bounced out of the app they had just signed
+  /// into.
+  Future<void> skipLoginOtp({required String stepUpToken}) async {
+    if (isClosed) return;
+    emit(const AuthenticationLoading());
+    final result = await _authRepository.skipLoginOtp(stepUpToken: stepUpToken);
+    if (isClosed) return;
+    if (result.isLeft()) {
+      final failure =
+          result.fold((l) => l, (r) => throw StateError('unreachable'));
+      emit(AuthenticationError(
+        failure.message,
+        code: failure is StepUpVerifyFailure ? failure.code : '',
+      ));
+    } else {
+      final profile =
+          result.fold((l) => throw StateError('unreachable'), (r) => r);
+      await _saveSession(profile);
+      emit(AuthenticationSuccess(profile));
+    }
+  }
+
   Future<void> verifyLoginOtp({
     required String stepUpToken,
     required String code,

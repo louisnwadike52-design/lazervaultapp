@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -306,10 +306,23 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
   // reversible choice — which is what "admin-tunable" has to mean to be worth
   // anything.
   void _onSkipDeviceVerification() {
-    _ticker?.cancel();
-    // Same exit as the labelled escape hatch: replace the stack, because the
-    // PopScope(canPop:false) on this gate vetoes pops.
-    Get.offAllNamed(AppRoutes.freshLoginEntry);
+    // WAS: Get.offAllNamed(freshLoginEntry) — which sent the user BACK to the
+    // login screen they had just come through. Not a workaround: there was no
+    // server path to complete a step-up without a code, because the step-up
+    // token is the OTP row id, not a session. The button could not work no
+    // matter what this screen did.
+    //
+    // SkipLoginOtp now exchanges that token for a real session, and emits the
+    // same AuthenticationSuccess a verify does — so the listener above lands
+    // the user on the dashboard through one code path, not two.
+    //
+    // The ticker keeps running on purpose. If the server refuses (the operator
+    // turned skipping off between render and tap) the listener shows the error
+    // and the user is still on a live challenge with a countdown that means
+    // something. Cancelling here would leave a working code looking expired.
+    context
+        .read<AuthenticationCubit>()
+        .skipLoginOtp(stepUpToken: widget.stepUpToken);
   }
 
   Future<void> _requestNewCode() async {
@@ -499,10 +512,20 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
                       fontWeight: FontWeight.w600),
                 ),
               ),
-              // Shown only when an admin has turned email verification off.
-              // FeatureFlags defaults this to REQUIRED, so the control is
-              // absent unless the server has said otherwise.
-              if (!FeatureFlags.isEmailVerificationRequired)
+              // Shown only when an operator has enabled the escape hatch.
+              // Defaults to hidden, so a config-read failure renders no skip
+              // and being wrong fails towards asking for the code.
+              //
+              // EndpointRegistry.otpSkipButtonVisible, NOT
+              // FeatureFlags.isEmailVerificationRequired.
+              //
+              // The button was gated on the ONBOARDING email-verification
+              // setting, which is a different control for a different
+              // question. auth_otp_skip_button_visible exists for exactly this
+              // and is the same key the SERVER checks before honouring a skip
+              // — so the control and the capability can no longer disagree,
+              // and a visible button is always one the backend will accept.
+              if (EndpointRegistry.instance.otpSkipButtonVisible)
                 TextButton(
                   onPressed: (_submitting || _resending)
                       ? null

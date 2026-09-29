@@ -655,16 +655,27 @@ class EndpointRegistry {
       'false';
 
   /// Whether the new-device OTP screen offers a "Skip for now" affordance.
-  /// Admin-tunable via `auth_otp_skip_button_visible`; defaults to ON.
+  /// Admin-tunable via `auth_otp_skip_button_visible`; defaults to OFF.
   ///
-  /// UI-ONLY, and deliberately so: this screen holds a step-up token and NO
-  /// session — tokens are issued only after the code is verified — so nothing
-  /// here can skip INTO the app. The button abandons the step-up and returns to
-  /// login. Whether a code is demanded at all is a BACKEND decision
-  /// (`auth_adaptive_otp_enabled`), not something the client can wave away.
+  /// NO LONGER UI-ONLY. It used to be: the screen holds a step-up token and no
+  /// session, so the button could only abandon the challenge and return to
+  /// login — which is exactly what users reported, being bounced out of the app
+  /// they had just signed into. auth-service now exposes SkipLoginOtp, which
+  /// exchanges that token for a real session while leaving the device
+  /// UNVERIFIED, so the next login raises the same challenge. A deferral, not a
+  /// bypass.
+  ///
+  /// DEFAULT OFF, and it must stay off, for two reasons that point the same
+  /// way. It is a security affordance, so an unreadable config must never be
+  /// the reason one appears. And the SERVER defaults the same key to false —
+  /// a default of ON here would render a button the backend then refuses,
+  /// which is worse than no button at all.
+  ///
+  /// Whether a code is demanded in the first place remains a backend decision
+  /// (`auth_adaptive_otp_enabled`); this only governs the way out of one.
   bool get otpSkipButtonVisible =>
-      _get('auth_otp_skip_button_visible', 'true').trim().toLowerCase() !=
-      'false';
+      _get('auth_otp_skip_button_visible', 'false').trim().toLowerCase() ==
+      'true';
 
   /// Raw read for any registered key — for places that store/read a key
   /// the typed accessors don't (yet) cover.

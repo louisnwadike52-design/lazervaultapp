@@ -295,6 +295,23 @@ class AuthRepositoryImpl implements IAuthRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, ProfileEntity>> skipLoginOtp({
+    required String stepUpToken,
+  }) async {
+    // Same response shape as a verify, so success takes the one session path.
+    return _processAuthResponse(() async {
+      final dev = await _deviceFields();
+      return await _authServiceClient.skipLoginOtp(
+        auth_req_resp.SkipLoginOtpRequest(
+          stepUpToken: stepUpToken,
+          deviceId: dev.id,
+          deviceName: dev.name,
+        ),
+      );
+    });
+  }
+
   Future<Either<Failure, ProfileEntity>> verifyLoginOtp({
     required String stepUpToken,
     required String code,

@@ -107,6 +107,13 @@ abstract class IAuthRepository {
   /// Requests a fresh step-up code; returns the new lifetime in seconds.
   Future<Either<Failure, int>> resendLoginOtp({required String stepUpToken});
 
+  /// Completes sign-in WITHOUT the code, when an operator has enabled the
+  /// escape hatch. The device stays unverified server-side, so the next login
+  /// raises the same challenge — a deferral, not a bypass.
+  Future<Either<Failure, ProfileEntity>> skipLoginOtp({
+    required String stepUpToken,
+  });
+
   Future<Either<Failure, ProfileEntity>> verifyLoginOtp({
     required String stepUpToken,
     required String code,

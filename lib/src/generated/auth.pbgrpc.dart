@@ -300,6 +300,20 @@ class AuthServiceClient extends $grpc.Client {
     return $createUnaryCall(_$resendLoginOtp, request, options: options);
   }
 
+  /// Complete sign-in WITHOUT entering the code, when an operator has enabled
+  /// the escape hatch (auth_otp_skip_button_visible).
+  ///
+  /// Skipping is not a bypass. The device stays UNVERIFIED, so the risk engine
+  /// raises the same challenge on the very next login — which is precisely the
+  /// contract the OTP screen already documents. Refused with FAILED_PRECONDITION
+  /// when the operator has skipping disabled, so the server decides, not the app.
+  $grpc.ResponseFuture<$0.LoginResponse> skipLoginOtp(
+    $0.SkipLoginOtpRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$skipLoginOtp, request, options: options);
+  }
+
   $grpc.ResponseFuture<$0.LoginResponse> verifyLoginOtp(
     $0.VerifyLoginOtpRequest request, {
     $grpc.CallOptions? options,
@@ -1123,6 +1137,11 @@ class AuthServiceClient extends $grpc.Client {
           '/pb.AuthService/ResendLoginOtp',
           ($0.ResendLoginOtpRequest value) => value.writeToBuffer(),
           $0.LoginResponse.fromBuffer);
+  static final _$skipLoginOtp =
+      $grpc.ClientMethod<$0.SkipLoginOtpRequest, $0.LoginResponse>(
+          '/pb.AuthService/SkipLoginOtp',
+          ($0.SkipLoginOtpRequest value) => value.writeToBuffer(),
+          $0.LoginResponse.fromBuffer);
   static final _$verifyLoginOtp =
       $grpc.ClientMethod<$0.VerifyLoginOtpRequest, $0.LoginResponse>(
           '/pb.AuthService/VerifyLoginOtp',
@@ -1757,6 +1776,14 @@ abstract class AuthServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) =>
             $0.ResendLoginOtpRequest.fromBuffer(value),
+        ($0.LoginResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SkipLoginOtpRequest, $0.LoginResponse>(
+        'SkipLoginOtp',
+        skipLoginOtp_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.SkipLoginOtpRequest.fromBuffer(value),
         ($0.LoginResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.VerifyLoginOtpRequest, $0.LoginResponse>(
         'VerifyLoginOtp',
@@ -2638,6 +2665,14 @@ abstract class AuthServiceBase extends $grpc.Service {
 
   $async.Future<$0.LoginResponse> resendLoginOtp(
       $grpc.ServiceCall call, $0.ResendLoginOtpRequest request);
+
+  $async.Future<$0.LoginResponse> skipLoginOtp_Pre($grpc.ServiceCall $call,
+      $async.Future<$0.SkipLoginOtpRequest> $request) async {
+    return skipLoginOtp($call, await $request);
+  }
+
+  $async.Future<$0.LoginResponse> skipLoginOtp(
+      $grpc.ServiceCall call, $0.SkipLoginOtpRequest request);
 
   $async.Future<$0.LoginResponse> verifyLoginOtp_Pre($grpc.ServiceCall $call,
       $async.Future<$0.VerifyLoginOtpRequest> $request) async {

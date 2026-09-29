@@ -10791,6 +10791,86 @@ class ResendLoginOtpRequest extends $pb.GeneratedMessage {
   void clearStepUpToken() => $_clearField(1);
 }
 
+class SkipLoginOtpRequest extends $pb.GeneratedMessage {
+  factory SkipLoginOtpRequest({
+    $core.String? stepUpToken,
+    $core.String? deviceId,
+    $core.String? deviceName,
+  }) {
+    final result = create();
+    if (stepUpToken != null) result.stepUpToken = stepUpToken;
+    if (deviceId != null) result.deviceId = deviceId;
+    if (deviceName != null) result.deviceName = deviceName;
+    return result;
+  }
+
+  SkipLoginOtpRequest._();
+
+  factory SkipLoginOtpRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SkipLoginOtpRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SkipLoginOtpRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'stepUpToken')
+    ..aOS(2, _omitFieldNames ? '' : 'deviceId')
+    ..aOS(3, _omitFieldNames ? '' : 'deviceName')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SkipLoginOtpRequest clone() => SkipLoginOtpRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SkipLoginOtpRequest copyWith(void Function(SkipLoginOtpRequest) updates) =>
+      super.copyWith((message) => updates(message as SkipLoginOtpRequest))
+          as SkipLoginOtpRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SkipLoginOtpRequest create() => SkipLoginOtpRequest._();
+  @$core.override
+  SkipLoginOtpRequest createEmptyInstance() => create();
+  static $pb.PbList<SkipLoginOtpRequest> createRepeated() =>
+      $pb.PbList<SkipLoginOtpRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SkipLoginOtpRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SkipLoginOtpRequest>(create);
+  static SkipLoginOtpRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get stepUpToken => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set stepUpToken($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasStepUpToken() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearStepUpToken() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get deviceId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set deviceId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasDeviceId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDeviceId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get deviceName => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set deviceName($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasDeviceName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDeviceName() => $_clearField(3);
+}
+
 class VerifyLoginOtpRequest extends $pb.GeneratedMessage {
   factory VerifyLoginOtpRequest({
     $core.String? stepUpToken,

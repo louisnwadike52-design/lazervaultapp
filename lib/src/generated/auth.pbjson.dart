@@ -2571,6 +2571,22 @@ final $typed_data.Uint8List resendLoginOtpRequestDescriptor = $convert.base64Dec
     'ChVSZXNlbmRMb2dpbk90cFJlcXVlc3QSIgoNc3RlcF91cF90b2tlbhgBIAEoCVILc3RlcFVwVG'
     '9rZW4=');
 
+@$core.Deprecated('Use skipLoginOtpRequestDescriptor instead')
+const SkipLoginOtpRequest$json = {
+  '1': 'SkipLoginOtpRequest',
+  '2': [
+    {'1': 'step_up_token', '3': 1, '4': 1, '5': 9, '10': 'stepUpToken'},
+    {'1': 'device_id', '3': 2, '4': 1, '5': 9, '10': 'deviceId'},
+    {'1': 'device_name', '3': 3, '4': 1, '5': 9, '10': 'deviceName'},
+  ],
+};
+
+/// Descriptor for `SkipLoginOtpRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List skipLoginOtpRequestDescriptor = $convert.base64Decode(
+    'ChNTa2lwTG9naW5PdHBSZXF1ZXN0EiIKDXN0ZXBfdXBfdG9rZW4YASABKAlSC3N0ZXBVcFRva2'
+    'VuEhsKCWRldmljZV9pZBgCIAEoCVIIZGV2aWNlSWQSHwoLZGV2aWNlX25hbWUYAyABKAlSCmRl'
+    'dmljZU5hbWU=');
+
 @$core.Deprecated('Use verifyLoginOtpRequestDescriptor instead')
 const VerifyLoginOtpRequest$json = {
   '1': 'VerifyLoginOtpRequest',
