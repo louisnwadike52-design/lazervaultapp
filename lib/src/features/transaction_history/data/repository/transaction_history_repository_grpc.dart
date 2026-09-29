@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:lazervault/src/features/transaction_history/data/repository/external_transfer_merge.dart';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/src/core/grpc/accounts_grpc_client.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart';
@@ -73,36 +75,9 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
   /// BOTH sources). Ledger rows win (richer fields); external fills in the
   /// pending/failed ones the ledger never records. Newest-first.
   List<UnifiedTransaction> _mergeExternalTransfers(
-      List<UnifiedTransaction> ledger, List<UnifiedTransaction> external) {
-    String keyFor(UnifiedTransaction tx) {
-      // An external-transfer CAPTURE ledger row is named HOLD-CAP-<reserveId>
-      // but carries the real payment reference (TRF-…) in metadata; the payments
-      // source keys the same transfer as TRF-… . So ONLY for capture rows do we
-      // prefer the metadata reference — that makes the two sources collide on
-      // one key and stops a COMPLETED external transfer being listed twice.
-      // Every other ledger row keeps its own reference, so unrelated rows that
-      // happen to share a metadata.reference are never over-collapsed.
-      final selfRef = tx.transactionReference ?? tx.id;
-      final metaRef = (tx.metadata?['reference'] as String?)?.trim();
-      final ref = (selfRef.startsWith('HOLD-CAP') &&
-              metaRef != null &&
-              metaRef.isNotEmpty)
-          ? metaRef
-          : selfRef;
-      final base = ref.endsWith('-CR') ? ref.substring(0, ref.length - 3) : ref;
-      return '${base}_${tx.flow.name}';
-    }
+          List<UnifiedTransaction> ledger, List<UnifiedTransaction> external) =>
+      mergeExternalTransfers(ledger, external);
 
-    final byKey = <String, UnifiedTransaction>{};
-    for (final tx in ledger) {
-      byKey[keyFor(tx)] = tx;
-    }
-    for (final tx in external) {
-      byKey.putIfAbsent(keyFor(tx), () => tx);
-    }
-    return byKey.values.toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-  }
 
   @override
   Future<TransactionListResponse> fetchAllTransactions({
