@@ -141,11 +141,23 @@ class CryptoRuntimeConfig extends Equatable {
           'ngn': [5000, 10000, 25000, 50000],
           'usdt': [5, 10, 25, 50],
         },
-        defaultSpreadBps: 50,
+        // 25 bps, matching crypto.spread.default.bps on the server.
+        //
+        // These were 50 and 150 while the server charges 25 — so before the
+        // first config RPC the app quoted 0.50% or 1.50% for a 0.25% charge.
+        // Over-quoting is the safe direction (nobody is under-charged) but it
+        // makes the platform look up to six times more expensive than it is,
+        // on the screen where a user decides whether to trade at all.
+        //
+        // Unlike the min/max floors these cannot simply be emptied: feeForOp
+        // must return a number to render a confirm sheet. So they mirror the
+        // server's configured value, and the comment says where to change it
+        // if that value moves.
+        defaultSpreadBps: 25,
         quoteExpirySeconds: 15,
         refreshGraceSeconds: 2,
         supportedQuoteCurrencies: ['ngn', 'usdt'],
-        feeDisplayFallbackBps: 150,
+        feeDisplayFallbackBps: 25,
         // Same rule as minOrderMinorUnits: a delivery minimum is Quidax's to
         // state, and it is learned from the provider's own refusal message
         // (learnDeliveryMinFromError). Seeding a guess here would block a
