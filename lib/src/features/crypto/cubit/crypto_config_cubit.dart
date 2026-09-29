@@ -104,7 +104,23 @@ class CryptoRuntimeConfig extends Equatable {
   /// `DefaultCryptoWorkerConfig()` in the Go service so the UI is functional
   /// even without a server roundtrip (e.g. cold start, airplane mode).
   factory CryptoRuntimeConfig.defaults() => const CryptoRuntimeConfig(
-        minOrderMinorUnits: {'ngn': 100000, 'usdt': 900000},
+        // NO app-layer floor until Quidax's real one arrives.
+        //
+        // This used to seed {'ngn': 100000, 'usdt': 900000} — ₦1,000 and
+        // 0.9 USDT. Quidax's actual market minimums are higher than both, so
+        // the guess was wrong in the DANGEROUS direction: it let a user enter
+        // an amount the app accepted and Quidax then refused. That is the
+        // shape of the "I put 1 USDT and it still says the minimum is one"
+        // confusion — an app-layer floor disagreeing with the real one is
+        // worse than no floor, because it converts a clear server message
+        // into a contradiction the user cannot act on.
+        //
+        // Every caller already reads a missing entry as "no app-layer floor"
+        // (minOrderFor returns null; swap/send/buy/sell all guard on
+        // `== null || <= 0`). So on a cold start the server — which resolves
+        // the floor from Quidax's minimum_order_size — is the single
+        // authority, and the user sees the true limit instead of ours.
+        minOrderMinorUnits: {},
         // MUST mirror the Go service's `quidax.LedgerMinorUnitDecimals` (the
         // platform LEDGER minor-unit scale the withdraw/swap sagas compare
         // against) — NOT Quidax display precision. Getting this wrong under-
@@ -130,9 +146,12 @@ class CryptoRuntimeConfig extends Equatable {
         refreshGraceSeconds: 2,
         supportedQuoteCurrencies: ['ngn', 'usdt'],
         feeDisplayFallbackBps: 150,
-        // Mirrors the server seed; replaced by Quidax-synced values on the
-        // first config RPC.
-        minDeliverable: {'eth': 0.001},
+        // Same rule as minOrderMinorUnits: a delivery minimum is Quidax's to
+        // state, and it is learned from the provider's own refusal message
+        // (learnDeliveryMinFromError). Seeding a guess here would block a
+        // deliverable amount, or pass an undeliverable one, before the real
+        // value has ever been fetched.
+        minDeliverable: {},
       );
 
   /// Returns the per-currency minimum order in minor units, or null if not
