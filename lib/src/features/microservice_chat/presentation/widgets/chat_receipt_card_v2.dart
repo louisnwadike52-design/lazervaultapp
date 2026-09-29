@@ -1,3 +1,9 @@
+import 'dart:async';
+
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/src/features/funds_transfer/services/transfer_websocket_service.dart';
+import 'package:lazervault/src/features/funds/data/datasources/payments_transfer_data_source.dart';
 import 'package:flutter/material.dart';
 import 'chat_receipt_extras.dart';
 import 'package:get/get.dart';
@@ -51,7 +57,142 @@ class ChatReceiptCardV2 extends StatefulWidget {
 class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
   bool _isSharing = false;
 
-  String _s(String key) => widget.payload[key]?.toString() ?? '';
+  /// Status as of NOW, when it has moved on from what the agent sent.
+  ///
+  /// V2 rendered `payload['status']` forever. V1 — the card this one replaced
+  /// — already knew better and polled, so the newer, preferred card was the
+  /// weaker one: an external transfer that settles a minute after the agent
+  /// answers kept reading "Pending" in chat and in voice. A user who sees that
+  /// re-sends, or asks support about money the recipient already has.
+  ///
+  /// Two sources, in order of preference:
+  ///   1. The live socket (/ws/transfer). Instant, and now that the gateway
+  ///      carries `reference` it can be matched to this exact card.
+  ///   2. A bounded poll, identical in shape to V1's, for when the socket is
+  ///      unavailable. Stops on a terminal status and gives up after
+  ///      [_maxStatusPolls] — a transcript can hold many receipts, and an
+  ///      unbounded timer per card would have old conversations quietly
+  ///      hammering the gateway forever.
+  String? _liveStatus;
+  StreamSubscription<TransferStatusEvent>? _wsSub;
+  Timer? _statusTimer;
+  int _statusPolls = 0;
+  bool _statusFetching = false;
+  static const int _maxStatusPolls = 20;
+  static const Duration _statusInterval = Duration(seconds: 6);
+
+  /// Reads a payload field. `status` is special-cased so every existing render
+  /// site picks up the live value without each one having to know about it.
+  String _s(String key) {
+    if (key == 'status' && _liveStatus != null) return _liveStatus!;
+    return widget.payload[key]?.toString() ?? '';
+  }
+
+  static bool _isTerminalStatus(String s) {
+    switch (s.toLowerCase()) {
+      case 'completed':
+      case 'success':
+      case 'successful':
+      case 'paid':
+      case 'settled':
+      case 'failed':
+      case 'declined':
+      case 'rejected':
+      case 'reversed':
+      case 'refunded':
+      case 'cancelled':
+      case 'canceled':
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _startLiveStatus();
+  }
+
+  @override
+  void dispose() {
+    _wsSub?.cancel();
+    _statusTimer?.cancel();
+    super.dispose();
+  }
+
+  /// Only for a receipt that has somewhere to go: unsettled, and with a
+  /// reference to look itself up by.
+  void _startLiveStatus() {
+    final ref = _s('reference');
+    if (ref.isEmpty) return;
+    if (_isTerminalStatus(_s('status'))) return;
+    // Transfers are the only kind this feed reports on.
+    final type = _s('transaction_type').toLowerCase();
+    if (type.isNotEmpty && !type.contains('transfer')) return;
+
+    unawaited(_subscribeSocket(ref));
+
+    _statusTimer = Timer.periodic(_statusInterval, (_) => _refreshStatus());
+    // Check once immediately: reopening an old chat should correct a stale
+    // card now, not six seconds from now.
+    unawaited(_refreshStatus());
+  }
+
+  Future<void> _subscribeSocket(String ref) async {
+    try {
+      final ws = serviceLocator<TransferWebSocketService>();
+      _wsSub = ws.transferUpdates.listen((e) {
+        if (!mounted) return;
+        if (e.reference.isEmpty || e.reference != ref) return;
+        _applyStatus(e.status);
+        if (e.isTerminal) {
+          _statusTimer?.cancel();
+          _wsSub?.cancel();
+        }
+      });
+      final storage = serviceLocator<SecureStorageService>();
+      final userId = await storage.getCurrentUserId() ?? await storage.getUserId();
+      final token = await storage.getAccessToken();
+      if (userId != null && token != null && userId.isNotEmpty && token.isNotEmpty) {
+        // Idempotent: the shared service early-returns when already connected.
+        await ws.connect(userId: userId, accessToken: token);
+      }
+    } catch (_) {
+      // The socket is an optimisation. The poll below is the guarantee.
+    }
+  }
+
+  void _applyStatus(String next) {
+    if (!mounted || next.isEmpty) return;
+    if (next.toLowerCase() == _s('status').toLowerCase()) return;
+    // Re-render silently — the badge settles, nothing demands attention.
+    setState(() => _liveStatus = next);
+  }
+
+  Future<void> _refreshStatus() async {
+    if (_statusFetching || !mounted) return;
+    if (_statusPolls >= _maxStatusPolls) {
+      _statusTimer?.cancel();
+      return;
+    }
+    final ref = _s('reference');
+    if (ref.isEmpty) return;
+    _statusFetching = true;
+    _statusPolls++;
+    try {
+      final snap = await serviceLocator<IPaymentsTransferDataSource>()
+          .getTransferStatus(reference: ref);
+      if (!mounted || snap == null || snap.status.isEmpty) return;
+      _applyStatus(snap.status);
+      if (snap.isTerminal) _statusTimer?.cancel();
+    } catch (_) {
+      // Keep the last known status. A failed poll must never downgrade a card
+      // that already reads as successful.
+    } finally {
+      _statusFetching = false;
+    }
+  }
 
   /// Currency symbol for the amount display (₦500, not "500 NGN"). Falls back to
   /// the code + space for currencies without a common single-glyph symbol.

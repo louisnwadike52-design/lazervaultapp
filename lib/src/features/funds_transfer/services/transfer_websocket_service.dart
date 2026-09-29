@@ -10,38 +10,89 @@ import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/utils/api_headers.dart';
 
-/// Transfer status event received from WebSocket
+/// Transfer status event received from WebSocket.
+///
+/// [reference] is the field that makes this feed usable to anything that has
+/// already drawn the transfer: it is the platform-canonical id chat and voice
+/// receipt cards are keyed by, so it is how an update finds the card on
+/// screen. The gateway did not send it (and could not — its Kafka consumer
+/// failed to decode the publisher's payload at all), which is why nothing ever
+/// subscribed and the receipt SCREEN polls instead.
 class TransferStatusEvent {
   final String transferId;
+  final String reference;
   final String userId;
   final String status;
+  final double? amount;
+  final String? currency;
+  final String? recipient;
   final String? errorMessage;
   final String eventType;
   final int timestamp;
 
   TransferStatusEvent({
     required this.transferId,
+    this.reference = '',
     required this.userId,
     required this.status,
+    this.amount,
+    this.currency,
+    this.recipient,
     this.errorMessage,
     required this.eventType,
     required this.timestamp,
   });
 
+  /// Tolerant by design. Every field here used to be a hard cast, so one
+  /// absent key threw and took the whole stream's error handler with it —
+  /// unacceptable for a feed whose only job is to make a card more accurate.
+  /// A malformed event should degrade to "no update", never to a crash.
   factory TransferStatusEvent.fromJson(Map<String, dynamic> json) {
+    String str(String k) {
+      final v = json[k];
+      return v == null ? '' : v.toString();
+    }
+
+    final rawAmount = json['amount'];
     return TransferStatusEvent(
-      transferId: json['transfer_id'] as String,
-      userId: json['user_id'] as String,
-      status: json['status'] as String,
-      errorMessage: json['error_message'] as String?,
-      eventType: json['event_type'] as String,
-      timestamp: json['timestamp'] as int,
+      // The gateway sends both; payment_id is the authoritative id and
+      // transfer_id mirrors it.
+      transferId: str('transfer_id').isNotEmpty
+          ? str('transfer_id')
+          : str('payment_id'),
+      reference: str('reference'),
+      userId: str('user_id'),
+      status: str('status'),
+      amount: rawAmount is num ? rawAmount.toDouble() : null,
+      currency: str('currency').isEmpty ? null : str('currency'),
+      recipient: str('recipient').isEmpty ? null : str('recipient'),
+      errorMessage: str('error_message').isEmpty ? null : str('error_message'),
+      eventType: str('event_type'),
+      timestamp: json['timestamp'] is int ? json['timestamp'] as int : 0,
     );
+  }
+
+  /// True once the transfer can no longer change — the point at which a
+  /// subscriber can stop listening for this reference.
+  bool get isTerminal {
+    switch (status.toLowerCase()) {
+      case 'completed':
+      case 'success':
+      case 'successful':
+      case 'failed':
+      case 'reversed':
+      case 'cancelled':
+      case 'canceled':
+        return true;
+      default:
+        return false;
+    }
   }
 
   @override
   String toString() {
-    return 'TransferStatusEvent(transferId: $transferId, userId: $userId, status: $status, eventType: $eventType)';
+    return 'TransferStatusEvent(transferId: $transferId, reference: $reference, '
+        'userId: $userId, status: $status, eventType: $eventType)';
   }
 }
 

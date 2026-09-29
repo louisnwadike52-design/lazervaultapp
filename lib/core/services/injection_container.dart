@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logger/logger.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
+import 'package:lazervault/src/features/funds_transfer/services/transfer_websocket_service.dart';
 import 'package:lazervault/core/services/grpc_channel_factory.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/panic_balance_service.dart';
@@ -1487,6 +1488,17 @@ Future<void> init() async {
   // push from financial-gateway. Replaces the old polling loop in the
   // processing screen. Registered as singleton so all cubits share one
   // connection.
+  // Live transfer status. One shared socket, lazily connected by whatever
+  // needs it (today: the in-chat receipt card, which otherwise can only poll).
+  // It was written long ago and never registered, so nothing could reach it —
+  // and the gateway it talks to was itself dropping every event, so there was
+  // nothing to reach. Both ends are fixed now.
+  serviceLocator.registerLazySingleton<TransferWebSocketService>(
+    () => TransferWebSocketService(
+      secureStorage: serviceLocator<SecureStorageService>(),
+    ),
+  );
+
   serviceLocator.registerLazySingleton<ExchangeWebSocketService>(
     () => ExchangeWebSocketService(),
   );
