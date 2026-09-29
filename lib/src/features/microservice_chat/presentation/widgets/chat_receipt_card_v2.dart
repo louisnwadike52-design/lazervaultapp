@@ -76,6 +76,7 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
   ///      hammering the gateway forever.
   String? _liveStatus;
   StreamSubscription<TransferStatusEvent>? _wsSub;
+  StreamSubscription<void>? _reconnectSub;
   Timer? _statusTimer;
   int _statusPolls = 0;
   bool _statusFetching = false;
@@ -118,6 +119,7 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
   @override
   void dispose() {
     _wsSub?.cancel();
+    _reconnectSub?.cancel();
     _statusTimer?.cancel();
     super.dispose();
   }
@@ -150,8 +152,20 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
         if (e.isTerminal) {
           _statusTimer?.cancel();
           _wsSub?.cancel();
+          _reconnectSub?.cancel();
         }
       });
+      // Anything that changed while the socket was down was MISSED, not
+      // queued — so a reconnect has to be followed by a read, or a card can
+      // sit on a status that settled during the gap.
+      _reconnectSub = ws.onReconnected.listen((_) {
+        if (!mounted) return;
+        // Give the re-sync its own budget: a reconnect is exactly when the
+        // card is most likely to be stale, and the poll may already be spent.
+        if (_statusPolls >= _maxStatusPolls) _statusPolls = _maxStatusPolls - 1;
+        unawaited(_refreshStatus());
+      });
+
       final storage = serviceLocator<SecureStorageService>();
       final userId = await storage.getCurrentUserId() ?? await storage.getUserId();
       final token = await storage.getAccessToken();

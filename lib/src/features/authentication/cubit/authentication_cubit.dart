@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dartz/dartz.dart' hide State;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/error/failure.dart';
+import 'package:lazervault/src/features/funds_transfer/services/transfer_websocket_service.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_chat_snapshot_cache.dart';
 import 'package:lazervault/src/features/p2p_chat/services/p2p_chat_websocket_service.dart';
 import 'package:lazervault/core/utilities/passcode_policy.dart';
@@ -536,6 +537,17 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       if (serviceLocator.isRegistered<P2PChatWebSocketService>()) {
         try {
           serviceLocator<P2PChatWebSocketService>().disconnect();
+        } catch (_) {}
+      }
+      // Same reasoning for the transfer-status socket, which carries live
+      // receipt updates into chat and voice. It is a lazy singleton holding
+      // THIS user's token, and its connect() early-returns while connected,
+      // so leaving it open would let the next user's session sit on the
+      // previous user's feed. disconnect() also stops the backoff loop, which
+      // would otherwise keep re-dialling with a token that is now revoked.
+      if (serviceLocator.isRegistered<TransferWebSocketService>()) {
+        try {
+          serviceLocator<TransferWebSocketService>().disconnect();
         } catch (_) {}
       }
     } catch (e) {

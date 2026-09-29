@@ -110,6 +110,30 @@ class TransferWebSocketService {
   http.Client? _httpClient;
   StreamSubscription? _sseSubscription;
   final _eventController = StreamController<TransferStatusEvent>.broadcast();
+
+  // --- Reconnect / identity lifecycle -------------------------------------
+  //
+  // This service was never registered in DI, so none of this was exercised:
+  // a dropped socket stayed dropped for the rest of the session, and a
+  // pending receipt card waiting on it simply never heard back. Same shape as
+  // BalanceWebSocketService — capped exponential backoff with jitter, and a
+  // reconnect signal so subscribers can re-sync the state they missed while
+  // the socket was down (events are NOT replayed).
+  Future<void>? _connecting;
+  String? _lastUserId;
+  String? _lastAccessToken;
+  bool _shouldReconnect = false;
+  Timer? _reconnectTimer;
+  int _reconnectAttempts = 0;
+  static const int _maxReconnectAttempts = 12;
+  static const Duration _maxReconnectDelay = Duration(seconds: 30);
+
+  final _reconnectedController = StreamController<void>.broadcast();
+
+  /// Fires after a successful reconnect. A subscriber that cares about state
+  /// rather than events should refetch here: anything that happened while the
+  /// socket was down was missed, not queued.
+  Stream<void> get onReconnected => _reconnectedController.stream;
   final _connectionController =
       StreamController<TransferWebSocketConnectionState>.broadcast();
   Timer? _pingTimer;
@@ -143,15 +167,44 @@ class TransferWebSocketService {
 
   /// Connect to the real-time updates server
   /// Attempts WebSocket first, falls back to SSE if WebSocket fails
+  /// Single-flight connect.
+  ///
+  /// Two receipt cards mounting in the same frame both saw `_isConnected ==
+  /// false` and both opened a socket; one leaked, pinging forever. The
+  /// in-flight future collapses concurrent callers onto one attempt, and the
+  /// identity check below means a user switch re-authenticates instead of
+  /// quietly serving the previous user's feed.
   Future<void> connect({
     required String userId,
     required String accessToken,
   }) async {
-    if (_isConnected) {
-      print('TransferWebSocketService: Already connected');
-      return;
+    if (_isConnected && _lastUserId == userId) return;
+
+    // A different user on the same process must not inherit the open socket.
+    if (_isConnected && _lastUserId != userId) {
+      print('TransferWebSocketService: user changed, reconnecting');
+      _shouldReconnect = false;
+      disconnect();
     }
 
+    final inFlight = _connecting;
+    if (inFlight != null) return inFlight;
+
+    final completer = Completer<void>();
+    _connecting = completer.future;
+    _lastUserId = userId;
+    _lastAccessToken = accessToken;
+    _shouldReconnect = true;
+    try {
+      await _doConnect(userId, accessToken);
+      _reconnectAttempts = 0;
+    } finally {
+      _connecting = null;
+      if (!completer.isCompleted) completer.complete();
+    }
+  }
+
+  Future<void> _doConnect(String userId, String accessToken) async {
     try {
       await _connectWebSocket(userId, accessToken);
     } catch (e) {
@@ -288,8 +341,15 @@ class TransferWebSocketService {
     }
   }
 
-  /// Disconnect from the server
+  /// Disconnect from the server.
+  ///
+  /// Call on sign-out: the socket is authenticated, and leaving it open means
+  /// the next user's process still holds the previous user's feed.
   void disconnect() {
+    _shouldReconnect = false;
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
+    _reconnectAttempts = 0;
     if (!_isConnected) return;
 
     print('TransferWebSocketService: Disconnecting');
@@ -381,6 +441,7 @@ class TransferWebSocketService {
     print('TransferWebSocketService: WebSocket error - $error');
     _isConnected = false;
     _connectionController.add(TransferWebSocketConnectionState.error);
+    _scheduleReconnect();
   }
 
   /// Handle WebSocket connection closed
@@ -388,6 +449,47 @@ class TransferWebSocketService {
     print('TransferWebSocketService: Connection closed');
     _isConnected = false;
     _connectionController.add(TransferWebSocketConnectionState.disconnected);
+    _scheduleReconnect();
+  }
+
+  /// Capped exponential backoff with jitter, so an outage does not produce a
+  /// reconnect stampede. Only runs while a deliberate disconnect has not been
+  /// requested and we still hold credentials.
+  void _scheduleReconnect() {
+    if (!_shouldReconnect || _lastUserId == null || _lastAccessToken == null) {
+      return;
+    }
+    if (_reconnectTimer != null || _connecting != null || _isConnected) return;
+    _reconnectAttempts++;
+    final capped = _reconnectAttempts > _maxReconnectAttempts
+        ? _maxReconnectAttempts
+        : _reconnectAttempts;
+    var seconds = 1 << (capped - 1);
+    if (seconds > _maxReconnectDelay.inSeconds) {
+      seconds = _maxReconnectDelay.inSeconds;
+    }
+    final jitterMs = (seconds * 1000 * 0.2).round();
+    final delayMs = (seconds * 1000) +
+        (DateTime.now().microsecond % (jitterMs == 0 ? 1 : (jitterMs * 2))) -
+        jitterMs;
+    _reconnectTimer =
+        Timer(Duration(milliseconds: delayMs.clamp(500, 60000)), () async {
+      _reconnectTimer = null;
+      if (!_shouldReconnect || _isConnected) return;
+      final uid = _lastUserId, tok = _lastAccessToken;
+      if (uid == null || tok == null) return;
+      try {
+        await _doConnect(uid, tok);
+        if (_isConnected) {
+          _reconnectAttempts = 0;
+          if (!_reconnectedController.isClosed) {
+            _reconnectedController.add(null);
+          }
+        }
+      } catch (_) {
+        _scheduleReconnect();
+      }
+    });
   }
 
   /// Dispose resources
@@ -395,6 +497,7 @@ class TransferWebSocketService {
     disconnect();
     _eventController.close();
     _connectionController.close();
+    _reconnectedController.close();
   }
 
   /// Check if using SSE connection
