@@ -5,6 +5,7 @@ import 'package:lazervault/core/config/locale_gating.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/types/services.dart';
 import 'package:lazervault/src/features/widgets/app_services_builder.dart';
 import 'package:lazervault/core/services/account_update_announcement_service.dart';
 import 'package:lazervault/src/features/onboarding/dashboard_walkthrough.dart';
@@ -384,14 +385,24 @@ class _DashboardState extends State<Dashboard> {
                       // constructed, so the dashboard does not fire the
                       // trending/public-groups fetches in a region whose
                       // results it will not show.
-                      if (LocaleGating.sectionAllowed('crowdfunds')) ...[
+                      // ALSO gated on the ACTIVE ACCOUNT offering the service.
+                      // A crowdfund belongs to a personal wallet; on a business
+                      // or savings pot the rail would advertise something that
+                      // account cannot do. The predicate reads the same
+                      // per-account service lists the quick-grid is built from,
+                      // so the two can never disagree.
+                      if (LocaleGating.sectionAllowed('crowdfunds') &&
+                          AppServicesBuilder.activeAccountSupports(
+                              AppServiceName.crowdfund)) ...[
                         SizedBox(height: 16.0.h),
                         BlocProvider(
                           create: (_) => serviceLocator<LeaderboardCubit>(),
                           child: const TrendingCrowdfunds(),
                         ),
                       ],
-                      if (LocaleGating.sectionAllowed('public_groups')) ...[
+                      if (LocaleGating.sectionAllowed('public_groups') &&
+                          AppServicesBuilder.activeAccountSupports(
+                              AppServiceName.groupAccount)) ...[
                         SizedBox(height: 16.0.h),
                         BlocProvider.value(
                           value: serviceLocator<GroupAccountCubit>(),
@@ -411,14 +422,23 @@ class _DashboardState extends State<Dashboard> {
                         SizedBox(height: 16.0.h),
                         GenerateBankCard(),
                       ],
-                      SizedBox(height: 16.0.h),
-                      Portfolio(),
-                      SizedBox(height: 16.0.h),
-                      BlocProvider(
-                        create: (_) => serviceLocator<DashboardRatesCubit>()
-                          ..loadRates(_getBaseCurrency()),
-                        child: const ExchangeRates(),
-                      ),
+                      // Portfolio belongs to an account that can actually
+                      // hold investments; Exchange rates to one that can
+                      // convert. Same predicate, same source of truth.
+                      if (AppServicesBuilder.activeAccountSupports(
+                          AppServiceName.invest)) ...[
+                        SizedBox(height: 16.0.h),
+                        Portfolio(),
+                      ],
+                      if (AppServicesBuilder.activeAccountSupports(
+                          AppServiceName.exchange)) ...[
+                        SizedBox(height: 16.0.h),
+                        BlocProvider(
+                          create: (_) => serviceLocator<DashboardRatesCubit>()
+                            ..loadRates(_getBaseCurrency()),
+                          child: const ExchangeRates(),
+                        ),
+                      ],
                       SizedBox(height: 16.0.h),
                       MonthlySummary(),
                     ],

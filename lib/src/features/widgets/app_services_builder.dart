@@ -44,6 +44,14 @@ class AppServicesBuilder extends StatefulWidget {
   static List<AppService> getAllServices() =>
       _AppServicesBuilderState.getAllServices();
 
+  /// Whether the ACTIVE account offers a given service. Public forwarder to
+  /// the State's implementation (same library), matching getAllServices above.
+  ///
+  /// The dashboard's discovery sections use this so they can never disagree
+  /// with the quick-service grid about what an account can do.
+  static bool activeAccountSupports(AppServiceName name) =>
+      _AppServicesBuilderState.activeAccountSupports(name);
+
   @override
   State<AppServicesBuilder> createState() => _AppServicesBuilderState();
 }
@@ -386,6 +394,46 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   /// Every service across all account types, deduped by name — the corpus the
   /// dashboard swipe-down search filters over so the user can find ANY platform
   /// service (not just the current account's quick tiles).
+  /// Whether the ACTIVE account offers a given service.
+  ///
+  /// The dashboard's discovery sections (Trending crowdfunds, Public groups,
+  /// Portfolio, Exchange rates) are not universal: a crowdfund or a public
+  /// group belongs to a personal wallet, not to a business or savings pot, and
+  /// showing them there offers an action the account cannot take. Rather than
+  /// hand-maintain a second per-account mapping for the sections, they ask the
+  /// SAME per-account-type service lists the quick-service grid is built from,
+  /// so the two can never disagree and a service added to a list is offered in
+  /// both places at once.
+  ///
+  /// Honours the hidden-service gates too (admin flags, locale), so a section
+  /// disappears wherever its own service does.
+  static bool activeAccountSupports(AppServiceName name) {
+    final raw = _servicesForAccountType(_lastResolvedAccountType);
+    if (!raw.any((s) => s.serviceName == name)) return false;
+    return !_effectiveHiddenServices.contains(name);
+  }
+
+  /// The account type the grid most recently resolved.
+  ///
+  /// Static because the dashboard's sections are built outside this widget and
+  /// must not each re-resolve the active account — that would mean several
+  /// independent lookups disagreeing mid-switch.
+  static VirtualAccountType? _lastResolvedAccountType;
+
+  static List<AppService> _servicesForAccountType(VirtualAccountType? t) {
+    return switch (t) {
+      VirtualAccountType.business => _businessServices,
+      VirtualAccountType.savings => _savingsServices,
+      VirtualAccountType.investment => _investmentServices,
+      VirtualAccountType.usd ||
+      VirtualAccountType.gbp ||
+      VirtualAccountType.eur =>
+        _multiCurrencyServices,
+      VirtualAccountType.family => _familyServices,
+      _ => _personalServices,
+    };
+  }
+
   static List<AppService> getAllServices() {
     final seen = <AppServiceName>{};
     final out = <AppService>[];
@@ -524,17 +572,8 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   }
 
   List<AppService> _rawServicesForActiveAccount() {
-    return switch (_activeAccountType) {
-      VirtualAccountType.business => _businessServices,
-      VirtualAccountType.savings => _savingsServices,
-      VirtualAccountType.investment => _investmentServices,
-      VirtualAccountType.usd ||
-      VirtualAccountType.gbp ||
-      VirtualAccountType.eur =>
-        _multiCurrencyServices,
-      VirtualAccountType.family => _familyServices,
-      _ => _personalServices,
-    };
+    _lastResolvedAccountType = _activeAccountType;
+    return _servicesForAccountType(_activeAccountType);
   }
 
   List<AppService> get _activeServices {
