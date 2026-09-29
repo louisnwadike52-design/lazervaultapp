@@ -460,8 +460,18 @@ class FeatureFlags {
       _prefs?.getBool(localeGatingEnabled) ?? true;
 
   static Set<String> _csv(String key, String fallback) {
-    final raw = (_prefs?.getString(key) ?? '').trim();
-    final source = raw.isEmpty ? fallback : raw;
+    // ABSENT and EMPTY mean different things, and conflating them would
+    // silently overrule the admin.
+    //
+    // An absent key means nobody has configured this yet → use the built-in
+    // default. A key set to the EMPTY STRING is a deliberate choice, and the
+    // gateway validates it as legitimate: for the services list it means
+    // "nothing outside NGN", for the disabled-nav list "disable nothing".
+    // Treating empty as "fall back to the default" would hand an admin who
+    // cleared the services list the default `exchange` instead of the lockout
+    // they asked for — the setting would appear to save and do the opposite.
+    final stored = _prefs?.getString(key);
+    final source = stored == null ? fallback : stored;
     return source
         .split(',')
         .map((e) => e.trim().toLowerCase())

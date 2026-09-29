@@ -814,6 +814,67 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     return totalHeight;
   }
 
+  /// The dashboard's service area in a region the platform does not fully
+  /// serve yet: whatever still works, plus one line explaining the rest.
+  Widget _buildRegionRestrictedServices() {
+    final available = _activeServices;
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.public_rounded,
+                  size: 16.sp, color: const Color(0xFF8E8E93)),
+              SizedBox(width: 8.w),
+              Expanded(
+                child: Text(
+                  'Limited in ${LocaleGating.currentCurrency}',
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                    fontFamily: 'Inter',
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            available.isEmpty
+                ? 'No services are available for ${LocaleGating.currentCurrency} '
+                    'accounts yet. Switch to your Naira account to continue.'
+                : 'Only the services below work with a '
+                    '${LocaleGating.currentCurrency} account for now. Switch to '
+                    'your Naira account for everything else.',
+            style: TextStyle(
+              fontSize: 12.sp,
+              height: 1.45,
+              color: const Color(0xFF8E8E93),
+              fontFamily: 'Inter',
+            ),
+          ),
+          if (available.isNotEmpty) ...[
+            SizedBox(height: 16.h),
+            Wrap(
+              spacing: 12.w,
+              runSpacing: 12.h,
+              children: [
+                for (final service in available)
+                  SizedBox(
+                    width: 72.w,
+                    child: AppServiceBuilder(appService: service),
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Show family setup CTA when active account is a pending family account
@@ -827,6 +888,17 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     if (_activeAccountType == VirtualAccountType.family &&
         _isFamilyProcessing) {
       return _buildFamilyProcessingNotice();
+    }
+
+    // Regional restriction: say WHY the grid is short.
+    //
+    // Without this the user in a non-Naira region just sees a near-empty
+    // dashboard and no reason for it, which reads as the app failing to load
+    // rather than as a deliberate limit they can act on. Also covers the case
+    // where an admin clears the allow-list entirely and NOTHING is available —
+    // an empty grid with no words is the worst possible version of that.
+    if (LocaleGating.restricted) {
+      return _buildRegionRestrictedServices();
     }
 
     final servicePages = _getServicePages();

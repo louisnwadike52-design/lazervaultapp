@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:lazervault/src/features/fraud_detection/presentation/fraud_freeze_flow.dart';
 
@@ -40,6 +41,7 @@ import 'package:lazervault/src/features/pending_actions/presentation/cubit/pendi
 import 'package:lazervault/src/features/pending_actions/presentation/widgets/pending_payments_prompt_sheet.dart';
 import 'package:lazervault/src/features/presentation/views/dashboard/dashboard_tabs.dart';
 import 'package:lazervault/core/config/locale_gating.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 
 /// Set to `true` to show the voice banking setup bottom sheet when the dashboard loads.
 const bool _kShowVoiceSetupDashboardPrompt = false;
@@ -77,6 +79,9 @@ class _DashboardScreenState extends State<DashboardScreen>
   /// opens it — TabBarView keeps the page alive, so its initState only fires
   /// once and wouldn't otherwise re-scroll on re-entry.
   final ValueNotifier<int> _activeTab = ValueNotifier<int>(0);
+
+  /// Watches the active region so a tab that becomes unavailable is left.
+  StreamSubscription<String>? _currencySub;
 
   void _handleOnTabChange(int index) {
     // Refuse a destination this region cannot use.
@@ -126,6 +131,17 @@ class _DashboardScreenState extends State<DashboardScreen>
     final raw = args['initialTab'];
     if (raw is! int || raw < 0 || raw >= DashboardScreen.tabItems.length)
       return;
+    // A deep link must not land on a destination this region cannot use.
+    //
+    // This path assigns _currentIndex DIRECTLY instead of going through
+    // _handleOnTabChange, so the guard there did not cover it: a LazerBeam
+    // receipt closing with initialTab:3 would have opened a non-NGN user
+    // straight onto the disabled Beam tab, past the check meant to stop
+    // exactly that. Fall back to the dashboard rather than refusing to
+    // navigate — the user asked to go somewhere and deserves to arrive.
+    if (!LocaleGating.navAllowed(dashboardTabLabel(raw))) {
+      return;
+    }
     if (raw == _currentIndex) return;
     setState(() {
       _currentIndex = raw;
@@ -168,6 +184,29 @@ class _DashboardScreenState extends State<DashboardScreen>
     _tabController =
         TabController(length: DashboardScreen.tabItems.length, vsync: this);
     _tabController.addListener(_onTabChanged);
+
+    // Leave a tab that the NEW region cannot use.
+    //
+    // Switching region does not move the user, so someone sitting on Beam or
+    // Lifestyle when they switch to a non-NGN account stayed on a screen that
+    // is now disabled everywhere else in the nav — reachable, dimmed in the
+    // bar, and backed by rails that cannot complete. Nothing else would have
+    // moved them off it. Also rebuilds so the dimming and locks re-resolve.
+    try {
+      _currencySub =
+          serviceLocator<LocaleManager>().currencyStream.listen((_) {
+        if (!mounted) return;
+        if (!LocaleGating.navAllowed(dashboardTabLabel(_currentIndex))) {
+          _handleOnTabChange(0);
+        } else {
+          setState(() {});
+        }
+      });
+    } catch (_) {
+      // Locale service unavailable (early startup, widget test): the nav
+      // simply does not react to a region change, which is the pre-existing
+      // behaviour and never worth failing the dashboard over.
+    }
 
     // Panic Balance trigger: shaking the phone twice toggles the decoy (the
     // other trigger is a long-press on the balance). Requiring two shakes avoids
@@ -560,6 +599,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _currencySub?.cancel();
     _updateCubit.close();
     _shakeDetector?.stopListening();
     _activeTab.dispose();
