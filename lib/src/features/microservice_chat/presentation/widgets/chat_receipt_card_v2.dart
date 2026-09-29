@@ -90,25 +90,9 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
     return widget.payload[key]?.toString() ?? '';
   }
 
-  static bool _isTerminalStatus(String s) {
-    switch (s.toLowerCase()) {
-      case 'completed':
-      case 'success':
-      case 'successful':
-      case 'paid':
-      case 'settled':
-      case 'failed':
-      case 'declined':
-      case 'rejected':
-      case 'reversed':
-      case 'refunded':
-      case 'cancelled':
-      case 'canceled':
-        return true;
-      default:
-        return false;
-    }
-  }
+  /// Delegates to the one shared list so the card and the socket event can
+  /// never disagree about when to stop tracking.
+  static bool _isTerminalStatus(String s) => isTerminalTransferStatus(s);
 
   @override
   void initState() {

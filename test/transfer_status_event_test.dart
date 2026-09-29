@@ -53,20 +53,32 @@ void main() {
       expect(e.isTerminal, isFalse);
     });
 
-    test('terminal statuses are recognised in every spelling the stack uses',
-        () {
+    test('terminal statuses match what core-payments actually publishes', () {
+      // Vocabulary source of truth: core-payments
+      // internal/models/payment.go (pending/processing/completed/failed/
+      // reversed/scheduled) plus the two rollback publishers, which emit
+      // `refunded` (transfer_rollback_refund.go) and `rollback_completed`
+      // (admin_service.go). Those two were missing, so a refunded transfer
+      // kept a receipt card listening for a change that could never come.
       for (final s in [
         'completed',
         'success',
         'successful',
         'failed',
         'reversed',
+        'refunded',
+        'rollback_completed',
         'cancelled',
+        'COMPLETED',
+        ' completed ',
       ]) {
         final e = TransferStatusEvent.fromJson({'status': s});
         expect(e.isTerminal, isTrue, reason: '$s should be terminal');
       }
-      for (final s in ['pending', 'processing', 'queued', '']) {
+      // `scheduled` has not run yet, so it is emphatically not terminal.
+      // An unrecognised status stays non-terminal too: keep watching rather
+      // than freeze a card on a state nobody has taught us about.
+      for (final s in ['pending', 'processing', 'scheduled', 'queued', '', 'weird_new_state']) {
         final e = TransferStatusEvent.fromJson({'status': s});
         expect(e.isTerminal, isFalse, reason: '$s should NOT be terminal');
       }

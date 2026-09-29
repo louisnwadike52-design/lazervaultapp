@@ -10,6 +10,35 @@ import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/utils/api_headers.dart';
 
+/// True when a transfer status can no longer change.
+///
+/// Shared so the socket event and the receipt card cannot disagree about
+/// when to stop tracking — they did, and each was missing a different
+/// terminal state.
+bool isTerminalTransferStatus(String status) {
+  switch (status.toLowerCase().trim()) {
+    case 'completed':
+    case 'success':
+    case 'successful':
+    case 'paid':
+    case 'settled':
+    case 'failed':
+    case 'declined':
+    case 'rejected':
+    case 'reversed':
+    case 'refunded':
+    case 'rollback_completed':
+    case 'cancelled':
+    case 'canceled':
+      return true;
+    default:
+      // pending / processing / scheduled / queued / anything unrecognised.
+      // Unknown is treated as NON-terminal on purpose: keep watching rather
+      // than freeze a card on a status nobody has taught us about yet.
+      return false;
+  }
+}
+
 /// Transfer status event received from WebSocket.
 ///
 /// [reference] is the field that makes this feed usable to anything that has
@@ -74,20 +103,15 @@ class TransferStatusEvent {
 
   /// True once the transfer can no longer change — the point at which a
   /// subscriber can stop listening for this reference.
-  bool get isTerminal {
-    switch (status.toLowerCase()) {
-      case 'completed':
-      case 'success':
-      case 'successful':
-      case 'failed':
-      case 'reversed':
-      case 'cancelled':
-      case 'canceled':
-        return true;
-      default:
-        return false;
-    }
-  }
+  ///
+  /// The list mirrors what core-payments actually PUBLISHES, not a guess:
+  /// internal/models/payment.go declares pending / processing / completed /
+  /// failed / reversed / scheduled, and the two rollback paths publish
+  /// `refunded` (transfer_rollback_refund.go) and `rollback_completed`
+  /// (admin_service.go). Those last two were the ones missing — a refunded
+  /// transfer kept a card listening for a change that could never come.
+  /// `scheduled` is deliberately NOT terminal: it has not run yet.
+  bool get isTerminal => isTerminalTransferStatus(status);
 
   @override
   String toString() {
