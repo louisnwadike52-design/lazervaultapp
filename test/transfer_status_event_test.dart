@@ -42,6 +42,21 @@ void main() {
     });
   });
 
+  group('isRmbReceiptType', () {
+    test('RMB is tracked separately, not via core-payments', () {
+      // core-payments holds no RMB rows, so GetTransferStatus(reference)
+      // can never resolve one — RMB must NOT be in isTrackableReceiptType,
+      // or every tick is a guaranteed miss. It has its own source on
+      // rmb-service keyed by transfer id.
+      expect(isRmbReceiptType('rmb_payout'), isTrue);
+      expect(isRmbReceiptType('RMB_PAYOUT'), isTrue);
+      expect(isTrackableReceiptType('rmb_payout'), isFalse,
+          reason: 'RMB must not be routed at core-payments');
+      expect(isRmbReceiptType('transfer'), isFalse);
+      expect(isRmbReceiptType('tagpay_pay'), isFalse);
+    });
+  });
+
   group('TransferStatusEvent.fromJson', () {
     test('reads the gateway payload including reference', () {
       final e = TransferStatusEvent.fromJson({

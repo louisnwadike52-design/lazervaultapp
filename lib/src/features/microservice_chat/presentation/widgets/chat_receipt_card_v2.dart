@@ -4,6 +4,8 @@ import 'dart:math' as math;
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/features/funds_transfer/services/transfer_websocket_service.dart';
+import 'package:lazervault/src/features/rmb/data/rmb_grpc_client.dart';
+import 'package:lazervault/src/generated/rmb.pbenum.dart';
 import 'package:lazervault/src/features/funds/data/datasources/payments_transfer_data_source.dart';
 import 'package:flutter/material.dart';
 import 'chat_receipt_extras.dart';
@@ -118,9 +120,18 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
     final ref = _s('reference');
     if (ref.isEmpty) return;
     if (_isTerminalStatus(_s('status'))) return;
-    // Only types whose reference GetTransferStatus can actually resolve —
-    // transfers, TagPay and split-bill. See isTrackableReceiptType.
-    if (!isTrackableReceiptType(_s('transaction_type'))) return;
+    // Two status sources, and the card must pick the right one.
+    // core-payments resolves transfers / TagPay / split-bill by reference;
+    // an RMB payout is not in core-payments at all and is looked up on
+    // rmb-service by its own transfer id. Anything else (crypto, insurance,
+    // exchange) has neither and is left alone.
+    final txType = _s('transaction_type');
+    if (!isTrackableReceiptType(txType) && !isRmbReceiptType(txType)) return;
+    if (isRmbReceiptType(txType) && _rmbTransferId().isEmpty) {
+      // Older cards predate extra.transfer_id; without it there is nothing
+      // to look up, and guessing with the reference would 404 every tick.
+      return;
+    }
 
     // One read now, regardless of transport: reopening an old chat should
     // correct a stale card immediately, not on the next tick.
@@ -134,6 +145,13 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
     // message — roughly 200 status requests a minute for one send. The
     // socket is already shared and idempotent across every card, so when it
     // connects the polling is pure duplication.
+    // The socket carries core-payments transfer events only; rmb-service
+    // publishes nothing to it, so an RMB card polls and never subscribes.
+    if (isRmbReceiptType(_s('transaction_type'))) {
+      _startPollFallback();
+      return;
+    }
+
     unawaited(_subscribeSocket(ref).then((_) {
       if (!mounted || _statusTimer != null) return;
       if (_socketLive) return; // the socket has it covered
@@ -214,6 +232,41 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
     }
   }
 
+  /// The rmb-service transfer id, carried in the card's extras because the
+  /// RMB status endpoint is keyed on it rather than on the reference.
+  String _rmbTransferId() {
+    final raw = widget.payload['extra'];
+    if (raw is Map) {
+      final v = raw['transfer_id'];
+      if (v != null && v.toString().trim().isNotEmpty) {
+        return v.toString().trim();
+      }
+    }
+    return '';
+  }
+
+  /// Map RmbStatus onto the status vocabulary the card and
+  /// isTerminalTransferStatus already speak, so RMB does not need a second
+  /// notion of "settled".
+  static String _rmbStatusLabel(RmbStatus s) {
+    switch (s) {
+      case RmbStatus.RMB_COMPLETED:
+        return 'completed';
+      case RmbStatus.RMB_FAILED:
+        return 'failed';
+      case RmbStatus.RMB_REFUNDED:
+        return 'refunded';
+      case RmbStatus.RMB_CANCELLED:
+        return 'cancelled';
+      case RmbStatus.RMB_PROCESSING:
+        return 'processing';
+      case RmbStatus.RMB_PENDING:
+        return 'pending';
+      default:
+        return ''; // unspecified — leave the card as it is
+    }
+  }
+
   void _applyStatus(String next) {
     if (!mounted || next.isEmpty) return;
     if (next.toLowerCase() == _s('status').toLowerCase()) return;
@@ -227,11 +280,25 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
       _statusTimer?.cancel();
       return;
     }
+    final isRmb = isRmbReceiptType(_s('transaction_type'));
     final ref = _s('reference');
-    if (ref.isEmpty) return;
+    if (!isRmb && ref.isEmpty) return;
     _statusFetching = true;
     _statusPolls++;
     try {
+      if (isRmb) {
+        final resp = await serviceLocator<RmbGrpcClient>()
+            .getTransfer(_rmbTransferId());
+        if (!mounted) return;
+        final next = _rmbStatusLabel(resp.transfer.status);
+        if (next.isEmpty) return;
+        _applyStatus(next);
+        if (isTerminalTransferStatus(next)) {
+          _statusTimer?.cancel();
+          _statusTimer = null;
+        }
+        return;
+      }
       final snap = await serviceLocator<IPaymentsTransferDataSource>()
           .getTransferStatus(reference: ref);
       if (!mounted || snap == null || snap.status.isEmpty) return;

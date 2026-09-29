@@ -64,6 +64,21 @@ bool isTrackableReceiptType(String transactionType) {
   return t.startsWith('tagpay') || t == 'split_bill_pay';
 }
 
+/// True for an RMB (China) payout, which tracks its status somewhere else
+/// entirely.
+///
+/// core-payments holds no RMB rows at all, so GetTransferStatus(reference)
+/// can never resolve one — putting `rmb_payout` in
+/// [isTrackableReceiptType] would just buy twenty guaranteed misses. Its
+/// status lives on rmb-service (`/v1/rmb/transfers/{id}`, reachable via
+/// RmbGrpcClient.getTransfer), keyed on the transfer ID rather than the
+/// reference — which is why the chat card now carries `extra.transfer_id`.
+///
+/// Worth the separate path: a cross-border payout settles slowly, so its
+/// receipt is the one most likely to be read while still in flight.
+bool isRmbReceiptType(String transactionType) =>
+    transactionType.toLowerCase().trim() == 'rmb_payout';
+
 /// Transfer status event received from WebSocket.
 ///
 /// [reference] is the field that makes this feed usable to anything that has
