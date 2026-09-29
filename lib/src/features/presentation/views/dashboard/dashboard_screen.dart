@@ -30,7 +30,6 @@ import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
 import 'package:lazervault/core/services/app_update_service.dart';
 import 'package:lazervault/core/services/app_patch_service.dart';
 import 'package:lazervault/src/features/app_update/cubit/app_update_cubit.dart';
-import 'package:lazervault/src/features/app_update/widgets/update_banner.dart';
 import 'package:lazervault/src/features/app_update/widgets/update_modal.dart';
 import 'package:lazervault/src/features/app_update/widgets/forced_update_screen.dart';
 import 'package:lazervault/src/core/services/analytics_service.dart';
@@ -604,13 +603,16 @@ class _DashboardScreenState extends State<DashboardScreen>
                 onUpdate: () => _openUpdateStore(updateState.info),
               );
             }
-            final Widget? updateBanner = updateState is AppUpdateOptional
-                ? UpdateBanner(
-                    info: updateState.info,
-                    onUpdate: () => _openUpdateStore(updateState.info),
-                    onDismiss: _updateCubit.dismissOptional,
-                  )
-                : null;
+            // NO inline banner. An optional update is announced by the
+            // one-time modal (see the listener above), which the user
+            // dismisses on their terms.
+            //
+            // The banner used to sit in the column ABOVE the dashboard, so it
+            // pushed the entire screen — balance card included — down by its
+            // own height and reflowed the layout the moment a release landed.
+            // A promotional strip is not worth displacing the thing people
+            // opened the app to see, and it duplicated the modal that had
+            // already told them.
             return DashboardWalkthrough.wrapShowcase(
                 builder: (context) => DefaultTabController(
                       initialIndex: _currentIndex,
@@ -636,7 +638,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                         ),
                         body: Column(
                           children: [
-                            if (updateBanner != null) updateBanner,
+
                             Expanded(
                               child: Stack(
                                 children: [

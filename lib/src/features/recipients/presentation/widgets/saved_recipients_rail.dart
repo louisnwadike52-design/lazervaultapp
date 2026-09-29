@@ -82,17 +82,33 @@ class SavedRecipientsRail extends StatelessWidget {
   final void Function(RecipientModel) onTap;
   final void Function(RecipientModel) onMore;
 
-  static const _cardWidth = 168.0;
+  static const _cardWidth = 150.0;
 
   @override
   Widget build(BuildContext context) {
     if (recipients.isEmpty) return const SizedBox.shrink();
 
+    // The rail is a horizontal list, so its height must be bounded — which
+    // means the card cannot simply grow to fit its text. It holds three lines
+    // plus a 34px avatar row, so it has to TRACK the text scale: at a fixed
+    // height an accessibility bump does not ellipsise, it overflows. (A
+    // widget test caught exactly that — 2px at scale 1.0 before this, and far
+    // more at 1.3.)
+    //
+    // Clamped at 1.5 so an extreme setting does not hand a horizontal strip
+    // half the screen; past that the text ellipsises, which is the right
+    // trade for a preview whose full detail is one tap away.
+    final scale =
+        MediaQuery.textScalerOf(context).scale(14) / 14;
+    final railHeight = 132.h * scale.clamp(1.0, 1.5);
+
     return SizedBox(
-      height: 158.h,
+      height: railHeight,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: 4.w),
+        // Vertical padding leaves the shadow somewhere to fall; without it an
+        // elevated card is clipped flat by the viewport edge.
+        padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 6.h),
         itemCount: recipients.length,
         separatorBuilder: (_, __) => SizedBox(width: 10.w),
         itemBuilder: (_, i) => _RecipientCard(
@@ -144,8 +160,12 @@ class _RecipientCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final surface = isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF5F4F7);
-    final border = isDark ? const Color(0xFF2A2A2C) : const Color(0xFFE6E4EA);
+    // A card on a white sheet reads as a card because it sits ABOVE the sheet,
+    // not because a 1px line traces its edge. The old hairline-on-grey did
+    // both jobs badly: the border was too faint to define an edge and the grey
+    // fill flattened the card into the background. White + a soft shadow is
+    // the standard elevated-surface treatment and survives both themes.
+    final surface = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final primaryText = isDark ? Colors.white : const Color(0xFF1A1A1A);
     final secondaryText = isDark ? Colors.grey[400] : Colors.grey[600];
 
@@ -153,16 +173,14 @@ class _RecipientCard extends StatelessWidget {
       width: width,
       child: Material(
         color: surface,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(14.r),
         clipBehavior: Clip.antiAlias,
+        elevation: isDark ? 0 : 2,
+        shadowColor: const Color(0x1A101828),
         child: InkWell(
           onTap: onTap,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(color: border),
-            ),
-            padding: EdgeInsets.fromLTRB(12.w, 12.h, 4.w, 10.h),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(11.w, 10.h, 6.w, 10.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -170,8 +188,8 @@ class _RecipientCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      width: 40.w,
-                      height: 40.w,
+                      width: 34.w,
+                      height: 34.w,
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         color: Color(0xFF4E03D0),
@@ -187,28 +205,37 @@ class _RecipientCard extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    // The three-dot sheet, same one the list row opens. Kept in
-                    // the corner so it never competes with the card's own tap
-                    // target, which is "send to this person".
+                    // Chat and the three-dot sheet share the top-right, beside
+                    // the avatar. Chat previously owned a full row at the foot
+                    // of the card purely to hold one 20px icon — a whole band
+                    // of height for an action that is secondary to sending.
+                    // Both are small, adjacent targets now, and the card body
+                    // below them is one uninterrupted tap target for "send".
+                    P2PChatIcon(
+                      otherUserId: recipient.internalUserId,
+                      otherUserName: recipient.name,
+                      isInternal: _isInternal,
+                      accountNumber: recipient.accountNumber,
+                    ),
                     InkWell(
-                      borderRadius: BorderRadius.circular(16.r),
+                      borderRadius: BorderRadius.circular(14.r),
                       onTap: onMore,
                       child: Padding(
-                        padding: EdgeInsets.all(4.w),
+                        padding: EdgeInsets.all(3.w),
                         child: Icon(Icons.more_vert,
-                            size: 18.w, color: secondaryText),
+                            size: 17.w, color: secondaryText),
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 8.h),
+                SizedBox(height: 7.h),
                 Text(
                   recipient.name.isNotEmpty ? recipient.name : 'Recipient',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: primaryText,
-                    fontSize: 13.5.sp,
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -232,18 +259,6 @@ class _RecipientCard extends StatelessWidget {
                       fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
-                const Spacer(),
-                // Chat sits on its own row at the foot so the card's body stays
-                // a single tap target for sending.
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: P2PChatIcon(
-                    otherUserId: recipient.internalUserId,
-                    otherUserName: recipient.name,
-                    isInternal: _isInternal,
-                    accountNumber: recipient.accountNumber,
-                  ),
-                ),
               ],
             ),
           ),
