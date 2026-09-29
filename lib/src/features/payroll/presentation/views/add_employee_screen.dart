@@ -12,6 +12,7 @@ import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/utils/form_validators.dart';
 import 'package:lazervault/core/widgets/app_phone_field.dart';
 import 'package:lazervault/core/widgets/bank_picker_sheet.dart';
+import 'package:lazervault/core/utils/masked_contact.dart';
 import 'package:lazervault/src/features/recipients/domain/entities/unified_search_result.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
@@ -556,7 +557,13 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
       // Prefill the personal fields from the picked user.
       _nameController.text =
           result.name.isNotEmpty ? result.name : result.displayName;
-      if (result.email.isNotEmpty) _emailController.text = result.email;
+      // User SEARCH masks email by contract ("ez***@gmail.com") so nobody can
+      // harvest addresses through it. Prefilling that put a value in the field
+      // that the field's own validator then rejected — "Enter a valid email
+      // address", on something the app typed itself. Leave it blank when masked
+      // so the placeholder shows and the employer can enter a real address.
+      final prefillEmail = prefillableContact(result.email);
+      if (prefillEmail.isNotEmpty) _emailController.text = prefillEmail;
     });
   }
 

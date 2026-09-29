@@ -328,7 +328,12 @@ class _CableTVPaymentConfirmationScreenState
         'transactionId': transactionId,
         'verificationToken': verificationToken!,
         'idempotencyKey': idempotencyKey,
-        'accountId': _selectedAccount?.id,
+        // spendingAccountId, NOT id — the same value bound to the X-Account-Id
+        // header six lines up. For a Family & Friends card `id` is the GROUP
+        // id and only `spendingAccountId` is debitable, so passing `id` here
+        // made the header and the payload name two different accounts for the
+        // one payment. Every other bill flow already passes the spendable id.
+        'accountId': _selectedAccount?.spendingAccountId,
         // Save + auto-renew flags — receipt screen consumes these on
         // successful payment.
         'saveBeneficiary': _saveBeneficiary,

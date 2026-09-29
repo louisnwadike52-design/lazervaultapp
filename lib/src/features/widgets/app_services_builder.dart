@@ -52,6 +52,16 @@ class AppServicesBuilder extends StatefulWidget {
   static bool activeAccountSupports(AppServiceName name) =>
       _AppServicesBuilderState.activeAccountSupports(name);
 
+  /// The curated service list for one account TYPE, before any locale or
+  /// feature-flag hiding. Public forwarder, matching the two above.
+  ///
+  /// Exists so the per-type lists are assertable on their own: which flows a
+  /// savings pot or a family pool offers is a product rule about what the
+  /// backend will accept for that wallet, and a rule worth a test is worth
+  /// being reachable from one.
+  static List<AppService> servicesForAccountType(VirtualAccountType? type) =>
+      _AppServicesBuilderState.servicesForAccountTypePublic(type);
+
   @override
   State<AppServicesBuilder> createState() => _AppServicesBuilderState();
 }
@@ -204,31 +214,30 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceImg: AppServiceImg.sendFunds),
   ];
 
-  // Savings account services (8 services — 1 page)
+  // Savings account services — money OUT of a savings pot, and nothing else.
+  //
+  // Send funds, batch transfer and the bills hub. All three debit the savings
+  // wallet directly and every one of them carries the active account id as the
+  // funding source, so what the grid offers is exactly what the backend will
+  // accept for this wallet.
+  //
+  // Deliberately narrow. The list used to carry auto-save, lock funds,
+  // insurance, exchange, crowdfund and airtime, which put a savings pot at the
+  // head of flows it is the wrong instrument for: auto-save and lock funds
+  // SAVE INTO a pot rather than out of one (offering them on the pot itself
+  // invites saving from savings), and exchange, crowdfund and insurance are
+  // wealth flows that belong to a personal wallet. Airtime is reachable through
+  // the bills hub, so listing it separately only spent a tile.
   static const List<AppService> _savingsServices = [
     AppService(
         serviceName: AppServiceName.sendFunds,
         serviceImg: AppServiceImg.sendFunds),
     AppService(
-        serviceName: AppServiceName.autoSave,
-        serviceImg: AppServiceImg.autoSave),
-    AppService(
-        serviceName: AppServiceName.lockFunds,
-        serviceImg: AppServiceImg.lockFunds),
+        serviceName: AppServiceName.batchTransfer,
+        serviceImg: AppServiceImg.batchTransfer),
     AppService(
         serviceName: AppServiceName.payBills,
         serviceImg: AppServiceImg.payBills),
-    AppService(
-        serviceName: AppServiceName.insurance,
-        serviceImg: AppServiceImg.insurance),
-    AppService(
-        serviceName: AppServiceName.exchange,
-        serviceImg: AppServiceImg.exchange),
-    AppService(
-        serviceName: AppServiceName.crowdfund,
-        serviceImg: AppServiceImg.crowdfund),
-    AppService(
-        serviceName: AppServiceName.airtime, serviceImg: AppServiceImg.airtime),
   ];
 
   // Investment account services (7 services — 1 page)
@@ -419,6 +428,10 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   /// must not each re-resolve the active account — that would mean several
   /// independent lookups disagreeing mid-switch.
   static VirtualAccountType? _lastResolvedAccountType;
+
+  /// Public entry point for [AppServicesBuilder.servicesForAccountType].
+  static List<AppService> servicesForAccountTypePublic(VirtualAccountType? t) =>
+      _servicesForAccountType(t);
 
   static List<AppService> _servicesForAccountType(VirtualAccountType? t) {
     return switch (t) {

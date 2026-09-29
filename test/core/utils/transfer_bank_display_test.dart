@@ -24,7 +24,10 @@ void main() {
         isTransfer: true,
       );
       expect(r, isNotNull);
-      expect(r!.name, 'LazerVault');
+      // Normal case. The camel-cased logotype reads as a typo mid-sentence,
+      // and it is also the spelling the backend never writes — accounts-service
+      // stamps "Lazervault". BrandBank.displayName is the single source.
+      expect(r!.name, 'Lazervault');
       expect(r.isLazerVault, isTrue);
       expect(r.shortLabel, 'LV');
     });
@@ -43,7 +46,7 @@ void main() {
         isTransfer: true,
       );
       expect(r?.isLazerVault, isTrue);
-      expect(r?.name, 'LazerVault');
+      expect(r?.name, 'Lazervault');
       expect(r?.code, isNull);
     });
 

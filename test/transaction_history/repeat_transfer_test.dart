@@ -15,7 +15,8 @@ void main() {
       );
       expect(r.type, 'internal');
       expect(r.internalUserId, 'abc-123');
-      expect(r.bankName, 'LazerVault');
+      // Normal case — BrandBank.displayName, the spelling the backend writes.
+      expect(r.bankName, 'Lazervault');
     });
 
     test('recipient_user_id is accepted as the same proof', () {
@@ -63,7 +64,8 @@ void main() {
         metadata: const {'bank_name': 'LazerVault'},
       );
       expect(r.type, 'internal');
-      expect(r.bankName, 'LazerVault');
+      // Camel-cased IN (an older build saved it that way), normal-case OUT.
+      expect(r.bankName, 'Lazervault');
     });
 
     test('null metadata does not throw', () {
