@@ -100,15 +100,22 @@ class SavedRecipientsRail extends StatelessWidget {
     // trade for a preview whose full detail is one tap away.
     final scale =
         MediaQuery.textScalerOf(context).scale(14) / 14;
-    final railHeight = 132.h * scale.clamp(1.0, 1.5);
+    // +4h over the previous 132: the shadow gutters above and below the card
+    // grew from 6/6 to 8/14, and a rail that does not grow with them clips the
+    // very shadow it just made room for.
+    final railHeight = 136.h * scale.clamp(1.0, 1.5);
 
     return SizedBox(
       height: railHeight,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        // Vertical padding leaves the shadow somewhere to fall; without it an
-        // elevated card is clipped flat by the viewport edge.
-        padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 6.h),
+        // Asymmetric vertical padding, because the shadow is not symmetric.
+        //
+        // The ambient shadow needs ~6px above the card and the key shadow
+        // needs its blur PLUS its downward offset below (12 + 4). An equal
+        // 6/6 clipped the key shadow flat against the viewport, which is part
+        // of why the elevation only half-read.
+        padding: EdgeInsets.fromLTRB(4.w, 8.h, 4.w, 14.h),
         itemCount: recipients.length,
         separatorBuilder: (_, __) => SizedBox(width: 10.w),
         itemBuilder: (_, i) => _RecipientCard(
@@ -169,14 +176,44 @@ class _RecipientCard extends StatelessWidget {
     final primaryText = isDark ? Colors.white : const Color(0xFF1A1A1A);
     final secondaryText = isDark ? Colors.grey[400] : Colors.grey[600];
 
+    // TWO shadows, not Material's `elevation`.
+    //
+    // Material elevation draws a KEY shadow offset downward, so the card's top
+    // edge got almost nothing and the rail read as if it were resting on the
+    // sheet rather than floating above it — reported as "only bottom
+    // elevations are visible". A real elevated surface needs an AMBIENT
+    // shadow too: no offset, tight blur, visible on every side including the
+    // top.
+    //
+    // It also has to exist in DARK mode. `elevation: isDark ? 0 : 2` meant the
+    // dark theme had no elevation at all, which is where the rail is actually
+    // used most. Dark surfaces need a deeper, tighter shadow to read at all,
+    // hence the separate alpha rather than reusing the light values.
+    final ambient = BoxShadow(
+      color: isDark ? const Color(0x66000000) : const Color(0x14101828),
+      blurRadius: 6,
+      spreadRadius: 0,
+      offset: Offset.zero,
+    );
+    final key = BoxShadow(
+      color: isDark ? const Color(0x4D000000) : const Color(0x1F101828),
+      blurRadius: 12,
+      spreadRadius: -1,
+      offset: const Offset(0, 4),
+    );
+
     return SizedBox(
       width: width,
-      child: Material(
-        color: surface,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: surface,
+          borderRadius: BorderRadius.circular(14.r),
+          boxShadow: [ambient, key],
+        ),
+        child: Material(
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(14.r),
         clipBehavior: Clip.antiAlias,
-        elevation: isDark ? 0 : 2,
-        shadowColor: const Color(0x1A101828),
         child: InkWell(
           onTap: onTap,
           child: Padding(
@@ -263,6 +300,7 @@ class _RecipientCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
       ),
     );
   }
