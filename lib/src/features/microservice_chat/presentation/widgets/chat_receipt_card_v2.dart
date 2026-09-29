@@ -9,6 +9,7 @@ import 'chat_receipt_extras.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/src/features/widgets/unified_transaction_receipt.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/widgets/transaction_details_sheet.dart';
 import 'package:lazervault/src/features/tag_pay/services/tag_pay_pdf_service.dart';
 import 'package:lazervault/src/features/widgets/user_avatar.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -271,6 +272,18 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
         .map((p) => p.isEmpty ? p : '${p[0].toUpperCase()}${p.substring(1)}')
         .join(' ')
         .toUpperCase();
+  }
+
+  /// Opens the SAME transaction details sheet the history screen uses —
+  /// amount, parties, reference, timestamps, and the Repeat / Receipt
+  /// actions. It was private to DashboardTransactionHistoryScreen, so a user
+  /// who sent money by talking to the assistant had no way to reach it; they
+  /// could only jump out to the full receipt screen or back to a list.
+  ///
+  /// Built from this card's own payload, so it works identically in general
+  /// chat, per-service chat and voice, with no extra round trip.
+  void _openDetailsSheet() {
+    TransactionDetailsSheet.show(context, _toUnifiedTransaction());
   }
 
   void _openDeeplink() {
@@ -551,6 +564,28 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
           const SizedBox(height: 10),
           Row(
             children: [
+              Expanded(
+                child: TextButton.icon(
+                  onPressed: _openDetailsSheet,
+                  icon: const Icon(Icons.info_outline, size: 14),
+                  label: Text(
+                    'Details',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    foregroundColor: statusColor,
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    backgroundColor: statusColor.withValues(alpha: 0.08),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
               Expanded(
                 child: TextButton.icon(
                   onPressed:
