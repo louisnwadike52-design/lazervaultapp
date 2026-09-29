@@ -243,84 +243,20 @@ class BusinessDashboardScreen extends StatelessWidget {
                   color: Colors.white,
                   fontSize: 30.sp,
                   fontWeight: FontWeight.w800)),
-          SizedBox(height: 8.h),
-          if (account?.accountNumber != null &&
-              account!.accountNumber!.isNotEmpty)
-            // Tappable. This was a line of dead text: the business NUBAN was on
-            // screen but there was no way to copy or share it, so anyone being
-            // paid had to retype ten digits read off a phone — which is how
-            // money reaches the wrong account. Personal accounts have had a
-            // copy/share surface all along; this brings business in line with
-            // the same sheet and the same share message.
-            Builder(
-              builder: (rowContext) => InkWell(
-                onTap: () => AccountDetailsShareSheet.show(
-                  rowContext,
-                  title: 'Business account details',
-                  subtitle: 'Share these to receive money into this business',
-                  accountName: (account.virtualAccountHolderName?.trim().isNotEmpty ??
-                          false)
-                      ? account.virtualAccountHolderName!.trim()
-                      : (account.accountName?.trim().isNotEmpty ?? false)
-                          ? account.accountName!.trim()
-                          : account.displayName,
-                  accountNameLabel: 'Business name',
-                  bankName: account.bankName ?? '',
-                  accountNumber: account.accountNumber ?? '',
-                ),
-                borderRadius: BorderRadius.circular(8.r),
-                child: Container(
-                  // A PILL, not a caption with an icon beside it.
-                  //
-                  // The first attempt made the existing line tappable and put a
-                  // small copy glyph next to it. That was still reported as
-                  // "I can't see where to click": on a dark gradient a 13sp
-                  // icon beside grey text reads as decoration, and nothing about
-                  // the row says it does anything. A bordered pill with a label
-                  // and a chevron is unambiguous at a glance, which is the whole
-                  // job of an affordance.
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(20.r),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.28)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          '${account.bankName ?? ''} · ${account.accountNumber}'
-                              .trim(),
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                      SizedBox(width: 8.w),
-                      Container(width: 1, height: 12.h,
-                          color: Colors.white.withValues(alpha: 0.3)),
-                      SizedBox(width: 8.w),
-                      Text('View',
-                          style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontSize: 11.5.sp,
-                              fontWeight: FontWeight.w700)),
-                      SizedBox(width: 2.w),
-                      Icon(Icons.chevron_right_rounded,
-                          size: 15.sp, color: Colors.white),
-                    ],
-                  ),
-                ),
-              ),
-            )
-          else
+          // The account-number pill that used to sit here is gone: the
+          // "Account details" CTA at the top of this card opens the same sheet,
+          // so the card was offering one action twice and spending its most
+          // valuable line — directly under the balance — to do it.
+          //
+          // The PENDING case is deliberately kept. Without a virtual account
+          // the business cannot be paid at all, and the CTA above cannot say
+          // so, so this is the only place that explains why.
+          if (account?.accountNumber == null || account!.accountNumber!.isEmpty) ...[
+            SizedBox(height: 8.h),
             Text('Virtual account pending — complete business KYC to activate',
                 style: GoogleFonts.inter(
                     color: Colors.white70, fontSize: 11.5.sp)),
+          ],
         ],
       ),
     );
