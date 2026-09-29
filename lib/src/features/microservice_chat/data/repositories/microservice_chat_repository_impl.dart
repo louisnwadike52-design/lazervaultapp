@@ -56,6 +56,7 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
       return Right(ChatResponseEntity(
         response: response.response,
         entities: entities,
+        llmErrorCode: response.llmErrorCode,
       ));
     } catch (e) {
       return Left(ServerFailure(
@@ -110,6 +111,7 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
         entities: response.entities,
         serviceRoutedTo: response.serviceRoutedTo,
         conversationState: response.conversationState,
+        llmErrorCode: response.llmErrorCode,
       ));
     } catch (e) {
       return Left(ServerFailure(

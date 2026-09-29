@@ -17,6 +17,7 @@ import 'bill_receipt_deeplink.dart';
 import 'chat_media_bubble.dart';
 import 'chat_media_input_bar.dart';
 import 'chat_receipt_card.dart';
+import 'llm_error_banner.dart';
 import 'chat_receipt_card_v2.dart';
 import 'chat_pin_prompt_card.dart';
 import 'chat_pin_auto_opener.dart';
@@ -675,6 +676,15 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
                   // receipt_card (e.g. batch transfers).
                   else if (!isUser && message.metadata?['receipt_card'] != null)
                     _buildReceiptCardV2(message.metadata!['receipt_card']),
+                  // Degradation banner — same signal, same chrome as the
+                  // general chat. Every chat service emits llm_error_code
+                  // (chat_services_shared/llm_failover.py), but this surface
+                  // rendered nothing for it, so an LLM outage inside a
+                  // per-service chat looked like an ordinary unhelpful reply.
+                  if (!isUser && message.metadata?['llm_error_code'] is String)
+                    LlmErrorBanner.build(
+                      message.metadata!['llm_error_code'] as String,
+                    ),
                   // The confirmed counterparty, as a card with their avatar.
                   // The same identity the voice HUD has always rendered — chat
                   // showed a line of prose at the one moment a misread costs

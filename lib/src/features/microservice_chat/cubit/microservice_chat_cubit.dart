@@ -297,6 +297,12 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             final analyticsCard = _entities.remove('_analytics_card_pending');
 
             final messageMetadata = <String, dynamic>{};
+            // Degradation chrome, matching the general chat: the same LLM
+            // failure must explain itself here too rather than leaving the
+            // fallback sentence looking like an ordinary answer.
+            if ((chatResponse.llmErrorCode ?? '').isNotEmpty) {
+              messageMetadata['llm_error_code'] = chatResponse.llmErrorCode;
+            }
             if (receiptData is Map<String, dynamic>) {
               messageMetadata['receipt_data'] = receiptData;
               _invalidateTransferRelatedCaches();
@@ -391,6 +397,12 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
               responseEntities.remove('_analytics_card_pending');
 
           final messageMetadata = <String, dynamic>{};
+          // Degradation chrome, matching the general chat: the same LLM
+          // failure must explain itself here too rather than leaving the
+          // fallback sentence looking like an ordinary answer.
+          if ((chatResponse.llmErrorCode ?? '').isNotEmpty) {
+            messageMetadata['llm_error_code'] = chatResponse.llmErrorCode;
+          }
           if (receiptData is Map<String, dynamic>) {
             messageMetadata['receipt_data'] = receiptData;
             _invalidateTransferRelatedCaches();
@@ -532,6 +544,12 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             final analyticsCard = _entities.remove('_analytics_card_pending');
             final pinPrompt = _entities.remove('_pin_prompt_pending');
             final messageMetadata = <String, dynamic>{};
+            // Degradation chrome, matching the general chat: the same LLM
+            // failure must explain itself here too rather than leaving the
+            // fallback sentence looking like an ordinary answer.
+            if ((chatResponse.llmErrorCode ?? '').isNotEmpty) {
+              messageMetadata['llm_error_code'] = chatResponse.llmErrorCode;
+            }
             if (receiptData is Map<String, dynamic>) {
               messageMetadata['receipt_data'] = receiptData;
               _invalidateTransferRelatedCaches();
@@ -605,6 +623,12 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           final analyticsCard =
               responseEntities.remove('_analytics_card_pending');
           final messageMetadata = <String, dynamic>{};
+          // Degradation chrome, matching the general chat: the same LLM
+          // failure must explain itself here too rather than leaving the
+          // fallback sentence looking like an ordinary answer.
+          if ((chatResponse.llmErrorCode ?? '').isNotEmpty) {
+            messageMetadata['llm_error_code'] = chatResponse.llmErrorCode;
+          }
           if (receiptCard != null) {
             messageMetadata['receipt_card'] = receiptCard;
             _invalidateTransferRelatedCaches();
@@ -753,6 +777,12 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           final lastPaymentId = responseEntities['last_payment_id'] as String?;
 
           final messageMetadata = <String, dynamic>{};
+          // Degradation chrome, matching the general chat: the same LLM
+          // failure must explain itself here too rather than leaving the
+          // fallback sentence looking like an ordinary answer.
+          if ((chatResponse.llmErrorCode ?? '').isNotEmpty) {
+            messageMetadata['llm_error_code'] = chatResponse.llmErrorCode;
+          }
           if (receiptData is Map<String, dynamic>) {
             messageMetadata['receipt_data'] = receiptData;
             _invalidateTransferRelatedCaches();

@@ -18,6 +18,7 @@ import 'bill_receipt_deeplink.dart';
 import 'chat_media_bubble.dart';
 import 'chat_media_input_bar.dart';
 import 'chat_receipt_card.dart';
+import 'llm_error_banner.dart';
 import 'chat_receipt_card_v2.dart';
 import 'chat_pin_prompt_card.dart';
 import 'chat_pin_auto_opener.dart';
@@ -644,81 +645,9 @@ class _GeneralChatContentState extends State<GeneralChatContent>
   /// carries the user-facing message; this is the visual + dismissible
   /// chrome that signals "AI is temporarily down, but everything else
   /// still works".
-  Widget _buildLlmErrorBanner(String code) {
-    // Map codes to icon + tone. Insufficient credit / auth / model-not-found
-    // get the warning amber chrome; transient codes (rate-limit / timeout /
-    // service unavailable) get the softer blue.
-    final isHardError = code == 'insufficient_credit' ||
-        code == 'auth_failed' ||
-        code == 'model_not_found';
-    final borderColor = isHardError
-        ? const Color(0xFFFB923C) // warning amber
-        : const Color(0xFF5B45C9); // info blue
-    final iconBg = borderColor.withValues(alpha: 0.15);
-
-    final label = switch (code) {
-      'insufficient_credit' => 'AI assistant — billing top-up in progress',
-      'model_not_found' => 'AI assistant — being upgraded',
-      'auth_failed' => 'AI assistant — config refresh in progress',
-      'provider_rate_limit' => 'AI assistant — high traffic',
-      'context_length_exceeded' => 'Conversation is full',
-      'timeout' => 'AI assistant timed out',
-      'service_unavailable' => 'AI assistant provider outage',
-      _ => 'AI assistant temporarily unavailable',
-    };
-
-    return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: borderColor.withValues(alpha: 0.6)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Icon(
-              isHardError ? Icons.error_outline : Icons.info_outline,
-              size: 16,
-              color: borderColor,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'The regular in-app screens still work normally. You can keep using them while we get the assistant back online.',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 11,
-                    height: 1.3,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  /// Delegates to the shared banner so per-service chat shows the same
+  /// degradation chrome for the same signal.
+  Widget _buildLlmErrorBanner(String code) => LlmErrorBanner.build(code);
 
   /// Pacing banner under any assistant message that returned from
   /// the gateway-level tool_rate_limiter. Soft tone — this isn't a

@@ -54,14 +54,34 @@ class ChatResponse {
   final Map<String, dynamic> metadata;
   final Map<String, dynamic>? receiptData;
 
-  ChatResponse(
-      {required this.response, required this.metadata, this.receiptData});
+  /// LLM degradation code from chat_services_shared/llm_failover.py, so a
+  /// per-service chat can show the same "AI is temporarily down" banner the
+  /// general chat shows. The chat proxy dropped this field entirely, so the
+  /// per-service user saw the fallback sentence with nothing explaining it.
+  final String? llmErrorCode;
+
+  ChatResponse({
+    required this.response,
+    required this.metadata,
+    this.receiptData,
+    this.llmErrorCode,
+  });
 
   factory ChatResponse.fromJson(Map<String, dynamic> json) {
+    // Accept both the proxy's top-level field and the nested shape the
+    // Python services emit, so either route renders the banner.
+    String? code = json['llm_error_code'] as String?;
+    if (code == null || code.isEmpty) {
+      final meta = json['metadata'];
+      if (meta is Map && meta['llm_error_code'] is String) {
+        code = meta['llm_error_code'] as String;
+      }
+    }
     return ChatResponse(
       response: json['response'] as String? ?? '',
       metadata: json['metadata'] as Map<String, dynamic>? ?? {},
       receiptData: json['receipt_data'] as Map<String, dynamic>?,
+      llmErrorCode: (code == null || code.isEmpty) ? null : code,
     );
   }
 }

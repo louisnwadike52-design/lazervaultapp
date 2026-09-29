@@ -61,12 +61,19 @@ class DirectChatResponse {
   final Map<String, dynamic> entities;
   final String conversationState;
 
+  /// LLM degradation code from chat_services_shared/llm_failover.py.
+  /// The Go proxy dropped it, so a per-service chat could not show the
+  /// "AI is temporarily down, the rest of the app still works" banner that
+  /// the general chat has always shown for the same failure.
+  final String? llmErrorCode;
+
   DirectChatResponse({
     required this.response,
     required this.serviceRoutedTo,
     required this.sessionId,
     required this.entities,
     required this.conversationState,
+    this.llmErrorCode,
   });
 
   factory DirectChatResponse.fromJson(Map<String, dynamic> json) {
@@ -76,6 +83,16 @@ class DirectChatResponse {
       sessionId: json['session_id'] as String? ?? '',
       entities: (json['entities'] as Map<String, dynamic>?) ?? {},
       conversationState: json['conversation_state'] as String? ?? 'IDLE',
+      llmErrorCode: () {
+        final top = json['llm_error_code'];
+        if (top is String && top.isNotEmpty) return top;
+        final meta = json['metadata'];
+        if (meta is Map && meta['llm_error_code'] is String) {
+          final m = meta['llm_error_code'] as String;
+          if (m.isNotEmpty) return m;
+        }
+        return null;
+      }(),
     );
   }
 }
