@@ -798,6 +798,35 @@ class TagPayPdfService {
   }
 
   /// Generate a transfer receipt PDF from UnifiedTransaction (for transaction history)
+
+  /// The principal of a transfer — what the beneficiary actually received.
+  ///
+  /// An OUTGOING transfer is recorded as a single ledger debit of principal +
+  /// fee (one row with fees, deliberately). The fee is the SENDER's cost, so
+  /// the amount that reached the other side is the debit minus the fee.
+  ///
+  /// An INFLOW is already the principal: the sender's fee was charged on their
+  /// own ledger and never appears here, so subtracting would understate what
+  /// the recipient got.
+  ///
+  /// Defensive on both ends. A fee larger than the amount is not a negative
+  /// transfer — it means the fee metadata does not belong to this row (a
+  /// mislabelled provider key, a total pasted into a per-leg field), and
+  /// printing a negative figure on a receipt is worse than printing the
+  /// unadjusted one. Same for a non-finite or negative fee.
+  /// Test seam for [_principalOf] — the arithmetic that decides what figure a
+  /// beneficiary's copy shows is worth asserting directly.
+  @visibleForTesting
+  static double principalOfForTest(double amount, double fee, bool incoming) =>
+      _principalOf(amount, fee, incoming);
+
+  static double _principalOf(double amount, double fee, bool incoming) {
+    if (incoming) return amount;
+    if (!fee.isFinite || fee <= 0) return amount;
+    if (fee >= amount) return amount;
+    return amount - fee;
+  }
+
   static Future<File> generateUnifiedTransferReceipt({
     required UnifiedTransaction transaction,
     ReceiptCopyType copyType = ReceiptCopyType.sender,
@@ -875,11 +904,33 @@ class TagPayPdfService {
       ]);
     }
 
+    // WHAT THE RECIPIENT ACTUALLY RECEIVED.
+    //
+    // transaction.amount on an OUTGOING transfer is the ledger debit, and by
+    // design that is ONE row carrying principal + fee — ₦123 for a ₦100
+    // transfer with a ₦23 fee. Handing that straight to the receipt printed
+    // "Amount Received ₦123.00" on the beneficiary's copy and put ₦123.00 in
+    // the share text. Grace received ₦100. The fee was Praiz's cost, and the
+    // document telling her otherwise is the one she keeps.
+    //
+    // The principal is the debit minus the fee. On an INFLOW there is nothing
+    // to subtract: what landed is what landed, and the sender's fee never
+    // touched this ledger row.
+    //
+    // Provider-agnostic on purpose — Flutterwave, Nomba or anything else, the
+    // rail never changes who paid the fee.
+    final feeAmount = double.tryParse(
+            _firstNonEmpty([metadata['Fee'], metadata['fee']])
+                    ?.replaceAll(RegExp(r'[^0-9.]'), '') ??
+                '0') ??
+        0.0;
+    final principalAmount = _principalOf(transaction.amount, feeAmount, incoming);
+
     return generateTransferReceiptFile(
       copyType: copyType,
       format: format,
       transferDetails: {
-        'amount': transaction.amount,
+        'amount': principalAmount,
         'currency': transaction.currency,
         'recipientName': recipientName,
         // On an inflow the entity's counterpartyAccount is the SENDER's
@@ -919,10 +970,7 @@ class TagPayPdfService {
             metadata['transferType']?.toString() ??
             'Fund Transfer',
         'transactionId': transaction.id,
-        'fee': double.tryParse(
-            _firstNonEmpty([metadata['Fee'], metadata['fee']])
-                    ?.replaceAll(RegExp(r'[^0-9.]'), '') ??
-                '0'),
+        'fee': feeAmount,
         'timestamp': transaction.createdAt,
         'extraRows': extraRows,
       },
@@ -1061,7 +1109,23 @@ class TagPayPdfService {
           extraRows: extraRows);
 
       final currencySymbol = _currencySymbolFor(transaction.currency);
-      final amount = _amountFormat.format(transaction.amount);
+      // The share text must quote the same figure the document does. It read
+      // "₦123.00 to GRACE C. ONWUANAKU" for a ₦100 transfer, and that line is
+      // often all the recipient reads before deciding the amount is right.
+      // See _principalOf: an outgoing row is principal + fee in one debit.
+      final shareFee = double.tryParse(
+              (_firstNonEmpty([
+                        transaction.metadata?['Fee']?.toString(),
+                        transaction.metadata?['fee']?.toString(),
+                      ]) ??
+                      '0')
+                  .replaceAll(RegExp(r'[^0-9.]'), '')) ??
+          0.0;
+      final amount = _amountFormat.format(_principalOf(
+        transaction.amount,
+        shareFee,
+        transaction.flow == TransactionFlow.incoming,
+      ));
 
       // An invoice payment is not a transfer: name it correctly and reference
       // the invoice number instead of "to <title>" (which produced the absurd

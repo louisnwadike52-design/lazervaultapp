@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/src/features/funds/presentation/view/send_funds/transfer_receipt_screen.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/balance_websocket_cubit.dart';
@@ -335,6 +336,14 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView>
             // Show snackbar for transfer events when user is on dashboard
             if (event.eventType == 'transfer_out' ||
                 event.eventType == 'transfer') {
+              // The transfer receipt IS the confirmation. It is pushed over
+              // this dashboard, whose listener stays alive, so a green
+              // "Transfer Completed" banner landed on top of a receipt reading
+              // "Transfer Processing · Pending" and contradicted it outright.
+              // A submitted transfer is not a settled one; the receipt polls
+              // and tells the truth as the rail answers. Same guard the deposit
+              // branch below already applies, for the same reason.
+              if (TransferReceiptScreen.isShowing) return;
               if (event.status == 'completed') {
                 LVSnackbar.showSuccess(
                   title: 'Transfer Completed',

@@ -21,6 +21,21 @@ import 'package:lazervault/core/widgets/bank_logo.dart';
 class TransferReceiptScreen extends StatefulWidget {
   const TransferReceiptScreen({super.key});
 
+  /// True while a transfer receipt is on screen.
+  ///
+  /// The dashboard's WebSocket listener pops a green "Transfer Completed —
+  /// your transfer was successful" banner on a transfer_out event. The receipt
+  /// is pushed OVER the dashboard, whose listener stays alive, so that banner
+  /// landed on top of a receipt reading "Transfer Processing · Pending" and
+  /// flatly contradicted it. A transfer that has been submitted is not a
+  /// transfer that has settled, and the receipt is the screen telling the
+  /// truth — it polls and updates as the rail answers.
+  ///
+  /// Same guard the deposit receipt already uses
+  /// (DepositReceiptScreen.isShowing) and for the same reason: the receipt IS
+  /// the confirmation, so nothing should pop the same claim over it.
+  static bool isShowing = false;
+
   @override
   State<TransferReceiptScreen> createState() => _TransferReceiptScreenState();
 }
@@ -65,6 +80,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
   @override
   void initState() {
     super.initState();
+    TransferReceiptScreen.isShowing = true;
     transferDetails = Get.arguments as Map<String, dynamic>? ?? {};
 
     // Telemetry: single-transfer receipt is a successful terminal view.
@@ -430,6 +446,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
 
   @override
   void dispose() {
+    TransferReceiptScreen.isShowing = false;
     _wsSub?.cancel();
     _statusPollTimer?.cancel();
     _itemsRev.dispose();
