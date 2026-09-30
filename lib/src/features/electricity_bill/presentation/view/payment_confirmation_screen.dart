@@ -26,6 +26,7 @@ import '../cubit/beneficiary_state.dart';
 import '../widgets/electricity_rollover_preference_sheet.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'meter_entry_mode.dart';
 part 'payment_confirmation_screen_widgets.dart';
 
 class PaymentConfirmationScreen extends StatefulWidget {
@@ -863,17 +864,30 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
       ),
       child: Row(
         children: [
-          // Verified icon
+          // Verified icon — GREEN ONLY WHEN IT ACTUALLY VERIFIED.
+          //
+          // A manual entry reaches this screen with isValid=false because the
+          // disco never confirmed the name. Showing the same green tick over
+          // an unconfirmed meter is the most expensive kind of wrong: paying
+          // the wrong meter cannot be reversed, and the tick is precisely the
+          // thing that stops a user reading the number again.
           Container(
             width: 40.w,
             height: 40.w,
             decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withValues(alpha: 0.15),
+              color: (validationResult.isValid
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFF59E0B))
+                  .withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20.r),
             ),
             child: Icon(
-              Icons.verified,
-              color: const Color(0xFF10B981),
+              validationResult.isValid
+                  ? Icons.verified
+                  : Icons.help_outline_rounded,
+              color: validationResult.isValid
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFFF59E0B),
               size: 20.sp,
             ),
           ),
@@ -883,9 +897,12 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  validationResult.customerName,
+                  meterHolderLabel(validationResult),
+                  key: const Key('elec_meter_holder'),
                   style: GoogleFonts.inter(
-                    color: Colors.white,
+                    color: validationResult.isValid
+                        ? Colors.white
+                        : const Color(0xFFFBBF24),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                   ),

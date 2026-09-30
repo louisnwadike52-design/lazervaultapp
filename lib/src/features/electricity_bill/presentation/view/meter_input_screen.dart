@@ -9,7 +9,9 @@ import '../../domain/entities/bill_payment_entity.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../cubit/electricity_bill_cubit.dart';
 import '../cubit/electricity_bill_state.dart';
+import '../../domain/repositories/electricity_bill_repository.dart';
 import '../../utils/meter_validation.dart';
+import 'meter_entry_mode.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class MeterInputScreen extends StatefulWidget {
@@ -24,6 +26,17 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
   MeterType _selectedMeterType = MeterType.prepaid;
   bool _isValidating = false;
   ElectricityProviderEntity? _provider;
+
+  /// Auto asks the disco who the meter belongs to; manual takes the
+  /// customer's word for it. See [MeterEntryMode] — the lookup does not
+  /// answer for every meter, and a red snackbar was the whole of the old
+  /// recovery path.
+  MeterEntryMode _mode = MeterEntryMode.auto;
+
+  /// The last lookup failure, shown INLINE with a way out instead of as a
+  /// snackbar that takes the reason away after four seconds and leaves the
+  /// user on a screen that will not advance.
+  String? _lookupError;
 
   @override
   void initState() {
@@ -59,11 +72,43 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
       return;
     }
 
+    if (_mode.isManual) {
+      // No lookup. The customer supplied the disco and the meter, and the
+      // confirmation screen will say the name is unconfirmed — which is the
+      // honest statement, and the one that makes them check.
+      _goToConfirmation(
+        provider: provider,
+        result: manualMeterResult(
+          meterNumber: _meterNumberController.text.trim(),
+          meterType: _selectedMeterType,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _lookupError = null);
     context.read<ElectricityBillCubit>().validateMeter(
           providerCode: provider.providerCode,
           meterNumber: _meterNumberController.text.trim(),
           meterType: _selectedMeterType,
         );
+  }
+
+  void _goToConfirmation({
+    required ElectricityProviderEntity provider,
+    required MeterValidationResult result,
+  }) {
+    Get.toNamed(
+      AppRoutes.electricityBillConfirmation,
+      arguments: {
+        'provider': provider,
+        'validationResult': result,
+        'providerCode': provider.providerCode,
+        'meterNumber': result.meterNumber,
+        'meterType': result.meterType,
+        'entryMode': _mode.name,
+      },
+    );
   }
 
   @override
@@ -112,17 +157,18 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
                     'providerCode': state.providerCode,
                     'meterNumber': state.meterNumber,
                     'meterType': state.meterType,
+                    'entryMode': MeterEntryMode.auto.name,
                   },
                 );
               }
 
               if (state is MeterValidationFailed) {
-                Get.snackbar(
-                  'Validation Failed',
-                  state.message,
-                  backgroundColor: Colors.red.withValues(alpha: 0.9),
-                  colorText: Colors.white,
-                );
+                // Inline, with the way out attached. A snackbar took the
+                // reason away after four seconds and left the user on a
+                // screen that would not advance — for a meter that pays
+                // perfectly well, because the disco's directory is the thing
+                // that is missing, not the customer's account.
+                setState(() => _lookupError = state.message);
               }
 
               if (state is ElectricityBillError) {
@@ -146,6 +192,12 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _buildProviderCard(provider),
+                          SizedBox(height: 20.h),
+                          _buildModeTabs(),
+                          if (_lookupError != null) ...[
+                            SizedBox(height: 14.h),
+                            _buildLookupErrorCard(),
+                          ],
                           SizedBox(height: 24.h),
                           _buildMeterTypeSelector(),
                           SizedBox(height: 24.h),
@@ -161,6 +213,144 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
             },
           ),
         ),
+      ),
+    );
+  }
+
+  /// Auto / Manual. Two tabs rather than a buried "having trouble?" link:
+  /// the choice is part of the task, and a customer whose meter never looks
+  /// up should not have to fail first to discover the other route exists.
+  Widget _buildModeTabs() {
+    Widget tab(MeterEntryMode mode, String label, String subtitle) {
+      final selected = _mode == mode;
+      return Expanded(
+        child: GestureDetector(
+          key: Key('meter_mode_${mode.name}'),
+          onTap: _isValidating
+              ? null
+              : () => setState(() {
+                    _mode = mode;
+                    // A failure from the other mode is not a statement about
+                    // this one.
+                    _lookupError = null;
+                  }),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 10.w),
+            decoration: BoxDecoration(
+              color: selected
+                  ? const Color(0xFF4E03D0).withValues(alpha: 0.22)
+                  : Colors.white.withValues(alpha: 0.04),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                color: selected
+                    ? const Color(0xFF8B7CF6)
+                    : Colors.white.withValues(alpha: 0.10),
+              ),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 13.5.sp,
+                    fontWeight: FontWeight.w600,
+                    color: selected ? Colors.white : Colors.white70,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 10.5.sp,
+                    color: Colors.white.withValues(alpha: 0.55),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Row(
+      children: [
+        tab(MeterEntryMode.auto, 'Auto', 'We confirm the name'),
+        SizedBox(width: 10.w),
+        tab(MeterEntryMode.manual, 'Manual', 'Enter it yourself'),
+      ],
+    );
+  }
+
+  /// The lookup failed. Say what happened, and put the only useful next step
+  /// in reach — not in a snackbar that is already gone.
+  Widget _buildLookupErrorCard() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A1520),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFFDC2626).withValues(alpha: 0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.error_outline,
+                  size: 17.sp, color: const Color(0xFFF87171)),
+              SizedBox(width: 9.w),
+              Expanded(
+                child: Text(
+                  _lookupError ?? '',
+                  key: const Key('meter_lookup_error'),
+                  style: GoogleFonts.inter(
+                    fontSize: 12.5.sp,
+                    color: Colors.white.withValues(alpha: 0.9),
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+          Text(
+            'Some meters are not in the disco\'s directory even though they '
+            'pay normally. You can enter the details yourself instead — we '
+            'will not be able to confirm the account name.',
+            style: GoogleFonts.inter(
+              fontSize: 11.5.sp,
+              color: Colors.white.withValues(alpha: 0.6),
+              height: 1.4,
+            ),
+          ),
+          SizedBox(height: 10.h),
+          GestureDetector(
+            key: const Key('meter_switch_to_manual'),
+            onTap: () => setState(() {
+              _mode = MeterEntryMode.manual;
+              _lookupError = null;
+            }),
+            child: Container(
+              padding: EdgeInsets.symmetric(vertical: 9.h, horizontal: 14.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4E03D0),
+                borderRadius: BorderRadius.circular(9.r),
+              ),
+              child: Text(
+                'Enter details manually',
+                style: GoogleFonts.inter(
+                  fontSize: 12.5.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
