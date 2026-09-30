@@ -12,6 +12,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lazervault/src/features/voice/cubit/per_service_voice_settings_cubit.dart';
 import 'package:lazervault/core/services/voice_biometrics_service.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
@@ -953,6 +954,52 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
   // ── Session Start ──
 
+  /// Applies the PER-SERVICE voice settings for [serviceName], when the user
+  /// has configured any.
+  ///
+  /// The per-service screen (Settings → Per-service voice, and the same screen
+  /// from the in-call sheet) writes languageCode/voiceId/promptHint per
+  /// service, and nothing read them: a session always used the GLOBAL language
+  /// and voice from SharedPreferences. So "Crypto speaks Yoruba" was saved,
+  /// shown as saved, and silently ignored on every call.
+  ///
+  /// Only overrides what the user actually set. An unconfigured service, or a
+  /// language that is not in the available set for this country, falls through
+  /// to the global choice rather than leaving the session with a voice the
+  /// agent cannot speak.
+  Future<void> _applyPerServiceVoice(String? serviceName) async {
+    final svc = (serviceName ?? '').trim();
+    if (svc.isEmpty) return;
+    try {
+      final saved =
+          await SharedPrefsPerServiceVoiceSettingsStorage().read(svc);
+      if (saved == null || !saved.isConfigured) return;
+
+      final lang = saved.languageCode;
+      if (lang != null && lang.isNotEmpty) {
+        // Guard against a stale saved language the agent no longer offers —
+        // applying it would start a session in a voice that cannot speak.
+        final known = _availableLanguages.any((l) => l.code == lang);
+        if (known || _availableLanguages.isEmpty) {
+          _selectedLanguageCode = lang;
+        }
+      }
+      final voice = saved.voiceId;
+      if (voice != null && voice.isNotEmpty) {
+        _selectedVoiceId = voice;
+      }
+      _perServicePromptHint = saved.promptHint.trim();
+    } catch (_) {
+      // A settings read must never stop a call starting. The global choice
+      // still applies, which is exactly today's behaviour.
+    }
+  }
+
+  /// The per-service prompt hint for the session now starting, or ''.
+  /// Passed to the agent so a service can steer its own phrasing.
+  String _perServicePromptHint = '';
+  String get perServicePromptHint => _perServicePromptHint;
+
   Future<void> startVoiceSession({
     required String? accessToken,
     String? serviceName,
@@ -964,6 +1011,12 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     if (isClosed) return;
     // Remember the user for once-per-session on-device voice biometrics.
     if (userId != null && userId.isNotEmpty) _currentUserId = userId;
+
+    // Per-service language/voice BEFORE the room is created, so the agent is
+    // started with the voice the user chose for THIS service rather than the
+    // global one. Awaited: it is a local read, and racing it against room
+    // creation is how a setting appears to work only sometimes.
+    await _applyPerServiceVoice(serviceName);
 
     // Re-entrancy guard: a single user action can dispatch startVoiceSession()
     // more than once (sheet-open path + language-selected + enrollment-proceed).
