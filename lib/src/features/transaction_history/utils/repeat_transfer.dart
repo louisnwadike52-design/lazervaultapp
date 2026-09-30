@@ -14,52 +14,58 @@
 library;
 
 import 'package:lazervault/core/utils/brand_bank.dart';
+import 'package:lazervault/core/utils/transfer_metadata_keys.dart';
 import '../../funds/presentation/send_funds_launcher.dart';
 import '../../recipients/data/models/recipient_model.dart';
 
 class RepeatTransfer {
   const RepeatTransfer._();
 
-  /// Metadata keys that can carry the payee's LazerVault user id, in the order
-  /// they should be trusted.
-  static const _uidKeys = ['counterparty_user_id', 'recipient_user_id'];
-  static const _bankNameKeys = [
-    'recipient_bank_name',
-    'destination_bank_name',
-    'bank_name',
-  ];
-  static const _bankCodeKeys = ['destination_bank_code', 'bank_code'];
-
-  static String _firstOf(Map<String, dynamic> md, List<String> keys) {
-    for (final k in keys) {
-      final v = md[k]?.toString().trim() ?? '';
-      if (v.isNotEmpty) return v;
-    }
-    return '';
-  }
+  // The key lists live in TransferMetadataKeys, shared with the receipt's
+  // institution line. They were duplicated here and BOTH copies looked for
+  // `destination_bank_code`, which core-payments never writes — it writes
+  // `destination_bank`, holding the code. Every external Redo was therefore
+  // built with an empty bank code: a transfer that cannot be sent.
+  static String _firstOf(Map<String, dynamic> md, List<String> keys) =>
+      TransferMetadataKeys.pickOrEmpty(md, keys);
 
   /// Rebuild the payee from a past transfer's row.
   ///
-  /// INTERNAL REQUIRES PROOF — either a resolved LazerVault user id, or a bank
-  /// explicitly named LazerVault. Absent proof the repeat goes out as EXTERNAL,
-  /// because that is the read that can still complete: an external transfer
-  /// mis-read as internal sends a bank account number to the LazerVault-user
-  /// lookup, which correctly 404s ("couldn't find that recipient"). An internal
-  /// transfer mis-read as external is merely slower and costs a fee, and the
-  /// confirmation screen shows the user both before they commit.
+  /// THE RULE IS "PICK THE READ THAT CAN STILL COMPLETE", and which read that
+  /// is depends on what the row carries:
+  ///
+  ///   * A bank code or name  → EXTERNAL. Positive evidence of a bank, and an
+  ///     internal transfer mis-read as external is merely slower and costs a
+  ///     fee, which the confirmation screen shows before the user commits.
+  ///   * A LazerVault user id, or a bank named LazerVault → INTERNAL.
+  ///   * NOTHING AT ALL → internal. This is not a guess about the payee; it is
+  ///     the only read with a route. In production every internal transfer
+  ///     lands with `metadata = {}` — no bank, no type, no user id — and
+  ///     reading those as external produced a payee with an empty bank code,
+  ///     which the send-funds form refuses outright ("Bank details are
+  ///     incomplete"). Nothing could ever be repeated. Read as internal, a
+  ///     genuinely internal transfer repeats, and a genuinely external one
+  ///     fails at the recipient lookup with a sentence that says what to do
+  ///     ("That recipient isn't a LazerVault account. Send to their bank
+  ///     instead"). Neither path moves money on a mistake.
   static RecipientModel recipientFrom({
     required String counterpartyName,
     required String counterpartyAccount,
     Map<String, dynamic>? metadata,
   }) {
     final md = metadata ?? const <String, dynamic>{};
-    final uid = _firstOf(md, _uidKeys);
-    final bankName = _firstOf(md, _bankNameKeys);
-    final bankCode = _firstOf(md, _bankCodeKeys);
+    final uid = _firstOf(md, TransferMetadataKeys.internalUserId);
+    final bankCode = _firstOf(md, TransferMetadataKeys.bankCode);
+    // A row that carries only the code still names a bank we can send to.
+    final bankName = _firstOf(md, TransferMetadataKeys.bankName).isNotEmpty
+        ? _firstOf(md, TransferMetadataKeys.bankName)
+        : (TransferMetadataKeys.bankNameForCode(bankCode) ?? '');
 
     final hasInternalUid = uid.isNotEmpty;
-    final isExternal =
-        !hasInternalUid && !bankName.toLowerCase().contains('lazervault');
+    final hasBankEvidence = bankCode.isNotEmpty || bankName.isNotEmpty;
+    final isExternal = !hasInternalUid &&
+        hasBankEvidence &&
+        !BrandBank.isOurs(bankName);
 
     return RecipientModel(
       id: '',
@@ -96,20 +102,41 @@ class RepeatTransfer {
     return (fee > 0 && fee < total) ? total - fee : total;
   }
 
-  /// True when there is enough on the row to rebuild a payee at all.
+  /// True when there is enough on the row to rebuild a payee the send-funds
+  /// form will ACCEPT.
   ///
-  /// Without this a "Repeat" button renders on rows it cannot act on — a dead
-  /// control, which is worse than an absent one.
+  /// Derived from [recipientFrom] rather than from its own rules, so the button
+  /// appears exactly when the repeat can proceed. The two used to disagree:
+  /// canRepeat asked only for a name plus an account number, while the long
+  /// flow refuses an external payee that is missing either half of its bank
+  /// details —
+  ///
+  ///   "Bank details are incomplete. Please verify the recipient's bank
+  ///    information."
+  ///
+  /// — which is exactly what every Redo produced while the bank-code key was
+  /// wrong. A button that always fails is worse than no button; a button that
+  /// is present only when the flow will take the payee is the invariant.
   static bool canRepeat({
     String? counterpartyName,
     String? counterpartyAccount,
     Map<String, dynamic>? metadata,
   }) {
-    if ((counterpartyName ?? '').trim().isEmpty) return false;
-    final hasAccount = (counterpartyAccount ?? '').trim().isNotEmpty;
-    final hasUid = _firstOf(metadata ?? const {}, _uidKeys).isNotEmpty;
-    // An internal payee resolves by user id, so it needs no account number.
-    return hasAccount || hasUid;
+    final name = (counterpartyName ?? '').trim();
+    if (name.isEmpty) return false;
+    final payee = recipientFrom(
+      counterpartyName: name,
+      counterpartyAccount: (counterpartyAccount ?? '').trim(),
+      metadata: metadata,
+    );
+    if (payee.type == 'internal') {
+      // Resolves by user id, or by account number on our own rail.
+      return (payee.internalUserId ?? '').isNotEmpty ||
+          payee.accountNumber.isNotEmpty;
+    }
+    return payee.accountNumber.isNotEmpty &&
+        payee.sortCode.trim().isNotEmpty &&
+        payee.bankName.trim().isNotEmpty;
   }
 
   /// Open Send Funds pre-filled, so only the transaction PIN remains.

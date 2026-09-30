@@ -10,6 +10,7 @@
 /// dashboard history, the recipient history and the select-recipients sheet
 /// cannot disagree about the same transaction.
 import 'package:lazervault/core/utils/brand_bank.dart';
+import 'package:lazervault/core/utils/transfer_metadata_keys.dart';
 
 class TransferBankDisplay {
   /// Display name of the destination institution ("Access Bank", "LazerVault").
@@ -49,31 +50,16 @@ class TransferBankDisplay {
   }) {
     final md = metadata ?? const <String, dynamic>{};
 
-    String? pick(List<String> keys) {
-      for (final k in keys) {
-        final v = md[k];
-        if (v != null && v.toString().trim().isNotEmpty) {
-          return v.toString().trim();
-        }
-      }
-      return null;
-    }
+    String? pick(List<String> keys) => TransferMetadataKeys.pick(md, keys);
 
-    final bankName = pick(const [
-      'bank_name',
-      'destination_bank_name',
-      'recipient_bank_name',
-      'bankName',
-      'destinationBankName',
-      'recipientBank',
-    ]);
-    final bankCode = pick(const [
-      'bank_code',
-      'destination_bank_code',
-      'recipient_bank_code',
-      'bankCode',
-      'destinationBankCode',
-    ]);
+    final bankCode = pick(TransferMetadataKeys.bankCode);
+    // A code with no name is the COMMON case in production, not an edge one:
+    // core-payments stamps `destination_bank` (the code) on every external
+    // transfer and `bank_name` on only some. This line used to resolve to null
+    // for those rows, so the receipt named no institution at all.
+    final bankName =
+        pick(TransferMetadataKeys.bankName) ??
+            TransferMetadataKeys.bankNameForCode(bankCode);
 
     // An explicitly LazerVault "bank" is an internal transfer wearing a bank
     // field — normalise it rather than rendering it as an external institution.
@@ -103,12 +89,7 @@ class TransferBankDisplay {
       'transferType',
       'Transfer Type',
     ])?.toLowerCase();
-    final hasInternalUser = pick(const [
-          'recipient_user_id',
-          'internal_user_id',
-          'internalUserId',
-        ]) !=
-        null;
+    final hasInternalUser = pick(TransferMetadataKeys.internalUserId) != null;
 
     if ((type != null && type.contains('internal')) || hasInternalUser) {
       return const TransferBankDisplay(

@@ -97,4 +97,58 @@ void main() {
       expect(r?.code, '057');
     });
   });
+  /// The production key names, pinned.
+  ///
+  /// Measured on `payments.payments` (transfers only) on 2026-09-30:
+  ///
+  ///   destination_bank      69 rows   <- the bank CODE, despite the name
+  ///   bank_name             41
+  ///   rail_bank_code         5
+  ///   destination_bank_code  0        <- what this resolver used to look for
+  ///
+  /// So every transfer carrying only a code resolved to null, and the receipt
+  /// named no institution at all — the one field that says where the money
+  /// went.
+  group('the keys core-payments actually writes', () {
+    test('destination_bank is read as a CODE and named from it', () {
+      final r = TransferBankDisplay.resolve(
+        const {'destination_bank': '057'},
+        isTransfer: true,
+      );
+      expect(r, isNotNull);
+      expect(r!.code, '057');
+      expect(r.name, 'Zenith Bank',
+          reason: 'a bare "057" on a receipt is not a destination');
+      expect(r.isLazerVault, isFalse);
+    });
+
+    test('rail_bank_code is read too', () {
+      final r = TransferBankDisplay.resolve(
+        const {'rail_bank_code': '035'},
+        isTransfer: true,
+      );
+      expect(r?.code, '035');
+      expect(r?.name, 'Wema Bank');
+    });
+
+    test('an explicit bank_name still wins over the code lookup', () {
+      // The provider's own spelling is more trustworthy than our static table.
+      final r = TransferBankDisplay.resolve(
+        const {'destination_bank': '057', 'bank_name': 'Zenith bank PLC'},
+        isTransfer: true,
+      );
+      expect(r?.name, 'Zenith bank PLC');
+      expect(r?.code, '057');
+    });
+
+    test('an unknown code shows nothing rather than digits', () {
+      // "999999" is not a destination a user can read.
+      final r = TransferBankDisplay.resolve(
+        const {'destination_bank': '999999'},
+        isTransfer: true,
+      );
+      expect(r, isNull);
+    });
+  });
+
 }
