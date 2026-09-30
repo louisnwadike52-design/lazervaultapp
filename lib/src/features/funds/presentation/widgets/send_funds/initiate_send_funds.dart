@@ -1706,13 +1706,21 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                             accountSummaries,
                                           _ => <AccountSummaryEntity>[],
                                         };
-                                        final accountCurrency =
+                                        final selectedSummary =
                                             summaries.isNotEmpty &&
                                                     selectedCardIndex <
                                                         summaries.length
                                                 ? summaries[selectedCardIndex]
-                                                    .currency
-                                                : 'NGN';
+                                                : null;
+                                        final accountCurrency =
+                                            selectedSummary?.currency ?? 'NGN';
+                                        // Non-null only on a family account
+                                        // that caps each member individually;
+                                        // the PIN sheet then shows what's left
+                                        // of THIS member's allocation before
+                                        // the PIN is entered.
+                                        final memberAllowance =
+                                            selectedSummary?.memberSpendAllowance;
 
                                         if (FeatureFlags
                                             .sendFundsPinIsRequired) {
@@ -1761,6 +1769,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                             // return `pending`), so don't claim success here.
                                             successMessage:
                                                 'Transfer Initiated',
+                                            memberAllocationRemaining:
+                                                memberAllowance,
                                             onPinValidated:
                                                 (verificationToken) async {
                                               // Execute transfer inside callback — PIN modal stays open

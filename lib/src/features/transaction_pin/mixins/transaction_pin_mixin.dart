@@ -113,6 +113,14 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
     // instead of clearing every popup down to the page. Default false preserves
     // the existing "return to the page" behaviour for full-screen callers.
     bool preserveHostSheet = false,
+    // The signed-in member's own remaining allowance when spending from a
+    // family account that caps members individually (see
+    // AccountSummaryEntity.memberSpendAllowance). Null on every other
+    // account, and the sheet then shows no allocation line at all.
+    //
+    // It belongs on THIS sheet because being refused AFTER entering a PIN
+    // reads as a fault; being told beforehand reads as a rule.
+    double? memberAllocationRemaining,
   }) async {
     // Reset the voice-flow outcome hints for this attempt.
     lastPinFailureReason = null;
@@ -186,6 +194,7 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
           processingSubtitle: processingSubtitle,
           successSubtitle: successSubtitle,
           transactionType: transactionType,
+          memberAllocationRemaining: memberAllocationRemaining,
           onPinSubmitted: (pin) {
             if (!completerRef.value.isCompleted) {
               completerRef.value.complete(pin);
@@ -266,6 +275,7 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
               successSubtitle: successSubtitle,
               failureMessageBuilder: failureMessageBuilder,
               preserveHostSheet: preserveHostSheet,
+              memberAllocationRemaining: memberAllocationRemaining,
             );
           }
 

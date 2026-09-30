@@ -208,6 +208,68 @@ class TransactionPinModalState extends State<TransactionPinModal>
     }
   }
 
+  /// Family & Friends allocation state, shown beneath the amount.
+  ///
+  /// Only when the family account runs an ALLOCATION mode, where the member
+  /// spends their own allowance rather than the pool. Three states, because
+  /// the difference matters at the moment money moves:
+  ///
+  ///   within      — "Your allocation: X left". Quiet reassurance; the spend
+  ///                 will go through.
+  ///   exactly     — same line. Spending your last naira is allowed, and
+  ///                 dressing it as a warning would be wrong.
+  ///   over        — a RED line naming both figures. The backend will refuse
+  ///                 this, and being refused after typing a PIN reads as a
+  ///                 fault where being told beforehand reads as a rule.
+  ///
+  /// Deliberately does not disable the keypad. The server is the authority on
+  /// spendability — limits reset, an admin can top someone up mid-session, and
+  /// a stale client figure must never be the thing that blocks a legitimate
+  /// payment. This informs; it does not adjudicate.
+  List<Widget> _allocationRows(double total) {
+    final remaining = widget.memberAllocationRemaining;
+    if (remaining == null) return const [];
+    // Compare in minor units. Doubles make `total == remaining` unreliable
+    // (12.30 + 0.10 != 12.40), and spending EXACTLY your allocation must not
+    // round into "over" — that would flag a legal payment as a breach.
+    final totalMinor = (total * 100).round();
+    final remainingMinor = (remaining * 100).round();
+    final over = totalMinor > remainingMinor;
+    final exact = totalMinor == remainingMinor;
+    final label = over
+        ? 'Over your allocation — $_displaySymbol${remaining.toStringAsFixed(2)} left'
+        : exact
+            ? 'Uses your full allocation of $_displaySymbol${remaining.toStringAsFixed(2)}'
+            : 'Your allocation · $_displaySymbol${remaining.toStringAsFixed(2)} left';
+    return [
+      SizedBox(height: 8.h),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            over ? Icons.error_outline : Icons.account_balance_wallet_outlined,
+            size: 13.sp,
+            color: over ? const Color(0xFFDC2626) : Colors.grey.shade500,
+          ),
+          SizedBox(width: 5.w),
+          Flexible(
+            child: Text(
+              label,
+              key: const Key('pin_member_allocation'),
+              maxLines: 2,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 11.sp,
+                fontWeight: over ? FontWeight.w600 : FontWeight.w500,
+                color: over ? const Color(0xFFDC2626) : Colors.grey.shade600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ];
+  }
+
   String get _displaySymbol => widget.currencySymbol ?? widget.currency ?? '';
 
   @override
@@ -388,6 +450,7 @@ class TransactionPinModalState extends State<TransactionPinModal>
                         ),
                       ),
                     ],
+                    ..._allocationRows(total),
                   ],
                 );
               }),
@@ -1075,4 +1138,5 @@ Future<String?> showTransactionPinModal(
   );
 
   return submittedPin;
+
 }

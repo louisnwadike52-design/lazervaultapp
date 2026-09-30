@@ -42,6 +42,21 @@ class TransactionPinModal extends StatefulWidget {
   // [successSubtitle] is supplied. Null → sheet keeps its transfer default.
   final String? transactionType;
 
+  /// A Family & Friends member's OWN spending allowance, when the family
+  /// account is in an allocation mode (equal_split / custom_allocation).
+  ///
+  /// WHY IT BELONGS ON THIS SHEET. Under allocation, a member does not spend
+  /// the family pool — they spend their allocation, and the backend refuses
+  /// anything above it. The PIN sheet is the last screen before the money
+  /// moves and the only one that shows the amount, so it is where a member can
+  /// still be told "this is more than you have" instead of typing a PIN and
+  /// being rejected afterwards. Being refused AFTER entering a PIN reads as a
+  /// fault; being told beforehand reads as a rule.
+  ///
+  /// Null on every non-family flow and in shared_pool, where no member has an
+  /// allocation and the pool balance is already the honest figure.
+  final double? memberAllocationRemaining;
+
   const TransactionPinModal({
     super.key,
     this.title,
@@ -64,6 +79,7 @@ class TransactionPinModal extends StatefulWidget {
     this.processingSubtitle,
     this.successSubtitle,
     this.transactionType,
+    this.memberAllocationRemaining,
   });
 
   @override

@@ -101,6 +101,25 @@ class AccountSummaryEntity extends Equatable {
   bool get isFamilyWalletProvisioning =>
       isFamilyAccount && !(virtualAccountId?.isNotEmpty ?? false);
 
+  /// The signed-in member's own remaining spend allowance, or null when this
+  /// account does not cap members individually.
+  ///
+  /// Only meaningful when the family account distributes funds PER MEMBER
+  /// (`equal_split` / `custom_allocation`). On a `shared_pool` account every
+  /// member spends the whole pool, so there is no personal ceiling: this
+  /// returns null and the spending UIs render nothing, rather than showing a
+  /// figure that reads like a limit where none exists.
+  ///
+  /// Falls back to [memberAllocatedBalance] when the remaining figure hasn't
+  /// been computed yet — an allocation with no spend recorded against it is
+  /// entirely still available, so the allocated amount IS the remainder.
+  double? get memberSpendAllowance {
+    if (!isFamilyAccount) return null;
+    final mode = fundDistributionMode;
+    if (mode == null || mode.isEmpty || mode == 'shared_pool') return null;
+    return memberRemainingBalance ?? memberAllocatedBalance;
+  }
+
   /// Estimated clearing time for pending deposits (e.g., "Available in 2h").
   /// Null when no clearing estimate is available from the backend.
   /// Will be populated when backend adds per-deposit clearing time fields.
