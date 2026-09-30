@@ -83,10 +83,16 @@ class InternetBillPaymentSuccess extends InternetBillState {
 class InternetBillPaymentFailed extends InternetBillState {
   final String message;
 
-  InternetBillPaymentFailed({required this.message});
+  /// The gRPC status code the backend chose, so the screen can tell an OUR-FAULT
+  /// failure from a correctable one from a purchase the provider has already
+  /// accepted — and steer the customer to their history rather than a retry for
+  /// the last.
+  final dynamic statusCode;
+
+  InternetBillPaymentFailed({required this.message, this.statusCode});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, statusCode];
 }
 
 class InternetBillError extends InternetBillState {

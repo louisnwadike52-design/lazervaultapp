@@ -141,7 +141,8 @@ class InternetBillCubit extends Cubit<InternetBillState> {
     if (isClosed) return;
 
     result.fold(
-      (failure) => emit(InternetBillPaymentFailed(message: failure.message)),
+      (failure) => emit(InternetBillPaymentFailed(
+          message: failure.message, statusCode: failure.statusCode)),
       (payment) {
         if (payment.isCompleted) {
           emit(InternetBillPaymentSuccess(payment: payment));

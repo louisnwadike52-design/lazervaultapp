@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:grpc/grpc.dart';
+import 'package:lazervault/src/features/bills/presentation/widgets/bill_failure_dialog.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -212,16 +214,23 @@ class _InternetPaymentProcessingScreenState
                   _failMessage = state.message;
                   _popAllowed = true;
                 });
-                Get.snackbar(
-                  'Payment Failed',
-                  state.message,
-                  backgroundColor:
-                      const Color(0xFFEF4444).withValues(alpha: 0.9),
-                  colorText: Colors.white,
-                  duration: const Duration(seconds: 4),
-                  snackPosition: SnackPosition.TOP,
-                  margin: EdgeInsets.all(16.w),
-                  borderRadius: 12,
+                // A MODAL, not a four-second snackbar. An internet bundle is a
+                // money event and the sentence that matters most — "you have not
+                // been charged" — is what a flash truncates, and what the
+                // customer needs before deciding whether to try again. The modal
+                // also withholds the retry when the provider has already
+                // accepted the purchase.
+                showBillFailure(
+                  context,
+                  error: state.statusCode is int
+                      ? GrpcError.custom(state.statusCode as int, state.message)
+                      : null,
+                  serviceLabel: 'Internet subscription',
+                  onRetry: billFailureForbidsRetry(state.statusCode)
+                      ? null
+                      : () => Get.back(),
+                  onViewHistory: () =>
+                      Get.offAllNamed(AppRoutes.internetBillHome),
                 );
               } else if (state is InternetBillError) {
                 setState(() {
