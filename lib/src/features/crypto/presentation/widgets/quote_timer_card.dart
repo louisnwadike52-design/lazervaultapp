@@ -161,10 +161,24 @@ class _QuoteTimerCardState extends State<QuoteTimerCard> {
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () {
-                          widget.onCancelled?.call();
-                          Navigator.of(context).maybePop();
-                        },
+                        // ONE pop, not two.
+                        //
+                        // This called onCancelled — which pops the sheet —
+                        // and then popped again. The first close dismissed
+                        // the quote sheet; the second dismissed the SWAP
+                        // SCREEN underneath it, so cancelling a quote threw
+                        // the user back to the crypto landing page and they
+                        // had to walk into Swap again to change an amount.
+                        // The sheet now owns its single pop and onCancelled
+                        // is a notification.
+                        onPressed: _submitting
+                            ? null
+                            : () {
+                                widget.onCancelled?.call();
+                                if (Navigator.canPop(context)) {
+                                  Navigator.of(context).pop();
+                                }
+                              },
                         child: const Text('Cancel'),
                       ),
                     ),
@@ -318,9 +332,9 @@ Future<void> showQuoteTimerSheet(
                       Navigator.of(sheetCtx).pop();
                     }
                   },
-            onCancelled: () {
-              if (Navigator.canPop(sheetCtx)) Navigator.of(sheetCtx).pop();
-            },
+            // Notification only — the card owns the pop. Popping here as
+            // well closed the screen underneath the sheet.
+            onCancelled: () {},
           ),
         ),
       );

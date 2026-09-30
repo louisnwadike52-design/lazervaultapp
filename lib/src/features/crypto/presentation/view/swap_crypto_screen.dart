@@ -1223,8 +1223,16 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
   }
 
   Widget _buildSwapButton() {
-    final isEnabled =
-        _fromHolding != null && _toCrypto != null && _hasValidAmount;
+    // The quote round-trip takes a visible moment before the confirm sheet
+    // appears, and the button said nothing about it — it kept its normal
+    // label and stayed tappable, so the screen looked like it had ignored
+    // the tap. _isTransacting covers exactly that window (set before
+    // runSwapFlow, cleared after), and _isLoading covers the data loads.
+    final busy = _isLoading || _isTransacting;
+    final isEnabled = _fromHolding != null &&
+        _toCrypto != null &&
+        _hasValidAmount &&
+        !busy;
 
     return SizedBox(
       width: double.infinity,
@@ -1271,7 +1279,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                     ]
                   : null,
             ),
-            child: _isLoading
+            child: busy
                 ? Center(
                     child: LazerVaultLoader.small(),
                   )
