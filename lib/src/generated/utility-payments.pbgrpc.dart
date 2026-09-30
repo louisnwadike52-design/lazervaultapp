@@ -82,14 +82,6 @@ class UtilityPaymentsServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getDataPlans, request, options: options);
   }
 
-  /// Get the bill-service catalogue with each type's effective-enabled state.
-  $grpc.ResponseFuture<$0.GetBillServicesResponse> getBillServices(
-    $0.GetBillServicesRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$getBillServices, request, options: options);
-  }
-
   /// Pay by scanning barcode (barcodeQuickPay from AppServiceName)
   $grpc.ResponseFuture<$0.BarcodePayResponse> barcodePay(
     $0.BarcodePayRequest request, {
@@ -1249,6 +1241,17 @@ class UtilityPaymentsServiceClient extends $grpc.Client {
         options: options);
   }
 
+  /// Get the bill-service catalogue with each type's effective-enabled state.
+  /// enabled = admin flag (service_<type>_enabled, default true) AND the type
+  /// has at least one active provider/mapping. The app consumes this single
+  /// endpoint to hide services that are admin-disabled or unfulfillable.
+  $grpc.ResponseFuture<$0.GetBillServicesResponse> getBillServices(
+    $0.GetBillServicesRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getBillServices, request, options: options);
+  }
+
   // method descriptors
 
   static final _$payElectricityBill = $grpc.ClientMethod<
@@ -1281,11 +1284,6 @@ class UtilityPaymentsServiceClient extends $grpc.Client {
           '/utilitypayments.UtilityPaymentsService/GetDataPlans',
           ($0.GetDataPlansRequest value) => value.writeToBuffer(),
           $0.GetDataPlansResponse.fromBuffer);
-  static final _$getBillServices =
-      $grpc.ClientMethod<$0.GetBillServicesRequest, $0.GetBillServicesResponse>(
-          '/utilitypayments.UtilityPaymentsService/GetBillServices',
-          ($0.GetBillServicesRequest value) => value.writeToBuffer(),
-          $0.GetBillServicesResponse.fromBuffer);
   static final _$barcodePay =
       $grpc.ClientMethod<$0.BarcodePayRequest, $0.BarcodePayResponse>(
           '/utilitypayments.UtilityPaymentsService/BarcodePay',
@@ -2030,6 +2028,11 @@ class UtilityPaymentsServiceClient extends $grpc.Client {
       '/utilitypayments.UtilityPaymentsService/DeleteBettingBeneficiary',
       ($0.DeleteBettingBeneficiaryRequest value) => value.writeToBuffer(),
       $0.DeleteBettingBeneficiaryResponse.fromBuffer);
+  static final _$getBillServices =
+      $grpc.ClientMethod<$0.GetBillServicesRequest, $0.GetBillServicesResponse>(
+          '/utilitypayments.UtilityPaymentsService/GetBillServices',
+          ($0.GetBillServicesRequest value) => value.writeToBuffer(),
+          $0.GetBillServicesResponse.fromBuffer);
 }
 
 @$pb.GrpcServiceName('utilitypayments.UtilityPaymentsService')
@@ -2087,15 +2090,6 @@ abstract class UtilityPaymentsServiceBase extends $grpc.Service {
             ($core.List<$core.int> value) =>
                 $0.GetDataPlansRequest.fromBuffer(value),
             ($0.GetDataPlansResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetBillServicesRequest,
-            $0.GetBillServicesResponse>(
-        'GetBillServices',
-        getBillServices_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) =>
-            $0.GetBillServicesRequest.fromBuffer(value),
-        ($0.GetBillServicesResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.BarcodePayRequest, $0.BarcodePayResponse>(
         'BarcodePay',
         barcodePay_Pre,
@@ -3335,6 +3329,15 @@ abstract class UtilityPaymentsServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.DeleteBettingBeneficiaryRequest.fromBuffer(value),
         ($0.DeleteBettingBeneficiaryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetBillServicesRequest,
+            $0.GetBillServicesResponse>(
+        'GetBillServices',
+        getBillServices_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetBillServicesRequest.fromBuffer(value),
+        ($0.GetBillServicesResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.PayElectricityBillResponse> payElectricityBill_Pre(
@@ -3388,15 +3391,6 @@ abstract class UtilityPaymentsServiceBase extends $grpc.Service {
 
   $async.Future<$0.GetDataPlansResponse> getDataPlans(
       $grpc.ServiceCall call, $0.GetDataPlansRequest request);
-
-  $async.Future<$0.GetBillServicesResponse> getBillServices_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.GetBillServicesRequest> $request) async {
-    return getBillServices($call, await $request);
-  }
-
-  $async.Future<$0.GetBillServicesResponse> getBillServices(
-      $grpc.ServiceCall call, $0.GetBillServicesRequest request);
 
   $async.Future<$0.BarcodePayResponse> barcodePay_Pre($grpc.ServiceCall $call,
       $async.Future<$0.BarcodePayRequest> $request) async {
@@ -4644,4 +4638,13 @@ abstract class UtilityPaymentsServiceBase extends $grpc.Service {
 
   $async.Future<$0.DeleteBettingBeneficiaryResponse> deleteBettingBeneficiary(
       $grpc.ServiceCall call, $0.DeleteBettingBeneficiaryRequest request);
+
+  $async.Future<$0.GetBillServicesResponse> getBillServices_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetBillServicesRequest> $request) async {
+    return getBillServices($call, await $request);
+  }
+
+  $async.Future<$0.GetBillServicesResponse> getBillServices(
+      $grpc.ServiceCall call, $0.GetBillServicesRequest request);
 }

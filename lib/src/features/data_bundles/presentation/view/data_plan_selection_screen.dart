@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/src/features/data_bundles/utils/data_plan_family_filter.dart';
 import 'package:lazervault/src/features/data_bundles/utils/data_plan_validity.dart';
 import 'package:intl/intl.dart';
 import '../../../../../core/types/app_routes.dart';
@@ -25,6 +26,16 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
   // Active duration filter pill (All / Daily / Weekly / Monthly), parsed from
   // each plan's name.
   DataPlanDuration _durationFilter = DataPlanDuration.all;
+
+  /// Active plan-FAMILY filter — the provider's own family id, '' for All.
+  ///
+  /// A second, orthogonal axis to the duration pills above. The provider lists
+  /// nine families and MTN spans seven of them, and the same volume costs
+  /// materially different amounts across them (1GB/30d: ₦880 cglite, ₦500 sme,
+  /// ₦490 awoof). One flat list — all this screen could show until now — put
+  /// three rows reading "1GB" at three prices side by side with nothing to
+  /// distinguish them.
+  String _familyFilter = '';
 
   @override
   void initState() {
@@ -187,7 +198,34 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: 12.h),
+              SizedBox(height: 8.h),
+
+              // Plan-FAMILY chips, built from what the provider actually
+              // returned rather than a hardcoded list — a family it starts
+              // selling appears the first time it ships instead of staying
+              // invisible until the app is updated. Absent entirely for a
+              // provider that publishes no families, since a filter with one
+              // option is a control that cannot do anything.
+              BlocBuilder<DataBundlesCubit, DataBundlesState>(
+                builder: (context, state) {
+                  if (state is! DataPlansLoaded) return const SizedBox.shrink();
+                  final families = dataPlanFamilies(state.plans);
+                  if (families.isEmpty) return const SizedBox.shrink();
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: 10.h),
+                    child: SizedBox(
+                      height: 34.h,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          for (final f in families)
+                            _buildFamilyPill(f, Color(networkColorValue)),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
 
               // Plans grid
               Expanded(
@@ -207,16 +245,29 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
                       if (state.plans.isEmpty) {
                         return _buildEmptyState();
                       }
-                      final plans = state.plans
+                      // Cheapest first WITHIN the selection. The reason the
+                      // families are worth showing at all is that one of them is
+                      // cheaper for the same volume, so the cheap end has to be
+                      // the end a customer sees.
+                      final plans = sortedByPrice(state.plans
                           .where((p) => matchesDuration(p, _durationFilter))
-                          .toList();
+                          .where((p) => matchesFamily(p, _familyFilter))
+                          .toList());
                       if (plans.isEmpty) {
+                        // Names BOTH active filters. "No daily plans" when the
+                        // user had also narrowed to SME reads as if the network
+                        // sells no daily data, and they clear the wrong one.
                         return Center(
-                          child: Text(
-                              'No ${_durationFilter.label.toLowerCase()} plans',
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 24.w),
+                            child: Text(
+                              _emptyFilterMessage(state.plans),
+                              textAlign: TextAlign.center,
                               style: GoogleFonts.inter(
                                   color: const Color(0xFF9CA3AF),
-                                  fontSize: 14.sp)),
+                                  fontSize: 14.sp),
+                            ),
+                          ),
                         );
                       }
                       return GridView.builder(
@@ -246,6 +297,68 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
                   },
                 ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Names every active filter when a combination has no plans.
+  ///
+  /// "No daily plans" while the user had ALSO narrowed to SME reads as if the
+  /// network sells no daily data at all, so they clear the duration and are
+  /// puzzled when the list stays empty.
+  String _emptyFilterMessage(List<DataPlanEntity> all) {
+    final parts = <String>[];
+    if (_durationFilter != DataPlanDuration.all) {
+      parts.add(_durationFilter.label.toLowerCase());
+    }
+    if (_familyFilter.isNotEmpty) {
+      final label = all
+          .firstWhere((p) => p.planFamily == _familyFilter,
+              orElse: () => all.first)
+          .familyChipLabel;
+      parts.add(label);
+    }
+    if (parts.isEmpty) return 'No plans available';
+    return 'No ${parts.join(' + ')} plans. Try another filter.';
+  }
+
+  Widget _buildFamilyPill(DataPlanFamily f, Color accent) {
+    final selected = f.id == _familyFilter;
+    return Padding(
+      padding: EdgeInsets.only(right: 8.w),
+      child: GestureDetector(
+        onTap: () => setState(() => _familyFilter = f.id),
+        child: Container(
+          alignment: Alignment.center,
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+          decoration: BoxDecoration(
+            color: selected
+                ? accent.withValues(alpha: 0.22)
+                : const Color(0xFF161616),
+            borderRadius: BorderRadius.circular(18.r),
+            border: Border.all(
+                color: selected ? accent : const Color(0xFF2D2D2D)),
+          ),
+          child: Row(
+            children: [
+              Text(f.label,
+                  style: GoogleFonts.inter(
+                      color: selected ? Colors.white : const Color(0xFF9CA3AF),
+                      fontSize: 12.sp,
+                      fontWeight:
+                          selected ? FontWeight.w600 : FontWeight.w500)),
+              SizedBox(width: 5.w),
+              // The count is what tells a customer a family is worth opening.
+              Text('${f.count}',
+                  style: GoogleFonts.inter(
+                      color: selected
+                          ? Colors.white.withValues(alpha: 0.7)
+                          : const Color(0xFF6B7280),
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w500)),
             ],
           ),
         ),

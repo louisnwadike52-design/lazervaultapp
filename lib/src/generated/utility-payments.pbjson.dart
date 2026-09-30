@@ -976,6 +976,53 @@ final $typed_data.Uint8List getEducationProvidersResponseDescriptor =
         'lsaXR5cGF5bWVudHMuRWR1Y2F0aW9uUHJvdmlkZXJSCXByb3ZpZGVycxIUCgV0b3RhbBgCIAEo'
         'BVIFdG90YWw=');
 
+@$core.Deprecated('Use getBillServicesRequestDescriptor instead')
+const GetBillServicesRequest$json = {
+  '1': 'GetBillServicesRequest',
+};
+
+/// Descriptor for `GetBillServicesRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getBillServicesRequestDescriptor =
+    $convert.base64Decode('ChZHZXRCaWxsU2VydmljZXNSZXF1ZXN0');
+
+@$core.Deprecated('Use billServiceDescriptor instead')
+const BillService$json = {
+  '1': 'BillService',
+  '2': [
+    {'1': 'type', '3': 1, '4': 1, '5': 9, '10': 'type'},
+    {'1': 'label', '3': 2, '4': 1, '5': 9, '10': 'label'},
+    {'1': 'enabled', '3': 3, '4': 1, '5': 8, '10': 'enabled'},
+    {'1': 'disabled_reason', '3': 4, '4': 1, '5': 9, '10': 'disabledReason'},
+  ],
+};
+
+/// Descriptor for `BillService`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List billServiceDescriptor = $convert.base64Decode(
+    'CgtCaWxsU2VydmljZRISCgR0eXBlGAEgASgJUgR0eXBlEhQKBWxhYmVsGAIgASgJUgVsYWJlbB'
+    'IYCgdlbmFibGVkGAMgASgIUgdlbmFibGVkEicKD2Rpc2FibGVkX3JlYXNvbhgEIAEoCVIOZGlz'
+    'YWJsZWRSZWFzb24=');
+
+@$core.Deprecated('Use getBillServicesResponseDescriptor instead')
+const GetBillServicesResponse$json = {
+  '1': 'GetBillServicesResponse',
+  '2': [
+    {
+      '1': 'services',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.utilitypayments.BillService',
+      '10': 'services'
+    },
+  ],
+};
+
+/// Descriptor for `GetBillServicesResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getBillServicesResponseDescriptor =
+    $convert.base64Decode(
+        'ChdHZXRCaWxsU2VydmljZXNSZXNwb25zZRI4CghzZXJ2aWNlcxgBIAMoCzIcLnV0aWxpdHlwYX'
+        'ltZW50cy5CaWxsU2VydmljZVIIc2VydmljZXM=');
+
 @$core.Deprecated('Use dataPlanDescriptor instead')
 const DataPlan$json = {
   '1': 'DataPlan',
@@ -986,6 +1033,8 @@ const DataPlan$json = {
     {'1': 'network', '3': 4, '4': 1, '5': 9, '10': 'network'},
     {'1': 'availability', '3': 5, '4': 1, '5': 9, '10': 'availability'},
     {'1': 'service_fee', '3': 6, '4': 1, '5': 1, '10': 'serviceFee'},
+    {'1': 'plan_family', '3': 7, '4': 1, '5': 9, '10': 'planFamily'},
+    {'1': 'family_label', '3': 8, '4': 1, '5': 9, '10': 'familyLabel'},
   ],
 };
 
@@ -994,7 +1043,8 @@ final $typed_data.Uint8List dataPlanDescriptor = $convert.base64Decode(
     'CghEYXRhUGxhbhIhCgx2YXJpYXRpb25faWQYASABKAlSC3ZhcmlhdGlvbklkEhIKBG5hbWUYAi'
     'ABKAlSBG5hbWUSFAoFcHJpY2UYAyABKAFSBXByaWNlEhgKB25ldHdvcmsYBCABKAlSB25ldHdv'
     'cmsSIgoMYXZhaWxhYmlsaXR5GAUgASgJUgxhdmFpbGFiaWxpdHkSHwoLc2VydmljZV9mZWUYBi'
-    'ABKAFSCnNlcnZpY2VGZWU=');
+    'ABKAFSCnNlcnZpY2VGZWUSHwoLcGxhbl9mYW1pbHkYByABKAlSCnBsYW5GYW1pbHkSIQoMZmFt'
+    'aWx5X2xhYmVsGAggASgJUgtmYW1pbHlMYWJlbA==');
 
 @$core.Deprecated('Use getDataPlansRequestDescriptor instead')
 const GetDataPlansRequest$json = {

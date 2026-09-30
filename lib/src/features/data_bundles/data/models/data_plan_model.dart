@@ -8,6 +8,8 @@ class DataPlanModel extends DataPlanEntity {
     required super.price,
     required super.network,
     required super.availability,
+    super.planFamily,
+    super.familyLabel,
   });
 
   factory DataPlanModel.fromProto(pb.DataPlan proto) {
@@ -17,6 +19,8 @@ class DataPlanModel extends DataPlanEntity {
       price: proto.price,
       network: proto.network,
       availability: proto.availability,
+      planFamily: proto.planFamily,
+      familyLabel: proto.familyLabel,
     );
   }
 }

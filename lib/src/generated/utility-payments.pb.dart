@@ -4365,255 +4365,6 @@ class GetEducationProvidersResponse extends $pb.GeneratedMessage {
   void clearTotal() => $_clearField(2);
 }
 
-class DataPlan extends $pb.GeneratedMessage {
-  factory DataPlan({
-    $core.String? variationId,
-    $core.String? name,
-    $core.double? price,
-    $core.String? network,
-    $core.String? availability,
-    $core.double? serviceFee,
-  }) {
-    final result = create();
-    if (variationId != null) result.variationId = variationId;
-    if (name != null) result.name = name;
-    if (price != null) result.price = price;
-    if (network != null) result.network = network;
-    if (availability != null) result.availability = availability;
-    if (serviceFee != null) result.serviceFee = serviceFee;
-    return result;
-  }
-
-  DataPlan._();
-
-  factory DataPlan.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory DataPlan.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'DataPlan',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'),
-      createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'variationId')
-    ..aOS(2, _omitFieldNames ? '' : 'name')
-    ..a<$core.double>(3, _omitFieldNames ? '' : 'price', $pb.PbFieldType.OD)
-    ..aOS(4, _omitFieldNames ? '' : 'network')
-    ..aOS(5, _omitFieldNames ? '' : 'availability')
-    ..a<$core.double>(
-        6, _omitFieldNames ? '' : 'serviceFee', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  DataPlan clone() => DataPlan()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  DataPlan copyWith(void Function(DataPlan) updates) =>
-      super.copyWith((message) => updates(message as DataPlan)) as DataPlan;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static DataPlan create() => DataPlan._();
-  @$core.override
-  DataPlan createEmptyInstance() => create();
-  static $pb.PbList<DataPlan> createRepeated() => $pb.PbList<DataPlan>();
-  @$core.pragma('dart2js:noInline')
-  static DataPlan getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DataPlan>(create);
-  static DataPlan? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get variationId => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set variationId($core.String value) => $_setString(0, value);
-  @$pb.TagNumber(1)
-  $core.bool hasVariationId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearVariationId() => $_clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get name => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set name($core.String value) => $_setString(1, value);
-  @$pb.TagNumber(2)
-  $core.bool hasName() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearName() => $_clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.double get price => $_getN(2);
-  @$pb.TagNumber(3)
-  set price($core.double value) => $_setDouble(2, value);
-  @$pb.TagNumber(3)
-  $core.bool hasPrice() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearPrice() => $_clearField(3);
-
-  @$pb.TagNumber(4)
-  $core.String get network => $_getSZ(3);
-  @$pb.TagNumber(4)
-  set network($core.String value) => $_setString(3, value);
-  @$pb.TagNumber(4)
-  $core.bool hasNetwork() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearNetwork() => $_clearField(4);
-
-  @$pb.TagNumber(5)
-  $core.String get availability => $_getSZ(4);
-  @$pb.TagNumber(5)
-  set availability($core.String value) => $_setString(4, value);
-  @$pb.TagNumber(5)
-  $core.bool hasAvailability() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearAvailability() => $_clearField(5);
-
-  /// Server-computed platform service fee (NGN) based on admin
-  /// system_settings (data_service_fee_enabled / data_fee_type /
-  /// data_fee_percentage / data_fee_fixed). Always ADDED to price on
-  /// the confirmation screen — never subtracted. Zero when the fee
-  /// toggle is off. Clients MUST display price + service_fee = total
-  /// rather than showing service_fee inside the plan price.
-  @$pb.TagNumber(6)
-  $core.double get serviceFee => $_getN(5);
-  @$pb.TagNumber(6)
-  set serviceFee($core.double value) => $_setDouble(5, value);
-  @$pb.TagNumber(6)
-  $core.bool hasServiceFee() => $_has(5);
-  @$pb.TagNumber(6)
-  void clearServiceFee() => $_clearField(6);
-}
-
-class GetDataPlansRequest extends $pb.GeneratedMessage {
-  factory GetDataPlansRequest({
-    $core.String? network,
-  }) {
-    final result = create();
-    if (network != null) result.network = network;
-    return result;
-  }
-
-  GetDataPlansRequest._();
-
-  factory GetDataPlansRequest.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory GetDataPlansRequest.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'GetDataPlansRequest',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'),
-      createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'network')
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetDataPlansRequest clone() => GetDataPlansRequest()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetDataPlansRequest copyWith(void Function(GetDataPlansRequest) updates) =>
-      super.copyWith((message) => updates(message as GetDataPlansRequest))
-          as GetDataPlansRequest;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static GetDataPlansRequest create() => GetDataPlansRequest._();
-  @$core.override
-  GetDataPlansRequest createEmptyInstance() => create();
-  static $pb.PbList<GetDataPlansRequest> createRepeated() =>
-      $pb.PbList<GetDataPlansRequest>();
-  @$core.pragma('dart2js:noInline')
-  static GetDataPlansRequest getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<GetDataPlansRequest>(create);
-  static GetDataPlansRequest? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get network => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set network($core.String value) => $_setString(0, value);
-  @$pb.TagNumber(1)
-  $core.bool hasNetwork() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearNetwork() => $_clearField(1);
-}
-
-class GetDataPlansResponse extends $pb.GeneratedMessage {
-  factory GetDataPlansResponse({
-    $core.Iterable<DataPlan>? plans,
-    $core.int? total,
-  }) {
-    final result = create();
-    if (plans != null) result.plans.addAll(plans);
-    if (total != null) result.total = total;
-    return result;
-  }
-
-  GetDataPlansResponse._();
-
-  factory GetDataPlansResponse.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory GetDataPlansResponse.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'GetDataPlansResponse',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'),
-      createEmptyInstance: create)
-    ..pc<DataPlan>(1, _omitFieldNames ? '' : 'plans', $pb.PbFieldType.PM,
-        subBuilder: DataPlan.create)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetDataPlansResponse clone() =>
-      GetDataPlansResponse()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetDataPlansResponse copyWith(void Function(GetDataPlansResponse) updates) =>
-      super.copyWith((message) => updates(message as GetDataPlansResponse))
-          as GetDataPlansResponse;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static GetDataPlansResponse create() => GetDataPlansResponse._();
-  @$core.override
-  GetDataPlansResponse createEmptyInstance() => create();
-  static $pb.PbList<GetDataPlansResponse> createRepeated() =>
-      $pb.PbList<GetDataPlansResponse>();
-  @$core.pragma('dart2js:noInline')
-  static GetDataPlansResponse getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<GetDataPlansResponse>(create);
-  static GetDataPlansResponse? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $pb.PbList<DataPlan> get plans => $_getList(0);
-
-  @$pb.TagNumber(2)
-  $core.int get total => $_getIZ(1);
-  @$pb.TagNumber(2)
-  set total($core.int value) => $_setSignedInt32(1, value);
-  @$pb.TagNumber(2)
-  $core.bool hasTotal() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearTotal() => $_clearField(2);
-}
-
-// ===== BILL SERVICE CATALOGUE =====
-// Hand-added (mirrors the microservice utility-payments.proto GetBillServices
-// RPC) so the app can data-drive the Bills hub and hide admin-disabled or
-// unfulfillable bill types. See utility-payments.pbgrpc.dart for the RPC.
-
 class GetBillServicesRequest extends $pb.GeneratedMessage {
   factory GetBillServicesRequest() => create();
 
@@ -4802,6 +4553,291 @@ class GetBillServicesResponse extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(1)
   $pb.PbList<BillService> get services => $_getList(0);
+}
+
+class DataPlan extends $pb.GeneratedMessage {
+  factory DataPlan({
+    $core.String? variationId,
+    $core.String? name,
+    $core.double? price,
+    $core.String? network,
+    $core.String? availability,
+    $core.double? serviceFee,
+    $core.String? planFamily,
+    $core.String? familyLabel,
+  }) {
+    final result = create();
+    if (variationId != null) result.variationId = variationId;
+    if (name != null) result.name = name;
+    if (price != null) result.price = price;
+    if (network != null) result.network = network;
+    if (availability != null) result.availability = availability;
+    if (serviceFee != null) result.serviceFee = serviceFee;
+    if (planFamily != null) result.planFamily = planFamily;
+    if (familyLabel != null) result.familyLabel = familyLabel;
+    return result;
+  }
+
+  DataPlan._();
+
+  factory DataPlan.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory DataPlan.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'DataPlan',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'variationId')
+    ..aOS(2, _omitFieldNames ? '' : 'name')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'price', $pb.PbFieldType.OD)
+    ..aOS(4, _omitFieldNames ? '' : 'network')
+    ..aOS(5, _omitFieldNames ? '' : 'availability')
+    ..a<$core.double>(
+        6, _omitFieldNames ? '' : 'serviceFee', $pb.PbFieldType.OD)
+    ..aOS(7, _omitFieldNames ? '' : 'planFamily')
+    ..aOS(8, _omitFieldNames ? '' : 'familyLabel')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DataPlan clone() => DataPlan()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DataPlan copyWith(void Function(DataPlan) updates) =>
+      super.copyWith((message) => updates(message as DataPlan)) as DataPlan;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static DataPlan create() => DataPlan._();
+  @$core.override
+  DataPlan createEmptyInstance() => create();
+  static $pb.PbList<DataPlan> createRepeated() => $pb.PbList<DataPlan>();
+  @$core.pragma('dart2js:noInline')
+  static DataPlan getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DataPlan>(create);
+  static DataPlan? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get variationId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set variationId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasVariationId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearVariationId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get name => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set name($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearName() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get price => $_getN(2);
+  @$pb.TagNumber(3)
+  set price($core.double value) => $_setDouble(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasPrice() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPrice() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get network => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set network($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasNetwork() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearNetwork() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get availability => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set availability($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasAvailability() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearAvailability() => $_clearField(5);
+
+  /// Server-computed platform service fee (NGN) based on admin
+  /// system_settings (data_service_fee_enabled / data_fee_type /
+  /// data_fee_percentage / data_fee_fixed). Always ADDED to price on
+  /// the confirmation screen — never subtracted. Zero when the fee
+  /// toggle is off. Clients MUST display price + service_fee = total
+  /// rather than showing service_fee inside the plan price.
+  @$pb.TagNumber(6)
+  $core.double get serviceFee => $_getN(5);
+  @$pb.TagNumber(6)
+  set serviceFee($core.double value) => $_setDouble(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasServiceFee() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearServiceFee() => $_clearField(6);
+
+  /// The provider's own plan FAMILY, verbatim: sme, gifting, awoofgifting,
+  /// specialdata, datacoupons, cglite, directdata, smile-direct, spectranet.
+  ///
+  /// MTN alone publishes 7 of these across 82 plans, and the cheap ones live
+  /// almost entirely OUTSIDE directdata — 1GB/30d is 880 on cglite, 500 on sme
+  /// and 490 on awoofgifting. Until now the app rendered one flat list with no
+  /// way to tell them apart, so a customer could not find the cheaper bundle and
+  /// had no idea two rows named "1GB" were different products with different
+  /// delivery behaviour (SME volumes are transferable, gifting is not, awoof
+  /// expires in a day).
+  ///
+  /// Sent verbatim rather than mapped to our own vocabulary: the app groups on
+  /// it, and a provider that adds a family must show up as a new group rather
+  /// than vanish into an "other" bucket.
+  @$pb.TagNumber(7)
+  $core.String get planFamily => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set planFamily($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasPlanFamily() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearPlanFamily() => $_clearField(7);
+
+  /// A human label for plan_family, resolved server-side so every client agrees
+  /// ("SME", "Gifting", "Awoof", "Special", "Corporate Lite", "Direct").
+  /// Empty when the family is unknown, which the client renders as "Other".
+  @$pb.TagNumber(8)
+  $core.String get familyLabel => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set familyLabel($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasFamilyLabel() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearFamilyLabel() => $_clearField(8);
+}
+
+class GetDataPlansRequest extends $pb.GeneratedMessage {
+  factory GetDataPlansRequest({
+    $core.String? network,
+  }) {
+    final result = create();
+    if (network != null) result.network = network;
+    return result;
+  }
+
+  GetDataPlansRequest._();
+
+  factory GetDataPlansRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetDataPlansRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetDataPlansRequest',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'network')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetDataPlansRequest clone() => GetDataPlansRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetDataPlansRequest copyWith(void Function(GetDataPlansRequest) updates) =>
+      super.copyWith((message) => updates(message as GetDataPlansRequest))
+          as GetDataPlansRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetDataPlansRequest create() => GetDataPlansRequest._();
+  @$core.override
+  GetDataPlansRequest createEmptyInstance() => create();
+  static $pb.PbList<GetDataPlansRequest> createRepeated() =>
+      $pb.PbList<GetDataPlansRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetDataPlansRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetDataPlansRequest>(create);
+  static GetDataPlansRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get network => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set network($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasNetwork() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearNetwork() => $_clearField(1);
+}
+
+class GetDataPlansResponse extends $pb.GeneratedMessage {
+  factory GetDataPlansResponse({
+    $core.Iterable<DataPlan>? plans,
+    $core.int? total,
+  }) {
+    final result = create();
+    if (plans != null) result.plans.addAll(plans);
+    if (total != null) result.total = total;
+    return result;
+  }
+
+  GetDataPlansResponse._();
+
+  factory GetDataPlansResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetDataPlansResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetDataPlansResponse',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'),
+      createEmptyInstance: create)
+    ..pc<DataPlan>(1, _omitFieldNames ? '' : 'plans', $pb.PbFieldType.PM,
+        subBuilder: DataPlan.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetDataPlansResponse clone() =>
+      GetDataPlansResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetDataPlansResponse copyWith(void Function(GetDataPlansResponse) updates) =>
+      super.copyWith((message) => updates(message as GetDataPlansResponse))
+          as GetDataPlansResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetDataPlansResponse create() => GetDataPlansResponse._();
+  @$core.override
+  GetDataPlansResponse createEmptyInstance() => create();
+  static $pb.PbList<GetDataPlansResponse> createRepeated() =>
+      $pb.PbList<GetDataPlansResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetDataPlansResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetDataPlansResponse>(create);
+  static GetDataPlansResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<DataPlan> get plans => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => $_clearField(2);
 }
 
 /// NOTE: user_id extracted from JWT token, not from request

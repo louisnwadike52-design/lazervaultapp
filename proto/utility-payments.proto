@@ -1494,6 +1494,25 @@ message DataPlan {
   // toggle is off. Clients MUST display price + service_fee = total
   // rather than showing service_fee inside the plan price.
   double service_fee = 6;
+  // The provider's own plan FAMILY, verbatim: sme, gifting, awoofgifting,
+  // specialdata, datacoupons, cglite, directdata, smile-direct, spectranet.
+  //
+  // MTN alone publishes 7 of these across 82 plans, and the cheap ones live
+  // almost entirely OUTSIDE directdata — 1GB/30d is 880 on cglite, 500 on sme
+  // and 490 on awoofgifting. Until now the app rendered one flat list with no
+  // way to tell them apart, so a customer could not find the cheaper bundle and
+  // had no idea two rows named "1GB" were different products with different
+  // delivery behaviour (SME volumes are transferable, gifting is not, awoof
+  // expires in a day).
+  //
+  // Sent verbatim rather than mapped to our own vocabulary: the app groups on
+  // it, and a provider that adds a family must show up as a new group rather
+  // than vanish into an "other" bucket.
+  string plan_family = 7;
+  // A human label for plan_family, resolved server-side so every client agrees
+  // ("SME", "Gifting", "Awoof", "Special", "Corporate Lite", "Direct").
+  // Empty when the family is unknown, which the client renders as "Other".
+  string family_label = 8;
 }
 
 message GetDataPlansRequest {
