@@ -78,7 +78,7 @@ class _StocksVoiceAgentButtonState extends State<StocksVoiceAgentButton>
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('🎤 ${AssistantIdentity.connected(service: 'Stocks')}'),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 2),
@@ -121,7 +121,7 @@ class _StocksVoiceAgentButtonState extends State<StocksVoiceAgentButton>
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(AssistantIdentity.disconnected(service: 'Stocks')),
           backgroundColor: Colors.orange,
           duration: Duration(seconds: 2),

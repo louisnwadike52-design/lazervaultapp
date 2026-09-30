@@ -81,7 +81,7 @@ class _InsuranceVoiceAgentButtonState extends State<InsuranceVoiceAgentButton>
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(AssistantIdentity.connected(service: 'Insurance')),
             backgroundColor: Color(0xFF10B981),
             duration: Duration(seconds: 2),
@@ -126,7 +126,7 @@ class _InsuranceVoiceAgentButtonState extends State<InsuranceVoiceAgentButton>
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(AssistantIdentity.disconnected(service: 'Insurance')),
           backgroundColor: Colors.orange,
           duration: Duration(seconds: 2),
