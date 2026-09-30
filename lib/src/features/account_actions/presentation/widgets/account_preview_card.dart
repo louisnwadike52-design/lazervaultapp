@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import 'package:lazervault/src/features/fcy_account/data/fcy_capabilities.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/share_origin.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -187,7 +188,11 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
   // CAD confirmed against the live Fincra sandbox 2026-08-30:
   // /profile/virtual-accounts/requests lists it (opening fee 0), deposits via
   // Interac e-Transfer.
-  static const Set<String> _fcyCapableCurrencies = {'USD', 'GBP', 'EUR', 'CAD'};
+  // WAS a hardcoded {'USD','GBP','EUR','CAD'}. Fincra issues ten, so a user on
+  // a GHS or KES wallet was never offered activation for a currency the active
+  // provider supports today — and a client-side list cannot follow a provider
+  // switch. FcyCapabilities asks the server, which resolves it through the same
+  // path a real mint takes. See fcy_capabilities.dart.
 
   String get _currency =>
       ((widget.accountArgs['currency'] as String?) ?? '').trim().toUpperCase();
@@ -447,7 +452,7 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
                     ),
                   ],
                 ),
-                if (_fcyCapableCurrencies.contains(_currency)) ...[
+                if (FcyCapabilities.instance.supports(_currency)) ...[
                   SizedBox(height: 8.h),
                   GestureDetector(
                     onTap: () => Get.toNamed(AppRoutes.fcyActivation,

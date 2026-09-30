@@ -66,6 +66,11 @@ class FCYAccountService {
       bankName: (d['bankName'] ?? '').toString(),
       accountName: (d['accountName'] ?? '').toString(),
       routingDetailsJson: (d['routingDetailsJson'] ?? '').toString(),
+      supportedCurrencies: ((d['supportedCurrencies'] as List?) ?? const [])
+          .map((e) => e.toString().trim().toUpperCase())
+          .where((e) => e.isNotEmpty)
+          .toList(growable: false),
+      provider: (d['provider'] ?? '').toString(),
     );
   }
 
@@ -215,6 +220,22 @@ class FCYStatus {
   final String bankName;
   final String accountName;
   final String routingDetailsJson;
+
+  /// Every currency a usable provider can issue RIGHT NOW, from the server.
+  ///
+  /// The app used to hardcode {USD, GBP, EUR, CAD}. Fincra issues ten, so a
+  /// user on a GHS or KES wallet was never offered activation for a currency
+  /// the active provider supports — and a hardcoded list cannot follow a
+  /// provider switch, because the set belongs to the provider, not to us.
+  ///
+  /// Empty when the server is older or the read failed; callers fall back
+  /// rather than showing nothing.
+  final List<String> supportedCurrencies;
+
+  /// Which rail would issue this currency ("fincra", "nomba", …), or empty
+  /// when none would. Lets a screen name the provider instead of assuming one.
+  final String provider;
+
   const FCYStatus({
     required this.status,
     required this.message,
@@ -222,6 +243,8 @@ class FCYStatus {
     required this.bankName,
     required this.accountName,
     required this.routingDetailsJson,
+    this.supportedCurrencies = const [],
+    this.provider = '',
   });
 }
 
