@@ -29,6 +29,7 @@ import 'package:lazervault/src/features/multi_country/cubit/multi_country_cubit.
 import 'package:lazervault/src/features/multi_country/cubit/multi_country_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/funds/presentation/view/deposit_receipt_screen.dart';
+import 'package:lazervault/core/config/locale_gating.dart';
 
 // Wrapper Widget to Provide the Cubit
 class DashboardCardSummary extends StatelessWidget {
@@ -479,9 +480,26 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView>
                   }
                   if (state is AccountCardsSummaryLoaded ||
                       state is AccountBalanceUpdated) {
-                    final accountSummaries = state is AccountCardsSummaryLoaded
+                    final allSummaries = state is AccountCardsSummaryLoaded
                         ? state.accountSummaries
                         : (state as AccountBalanceUpdated).accountSummaries;
+                    // Outside NGN, only the account types the region actually
+                    // supports are selectable. Every other type rests on a
+                    // rail that stops at the Nigerian border, so a card the
+                    // user can swipe to and then not spend from is worse than
+                    // no card. Admin-tunable
+                    // (locale_non_ngn_account_types) — the restriction is a
+                    // commercial fact, not a property of the code.
+                    //
+                    // Filtered at the CAROUSEL, which is what drives the
+                    // active account for every service screen, so a hidden
+                    // type cannot become the active one by any route.
+                    final accountSummaries = LocaleGating.restricted
+                        ? allSummaries
+                            .where((a) =>
+                                LocaleGating.accountTypeAllowed(a.accountType))
+                            .toList()
+                        : allSummaries;
                     // True only during an explicit user refresh (swipe-down →
                     // "Refresh accounts"). Keeps the card visible and overlays a
                     // small "Refreshing…" pill so there's feedback even when the

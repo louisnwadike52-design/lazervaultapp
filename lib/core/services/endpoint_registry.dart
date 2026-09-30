@@ -90,6 +90,7 @@ class EndpointRegistry {
     'locale_non_ngn_nav_disabled',
     'locale_non_ngn_ai_scopes',
     'locale_non_ngn_dashboard_sections',
+    'locale_non_ngn_account_types',
     // Bulk SMS service visibility (hidden by default; admin can restore).
     'bulk_sms_visible',
     // African voice-language master gate (English-only when off). Cached so the

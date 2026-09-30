@@ -85,6 +85,23 @@ class LocaleGating {
         .contains(section.toLowerCase());
   }
 
+  /// Whether an ACCOUNT TYPE can be held and operated in the current region.
+  ///
+  /// Personal only, by default. Every other type rests on a rail that stops
+  /// at the Nigerian border — a business account settles to a Nigerian
+  /// corporate payout, savings and investments are NGN-denominated products,
+  /// family and group pots are contributed to in Naira — so offering one
+  /// abroad creates an account that can be opened and then not used.
+  ///
+  /// Matching is on the type NAME, lower-cased and trimmed, because the same
+  /// value arrives as 'Personal', 'personal' and ' personal ' from the three
+  /// places that produce it (the proto, the picker, the cached summary).
+  static bool accountTypeAllowed(String accountType) {
+    if (!restricted) return true;
+    return FeatureFlags.localeNonNgnAccountTypeNames
+        .contains(accountType.trim().toLowerCase());
+  }
+
   /// One sentence explaining the restriction, for the UI to show.
   ///
   /// Names the currency rather than saying "your region", because a user who

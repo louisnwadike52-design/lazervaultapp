@@ -254,6 +254,10 @@ class FeatureFlags {
   static const String localeNonNgnDashboardSections =
       'locale_non_ngn_dashboard_sections';
 
+  /// CSV of ACCOUNT TYPES a user can hold and operate outside NGN.
+  static const String localeNonNgnAccountTypes =
+      'locale_non_ngn_account_types';
+
   // Whether the Bulk SMS service tile is visible anywhere in the app.
   // Hidden by default (product decision 2026-09-07); an admin can restore it
   // from the dashboard Feature Flags tab without a release.
@@ -515,6 +519,16 @@ class FeatureFlags {
   /// scroll of things they can look at and not join.
   static Set<String> get localeNonNgnDashboardSectionNames =>
       _csv(localeNonNgnDashboardSections, '');
+
+  /// Account types available outside NGN.
+  ///
+  /// PERSONAL only by default. Every other type is built on rails that stop
+  /// at the Nigerian border: a business account settles to a Nigerian
+  /// corporate payout, savings and investments are NGN-denominated products,
+  /// and family/group pots are contributed to in Naira. Offering one in
+  /// another region creates an account that can be opened and then not used.
+  static Set<String> get localeNonNgnAccountTypeNames =>
+      _csv(localeNonNgnAccountTypes, 'personal');
 
   // ── Bulk SMS visibility ──────────────────────────────────────────────────
   /// Whether the Bulk SMS service is visible anywhere in the app.
