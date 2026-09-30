@@ -9,11 +9,43 @@
 // read.
 import 'package:lazervault/src/features/data_bundles/domain/entities/data_plan_entity.dart';
 
-// e.g. "30 days", "1 Month", "7day", "24 hrs", "1 year".
+// e.g. "30 days", "1 Month", "7day", "24 hrs", "1 year", "2-Day", "3-Month".
+//
+// The separator allows a HYPHEN, not just whitespace. Both providers name
+// plans that way — "1.5GB 2-Day Plan", "4GB 2-Days Plan", "480GB 3-Month
+// Plan" — and a whitespace-only separator matched none of them.
 final RegExp _validityRe = RegExp(
-  r'(\d+)\s*(day|days|d|week|weeks|wk|month|months|mo|hour|hours|hr|hrs|year|years|yr)',
+  // The unit must END on a word boundary, and the one-letter `d` / two-letter
+  // `mo` abbreviations are gone. Without both, "N500 Data Bundle" parsed as
+  // 500 DAYS — the `d` matched the D of "Data" — and "100 More" as 3000. No
+  // plan in either live catalogue triggers it today, which is exactly why it
+  // would have been found by a customer rather than by us.
+  r'(\d+)[\s-]*(days|day|weeks|week|wk|months|month|hours|hour|hrs|hr|years|year|yrs|yr)\b',
   caseSensitive: false,
 );
+
+// A period named as a WORD, with no number in front: "Daily Plan", "Weekly
+// Plan", "16.5GB + 10mins Monthly Plan".
+//
+// MEASURED, not hypothetical: with the numeric pattern alone the filter pills
+// dropped 28 of 36 Nomba MTN plans and 22 of 50 VTpass MTN plans — more than
+// half the catalogue — so tapping "Monthly" hid most of the monthly bundles.
+// A filter that quietly omits the plan someone is looking for is worse than
+// no filter, because they conclude we do not sell it.
+final RegExp _periodWordRe = RegExp(
+  r'\b(daily|weekly|fortnightly|monthly|quarterly|yearly|annual)\b',
+  caseSensitive: false,
+);
+
+int? _daysForPeriodWord(String word) => switch (word.toLowerCase()) {
+      'daily' => 1,
+      'weekly' => 7,
+      'fortnightly' => 14,
+      'monthly' => 30,
+      'quarterly' => 90,
+      'yearly' || 'annual' => 365,
+      _ => null,
+    };
 
 /// Best-effort number of days a plan is valid for, parsed from its [name].
 /// Returns null when no duration token is present (those plans show only under
@@ -21,7 +53,12 @@ final RegExp _validityRe = RegExp(
 /// round to whole days, otherwise count as 1 day (a same-day plan).
 int? parseValidityDays(String name) {
   final m = _validityRe.firstMatch(name);
-  if (m == null) return null;
+  if (m == null) {
+    // No "<n> <unit>" anywhere. Fall back to a bare period word, which is how
+    // the majority of both providers' plans are actually named.
+    final w = _periodWordRe.firstMatch(name);
+    return w == null ? null : _daysForPeriodWord(w.group(1) ?? '');
+  }
   final n = int.tryParse(m.group(1) ?? '');
   if (n == null || n <= 0) return null;
   final unit = (m.group(2) ?? '').toLowerCase();
