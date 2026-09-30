@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:grpc/grpc.dart';
+import 'package:lazervault/src/features/bills/presentation/widgets/bill_failure_dialog.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -121,18 +123,27 @@ class _EducationPaymentProcessingScreenState
                 'candidateNickname': _params?['candidateNickname'],
               });
             } else if (state is EducationPurchaseFailed) {
-              // No auto-navigation here — the builder renders an explicit
-              // failure card with "Back to Education" / "Try Again" CTAs so
-              // the user controls when they leave. The snackbar is kept as
-              // a top-of-screen tap-target for the error text; its duration
-              // is cosmetic, not a gate on navigation.
-              Get.snackbar(
-                'Purchase Failed',
-                state.message,
-                backgroundColor: const Color(0xFFEF4444),
-                colorText: Colors.white,
-                snackPosition: SnackPosition.TOP,
-                duration: const Duration(seconds: 4),
+              // A MODAL, not a four-second snackbar.
+              //
+              // An exam PIN is up to ₦38,000 and the sentence that matters most
+              // on a failed one is "you have not been charged" — which is exactly
+              // what a flash truncates, and exactly what the customer needs
+              // before deciding whether to try again. The modal also carries the
+              // single right action per failure kind, and WITHHOLDS the retry
+              // when the provider has already accepted the purchase: ePINs has no
+              // requery endpoint, so that tap is how one PIN becomes two.
+              //
+              // The inline failure card below still renders; this sits over it.
+              showBillFailure(
+                context,
+                error: state.statusCode is int
+                    ? GrpcError.custom(state.statusCode as int, state.message)
+                    : null,
+                serviceLabel: 'Exam PIN purchase',
+                onRetry: billFailureForbidsRetry(state.statusCode)
+                    ? null
+                    : () => Get.back(),
+                onViewHistory: () => Get.back(),
               );
             }
           },
@@ -267,26 +278,32 @@ class _EducationPaymentProcessingScreenState
         SizedBox(height: 16.h),
         Row(
           children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => Get.back(),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFF4E03D0)),
-                  padding: EdgeInsets.symmetric(vertical: 14.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
+            // Try Again is ABSENT — not disabled — when the provider has already
+            // accepted the purchase. ePINs exposes no requery endpoint, so a
+            // second attempt buys a second exam PIN at up to ₦38,000 and nothing
+            // downstream would notice. A greyed button invites a tap; an absent
+            // one cannot be tapped.
+            if (!billFailureForbidsRetry(state.statusCode))
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Get.back(),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xFF4E03D0)),
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
                   ),
-                ),
-                child: Text(
-                  'Try Again',
-                  style: TextStyle(
-                    color: const Color(0xFF4E03D0),
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
+                  child: Text(
+                    'Try Again',
+                    style: TextStyle(
+                      color: const Color(0xFF4E03D0),
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
-            ),
             SizedBox(width: 12.w),
             Expanded(
               child: ElevatedButton(

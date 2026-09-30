@@ -57,10 +57,17 @@ class EducationPurchaseSuccess extends EducationState {
 class EducationPurchaseFailed extends EducationState {
   final String message;
 
-  const EducationPurchaseFailed({required this.message});
+  /// The gRPC status code the backend chose, so the screen can tell an
+  /// OUR-FAULT failure from a correctable one from a purchase the provider has
+  /// already accepted — and withhold "Try Again" for the last. ePINs exposes no
+  /// requery endpoint, so a retry after its duplicate code is how one exam PIN
+  /// silently becomes two.
+  final dynamic statusCode;
+
+  const EducationPurchaseFailed({required this.message, this.statusCode});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, statusCode];
 }
 
 class EducationError extends EducationState {

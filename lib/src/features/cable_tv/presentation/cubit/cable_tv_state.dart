@@ -83,10 +83,16 @@ class CableTVPaymentSuccess extends CableTVState {
 class CableTVPaymentFailed extends CableTVState {
   final String message;
 
-  CableTVPaymentFailed({required this.message});
+  /// The gRPC status code the backend chose, carried so the screen can withhold
+  /// "Try Again" for a purchase the provider has ALREADY accepted. ePINs is the
+  /// active cable rail and exposes no requery endpoint, so a retry after its
+  /// duplicate code is how one bouquet is paid for twice.
+  final dynamic statusCode;
+
+  CableTVPaymentFailed({required this.message, this.statusCode});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, statusCode];
 }
 
 class CableTVError extends CableTVState {

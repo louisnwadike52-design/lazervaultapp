@@ -118,7 +118,8 @@ class CableTVCubit extends Cubit<CableTVState> {
     if (isClosed) return;
 
     result.fold(
-      (failure) => emit(CableTVPaymentFailed(message: failure.message)),
+      (failure) => emit(CableTVPaymentFailed(
+          message: failure.message, statusCode: failure.statusCode)),
       (payment) {
         if (payment.isFailed) {
           emit(CableTVPaymentFailed(

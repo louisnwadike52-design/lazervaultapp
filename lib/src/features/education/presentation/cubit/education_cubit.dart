@@ -78,7 +78,8 @@ class EducationCubit extends Cubit<EducationState> {
       if (isClosed) return;
 
       result.fold(
-        (failure) => emit(EducationPurchaseFailed(message: failure.message)),
+        (failure) => emit(EducationPurchaseFailed(
+            message: failure.message, statusCode: failure.statusCode)),
         (purchase) {
           if (purchase.isCompleted) {
             emit(EducationPurchaseSuccess(purchase: purchase));

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:grpc/grpc.dart';
+import 'package:lazervault/src/features/bills/presentation/widgets/bill_failure_dialog.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -28,6 +30,9 @@ class _CableTVPaymentProcessingScreenState
   bool _paymentTriggered = false;
   bool _hasNavigated = false;
   bool _hasFailed = false;
+  /// Set when the provider has already accepted the subscription, so the retry
+  /// control is withheld rather than merely discouraged.
+  bool _retryForbidden = false;
   String _failMessage = '';
   int _currentStep = 0;
 
@@ -191,7 +196,23 @@ class _CableTVPaymentProcessingScreenState
                   setState(() {
                     _hasFailed = true;
                     _failMessage = state.message;
+                    _retryForbidden =
+                        billFailureForbidsRetry(state.statusCode);
                   });
+                  // A modal over the inline card, carrying the two things the
+                  // card cannot: whether the customer was charged, and the one
+                  // action that resolves this kind of failure. Bouquets run to
+                  // ₦69,000, so "you have not been charged" is not a detail.
+                  showBillFailure(
+                    context,
+                    error: state.statusCode is int
+                        ? GrpcError.custom(
+                            state.statusCode as int, state.message)
+                        : null,
+                    serviceLabel: 'TV subscription',
+                    onRetry: _retryForbidden ? null : () => Get.back(),
+                    onViewHistory: () => Get.back(),
+                  );
                 }
               } else if (state is CableTVError) {
                 _hasNavigated = true;
