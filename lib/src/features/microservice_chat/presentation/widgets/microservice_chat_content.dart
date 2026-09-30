@@ -13,16 +13,11 @@ import 'package:lazervault/core/utils/pin_mask_utils.dart';
 import 'package:lazervault/src/features/microservice_chat/cubit/microservice_chat_cubit.dart';
 import 'package:lazervault/src/features/microservice_chat/cubit/microservice_chat_state.dart';
 import 'package:lazervault/src/features/microservice_chat/domain/entities/microservice_chat_message_entity.dart';
-import 'bill_receipt_deeplink.dart';
 import 'chat_media_bubble.dart';
 import 'chat_media_input_bar.dart';
-import 'chat_receipt_card.dart';
-import 'llm_error_banner.dart';
-import 'chat_receipt_card_v2.dart';
-import 'chat_pin_prompt_card.dart';
 import 'chat_pin_auto_opener.dart';
-import 'chat_recipient_card.dart';
-import 'chat_analytics_card.dart';
+import 'chat_structured_payloads.dart';
+import 'chat_typed_pin_guard.dart';
 import 'chat_reply_widgets.dart';
 import 'quick_action_chips.dart';
 import 'package:lazervault/core/services/voice_record_configs.dart';
@@ -145,6 +140,22 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
 
   /// Send [text] with any staged reply context, then clear the input + reply.
   void _sendText(String text) {
+    // A PIN typed into the box never goes over the wire. Only bites while a
+    // prompt is outstanding — "5000" is also an answer to "how much?".
+    final intercepted = ChatTypedPinGuard.interceptedTransactionId(
+      text: text,
+      prompts: _pinPromptsIn(
+        context.read<MicroserviceChatCubit>().state.messages,
+      ),
+    );
+    if (intercepted != null) {
+      _textController.clear();
+      ChatTypedPinGuard.openPadFor(intercepted);
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+        const SnackBar(content: Text(ChatTypedPinGuard.notice)),
+      );
+      return;
+    }
     context.read<MicroserviceChatCubit>().sendMessage(
           text,
           replyToText: _replyToText,
@@ -460,18 +471,6 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
     );
   }
 
-  /// Render the generic ReceiptCard V2 payload (single dict or list).
-  /// See chat_services_shared/receipt_protocol.py for the schema.
-  Widget _buildReceiptCardV2(dynamic payload) {
-    if (payload is List) {
-      return ChatReceiptCardV2List(payloads: payload);
-    }
-    if (payload is Map) {
-      return ChatReceiptCardV2(payload: Map<String, dynamic>.from(payload));
-    }
-    return const SizedBox.shrink();
-  }
-
   /// Render the PIN-prompt card. On successful PIN verification it
   /// rounds-trips the verification token back via the cubit's
   /// submitPinVerification method so the agent's bound callback tool
@@ -489,71 +488,6 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
       }
     }
     return out;
-  }
-
-  Widget _buildPinPromptCard(Map<String, dynamic> payload) {
-    final callbackIntent = payload['callback_intent']?.toString() ?? '';
-    final callbackArgsRaw = payload['callback_args'];
-    final callbackArgs = callbackArgsRaw is Map
-        ? Map<String, dynamic>.from(callbackArgsRaw)
-        : <String, dynamic>{};
-    final txId = ChatPinAutoOpener.transactionIdOf(payload);
-    return ChatPinPromptCard(
-      // Stable key per transaction_id — without it autoOpenFor() has no card to drive.
-      key: ChatPinPromptCard.keyFor(txId),
-      payload: payload,
-      onCancelled: () => _pinAutoOpener.noteCancelled(txId),
-      onPinVerified: (verificationToken) async {
-        await context.read<MicroserviceChatCubit>().submitPinVerification(
-              verificationToken: verificationToken,
-              callbackIntent: callbackIntent,
-              callbackArgs: callbackArgs,
-            );
-      },
-    );
-  }
-
-  /// Safely parse receipt_data and build a ChatReceiptCard.
-  /// Returns SizedBox.shrink() if the data is malformed or not a valid map.
-  Widget _buildReceiptCard(dynamic receiptData) {
-    try {
-      Map<String, dynamic> data;
-      if (receiptData is Map<String, dynamic>) {
-        data = receiptData;
-      } else if (receiptData is Map) {
-        data = Map<String, dynamic>.from(receiptData);
-      } else {
-        return const SizedBox.shrink();
-      }
-      return Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: ChatReceiptCard(
-          receipt: TransferReceiptData.fromJson(data),
-        ),
-      );
-    } catch (_) {
-      // Receipt data malformed — show a minimal success indicator instead of nothing
-      return Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1A2E1A),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.check_circle_outline,
-                  color: Color(0xFF10B981), size: 16),
-              SizedBox(width: 8),
-              Text('Transfer completed',
-                  style: TextStyle(color: Color(0xFF10B981), fontSize: 13)),
-            ],
-          ),
-        ),
-      );
-    }
   }
 
   Widget _buildMessageBubble(MicroserviceChatMessageEntity message) {
@@ -665,68 +599,24 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
                             ),
                           ),
                   ],
-                  // Inline receipt card for successful transfers (lazy — PDF generated on tap)
-                  if (!isUser && message.metadata?['receipt_data'] != null)
-                    _buildReceiptCard(message.metadata!['receipt_data'])
-                  // ReceiptCard V2 — generic shape emitted by
-                  // chat_services_shared/receipt_protocol.py. Single
-                  // dict OR list (batch transfer produces N cards).
-                  // Rendered ONLY when there's no receipt_data: a successful
-                  // transfer surfaces both, but we show the single receipt_data
-                  // card above; V2 is the fallback for flows that emit only
-                  // receipt_card (e.g. batch transfers).
-                  else if (!isUser && message.metadata?['receipt_card'] != null)
-                    _buildReceiptCardV2(message.metadata!['receipt_card']),
-                  // Degradation banner — same signal, same chrome as the
-                  // general chat. Every chat service emits llm_error_code
-                  // (chat_services_shared/llm_failover.py), but this surface
-                  // rendered nothing for it, so an LLM outage inside a
-                  // per-service chat looked like an ordinary unhelpful reply.
-                  if (!isUser && message.metadata?['llm_error_code'] is String)
-                    LlmErrorBanner.build(
-                      message.metadata!['llm_error_code'] as String,
-                    ),
-                  // The confirmed counterparty, as a card with their avatar.
-                  // The same identity the voice HUD has always rendered — chat
-                  // showed a line of prose at the one moment a misread costs
-                  // money.
-                  // Charts for a "how am I doing?" turn. Reaches here on
-                  // metadata.analytics_card — the gateway surfaces it
-                  // top-level and persists it with the turn, so reopening
-                  // the thread redraws the chart instead of leaving a
-                  // sentence pointing at one that is gone.
-                  if (!isUser && message.metadata?['analytics_card'] is Map)
-                    ChatAnalyticsCard(
-                      payload: Map<String, dynamic>.from(
-                        message.metadata!['analytics_card'] as Map,
-                      ),
-                    ),
-                  if (!isUser && message.metadata?['recipient_card'] is Map)
-                    ChatRecipientCard(
-                      data: Map<String, dynamic>.from(
-                        message.metadata!['recipient_card'] as Map,
-                      ),
-                      onChangeRecipient: () => _sendText('change recipient'),
-                    ),
-                  // PinPromptIntent — money-moving tools emit this
-                  // when they need the user's PIN. The card opens the
-                  // native TransactionPinMixin modal; on success the
-                  // cubit rounds-trips the verification token back to
-                  // the agent so the raw PIN never enters chat context.
-                  if (!isUser && message.metadata?['pin_prompt'] is Map)
-                    _buildPinPromptCard(
-                      Map<String, dynamic>.from(
-                        message.metadata!['pin_prompt'] as Map,
-                      ),
-                    ),
-                  // "Open full receipt" deep-link under any bill purchase.
-                  if (!isUser &&
-                      message.metadata?['bill_type'] is String &&
-                      message.metadata?['last_payment_id'] is String)
-                    BillReceiptDeepLinkButton(
-                      billType: message.metadata!['bill_type'] as String,
-                      paymentId: message.metadata!['last_payment_id'] as String,
-                    ),
+                  // Receipt / PIN pad / recipient / chart / degradation
+                  // banner / bill deep-link — one implementation, shared with
+                  // the bottom-sheet chat, which used to render none of them.
+                  ChatStructuredPayloads(
+                    metadata: message.metadata,
+                    isUser: isUser,
+                    onPinCancelled: _pinAutoOpener.noteCancelled,
+                    onPinVerified: (token, intent, args) async {
+                      await context
+                          .read<MicroserviceChatCubit>()
+                          .submitPinVerification(
+                            verificationToken: token,
+                            callbackIntent: intent,
+                            callbackArgs: args,
+                          );
+                    },
+                    onChangeRecipient: () => _sendText('change recipient'),
+                  ),
                   if (message.serviceRoutedTo != null) ...[
                     const SizedBox(height: 4),
                     Text(

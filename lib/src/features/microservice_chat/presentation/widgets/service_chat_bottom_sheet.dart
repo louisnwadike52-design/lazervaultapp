@@ -23,6 +23,9 @@ import '../../domain/usecases/send_direct_chat_message_usecase.dart';
 import '../../domain/usecases/load_microservice_chat_history_usecase.dart';
 import '../../domain/usecases/load_direct_chat_history_usecase.dart';
 import 'chat_media_bubble.dart';
+import 'chat_pin_auto_opener.dart';
+import 'chat_structured_payloads.dart';
+import 'chat_typed_pin_guard.dart';
 import 'chat_media_input_bar.dart';
 import 'chat_reply_widgets.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -112,6 +115,15 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
   String? _userAvatarUrl;
   bool _isExpanded = false;
 
+  /// Drives the PIN pad open when a turn asks for one.
+  ///
+  /// The sheet had none, and rendered no pin-prompt card either — so a money
+  /// move started from Send Funds told the user to enter a PIN on a pad that
+  /// never appeared, and they typed it into the message box instead. Same
+  /// component the full-screen chat uses, so the guards (history replay,
+  /// one-shot, cancellation, navigation, expiry) are the same ones.
+  final ChatPinAutoOpener _pinAutoOpener = ChatPinAutoOpener();
+
   // Swipe-to-reply: the message the user swiped to reply to (staged in the
   // preview bar above the input, and prepended as AI context on send).
   String? _replyToText;
@@ -188,6 +200,24 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
 
   void _sendMessage() {
     final text = _messageController.text.trim();
+    // A PIN typed into the box never goes over the wire. This surface is
+    // where it happened: with no pin-prompt card rendered the pad never
+    // appeared, so the user typed their PIN into the message box and it was
+    // spent as one. Only bites while a prompt is outstanding.
+    final intercepted = ChatTypedPinGuard.interceptedTransactionId(
+      text: text,
+      prompts: _pinPromptsIn(
+        context.read<MicroserviceChatCubit>().state.messages,
+      ),
+    );
+    if (intercepted != null) {
+      _messageController.clear();
+      ChatTypedPinGuard.openPadFor(intercepted);
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+        const SnackBar(content: Text(ChatTypedPinGuard.notice)),
+      );
+      return;
+    }
     if (text.isNotEmpty) {
       context.read<MicroserviceChatCubit>().sendMessage(
             text,
@@ -536,9 +566,32 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
     );
   }
 
+  /// Every pin-prompt payload in the transcript, oldest first.
+  List<Map<String, dynamic>> _pinPromptsIn(List<dynamic> messages) {
+    final out = <Map<String, dynamic>>[];
+    for (final m in messages) {
+      try {
+        if (m.isUser == true) continue;
+        final raw = m.metadata?['pin_prompt'];
+        if (raw is Map) out.add(Map<String, dynamic>.from(raw));
+      } catch (_) {
+        // Never let transcript parsing throw — it would take down the list.
+      }
+    }
+    return out;
+  }
+
   Widget _buildMessageList() {
     return BlocConsumer<MicroserviceChatCubit, MicroserviceChatState>(
       listener: (context, state) {
+        // Offered on EVERY emission: the opener's own appearance-based
+        // priming is what separates a live prompt from a replayed historical
+        // one, so a state added later cannot silently bypass it.
+        _pinAutoOpener.sync(
+          context: context,
+          prompts: _pinPromptsIn(state.messages),
+          isLiveTurn: state is MicroserviceChatMessageSuccess,
+        );
         if (state is MicroserviceChatMessageSuccess) {
           _scrollToBottom();
         } else if (state is MicroserviceChatMessageLoading) {
@@ -806,6 +859,29 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
                       ],
                     ),
                   ),
+                ),
+                // Receipt / PIN pad / recipient / chart / bill deep-link.
+                // Rendered OUTSIDE the 72%-width bubble so a card is not
+                // squeezed, and from the shared widget so this surface cannot
+                // drift from the full-screen chat again — it used to render
+                // none of them, which is why the PIN pad never appeared here.
+                ChatStructuredPayloads(
+                  metadata: message.metadata,
+                  isUser: isUser,
+                  onPinCancelled: _pinAutoOpener.noteCancelled,
+                  onPinVerified: (token, intent, args) async {
+                    await context
+                        .read<MicroserviceChatCubit>()
+                        .submitPinVerification(
+                          verificationToken: token,
+                          callbackIntent: intent,
+                          callbackArgs: args,
+                        );
+                  },
+                  onChangeRecipient: () {
+                    _messageController.text = 'change recipient';
+                    _sendMessage();
+                  },
                 ),
                 SizedBox(height: 4.h),
                 Text(
