@@ -199,16 +199,19 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
         onPinValidated: (token) async {
           // The sheet renders the outcome, so suppress the duplicate snackbar
           // the BlocListener would otherwise raise for the same failure.
+          //
+          // The flag is CLEARED IN THE OUTER finally, not here. BlocListener
+          // delivers on a microtask, so clearing it the moment payShare
+          // returned put the listener on the far side of the reset: the user
+          // got the red "Payment Failed" banner AND the sheet's failure state
+          // for one failure. Held until the sheet is done, one failure reads
+          // as one failure.
           _settlingInPinSheet = true;
-          try {
-            await cubit.payShare(
-              splitBillId: splitBillId,
-              sourceAccountId: sourceAccountId,
-              transactionPin: token,
-            );
-          } finally {
-            _settlingInPinSheet = false;
-          }
+          await cubit.payShare(
+            splitBillId: splitBillId,
+            sourceAccountId: sourceAccountId,
+            transactionPin: token,
+          );
           final result = cubit.state;
           if (result is SplitBillError) {
             // Surface the real reason through the mixin so the sheet shows the
@@ -218,6 +221,7 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
         },
       );
     } finally {
+      _settlingInPinSheet = false;
       if (mounted) setState(() => _isProcessing = false);
     }
   }

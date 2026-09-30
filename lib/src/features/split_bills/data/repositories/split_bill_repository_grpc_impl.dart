@@ -321,6 +321,13 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
         throw SplitBillPermissionDeniedException(
             e.message ?? 'Permission denied');
       case StatusCode.failedPrecondition:
+      // invalidArgument is a DELIBERATE, user-facing refusal — the server
+      // validated the request and wrote a sentence for the payer ("the
+      // minimum for a bank transfer is 100.00 NGN (you entered 25.00)").
+      // It used to fall to `default`, which replaced that sentence with
+      // "Something went wrong. Please try again." — the generic line the
+      // payer saw three times over on a share that can never be paid.
+      case StatusCode.invalidArgument:
         throw SplitBillStateException(e.message ?? 'Invalid state');
       case StatusCode.unavailable:
         throw SplitBillServiceUnavailableException(
