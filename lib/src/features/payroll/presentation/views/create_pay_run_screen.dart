@@ -119,6 +119,21 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
     });
   }
 
+  /// The one thing wrong with the form right now, shown INLINE above the
+  /// action button.
+  ///
+  /// Every validation failure here used to be a snackbar: a four-second
+  /// banner that covers the screen, says what is wrong, and then removes the
+  /// message while the user is still looking for the field it referred to. An
+  /// inline line sits next to the button that will not work and stays until
+  /// the problem is fixed.
+  String? _formError;
+
+  void _setFormError(String? message) {
+    if (_formError == message) return;
+    setState(() => _formError = message);
+  }
+
   void _toggleEmployee(String id) {
     setState(() {
       if (_selectedEmployeeIds.contains(id)) {
@@ -153,66 +168,32 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
       _selectAll = _selectedEmployeeIds.length == _employees.length;
       _employeesLoaded = true;
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${created.fullName} added and selected'),
-        backgroundColor: InvoiceThemeColors.successGreen,
-      ),
-    );
+    // No snackbar: the employee appears in the list, already ticked. That IS
+    // "added and selected", and it does not disappear after four seconds.
   }
 
   void _createPayRun() {
     if (_startDate == null || _endDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Please select both start and end dates',
-            style: GoogleFonts.inter(),
-          ),
-          backgroundColor: InvoiceThemeColors.errorRed,
-        ),
-      );
+      _setFormError('Choose both a start and an end date.');
       return;
     }
 
     if (_endDate!.isBefore(_startDate!)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'End date must be after start date',
-            style: GoogleFonts.inter(),
-          ),
-          backgroundColor: InvoiceThemeColors.errorRed,
-        ),
-      );
+      _setFormError('The end date must come after the start date.');
       return;
     }
 
     if (!_selectAll && _selectedEmployeeIds.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Please select at least one employee',
-            style: GoogleFonts.inter(),
-          ),
-          backgroundColor: InvoiceThemeColors.errorRed,
-        ),
-      );
+      _setFormError('Select at least one employee to pay.');
       return;
     }
 
     if (_isRecurring && _recurrenceFrequency == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Please select a recurrence frequency',
-            style: GoogleFonts.inter(),
-          ),
-          backgroundColor: InvoiceThemeColors.errorRed,
-        ),
-      );
+      _setFormError('Choose how often this pay run should repeat.');
       return;
     }
+
+    _setFormError(null);
 
     // If selectAll, pass empty list (backend uses all active employees)
     final employeeIds = _selectAll ? <String>[] : _selectedEmployeeIds.toList();
@@ -233,12 +214,10 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
     return BlocConsumer<PayrollCubit, PayrollState>(
       listener: (context, state) {
         if (state is PayRunCreated) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: InvoiceThemeColors.successGreen,
-            ),
-          );
+          // No snackbar. The pay run itself is the confirmation — the user
+          // lands back on the list with it at the top. The old banner also
+          // fired once per screen listening to this shared cubit, so a single
+          // creation announced itself several times over.
           Navigator.of(context).pop();
         } else if (state is EmployeesLoaded && !_employeesLoaded) {
           setState(() {
@@ -250,12 +229,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
             _employeesLoaded = true;
           });
         } else if (state is PayrollError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: InvoiceThemeColors.errorRed,
-            ),
-          );
+          _setFormError(state.message);
         }
       },
       builder: (context, state) {
@@ -429,32 +403,62 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                       top: BorderSide(color: InvoiceThemeColors.borderColor),
                     ),
                   ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 52.h,
-                    child: ElevatedButton(
-                      onPressed: isLoading ? null : _createPayRun,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: InvoiceThemeColors.primaryPurple,
-                        disabledBackgroundColor: InvoiceThemeColors
-                            .primaryPurple
-                            .withValues(alpha: 0.5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14.r),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: isLoading
-                          ? LazerVaultLoader(size: 22)
-                          : Text(
-                              'Create Pay Run',
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w600,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Sits next to the button that will not work, and stays
+                      // there until the problem is fixed.
+                      if (_formError != null) ...[
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(Icons.error_outline,
+                                size: 16.sp,
+                                color: InvoiceThemeColors.errorRed),
+                            SizedBox(width: 8.w),
+                            Expanded(
+                              child: Text(
+                                _formError!,
+                                key: const Key('pay_run_form_error'),
+                                style: GoogleFonts.inter(
+                                  fontSize: 12.5.sp,
+                                  color: InvoiceThemeColors.errorRed,
+                                  height: 1.35,
+                                ),
                               ),
                             ),
-                    ),
+                          ],
+                        ),
+                        SizedBox(height: 10.h),
+                      ],
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52.h,
+                        child: ElevatedButton(
+                          onPressed: isLoading ? null : _createPayRun,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: InvoiceThemeColors.primaryPurple,
+                            disabledBackgroundColor: InvoiceThemeColors
+                                .primaryPurple
+                                .withValues(alpha: 0.5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14.r),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: isLoading
+                              ? LazerVaultLoader(size: 22)
+                              : Text(
+                                  'Create Pay Run',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

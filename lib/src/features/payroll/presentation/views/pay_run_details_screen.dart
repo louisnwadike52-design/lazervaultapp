@@ -11,6 +11,7 @@ import '../cubit/payroll_state.dart';
 import '../../domain/entities/pay_run_entity.dart';
 import '../../domain/entities/pay_slip_entity.dart';
 import '../../../transaction_pin/widgets/transaction_pin_modal.dart';
+import 'pay_run_funding_check.dart';
 import 'pay_slip_details_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
@@ -70,12 +71,10 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
         child: BlocConsumer<PayrollCubit, PayrollState>(
           listener: (context, state) {
             if (state is PayRunApproved) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: InvoiceThemeColors.successGreen,
-                ),
-              );
+              // No snackbar. The status badge flips to APPROVED and the
+              // action button becomes "Process" — the screen itself is the
+              // confirmation, and it stays on screen instead of vanishing
+              // after four seconds.
               context.read<PayrollCubit>().getPayRun(widget.payRunId);
             } else if (state is PayRunProcessed) {
               final pr = _lastPayRun;
@@ -103,12 +102,9 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
                 'processedAt': DateTime.now().toIso8601String(),
               });
             } else if (state is PayRunCalculated) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Pay run calculated successfully'),
-                  backgroundColor: InvoiceThemeColors.successGreen,
-                ),
-              );
+              // No snackbar: the totals and the pay-slip list appear, which
+              // is what "calculated" means. Announcing it as well is noise on
+              // top of the actual answer.
             } else if (state is PayrollError) {
               final msg = state.message.toLowerCase();
               final isPinError = msg.contains('pin') || msg.contains('locked');
@@ -624,6 +620,28 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
       return;
     }
 
+    // FUNDING IS CHECKED BEFORE THE PIN, NOT AFTER THE RUN.
+    //
+    // A pay run that outran the balance was discovered the hard way: PIN
+    // entered, run submitted, screen came back "failed", with no figure
+    // saying how short the account was. Here it is a fact the user can act
+    // on, and nothing has been committed.
+    final acctForFunding = _accountManager.activeAccountDetails;
+    if (acctForFunding != null) {
+      final short = PayRunFundingCheck.shortfall(
+        totalNet: payRun.totalNet,
+        availableBalance: acctForFunding.balance,
+      );
+      if (short != null) {
+        await _showUnderfundedDialog(
+          payRun: payRun,
+          shortfall: short,
+          currency: acctForFunding.currency,
+        );
+        return;
+      }
+    }
+
     // Reuse the SHARED transaction-PIN bottom sheet (same one Send Funds /
     // Batch Transfer use). It returns the raw 4-digit PIN, which ProcessPayRun
     // verifies server-side via auth-service.
@@ -643,6 +661,62 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
           pin: pin,
           accountId: accountId,
         );
+  }
+
+  /// Names the shortfall and offers the one action that fixes it. Not a
+  /// snackbar: a four-second banner is the wrong shape for "your payroll
+  /// cannot go out today", and it is gone before the user can read the figure.
+  Future<void> _showUnderfundedDialog({
+    required PayRunEntity payRun,
+    required double shortfall,
+    required String currency,
+  }) async {
+    final symbol = currency.toUpperCase() == 'NGN' ? '\u20A6' : '$currency ';
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: InvoiceThemeColors.secondaryBackground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        title: Text(
+          'Not enough in this account',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 17.sp,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: Text(
+          'This pay run needs $symbol${payRun.totalNet.toStringAsFixed(2)}. '
+          'You are $symbol${shortfall.toStringAsFixed(2)} short.\n\n'
+          'Top up this account, or switch to one that can cover it, then '
+          'process the run again. Nothing has been sent and no one has been '
+          'paid.',
+          style: GoogleFonts.inter(
+            color: Colors.white70,
+            fontSize: 14.sp,
+            height: 1.45,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text('Close', style: GoogleFonts.inter(color: Colors.white70)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              Get.toNamed(AppRoutes.depositFunds);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: InvoiceThemeColors.successGreen,
+            ),
+            child: Text('Add money', style: GoogleFonts.inter(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showPinErrorDialog(String errorMessage) {
