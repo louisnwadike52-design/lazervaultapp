@@ -10,8 +10,10 @@ import 'package:lazervault/src/features/channel_management/cubit/channel_managem
 import 'package:lazervault/src/features/channel_management/cubit/channel_management_state.dart';
 import 'package:lazervault/src/features/channel_management/domain/entities/channel_registration.dart';
 import 'package:lazervault/src/features/channel_management/presentation/widgets/channel_screen_scaffold.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 
 import 'channel_activation_screen.dart';
+import 'phone_banking_pin_state.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 
 /// Phone Banking — call LazerVault and bank by voice. Its own Quick Service.
@@ -42,10 +44,37 @@ class _PhoneBankingChannelScreenState extends State<PhoneBankingChannelScreen> {
 
   bool _toggleBusy = false;
 
+  /// Whether the user has a transaction PIN, asked of the PIN service itself.
+  ///
+  /// The channel registration's `hasPin` cannot answer this: a user who has
+  /// never switched phone banking on HAS NO REGISTRATION, so `reg?.hasPin`
+  /// falls back to false and the screen told someone who has banked with that
+  /// PIN for months to go and set one. There is no phone-specific PIN to set —
+  /// a call is authorised by the profile transaction PIN — so the only honest
+  /// source is the service that owns it.
+  ///
+  /// Null while unknown (in flight, or the call failed). Unknown renders as
+  /// neither claim: a screen that has not heard back must not assert that a
+  /// PIN is missing.
+  bool? _hasProfilePin;
+
   @override
   void initState() {
     super.initState();
     context.read<ChannelManagementCubit>().loadChannels();
+    _loadPinState();
+  }
+
+  Future<void> _loadPinState() async {
+    try {
+      final has =
+          await serviceLocator<ITransactionPinService>().checkUserHasPin();
+      if (mounted) setState(() => _hasProfilePin = has);
+    } catch (_) {
+      // Leave it unknown. Claiming "no PIN" on a failed lookup is the bug
+      // this replaced.
+      if (mounted) setState(() => _hasProfilePin = null);
+    }
   }
 
   String get _profilePhone {
@@ -225,19 +254,49 @@ class _PhoneBankingChannelScreenState extends State<PhoneBankingChannelScreen> {
   }
 
   Widget _securitySection(ChannelRegistration? reg) {
-    // `hasPin` now reports the PROFILE transaction PIN, because that is what
-    // authorises a call. The server resolves telephony to the app PIN, so there
-    // is no phone-only secret to create, change or forget.
-    final hasPin = reg?.hasPin ?? false;
+    // The PIN service is the authority; the channel row is a fallback for the
+    // moment before it answers. A call is authorised by the PROFILE
+    // transaction PIN — the server resolves telephony to the app PIN — so
+    // there is no phone-only secret to create, change or forget.
+    final pinState = PhoneBankingPinState.resolve(
+      fromService: _hasProfilePin,
+      fromRegistration: reg?.hasPin,
+    );
+    final hasPin = pinState.claimsPinIsSet;
+    final pinStateKnown = pinState != PhoneBankingPinState.unknown;
 
     return ChannelSection(
       title: 'Security',
-      caption: hasPin
+      caption: hasPin || !pinStateKnown
           ? 'Money moved on a call is authorised by your transaction PIN — the '
               'same one you use in the app. There is no separate phone PIN.'
           : 'Money moved on a call is authorised by your transaction PIN. You '
               'need to set one before you can bank by phone.',
-      child: hasPin
+      // While the answer is unknown, state the rule and offer nothing: an
+      // unanswered lookup is not evidence that a PIN is missing, and a
+      // "set up your PIN" row shown to someone who has one is both wrong and
+      // alarming.
+      child: !pinStateKnown
+          ? Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  const Icon(Icons.shield_outlined,
+                      color: ChannelScreenTheme.textMuted, size: 18),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Your app transaction PIN authorises money on a call',
+                      style: GoogleFonts.inter(
+                          color: ChannelScreenTheme.textMuted,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : hasPin
           // Nothing to do. A control here would invite someone to change a PIN
           // they came to this screen to read about, not to alter — and the place
           // to change a transaction PIN is where it was set.
