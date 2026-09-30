@@ -96,7 +96,8 @@ class DataBundlesCubit extends Cubit<DataBundlesState> {
       if (isClosed) return;
 
       result.fold(
-        (failure) => emit(DataBundlesPaymentFailed(message: failure.message)),
+        (failure) => emit(DataBundlesPaymentFailed(
+            message: failure.message, statusCode: failure.statusCode)),
         (purchase) {
           if (purchase.isFailed) {
             emit(DataBundlesPaymentFailed(

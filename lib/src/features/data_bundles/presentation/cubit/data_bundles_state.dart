@@ -54,10 +54,19 @@ class DataBundlesPaymentSuccess extends DataBundlesState {
 class DataBundlesPaymentFailed extends DataBundlesState {
   final String message;
 
-  DataBundlesPaymentFailed({required this.message});
+  /// The gRPC status code the backend chose, carried through so the screen can
+  /// tell an OUR-FAULT failure from a correctable one from an already-accepted
+  /// purchase — and in particular so it can WITHHOLD "Try Again" for the last.
+  ///
+  /// Re-deriving that from the message text would break the moment the copy
+  /// changed, and on a provider with no requery endpoint an offered retry after
+  /// code 104 is how one purchase silently becomes two.
+  final dynamic statusCode;
+
+  DataBundlesPaymentFailed({required this.message, this.statusCode});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, statusCode];
 }
 
 // ================= Purchase history states =================

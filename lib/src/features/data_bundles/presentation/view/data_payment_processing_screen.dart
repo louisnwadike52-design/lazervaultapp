@@ -7,7 +7,9 @@ import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/data_plan_entity.dart';
 import '../cubit/data_bundles_cubit.dart';
 import '../cubit/data_bundles_state.dart';
+import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/bills/presentation/widgets/bill_failure_dialog.dart';
 part 'data_payment_processing_screen_widgets.dart';
 
 class DataPaymentProcessingScreen extends StatefulWidget {
@@ -22,6 +24,9 @@ class _DataPaymentProcessingScreenState
     extends State<DataPaymentProcessingScreen> with TickerProviderStateMixin {
   late AnimationController _stepController;
   bool _hasFailed = false;
+  /// Set when the provider has already accepted the purchase, so the Try Again
+  /// control must be withheld rather than merely discouraged.
+  bool _retryForbidden = false;
   bool _hasNavigated = false;
   String _failMessage = '';
   bool _argsValid = false;
@@ -210,9 +215,27 @@ class _DataPaymentProcessingScreenState
                 setState(() {
                   _hasFailed = true;
                   _failMessage = state.message;
+                  // A purchase the provider has ALREADY ACCEPTED must not be
+                  // retryable from this screen. ePINs exposes no requery
+                  // endpoint, so a second attempt is how one purchase silently
+                  // becomes two and nothing downstream ever notices.
+                  _retryForbidden = billFailureForbidsRetry(state.statusCode);
                 });
-                // No auto-navigation — the failure card below gives the
-                // user explicit Try Again / Back to Data CTAs.
+                // The inline card persists, and a MODAL carries the two things
+                // the card cannot: whether the customer was charged, and which
+                // single action actually resolves this. A money failure is not a
+                // flash — and "you have not been charged" is exactly the sentence
+                // a user needs before deciding whether to try again.
+                showBillFailure(
+                  context,
+                  error: state.statusCode is int
+                      ? GrpcError.custom(state.statusCode as int, state.message)
+                      : null,
+                  serviceLabel: 'Data purchase',
+                  onRetry: _retryForbidden ? null : () => Get.back(),
+                  onViewHistory: () =>
+                      Get.offAllNamed(AppRoutes.dataBundlesHistory),
+                );
               }
 
               if (state is DataBundlesError) {
@@ -220,7 +243,12 @@ class _DataPaymentProcessingScreenState
                   _hasFailed = true;
                   _failMessage = state.message;
                 });
-                // Same — let the user drive the next step.
+                showBillFailure(
+                  context,
+                  error: null, // no code on this state: treated as ours, retryable
+                  serviceLabel: 'Data purchase',
+                  onRetry: () => Get.back(),
+                );
               }
             },
             child: Padding(
@@ -468,27 +496,33 @@ class _DataPaymentProcessingScreenState
         SizedBox(height: 16.h),
         Row(
           children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => Get.back(),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFF3B82F6)),
-                  padding: EdgeInsets.symmetric(vertical: 14.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
+            // Try Again is ABSENT, not disabled, when the provider has already
+            // accepted the purchase. A greyed-out button invites tapping and
+            // explaining; an absent one cannot be tapped at all, and on a rail
+            // with no requery endpoint the cost of that tap is a second charge.
+            if (!_retryForbidden) ...[
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Get.back(),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xFF3B82F6)),
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
                   ),
-                ),
-                child: Text(
-                  'Try Again',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF3B82F6),
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
+                  child: Text(
+                    'Try Again',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF3B82F6),
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
-            ),
-            SizedBox(width: 12.w),
+              SizedBox(width: 12.w),
+            ],
             Expanded(
               child: ElevatedButton(
                 onPressed: () => Get.offAllNamed(AppRoutes.dataBundlesHome),
