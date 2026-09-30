@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'voice_integration.dart';
 import 'pin_entry_workflow.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/branding/assistant_identity.dart';
 
 /// Voice Assistant Screen with PIN Workflow Integration
 ///
@@ -228,7 +229,7 @@ class _VoiceAssistantScreenWithPINState
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Voice Assistant'),
+        title: const Text(AssistantIdentity.name),
         actions: [
           if (_currentService != null)
             Chip(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:livekit_client/livekit_client.dart' as lk;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lazervault/core/branding/assistant_identity.dart';
 
 /// Voice agent button for stock trading conversations
 /// Connects to the stocks-voice-agent microservice via LiveKit
@@ -78,7 +79,7 @@ class _StocksVoiceAgentButtonState extends State<StocksVoiceAgentButton>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('🎤 Connected to Stock AI Assistant'),
+            content: Text('🎤 ${AssistantIdentity.connected(service: 'Stocks')}'),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 2),
           ),
@@ -121,7 +122,7 @@ class _StocksVoiceAgentButtonState extends State<StocksVoiceAgentButton>
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Disconnected from Stock AI Assistant'),
+          content: Text(AssistantIdentity.disconnected(service: 'Stocks')),
           backgroundColor: Colors.orange,
           duration: Duration(seconds: 2),
         ),
@@ -246,7 +247,7 @@ class _StocksVoiceAgentControlState extends State<StocksVoiceAgentControl> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'Stock AI Assistant',
+                  AssistantIdentity.name,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

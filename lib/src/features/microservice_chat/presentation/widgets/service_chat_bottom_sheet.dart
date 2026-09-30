@@ -27,6 +27,7 @@ import 'chat_media_input_bar.dart';
 import 'chat_reply_widgets.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/services/voice_record_configs.dart';
+import 'package:lazervault/core/branding/assistant_identity.dart';
 
 /// Shows a scoped chat bottom sheet for a specific service.
 ///
@@ -465,7 +466,7 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${widget.serviceName} Assistant',
+                      AssistantIdentity.name,
                       style: GoogleFonts.inter(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w700,
@@ -476,7 +477,10 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
                       builder: (context, state) {
                         final isTyping = state.isTyping;
                         return Text(
-                          isTyping ? 'Typing...' : 'Online',
+                          AssistantIdentity.statusLine(
+                            service: widget.serviceName,
+                            status: isTyping ? 'Typing…' : 'Online',
+                          ),
                           style: GoogleFonts.inter(
                             fontSize: 12.sp,
                             color: isTyping

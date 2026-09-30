@@ -26,6 +26,7 @@ import 'chat_analytics_card.dart';
 import 'chat_reply_widgets.dart';
 import 'quick_action_chips.dart';
 import 'package:lazervault/core/services/voice_record_configs.dart';
+import 'package:lazervault/core/branding/assistant_identity.dart';
 
 class MicroserviceChatContent extends StatefulWidget {
   final String serviceName;
@@ -598,7 +599,7 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
                     ChatReplyQuoteBlock(
                       author: (message.replyToIsUser ?? false)
                           ? 'You'
-                          : 'Assistant',
+                          : AssistantIdentity.name,
                       quotedText: message.replyToText!,
                     ),
                   if (message.mediaType != null) ...[

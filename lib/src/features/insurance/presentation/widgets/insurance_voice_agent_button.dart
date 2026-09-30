@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:livekit_client/livekit_client.dart' as livekit;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lazervault/core/branding/assistant_identity.dart';
 
 /// Voice agent button for insurance management conversations
 /// Connects to the insurance-voice-agent microservice via LiveKit
@@ -81,7 +82,7 @@ class _InsuranceVoiceAgentButtonState extends State<InsuranceVoiceAgentButton>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Connected to Insurance AI Assistant'),
+            content: Text(AssistantIdentity.connected(service: 'Insurance')),
             backgroundColor: Color(0xFF10B981),
             duration: Duration(seconds: 2),
           ),
@@ -126,7 +127,7 @@ class _InsuranceVoiceAgentButtonState extends State<InsuranceVoiceAgentButton>
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Disconnected from Insurance AI Assistant'),
+          content: Text(AssistantIdentity.disconnected(service: 'Insurance')),
           backgroundColor: Colors.orange,
           duration: Duration(seconds: 2),
         ),
@@ -254,7 +255,7 @@ class _InsuranceVoiceAgentControlState
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'Insurance AI Assistant',
+                  AssistantIdentity.name,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

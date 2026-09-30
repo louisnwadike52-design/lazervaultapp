@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/branding/assistant_identity.dart';
 part 'voice_integration_widgets.dart';
 
 // ============================================================================
@@ -83,9 +84,10 @@ class _VoiceAssistantScreenState extends State<VoiceAssistantScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.service != null
-            ? '${widget.service!.toUpperCase()} Voice Assistant'
-            : 'Voice Assistant'),
+        title: Text(AssistantIdentity.statusLine(
+          service: AssistantIdentity.name,
+          status: widget.service?.toUpperCase() ?? 'Voice',
+        )),
         actions: [
           if (_responses.isNotEmpty)
             IconButton(

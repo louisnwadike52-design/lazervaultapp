@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:livekit_client/livekit_client.dart' as lk;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lazervault/core/branding/assistant_identity.dart';
 
 /// Voice agent button for invoice management conversations
 /// Connects to the invoice-voice-agent microservice via LiveKit
@@ -80,7 +81,7 @@ class _InvoiceVoiceAgentButtonState extends State<InvoiceVoiceAgentButton>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('💰 Connected to Invoice AI Assistant'),
+            content: Text('💰 ${AssistantIdentity.connected(service: 'Invoices')}'),
             backgroundColor: Colors.purple,
             duration: Duration(seconds: 2),
           ),
@@ -123,7 +124,7 @@ class _InvoiceVoiceAgentButtonState extends State<InvoiceVoiceAgentButton>
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Disconnected from Invoice AI Assistant'),
+          content: Text(AssistantIdentity.disconnected(service: 'Invoices')),
           backgroundColor: Colors.orange,
           duration: Duration(seconds: 2),
         ),
@@ -251,7 +252,7 @@ class _InvoiceVoiceAgentControlState extends State<InvoiceVoiceAgentControl> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'Invoice AI Assistant',
+                  AssistantIdentity.name,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

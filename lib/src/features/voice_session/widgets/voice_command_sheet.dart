@@ -41,6 +41,7 @@ import 'package:lazervault/src/features/voice/services/voice_talk_mode_controlle
 import 'package:lazervault/src/features/ai_chats/presentation/widgets/ai_chat_content.dart'
     show BubbleTailPainter;
 import 'voice_session_tip_bar.dart';
+import 'package:lazervault/core/branding/assistant_identity.dart';
 part 'voice_command_sheet_widgets.dart';
 
 class VoiceCommandSheet extends StatefulWidget {
@@ -3117,7 +3118,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       title = 'Disconnected';
       subtitle = 'Session ended';
     } else {
-      title = 'Voice Assistant';
+      title = AssistantIdentity.name;
       subtitle = 'Powered by Lazervault AI';
     }
 

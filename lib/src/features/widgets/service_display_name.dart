@@ -17,6 +17,8 @@
 /// a leaked identifier.
 library;
 
+import 'package:lazervault/core/branding/assistant_identity.dart';
+
 const Map<String, String> _kServiceDisplayNames = {
   // Accounts
   'accounts': 'Accounts',
@@ -31,7 +33,7 @@ const Map<String, String> _kServiceDisplayNames = {
   'exchange': 'Currency Exchange',
   'rmb': 'RMB Transfers',
   'ai-scan': 'Scan to Pay',
-  'p2p_chat': 'Chat Assistant',
+  'p2p_chat': 'Chat',
   // Banking
   'banking': 'Banking',
   'mandates': 'Direct Debits',
@@ -81,7 +83,7 @@ const Map<String, String> _kServiceDisplayNames = {
 /// The label to SHOW for a routing [slug]. Never returns the slug itself.
 String serviceDisplayName(String slug) {
   final key = slug.trim();
-  if (key.isEmpty) return 'Assistant';
+  if (key.isEmpty) return AssistantIdentity.name;
 
   final mapped = _kServiceDisplayNames[key.toLowerCase()];
   if (mapped != null) return mapped;
