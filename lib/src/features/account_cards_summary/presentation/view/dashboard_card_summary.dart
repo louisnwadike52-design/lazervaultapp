@@ -494,12 +494,26 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView>
                     // Filtered at the CAROUSEL, which is what drives the
                     // active account for every service screen, so a hidden
                     // type cannot become the active one by any route.
-                    final accountSummaries = LocaleGating.restricted
-                        ? allSummaries
-                            .where((a) =>
-                                LocaleGating.accountTypeAllowed(a.accountType))
-                            .toList()
-                        : allSummaries;
+                    // Two filters, and they are not the same rule.
+                    //
+                    // CURRENCY applies in every locale: a wallet can only be
+                    // spent in its own currency, so a Naira Family & Friends
+                    // pot on a GBP dashboard is a card the user can select,
+                    // send from, and have refused — with its balance reading
+                    // as part of their GBP money. Reported from a device.
+                    //
+                    // TYPE applies only in a restricted locale, and is
+                    // admin-tunable (locale_non_ngn_account_types).
+                    final accountSummaries = allSummaries.where((a) {
+                      if (!LocaleGating.accountCurrencyAllowed(a.currency)) {
+                        return false;
+                      }
+                      if (LocaleGating.restricted &&
+                          !LocaleGating.accountTypeAllowed(a.accountType)) {
+                        return false;
+                      }
+                      return true;
+                    }).toList();
                     // True only during an explicit user refresh (swipe-down →
                     // "Refresh accounts"). Keeps the card visible and overlays a
                     // small "Refreshing…" pill so there's feedback even when the

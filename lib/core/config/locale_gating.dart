@@ -102,6 +102,29 @@ class LocaleGating {
         .contains(accountType.trim().toLowerCase());
   }
 
+  /// Whether an account denominated in [accountCurrency] belongs on screen in
+  /// the CURRENT locale.
+  ///
+  /// A wallet is denominated in one currency and can only be spent in it. A
+  /// Naira Family & Friends pot shown to a user who has switched to GBP is a
+  /// card they can select, send from, and have refused — and worse, its
+  /// balance reads as if it were part of their GBP money. Reported from a
+  /// device: NGN family accounts appearing in the GBP locale.
+  ///
+  /// Applies in EVERY locale, not just the restricted ones: a GBP wallet has
+  /// no business on a Naira dashboard either. The restriction is symmetric
+  /// because the reason is — you cannot spend one currency's wallet in
+  /// another's locale.
+  ///
+  /// An account with no currency at all is SHOWN. Those are provisioning
+  /// placeholders, and hiding a real account because a field has not been
+  /// stamped yet is the worse failure of the two.
+  static bool accountCurrencyAllowed(String? accountCurrency) {
+    final c = (accountCurrency ?? '').trim().toUpperCase();
+    if (c.isEmpty) return true;
+    return c == currentCurrency;
+  }
+
   /// One sentence explaining the restriction, for the UI to show.
   ///
   /// Names the currency rather than saying "your region", because a user who
