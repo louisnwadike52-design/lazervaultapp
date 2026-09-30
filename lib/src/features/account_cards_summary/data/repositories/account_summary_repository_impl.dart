@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:grpc/grpc.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/src/core/errors/failures.dart'
     show friendlyGrpcError;
@@ -169,6 +170,22 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
       // (family_setup_flow uses LocaleManager.currentCurrency). The proto does
       // not yet carry a currency field, so resolve it from the active locale
       // rather than hardcoding USD — otherwise an NGN user sees a "$" card.
+      // WHOSE allocation the card shows. Needed because a family account can
+      // run two completely different ways, and the card must not conflate
+      // them:
+      //
+      //   shared_pool        — nobody has an allocation; everyone spends the
+      //                        pool, and the pool figure IS the member's
+      //                        spendable balance.
+      //   equal_split /      — each member has their OWN allocated balance and
+      //   custom_allocation    can only spend that. The pool is what is left
+      //                        UNallocated, which is not theirs to spend.
+      //
+      // In the second case showing only the family total tells a member they
+      // have money they cannot touch.
+      final currentUserId =
+          await serviceLocator<SecureStorageService>().getCurrentUserId();
+
       final localeCurrency = serviceLocator<LocaleManager>().currentCurrency;
       final familyCurrency = localeCurrency.isNotEmpty ? localeCurrency : 'NGN';
       return response.familyAccounts.map((proto) {
@@ -180,8 +197,20 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
           // the active locale currency (never hardcode USD).
           currency: proto.currency.isNotEmpty ? proto.currency : familyCurrency,
           totalBalance: proto.totalBalance,
-          memberAllocatedBalance: proto.totalAllocatedBalance,
-          memberRemainingBalance: proto.totalPoolBalance,
+          // THE LOGGED-IN MEMBER's own numbers, not the family aggregate.
+          //
+          // These were fed proto.totalAllocatedBalance (every member's
+          // allocation added together) and proto.totalPoolBalance (the
+          // UNallocated remainder). Rendered as "your allocation" that would
+          // have told a member the whole family's money was theirs, and called
+          // the unallocated pool their "remaining".
+          //
+          // The caller's own row is already on the wire in proto.members, so
+          // this needs nothing new from the server.
+          memberAllocatedBalance:
+              _selfMember(proto, currentUserId)?.allocatedBalance,
+          memberRemainingBalance: _selfRemaining(proto, currentUserId),
+          poolBalance: proto.totalPoolBalance,
           memberCount: proto.memberCount,
           allowMemberContributions: proto.allowMemberContributions,
           trendPercentage: 0.0,
@@ -259,4 +288,37 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
 
     return sortedList;
   }
+}
+
+/// The caller's OWN row in a family account, or null when they are not a
+/// member of it (an admin view, or a stale cache).
+///
+/// Matching on user_id, not on position: the members list is ordered by the
+/// server and a family's first member is its creator, not whoever is looking.
+family_pb.FamilyMember? _selfMember(
+    family_pb.FamilyAccount account, String? currentUserId) {
+  final uid = (currentUserId ?? '').trim();
+  if (uid.isEmpty) return null;
+  for (final m in account.members) {
+    if (m.userId.trim() == uid) return m;
+  }
+  return null;
+}
+
+/// What the caller can actually still spend from their allocation today.
+///
+/// allocated − spentToday, floored at zero, which is the same arithmetic the
+/// backend's GetRemainingBalance uses — so the number on the card is the
+/// number the spend gate will enforce, rather than an optimistic figure the
+/// server then refuses.
+///
+/// Null when the caller has no allocation: in shared_pool nobody does, and a
+/// "remaining" of 0 would read as "you cannot spend" when in fact they spend
+/// the pool.
+double? _selfRemaining(
+    family_pb.FamilyAccount account, String? currentUserId) {
+  final me = _selfMember(account, currentUserId);
+  if (me == null) return null;
+  final remaining = me.allocatedBalance - me.spentToday;
+  return remaining > 0 ? remaining : 0;
 }

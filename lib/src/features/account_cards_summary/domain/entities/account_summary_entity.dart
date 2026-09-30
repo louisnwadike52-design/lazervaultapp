@@ -283,8 +283,15 @@ class AccountSummaryEntity extends Equatable {
     required String id,
     required String currency,
     required double totalBalance,
-    required double memberAllocatedBalance,
-    required double memberRemainingBalance,
+    // NULLABLE on purpose: in shared_pool no member has an allocation, and a
+    // 0 there would render as "you have nothing to spend" when in fact they
+    // spend the pool. Absent means "not applicable", not "zero".
+    double? memberAllocatedBalance,
+    double? memberRemainingBalance,
+    // The family's UNALLOCATED pool. In shared_pool this is what everyone
+    // spends from; in an allocation mode it is what has not been handed out
+    // yet, and is NOT the member's to spend.
+    double poolBalance = 0,
     required int memberCount,
     required bool allowMemberContributions,
     required double trendPercentage,
@@ -305,9 +312,21 @@ class AccountSummaryEntity extends Equatable {
     //                     headline figure.
     // Showing the allocated portion for a shared pool understated what a member
     // could actually spend (e.g. pool ₦1,550 but card read ₦500).
+    // The headline is what THIS member can actually spend right now.
+    //
+    //   shared_pool      → the pool. Nobody has an allocation, so the pool IS
+    //                      the spendable figure.
+    //   allocation modes → their own REMAINING allocation (allocated minus
+    //                      spent today), because that is the number the
+    //                      backend's spend gate enforces. The gross allocation
+    //                      would promise money a later spend the same day is
+    //                      refused.
+    //
+    // Falls back to the pool when the caller has no member row (an admin view,
+    // a stale cache) rather than rendering a blank card.
     final double displayBalance = (fundDistributionMode == 'shared_pool')
-        ? memberRemainingBalance
-        : memberAllocatedBalance;
+        ? poolBalance
+        : (memberRemainingBalance ?? memberAllocatedBalance ?? poolBalance);
     return AccountSummaryEntity(
       id: id,
       accountType: 'Family & Friends',

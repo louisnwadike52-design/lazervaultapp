@@ -266,6 +266,42 @@ class _AccountCarouselState extends State<AccountCarousel> {
     );
   }
 
+  /// The "Family pool" line under the headline, on allocation-mode accounts.
+  ///
+  /// Shown ONLY when the member has their own allocation, because only then is
+  /// the headline something other than the pool. It is deliberately quiet: the
+  /// member's spendable figure is the one that matters to them, and the pool is
+  /// context, not a second balance they can spend.
+  ///
+  /// Hidden while balances are masked or panic camouflage is on — a second
+  /// real figure beside a hidden one defeats both.
+  Widget _familyPoolLine(AccountSummaryEntity account, String currencySymbol) {
+    if (!account.isFamilyAccount) return const SizedBox.shrink();
+    if (account.fundDistributionMode == 'shared_pool') {
+      return const SizedBox.shrink();
+    }
+    final allocated = account.memberAllocatedBalance;
+    if (allocated == null) return const SizedBox.shrink();
+    if (_isHidden(account.id) || _panic.isCamouflageOn) {
+      return const SizedBox.shrink();
+    }
+    final pool = account.familyTotalBalance ?? 0;
+    if (pool <= 0) return const SizedBox.shrink();
+    return Padding(
+      padding: EdgeInsets.only(top: 2.h),
+      child: Text(
+        'Your allocation · Family pool $currencySymbol${_formatBalance(pool)}',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: Colors.white.withValues(alpha: 0.65),
+          fontSize: 10.sp,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
   /// Hides or reveals one account's balance and remembers the choice.
   ///
   /// Optimistic: the card flips immediately and the preference write follows.
@@ -1736,6 +1772,13 @@ class _AccountCarouselState extends State<AccountCarousel> {
                           ),
                         ],
                       ),
+                      // On an ALLOCATION-mode family account the headline is
+                      // the member's own remaining allocation, so the family
+                      // pool needs saying too — otherwise a member sees a
+                      // number with no idea whether the household has more.
+                      // In shared_pool the headline already IS the pool, so
+                      // repeating it would be noise.
+                      _familyPoolLine(account, currencySymbol),
                       SizedBox(height: 2.h),
                       if (_animatingAccounts.contains(account.id))
                         Row(
