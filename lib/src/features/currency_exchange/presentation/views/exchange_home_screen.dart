@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/src/features/currency_exchange/presentation/widgets/exchange_bottom_action.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/widgets/international_payout_unavailable.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -950,6 +951,21 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
     final rate = state.rate;
     final convertedAmount = rate != null ? rate.calculateToAmount(amount) : 0.0;
     final canProceed = amount > 0 && rate != null;
+    // The rail is OFF, which is not the same as "you have more to do".
+    //
+    // The bottom CTA is shared by both tabs and stayed enabled here, because
+    // `canProceed` only asks whether there is an amount and a rate — both
+    // still true from the Convert tab. So a screen whose whole body said
+    // "Not available at the moment" ended in a live purple "Continue". A
+    // control the service cannot honour is worse than no control: it reads as
+    // the app disagreeing with itself. The only action that makes sense here
+    // is the one the card already suggests.
+    final bottomAction = ExchangeBottomAction.resolve(
+      mode: _mode,
+      intlPayoutAvailable: FeatureFlags.intlPayoutAvailable,
+    );
+    final sendAbroadUnavailable =
+        bottomAction == ExchangeBottomAction.switchToConvert;
 
     return RefreshIndicator(
       onRefresh: _refresh,
@@ -984,8 +1000,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                     // Send Abroad is gated: when international payout is off the
                     // tab still opens and explains itself, instead of collecting a
                     // recipient, an amount and a PIN and failing at the provider.
-                    if (_mode == ExchangeMode.sendAbroad &&
-                        !FeatureFlags.intlPayoutAvailable) ...[
+                    if (sendAbroadUnavailable) ...[
                       const SizedBox(height: 20),
                       const InternationalPayoutUnavailable(),
                       const SizedBox(height: 80),
@@ -1111,13 +1126,35 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
             ),
           ),
 
-          // Primary action button — pinned at bottom
+          // Pinned action. When the rail is off this is NOT the journey's
+          // CTA — a disabled "Continue" would still imply the journey exists
+          // and is merely blocked by something the user can fix. It becomes
+          // the way out the card names: the Convert tab, which works.
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
               child: SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
+                child: sendAbroadUnavailable
+                    ? OutlinedButton(
+                        key: const Key('exchange_switch_to_convert'),
+                        onPressed: () => _onModeChanged(ExchangeMode.convert),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: ExchangeTheme.primary),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text(
+                          bottomAction.label,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      )
+                    : ElevatedButton(
                   onPressed: (canProceed && !_isPrimaryActionInProgress)
                       ? _onPrimaryAction
                       : null,
@@ -1134,9 +1171,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                           width: 22,
                           child: LazerVaultLoader.small())
                       : Text(
-                          _mode == ExchangeMode.convert
-                              ? 'Convert Now'
-                              : 'Continue',
+                          bottomAction.label,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
