@@ -55,15 +55,34 @@ void main() {
     });
 
     test('insufficient funds is a sheet, not a five-second flash', () {
-      expect(source, contains("title: 'Insufficient funds'"));
-      final idx = source.indexOf("title: 'Insufficient funds'");
-      final call = source.substring(idx - 200, idx + 400);
-      expect(call, contains('showServerRefusal'));
+      // The sheet moved into a shared helper so the SHORT flow says exactly
+      // the same thing — it used to set six words in red under its amount
+      // field for this refusal. Both flows must now route through it.
+      expect(source, contains('showInsufficientFunds('),
+          reason: 'the long flow must use the shared sheet');
+
+      final shortFlow = File(
+        'lib/src/features/funds/presentation/widgets/send_funds/'
+        'send_funds_amount_sheet.dart',
+      ).readAsStringSync();
+      expect(shortFlow, contains('showInsufficientFunds('),
+          reason: 'the short flow must use the same sheet, not an inline '
+              'error line');
+
+      final helper = File(
+        'lib/src/features/funds/presentation/widgets/send_funds/'
+        'insufficient_funds_sheet.dart',
+      ).readAsStringSync();
+      expect(helper, contains("title: 'Insufficient funds'"));
+      expect(helper, contains('showServerRefusal'));
       // "Top up your account" is an instruction with somewhere to go.
-      expect(call, contains('AppRoutes.depositFunds'));
+      expect(helper, contains('AppRoutes.depositFunds'));
       // And it must say the money did not move — this check runs BEFORE any
       // debit, so unlike a mid-flight failure it can state that truthfully.
-      expect(call, contains('Nothing has been sent.'));
+      expect(helper, contains('Nothing has been sent.'));
+      // The fee variant is the whole reason the message is long: without it,
+      // "insufficient balance" on an amount that fits is baffling.
+      expect(helper, contains('+ Fee ('));
     });
 
     test('a failed recipient save is reported, not printed', () {

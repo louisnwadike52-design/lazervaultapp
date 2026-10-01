@@ -18,6 +18,7 @@ import '../widgets/documents_tab.dart';
 import '../widgets/help_tab.dart';
 import '../widgets/account_preview_card.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/config/locale_gating.dart';
 part 'account_actions_bottom_sheet_widgets.dart';
 
 /// Account Actions Bottom Sheet - Clean, tabbed interface for card management
@@ -52,10 +53,17 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
   /// `_buildTabContent` switch stays exhaustive without dead branches.
   List<AccountActionTab> get _visibleTabs => [
         if (_cardsFeatureEnabled) AccountActionTab.manageCard,
-        AccountActionTab.controls,
-        AccountActionTab.limits,
-        AccountActionTab.documents,
-        AccountActionTab.help,
+        // Outside NGN the set is admin-tunable, so a tab that stops making
+        // sense in a region can be withdrawn without a release. Everything is
+        // shown by default — a foreign wallet can hold a balance (currency
+        // exchange funds it even with no deposit rail), so freezing it,
+        // bounding it, and pulling a statement all remain real.
+        if (LocaleGating.accountTabAllowed('controls'))
+          AccountActionTab.controls,
+        if (LocaleGating.accountTabAllowed('limits')) AccountActionTab.limits,
+        if (LocaleGating.accountTabAllowed('documents'))
+          AccountActionTab.documents,
+        if (LocaleGating.accountTabAllowed('help')) AccountActionTab.help,
       ];
 
   @override

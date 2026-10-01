@@ -120,6 +120,13 @@ class LocaleGating {
         .contains(action.trim().toLowerCase());
   }
 
+  /// Whether an account-details tab is worth showing in the current region.
+  static bool accountTabAllowed(String tab) {
+    if (!restricted) return true;
+    return FeatureFlags.localeNonNgnAccountTabNames
+        .contains(tab.trim().toLowerCase());
+  }
+
   /// Whether an account denominated in [accountCurrency] belongs on screen in
   /// the CURRENT locale.
   ///

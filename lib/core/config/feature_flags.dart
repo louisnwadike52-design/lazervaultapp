@@ -73,7 +73,8 @@ class FeatureFlags {
   /// written before this app version knew about it — falls back to 'generic',
   /// which is the only message that is true regardless of why it is off.
   static String get intlPayoutScope {
-    final raw = _prefs?.getString(intlPayoutUnavailableScope)?.trim().toLowerCase();
+    final raw =
+        _prefs?.getString(intlPayoutUnavailableScope)?.trim().toLowerCase();
     switch (raw) {
       case 'account':
       case 'country':
@@ -255,12 +256,14 @@ class FeatureFlags {
       'locale_non_ngn_dashboard_sections';
 
   /// CSV of ACCOUNT TYPES a user can hold and operate outside NGN.
-  static const String localeNonNgnAccountTypes =
-      'locale_non_ngn_account_types';
+  static const String localeNonNgnAccountTypes = 'locale_non_ngn_account_types';
 
   /// CSV of MONEY-MOVEMENT actions offered outside NGN: `deposit`, `withdraw`.
-  static const String localeNonNgnMoneyActions =
-      'locale_non_ngn_money_actions';
+  static const String localeNonNgnMoneyActions = 'locale_non_ngn_money_actions';
+
+  /// CSV of ACCOUNT-DETAILS tabs shown outside NGN: `controls`, `limits`,
+  /// `documents`, `help`.
+  static const String localeNonNgnAccountTabs = 'locale_non_ngn_account_tabs';
 
   // Whether the Bulk SMS service tile is visible anywhere in the app.
   // Hidden by default (product decision 2026-09-07); an admin can restore it
@@ -420,6 +423,7 @@ class FeatureFlags {
       // so a missing key still means "use the default", not "allow none".
       localeNonNgnAccountTypes,
       localeNonNgnMoneyActions,
+      localeNonNgnAccountTabs,
     ]) {
       final v = remote[key];
       if (v == null) continue;
@@ -554,6 +558,16 @@ class FeatureFlags {
   /// that is a commercial fact rather than a property of the code.
   static Set<String> get localeNonNgnMoneyActionNames =>
       _csv(localeNonNgnMoneyActions, '');
+
+  /// Account-details tabs shown outside NGN.
+  ///
+  /// ALL of them by default. Freezing an account, bounding its limits,
+  /// pulling a statement and getting help all work on a foreign wallet —
+  /// which can hold a balance, since currency exchange funds it even with no
+  /// deposit rail. This exists so an operator can narrow it the day a tab
+  /// stops making sense in a region, without a release.
+  static Set<String> get localeNonNgnAccountTabNames =>
+      _csv(localeNonNgnAccountTabs, 'controls,limits,documents,help');
 
   // ── Bulk SMS visibility ──────────────────────────────────────────────────
   /// Whether the Bulk SMS service is visible anywhere in the app.

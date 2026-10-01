@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:lazervault/src/features/account_actions/domain/entities/account_details_entity.dart';
 import 'package:lazervault/src/features/account_actions/presentation/cubit/account_actions_cubit.dart';
 import 'package:lazervault/core/utils/edge_case_validator.dart';
+import 'package:lazervault/core/config/locale_gating.dart';
 
 /// Account Controls Tab — real, account-level transaction controls for the
 /// virtual account (Lazervault has no card product). Replaces the old card-only
@@ -85,16 +86,23 @@ class AccountControlsTab extends StatelessWidget {
           SizedBox(height: 12.h),
 
           // International transfers — gates the send-abroad / exchange flow.
-          _buildToggleRow(
-            context,
-            icon: Icons.public_outlined,
-            title: 'Allow international transfers',
-            subtitle: 'Let this account send money abroad',
-            value: details?.allowInternationalTransfers ?? true,
-            onChanged: details == null
-                ? null
-                : (value) => _onInternationalChanged(context, value, details),
-          ),
+          //
+          // Hidden outside NGN: there is no payout corridor out of a foreign
+          // wallet, so this toggles a capability the account does not have.
+          // A switch that changes nothing is worse than an absent one — the
+          // user flips it, nothing happens, and they are left unsure whether
+          // the setting or the transfer is broken.
+          if (!LocaleGating.restricted)
+            _buildToggleRow(
+              context,
+              icon: Icons.public_outlined,
+              title: 'Allow international transfers',
+              subtitle: 'Let this account send money abroad',
+              value: details?.allowInternationalTransfers ?? true,
+              onChanged: details == null
+                  ? null
+                  : (value) => _onInternationalChanged(context, value, details),
+            ),
           SizedBox(height: 24.h),
 
           // Notice
