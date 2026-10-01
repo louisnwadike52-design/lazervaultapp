@@ -242,11 +242,13 @@ class SprayMeRepositoryImpl implements ISprayMeRepository {
     required int minutes,
     required String sourceAccountId,
     required String idempotencyKey,
+    required String verificationToken,
   }) =>
       _dataSource.extendSession(
         sessionId,
         minutes: minutes,
         sourceAccountId: sourceAccountId,
         idempotencyKey: idempotencyKey,
+        verificationToken: verificationToken,
       );
 }

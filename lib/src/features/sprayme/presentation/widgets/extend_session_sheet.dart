@@ -144,12 +144,16 @@ class _ExtendSessionSheetState extends State<ExtendSessionSheet>
       message:
           'Add ${opt.minutes} minutes to this session for ${acct.currency} ${opt.priceMajor.toStringAsFixed(0)}',
       successMessage: 'Session extended',
-      onPinValidated: (_) async {
+      // The token is the whole point of the PIN sheet — it was being
+      // discarded here, which left the server with no way to tell a
+      // confirmed purchase from an unconfirmed one.
+      onPinValidated: (verificationToken) async {
         await serviceLocator<ISprayMeRepository>().extendSession(
           widget.sessionId,
           minutes: opt.minutes,
           sourceAccountId: acct.id,
           idempotencyKey: _idempotencyKey,
+          verificationToken: verificationToken,
         );
       },
     );

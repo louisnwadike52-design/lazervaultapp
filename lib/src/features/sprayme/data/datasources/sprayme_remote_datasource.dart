@@ -607,6 +607,7 @@ class SprayMeRemoteDataSource {
     required int minutes,
     required String sourceAccountId,
     required String idempotencyKey,
+    required String verificationToken,
   }) async {
     try {
       final res = await _dio.post(
@@ -615,6 +616,11 @@ class SprayMeRemoteDataSource {
           'minutes': minutes,
           'source_account_id': sourceAccountId,
           'idempotency_key': idempotencyKey,
+          // The token the PIN sheet minted — NEVER a raw PIN. sprayme-service
+          // re-validates it against (user, source account) and refuses the
+          // purchase without one, so the PIN is a real gate rather than a
+          // prompt a direct API call can skip.
+          'verification_token': verificationToken,
         },
       );
       final raw = res.data['new_expires_at'] as String?;

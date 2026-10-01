@@ -124,6 +124,7 @@ abstract class ISprayMeRepository {
     required int minutes,
     required String sourceAccountId,
     required String idempotencyKey,
+    required String verificationToken,
   });
   Future<void> toggleRecording(String sessionId, {required bool enabled});
 }
