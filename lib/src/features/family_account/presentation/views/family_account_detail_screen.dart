@@ -3311,16 +3311,24 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 height: 26.h,
                 color: Colors.white.withValues(alpha: 0.2),
               ),
-              _buildHeroStat(
-                'Allocated',
-                '$symbol${account.totalAllocatedBalance.toStringAsFixed(0)}',
-                Icons.pie_chart,
-              ),
-              Container(
-                width: 1,
-                height: 26.h,
-                color: Colors.white.withValues(alpha: 0.2),
-              ),
+              // "Allocated" is only a meaningful stat where an allocation can
+              // actually be SPENT. On a shared-pool account the spend path reads
+              // the pool and never a member's allocation, so showing an
+              // allocated figure beside the pool balance presents money nobody
+              // can reach as though it were ordinary. It is surfaced below as a
+              // warning instead, and only when it is non-zero.
+              if (!isSharedPool) ...[
+                _buildHeroStat(
+                  'Allocated',
+                  '$symbol${account.totalAllocatedBalance.toStringAsFixed(0)}',
+                  Icons.pie_chart,
+                ),
+                Container(
+                  width: 1,
+                  height: 26.h,
+                  color: Colors.white.withValues(alpha: 0.2),
+                ),
+              ],
               _buildHeroStat(
                 'Spent Today',
                 '$symbol${spentToday.toStringAsFixed(0)}',
@@ -3328,6 +3336,47 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               ),
             ],
           ),
+
+          // Money that was allocated while the account shares one pool.
+          //
+          // It is NOT spendable: the shared-pool spend path draws on the pool
+          // only, so an allocation made in this mode is absent from the pool and
+          // unreachable from anywhere. Allocating in this mode is now refused,
+          // so this can only appear on an account where it already happened —
+          // and silence would leave the family's own totals unexplainable.
+          if (isSharedPool && account.totalAllocatedBalance > 0) ...[
+            SizedBox(height: 10.h),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF59E0B).withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(10.r),
+                border: Border.all(
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.45)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.info_outline,
+                      size: 14.sp, color: const Color(0xFFFCD34D)),
+                  SizedBox(width: 7.w),
+                  Expanded(
+                    child: Text(
+                      '$symbol${account.totalAllocatedBalance.toStringAsFixed(2)} '
+                      'is held as a member allocation and can\'t be spent while '
+                      'this account shares one pool. Contact support to return it '
+                      'to the pool.',
+                      style: GoogleFonts.inter(
+                        fontSize: 11.sp,
+                        height: 1.35,
+                        color: const Color(0xFFFDE68A),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           SizedBox(height: 12.h),
           Container(
             height: 5.h,

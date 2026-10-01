@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/data_bundles/utils/data_plan_family_filter.dart';
 import 'package:lazervault/src/features/data_bundles/utils/data_plan_validity.dart';
+import 'package:lazervault/src/features/data_bundles/utils/data_plan_volume.dart';
 import 'package:intl/intl.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/data_plan_entity.dart';
@@ -36,6 +37,13 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
   /// three rows reading "1GB" at three prices side by side with nothing to
   /// distinguish them.
   String _familyFilter = '';
+
+  /// Active data-VOLUME range, null for "any size".
+  ///
+  /// A third axis alongside duration and family, because the catalogue has 87
+  /// distinct volumes across 254 plans and "about 2GB" is how people actually
+  /// shop. Ranges rather than exact sizes — 87 chips is not a filter.
+  DataVolumeBucket? _volumeFilter;
 
   @override
   void initState() {
@@ -227,6 +235,34 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
                 },
               ),
 
+              // Data-VOLUME chips, built from the plans actually returned so a
+              // range with nothing in it never becomes a chip that leads to an
+              // empty list. Absent when fewer than two ranges are populated,
+              // since one option cannot narrow anything.
+              BlocBuilder<DataBundlesCubit, DataBundlesState>(
+                builder: (context, state) {
+                  if (state is! DataPlansLoaded) return const SizedBox.shrink();
+                  final chips = dataVolumeChips(state.plans);
+                  if (chips.isEmpty) return const SizedBox.shrink();
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: 10.h),
+                    child: SizedBox(
+                      height: 34.h,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          _buildVolumePill(null, 'Any size', null,
+                              Color(networkColorValue)),
+                          for (final b in chips)
+                            _buildVolumePill(b, b.label, b.count,
+                                Color(networkColorValue)),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+
               // Plans grid
               Expanded(
                 child: BlocBuilder<DataBundlesCubit, DataBundlesState>(
@@ -252,6 +288,7 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
                       final plans = sortedByPrice(state.plans
                           .where((p) => matchesDuration(p, _durationFilter))
                           .where((p) => matchesFamily(p, _familyFilter))
+                          .where((p) => matchesVolume(p, _volumeFilter))
                           .toList());
                       if (plans.isEmpty) {
                         // Names BOTH active filters. "No daily plans" when the
@@ -321,8 +358,54 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
           .familyChipLabel;
       parts.add(label);
     }
+    if (_volumeFilter != null) {
+      parts.add(_volumeFilter!.label);
+    }
     if (parts.isEmpty) return 'No plans available';
     return 'No ${parts.join(' + ')} plans. Try another filter.';
+  }
+
+  Widget _buildVolumePill(
+      DataVolumeBucket? b, String label, int? count, Color accent) {
+    final selected = b?.label == _volumeFilter?.label;
+    return Padding(
+      padding: EdgeInsets.only(right: 8.w),
+      child: GestureDetector(
+        onTap: () => setState(() => _volumeFilter = b),
+        child: Container(
+          alignment: Alignment.center,
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+          decoration: BoxDecoration(
+            color: selected
+                ? accent.withValues(alpha: 0.22)
+                : const Color(0xFF161616),
+            borderRadius: BorderRadius.circular(18.r),
+            border:
+                Border.all(color: selected ? accent : const Color(0xFF2D2D2D)),
+          ),
+          child: Row(
+            children: [
+              Text(label,
+                  style: GoogleFonts.inter(
+                      color: selected ? Colors.white : const Color(0xFF9CA3AF),
+                      fontSize: 12.sp,
+                      fontWeight:
+                          selected ? FontWeight.w600 : FontWeight.w500)),
+              if (count != null) ...[
+                SizedBox(width: 5.w),
+                Text('$count',
+                    style: GoogleFonts.inter(
+                        color: selected
+                            ? Colors.white.withValues(alpha: 0.7)
+                            : const Color(0xFF6B7280),
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w500)),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildFamilyPill(DataPlanFamily f, Color accent) {

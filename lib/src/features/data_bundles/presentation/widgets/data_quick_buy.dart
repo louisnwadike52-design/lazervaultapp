@@ -26,6 +26,7 @@ import '../cubit/data_bundles_cubit.dart';
 import '../cubit/data_bundles_state.dart';
 import '../../domain/entities/data_plan_entity.dart';
 import '../../utils/data_plan_validity.dart';
+import '../../utils/data_plan_volume.dart';
 import '../../domain/entities/data_purchase_entity.dart';
 import '../../domain/entities/data_beneficiary.dart';
 import '../../data/datasources/data_beneficiary_remote_datasource.dart';
@@ -259,6 +260,28 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
   String get _netHex =>
       '#${(_netMeta[_networkCode]?.$2 ?? 0xFF4E03D0).toRadixString(16).padLeft(8, '0').substring(2)}';
 
+  /// Volume chips for the plans currently loaded, or an empty list when the
+  /// catalogue does not justify the row.
+  ///
+  /// Reads the CURRENT fetch state rather than taking plans as an argument,
+  /// because the sheet is opened before the fetch may have settled; an empty
+  /// list here simply renders no second row.
+  List<BillListFilter<DataPlanEntity>> _volumeFilters() {
+    final chips = dataVolumeChips(_planState.value.items);
+    if (chips.isEmpty) return const [];
+    return [
+      (
+        label: 'Any size',
+        test: (DataPlanEntity p) => true,
+      ),
+      for (final b in chips)
+        (
+          label: '${b.label} (${b.count})',
+          test: (DataPlanEntity p) => matchesVolume(p, b),
+        ),
+    ];
+  }
+
   // ── Styled plan bottom sheet ────────────────────────────────────────────────
   Future<void> _openPlanSheet() async {
     if (_networkCode == null) return;
@@ -280,6 +303,15 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
           for (final d in DataPlanDuration.values)
             (label: d.label, test: (DataPlanEntity p) => matchesDuration(p, d)),
         ],
+        // A SECOND axis: how much data. The live catalogue has 87 distinct
+        // volumes across 254 plans, so a flat list made "the cheapest 2GB"
+        // something you had to find by scrolling and squinting at names.
+        //
+        // Ranges, not exact sizes — 87 chips is not a filter, and nobody shops
+        // for exactly 1,638.4 MB. Built from the plans actually returned, so an
+        // empty range never becomes a chip that leads nowhere, and the row
+        // disappears entirely when fewer than two ranges are populated.
+        secondaryFilters: _volumeFilters(),
       ),
     );
     if (picked != null && mounted) setState(() => _plan = picked);

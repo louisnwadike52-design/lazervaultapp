@@ -61,6 +61,7 @@ class BillListPickerSheet<T> extends StatefulWidget {
     this.emptyLabel = 'Nothing available right now',
     this.onRetry,
     this.filters,
+    this.secondaryFilters,
   });
 
   final String title;
@@ -89,6 +90,16 @@ class BillListPickerSheet<T> extends StatefulWidget {
   /// Optional filter pills. When null/empty, no pill row is shown.
   final List<BillListFilter<T>>? filters;
 
+  /// A SECOND, independent row of pills, ANDed with [filters].
+  ///
+  /// Two axes rather than one long row because they answer different questions
+  /// and a shopper uses both: "how long does it last" (daily/weekly/monthly) and
+  /// "how much data is it" (a size range). Flattening them into one row would
+  /// force a choice between the two and make most combinations unreachable.
+  ///
+  /// Like [filters], the first entry is the "All" pass-through.
+  final List<BillListFilter<T>>? secondaryFilters;
+
   @override
   State<BillListPickerSheet<T>> createState() => _BillListPickerSheetState<T>();
 }
@@ -100,6 +111,7 @@ class _BillListPickerSheetState<T> extends State<BillListPickerSheet<T>> {
   static const _price = Color(0xFF10B981);
 
   int _filterIndex = 0;
+  int _secondaryIndex = 0;
 
   String get title => widget.title;
   IconData get icon => widget.icon;
@@ -112,12 +124,40 @@ class _BillListPickerSheetState<T> extends State<BillListPickerSheet<T>> {
   String? Function(T item)? get subtitleOf => widget.subtitleOf;
   Widget Function(T item)? get leadingOf => widget.leadingOf;
 
-  Widget _filterPill(String label, int index) {
-    final selected = index == _filterIndex;
+  /// Names EVERY active filter when a combination matches nothing.
+  ///
+  /// "No plans in this filter" when two are active sends the user to clear the
+  /// wrong one — they drop the duration, see the list stay empty, and conclude
+  /// the network has nothing.
+  String _noMatchLabel(
+    List<BillListFilter<T>>? primary,
+    List<BillListFilter<T>>? secondary,
+  ) {
+    final active = <String>[];
+    if (primary != null && _filterIndex > 0 && _filterIndex < primary.length) {
+      active.add(primary[_filterIndex].label);
+    }
+    if (secondary != null &&
+        _secondaryIndex > 0 &&
+        _secondaryIndex < secondary.length) {
+      active.add(secondary[_secondaryIndex].label);
+    }
+    if (active.isEmpty) return 'No plans in this filter';
+    return 'No ${active.join(' + ')} plans. Try another filter.';
+  }
+
+  Widget _filterPill(String label, int index, {bool secondary = false}) {
+    final selected = index == (secondary ? _secondaryIndex : _filterIndex);
     return Padding(
       padding: EdgeInsets.only(right: 8.w),
       child: GestureDetector(
-        onTap: () => setState(() => _filterIndex = index),
+        onTap: () => setState(() {
+          if (secondary) {
+            _secondaryIndex = index;
+          } else {
+            _filterIndex = index;
+          }
+        }),
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
           decoration: BoxDecoration(
@@ -138,6 +178,7 @@ class _BillListPickerSheetState<T> extends State<BillListPickerSheet<T>> {
   @override
   Widget build(BuildContext context) {
     final filters = widget.filters;
+    final secondaryFilters = widget.secondaryFilters;
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
@@ -184,6 +225,18 @@ class _BillListPickerSheetState<T> extends State<BillListPickerSheet<T>> {
               ],
             ),
           ),
+        if (secondaryFilters != null && secondaryFilters.isNotEmpty)
+          SizedBox(
+            height: 36.h,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              children: [
+                for (var i = 0; i < secondaryFilters.length; i++)
+                  _filterPill(secondaryFilters[i].label, i, secondary: true),
+              ],
+            ),
+          ),
         Expanded(
           child: ValueListenableBuilder<BillListFetchState<T>>(
             valueListenable: listenable,
@@ -198,12 +251,21 @@ class _BillListPickerSheetState<T> extends State<BillListPickerSheet<T>> {
                   onRetry: onRetry,
                 );
               }
-              // Apply the active filter pill (if any) to the fetched items.
-              final items = (filters != null &&
-                      filters.isNotEmpty &&
-                      _filterIndex < filters.length)
-                  ? state.items.where(filters[_filterIndex].test).toList()
-                  : state.items;
+              // Apply BOTH active pills. They are independent axes, so they
+              // narrow together — picking "Weekly" and "1–2GB" means weekly
+              // plans that are also 1–2GB, not one or the other.
+              var items = state.items;
+              if (filters != null &&
+                  filters.isNotEmpty &&
+                  _filterIndex < filters.length) {
+                items = items.where(filters[_filterIndex].test).toList();
+              }
+              if (secondaryFilters != null &&
+                  secondaryFilters.isNotEmpty &&
+                  _secondaryIndex < secondaryFilters.length) {
+                items =
+                    items.where(secondaryFilters[_secondaryIndex].test).toList();
+              }
               if (items.isEmpty) {
                 return Center(
                   child: Padding(
@@ -211,7 +273,7 @@ class _BillListPickerSheetState<T> extends State<BillListPickerSheet<T>> {
                     child: Text(
                         state.items.isEmpty
                             ? emptyLabel
-                            : 'No plans in this filter',
+                            : _noMatchLabel(filters, secondaryFilters),
                         textAlign: TextAlign.center,
                         style:
                             GoogleFonts.inter(color: _muted, fontSize: 14.sp)),
