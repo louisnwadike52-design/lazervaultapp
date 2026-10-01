@@ -74,6 +74,21 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
               AccountSummaryModel.fromProto(proto) as AccountSummaryEntity)
           .toList();
 
+      // CLOSED wallets are tombstones, not accounts.
+      //
+      // Migration 037 retired duplicate wallets by CLOSING them — it cannot
+      // delete them, because transactions reference the row — and the carousel
+      // was rendering those tombstones beside the live wallet. A user in en-ZA
+      // saw "Personal" twice; same for savings, business and investment, and in
+      // en-KE too.
+      //
+      // The server now withholds them; this client-side mirror keeps the
+      // carousel clean against an older backend, exactly like the investment
+      // sunset below. Same carve-out: a closed wallet still holding money stays
+      // visible, because hiding a balance is how it gets forgotten.
+      allAccounts.removeWhere((a) =>
+          a.isClosed && a.balance == 0 && a.availableBalance == 0);
+
       // Investment sunset (2026-09-07): the server already withholds EMPTY
       // legacy investment wallets; this client-side mirror keeps the carousel
       // clean even against an older backend. A wallet still holding money is

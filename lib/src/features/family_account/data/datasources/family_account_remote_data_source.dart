@@ -32,6 +32,12 @@ abstract class FamilyAccountRemoteDataSource {
     String? description,
     String? idempotencyKey,
   });
+
+  /// Sweep member allocations back into the shared pool. Returns the amount
+  /// moved. Refused server-side when the account's mode can actually SPEND
+  /// allocations, so this only ever applies to money stranded by a mode switch.
+  Future<double> returnAllocationsToPool({required String familyId});
+
   Future<FamilyMemberProto> generateMemberCard({
     required String familyId,
     required String memberId,
@@ -604,6 +610,16 @@ class FamilyAccountRemoteDataSourceImpl
     }
 
     return transactions.sublist(start, end.clamp(0, transactions.length));
+  }
+
+  @override
+  Future<double> returnAllocationsToPool({required String familyId}) async {
+    // In-memory stand-in only — the real implementation is the gRPC data
+    // source. This class is the mock used before the rail existed; it reports
+    // the amount it WOULD move without mutating, because its FamilyAccountProto
+    // is immutable and the number is all any caller reads.
+    await Future.delayed(const Duration(milliseconds: 300));
+    return _familyAccounts[familyId]?.totalAllocatedBalance ?? 0;
   }
 
   @override

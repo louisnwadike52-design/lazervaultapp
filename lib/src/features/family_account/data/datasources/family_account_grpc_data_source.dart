@@ -306,6 +306,25 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
   }
 
   @override
+  /// Sweep member allocations back into the shared pool.
+  ///
+  /// Returns the amount moved. The server refuses when the account's mode can
+  /// actually SPEND allocations, so this is only ever reachable for a pool the
+  /// allocations are stranded in.
+  Future<double> returnAllocationsToPool({required String familyId}) async {
+    try {
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.returnAllocationsToPool(
+        family_pb.ReturnAllocationsToPoolRequest(familyId: familyId),
+        options: callOptions,
+      );
+      return response.amountReturned;
+    } on GrpcError catch (e) {
+      throw mapGrpcError(e);
+    }
+  }
+
+  @override
   Future<FamilyMemberProto> generateMemberCard({
     required String familyId,
     required String memberId,

@@ -132,6 +132,24 @@ service FamilyAccountsService {
     };
   }
 
+  // Sweep member allocations back into the shared pool.
+  //
+  // An account switched to shared_pool while members still held allocations
+  // strands that money: the spend gate reads the POOL for everyone, so the
+  // allocated amount is neither spendable by its member nor part of the pool.
+  // The app used to tell the owner to "contact support", and support had no
+  // path either short of removing the member.
+  //
+  // Admin of the account, not platform admin. Refused outright in a mode where
+  // allocations ARE spendable — there the allocation is the member's working
+  // balance and sweeping it would take away what they were given.
+  rpc ReturnAllocationsToPool(ReturnAllocationsToPoolRequest) returns (ReturnAllocationsToPoolResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/family-accounts/{family_id}/return-allocations"
+      body: "*"
+    };
+  }
+
   // Generate a virtual card for a family member
   // Member can request their own card, or admin can generate for them
   rpc GenerateMemberCard(GenerateMemberCardRequest) returns (GenerateMemberCardResponse) {
@@ -167,6 +185,8 @@ service FamilyAccountsService {
     };
   }
 
+  // A non-creator member leaves the family on their own. Their allocation
+  // returns to the pool; the creator cannot leave (delete instead).
   rpc LeaveFamilyAccount(LeaveFamilyAccountRequest) returns (LeaveFamilyAccountResponse) {
     option (google.api.http) = {
       post: "/api/v1/family-accounts/{family_id}/leave"
@@ -198,6 +218,53 @@ service FamilyAccountsService {
       body: "*"
     };
   }
+
+  // Update spending visibility and the funding policy on an ACTIVE account.
+  //
+  // These were previously settable only through SetupFamilyAccount, which
+  // refuses to run once the account leaves pending_setup — so a creator who
+  // picked the wrong option during the wizard could never change it, for the
+  // life of the account. Both are enforced server-side (visibility gates the
+  // spend summary, funding policy gates ProcessMemberContribution), so they
+  // must be changeable through a path that applies the same normalisation the
+  // wizard does.
+  rpc UpdateFamilySettings(UpdateFamilySettingsRequest) returns (UpdateFamilySettingsResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/family-accounts/{family_id}/settings"
+      body: "*"
+    };
+  }
+
+  // =========================================================================
+  // Service-internal spend RPCs (called by core-payments, NOT user-facing).
+  // No HTTP gateway route — gRPC only, restricted to internal service callers.
+  // =========================================================================
+
+  // AuthorizeFamilySpend resolves the family + spending member from the family
+  // virtual account id and verifies the spend against the distribution mode and
+  // per-member limits. Does NOT move money — call before the real debit.
+  rpc AuthorizeFamilySpend(AuthorizeFamilySpendRequest) returns (AuthorizeFamilySpendResponse) {}
+
+  // RecordFamilySpend updates the family ledger after a successful real debit:
+  // decrements the pool (shared_pool) or the member allocation, bumps
+  // spent_today / spent_this_month, and writes a spending FamilyTransaction.
+  // Idempotent on transaction_id.
+  rpc RecordFamilySpend(RecordFamilySpendRequest) returns (RecordFamilySpendResponse) {}
+
+  // ReleaseFamilySpend reverses a still-outstanding reservation when a spend
+  // FAILS before the real money moved / before capture. Idempotent on reference.
+  rpc ReleaseFamilySpend(ReleaseFamilySpendRequest) returns (ReleaseFamilySpendResponse) {}
+
+  // RefundFamilySpend reverses a CAPTURED spend when the provider refunds / the
+  // transfer is rolled back AFTER the money moved. Writes a refund transaction.
+  // Idempotent on reference.
+  rpc RefundFamilySpend(RefundFamilySpendRequest) returns (RefundFamilySpendResponse) {}
+
+  // GetFamilySpendByReference is a read-only lookup of the family-pool
+  // reservation(s) for a payment reference (0 or 1 — reference is unique). Used
+  // by core-payments' admin internal-transfer detail to surface the family
+  // spend lifecycle. No side effects.
+  rpc GetFamilySpendByReference(GetFamilySpendByReferenceRequest) returns (GetFamilySpendByReferenceResponse) {}
 
   // =========================================================================
   // Admin RPCs (ops dashboard)
@@ -265,6 +332,367 @@ service FamilyAccountsService {
       body: "*"
     };
   }
+
+  // Admin: paginated full transaction history (ops view, all members).
+  rpc AdminGetFamilyTransactions(AdminGetFamilyTransactionsRequest) returns (AdminGetFamilyTransactionsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/family-accounts/{family_id}/transactions"
+    };
+  }
+
+  // Admin: money-integrity reconciliation (fresh snapshot + recent history).
+  rpc AdminGetFamilyReconciliation(AdminGetFamilyReconciliationRequest) returns (AdminGetFamilyReconciliationResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/family-accounts/{family_id}/reconciliation"
+    };
+  }
+
+  // Admin: force a reconciliation pass for one family now.
+  rpc AdminReconcileFamilyAccount(AdminReconcileFamilyAccountRequest) returns (AdminGetFamilyReconciliationResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/family-accounts/{family_id}/reconcile"
+      body: "*"
+    };
+  }
+
+  // Admin: repair a spend reservation the stale-reservation sweeper refused to
+  // touch because the real debit had already settled on the pool account.
+  //
+  // This is the only supported way to clear a fam_manual_review condition. The
+  // sweeper is right not to release such a row — that would re-credit the family
+  // for money which is gone — but until this existed there was no action to take,
+  // and the FamilyAccountsManualReviewBacklog alert fired forever (506 times for
+  // one 100.00 reservation stuck since 2026-08-25). Idempotent, and it refuses
+  // unless the post-repair ledger balances against the pool account.
+  rpc AdminRepairFamilyReservation(AdminRepairFamilyReservationRequest) returns (AdminRepairFamilyReservationResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/family-accounts/{family_id}/reservations/repair"
+      body: "*"
+    };
+  }
+
+  // Admin: immutable audit log of sensitive actions on a family account.
+  rpc AdminGetFamilyAuditLog(AdminGetFamilyAuditLogRequest) returns (AdminGetFamilyAuditLogResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/family-accounts/{family_id}/audit-log"
+    };
+  }
+
+  // =========================================================================
+  // PAID SLOTS — capacity beyond the free allowance, billed monthly.
+  //
+  // Routed under /family-slots rather than under /family-accounts/... because
+  // /api/v1/family-accounts/{family_id} would otherwise swallow a literal
+  // segment like "capacity" and try to read it as an account id.
+  // =========================================================================
+
+  // What the caller may currently create, and what it is costing them.
+  rpc GetFamilyCapacity(GetFamilyCapacityRequest) returns (GetFamilyCapacityResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/family-slots/capacity"
+    };
+  }
+
+  // Buy one extra slot. Charges the first month immediately.
+  rpc RequestExtraFamilySlot(RequestExtraFamilySlotRequest) returns (RequestExtraFamilySlotResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/family-slots"
+      body: "*"
+    };
+  }
+
+  // The caller's slots with their billing state.
+  rpc ListFamilySlots(ListFamilySlotsRequest) returns (ListFamilySlotsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/family-slots"
+    };
+  }
+
+  // Give up a slot at the end of the period already paid for.
+  rpc CancelFamilySlot(CancelFamilySlotRequest) returns (CancelFamilySlotResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/family-slots/{slot_id}"
+    };
+  }
+
+  // Billing history for one slot — what answers "why was I charged".
+  rpc GetFamilySlotCharges(GetFamilySlotChargesRequest) returns (GetFamilySlotChargesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/family-slots/{slot_id}/charges"
+    };
+  }
+
+  // Admin: every slot and its billing state, for revenue and dispute work.
+  rpc AdminListFamilySlots(AdminListFamilySlotsRequest) returns (AdminListFamilySlotsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/family-slots"
+    };
+  }
+
+  // Admin: charge attempts across all slots, successful and failed.
+  rpc AdminListFamilySlotCharges(AdminListFamilySlotChargesRequest) returns (AdminListFamilySlotChargesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/family-slots/charges"
+    };
+  }
+}
+
+// =========================================================================
+// PAID SLOT MESSAGES
+//
+// Money is carried in MINOR units (kobo) as int64 — the same rule every other
+// amount crossing a service boundary here follows. A float naira field would
+// be one rounding bug away from charging the wrong price.
+// =========================================================================
+
+message GetFamilyCapacityRequest {}
+
+message GetFamilyCapacityResponse {
+  // Accounts nobody pays for (the admin tunable).
+  int32 free_allowance = 1;
+  // Slots currently granting capacity.
+  int32 paid_slots = 2;
+  // Slots that exist but grant nothing because a fee could not be collected.
+  // Surfaced so the app can explain a capacity that dropped, rather than the
+  // user discovering it at the moment of creating.
+  int32 suspended_slots = 3;
+  // free_allowance + paid_slots.
+  int32 total = 4;
+  // How many family accounts exist.
+  int32 used = 5;
+  // Paid slots actually being billed. NOT the same as paid_slots: if an admin
+  // RAISES the free allowance, slots it now covers stop being billed.
+  int32 chargeable_slots = 6;
+  // Price of one more slot per month, in kobo.
+  int64 extra_slot_fee_minor = 7;
+  string currency = 8;
+}
+
+message RequestExtraFamilySlotRequest {
+  // Client-supplied key so a retry after a timeout returns the slot already
+  // bought instead of selling a second one.
+  string idempotency_key = 1;
+
+  // Transaction-PIN confirmation token, obtained by exchanging the user's PIN
+  // with auth-service. Bound to (user, transaction_id) so a token captured from
+  // one request cannot authorise a different, larger one. The PIN itself never
+  // crosses this boundary.
+  string pin_token = 2;
+  // The id the token was minted against. Must match, or the token is refused.
+  string pin_transaction_id = 3;
+}
+
+message RequestExtraFamilySlotResponse {
+  bool success = 1;
+  FamilyPaidSlot slot = 2;
+  string message = 3;
+  // Capacity AFTER the purchase, so the app does not need a second round trip
+  // to redraw the screen the user is looking at.
+  GetFamilyCapacityResponse capacity = 4;
+}
+
+message ListFamilySlotsRequest {}
+
+message ListFamilySlotsResponse {
+  repeated FamilyPaidSlot slots = 1;
+}
+
+message CancelFamilySlotRequest {
+  string slot_id = 1;
+}
+
+message CancelFamilySlotResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetFamilySlotChargesRequest {
+  string slot_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetFamilySlotChargesResponse {
+  repeated FamilySlotCharge charges = 1;
+  int32 total = 2;
+}
+
+message FamilyPaidSlot {
+  string id = 1;
+  string creator_user_id = 2;
+  // active | suspended | cancelled
+  string status = 3;
+  // The price AGREED at purchase, held per slot so a later price change never
+  // silently re-prices what somebody already signed up for.
+  int64 fee_minor = 4;
+  string currency = 5;
+  string period_start = 6;
+  string next_charge_at = 7;
+  string last_charged_at = 8;
+  int32 failure_count = 9;
+  string last_failure_reason = 10;
+  string cancelled_at = 11;
+  string created_at = 12;
+}
+
+message FamilySlotCharge {
+  string id = 1;
+  string slot_id = 2;
+  int64 amount_minor = 3;
+  string currency = 4;
+  // succeeded | failed
+  string status = 5;
+  string failure_reason = 6;
+  string period_start = 7;
+  string period_end = 8;
+  string created_at = 9;
+}
+
+message AdminListFamilySlotsRequest {
+  // Optional filters.
+  string status = 1;
+  string creator_user_id = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message AdminListFamilySlotsResponse {
+  repeated AdminFamilySlot slots = 1;
+  int32 total = 2;
+  // Roll-up so the console can lead with the number ops actually care about.
+  int32 active_count = 3;
+  int32 suspended_count = 4;
+  int32 cancelled_count = 5;
+  // Recurring revenue these slots represent per month, in kobo.
+  int64 monthly_revenue_minor = 6;
+}
+
+message AdminFamilySlot {
+  FamilyPaidSlot slot = 1;
+  // Total successfully collected against this slot, in kobo.
+  int64 collected_minor = 2;
+  int32 charge_count = 3;
+}
+
+message AdminListFamilySlotChargesRequest {
+  string status = 1;
+  string creator_user_id = 2;
+  string slot_id = 3;
+  int32 limit = 4;
+  int32 offset = 5;
+}
+
+message AdminListFamilySlotChargesResponse {
+  repeated AdminFamilySlotCharge charges = 1;
+  int32 total = 2;
+  int64 collected_minor = 3;
+  int64 failed_minor = 4;
+}
+
+message AdminFamilySlotCharge {
+  FamilySlotCharge charge = 1;
+  string creator_user_id = 2;
+}
+
+// Admin: transactions
+message AdminGetFamilyTransactionsRequest {
+  string family_id = 1;
+  string member_id = 2;   // optional filter
+  string type = 3;        // optional filter (allocation|spending|refund|...)
+  string start_date = 4;  // RFC3339
+  string end_date = 5;    // RFC3339
+  int32  page = 6;
+  int32  page_size = 7;
+}
+message AdminGetFamilyTransactionsResponse {
+  repeated FamilyTransaction transactions = 1;
+  int32 total_count = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+  int32 total_pages = 5;
+}
+
+// Admin: reconciliation
+message AdminGetFamilyReconciliationRequest { string family_id = 1; }
+message ReturnAllocationsToPoolRequest {
+  string family_id = 1;
+}
+
+message ReturnAllocationsToPoolResponse {
+  double amount_returned = 1;
+  int32 members_affected = 2;
+  double pool_after = 3;
+  // already_clear: nothing was allocated, so the call changed nothing. An owner
+  // tapping twice must not double the pool.
+  bool already_clear = 4;
+  string message = 5;
+}
+
+message AdminReconcileFamilyAccountRequest { string family_id = 1; }
+
+message AdminRepairFamilyReservationRequest {
+  string family_id = 1;
+  // reference is the reservation's own reference, as the manual-review audit row
+  // and the reconciliation view report it.
+  string reference = 2;
+  string admin_user_id = 3;
+  // reason is REQUIRED. This writes to a money ledger, and the audit row has to
+  // say why; the service refuses an empty one.
+  string reason = 4;
+}
+
+message AdminRepairFamilyReservationResponse {
+  string reference = 1;
+  double amount = 2;
+  // already_repaired: the reservation was already terminal and nothing changed.
+  // An operator retrying after a timeout must not move money twice.
+  bool already_repaired = 3;
+  double pool_before = 4;
+  double pool_after = 5;
+  // The figures the repair balanced against, so the console can show the
+  // arithmetic rather than just an outcome.
+  double va_available = 6;
+  double ledger_after = 7;
+  string message = 8;
+}
+message FamilyReconciliationResult {
+  string family_id = 1;
+  string currency = 2;
+  double va_available = 3;
+  double ledger_pool_plus_alloc = 4;
+  double drift_amount = 5;
+  string status = 6;
+  string notes = 7;
+  string recon_at = 8;
+}
+message AdminGetFamilyReconciliationResponse {
+  FamilyReconciliationResult latest = 1;
+  repeated FamilyReconciliationResult history = 2;
+}
+
+// Admin: audit log
+message AdminGetFamilyAuditLogRequest {
+  string family_id = 1;
+  int32  page = 2;
+  int32  page_size = 3;
+}
+message FamilyAuditLogEntry {
+  string id = 1;
+  string family_id = 2;
+  string action = 3;
+  string actor_id = 4;
+  string actor_type = 5;
+  string target_id = 6;
+  string reason = 7;
+  string metadata_json = 8;
+  string created_at = 9;
+}
+message AdminGetFamilyAuditLogResponse {
+  repeated FamilyAuditLogEntry entries = 1;
+  int32 total_count = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+  int32 total_pages = 5;
 }
 
 // Admin: list
@@ -387,8 +815,8 @@ message CreateFamilyAccountRequest {
   string initial_currency = 3; // Optional: Currency code (default: USD)
   double initial_funding = 4; // Optional: Initial amount to fund the account with
   bool allow_member_contributions = 5; // NEW: Allow members to contribute (default: true)
-  string funding_policy = 6; // any_member (default) | creator_only | specific_members
-  repeated string specific_member_ids = 7; // member ids allowed to fund when funding_policy=specific_members
+  string funding_policy = 6; // Optional: who may fund the pool — any_member (default) | creator_only | specific_members
+  repeated string specific_member_ids = 7; // Optional: member ids allowed to fund when funding_policy=specific_members
 }
 
 message CreateFamilyAccountResponse {
@@ -602,7 +1030,15 @@ message AllocateFundsRequest {
   string member_id = 2; // Required: Member ID
   double amount = 3; // Required: Amount to allocate
   string description = 4; // Optional: Description of the allocation
-  string idempotency_key = 5; // Optional: dedup key
+  string idempotency_key = 5; // Optional: dedup key so a retry never double-allocates
+
+  // Transaction-PIN confirmation token, obtained by exchanging the user's PIN
+  // with auth-service. Bound to (user, transaction_id) so a token captured from
+  // one request cannot authorise a different, larger one. The PIN itself never
+  // crosses this boundary.
+  string pin_token = 6;
+  // The id the token was minted against. Must match, or the token is refused.
+  string pin_transaction_id = 7;
 }
 
 message AllocateFundsResponse {
@@ -675,7 +1111,15 @@ message ProcessMemberContributionRequest {
   string member_id = 2; // Required: Contributing member's ID
   double amount = 3; // Required: Contribution amount
   string description = 4; // Optional: Description of the contribution
-  string idempotency_key = 5; // Required for money-safety: client-generated UUID
+  string idempotency_key = 5; // Required for money-safety: client-generated UUID; the same key never double-debits the contributor
+
+  // Transaction-PIN confirmation token, obtained by exchanging the user's PIN
+  // with auth-service. Bound to (user, transaction_id) so a token captured from
+  // one request cannot authorise a different, larger one. The PIN itself never
+  // crosses this boundary.
+  string pin_token = 6;
+  // The id the token was minted against. Must match, or the token is refused.
+  string pin_transaction_id = 7;
 }
 
 message ProcessMemberContributionResponse {
@@ -684,15 +1128,109 @@ message ProcessMemberContributionResponse {
   string message = 3; // Success message
 }
 
+// Service-internal: authorize a member spend from the family virtual account.
+message AuthorizeFamilySpendRequest {
+  string virtual_account_id = 1; // accounts-table family virtual account id (the source)
+  string spender_user_id = 2;    // the user attempting the spend
+  double amount = 3;             // spend amount (major units)
+  string reference = 4;          // payment reference — the reservation/idempotency anchor
+}
+
+message AuthorizeFamilySpendResponse {
+  bool authorized = 1;
+  string reason = 2;        // human-readable denial reason when not authorized
+  string family_id = 3;     // resolved family group id (for the subsequent record call)
+  string member_id = 4;     // resolved spending member id
+  string distribution_mode = 5; // shared_pool | equal_split | custom_allocation
+  // A MACHINE-READABLE reason, so a caller never has to parse `reason`.
+  //
+  // Every family refusal used to reach the customer as "Something went wrong":
+  // the prose fell through every substring case in the bill handler's error
+  // mapper and landed on codes.Internal. Measured — 4 of 5 refusals did this —
+  // so after typing a transaction PIN a member whose allocation was ₦20 short
+  // was told the system had broken.
+  //
+  // Values (stable; add, never repurpose):
+  //   pool_insufficient      the shared pool is short — ANYONE can top it up
+  //   allocation_insufficient the member's own allocation is short — only an
+  //                          admin can raise it
+  //   per_transaction_limit  over the member's per-transaction cap
+  //   daily_limit            over the member's daily cap
+  //   monthly_limit          over the member's monthly cap
+  //   member_inactive        membership is not active
+  //   not_a_member           the spender is not in this family
+  //   account_frozen         the family account is frozen
+  // Empty when authorized, or for a refusal predating this field.
+  string reason_code = 6;
+  // The figure the refusal turns on, so the client can say "you have ₦20"
+  // rather than only "not enough". Zero when not applicable.
+  double available_amount = 7;
+  // The cap that was exceeded, for the three limit codes. Zero otherwise.
+  double limit_amount = 8;
+}
+
+// Service-internal: record a completed family spend (after the real debit).
+message RecordFamilySpendRequest {
+  string family_id = 1;
+  string member_id = 2;
+  double amount = 3;
+  string merchant_name = 4;   // optional: recipient / merchant label
+  string transaction_id = 5;  // idempotency key (the payment reference)
+}
+
+message RecordFamilySpendResponse {
+  bool recorded = 1;
+  string message = 2;
+}
+
+// Service-internal: release a pre-capture reservation (spend failed).
+message ReleaseFamilySpendRequest {
+  string reference = 1; // the payment reference used at authorize time
+}
+message ReleaseFamilySpendResponse {
+  bool released = 1;
+  string message = 2;
+}
+
+message GetFamilySpendByReferenceRequest {
+  string reference = 1;
+}
+message FamilySpendRecord {
+  string reference = 1;
+  string family_id = 2;
+  string member_id = 3;
+  double amount = 4;
+  string currency = 5;
+  string status = 6;     // reserved | captured | released | refunded
+  string mode = 7;
+  string created_at = 8;
+}
+message GetFamilySpendByReferenceResponse {
+  repeated FamilySpendRecord records = 1;
+}
+
+// Service-internal: refund a captured spend (post-charge reversal).
+message RefundFamilySpendRequest {
+  string reference = 1; // the payment reference used at authorize time
+  double amount = 2;    // fallback amount when no reservation row exists
+}
+message RefundFamilySpendResponse {
+  bool refunded = 1;
+  string message = 2;
+}
+
 // Setup Family Account
 message SetupFamilyAccountRequest {
   string family_id = 1;
   FundDistributionMode fund_distribution_mode = 2;
   bool spending_visibility_enabled = 3;
   repeated MemberAllocation allocations = 4;
-  string funding_policy = 5; // any_member | creator_only | specific_members
-  repeated string specific_member_ids = 6;
-  // Optional display name applied during activation (empty = keep current).
+  string funding_policy = 5; // Optional: any_member | creator_only | specific_members
+  repeated string specific_member_ids = 6; // member ids allowed to fund when funding_policy=specific_members
+  // Optional display name applied during activation. Every family account is
+  // named (user request 2026-09-07): the FIRST account is auto-created as
+  // "Family & Friends", and this lets the user name it while setting it up.
+  // Empty = keep the current name. Trimmed; max 50 chars server-side.
   string account_name = 7;
 }
 
@@ -714,6 +1252,31 @@ message UpdateFundDistributionModeRequest {
 }
 
 message UpdateFundDistributionModeResponse {
+  FamilyAccount family_account = 1;
+  string message = 2;
+}
+
+message UpdateFamilySettingsRequest {
+  string family_id = 1;
+  // PARTIAL UPDATE. Each field is independently optional so a client changing
+  // one setting cannot silently reset the other — a plain `bool` would send
+  // false when unset and quietly disable spending visibility for anyone who
+  // only meant to change the funding policy.
+  optional bool spending_visibility_enabled = 2;
+  // "" = leave unchanged. Same convention SetupFamilyAccount already uses.
+  // any_member | creator_only | specific_members (normalised server-side).
+  string funding_policy = 3;
+  // Required when funding_policy=specific_members; ignored otherwise. Replaces
+  // the whole allow-list, so an empty list with that policy means "nobody but
+  // the creator" rather than "unchanged".
+  repeated string specific_member_ids = 4;
+  // Per-account invitation lifetime in days. Absent = leave unchanged; 0 = clear
+  // the override and follow the platform default again. Clamped server-side to
+  // [1, 90].
+  optional int32 invitation_expiry_days = 5;
+}
+
+message UpdateFamilySettingsResponse {
   FamilyAccount family_account = 1;
   string message = 2;
 }
@@ -741,11 +1304,15 @@ message FamilyAccount {
   bool setup_completed = 17;
   bool spending_visibility_enabled = 18;
   string currency = 19; // Account currency (e.g. NGN) — drives the UI symbol
-  string virtual_account_id = 20; // family virtual account id (real-money pool); spend FROM this
-  string funding_policy = 21;
-  string account_number = 22;
-  string bank_name = 23;
-  string virtual_account_status = 24; // processing | active | frozen
+  string virtual_account_id = 20; // accounts-table family virtual account id (the real-money pool); members spend FROM this
+  string funding_policy = 21; // who may fund the pool: any_member | creator_only | specific_members
+  string account_number = 22; // the pool virtual account's real NUBAN (once provisioned)
+  string bank_name = 23; // the pool virtual account's bank name (once provisioned)
+  string virtual_account_status = 24; // pool account-row status: processing (NUBAN minting) | active | frozen
+  // Per-account invitation lifetime override, in days. 0 = no override, this
+  // family follows the platform default. Sent so the app can show whether the
+  // family overrides it and what the current window is.
+  int32 invitation_expiry_days = 25;
 }
 
 // Family Member
@@ -775,7 +1342,11 @@ message FamilyMember {
   double per_transaction_limit = 23; // NEW: Maximum amount per single transaction (0 = unlimited)
   double allocation_percentage_cap = 24; // NEW: Maximum % of total pool that can be allocated to this member
   double remaining_balance = 25; // NEW: Calculated: allocated_balance - spent_today
-  bool can_contribute = 26;
+  bool can_contribute = 26; // Whether this member may fund the pool when funding_policy=specific_members
+  // True when this member LEFT rather than being removed. Both land on
+  // invitation_status='removed' (Leave reuses the removal path for its
+  // row-locked refund), so without this the two are indistinguishable.
+  bool self_exited = 27;
 }
 
 // Family Transaction
@@ -818,7 +1389,7 @@ message FamilyAccountSummary {
   int32 transaction_count_this_month = 4;
   repeated FamilyMemberSpending top_spenders = 5; // Top 5 spenders this month
   double total_contributed = 6; // Total contributed to the pool this month
-  repeated FamilyMemberSpending top_funders = 7; // Top 5 funders this month
+  repeated FamilyMemberSpending top_funders = 7; // Top 5 funders this month (amount_spent = amount contributed)
 }
 
 // Family Member Spending Stats

@@ -488,6 +488,40 @@ final $typed_data.Uint8List adminGetFamilyReconciliationRequestDescriptor =
         'CiNBZG1pbkdldEZhbWlseVJlY29uY2lsaWF0aW9uUmVxdWVzdBIbCglmYW1pbHlfaWQYASABKA'
         'lSCGZhbWlseUlk');
 
+@$core.Deprecated('Use returnAllocationsToPoolRequestDescriptor instead')
+const ReturnAllocationsToPoolRequest$json = {
+  '1': 'ReturnAllocationsToPoolRequest',
+  '2': [
+    {'1': 'family_id', '3': 1, '4': 1, '5': 9, '10': 'familyId'},
+  ],
+};
+
+/// Descriptor for `ReturnAllocationsToPoolRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List returnAllocationsToPoolRequestDescriptor =
+    $convert.base64Decode(
+        'Ch5SZXR1cm5BbGxvY2F0aW9uc1RvUG9vbFJlcXVlc3QSGwoJZmFtaWx5X2lkGAEgASgJUghmYW'
+        '1pbHlJZA==');
+
+@$core.Deprecated('Use returnAllocationsToPoolResponseDescriptor instead')
+const ReturnAllocationsToPoolResponse$json = {
+  '1': 'ReturnAllocationsToPoolResponse',
+  '2': [
+    {'1': 'amount_returned', '3': 1, '4': 1, '5': 1, '10': 'amountReturned'},
+    {'1': 'members_affected', '3': 2, '4': 1, '5': 5, '10': 'membersAffected'},
+    {'1': 'pool_after', '3': 3, '4': 1, '5': 1, '10': 'poolAfter'},
+    {'1': 'already_clear', '3': 4, '4': 1, '5': 8, '10': 'alreadyClear'},
+    {'1': 'message', '3': 5, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `ReturnAllocationsToPoolResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List returnAllocationsToPoolResponseDescriptor =
+    $convert.base64Decode(
+        'Ch9SZXR1cm5BbGxvY2F0aW9uc1RvUG9vbFJlc3BvbnNlEicKD2Ftb3VudF9yZXR1cm5lZBgBIA'
+        'EoAVIOYW1vdW50UmV0dXJuZWQSKQoQbWVtYmVyc19hZmZlY3RlZBgCIAEoBVIPbWVtYmVyc0Fm'
+        'ZmVjdGVkEh0KCnBvb2xfYWZ0ZXIYAyABKAFSCXBvb2xBZnRlchIjCg1hbHJlYWR5X2NsZWFyGA'
+        'QgASgIUgxhbHJlYWR5Q2xlYXISGAoHbWVzc2FnZRgFIAEoCVIHbWVzc2FnZQ==');
+
 @$core.Deprecated('Use adminReconcileFamilyAccountRequestDescriptor instead')
 const AdminReconcileFamilyAccountRequest$json = {
   '1': 'AdminReconcileFamilyAccountRequest',
@@ -501,6 +535,48 @@ final $typed_data.Uint8List adminReconcileFamilyAccountRequestDescriptor =
     $convert.base64Decode(
         'CiJBZG1pblJlY29uY2lsZUZhbWlseUFjY291bnRSZXF1ZXN0EhsKCWZhbWlseV9pZBgBIAEoCV'
         'IIZmFtaWx5SWQ=');
+
+@$core.Deprecated('Use adminRepairFamilyReservationRequestDescriptor instead')
+const AdminRepairFamilyReservationRequest$json = {
+  '1': 'AdminRepairFamilyReservationRequest',
+  '2': [
+    {'1': 'family_id', '3': 1, '4': 1, '5': 9, '10': 'familyId'},
+    {'1': 'reference', '3': 2, '4': 1, '5': 9, '10': 'reference'},
+    {'1': 'admin_user_id', '3': 3, '4': 1, '5': 9, '10': 'adminUserId'},
+    {'1': 'reason', '3': 4, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `AdminRepairFamilyReservationRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminRepairFamilyReservationRequestDescriptor =
+    $convert.base64Decode(
+        'CiNBZG1pblJlcGFpckZhbWlseVJlc2VydmF0aW9uUmVxdWVzdBIbCglmYW1pbHlfaWQYASABKA'
+        'lSCGZhbWlseUlkEhwKCXJlZmVyZW5jZRgCIAEoCVIJcmVmZXJlbmNlEiIKDWFkbWluX3VzZXJf'
+        'aWQYAyABKAlSC2FkbWluVXNlcklkEhYKBnJlYXNvbhgEIAEoCVIGcmVhc29u');
+
+@$core.Deprecated('Use adminRepairFamilyReservationResponseDescriptor instead')
+const AdminRepairFamilyReservationResponse$json = {
+  '1': 'AdminRepairFamilyReservationResponse',
+  '2': [
+    {'1': 'reference', '3': 1, '4': 1, '5': 9, '10': 'reference'},
+    {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
+    {'1': 'already_repaired', '3': 3, '4': 1, '5': 8, '10': 'alreadyRepaired'},
+    {'1': 'pool_before', '3': 4, '4': 1, '5': 1, '10': 'poolBefore'},
+    {'1': 'pool_after', '3': 5, '4': 1, '5': 1, '10': 'poolAfter'},
+    {'1': 'va_available', '3': 6, '4': 1, '5': 1, '10': 'vaAvailable'},
+    {'1': 'ledger_after', '3': 7, '4': 1, '5': 1, '10': 'ledgerAfter'},
+    {'1': 'message', '3': 8, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `AdminRepairFamilyReservationResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminRepairFamilyReservationResponseDescriptor = $convert.base64Decode(
+    'CiRBZG1pblJlcGFpckZhbWlseVJlc2VydmF0aW9uUmVzcG9uc2USHAoJcmVmZXJlbmNlGAEgAS'
+    'gJUglyZWZlcmVuY2USFgoGYW1vdW50GAIgASgBUgZhbW91bnQSKQoQYWxyZWFkeV9yZXBhaXJl'
+    'ZBgDIAEoCFIPYWxyZWFkeVJlcGFpcmVkEh8KC3Bvb2xfYmVmb3JlGAQgASgBUgpwb29sQmVmb3'
+    'JlEh0KCnBvb2xfYWZ0ZXIYBSABKAFSCXBvb2xBZnRlchIhCgx2YV9hdmFpbGFibGUYBiABKAFS'
+    'C3ZhQXZhaWxhYmxlEiEKDGxlZGdlcl9hZnRlchgHIAEoAVILbGVkZ2VyQWZ0ZXISGAoHbWVzc2'
+    'FnZRgIIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use familyReconciliationResultDescriptor instead')
 const FamilyReconciliationResult$json = {
@@ -2091,6 +2167,9 @@ const AuthorizeFamilySpendResponse$json = {
       '5': 9,
       '10': 'distributionMode'
     },
+    {'1': 'reason_code', '3': 6, '4': 1, '5': 9, '10': 'reasonCode'},
+    {'1': 'available_amount', '3': 7, '4': 1, '5': 1, '10': 'availableAmount'},
+    {'1': 'limit_amount', '3': 8, '4': 1, '5': 1, '10': 'limitAmount'},
   ],
 };
 
@@ -2099,7 +2178,9 @@ final $typed_data.Uint8List authorizeFamilySpendResponseDescriptor = $convert.ba
     'ChxBdXRob3JpemVGYW1pbHlTcGVuZFJlc3BvbnNlEh4KCmF1dGhvcml6ZWQYASABKAhSCmF1dG'
     'hvcml6ZWQSFgoGcmVhc29uGAIgASgJUgZyZWFzb24SGwoJZmFtaWx5X2lkGAMgASgJUghmYW1p'
     'bHlJZBIbCgltZW1iZXJfaWQYBCABKAlSCG1lbWJlcklkEisKEWRpc3RyaWJ1dGlvbl9tb2RlGA'
-    'UgASgJUhBkaXN0cmlidXRpb25Nb2Rl');
+    'UgASgJUhBkaXN0cmlidXRpb25Nb2RlEh8KC3JlYXNvbl9jb2RlGAYgASgJUgpyZWFzb25Db2Rl'
+    'EikKEGF2YWlsYWJsZV9hbW91bnQYByABKAFSD2F2YWlsYWJsZUFtb3VudBIhCgxsaW1pdF9hbW'
+    '91bnQYCCABKAFSC2xpbWl0QW1vdW50');
 
 @$core.Deprecated('Use recordFamilySpendRequestDescriptor instead')
 const RecordFamilySpendRequest$json = {

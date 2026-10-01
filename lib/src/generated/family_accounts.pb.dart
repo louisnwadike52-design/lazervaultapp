@@ -2015,6 +2015,179 @@ class AdminGetFamilyReconciliationRequest extends $pb.GeneratedMessage {
   void clearFamilyId() => $_clearField(1);
 }
 
+class ReturnAllocationsToPoolRequest extends $pb.GeneratedMessage {
+  factory ReturnAllocationsToPoolRequest({
+    $core.String? familyId,
+  }) {
+    final result = create();
+    if (familyId != null) result.familyId = familyId;
+    return result;
+  }
+
+  ReturnAllocationsToPoolRequest._();
+
+  factory ReturnAllocationsToPoolRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ReturnAllocationsToPoolRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ReturnAllocationsToPoolRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'familyId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ReturnAllocationsToPoolRequest clone() =>
+      ReturnAllocationsToPoolRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ReturnAllocationsToPoolRequest copyWith(
+          void Function(ReturnAllocationsToPoolRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as ReturnAllocationsToPoolRequest))
+          as ReturnAllocationsToPoolRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ReturnAllocationsToPoolRequest create() =>
+      ReturnAllocationsToPoolRequest._();
+  @$core.override
+  ReturnAllocationsToPoolRequest createEmptyInstance() => create();
+  static $pb.PbList<ReturnAllocationsToPoolRequest> createRepeated() =>
+      $pb.PbList<ReturnAllocationsToPoolRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ReturnAllocationsToPoolRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ReturnAllocationsToPoolRequest>(create);
+  static ReturnAllocationsToPoolRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get familyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set familyId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyId() => $_clearField(1);
+}
+
+class ReturnAllocationsToPoolResponse extends $pb.GeneratedMessage {
+  factory ReturnAllocationsToPoolResponse({
+    $core.double? amountReturned,
+    $core.int? membersAffected,
+    $core.double? poolAfter,
+    $core.bool? alreadyClear,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (amountReturned != null) result.amountReturned = amountReturned;
+    if (membersAffected != null) result.membersAffected = membersAffected;
+    if (poolAfter != null) result.poolAfter = poolAfter;
+    if (alreadyClear != null) result.alreadyClear = alreadyClear;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  ReturnAllocationsToPoolResponse._();
+
+  factory ReturnAllocationsToPoolResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ReturnAllocationsToPoolResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ReturnAllocationsToPoolResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..a<$core.double>(
+        1, _omitFieldNames ? '' : 'amountReturned', $pb.PbFieldType.OD)
+    ..a<$core.int>(
+        2, _omitFieldNames ? '' : 'membersAffected', $pb.PbFieldType.O3)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'poolAfter', $pb.PbFieldType.OD)
+    ..aOB(4, _omitFieldNames ? '' : 'alreadyClear')
+    ..aOS(5, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ReturnAllocationsToPoolResponse clone() =>
+      ReturnAllocationsToPoolResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ReturnAllocationsToPoolResponse copyWith(
+          void Function(ReturnAllocationsToPoolResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as ReturnAllocationsToPoolResponse))
+          as ReturnAllocationsToPoolResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ReturnAllocationsToPoolResponse create() =>
+      ReturnAllocationsToPoolResponse._();
+  @$core.override
+  ReturnAllocationsToPoolResponse createEmptyInstance() => create();
+  static $pb.PbList<ReturnAllocationsToPoolResponse> createRepeated() =>
+      $pb.PbList<ReturnAllocationsToPoolResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ReturnAllocationsToPoolResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ReturnAllocationsToPoolResponse>(
+          create);
+  static ReturnAllocationsToPoolResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.double get amountReturned => $_getN(0);
+  @$pb.TagNumber(1)
+  set amountReturned($core.double value) => $_setDouble(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasAmountReturned() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAmountReturned() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get membersAffected => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set membersAffected($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMembersAffected() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMembersAffected() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get poolAfter => $_getN(2);
+  @$pb.TagNumber(3)
+  set poolAfter($core.double value) => $_setDouble(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasPoolAfter() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPoolAfter() => $_clearField(3);
+
+  /// already_clear: nothing was allocated, so the call changed nothing. An owner
+  /// tapping twice must not double the pool.
+  @$pb.TagNumber(4)
+  $core.bool get alreadyClear => $_getBF(3);
+  @$pb.TagNumber(4)
+  set alreadyClear($core.bool value) => $_setBool(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasAlreadyClear() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAlreadyClear() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get message => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set message($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasMessage() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearMessage() => $_clearField(5);
+}
+
 class AdminReconcileFamilyAccountRequest extends $pb.GeneratedMessage {
   factory AdminReconcileFamilyAccountRequest({
     $core.String? familyId,
@@ -2075,6 +2248,261 @@ class AdminReconcileFamilyAccountRequest extends $pb.GeneratedMessage {
   $core.bool hasFamilyId() => $_has(0);
   @$pb.TagNumber(1)
   void clearFamilyId() => $_clearField(1);
+}
+
+class AdminRepairFamilyReservationRequest extends $pb.GeneratedMessage {
+  factory AdminRepairFamilyReservationRequest({
+    $core.String? familyId,
+    $core.String? reference,
+    $core.String? adminUserId,
+    $core.String? reason,
+  }) {
+    final result = create();
+    if (familyId != null) result.familyId = familyId;
+    if (reference != null) result.reference = reference;
+    if (adminUserId != null) result.adminUserId = adminUserId;
+    if (reason != null) result.reason = reason;
+    return result;
+  }
+
+  AdminRepairFamilyReservationRequest._();
+
+  factory AdminRepairFamilyReservationRequest.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminRepairFamilyReservationRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminRepairFamilyReservationRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'familyId')
+    ..aOS(2, _omitFieldNames ? '' : 'reference')
+    ..aOS(3, _omitFieldNames ? '' : 'adminUserId')
+    ..aOS(4, _omitFieldNames ? '' : 'reason')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminRepairFamilyReservationRequest clone() =>
+      AdminRepairFamilyReservationRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminRepairFamilyReservationRequest copyWith(
+          void Function(AdminRepairFamilyReservationRequest) updates) =>
+      super.copyWith((message) =>
+              updates(message as AdminRepairFamilyReservationRequest))
+          as AdminRepairFamilyReservationRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminRepairFamilyReservationRequest create() =>
+      AdminRepairFamilyReservationRequest._();
+  @$core.override
+  AdminRepairFamilyReservationRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminRepairFamilyReservationRequest> createRepeated() =>
+      $pb.PbList<AdminRepairFamilyReservationRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminRepairFamilyReservationRequest getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<
+          AdminRepairFamilyReservationRequest>(create);
+  static AdminRepairFamilyReservationRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get familyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set familyId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyId() => $_clearField(1);
+
+  /// reference is the reservation's own reference, as the manual-review audit row
+  /// and the reconciliation view report it.
+  @$pb.TagNumber(2)
+  $core.String get reference => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set reference($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasReference() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReference() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get adminUserId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set adminUserId($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasAdminUserId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAdminUserId() => $_clearField(3);
+
+  /// reason is REQUIRED. This writes to a money ledger, and the audit row has to
+  /// say why; the service refuses an empty one.
+  @$pb.TagNumber(4)
+  $core.String get reason => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set reason($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasReason() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearReason() => $_clearField(4);
+}
+
+class AdminRepairFamilyReservationResponse extends $pb.GeneratedMessage {
+  factory AdminRepairFamilyReservationResponse({
+    $core.String? reference,
+    $core.double? amount,
+    $core.bool? alreadyRepaired,
+    $core.double? poolBefore,
+    $core.double? poolAfter,
+    $core.double? vaAvailable,
+    $core.double? ledgerAfter,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (reference != null) result.reference = reference;
+    if (amount != null) result.amount = amount;
+    if (alreadyRepaired != null) result.alreadyRepaired = alreadyRepaired;
+    if (poolBefore != null) result.poolBefore = poolBefore;
+    if (poolAfter != null) result.poolAfter = poolAfter;
+    if (vaAvailable != null) result.vaAvailable = vaAvailable;
+    if (ledgerAfter != null) result.ledgerAfter = ledgerAfter;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  AdminRepairFamilyReservationResponse._();
+
+  factory AdminRepairFamilyReservationResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminRepairFamilyReservationResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminRepairFamilyReservationResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'reference')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOB(3, _omitFieldNames ? '' : 'alreadyRepaired')
+    ..a<$core.double>(
+        4, _omitFieldNames ? '' : 'poolBefore', $pb.PbFieldType.OD)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'poolAfter', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        6, _omitFieldNames ? '' : 'vaAvailable', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        7, _omitFieldNames ? '' : 'ledgerAfter', $pb.PbFieldType.OD)
+    ..aOS(8, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminRepairFamilyReservationResponse clone() =>
+      AdminRepairFamilyReservationResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminRepairFamilyReservationResponse copyWith(
+          void Function(AdminRepairFamilyReservationResponse) updates) =>
+      super.copyWith((message) =>
+              updates(message as AdminRepairFamilyReservationResponse))
+          as AdminRepairFamilyReservationResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminRepairFamilyReservationResponse create() =>
+      AdminRepairFamilyReservationResponse._();
+  @$core.override
+  AdminRepairFamilyReservationResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminRepairFamilyReservationResponse> createRepeated() =>
+      $pb.PbList<AdminRepairFamilyReservationResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminRepairFamilyReservationResponse getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<
+          AdminRepairFamilyReservationResponse>(create);
+  static AdminRepairFamilyReservationResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get reference => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set reference($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasReference() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearReference() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get amount => $_getN(1);
+  @$pb.TagNumber(2)
+  set amount($core.double value) => $_setDouble(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAmount() => $_clearField(2);
+
+  /// already_repaired: the reservation was already terminal and nothing changed.
+  /// An operator retrying after a timeout must not move money twice.
+  @$pb.TagNumber(3)
+  $core.bool get alreadyRepaired => $_getBF(2);
+  @$pb.TagNumber(3)
+  set alreadyRepaired($core.bool value) => $_setBool(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasAlreadyRepaired() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAlreadyRepaired() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get poolBefore => $_getN(3);
+  @$pb.TagNumber(4)
+  set poolBefore($core.double value) => $_setDouble(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasPoolBefore() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPoolBefore() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.double get poolAfter => $_getN(4);
+  @$pb.TagNumber(5)
+  set poolAfter($core.double value) => $_setDouble(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasPoolAfter() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPoolAfter() => $_clearField(5);
+
+  /// The figures the repair balanced against, so the console can show the
+  /// arithmetic rather than just an outcome.
+  @$pb.TagNumber(6)
+  $core.double get vaAvailable => $_getN(5);
+  @$pb.TagNumber(6)
+  set vaAvailable($core.double value) => $_setDouble(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasVaAvailable() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearVaAvailable() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.double get ledgerAfter => $_getN(6);
+  @$pb.TagNumber(7)
+  set ledgerAfter($core.double value) => $_setDouble(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasLedgerAfter() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearLedgerAfter() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get message => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set message($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasMessage() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearMessage() => $_clearField(8);
 }
 
 class FamilyReconciliationResult extends $pb.GeneratedMessage {
@@ -8136,6 +8564,9 @@ class AuthorizeFamilySpendResponse extends $pb.GeneratedMessage {
     $core.String? familyId,
     $core.String? memberId,
     $core.String? distributionMode,
+    $core.String? reasonCode,
+    $core.double? availableAmount,
+    $core.double? limitAmount,
   }) {
     final result = create();
     if (authorized != null) result.authorized = authorized;
@@ -8143,6 +8574,9 @@ class AuthorizeFamilySpendResponse extends $pb.GeneratedMessage {
     if (familyId != null) result.familyId = familyId;
     if (memberId != null) result.memberId = memberId;
     if (distributionMode != null) result.distributionMode = distributionMode;
+    if (reasonCode != null) result.reasonCode = reasonCode;
+    if (availableAmount != null) result.availableAmount = availableAmount;
+    if (limitAmount != null) result.limitAmount = limitAmount;
     return result;
   }
 
@@ -8164,6 +8598,11 @@ class AuthorizeFamilySpendResponse extends $pb.GeneratedMessage {
     ..aOS(3, _omitFieldNames ? '' : 'familyId')
     ..aOS(4, _omitFieldNames ? '' : 'memberId')
     ..aOS(5, _omitFieldNames ? '' : 'distributionMode')
+    ..aOS(6, _omitFieldNames ? '' : 'reasonCode')
+    ..a<$core.double>(
+        7, _omitFieldNames ? '' : 'availableAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        8, _omitFieldNames ? '' : 'limitAmount', $pb.PbFieldType.OD)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -8235,6 +8674,55 @@ class AuthorizeFamilySpendResponse extends $pb.GeneratedMessage {
   $core.bool hasDistributionMode() => $_has(4);
   @$pb.TagNumber(5)
   void clearDistributionMode() => $_clearField(5);
+
+  /// A MACHINE-READABLE reason, so a caller never has to parse `reason`.
+  ///
+  /// Every family refusal used to reach the customer as "Something went wrong":
+  /// the prose fell through every substring case in the bill handler's error
+  /// mapper and landed on codes.Internal. Measured — 4 of 5 refusals did this —
+  /// so after typing a transaction PIN a member whose allocation was ₦20 short
+  /// was told the system had broken.
+  ///
+  /// Values (stable; add, never repurpose):
+  ///   pool_insufficient      the shared pool is short — ANYONE can top it up
+  ///   allocation_insufficient the member's own allocation is short — only an
+  ///                          admin can raise it
+  ///   per_transaction_limit  over the member's per-transaction cap
+  ///   daily_limit            over the member's daily cap
+  ///   monthly_limit          over the member's monthly cap
+  ///   member_inactive        membership is not active
+  ///   not_a_member           the spender is not in this family
+  ///   account_frozen         the family account is frozen
+  /// Empty when authorized, or for a refusal predating this field.
+  @$pb.TagNumber(6)
+  $core.String get reasonCode => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set reasonCode($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasReasonCode() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearReasonCode() => $_clearField(6);
+
+  /// The figure the refusal turns on, so the client can say "you have ₦20"
+  /// rather than only "not enough". Zero when not applicable.
+  @$pb.TagNumber(7)
+  $core.double get availableAmount => $_getN(6);
+  @$pb.TagNumber(7)
+  set availableAmount($core.double value) => $_setDouble(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasAvailableAmount() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearAvailableAmount() => $_clearField(7);
+
+  /// The cap that was exceeded, for the three limit codes. Zero otherwise.
+  @$pb.TagNumber(8)
+  $core.double get limitAmount => $_getN(7);
+  @$pb.TagNumber(8)
+  set limitAmount($core.double value) => $_setDouble(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasLimitAmount() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearLimitAmount() => $_clearField(8);
 }
 
 /// Service-internal: record a completed family spend (after the real debit).

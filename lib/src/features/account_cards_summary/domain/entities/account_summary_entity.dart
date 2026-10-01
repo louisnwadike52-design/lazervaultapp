@@ -235,6 +235,20 @@ class AccountSummaryEntity extends Equatable {
     return fs == 'frozen' || fs == 'suspended';
   }
 
+  /// Whether this wallet has been retired.
+  ///
+  /// A closed row is a tombstone: migration 037 retires duplicate wallets by
+  /// closing them rather than deleting them, because `transactions` references
+  /// the row. Those tombstones are not accounts the user has, and rendering one
+  /// beside its live twin is what showed "Personal" twice in a locale.
+  ///
+  /// Family cards carry their lifecycle on [familyStatus] — a closed family
+  /// GROUP is closed even when the pooled virtual account row is not.
+  bool get isClosed {
+    if (status.toLowerCase() == 'closed') return true;
+    return (familyStatus ?? '').toLowerCase() == 'closed';
+  }
+
   /// Get the display name for the account type — this is the account TYPE
   /// ("Personal", "Investment", "Savings", "Family & Friends", …), used to
   /// DIFFERENTIATE accounts in every picker/dropdown (Beam, batch, move-money,

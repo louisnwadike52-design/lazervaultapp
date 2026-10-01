@@ -13,6 +13,7 @@ import 'package:intl/intl.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/family_account/data/datasources/family_account_remote_data_source.dart';
 import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
@@ -594,7 +595,15 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 _showContributeDialog(account);
               },
             ),
-            if (isAdmin) ...[
+            // Allocation is meaningless on a SHARED POOL: every member spends
+            // the one pool, the spend gate never reads a member allocation, and
+            // accounts-service refuses the call outright
+            // (family_allocation_mode_guard). Offering it here only produced an
+            // error after the fact — or, before that guard existed, money
+            // stranded in an allocation nobody could spend.
+            if (isAdmin &&
+                account.fundDistributionMode !=
+                    FundDistributionMode.sharedPool) ...[
               SizedBox(height: 12.h),
               _fundOptionTile(
                 icon: Icons.groups_2_outlined,
@@ -1556,6 +1565,80 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         ],
       ),
     );
+  }
+
+  /// Ask before sweeping member allocations back into the shared pool.
+  ///
+  /// Confirmed on purpose: it is a visible change to how the account's money is
+  /// presented to every member, even though nothing leaves the account. The
+  /// amount is named so the admin is agreeing to a number, not a verb.
+  Future<void> _confirmReturnAllocations(FamilyAccount account) async {
+    final symbol = CurrencySymbols.currentSymbol;
+    final amount = account.totalAllocatedBalance;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1430),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        title: Text('Return $symbol${amount.toStringAsFixed(2)} to the pool?',
+            style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 17.sp,
+                fontWeight: FontWeight.w700)),
+        content: Text(
+          'This account shares one pool, so money held as a member allocation '
+          "can't be spent by anyone. Returning it puts it back in the shared "
+          'pool where every member can use it.\n\n'
+          'No money leaves the account.',
+          style: GoogleFonts.inter(
+              color: Colors.white70, fontSize: 13.5.sp, height: 1.45),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text('Cancel',
+                style: GoogleFonts.inter(color: Colors.white60)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: _kFamilyPurpleText,
+                foregroundColor: Colors.white),
+            child: Text('Return to pool',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+
+    try {
+      final returned = await serviceLocator<FamilyAccountRemoteDataSource>()
+          .returnAllocationsToPool(familyId: account.id);
+      if (!mounted) return;
+      // Re-read rather than patching local state: the pool, the allocated
+      // total and every member row all moved, and the server is the only thing
+      // that knows the result of a concurrent spend landing alongside this.
+      _cubit.loadFamilyAccount(account.id);
+      Get.snackbar(
+        'Returned to the pool',
+        '$symbol${returned.toStringAsFixed(2)} is back in the shared pool.',
+        backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.95),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Get.snackbar(
+        'Could not return the allocation',
+        e.toString().replaceAll('Exception:', '').trim(),
+        backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.95),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 5),
+      );
+    }
   }
 
   void _showContributeDialog(FamilyAccount account) {
@@ -3361,16 +3444,63 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                       size: 14.sp, color: const Color(0xFFFCD34D)),
                   SizedBox(width: 7.w),
                   Expanded(
-                    child: Text(
-                      '$symbol${account.totalAllocatedBalance.toStringAsFixed(2)} '
-                      'is held as a member allocation and can\'t be spent while '
-                      'this account shares one pool. Contact support to return it '
-                      'to the pool.',
-                      style: GoogleFonts.inter(
-                        fontSize: 11.sp,
-                        height: 1.35,
-                        color: const Color(0xFFFDE68A),
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '$symbol${account.totalAllocatedBalance.toStringAsFixed(2)} '
+                          'is held as a member allocation and can\'t be spent '
+                          'while this account shares one pool.',
+                          style: GoogleFonts.inter(
+                            fontSize: 11.sp,
+                            height: 1.35,
+                            color: const Color(0xFFFDE68A),
+                          ),
+                        ),
+                        // An admin can fix this themselves. It used to say
+                        // "contact support", and support had no way to do it
+                        // either short of removing the member — the only code
+                        // path that moved an allocation back was
+                        // AdminRemoveMember's return_balance_to_pool.
+                        if (account.isCurrentUserAdmin(_currentUserId)) ...[
+                          SizedBox(height: 6.h),
+                          GestureDetector(
+                            key: const Key('return_allocations_to_pool'),
+                            onTap: () => _confirmReturnAllocations(account),
+                            behavior: HitTestBehavior.opaque,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Return it to the pool',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.5.sp,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFFFCD34D),
+                                    decoration: TextDecoration.underline,
+                                    decorationColor: const Color(0xFFFCD34D),
+                                  ),
+                                ),
+                                SizedBox(width: 3.w),
+                                Icon(Icons.chevron_right_rounded,
+                                    size: 14.sp,
+                                    color: const Color(0xFFFCD34D)),
+                              ],
+                            ),
+                          ),
+                        ] else ...[
+                          SizedBox(height: 4.h),
+                          Text(
+                            'An admin of this account can return it to the pool.',
+                            style: GoogleFonts.inter(
+                              fontSize: 10.5.sp,
+                              height: 1.3,
+                              color: const Color(0xFFFDE68A)
+                                  .withValues(alpha: 0.75),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ],

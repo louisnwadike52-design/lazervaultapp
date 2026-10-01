@@ -160,6 +160,26 @@ class FamilyAccountsServiceClient extends $grpc.Client {
     return $createUnaryCall(_$allocateFunds, request, options: options);
   }
 
+  /// Sweep member allocations back into the shared pool.
+  ///
+  /// An account switched to shared_pool while members still held allocations
+  /// strands that money: the spend gate reads the POOL for everyone, so the
+  /// allocated amount is neither spendable by its member nor part of the pool.
+  /// The app used to tell the owner to "contact support", and support had no
+  /// path either short of removing the member.
+  ///
+  /// Admin of the account, not platform admin. Refused outright in a mode where
+  /// allocations ARE spendable — there the allocation is the member's working
+  /// balance and sweeping it would take away what they were given.
+  $grpc.ResponseFuture<$0.ReturnAllocationsToPoolResponse>
+      returnAllocationsToPool(
+    $0.ReturnAllocationsToPoolRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$returnAllocationsToPool, request,
+        options: options);
+  }
+
   /// Generate a virtual card for a family member
   /// Member can request their own card, or admin can generate for them
   $grpc.ResponseFuture<$0.GenerateMemberCardResponse> generateMemberCard(
@@ -413,6 +433,24 @@ class FamilyAccountsServiceClient extends $grpc.Client {
         options: options);
   }
 
+  /// Admin: repair a spend reservation the stale-reservation sweeper refused to
+  /// touch because the real debit had already settled on the pool account.
+  ///
+  /// This is the only supported way to clear a fam_manual_review condition. The
+  /// sweeper is right not to release such a row — that would re-credit the family
+  /// for money which is gone — but until this existed there was no action to take,
+  /// and the FamilyAccountsManualReviewBacklog alert fired forever (506 times for
+  /// one 100.00 reservation stuck since 2026-08-25). Idempotent, and it refuses
+  /// unless the post-repair ledger balances against the pool account.
+  $grpc.ResponseFuture<$0.AdminRepairFamilyReservationResponse>
+      adminRepairFamilyReservation(
+    $0.AdminRepairFamilyReservationRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$adminRepairFamilyReservation, request,
+        options: options);
+  }
+
   /// Admin: immutable audit log of sensitive actions on a family account.
   $grpc.ResponseFuture<$0.AdminGetFamilyAuditLogResponse>
       adminGetFamilyAuditLog(
@@ -551,6 +589,12 @@ class FamilyAccountsServiceClient extends $grpc.Client {
           '/accounts.v1.FamilyAccountsService/AllocateFunds',
           ($0.AllocateFundsRequest value) => value.writeToBuffer(),
           $0.AllocateFundsResponse.fromBuffer);
+  static final _$returnAllocationsToPool = $grpc.ClientMethod<
+          $0.ReturnAllocationsToPoolRequest,
+          $0.ReturnAllocationsToPoolResponse>(
+      '/accounts.v1.FamilyAccountsService/ReturnAllocationsToPool',
+      ($0.ReturnAllocationsToPoolRequest value) => value.writeToBuffer(),
+      $0.ReturnAllocationsToPoolResponse.fromBuffer);
   static final _$generateMemberCard = $grpc.ClientMethod<
           $0.GenerateMemberCardRequest, $0.GenerateMemberCardResponse>(
       '/accounts.v1.FamilyAccountsService/GenerateMemberCard',
@@ -689,6 +733,12 @@ class FamilyAccountsServiceClient extends $grpc.Client {
       '/accounts.v1.FamilyAccountsService/AdminReconcileFamilyAccount',
       ($0.AdminReconcileFamilyAccountRequest value) => value.writeToBuffer(),
       $0.AdminGetFamilyReconciliationResponse.fromBuffer);
+  static final _$adminRepairFamilyReservation = $grpc.ClientMethod<
+          $0.AdminRepairFamilyReservationRequest,
+          $0.AdminRepairFamilyReservationResponse>(
+      '/accounts.v1.FamilyAccountsService/AdminRepairFamilyReservation',
+      ($0.AdminRepairFamilyReservationRequest value) => value.writeToBuffer(),
+      $0.AdminRepairFamilyReservationResponse.fromBuffer);
   static final _$adminGetFamilyAuditLog = $grpc.ClientMethod<
           $0.AdminGetFamilyAuditLogRequest, $0.AdminGetFamilyAuditLogResponse>(
       '/accounts.v1.FamilyAccountsService/AdminGetFamilyAuditLog',
@@ -854,6 +904,15 @@ abstract class FamilyAccountsServiceBase extends $grpc.Service {
             ($core.List<$core.int> value) =>
                 $0.AllocateFundsRequest.fromBuffer(value),
             ($0.AllocateFundsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ReturnAllocationsToPoolRequest,
+            $0.ReturnAllocationsToPoolResponse>(
+        'ReturnAllocationsToPool',
+        returnAllocationsToPool_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.ReturnAllocationsToPoolRequest.fromBuffer(value),
+        ($0.ReturnAllocationsToPoolResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GenerateMemberCardRequest,
             $0.GenerateMemberCardResponse>(
         'GenerateMemberCard',
@@ -1085,6 +1144,16 @@ abstract class FamilyAccountsServiceBase extends $grpc.Service {
             $0.AdminReconcileFamilyAccountRequest.fromBuffer(value),
         ($0.AdminGetFamilyReconciliationResponse value) =>
             value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminRepairFamilyReservationRequest,
+            $0.AdminRepairFamilyReservationResponse>(
+        'AdminRepairFamilyReservation',
+        adminRepairFamilyReservation_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminRepairFamilyReservationRequest.fromBuffer(value),
+        ($0.AdminRepairFamilyReservationResponse value) =>
+            value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.AdminGetFamilyAuditLogRequest,
             $0.AdminGetFamilyAuditLogResponse>(
         'AdminGetFamilyAuditLog',
@@ -1276,6 +1345,15 @@ abstract class FamilyAccountsServiceBase extends $grpc.Service {
 
   $async.Future<$0.AllocateFundsResponse> allocateFunds(
       $grpc.ServiceCall call, $0.AllocateFundsRequest request);
+
+  $async.Future<$0.ReturnAllocationsToPoolResponse> returnAllocationsToPool_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.ReturnAllocationsToPoolRequest> $request) async {
+    return returnAllocationsToPool($call, await $request);
+  }
+
+  $async.Future<$0.ReturnAllocationsToPoolResponse> returnAllocationsToPool(
+      $grpc.ServiceCall call, $0.ReturnAllocationsToPoolRequest request);
 
   $async.Future<$0.GenerateMemberCardResponse> generateMemberCard_Pre(
       $grpc.ServiceCall $call,
@@ -1511,6 +1589,18 @@ abstract class FamilyAccountsServiceBase extends $grpc.Service {
   $async.Future<$0.AdminGetFamilyReconciliationResponse>
       adminReconcileFamilyAccount($grpc.ServiceCall call,
           $0.AdminReconcileFamilyAccountRequest request);
+
+  $async.Future<$0.AdminRepairFamilyReservationResponse>
+      adminRepairFamilyReservation_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.AdminRepairFamilyReservationRequest>
+              $request) async {
+    return adminRepairFamilyReservation($call, await $request);
+  }
+
+  $async.Future<$0.AdminRepairFamilyReservationResponse>
+      adminRepairFamilyReservation($grpc.ServiceCall call,
+          $0.AdminRepairFamilyReservationRequest request);
 
   $async.Future<$0.AdminGetFamilyAuditLogResponse> adminGetFamilyAuditLog_Pre(
       $grpc.ServiceCall $call,
