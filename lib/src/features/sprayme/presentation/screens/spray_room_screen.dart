@@ -2350,7 +2350,10 @@ class _SprayRoomViewState extends State<_SprayRoomView>
   /// participant the host just invited. Surfaces live errors as a snackbar.
   Widget _buildLiveStatusOverlay() {
     return BlocConsumer<SprayLiveCubit, SprayLiveState>(
-      listenWhen: (p, c) => p.error != c.error,
+      listenWhen: (p, c) =>
+          p.error != c.error ||
+          p.videoEndedByHost != c.videoEndedByHost ||
+          p.sessionEnded != c.sessionEnded,
       listener: (context, live) {
         if (live.error != null && live.error!.isNotEmpty && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -2358,6 +2361,25 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                 content: Text(live.error!),
                 backgroundColor: const Color(0xFFEF4444)),
           );
+        }
+        // TURNING THE VIDEO OFF AND ENDING THE PARTY ARE DIFFERENT EVENTS.
+        //
+        // Both used to tear the live layer down to the same bare idle state,
+        // so "the host stopped the camera" and "the host ended the session"
+        // looked identical from a viewer's seat — and people left rooms that
+        // were still running, still taking comments and still taking sprays.
+        if (live.videoEndedByHost && mounted) {
+          final host = context.read<SprayRoomCubit>().state.session?.hostName;
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(
+              content: Text(
+                  '${host?.isNotEmpty == true ? host : 'The host'} turned the '
+                  'video off. The session is still on — you can keep '
+                  'commenting and spraying.'),
+              backgroundColor: const Color(0xFF7C3AED),
+              duration: const Duration(seconds: 4),
+            ));
         }
       },
       builder: (context, live) {

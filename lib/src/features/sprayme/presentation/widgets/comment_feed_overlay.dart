@@ -100,6 +100,19 @@ class _CommentItem extends StatefulWidget {
 
 class _CommentItemState extends State<_CommentItem>
     with SingleTickerProviderStateMixin {
+  /// Collapsed comments show three lines; tapping shows the whole thing.
+  ///
+  /// A long comment used to end in an ellipsis with nothing to do about it —
+  /// the text was simply gone, and the feed is the only place it is ever
+  /// rendered during a live. Three lines stays the default because the feed
+  /// sits over somebody's face and a wall of text would bury the stream; the
+  /// tap is the way out.
+  bool _expanded = false;
+
+  /// Collapsed line budget. Matches what the feed used to truncate at, so a
+  /// comment that fitted before still looks identical.
+  static const int _collapsedLines = 3;
+
   late final AnimationController _controller;
   late final Animation<Offset> _slide;
   late final Animation<double> _fade;
@@ -165,9 +178,17 @@ class _CommentItemState extends State<_CommentItem>
                 ),
                 SizedBox(width: 6.w),
                 Flexible(
-                  child: RichText(
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => setState(() => _expanded = !_expanded),
+                    child: _CommentBody(
+                      expanded: _expanded,
+                      collapsedLines: _collapsedLines,
+                      child: RichText(
+                    maxLines: _expanded ? null : _collapsedLines,
+                    overflow: _expanded
+                        ? TextOverflow.clip
+                        : TextOverflow.ellipsis,
                     text: TextSpan(
                       children: [
                         TextSpan(
@@ -196,12 +217,76 @@ class _CommentItemState extends State<_CommentItem>
                       ],
                     ),
                   ),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Wraps a collapsed comment so an overflowing one says it can be opened.
+///
+/// An ellipsis alone is not an affordance: it reads as "the rest is lost",
+/// which is how a truncated comment was received. "Tap to read" names the
+/// gesture, and only appears when the text actually overflowed — measured,
+/// not guessed from a character count, so a long name plus a short comment
+/// does not claim there is more to see.
+class _CommentBody extends StatelessWidget {
+  final bool expanded;
+  final int collapsedLines;
+  final RichText child;
+
+  const _CommentBody({
+    required this.expanded,
+    required this.collapsedLines,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (expanded) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          child,
+          SizedBox(height: 2.h),
+          Text('Tap to collapse',
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w600)),
+        ],
+      );
+    }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final painter = TextPainter(
+          text: child.text,
+          maxLines: collapsedLines,
+          textDirection: Directionality.of(context),
+        )..layout(maxWidth: constraints.maxWidth);
+        final overflowed = painter.didExceedMaxLines;
+        if (!overflowed) return child;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            child,
+            SizedBox(height: 2.h),
+            Text('Tap to read',
+                style: TextStyle(
+                    color: const Color(0xFF60A5FA),
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w600)),
+          ],
+        );
+      },
     );
   }
 }
@@ -225,8 +310,26 @@ class CommentInputBar extends StatefulWidget {
 }
 
 class _CommentInputBarState extends State<CommentInputBar> {
+  /// Characters a live comment may run to.
+  ///
+  /// 150, which is where TikTok Live and Instagram Live both sit. A comment
+  /// is drawn over the broadcaster's face; past about three lines it stops
+  /// being a comment on the stream and starts being in front of it.
+  ///
+  /// It was 500, with `counterText: ''` hiding the counter and
+  /// MaxLengthEnforcement.enforced silently dropping keystrokes — so the
+  /// field simply stopped responding and nothing said why. The limit is now
+  /// visible before it is reached and announced when it is.
+  static const int maxChars = 150;
+
+  /// How close to the limit before the counter appears. Showing it from the
+  /// first character turns every comment into a word-count exercise.
+  static const int counterShowsFrom = maxChars - 30;
+
   final _controller = TextEditingController();
   bool _hasText = false;
+  int _length = 0;
+  bool _atLimit = false;
   List<String> _suggestions = const [];
 
   @override
@@ -242,6 +345,8 @@ class _CommentInputBarState extends State<CommentInputBar> {
     _controller.clear();
     setState(() {
       _hasText = false;
+      _length = 0;
+      _atLimit = false;
       _suggestions = const [];
     });
   }
@@ -271,8 +376,14 @@ class _CommentInputBarState extends State<CommentInputBar> {
           .take(6)
           .toList();
     }
+    final len = v.characters.length;
     setState(() {
       _hasText = v.trim().isNotEmpty;
+      _length = len;
+      // Latches true the moment the cap is reached, so the notice is shown
+      // for the keystroke that was refused rather than only while the user
+      // keeps pressing keys.
+      _atLimit = len >= maxChars;
       _suggestions = sug;
     });
   }
@@ -353,8 +464,42 @@ class _CommentInputBarState extends State<CommentInputBar> {
               ],
             ),
           ),
+        if (_atLimit || _length >= counterShowsFrom) _buildLimitNotice(),
         _buildInputRow(),
       ],
+    );
+  }
+
+  /// The limit, said out loud.
+  ///
+  /// Amber while approaching, red once reached, and only then does it explain
+  /// — a permanent explanation would be noise, and an unexplained dead
+  /// keyboard is the thing being fixed.
+  Widget _buildLimitNotice() {
+    final color =
+        _atLimit ? const Color(0xFFEF4444) : const Color(0xFFFB923C);
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 2.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          if (_atLimit) ...[
+            Icon(Icons.info_outline, size: 12.sp, color: color),
+            SizedBox(width: 4.w),
+            Expanded(
+              child: Text(
+                "That's the longest a live comment can be — send it, or "
+                'shorten it to add more.',
+                style: TextStyle(color: color, fontSize: 10.sp),
+              ),
+            ),
+            SizedBox(width: 6.w),
+          ],
+          Text('$_length/$maxChars',
+              style: TextStyle(
+                  color: color, fontSize: 10.sp, fontWeight: FontWeight.w600)),
+        ],
+      ),
     );
   }
 
@@ -376,7 +521,12 @@ class _CommentInputBarState extends State<CommentInputBar> {
               ),
               child: TextField(
                 controller: _controller,
-                maxLength: 500,
+                maxLength: maxChars,
+                // Flutter's length limiter counts grapheme clusters, so an
+                // emoji or a Yoruba diacritic costs the one character the
+                // user typed rather than the code units it is built from.
+                // The counter below uses `.characters` for the same reason —
+                // the two must agree or the field stops a third early.
                 maxLengthEnforcement: MaxLengthEnforcement.enforced,
                 onChanged: _onChanged,
                 onSubmitted: (_) => _submit(),

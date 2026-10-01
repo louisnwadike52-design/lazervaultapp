@@ -176,18 +176,61 @@ class _TagPeopleSheetState extends State<TagPeopleSheet> {
               ),
             ),
             SizedBox(height: 16.h),
-            Text(
-              'Tag people',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            SizedBox(height: 4.h),
-            Text(
-              'They will see this celebration on their own Lazerspray page.',
-              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+            // A heading with an icon and a running count, rather than a bare
+            // line of text. The sheet is a picker — the number chosen is the
+            // single thing a user checks before confirming, and it was only
+            // visible on the button at the far bottom of a 78%-height sheet.
+            Row(
+              children: [
+                Container(
+                  width: 34.w,
+                  height: 34.w,
+                  decoration: BoxDecoration(
+                    color: _accent.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child:
+                      Icon(Icons.person_add_alt_1, color: _accent, size: 18.sp),
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Tag people',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        'They will see this celebration on their own '
+                        'Lazerspray page.',
+                        style: TextStyle(
+                            color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                      ),
+                    ],
+                  ),
+                ),
+                if (_selected.isNotEmpty)
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 9.w, vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color: _accent.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                    child: Text('${_selected.length}',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w700)),
+                  ),
+              ],
             ),
             SizedBox(height: 14.h),
             _searchField(),
@@ -209,6 +252,7 @@ class _TagPeopleSheetState extends State<TagPeopleSheet> {
         controller: _controller,
         onChanged: _onQueryChanged,
         autofocus: true,
+        textInputAction: TextInputAction.search,
         style: TextStyle(color: Colors.white, fontSize: 14.sp),
         decoration: InputDecoration(
           hintText: 'Search by name, username or email',
@@ -216,6 +260,20 @@ class _TagPeopleSheetState extends State<TagPeopleSheet> {
               TextStyle(color: const Color(0xFF6B7280), fontSize: 13.5.sp),
           prefixIcon:
               Icon(Icons.search, color: const Color(0xFF9CA3AF), size: 20.sp),
+          // Clearing a query took selecting the whole field and deleting it.
+          // On a search that needs two characters before it does anything,
+          // starting over is a common move.
+          suffixIcon: _controller.text.isEmpty
+              ? null
+              : IconButton(
+                  icon: Icon(Icons.close,
+                      color: const Color(0xFF9CA3AF), size: 18.sp),
+                  onPressed: () {
+                    _controller.clear();
+                    _onQueryChanged('');
+                    setState(() {});
+                  },
+                ),
           filled: true,
           fillColor: _card,
           contentPadding: EdgeInsets.symmetric(vertical: 12.h),
@@ -223,23 +281,61 @@ class _TagPeopleSheetState extends State<TagPeopleSheet> {
             borderRadius: BorderRadius.circular(12.r),
             borderSide: BorderSide.none,
           ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: BorderSide.none,
+          ),
+          // A focused field that looks identical to an unfocused one gives no
+          // sign the keyboard is going anywhere.
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: BorderSide(color: _accent.withValues(alpha: 0.7)),
+          ),
         ),
       );
 
-  Widget _selectedChips() => Wrap(
-        spacing: 8.w,
-        runSpacing: 8.h,
-        children: [
-          for (final i in _selected.values)
-            Chip(
-              label: Text(i.name, style: TextStyle(fontSize: 12.sp)),
-              backgroundColor: _accent.withValues(alpha: 0.16),
-              labelStyle: const TextStyle(color: Colors.white),
-              deleteIconColor: Colors.white70,
-              onDeleted: () => setState(() => _selected.remove(i.userId)),
-              side: BorderSide.none,
-            ),
-        ],
+  /// The people picked so far, in a single scrolling row.
+  ///
+  /// This was a Wrap, so twenty selections became five rows of chips that ate
+  /// the results list they were being chosen from — the sheet got less usable
+  /// the more it was used. One row that scrolls keeps the height fixed however
+  /// many people are tagged.
+  Widget _selectedChips() => SizedBox(
+        height: 36.h,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: _selected.length,
+          separatorBuilder: (_, __) => SizedBox(width: 8.w),
+          itemBuilder: (_, idx) {
+            final i = _selected.values.elementAt(idx);
+            return Container(
+              padding: EdgeInsets.only(left: 10.w, right: 4.w),
+              decoration: BoxDecoration(
+                color: _accent.withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(18.r),
+                border: Border.all(color: _accent.withValues(alpha: 0.35)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    i.name,
+                    style: TextStyle(color: Colors.white, fontSize: 12.sp),
+                  ),
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints:
+                        BoxConstraints(minWidth: 28.w, minHeight: 28.w),
+                    icon: Icon(Icons.close,
+                        size: 14.sp, color: Colors.white70),
+                    onPressed: () =>
+                        setState(() => _selected.remove(i.userId)),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       );
 
   Widget _resultsList() {
@@ -268,56 +364,108 @@ class _TagPeopleSheetState extends State<TagPeopleSheet> {
     final tagged = widget.alreadyTagged.contains(id);
     final picked = _selected.containsKey(id);
 
-    return ListTile(
-      contentPadding: EdgeInsets.symmetric(horizontal: 4.w),
-      onTap: tagged ? null : () => _toggle(u),
-      leading: CircleAvatar(
-        radius: 18.r,
-        backgroundColor: _accent.withValues(alpha: 0.18),
-        child: Text(
-          name.isNotEmpty ? name[0].toUpperCase() : '?',
-          style: TextStyle(color: Colors.white, fontSize: 14.sp),
+    final avatar = (u['profile_picture'] ?? '').toString();
+    final username = (u['username'] ?? '').toString().trim();
+
+    // A selected row is a filled card, not just a changed tick.
+    //
+    // Selection used to be a 20px icon at the right edge of an otherwise
+    // identical row: on a list of a dozen similar names, checking who you had
+    // picked meant reading every trailing icon. The whole row carries the
+    // state now.
+    return Container(
+      margin: EdgeInsets.only(bottom: 2.h),
+      decoration: BoxDecoration(
+        color: picked ? _accent.withValues(alpha: 0.12) : Colors.transparent,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: picked ? _accent.withValues(alpha: 0.45) : Colors.transparent,
         ),
       ),
-      title: Text(
-        name,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: tagged ? const Color(0xFF6B7280) : Colors.white,
-          fontSize: 14.sp,
+      child: ListTile(
+        contentPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 2.h),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+        onTap: tagged ? null : () => _toggle(u),
+        leading: CircleAvatar(
+          radius: 19.r,
+          backgroundColor: _accent.withValues(alpha: 0.18),
+          // Use the real picture when the directory gave us one — initials on
+          // every row makes a list of people look like a list of records.
+          backgroundImage: avatar.isNotEmpty ? NetworkImage(avatar) : null,
+          child: avatar.isNotEmpty
+              ? null
+              : Text(
+                  name.isNotEmpty ? name[0].toUpperCase() : '?',
+                  style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                ),
         ),
+        title: Text(
+          name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: tagged ? const Color(0xFF6B7280) : Colors.white,
+            fontSize: 14.sp,
+            fontWeight: picked ? FontWeight.w600 : FontWeight.w400,
+          ),
+        ),
+        // The username disambiguates two people with the same display name,
+        // which the directory certainly contains and this list could not tell
+        // apart at all.
+        subtitle: tagged
+            ? Text('Already tagged',
+                style: TextStyle(
+                    color: const Color(0xFF6B7280), fontSize: 11.5.sp))
+            : (username.isEmpty
+                ? null
+                : Text('@$username',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        color: const Color(0xFF6B7280), fontSize: 11.5.sp))),
+        trailing: tagged
+            ? Icon(Icons.check_circle,
+                color: const Color(0xFF4B5563), size: 20.sp)
+            : Icon(
+                picked
+                    ? Icons.check_circle_rounded
+                    : Icons.radio_button_unchecked,
+                color: picked ? _accent : const Color(0xFF4B5563),
+                size: 22.sp,
+              ),
       ),
-      subtitle: tagged
-          ? Text('Already tagged',
-              style:
-                  TextStyle(color: const Color(0xFF6B7280), fontSize: 11.5.sp))
-          : null,
-      trailing: tagged
-          ? Icon(Icons.check_circle,
-              color: const Color(0xFF4B5563), size: 20.sp)
-          : Icon(
-              picked
-                  ? Icons.check_circle_rounded
-                  : Icons.radio_button_unchecked,
-              color: picked ? _accent : const Color(0xFF4B5563),
-              size: 20.sp,
-            ),
     );
   }
 
   Widget _hint(String text, {VoidCallback? retry}) => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              text,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
-            ),
-            if (retry != null)
-              TextButton(onPressed: retry, child: const Text('Try again')),
-          ],
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                retry != null
+                    ? Icons.cloud_off_rounded
+                    : Icons.person_search_rounded,
+                size: 34.sp,
+                color: const Color(0xFF3A3A3A),
+              ),
+              SizedBox(height: 10.h),
+              Text(
+                text,
+                textAlign: TextAlign.center,
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+              ),
+              if (retry != null)
+                TextButton(
+                  onPressed: retry,
+                  child: Text('Try again',
+                      style: TextStyle(color: _accent, fontSize: 13.sp)),
+                ),
+            ],
+          ),
         ),
       );
 

@@ -140,8 +140,50 @@ class _NetworkPickerSheet extends StatelessWidget {
               ),
             ],
           ),
+          // THE ONE BALANCE, SAID ONCE, EVERYWHERE.
+          //
+          // Quidax holds ONE balance per currency; `networks[]` is an
+          // attribute of that single wallet, and GET /users/{id}/wallets
+          // returns no per-network figure at all. So a balance that does not
+          // move when you change network is not a stale read — it is the only
+          // thing the data supports.
+          //
+          // The buy sheet already said so; send, receive and swap did not, so
+          // the same unchanged number read as a bug on three screens out of
+          // four. What the network actually changes is the deposit ADDRESS,
+          // the withdrawal RAIL and its FEE (verified live: usdt/trc20 → 1,
+          // usdt/erc20 → 5), and the minimums — all of which the rows below
+          // already show per network.
+          SizedBox(height: 10.h),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFF93C5FD).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline,
+                    size: 14.sp, color: const Color(0xFF93C5FD)),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text(
+                    'Your ${currency.toUpperCase()} balance is the same on '
+                    'every network — you hold one balance. The network only '
+                    'sets the address, the fee and the minimum.',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFFBFDBFE),
+                      fontSize: 11.sp,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
           if (subtitle != null) ...[
-            SizedBox(height: 6.h),
+            SizedBox(height: 8.h),
             Text(
               subtitle!,
               style: GoogleFonts.inter(

@@ -1198,7 +1198,21 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
           child: SprayRoomScreen(sessionId: session.id, accessToken: token),
         ),
       ),
-    );
+      // RE-READ ON THE WAY BACK.
+      //
+      // Create Session and Join Session both refresh on return; this one did
+      // not. So a host who ended their session, or a viewer who watched one
+      // end, came back to a list still showing it under "LIVE NOW" — with a
+      // tap target that leads into a finished room — until they thought to
+      // pull down. The list is a cache of something that changed while they
+      // were inside it, which is exactly when it must be re-read.
+    ).then((_) {
+      if (!mounted) return;
+      _refresh();
+      // Invites are loaded separately and go stale the same way: an invite to
+      // a session that has since ended should stop being offered.
+      _loadInvites();
+    });
   }
 
   // ── Stats Card ───────────────────────────────────────────────────────────────

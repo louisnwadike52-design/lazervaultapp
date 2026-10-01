@@ -294,8 +294,10 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
       networks: _networks,
       selectedNetwork: _selectedNetwork,
       title: 'Receive $sym on',
+      // The unified-balance sentence now lives in the picker itself, where
+      // every flow gets it. This only says what the choice is FOR here.
       subtitle:
-          'Your balance is the same on every network. This sets the chain your $sym address uses for receiving and sending.',
+          'This sets the chain your $sym address uses for receiving and sending.',
     );
     if (chosen == null || chosen == _selectedNetwork || !mounted) return;
     setState(() {

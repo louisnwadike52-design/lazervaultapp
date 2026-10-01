@@ -6,6 +6,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+
+import 'package:lazervault/core/utils/person_first_name.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/funds/presentation/send_funds_launcher.dart';
@@ -37,8 +39,21 @@ class P2PTransferBubble extends StatelessWidget {
   });
 
   /// Display name with fallback for empty strings.
+  ///
+  /// Used where the name IDENTIFIES the other party — the receipt, the
+  /// detail sheet — and must stay complete.
   String get _displayName =>
       otherUserName.isNotEmpty ? otherUserName : 'Unknown User';
+
+  /// First name only, for the conversational line above the amount.
+  ///
+  /// "Nnaemeka Christiana sent you" is not how anyone says it, and a full
+  /// name is also the longest thing that can sit on that single ellipsised
+  /// row — on a double-barrelled name the amount was pushed off the end, so
+  /// the one number the line exists to carry was the first to disappear.
+  /// [_displayName] stays wherever the name is identifying rather than
+  /// narrating.
+  String get _shortName => firstNameOr(otherUserName, 'Unknown User');
 
   /// Whether this transfer was sent by the current user.
   ///
@@ -134,14 +149,14 @@ class P2PTransferBubble extends StatelessWidget {
       // Directional copy so the bubble depicts WHERE the money went, not just
       // that a transfer happened.
       label = message.isCryptoTransfer
-          ? 'You sent crypto to $_displayName'
-          : 'You sent to $_displayName';
+          ? 'You sent crypto to $_shortName'
+          : 'You sent to $_shortName';
     } else {
       iconColor = const Color(0xFF10B981); // green
       icon = Icons.arrow_downward;
       label = message.isCryptoTransfer
-          ? '$_displayName sent you crypto'
-          : '$_displayName sent you';
+          ? '$_shortName sent you crypto'
+          : '$_shortName sent you';
     }
 
     final currency = message.transferCurrency ?? 'NGN';
