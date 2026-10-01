@@ -91,6 +91,19 @@ class SprayLiveState {
   /// publications only) — presence has to come from the participant list.
   final bool novaInLive;
 
+  /// The host switched the camera off, but the SESSION is still running.
+  ///
+  /// Turning video off and ending the party are completely different events
+  /// and were rendered identically: both tore the live layer down to a bare
+  /// idle state, so "Praiz stopped the video" and "Praiz ended the session"
+  /// looked the same to everybody watching. People left rooms that were still
+  /// going. The room reads this to say which happened.
+  final bool videoEndedByHost;
+
+  /// The whole session ended. Distinct from [videoEndedByHost]: there is
+  /// nothing left to come back to.
+  final bool sessionEnded;
+
   final String? error;
 
   const SprayLiveState({
@@ -108,6 +121,8 @@ class SprayLiveState {
     this.coHostInvitePending = false,
     this.coHostBusy = false,
     this.coHostError,
+    this.videoEndedByHost = false,
+    this.sessionEnded = false,
     this.error,
   });
 
@@ -134,6 +149,8 @@ class SprayLiveState {
     bool? coHostBusy,
     String? coHostError,
     bool clearCoHostError = false,
+    bool? videoEndedByHost,
+    bool? sessionEnded,
     String? error,
     bool clearError = false,
   }) {
@@ -153,6 +170,8 @@ class SprayLiveState {
       coHostBusy: coHostBusy ?? this.coHostBusy,
       coHostError:
           clearCoHostError ? null : (coHostError ?? this.coHostError),
+      videoEndedByHost: videoEndedByHost ?? this.videoEndedByHost,
+      sessionEnded: sessionEnded ?? this.sessionEnded,
       error: clearError ? null : (error ?? this.error),
     );
   }

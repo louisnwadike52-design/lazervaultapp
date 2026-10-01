@@ -10,7 +10,19 @@ class GiftShopSheet extends StatefulWidget {
   final List<SprayGift> gifts;
   final double walletBalance; // in major units (spendable "gifts to spray")
   final String currency;
-  final void Function(SprayGift gift, int quantity) onSendGift;
+  /// Send the chosen gift. Returns TRUE when it was accepted, FALSE when the
+  /// room refused it (sending to yourself, say).
+  ///
+  /// THE RETURN VALUE IS WHO CLOSES THE SHEET, and that is why it exists.
+  /// It used to return void, and the room's self-gift guard popped the
+  /// navigator itself before returning — then this sheet popped as well. Two
+  /// pops: the first closed the sheet, the second closed the ROOM. Trying to
+  /// gift yourself threw you out of the live.
+  ///
+  /// One owner now. The callback never navigates; the sheet closes itself if
+  /// the gift went, and stays open if it did not, so the reason is still on
+  /// screen next to the button that produced it.
+  final bool Function(SprayGift gift, int quantity) onSendGift;
 
   /// Opens the buy-gifts-from-personal flow to top up the spendable balance.
   final VoidCallback? onBuyGifts;
@@ -375,8 +387,11 @@ class _GiftShopSheetState extends State<GiftShopSheet>
                           return;
                         }
                         HapticFeedback.mediumImpact();
-                        widget.onSendGift(gift, _quantity);
-                        Navigator.of(context).pop();
+                        // Only close on acceptance. A refusal keeps the sheet
+                        // up so the message lands where the user is looking.
+                        if (widget.onSendGift(gift, _quantity)) {
+                          Navigator.of(context).pop();
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF3B82F6),

@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:lazervault/core/services/injection_container.dart';
-import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_wallet.dart';
 import 'package:lazervault/src/features/sprayme/domain/repositories/i_sprayme_repository.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
@@ -56,7 +56,16 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
       serviceLocator<ITransactionPinService>();
 
   final _amountController = TextEditingController();
-  final _accountManager = serviceLocator<AccountManager>();
+
+  /// The account the money moves to or from, read LIVE.
+  ///
+  /// This used to come from `AccountManager.activeAccountDetails`, a field
+  /// nothing in the app ever writes — so it was always null, the sheet always
+  /// took its fallback branch, and "From account: Personal account" appeared
+  /// with no balance beside it at all. Someone funding ₦5,000 found out
+  /// whether they could afford it from the failure. See
+  /// active_account_snapshot.dart.
+  ActiveAccountSnapshot? _account;
 
   String? _accountId;
   String _accountDisplay = '';
@@ -69,16 +78,12 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
   @override
   void initState() {
     super.initState();
-    final d = _accountManager.activeAccountDetails;
-    if (d != null) {
-      _accountId = d.id;
-      final n = d.accountNumber;
-      _accountDisplay =
-          '${d.accountType} •••• ${n.length >= 4 ? n.substring(n.length - 4) : n}';
-      _currency = d.currency.isNotEmpty ? d.currency : 'NGN';
-    } else {
-      _accountId = _accountManager.activeAccountId;
-      _accountDisplay = _accountId != null ? 'Personal account' : '';
+    _account = activeAccountSnapshot();
+    final a = _account;
+    if (a != null) {
+      _accountId = a.id;
+      _accountDisplay = a.display;
+      _currency = a.currency;
     }
     _amountController.addListener(() => setState(() {}));
   }
@@ -104,10 +109,32 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
   int get _withdrawableKobo =>
       widget.wallet.balance + widget.wallet.earningsBalance;
 
+  /// What the source account can actually cover, in kobo. Null when we could
+  /// not read it — in which case the server decides and we do not block.
+  int? get _sourceBalanceKobo {
+    final a = _account;
+    if (a == null) return null;
+    return (a.balanceMajor * 100).round();
+  }
+
+  bool get _overSourceBalance {
+    if (!_isFund) return false;
+    final kobo = _amountKobo, have = _sourceBalanceKobo;
+    return kobo != null && have != null && kobo > have;
+  }
+
   bool get _canContinue {
     final kobo = _amountKobo;
     if (kobo == null || _accountId == null || _accountId!.isEmpty) return false;
     if (!_isFund && kobo > _withdrawableKobo) return false;
+    // Funding more than the account holds is refused BEFORE the PIN sheet.
+    // Asking someone for their transaction PIN and then telling them there
+    // was never enough money is the worst order to do those two things in.
+    if (_overSourceBalance) return false;
+    final a = _account;
+    if (_isFund && a != null && (!a.isSpendable || a.isProvisioning)) {
+      return false;
+    }
     return true;
   }
 
@@ -125,6 +152,11 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
     if (!_isFund && kobo > _withdrawableKobo) {
       final avail = (_withdrawableKobo / 100).toStringAsFixed(0);
       _snack('Not enough in your wallet. Available: $_currency $avail');
+      return;
+    }
+    if (_overSourceBalance) {
+      _snack(
+          'Not enough in $_accountDisplay. Available: $_currency ${_money(_account!.balanceMajor)}');
       return;
     }
 
@@ -271,6 +303,25 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
               _accountRow(),
               SizedBox(height: 16.h),
               _amountField(accent),
+              if (_overSourceBalance) ...[
+                SizedBox(height: 8.h),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline,
+                        size: 14.sp, color: const Color(0xFFEF4444)),
+                    SizedBox(width: 6.w),
+                    Expanded(
+                      child: Text(
+                        'That is more than $_accountDisplay holds. Add money to '
+                        'the account first, or enter a smaller amount.',
+                        style: TextStyle(
+                            color: const Color(0xFFFCA5A5), fontSize: 11.sp),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               SizedBox(height: 20.h),
               SizedBox(
                 width: double.infinity,
@@ -363,9 +414,40 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
               ],
             ),
           ),
+          // THE BALANCE, which this row never showed.
+          if (_account != null)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '$_currency ${_money(_account!.balanceMajor)}',
+                  style: TextStyle(
+                      color: _overSourceBalance
+                          ? const Color(0xFFEF4444)
+                          : Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700),
+                ),
+                Text(_isFund ? 'available' : 'current balance',
+                    style: TextStyle(
+                        color: const Color(0xFF6B7280), fontSize: 10.sp)),
+              ],
+            ),
         ],
       ),
     );
+  }
+
+  /// Thousands separators — a party top-up is routinely five figures.
+  static String _money(double major) {
+    final digits = major.floor().toString();
+    final b = StringBuffer();
+    for (var i = 0; i < digits.length; i++) {
+      if (i > 0 && (digits.length - i) % 3 == 0) b.write(',');
+      b.write(digits[i]);
+    }
+    return b.toString();
   }
 
   Widget _amountField(Color accent) {

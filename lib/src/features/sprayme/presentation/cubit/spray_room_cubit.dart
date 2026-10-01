@@ -376,8 +376,17 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
       case 'seat_declined':
       case 'seat_left':
       case 'seat_removed':
+      // The host-initiated half of the same lifecycle. These used to be absent,
+      // so an invite, a decline and a cancelled invite changed seat_state on
+      // the server and the host's sheet went on showing a plain Invite button
+      // for someone who had already been asked — which is how the same person
+      // got invited twice in seventeen seconds.
+      case 'cohost_invited':
+      case 'cohost_revoked':
+      case 'cohost_invite_declined':
         // Seat state lives on participants — refresh the roster so the guest
-        // grid + pending-requests list stay accurate for everyone.
+        // grid, the pending-invite badges and the capacity count stay accurate
+        // for everyone in the room.
         emit(state.copyWith(recentEvents: updatedEvents));
         loadParticipants();
       default:
@@ -415,30 +424,77 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
   }
 
   /// Host: decline a pending seat request.
-  Future<void> declineSeat(String userId) async {
-    if (state.session == null) return;
+  ///
+  /// Returns null on success, else the reason. These three used to swallow
+  /// every failure into an empty catch, so a host pressing Remove on a guest
+  /// the server refused to remove saw the guest stay exactly where they were
+  /// with no explanation at all.
+  Future<String?> declineSeat(String userId) async {
+    if (state.session == null) return 'no session';
     try {
       await _repository.declineSeat(state.session!.id, userId: userId);
       loadParticipants();
-    } catch (_) {}
+      return null;
+    } catch (e) {
+      return e.toString().replaceAll('Exception: ', '');
+    }
   }
 
-  /// Guest: step down from the stage.
-  Future<void> leaveSeat() async {
-    if (state.session == null) return;
+  /// Guest: step down from the stage, or turn down a pending invite.
+  ///
+  /// The server decides which this was from the state we are in — see
+  /// sprayme-service seat_invite_state.go.
+  Future<String?> leaveSeat() async {
+    if (state.session == null) return 'no session';
     try {
       await _repository.leaveSeat(state.session!.id);
       loadParticipants();
-    } catch (_) {}
+      return null;
+    } catch (e) {
+      return e.toString().replaceAll('Exception: ', '');
+    }
   }
 
-  /// Host: remove a seated guest.
-  Future<void> removeFromSeat(String userId) async {
-    if (state.session == null) return;
+  /// Host: remove a seated guest from their box.
+  Future<String?> removeFromSeat(String userId) async {
+    if (state.session == null) return 'no session';
     try {
       await _repository.removeFromSeat(state.session!.id, userId: userId);
       loadParticipants();
-    } catch (_) {}
+      return null;
+    } catch (e) {
+      return e.toString().replaceAll('Exception: ', '');
+    }
+  }
+
+  /// Host: take back an invite nobody has answered yet.
+  ///
+  /// Frees the box for somebody else. Routed through RevokeCoHost, which the
+  /// service maps to "cancel" rather than "demote" when the target is still
+  /// pending, so the guest's banner disappears instead of them being told they
+  /// were removed from a stage they never joined.
+  Future<String?> cancelStageInvite(String userId) async {
+    if (state.session == null) return 'no session';
+    try {
+      await _repository.revokeCoHost(state.session!.id, userId: userId);
+      loadParticipants();
+      return null;
+    } catch (e) {
+      return e.toString().replaceAll('Exception: ', '');
+    }
+  }
+
+  /// How many of the stage's boxes are free, from the roster we already hold.
+  ///
+  /// Counts invited guests as well as seated ones, exactly as the server does,
+  /// so the host is never offered an invite the server will refuse.
+  static const int maxStageBoxes = 8;
+  int get freeStageBoxes {
+    final hostId = state.session?.hostUserId ?? '';
+    final used = state.participants
+        .where((p) => p.userId != hostId && p.occupiesBox)
+        .length;
+    return (maxStageBoxes - used).clamp(0, maxStageBoxes);
   }
 
   // ─── Session Actions ────────────────────────────────────────

@@ -9,7 +9,18 @@ class SessionParticipant {
   final int totalLikes;
   final DateTime joinedAt;
   final int seatIndex; // 0-based guest "box" slot; -1 when not seated
-  final String seatState; // "" | "requested" | "seated"
+  /// Where this person is in the guest-box lifecycle.
+  ///
+  ///   ""          watching, not on the stage
+  ///   "requested" asked the host to come up
+  ///   "invited"   the host asked THEM up — awaiting their answer
+  ///   "seated"    on stage in a box
+  ///   "declined"  turned the host's invite down
+  ///
+  /// Mirrors sprayme-service's seat_invite_state.go. Treat it as a closed
+  /// vocabulary: an unknown value renders as a plain viewer rather than
+  /// throwing, so a server that learns a new state cannot crash an old app.
+  final String seatState;
 
   const SessionParticipant({
     required this.userId,
@@ -33,6 +44,35 @@ class SessionParticipant {
 
   bool get isSeated => seatState == 'seated';
   bool get hasRequestedSeat => seatState == 'requested';
+
+  /// The host has invited them up and they have not answered yet.
+  bool get hasPendingInvite => seatState == 'invited';
+
+  /// They turned the host's invite down.
+  bool get declinedInvite => seatState == 'declined';
+
+  /// Holding one of the stage's boxes — seated, or invited into one that is
+  /// being kept for them. Capacity is counted on this, exactly as the server
+  /// counts it, so the host's "x of 8 boxes" never disagrees with the refusal
+  /// they get when they try to invite a ninth person.
+  bool get occupiesBox => isSeated || hasPendingInvite;
+
+  /// Can the host send this person an invite right now?
+  ///
+  /// Someone already on stage or already asked is NOT invitable — the whole
+  /// point of showing a badge instead of a button. Someone who declined IS,
+  /// because asking again is a deliberate act the host may well want to make.
+  bool get isInvitable => !isSeated && !hasPendingInvite && !isHost;
+
+  /// A short status word for the host's list, or null when there is nothing
+  /// to say and an Invite button belongs there instead.
+  String? get stageBadge {
+    if (isSeated) return 'On stage · box ${seatIndex + 1}';
+    if (hasPendingInvite) return 'Awaiting acceptance';
+    if (declinedInvite) return 'Declined';
+    if (hasRequestedSeat) return 'Asked to join';
+    return null;
+  }
 
   /// Normalises a participant role from the wire.
   ///

@@ -124,6 +124,13 @@ class FeatureFlags {
   // spraymeLikeSoundKey: false (DEFAULT) = tapping to like in a Lazerspray room
   //   is silent. Admin-tunable so the sound can be restored without a release.
   static const String spraymeLikeSoundKey = 'sprayme_like_sound_enabled';
+  // spraymeRecordingEnabled: false (DEFAULT) = the Record control is hidden
+  //   from a LazerSpray broadcast and no recording egress can be started from
+  //   the app. Off because a recording is a full-length video file per live
+  //   and the platform does not have the storage to hold them yet; a host who
+  //   could press Record would be promised a replay that cannot be kept.
+  //   Admin-tunable so it comes back the day storage does, with no release.
+  static const String spraymeRecordingEnabled = 'sprayme_recording_enabled';
 
   // ── Batch-transfer flow config (admin-toggled, mirrors send-funds) ────────
   // batchTransferShortFlowEnabled: false (DEFAULT) = current long flow
@@ -383,6 +390,8 @@ class FeatureFlags {
       appUpdateEnabledKey,
       crowdfundDonationAlertsVisible,
       intlPayoutEnabled,
+      spraymeLikeSoundKey,
+      spraymeRecordingEnabled,
     ]) {
       final v = remote[key];
       if (v == null) continue;
@@ -615,6 +624,16 @@ class FeatureFlags {
   /// without an app release if people miss it.
   static bool get spraymeLikeSoundEnabled {
     return _prefs?.getBool(spraymeLikeSoundKey) ?? false;
+  }
+
+  /// Whether a LazerSpray host can record their live.
+  ///
+  /// Defaults to FALSE and the control is hidden entirely, not disabled: a
+  /// recording is a full-length video per session and there is no storage to
+  /// keep them, so offering the button would promise a replay that never
+  /// arrives. An admin turns it on the day there is somewhere to put them.
+  static bool get spraymeRecordingAllowed {
+    return _prefs?.getBool(spraymeRecordingEnabled) ?? false;
   }
 
   /// Whether the crowdfund "Donation alerts" menu entry is shown.

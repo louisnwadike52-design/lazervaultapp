@@ -114,6 +114,12 @@ class EndpointRegistry {
     // opens in one arrangement and re-lays-out a moment later is worse than
     // one that was simply right to begin with.
     'sprayme_default_layout_mode',
+    // Whether tapping to like plays a sound, and whether a host may record.
+    // Both were declared in FeatureFlags but never persisted here, so the
+    // admin snapshot could not reach them: the dashboard control saved a row
+    // nothing read. Recording defaults OFF — there is no storage for replays.
+    'sprayme_like_sound_enabled',
+    'sprayme_recording_enabled',
     // Standalone signup BVN screen (admin-toggled, OFF by default). Gates
     // whether signup shows the dedicated BVN screen; the default onboarding
     // uses Mono Prove (whose webhook auto-provisions the virtual account).

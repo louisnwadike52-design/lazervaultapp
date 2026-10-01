@@ -26,6 +26,13 @@ class BuyGiftCreditSheet extends StatefulWidget {
   final Future<String?> Function(
       List<Map<String, dynamic>> items, String verificationToken) onBuy;
 
+  /// Take the user to fund the account they are buying from.
+  ///
+  /// The sheet used to tell someone with too little balance to "top up your
+  /// account" and give them nowhere to do it — in the middle of a live, which
+  /// is the one moment nobody will go and find the deposit flow themselves.
+  final VoidCallback? onTopUp;
+
   const BuyGiftCreditSheet({
     super.key,
     required this.gifts,
@@ -34,6 +41,7 @@ class BuyGiftCreditSheet extends StatefulWidget {
     required this.accountBalanceMajor,
     required this.currency,
     required this.onBuy,
+    this.onTopUp,
   });
 
   @override
@@ -110,6 +118,19 @@ class _BuyGiftCreditSheetState extends State<BuyGiftCreditSheet>
       Navigator.of(context).pop();
       _toast('Gifts purchased — ready to spray', const Color(0xFF10B981));
     }
+  }
+
+  /// Thousands separators. A party balance is routinely five or six figures
+  /// and "NGN 125000" is not a number anyone reads at a glance.
+  static String _money(double major) {
+    final whole = major.floor();
+    final digits = whole.toString();
+    final b = StringBuffer();
+    for (var i = 0; i < digits.length; i++) {
+      if (i > 0 && (digits.length - i) % 3 == 0) b.write(',');
+      b.write(digits[i]);
+    }
+    return b.toString();
   }
 
   void _toast(String msg, Color color) {
@@ -287,13 +308,37 @@ class _BuyGiftCreditSheetState extends State<BuyGiftCreditSheet>
               if (_insufficient)
                 Padding(
                   padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Insufficient balance in your personal account. Top up your account or pick a smaller gift.',
-                      style: TextStyle(
-                          color: const Color(0xFFEF4444), fontSize: 12.sp),
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'You need ${widget.currency} ${(_totalMajor - widget.accountBalanceMajor).toStringAsFixed(0)} more. '
+                        'Add money to ${widget.accountDisplay.isNotEmpty ? widget.accountDisplay : 'your account'}, or pick a smaller gift.',
+                        style: TextStyle(
+                            color: const Color(0xFFEF4444), fontSize: 12.sp),
+                      ),
+                      if (widget.onTopUp != null) ...[
+                        SizedBox(height: 10.h),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 44.h,
+                          child: OutlinedButton.icon(
+                            onPressed: widget.onTopUp,
+                            icon: Icon(Icons.add_circle_outline, size: 18.sp),
+                            label: Text('Add money to this account',
+                                style: TextStyle(
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.w600)),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF3B82F6),
+                              side: const BorderSide(color: Color(0xFF3B82F6)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               SizedBox(height: 14.h),
@@ -375,12 +420,30 @@ class _BuyGiftCreditSheetState extends State<BuyGiftCreditSheet>
                 ],
               ),
             ),
-            Text(
-                '${widget.currency} ${widget.accountBalanceMajor.toStringAsFixed(0)}',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600)),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                    '${widget.currency} ${_money(widget.accountBalanceMajor)}',
+                    style: TextStyle(
+                        color: widget.accountBalanceMajor <= 0
+                            ? const Color(0xFFEF4444)
+                            : Colors.white,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600)),
+                // A genuinely empty account and a balance that failed to load
+                // used to render identically as "NGN 0". Saying which is the
+                // difference between "add money" and "something is wrong".
+                if (widget.accountBalanceMajor <= 0)
+                  Padding(
+                    padding: EdgeInsets.only(top: 2.h),
+                    child: Text('Nothing available',
+                        style: TextStyle(
+                            color: const Color(0xFFEF4444), fontSize: 10.sp)),
+                  ),
+              ],
+            ),
           ],
         ),
       ),
