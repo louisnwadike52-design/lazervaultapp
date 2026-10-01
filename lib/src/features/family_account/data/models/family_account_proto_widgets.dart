@@ -252,6 +252,7 @@ class FamilyAccountProto {
   final int invitationExpiryDays;
   final String? accountNumber;
   final String? bankName;
+  final String? accountName;
   final String? virtualAccountStatus;
   // Aggregated funders/spenders breakdown, attached on GetFamilyAccount only
   // (the summary rides on the RESPONSE, not the account message, so it's set by
@@ -281,6 +282,7 @@ class FamilyAccountProto {
     this.invitationExpiryDays = 0,
     this.accountNumber,
     this.bankName,
+    this.accountName,
     this.virtualAccountStatus,
   });
 
@@ -317,6 +319,7 @@ class FamilyAccountProto {
           (json['invitation_expiry_days'] as num?)?.toInt() ?? 0,
       accountNumber: json['account_number'] as String?,
       bankName: json['bank_name'] as String?,
+      accountName: json['account_name'] as String?,
       virtualAccountStatus: json['virtual_account_status'] as String?,
     );
   }

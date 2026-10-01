@@ -2623,6 +2623,7 @@ const FamilyAccount$json = {
     {'1': 'funding_policy', '3': 21, '4': 1, '5': 9, '10': 'fundingPolicy'},
     {'1': 'account_number', '3': 22, '4': 1, '5': 9, '10': 'accountNumber'},
     {'1': 'bank_name', '3': 23, '4': 1, '5': 9, '10': 'bankName'},
+    {'1': 'account_name', '3': 26, '4': 1, '5': 9, '10': 'accountName'},
     {
       '1': 'virtual_account_status',
       '3': 24,
@@ -2659,9 +2660,9 @@ final $typed_data.Uint8List familyAccountDescriptor = $convert.base64Decode(
     'bmN5GBMgASgJUghjdXJyZW5jeRIsChJ2aXJ0dWFsX2FjY291bnRfaWQYFCABKAlSEHZpcnR1YW'
     'xBY2NvdW50SWQSJQoOZnVuZGluZ19wb2xpY3kYFSABKAlSDWZ1bmRpbmdQb2xpY3kSJQoOYWNj'
     'b3VudF9udW1iZXIYFiABKAlSDWFjY291bnROdW1iZXISGwoJYmFua19uYW1lGBcgASgJUghiYW'
-    '5rTmFtZRI0ChZ2aXJ0dWFsX2FjY291bnRfc3RhdHVzGBggASgJUhR2aXJ0dWFsQWNjb3VudFN0'
-    'YXR1cxI0ChZpbnZpdGF0aW9uX2V4cGlyeV9kYXlzGBkgASgFUhRpbnZpdGF0aW9uRXhwaXJ5RG'
-    'F5cw==');
+    '5rTmFtZRIhCgxhY2NvdW50X25hbWUYGiABKAlSC2FjY291bnROYW1lEjQKFnZpcnR1YWxfYWNj'
+    'b3VudF9zdGF0dXMYGCABKAlSFHZpcnR1YWxBY2NvdW50U3RhdHVzEjQKFmludml0YXRpb25fZX'
+    'hwaXJ5X2RheXMYGSABKAVSFGludml0YXRpb25FeHBpcnlEYXlz');
 
 @$core.Deprecated('Use familyMemberDescriptor instead')
 const FamilyMember$json = {

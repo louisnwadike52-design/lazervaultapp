@@ -30,6 +30,16 @@ class FamilyAccount extends Equatable {
   final int invitationExpiryDays;
   final String? accountNumber; // pool NUBAN (only once provisioned/active)
   final String? bankName; // pool bank name (only once provisioned/active)
+
+  /// The name the PROVIDER registered the pool's account under — what a sender
+  /// sees at their own bank when they type the NUBAN.
+  ///
+  /// NOT always the pool's display name. Measured in production: Nomba pools
+  /// register the pool name ("Smith Family"), Flutterwave pools register the
+  /// creator's ("Praiz Onah FLW"). The share sheet used to show [name], so a
+  /// member was told to expect one name and their bank showed another — which
+  /// reads as the wrong account and stops the transfer.
+  final String? accountName;
   final String? virtualAccountStatus; // processing | active | frozen
   /// Aggregated stats (funders + spenders breakdown + monthly totals) attached
   /// to GetFamilyAccount. Null on list responses.
@@ -58,6 +68,7 @@ class FamilyAccount extends Equatable {
     this.invitationExpiryDays = 0,
     this.accountNumber,
     this.bankName,
+    this.accountName,
     this.virtualAccountStatus,
     this.summary,
   });
@@ -90,6 +101,7 @@ class FamilyAccount extends Equatable {
         invitationExpiryDays,
         accountNumber,
         bankName,
+        accountName,
         virtualAccountStatus,
         summary,
       ];
@@ -116,6 +128,7 @@ class FamilyAccount extends Equatable {
     String? fundingPolicy,
     String? accountNumber,
     String? bankName,
+    String? accountName,
     String? virtualAccountStatus,
     FamilyAccountSummary? summary,
   }) {
@@ -144,6 +157,7 @@ class FamilyAccount extends Equatable {
       fundingPolicy: fundingPolicy ?? this.fundingPolicy,
       accountNumber: accountNumber ?? this.accountNumber,
       bankName: bankName ?? this.bankName,
+      accountName: accountName ?? this.accountName,
       virtualAccountStatus: virtualAccountStatus ?? this.virtualAccountStatus,
       summary: summary ?? this.summary,
     );

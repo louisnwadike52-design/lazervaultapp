@@ -10093,6 +10093,7 @@ class FamilyAccount extends $pb.GeneratedMessage {
     $core.String? bankName,
     $core.String? virtualAccountStatus,
     $core.int? invitationExpiryDays,
+    $core.String? accountName,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -10126,6 +10127,7 @@ class FamilyAccount extends $pb.GeneratedMessage {
       result.virtualAccountStatus = virtualAccountStatus;
     if (invitationExpiryDays != null)
       result.invitationExpiryDays = invitationExpiryDays;
+    if (accountName != null) result.accountName = accountName;
     return result;
   }
 
@@ -10177,6 +10179,7 @@ class FamilyAccount extends $pb.GeneratedMessage {
     ..aOS(24, _omitFieldNames ? '' : 'virtualAccountStatus')
     ..a<$core.int>(
         25, _omitFieldNames ? '' : 'invitationExpiryDays', $pb.PbFieldType.O3)
+    ..aOS(26, _omitFieldNames ? '' : 'accountName')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -10421,6 +10424,23 @@ class FamilyAccount extends $pb.GeneratedMessage {
   $core.bool hasInvitationExpiryDays() => $_has(24);
   @$pb.TagNumber(25)
   void clearInvitationExpiryDays() => $_clearField(25);
+
+  /// The name the PROVIDER registered the pool's account under — what a sender
+  /// sees at their own bank when they type the NUBAN.
+  ///
+  /// It is NOT always the pool's display name. Measured in production: Nomba
+  /// pools register the pool name ("Smith Family"), Flutterwave pools register
+  /// the creator's ("Praiz Onah FLW"). Showing the pool name on the share sheet
+  /// therefore told a member to expect one name and their bank showed another,
+  /// which reads as the wrong account and stops the transfer.
+  @$pb.TagNumber(26)
+  $core.String get accountName => $_getSZ(25);
+  @$pb.TagNumber(26)
+  set accountName($core.String value) => $_setString(25, value);
+  @$pb.TagNumber(26)
+  $core.bool hasAccountName() => $_has(25);
+  @$pb.TagNumber(26)
+  void clearAccountName() => $_clearField(26);
 }
 
 /// Family Member

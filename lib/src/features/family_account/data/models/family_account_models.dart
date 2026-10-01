@@ -65,6 +65,7 @@ extension FamilyAccountProtoExtension on FamilyAccountProto {
       invitationExpiryDays: invitationExpiryDays,
       accountNumber: accountNumber,
       bankName: bankName,
+      accountName: accountName,
       virtualAccountStatus: virtualAccountStatus,
       summary: summary,
     );

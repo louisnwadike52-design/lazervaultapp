@@ -1597,8 +1597,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Cancel',
-                style: GoogleFonts.inter(color: Colors.white60)),
+            child:
+                Text('Cancel', style: GoogleFonts.inter(color: Colors.white60)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
@@ -1884,7 +1884,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     // right for pasting into a chat; it is wrong when a bank form wants only
     // the digits, and making someone edit a pasted blob is how a stray space
     // ends up inside an account number.
-    Widget row(IconData icon, String label, String value, {String? copyValue}) =>
+    Widget row(IconData icon, String label, String value,
+            {String? copyValue}) =>
         Padding(
           padding: EdgeInsets.symmetric(vertical: 6.h),
           child: Row(
@@ -1973,6 +1974,21 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               ),
             )
           else if (hasNuban) ...[
+            // The name the PROVIDER registered, not the pool's display name.
+            //
+            // They are not the same: Nomba pools register the pool name
+            // ("Smith Family"), Flutterwave pools register the creator's
+            // ("Praiz Onah FLW"). A member told to send to "Smith Family"
+            // who sees "Praiz Onah FLW" at their own bank concludes they
+            // have the wrong account and stops. Showing it here, and sharing
+            // it below, means the name they are told is the name they will
+            // see. Omitted entirely when the provider has not reported one,
+            // rather than falling back to the pool name — a confident wrong
+            // name is worse than no name.
+            if (account.accountName?.trim().isNotEmpty == true)
+              row(Icons.badge_outlined, 'Account name',
+                  account.accountName!.trim(),
+                  copyValue: account.accountName!.trim()),
             row(Icons.account_balance_outlined, 'Bank',
                 account.bankName?.isNotEmpty == true ? account.bankName! : '—',
                 copyValue: account.bankName),
@@ -1991,8 +2007,16 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                     shareContext,
                     title: 'Pool account details',
                     subtitle: 'Share these so members can fund ${account.name}',
-                    accountName: account.name,
-                    accountNameLabel: 'Pool name',
+                    // The provider's registered name when we have it — that
+                    // is what the sender's bank will display. Falls back to
+                    // the pool name only when the provider reported none.
+                    accountName: account.accountName?.trim().isNotEmpty == true
+                        ? account.accountName!.trim()
+                        : account.name,
+                    accountNameLabel:
+                        account.accountName?.trim().isNotEmpty == true
+                            ? 'Account name'
+                            : 'Pool name',
                     bankName: account.bankName ?? '',
                     accountNumber: account.accountNumber ?? '',
                   ),
@@ -2002,8 +2026,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                           fontSize: 12.5.sp, fontWeight: FontWeight.w600)),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    side: BorderSide(
-                        color: Colors.white.withValues(alpha: 0.22)),
+                    side:
+                        BorderSide(color: Colors.white.withValues(alpha: 0.22)),
                     padding: EdgeInsets.symmetric(vertical: 10.h),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.r)),
@@ -4613,7 +4637,6 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
       ),
     );
   }
-
 
   /// Shares a single Family & Friends transaction as a PDF receipt.
   ///
