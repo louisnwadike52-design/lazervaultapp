@@ -129,6 +129,78 @@ void main() {
     expect(FcyCapabilities.instance.canActivate('USD'), isFalse);
   });
 
+  // ── What the dashboard card shows in the account-number slot ───────────
+  //
+  // This is the only VISIBLE route into activation. Before it, a foreign wallet
+  // showed "**** **** **" — a placeholder for a number that never arrives on its
+  // own, since the provider wants a one-time KYC pack first — and the only way
+  // in was a text link buried in the account-actions sheet.
+
+  group('numberSlotFor', () {
+    setUp(() {
+      FcyCapabilities.instance.seedForTest(
+        ['USD', 'GBP', 'GHS', 'KES'],
+        activatable: ['GHS', 'KES'],
+        gated: ['USD', 'GBP'],
+      );
+    });
+
+    test('a wallet with a real number just shows the number', () {
+      expect(
+        FcyCapabilities.instance
+            .numberSlotFor(currency: 'GHS', accountNumber: '1234567890'),
+        FcyNumberSlot.number,
+      );
+    });
+
+    test('NGN never gets the foreign CTA, even with no number yet', () {
+      // An NGN wallet is provisioned at signup; a missing number means
+      // provisioning is still running, not that the user has something to do.
+      expect(
+        FcyCapabilities.instance
+            .numberSlotFor(currency: 'NGN', accountNumber: ''),
+        FcyNumberSlot.number,
+      );
+    });
+
+    test('an open currency with no number offers activation', () {
+      for (final c in ['GHS', 'KES']) {
+        expect(
+          FcyCapabilities.instance.numberSlotFor(currency: c, accountNumber: ''),
+          FcyNumberSlot.activate,
+          reason: c,
+        );
+      }
+    });
+
+    test('a gated currency says so instead of offering a dead-end form', () {
+      for (final c in ['USD', 'GBP']) {
+        expect(
+          FcyCapabilities.instance.numberSlotFor(currency: c, accountNumber: ''),
+          FcyNumberSlot.gated,
+          reason: c,
+        );
+      }
+    });
+
+    test('a currency no rail carries reads as convert-only', () {
+      // ZAR: we hold the wallet, no provider issues a deposit account for it.
+      expect(
+        FcyCapabilities.instance
+            .numberSlotFor(currency: 'ZAR', accountNumber: ''),
+        FcyNumberSlot.convertOnly,
+      );
+    });
+
+    test('whitespace and case do not change the answer', () {
+      expect(
+        FcyCapabilities.instance
+            .numberSlotFor(currency: ' ghs ', accountNumber: '   '),
+        FcyNumberSlot.activate,
+      );
+    });
+  });
+
   test('invalidate clears the split as well as the set', () {
     FcyCapabilities.instance
         .seedForTest(['USD', 'GHS'], activatable: ['GHS'], gated: ['USD']);

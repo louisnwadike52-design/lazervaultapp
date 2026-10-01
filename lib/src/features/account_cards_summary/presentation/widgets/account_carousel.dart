@@ -22,6 +22,7 @@ import 'package:lazervault/src/features/account_cards_summary/presentation/widge
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/fcy_account/data/fcy_capabilities.dart';
 part 'account_carousel_widgets.dart';
 
 class AccountCarousel extends StatefulWidget {
@@ -1107,18 +1108,16 @@ class _AccountCarouselState extends State<AccountCarousel> {
                           // still in cardArguments['accountNumber'] for
                           // the Deposit / Withdraw flows where the
                           // unmasked value is required.
-                          Text(
-                            _maskAccountNumber(
-                              cardArguments['accountNumber'] as String,
-                            ),
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.7),
-                              fontSize: 14.sp,
-                              // No letter-spacing — this is an account
-                              // number, not a card PIN, so we want the
-                              // bullets to read as one tight run.
-                            ),
-                          ),
+                          //
+                          // A FOREIGN wallet with no number yet shows the
+                          // activation CTA here instead. That space otherwise
+                          // renders '**** **** **' — a placeholder for a number
+                          // that will never arrive on its own, since the
+                          // provider needs a one-time KYC pack first. Nothing
+                          // on the dashboard said so, and the only way in was a
+                          // text link inside the account-actions sheet, which
+                          // is why not one user has ever started it.
+                          _buildNumberOrActivateCta(account, cardArguments),
                           SizedBox(width: 16.w),
                           Row(
                             children: [
@@ -1176,6 +1175,116 @@ class _AccountCarouselState extends State<AccountCarousel> {
       margin: EdgeInsets.all(12.w),
       icon: const Icon(Icons.ac_unit_rounded, color: Colors.white),
       duration: const Duration(seconds: 4),
+    );
+  }
+
+  /// The account-number slot on a card — or, for a foreign wallet that has no
+  /// number yet, the thing that will get it one.
+  ///
+  /// Three states, and the distinction between the last two is the provider's,
+  /// not ours (see FcyCapabilities):
+  ///
+  ///   * a real number        → masked, as always;
+  ///   * no number, ACTIVATABLE → "Activate deposits", tappable, straight into
+  ///     the one-time KYC pack the provider requires;
+  ///   * no number, GATED     → "Deposits open soon", stated plainly rather
+  ///     than offering a form whose submission can only be queued.
+  ///
+  /// NGN wallets are untouched: they are provisioned at signup and a missing
+  /// number there means provisioning is still running, not that the user has
+  /// something to do.
+  Widget _buildNumberOrActivateCta(
+    AccountSummaryEntity account,
+    Map<String, dynamic> cardArguments,
+  ) {
+    final number = (cardArguments['accountNumber'] as String?) ?? '';
+    final currency = account.currency.trim().toUpperCase();
+    // The decision lives in FcyCapabilities, not here: this widget has streams,
+    // a service locator and three cubits behind it, none of which bears on which
+    // of four things to show — and none of which a test should have to stand up.
+    final slot = FcyCapabilities.instance
+        .numberSlotFor(currency: currency, accountNumber: number);
+
+    if (slot == FcyNumberSlot.number) {
+      return Text(
+        _maskAccountNumber(number),
+        style: TextStyle(
+          color: Colors.white.withValues(alpha: 0.7),
+          fontSize: 14.sp,
+          // No letter-spacing — this is an account number, not a card PIN, so
+          // we want the bullets to read as one tight run.
+        ),
+      );
+    }
+
+    if (slot == FcyNumberSlot.gated) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.schedule_rounded,
+              size: 14.sp, color: Colors.white.withValues(alpha: 0.6)),
+          SizedBox(width: 5.w),
+          Text(
+            'Deposits open soon',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.6),
+              fontSize: 12.5.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (slot == FcyNumberSlot.convertOnly) {
+      // No rail issues this currency at all — it can still be funded by
+      // conversion, and there is nothing for the user to do about that.
+      return Text(
+        'Convert to fund',
+        style: TextStyle(
+          color: Colors.white.withValues(alpha: 0.6),
+          fontSize: 12.5.sp,
+          fontWeight: FontWeight.w500,
+        ),
+      );
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => Get.toNamed(AppRoutes.fcyActivation,
+            arguments: {'currency': currency}),
+        borderRadius: BorderRadius.circular(20.r),
+        child: Container(
+          key: const Key('activate_foreign_deposits_cta'),
+          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+          decoration: BoxDecoration(
+            // Deliberately brighter than the Deposit/Withdraw pills beside it.
+            // This is the one action on the card that unlocks the others, and a
+            // wallet that cannot receive money is the card's most important
+            // fact.
+            color: Colors.white.withValues(alpha: 0.22),
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.verified_user_outlined,
+                  size: 14.sp, color: Colors.white),
+              SizedBox(width: 5.w),
+              Text(
+                'Activate deposits',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12.5.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

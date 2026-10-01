@@ -112,6 +112,28 @@ class FcyCapabilities {
     }
   }
 
+  /// What a wallet's account-number slot should say.
+  ///
+  /// Pure and separated from the card that renders it so the decision is
+  /// testable: the card has streams, a service locator and three cubits behind
+  /// it, and none of that has any bearing on which of four things to show.
+  ///
+  /// [accountNumber] empty means the wallet has no deposit number yet.
+  FcyNumberSlot numberSlotFor({
+    required String currency,
+    required String accountNumber,
+  }) {
+    final c = currency.trim().toUpperCase();
+    if (accountNumber.trim().isNotEmpty) return FcyNumberSlot.number;
+    // NGN wallets are provisioned at signup. A missing number there means
+    // provisioning is still running — not that the user has something to do —
+    // so it keeps the placeholder rather than being offered a foreign KYC pack.
+    if (c.isEmpty || c == 'NGN') return FcyNumberSlot.number;
+    if (isGated(c)) return FcyNumberSlot.gated;
+    if (!canActivate(c)) return FcyNumberSlot.convertOnly;
+    return FcyNumberSlot.activate;
+  }
+
   /// Adopt a status read someone else already made.
   ///
   /// The capability set rides on every status response, so a caller that has
@@ -144,3 +166,22 @@ class FcyCapabilities {
     _gated = gated;
   }
 }
+
+/// What a wallet card shows where its deposit number would go.
+enum FcyNumberSlot {
+  /// A real (or still-provisioning NGN) number — render it masked.
+  number,
+
+  /// Foreign, no number, and the provider WILL accept a request: offer the
+  /// one-time KYC pack. This is the only state with an action.
+  activate,
+
+  /// Foreign, no number, and the provider refuses requests for this currency
+  /// today. Say so; do not open a form whose submission can only be queued.
+  gated,
+
+  /// Foreign and no rail issues this currency at all. It can still hold money
+  /// moved in by conversion, and there is nothing for the user to do.
+  convertOnly,
+}
+
