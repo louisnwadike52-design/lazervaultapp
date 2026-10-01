@@ -1,4 +1,5 @@
 import 'package:lazervault/core/utils/brand_bank.dart';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -130,7 +131,7 @@ class BatchTransferFormState extends State<BatchTransferForm>
   void initState() {
     super.initState();
     final accountManager = GetIt.I<AccountManager>();
-    _currency = accountManager.activeAccountDetails?.currency ?? 'NGN';
+    _currency = activeAccountSnapshot()?.currency ?? 'NGN';
     _currencySymbol = CurrencyUtils.getSymbol(_currency);
     _loadRecipients();
     _loadAccounts();
@@ -720,7 +721,7 @@ class BatchTransferFormState extends State<BatchTransferForm>
     // Self-transfer check
     final accountManager = GetIt.I<AccountManager>();
     final myAccountNumber =
-        accountManager.activeAccountDetails?.accountNumber ?? '';
+        activeAccountSnapshot()?.accountNumber ?? '';
     if (myAccountNumber.isNotEmpty) {
       final selfTransfers = _selectedRecipients
           .where((r) => r.recipient.accountNumber == myAccountNumber)
@@ -822,7 +823,7 @@ class BatchTransferFormState extends State<BatchTransferForm>
       fromAccountId = src.spendingAccountId;
     } else {
       fromAccountId = accountManager.activeAccountId ??
-          accountManager.activeAccountDetails?.id ??
+          activeAccountSnapshot()?.id ??
           '0';
     }
 

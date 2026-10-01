@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -113,16 +114,22 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
     return null;
   }
 
+  // FALLBACK IS THE LIVE SNAPSHOT, NOT AccountManager.activeAccountDetails.
+  //
+  // That field is written by nothing in the app, so the old fallback always
+  // returned null: whenever the cubit's summaries had not loaded, the balance
+  // was unknown and the currency silently reverted to a default. Both now
+  // resolve against the same live source the dashboard draws from.
   double? get _accountBalance {
     final summary = _selectedSummary;
     if (summary != null) return summary.availableBalance;
-    return _accountManager.activeAccountDetails?.balance;
+    return activeAccountSnapshot()?.balanceMajor;
   }
 
   String? get _accountDisplayCurrency {
     final summary = _selectedSummary;
     if (summary != null) return summary.currency;
-    return _accountManager.activeAccountDetails?.currency;
+    return activeAccountSnapshot()?.currency;
   }
 
   bool get _hasInsufficientFunds {

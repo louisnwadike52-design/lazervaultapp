@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -634,7 +635,7 @@ class _QRPaymentConfirmationScreenState
           // full currency list only if neither can be identified.
           final am = GetIt.I<AccountManager>();
           final activeId =
-              am.activeAccountId ?? am.activeAccountDetails?.id ?? '';
+              am.activeAccountId ?? activeAccountSnapshot()?.id ?? '';
           final matchingAccounts = <dynamic>[];
           for (final a in currencyMatches) {
             final isActive = a.id.toString() == activeId;

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -84,7 +85,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
   /// active locale's currency (never a hardcoded £).
   String get _currencySymbol {
     final acctCurrency =
-        serviceLocator<AccountManager>().activeAccountDetails?.currency;
+        activeAccountSnapshot()?.currency;
     if (acctCurrency != null && acctCurrency.trim().isNotEmpty) {
       return CurrencySymbols.getSymbol(acctCurrency);
     }

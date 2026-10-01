@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -145,7 +146,11 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
     // creator's primary account server-side.
     String? recipientAccountId;
     final manager = serviceLocator<AccountManager>();
-    final active = manager.activeAccountDetails;
+    // The currency match decides whether the ID-Pay collects into the active
+    // wallet. It read a field nothing writes, so `active` was always null and
+    // recipientAccountId was NEVER set — every ID-Pay was created without the
+    // account it was supposed to pay into.
+    final active = activeAccountSnapshot();
     if (active != null &&
         active.currency.toUpperCase() == _selectedCurrency.toUpperCase()) {
       recipientAccountId = manager.activeAccountId;

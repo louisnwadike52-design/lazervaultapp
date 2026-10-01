@@ -1,4 +1,5 @@
 import 'package:lazervault/src/features/group_account/presentation/widgets/join_requests_sheet.dart';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:lazervault/src/features/group_account/data/datasources/group_account_remote_data_source.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'dart:async';
@@ -1735,7 +1736,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
       userCurrency = group.contributions.first.currency.toUpperCase();
     } else {
       final activeAccount =
-          serviceLocator<AccountManager>().activeAccountDetails;
+          activeAccountSnapshot();
       if (activeAccount != null && activeAccount.currency.isNotEmpty) {
         userCurrency = activeAccount.currency.toUpperCase();
       } else {

@@ -1,4 +1,5 @@
 import 'package:lazervault/core/utils/brand_bank.dart';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'dart:async';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 
@@ -261,7 +262,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
   ({String countryCode, String currency}) _activeFilter() {
     final lm = serviceLocator<LocaleManager>();
     final am = serviceLocator<AccountManager>();
-    final acctCurrency = am.activeAccountDetails?.currency;
+    final acctCurrency = activeAccountSnapshot()?.currency;
     return (
       countryCode: lm.currentCountry,
       currency: (acctCurrency != null && acctCurrency.isNotEmpty)

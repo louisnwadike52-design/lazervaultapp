@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart' hide Trans;
@@ -78,7 +79,7 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
               context.read<PayrollCubit>().getPayRun(widget.payRunId);
             } else if (state is PayRunProcessed) {
               final pr = _lastPayRun;
-              final acct = _accountManager.activeAccountDetails;
+              final acct = activeAccountSnapshot();
               Get.toNamed(AppRoutes.payRunReceipt, arguments: {
                 'name': pr?.name ?? 'Payroll',
                 'periodStart': pr?.payPeriodStart,
@@ -91,13 +92,14 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
                 'failedPayments': state.failedPayments,
                 'reference': widget.payRunId,
                 'payRunId': widget.payRunId,
-                'sourceAccountName': acct != null && acct.accountType.isNotEmpty
-                    ? '${acct.accountType[0].toUpperCase()}${acct.accountType.substring(1)}'
-                    : acct?.accountType,
+                'sourceAccountName': acct?.display,
+                // last4 is carried on the snapshot directly: a wallet can have
+                // no full NUBAN yet while still having the four digits every
+                // receipt shows, and slicing an empty string gave null for an
+                // account that did have them.
                 'sourceAccountLast4':
-                    acct != null && acct.accountNumber.length >= 4
-                        ? acct.accountNumber
-                            .substring(acct.accountNumber.length - 4)
+                    (acct?.accountNumberLast4.isNotEmpty ?? false)
+                        ? acct!.accountNumberLast4
                         : null,
                 'processedAt': DateTime.now().toIso8601String(),
               });
@@ -632,11 +634,25 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
     // entered, run submitted, screen came back "failed", with no figure
     // saying how short the account was. Here it is a fact the user can act
     // on, and nothing has been committed.
-    final acctForFunding = _accountManager.activeAccountDetails;
+    // THIS CHECK NEVER RAN, AND CHECKED THE WRONG NUMBER.
+    //
+    // It read AccountManager.activeAccountDetails — a field nothing in the app
+    // writes — so `acctForFunding` was always null and the whole block was
+    // skipped. The warning it exists to give has never been shown to anybody.
+    //
+    // And it compared the balance against NET PAY, which is not what a pay run
+    // costs: the business is charged gross plus whatever employer
+    // contributions it owes. payroll-service refuses an underfunded run
+    // against that larger figure, so a run could pass here and be refused
+    // server-side with an amount the user had never seen.
+    final acctForFunding = activeAccountSnapshot();
     if (acctForFunding != null) {
       final short = PayRunFundingCheck.shortfall(
-        totalNet: payRun.totalNet,
-        availableBalance: acctForFunding.balance,
+        totalNet: PayRunFundingCheck.totalCost(
+          totalGross: payRun.totalGross,
+          totalEmployerContributions: payRun.totalEmployerContributions,
+        ),
+        availableBalance: acctForFunding.balanceMajor,
       );
       if (short != null) {
         await _showUnderfundedDialog(

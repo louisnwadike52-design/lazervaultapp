@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lazervault/core/services/account_manager.dart';
@@ -96,7 +97,12 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
 
   @override
   Widget build(BuildContext context) {
-    final account = serviceLocator<AccountManager>().activeAccountDetails;
+    // Was AccountManager.activeAccountDetails, which nothing writes — so this
+    // card always rendered its placeholder ("Active account", no balance)
+    // instead of naming the wallet the commitment is funded from. On a screen
+    // whose whole job is to show the funding source read-only, that is the one
+    // thing it has to get right.
+    final account = activeAccountSnapshot();
     final locale = serviceLocator<LocaleManager>();
     return Scaffold(
       backgroundColor: kUpBg,
@@ -132,10 +138,10 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
               label: 'Funding account',
               value: account == null
                   ? 'Active account'
-                  : '${_titleCase(account.accountType)} · ${_maskAccount(account.accountNumber)}',
+                  : account.display,
               sub: account == null
                   ? null
-                  : 'Balance ${account.currency} ${account.balance.toStringAsFixed(2)}',
+                  : 'Balance ${account.currency} ${account.balanceMajor.toStringAsFixed(2)}',
             ),
             const SizedBox(height: 10),
             _readOnlyTile(
@@ -235,8 +241,4 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
     );
   }
 
-  String _maskAccount(String n) =>
-      n.length <= 4 ? n : '••${n.substring(n.length - 4)}';
-  String _titleCase(String s) =>
-      s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 }

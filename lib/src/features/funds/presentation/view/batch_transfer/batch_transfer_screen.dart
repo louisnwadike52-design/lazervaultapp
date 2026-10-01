@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:flutter/services.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -165,7 +166,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
     final accountManager = GetIt.I<AccountManager>();
     // activeAccountId already holds the SPENDING account id (family-safe).
     final fromAccountId = accountManager.activeAccountId ??
-        accountManager.activeAccountDetails?.id ??
+        activeAccountSnapshot()?.id ??
         '0';
 
     Get.offNamed(
@@ -406,10 +407,18 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
         transferData['selectedAccount'] as AccountSummaryEntity?;
 
     // Client-side balance pre-check.
+    // A ZERO HERE HARD-BLOCKS A FUNDED TRANSFER.
+    //
+    // The old fallback read AccountManager.activeAccountDetails, which nothing
+    // in the app ever writes — so whenever `selectedAccount` was absent this
+    // resolved to 0.0 and every batch, however small, was refused with
+    // "Insufficient balance. Available: ₦0.00". The snapshot reads the live
+    // summaries instead; a null from it means genuinely unknown, and an
+    // unknown balance must not be the reason a transfer is blocked — the
+    // server holds the funds and is the authority.
     final available = selectedAccount?.availableBalance ??
-        GetIt.I<AccountManager>().activeAccountDetails?.balance ??
-        0.0;
-    if (totalAmount > available) {
+        activeAccountSnapshot()?.balanceMajor;
+    if (available != null && totalAmount > available) {
       Get.snackbar('Insufficient balance',
           'Available: $currencySymbol${available.toStringAsFixed(2)}',
           snackPosition: SnackPosition.BOTTOM);

@@ -50,6 +50,16 @@ class ActiveAccountSnapshot {
   /// Spendable balance in MAJOR units, net of holds and clearing.
   final double balanceMajor;
 
+  /// Full NUBAN, or empty when the wallet has not been provisioned one.
+  ///
+  /// Needed by the surfaces that have to EXCLUDE the sender from a recipient
+  /// list — a batch transfer that lets you pay yourself is a round trip that
+  /// costs a fee and moves nothing.
+  final String accountNumber;
+
+  /// Last four digits, always present even when the full number is not.
+  final String accountNumberLast4;
+
   /// Frozen, suspended or closed: a debit will be refused.
   final bool isSpendable;
 
@@ -62,6 +72,8 @@ class ActiveAccountSnapshot {
     required this.display,
     required this.currency,
     required this.balanceMajor,
+    required this.accountNumber,
+    required this.accountNumberLast4,
     required this.isSpendable,
     required this.isProvisioning,
   });
@@ -116,6 +128,8 @@ ActiveAccountSnapshot snapshotOf(AccountSummaryEntity a) {
     display: last4.isEmpty ? label : '$label •••• $last4',
     currency: a.currency.isNotEmpty ? a.currency : 'NGN',
     balanceMajor: spendable,
+    accountNumber: a.accountNumber ?? '',
+    accountNumberLast4: last4,
     isSpendable: a.status.toLowerCase() == 'active',
     isProvisioning: a.isFamilyWalletProvisioning,
   );

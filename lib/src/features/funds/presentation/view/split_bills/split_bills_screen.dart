@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -42,8 +43,10 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
   double _myShare = 0.0;
 
   String get _currency {
-    final acctDetails = GetIt.I<AccountManager>().activeAccountDetails;
-    return acctDetails?.currency ?? 'NGN';
+    // Reads the LIVE account. The old field is written by nothing in
+    // the app, so every split bill was priced in naira even on a USD
+    // wallet.
+    return activeAccountSnapshot()?.currency ?? 'NGN';
   }
 
   /// Shared resolver — see SplitBillEntity._currencySymbol. _currency comes

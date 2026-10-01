@@ -17,6 +17,27 @@ class PayRunFundingCheck {
   /// `12_400.00 + 0.10` style drift is routine in doubles. A run that exactly
   /// equals the balance is fundable — treating it as short by a rounding
   /// artefact would block a legitimate payroll.
+  /// What the business must actually have, in major units.
+  ///
+  /// NET PAY IS NOT THE COST OF A PAY RUN. The business is charged gross
+  /// (net + everything withheld from the employees) PLUS whatever employer
+  /// contributions it owes on top — pension, NSITF, ITF — which is what
+  /// payroll-service's own pre-flight checks before it pays anybody.
+  ///
+  /// Checking net alone let a run pass here and then be refused server-side
+  /// with a figure the user had never been shown. The two checks now compute
+  /// the same number: RunCost.Total() in payroll_statutory_funding.go is
+  /// NetPay + Withheld + EmployerContributions, and net + withheld IS gross.
+  ///
+  /// [totalEmployerContributions] is zero when an operator has switched the
+  /// employer contributions off, so an exempt business is not asked for money
+  /// it does not owe.
+  static double totalCost({
+    required double totalGross,
+    required double totalEmployerContributions,
+  }) =>
+      totalGross + totalEmployerContributions;
+
   static double? shortfall({
     required double totalNet,
     required double availableBalance,

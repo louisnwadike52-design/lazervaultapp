@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -320,7 +321,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
     } catch (_) {}
     try {
       final accountManager = GetIt.I<AccountManager>();
-      return accountManager.activeAccountDetails?.id;
+      return activeAccountSnapshot()?.id;
     } catch (_) {
       return null;
     }

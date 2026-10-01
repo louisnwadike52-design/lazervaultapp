@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -1744,7 +1745,14 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
   }
 
   String? _sourceCurrencyGuard() {
-    final acct = GetIt.I<AccountManager>().activeAccountDetails;
+    // THIS GUARD HAS NEVER FIRED.
+    //
+    // It read AccountManager.activeAccountDetails, which nothing in the app
+    // writes — so `cur` was always empty, the condition below was always
+    // false, and an RMB payout attempted from a USD or GBP wallet was never
+    // stopped here. The snapshot reads the live account, so the refusal the
+    // code was written to produce now actually happens.
+    final acct = activeAccountSnapshot();
     final cur = (acct?.currency ?? '').trim().toUpperCase();
     if (cur.isNotEmpty && cur != 'NGN') {
       return 'RMB payouts are funded from your Naira (NGN) wallet. Switch to a NGN account to continue.';

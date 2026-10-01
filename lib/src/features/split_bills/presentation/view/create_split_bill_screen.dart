@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -101,8 +102,10 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
   int _receiverLookupSeq = 0;
 
   String get _currency {
-    final acctDetails = GetIt.I<AccountManager>().activeAccountDetails;
-    return acctDetails?.currency ?? 'NGN';
+    // Reads the LIVE account — see active_account_snapshot.dart. The old
+    // field is never written, so a split bill created from a foreign
+    // wallet was always denominated in naira.
+    return activeAccountSnapshot()?.currency ?? 'NGN';
   }
 
   /// Admin-controlled feature flag (cached/refreshed in the background by

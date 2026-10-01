@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
@@ -140,7 +141,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     // Get currency from arguments, fallback to account manager
     final accountManager = GetIt.I<AccountManager>();
     _currency = transferData['currency'] as String? ??
-        accountManager.activeAccountDetails?.currency ??
+        activeAccountSnapshot()?.currency ??
         'NGN';
     _currencySymbol = transferData['currencySymbol'] as String? ??
         batchCurrencySymbol(_currency);
@@ -287,12 +288,16 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     final accountManager = GetIt.I<AccountManager>();
     final selectedAccount =
         transferData['selectedAccount'] as AccountSummaryEntity?;
+    // Unknown is NOT zero. The old fallback read a field nothing writes, so an
+    // absent `selectedAccount` resolved to 0.0 and refused every batch at the
+    // last screen before the PIN — the most expensive place to be blocked by a
+    // figure that was never read. A null now means genuinely unknown, and the
+    // server's hold is the authority on whether the money is there.
     final availableBalance = selectedAccount?.availableBalance ??
-        accountManager.activeAccountDetails?.balance ??
-        0.0;
+        activeAccountSnapshot()?.balanceMajor;
     final chargeTotal = totalAmount + (_totalFee ?? 0.0);
 
-    if (chargeTotal > availableBalance) {
+    if (availableBalance != null && chargeTotal > availableBalance) {
       setState(() => _isProcessing = false);
       _showError(
           'Insufficient balance. Available: $_currencySymbol${availableBalance.toStringAsFixed(2)}');

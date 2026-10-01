@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -477,7 +478,7 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
         ? batch.sourceAccountId
         // activeAccountId already holds the SPENDING account id (family-safe).
         : (accountManager.activeAccountId ??
-            accountManager.activeAccountDetails?.id ??
+            activeAccountSnapshot()?.id ??
             '');
 
     await cubit.execute(

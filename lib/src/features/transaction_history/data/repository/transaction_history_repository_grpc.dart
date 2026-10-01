@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 
 import 'package:lazervault/src/features/transaction_history/data/repository/external_transfer_merge.dart';
 
@@ -982,7 +983,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     final currency =
         (!isCryptoSwap && !isCryptoSend && supportedFiat.contains(metaCurrency))
             ? metaCurrency
-            : (accountManager.activeAccountDetails?.currency ?? 'NGN');
+            : (activeAccountSnapshot()?.currency ?? 'NGN');
 
     // Prefer the ORIGINATING reference stashed in metadata (TRF-…, C2C-…,
     // DEP-…) over the ledger row's internal bookkeeping reference

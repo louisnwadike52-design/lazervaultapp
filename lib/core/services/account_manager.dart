@@ -22,7 +22,31 @@ class AccountManager {
   /// Get current active account ID (or null if none selected)
   String? get activeAccountId => _accountIdController.value;
 
-  /// Get current active account details (or null if none selected)
+  /// Get current active account details (or null if none selected).
+  ///
+  /// ALWAYS NULL. NOTHING IN THE APP WRITES THIS.
+  ///
+  /// [setActiveAccountDetails] and [updateAccountDetails] have zero callers —
+  /// only `setActiveAccount(id)` is ever called (the carousel, the cards-summary
+  /// cubit, several payment confirmation screens) — so this BehaviorSubject is
+  /// seeded null and never updated. Eighteen places read it and every one of
+  /// them silently took its fallback: "NGN 0" over a funded account, a foreign
+  /// wallet reported as naira, an RMB currency guard that never fired, a
+  /// payroll funding warning that was never shown, and a batch transfer
+  /// refused with "Available: ₦0.00".
+  ///
+  /// USE `activeAccountSnapshot()` INSTEAD (core/services/active_account_snapshot.dart).
+  /// It resolves [activeAccountId] against the live account-cards summaries —
+  /// the same source the dashboard draws from — and returns id, display,
+  /// currency, balance in MAJOR units, account number and spendable/provisioning
+  /// flags.
+  ///
+  /// Kept rather than deleted only because [AccountDetailsEntity] is the type
+  /// the card-settings screens genuinely use; it is not a source of truth for
+  /// anything.
+  @Deprecated(
+      'Always null — nothing writes it. Use activeAccountSnapshot() from '
+      'core/services/active_account_snapshot.dart.')
   AccountDetailsEntity? get activeAccountDetails =>
       _accountDetailsController.value;
 

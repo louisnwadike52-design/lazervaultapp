@@ -59,7 +59,7 @@ class _MultiSelectRecipientBottomSheetState
   void _loadCurrentUserInfo() {
     try {
       final accountManager = GetIt.I<AccountManager>();
-      _currentUsername = accountManager.activeAccountDetails?.accountNumber;
+      _currentUsername = activeAccountSnapshot()?.accountNumber;
     } catch (_) {}
     // Defer context.read to after build
     WidgetsBinding.instance.addPostFrameCallback((_) {
