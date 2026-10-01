@@ -49,6 +49,11 @@ part 'send_crypto_screen_widgets.dart';
 // order from CryptoConfigCubit). Network list comes from the holding's
 // per-asset metadata, never hardcoded.
 
+/// What the network cross-check sheet came back with. A plain bool could not
+/// express "change it" — which is the action the user actually wants when the
+/// warning names a chain they did not choose.
+enum _NetworkCheckOutcome { confirmed, cancelled, change }
+
 class SendCryptoScreen extends StatefulWidget {
   final CryptoHolding? preselectedHolding;
 
@@ -135,6 +140,12 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
   // free-text field when the asset has no configured networks.
   List<QuidaxAssetNetwork> _networks = const [];
   String? _selectedNetwork;
+
+  /// True once the user has picked a network themselves (via the picker), as
+  /// opposed to inheriting the asset's default or one inferred from a pasted
+  /// address. Drives the pre-send confirmation: we only interrupt someone to
+  /// tell them which chain we chose FOR them.
+  bool _networkChosenByUser = false;
   bool _loadingNetworks = false;
 
   // Inline validation error for the external destination address, keyed to the
@@ -280,11 +291,19 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     }
   }
 
-  /// Resolve the network string to submit: empty for internal transfers; the
-  /// dropdown selection when networks are configured; otherwise the free-text
-  /// fallback field.
+  /// Resolve the network string to submit: empty for an ordinary internal
+  /// transfer; the dropdown selection when networks are configured; otherwise
+  /// the free-text fallback field.
   String _networkValue() {
-    if (_isInternal) return '';
+    // An ordinary internal send carries NO network — the recipient is paid at
+    // whichever deposit address they already hold.
+    //
+    // But "Send on a specific network" is an explicit request to pin one, and
+    // this returned '' for it too. The submit guard reads the same function,
+    // so every internal send with that toggle on was refused with "Pick a
+    // network to send on" — while the chosen network was displayed in the card
+    // directly above the button. The toggle could not be satisfied at all.
+    if (_isInternal && !_advancedOnNetwork) return '';
     if (_networks.isNotEmpty) return _selectedNetwork ?? '';
     return _networkController.text.trim();
   }
@@ -346,11 +365,45 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     }
   }
 
-  /// Blocking network confirmation for ON-CHAIN sends. Returns true only when
-  /// the user explicitly confirms the recipient receives on [network].
+  /// Blocking network confirmation for ON-CHAIN sends.
+  ///
+  /// Loops: "Change network" opens the picker and re-asks about whatever was
+  /// chosen, so the user can correct the chain from the warning itself. It
+  /// used to offer only "Go back", which dropped them on the form with no
+  /// indication of what to do next — and on the internal path the picker is
+  /// behind a toggle they had already set, so the only visible action was the
+  /// one that cancelled the send.
+  ///
+  /// Returns true only on an explicit confirmation of the final network.
   Future<bool> _confirmNetworkCrossCheck(String network, String token) async {
+    var net = network;
+    // Bounded: each pass needs a fresh user decision, and the cap stops a
+    // pathological loop from pinning the UI if the picker ever returns
+    // instantly.
+    for (var pass = 0; pass < 10; pass++) {
+      final outcome = await _askNetworkCrossCheck(net, token);
+      switch (outcome) {
+        case _NetworkCheckOutcome.confirmed:
+          return true;
+        case _NetworkCheckOutcome.cancelled:
+          return false;
+        case _NetworkCheckOutcome.change:
+          await _pickSendNetwork();
+          if (!mounted) return false;
+          final next = _networkValue();
+          // Picker dismissed without a choice — ask again about the same
+          // network rather than silently proceeding on it.
+          if (next.isNotEmpty) net = next;
+      }
+    }
+    return false;
+  }
+
+  Future<_NetworkCheckOutcome> _askNetworkCrossCheck(
+      String network, String token) async {
     final net = network.toUpperCase();
-    final res = await showModalBottomSheet<bool>(
+    final canChange = _networks.length > 1;
+    final res = await showModalBottomSheet<_NetworkCheckOutcome>(
       context: context,
       isDismissible: false,
       backgroundColor: const Color(0xFF1A1A1A),
@@ -384,10 +437,32 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                   height: 1.45),
             ),
             SizedBox(height: 20.h),
+            // Offered only when there is another chain to move to. With a
+            // single withdraw-enabled network the button would open a picker
+            // containing the one network already selected.
+            if (canChange) ...[
+              SizedBox(
+                width: double.infinity,
+                child: TextButton.icon(
+                  key: const Key('change_send_network'),
+                  onPressed: () =>
+                      Navigator.of(ctx).pop(_NetworkCheckOutcome.change),
+                  icon: Icon(Icons.swap_horiz_rounded,
+                      size: 18.sp, color: const Color(0xFF7C5CFF)),
+                  label: Text('Change network',
+                      style: GoogleFonts.inter(
+                          fontSize: 13.5.sp,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF7C5CFF))),
+                ),
+              ),
+              SizedBox(height: 4.h),
+            ],
             Row(children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () => Navigator.of(ctx).pop(false),
+                  onPressed: () =>
+                      Navigator.of(ctx).pop(_NetworkCheckOutcome.cancelled),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
                     side:
@@ -402,7 +477,8 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
               SizedBox(width: 12.w),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () => Navigator.of(ctx).pop(true),
+                  onPressed: () =>
+                      Navigator.of(ctx).pop(_NetworkCheckOutcome.confirmed),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF7C5CFF),
                     foregroundColor: Colors.white,
@@ -419,7 +495,8 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
         ),
       ),
     );
-    return res == true;
+    // Dismissal is not consent for an irreversible on-chain send.
+    return res ?? _NetworkCheckOutcome.cancelled;
   }
 
   /// Modal (not a toast) for network-incompatibility on the advanced internal
@@ -1253,6 +1330,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       _invalidateIntent();
       _networks = const [];
       _selectedNetwork = null;
+      _networkChosenByUser = false;
       _networkController.clear();
     });
     _loadNetworks();
@@ -2032,6 +2110,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     if (chosen == null || !mounted) return;
     setState(() {
       _selectedNetwork = chosen;
+      _networkChosenByUser = true;
       _networkAutoDetected = false; // manual pick overrides auto-detection
     });
     // A valid address for the old chain may be invalid for the new one.

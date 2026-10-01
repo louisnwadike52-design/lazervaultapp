@@ -222,6 +222,26 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
   }
 
   /// The asset ticker the receipt hero should show (received asset for swaps).
+  /// Fiat codes we trade against. Used to tell a buy/sell (fiat leg) from a
+  /// crypto→crypto swap, which has none.
+  static const _fiatCodes = {
+    'NGN', 'USD', 'GBP', 'EUR', 'KES', 'GHS', 'ZAR', 'CAD', 'XAF', 'TZS',
+    'UGX', 'RWF',
+  };
+
+  /// "Swap USDT → USDC", degrading to "Swap USDC" rather than
+  /// "Swap null → null" or "Swap  → USDC" when the source asset is unknown —
+  /// which is what a receipt built from a row that predates the
+  /// counter-currency field will hand us.
+  String _swapTitle(CryptoTransactionDetails d) {
+    final from = (d.fromCrypto ?? '').trim().toUpperCase();
+    final to = (d.toCrypto ?? d.cryptoSymbol).trim().toUpperCase();
+    if (from.isEmpty && to.isEmpty) return 'Swap';
+    if (from.isEmpty) return 'Swap to $to';
+    if (to.isEmpty) return 'Swap $from';
+    return 'Swap $from → $to';
+  }
+
   String _heroAssetSymbol(CryptoTransactionDetails d) {
     if (d.type == CryptoTransactionType.swap) {
       final to = (d.toCrypto ?? '').trim();
@@ -238,8 +258,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
     final title = switch (d.type) {
       CryptoTransactionType.buy => 'Buy ${d.cryptoSymbol}',
       CryptoTransactionType.sell => 'Sell ${d.cryptoSymbol}',
-      CryptoTransactionType.swap =>
-        'Swap ${d.fromCrypto ?? ''} → ${d.toCrypto ?? d.cryptoSymbol}',
+      CryptoTransactionType.swap => _swapTitle(d),
       CryptoTransactionType.send => 'Send ${d.cryptoSymbol}',
       CryptoTransactionType.deposit => 'Deposit ${d.cryptoSymbol}',
     };
@@ -257,7 +276,25 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
 
     // The hero amount is the fiat total the user paid / received. Fall back
     // to the fiat subtotal when the total hasn't been populated yet.
-    final heroAmount = d.totalAmount > 0 ? d.totalAmount : d.fiatAmount;
+    var heroAmount = d.totalAmount > 0 ? d.totalAmount : d.fiatAmount;
+
+    // A crypto→crypto swap has NO fiat leg. Its "total" is the amount of the
+    // asset given up (1.5 USDT), and rendering that with the naira symbol
+    // produced "₦1.50" for a trade worth about ₦2,000 — wrong by three orders
+    // of magnitude and in the wrong unit. Show the asset received, in its own
+    // unit, which is what the customer actually got.
+    final fromAsset = (d.fromCrypto ?? '').trim().toUpperCase();
+    final toAsset = (d.toCrypto ?? d.cryptoSymbol).trim().toUpperCase();
+    final isCryptoToCrypto = d.type == CryptoTransactionType.swap &&
+        fromAsset.isNotEmpty &&
+        !_fiatCodes.contains(fromAsset);
+    var heroCurrency = fiatCurrency;
+    if (isCryptoToCrypto) {
+      final qty = d.cryptoQuantity ?? 0;
+      heroAmount =
+          qty > 0 ? qty : (double.tryParse(d.cryptoAmount) ?? heroAmount);
+      heroCurrency = toAsset;
+    }
 
     final assetAmountLabel = switch (d.type) {
       CryptoTransactionType.buy => 'You receive',
@@ -276,7 +313,12 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
         'To asset': d.toCrypto!,
       if (d.cryptoAmount.isNotEmpty)
         assetAmountLabel: '${d.cryptoAmount} ${d.cryptoSymbol}',
-      if (d.pricePerUnit > 0)
+      // Rate between the two ASSETS for a crypto→crypto swap — "1 USDC =
+      // ₦1.03" was the fiat field reinterpreted, and meant nothing.
+      if (isCryptoToCrypto && d.fiatAmount > 0 && heroAmount > 0)
+        'Rate':
+            '1 $fromAsset = ${(heroAmount / d.fiatAmount).toStringAsFixed(6)} $toAsset',
+      if (!isCryptoToCrypto && d.pricePerUnit > 0)
         'Rate': '1 ${d.cryptoSymbol} = $sym${_money(d.pricePerUnit)}',
       // No 'Subtotal' / 'Trading fee' split: the platform margin is carried in
       // the RATE the user was quoted and accepted, not charged on top. Showing
@@ -287,7 +329,15 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
       // Network fee stays: it is a real third-party on-chain cost the user
       // genuinely pays on a send, not our margin.
       if (d.networkFee > 0) 'Network fee': '$sym${_money(d.networkFee)}',
-      if (heroAmount > 0) 'Total': '$sym${_money(heroAmount)}',
+      // "You sell / You pay" is the OTHER side of a swap: without it the
+      // receipt named only the asset received, so the source crypto appeared
+      // nowhere on the page or in the shared PDF.
+      if (isCryptoToCrypto && d.fiatAmount > 0)
+        'You swap': '${d.fiatAmount.toStringAsFixed(6)} $fromAsset',
+      if (heroAmount > 0)
+        'Total': isCryptoToCrypto
+            ? '${heroAmount.toStringAsFixed(6)} $toAsset'
+            : '$sym${_money(heroAmount)}',
       'Payment method': d.paymentMethod,
       'Settlement': 'Instant',
       'Custody': 'Managed by licensed partner',
@@ -301,7 +351,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
           ? '${d.cryptoAmount} ${d.cryptoSymbol}'
           : null,
       amount: heroAmount,
-      currency: fiatCurrency,
+      currency: heroCurrency,
       createdAt: r.timestamp,
       status: _mapStatus(r.status),
       flow: flow,

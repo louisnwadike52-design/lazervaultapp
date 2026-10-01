@@ -17,6 +17,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
+import 'package:lazervault/core/utils/transfer_metadata_keys.dart';
 
 class TransferReceiptScreen extends StatefulWidget {
   const TransferReceiptScreen({super.key});
@@ -34,7 +35,12 @@ class TransferReceiptScreen extends StatefulWidget {
   /// Same guard the deposit receipt already uses
   /// (DepositReceiptScreen.isShowing) and for the same reason: the receipt IS
   /// the confirmation, so nothing should pop the same claim over it.
-  static bool isShowing = false;
+  /// A DEPTH, not a flag: a batch receipt can have a leg receipt pushed on
+  /// top of it. With a plain bool the leg's dispose() set it back to false
+  /// while the batch receipt was still on screen, re-arming the very toast
+  /// this guard exists to suppress.
+  static int _showingDepth = 0;
+  static bool get isShowing => _showingDepth > 0;
 
   @override
   State<TransferReceiptScreen> createState() => _TransferReceiptScreenState();
@@ -80,7 +86,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
   @override
   void initState() {
     super.initState();
-    TransferReceiptScreen.isShowing = true;
+    TransferReceiptScreen._showingDepth++;
     transferDetails = Get.arguments as Map<String, dynamic>? ?? {};
 
     // Telemetry: single-transfer receipt is a successful terminal view.
@@ -376,34 +382,64 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
   /// receipt is indistinguishable from the same transfer sent via SendFunds.
   void _openItemReceipt(Map<String, dynamic> t) {
     final currency = transferDetails['currency'] as String? ?? 'NGN';
-    Get.toNamed(AppRoutes.transferProof, arguments: <String, dynamic>{
-      'amount': (t['amount'] as num?)?.toDouble() ?? 0.0,
-      'fee': (t['fee'] as num?)?.toDouble() ?? 0.0,
-      'currency': currency,
-      'currencySymbol': _currencySymbol(currency),
-      'status': (t['status'] ?? '').toString(),
-      'reference': (t['reference'] ?? '').toString(),
-      'transferId': (t['transferId'] ?? '').toString(),
-      'liveStatusReference': (t['reference'] ?? '').toString(),
-      'recipientName': (t['recipientName'] ?? 'Recipient').toString(),
-      'recipientAccountMasked': (t['recipientAccount'] ?? '').toString(),
-      'recipientBankName': (t['destinationBankName'] ?? '').toString(),
-      'recipientBankCode': (t['destinationBankCode'] ?? '').toString(),
-      'transferType': (t['transferType'] ?? '').toString(),
-      'timestamp': transferDetails['timestamp'],
-      'senderAccountName': transferDetails['senderAccountName'],
-      'senderAccountInfo': transferDetails['senderAccountInfo'],
-      // This is a drill-in, not a fresh settlement — don't double-count.
-      'settledEmitted': true,
-      // Carry the batch down with the leg so the item receipt can offer its
-      // siblings and the full batch. Without this the drill-in is a dead end:
-      // the only way back to another recipient is out and in again.
-      'parentBatch': transferDetails,
-      // True when the batch receipt is the route directly beneath this one, so
-      // "All recipients" can pop back to the LIVE instance instead of pushing
-      // a second copy of a screen the user is already standing on.
-      'batchReceiptBelow': true,
-    });
+    // The sheet is its own route — dismiss it, or the leg receipt opens
+    // underneath it and the user sees nothing happen.
+    if (Get.isBottomSheetOpen ?? false) Get.back();
+    // preventDuplicates: false is LOAD-BEARING. This screen is registered at
+    // AppRoutes.transferProof, and a batch receipt drilling into one of its
+    // legs is a push from that route TO that route. GetX refuses such a push
+    // by default and returns null — silently. That is why tapping a recipient
+    // did nothing at all: no error, no navigation, no feedback.
+    Get.toNamed(AppRoutes.transferProof,
+        preventDuplicates: false,
+        arguments: <String, dynamic>{
+          'amount': (t['amount'] as num?)?.toDouble() ?? 0.0,
+          'fee': (t['fee'] as num?)?.toDouble() ?? 0.0,
+          'currency': currency,
+          'currencySymbol': _currencySymbol(currency),
+          'status': (t['status'] ?? '').toString(),
+          'reference': (t['reference'] ?? '').toString(),
+          'transferId': (t['transferId'] ?? '').toString(),
+          'liveStatusReference': (t['reference'] ?? '').toString(),
+          'recipientName': (t['recipientName'] ?? 'Recipient').toString(),
+          'recipientAccountMasked': (t['recipientAccount'] ?? '').toString(),
+          // Resolve the institution the SAME way send funds does: a batch leg
+          // often carries only the destination CODE, and passing an empty
+          // name through left the leg receipt naming no bank at all. The
+          // shared resolver maps code → name, so the batch leg, the send
+          // funds receipt and the history row all name one institution.
+          'recipientBankName': _legBankName(t),
+          'recipientBankCode': (t['destinationBankCode'] ?? '').toString(),
+          'transferType': (t['transferType'] ?? '').toString(),
+          'timestamp': transferDetails['timestamp'],
+          'senderAccountName': transferDetails['senderAccountName'],
+          'senderAccountInfo': transferDetails['senderAccountInfo'],
+          // This is a drill-in, not a fresh settlement — don't double-count.
+          'settledEmitted': true,
+          // Carry the batch down with the leg so the item receipt can offer its
+          // siblings and the full batch. Without this the drill-in is a dead end:
+          // the only way back to another recipient is out and in again.
+          'parentBatch': transferDetails,
+          // True when the batch receipt is the route directly beneath this one, so
+          // "All recipients" can pop back to the LIVE instance instead of pushing
+          // a second copy of a screen the user is already standing on.
+          'batchReceiptBelow': true,
+        });
+  }
+
+  /// The institution name for a batch leg.
+  ///
+  /// Prefers what the backend sent; falls back to the shared code→name map
+  /// when only the destination code is present, which is the common shape for
+  /// a batch item. An internal (Lazervault→Lazervault) leg has no institution
+  /// and returns empty, so the receipt omits the row rather than inventing a
+  /// bank for a wallet transfer.
+  String _legBankName(Map<String, dynamic> t) {
+    final name = (t['destinationBankName'] ?? '').toString().trim();
+    if (name.isNotEmpty) return name;
+    final code = (t['destinationBankCode'] ?? '').toString().trim();
+    if (code.isEmpty) return '';
+    return TransferMetadataKeys.bankNameForCode(code) ?? '';
   }
 
   /// The batch payload this receipt was drilled into from, if any.
@@ -438,7 +474,9 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
       Get.back();
       return;
     }
-    Get.toNamed(AppRoutes.transferProof, arguments: {
+    // Same reason as _openItemReceipt: leg receipt → batch receipt is a push
+    // from this route to this route.
+    Get.toNamed(AppRoutes.transferProof, preventDuplicates: false, arguments: {
       ...parent,
       'settledEmitted': true,
     });
@@ -446,7 +484,9 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
 
   @override
   void dispose() {
-    TransferReceiptScreen.isShowing = false;
+    if (TransferReceiptScreen._showingDepth > 0) {
+      TransferReceiptScreen._showingDepth--;
+    }
     _wsSub?.cancel();
     _statusPollTimer?.cancel();
     _itemsRev.dispose();
