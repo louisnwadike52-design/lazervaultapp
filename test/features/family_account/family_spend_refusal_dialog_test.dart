@@ -31,28 +31,56 @@ void main() {
   });
 
   group('familyRefusalIsAboutFunds', () {
-    test('recognises the real server refusals', () {
-      const samples = [
-        'You have 20.00 left of your 200.00 allowance',
-        'Insufficient funds in the family pool',
-        'That is more than your remaining allocation',
-        'This exceeds your single-transaction limit of 5,000.00',
-        'Not enough available balance',
-      ];
-      for (final s in samples) {
+    // The strings below are the REAL ones, copied from the two generators that
+    // produce them, so the classification is pinned to the server rather than to
+    // my idea of what the server says:
+    //
+    //   utility-payments  service.FamilyRefusalMessage  (bills — customer copy)
+    //   accounts-service  classifyFamilySpendRefusal    (the terser Reason that
+    //                     core-payments forwards verbatim for send-funds/TagPay)
+    const fundsMessages = [
+      // utility-payments, all five funds codes
+      'The family pool has ₦180.00 left, which doesn\'t cover this payment. '
+          'Anyone in the family can add money to the pool.',
+      'You have ₦20.00 left of your allocation, which doesn\'t cover this '
+          'payment. Ask a family admin to allocate more.',
+      'This is above your ₦5000.00 limit for a single payment. Try a smaller '
+          'amount, or ask a family admin to raise it.',
+      'This would put you over your ₦10000.00 daily limit — you have ₦250.00 '
+          'left today. Try a smaller amount, or again tomorrow.',
+      'This would put you over your ₦50000.00 monthly limit — you have ₦250.00 '
+          'left this month. Try a smaller amount, or ask a family admin to raise it.',
+      // accounts-service Reason strings, as core-payments forwards them
+      'amount 500.00 exceeds per-transaction limit 200.00',
+      'this would exceed your daily limit of 1000.00 (already spent 900.00)',
+      'this would exceed your monthly limit of 20000.00 (already spent 19900.00)',
+      'amount 500.00 exceeds remaining balance 20.00',
+      'family pool balance is too low for this spend',
+    ];
+
+    const nonFundsMessages = [
+      // utility-payments
+      'Your membership of this family account isn\'t active, so you can\'t spend '
+          'from it yet. A family admin can reactivate you.',
+      'You\'re not a member of this family account.',
+      'This family account is frozen, so payments from it are paused. A family '
+          'admin can unfreeze it.',
+      // accounts-service
+      'not a member of this family account',
+      'your family membership is not active',
+    ];
+
+    test('recognises every funds refusal the server actually sends', () {
+      for (final s in fundsMessages) {
         expect(familyRefusalIsAboutFunds(s), isTrue, reason: s);
       }
     });
 
     test('does not claim a non-funds refusal is about money', () {
-      // Both arrive under the same gRPC code as an allowance shortfall, and
-      // neither is fixed by topping anything up.
-      const samples = [
-        'This account is frozen',
-        'Spending is switched off for this member',
-        'You are not a member of this family account',
-      ];
-      for (final s in samples) {
+      // These arrive under the same gRPC code as an allowance shortfall, and
+      // none of them is fixed by topping anything up — titling one "Not enough
+      // in your allowance" would send someone to add money they already have.
+      for (final s in nonFundsMessages) {
         expect(familyRefusalIsAboutFunds(s), isFalse, reason: s);
       }
     });
