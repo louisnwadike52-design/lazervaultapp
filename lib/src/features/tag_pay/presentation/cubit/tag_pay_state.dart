@@ -33,14 +33,26 @@ class TagPayError extends TagPayState {
   /// unknown outcome is how a single payment becomes two.
   final bool isIndeterminate;
 
+  /// The server REFUSED this spend on its merits — a limit, a cap, a family
+  /// allowance, an inactive account — rather than failing to carry it out.
+  ///
+  /// From gRPC FailedPrecondition. [message] already says what to change, so a
+  /// screen can present it as a decision with a way out instead of a red
+  /// "Payment Failed" snackbar that reads like a fault. Family wallets are where
+  /// this mattered most: a member over their allowance was told the same thing a
+  /// network outage would have told them.
+  final bool isSpendRefusal;
+
   const TagPayError(
     this.message, {
     this.isRetryable = false,
     this.isIndeterminate = false,
+    this.isSpendRefusal = false,
   });
 
   @override
-  List<Object?> get props => [message, isRetryable, isIndeterminate];
+  List<Object?> get props =>
+      [message, isRetryable, isIndeterminate, isSpendRefusal];
 }
 
 /// Emitted when a TagPay operation fails specifically due to an incorrect PIN.

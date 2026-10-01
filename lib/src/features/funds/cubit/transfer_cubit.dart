@@ -315,6 +315,12 @@ class TransferCubit extends Cubit<TransferState> {
       emit(TransferFailure(
         message: GrpcErrorHandler.userFriendlyMessage(e),
         isRetryable: GrpcErrorHandler.isRetryable(e),
+        // FailedPrecondition is core-payments' code for "we refused this on its
+        // merits": a limit, a cap, a family allowance, an inactive account. The
+        // message it carries is written for the payer and tells them what to
+        // change, so a screen must be able to tell this apart from a transport
+        // failure and present it properly rather than as a passing flash.
+        isSpendRefusal: e.code == StatusCode.failedPrecondition,
       ));
       recordOutcome('failure');
     } catch (e) {

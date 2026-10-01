@@ -14,6 +14,7 @@ import '../../../account_cards_summary/domain/entities/account_summary_entity.da
 import '../cubit/tag_pay_cubit.dart';
 import '../cubit/tag_pay_state.dart';
 import '../widgets/tag_lifecycle_actions.dart';
+import '../../../family_account/presentation/widgets/family_spend_refusal_dialog.dart';
 import '../../../../../core/types/app_routes.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
@@ -57,6 +58,30 @@ class _TagPaymentConfirmationScreenState
 
   /// Refuse a tag raised against this user. Tagged-user-only and pending-only,
   /// both enforced server-side; no money moves, so there is no PIN gate.
+  /// The chosen source wallet, but only when it is a Family & Friends one.
+  ///
+  /// isFamilyAccount rather than a string compare on accountType: the family
+  /// summary carries the DISPLAY label 'Family & Friends' there, so matching
+  /// 'family' would never fire.
+  AccountSummaryEntity? _familySourceAccount() {
+    final st = context.read<AccountCardsSummaryCubit>().state;
+    final summaries = switch (st) {
+      AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+      AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+      _ => <AccountSummaryEntity>[],
+    };
+    for (final a in summaries) {
+      // Matches on the SPENDING account id, which is what this screen selects
+      // and what the server was asked to debit — for a family card that is the
+      // pool's virtual account, not the group id.
+      if (a.spendingAccountId == _selectedAccountId ||
+          a.id.toString() == _selectedAccountId) {
+        return a.isFamilyAccount ? a : null;
+      }
+    }
+    return null;
+  }
+
   Future<void> _declineTag() async {
     if (_isDeclining || _isProcessing) return;
 
@@ -213,6 +238,28 @@ class _TagPaymentConfirmationScreenState
               _isProcessing = false;
               _isDeclining = false;
             });
+
+            // FAMILY WALLET REFUSAL — a dialog, not a red snackbar.
+            //
+            // The client-side balance check above passes for an allocation-mode
+            // family wallet whose POOL covers the tag while this member's
+            // allowance does not — and for a per-transaction or daily cap it
+            // passes too. So the refusal arrives from the server, and "Payment
+            // Failed" in red is the wrong frame: nothing failed, the spend was
+            // declined and there is something the user can do about it.
+            if (!wasDeclining && state.isSpendRefusal) {
+              final refusalAccount = _familySourceAccount();
+              if (refusalAccount != null && context.mounted) {
+                showFamilySpendRefusalDialog(
+                  context,
+                  message: state.message,
+                  mode: familyFundModeFrom(
+                      refusalAccount.fundDistributionMode),
+                  familyName: refusalAccount.accountName,
+                );
+                return;
+              }
+            }
             // An indeterminate outcome is NOT a failure: the debit may already
             // have settled. Saying "Payment Failed" over a message that tells
             // the user it might have gone through is what makes them pay twice,

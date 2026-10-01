@@ -503,6 +503,10 @@ class TagPayCubit extends Cubit<TagPayState> {
             TagPayError(
               GrpcErrorHandler.userFriendlyMessage(e),
               isRetryable: GrpcErrorHandler.isRetryable(e),
+              // The server refused the spend rather than failing at it. Carried
+              // so the screen can explain a family allowance shortfall properly
+              // instead of flashing "Payment Failed".
+              isSpendRefusal: e.code == StatusCode.failedPrecondition,
             ));
       }
     } catch (e) {

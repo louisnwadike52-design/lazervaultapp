@@ -133,90 +133,96 @@ Future<void> _showFcyDialog(
       backgroundColor: AppSurfaces.pageTop,
       insetPadding: EdgeInsets.symmetric(horizontal: 24.w),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.r)),
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(24.w, 28.h, 24.w, 20.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 64.w,
-              height: 64.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppSurfaces.accentPurple.withValues(alpha: 0.15),
+      child: SingleChildScrollView(
+        // Same reason as the family refusal dialog: long copy plus a large text
+        // scale overflows a height-constrained Dialog, and an overflow stripe
+        // across the primary button is worse than a scroll.
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(24.w, 28.h, 24.w, 20.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64.w,
+                height: 64.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppSurfaces.accentPurple.withValues(alpha: 0.15),
+                ),
+                child: Icon(icon, size: 30.sp, color: AppSurfaces.accentPurple),
               ),
-              child: Icon(icon, size: 30.sp, color: AppSurfaces.accentPurple),
-            ),
-            SizedBox(height: 18.h),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 19.sp,
-                fontWeight: FontWeight.w700,
+              SizedBox(height: 18.h),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 19.sp,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
-            SizedBox(height: 10.h),
-            Text(
-              body,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
-                fontSize: 13.5.sp,
-                height: 1.5,
+              SizedBox(height: 10.h),
+              Text(
+                body,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 13.5.sp,
+                  height: 1.5,
+                ),
               ),
-            ),
-            if (footnote != null) ...[
-              SizedBox(height: 14.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.schedule_rounded,
-                      size: 14.sp, color: Colors.white.withValues(alpha: 0.5)),
-                  SizedBox(width: 6.w),
-                  Text(
-                    footnote,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5),
-                      fontSize: 12.sp,
+              if (footnote != null) ...[
+                SizedBox(height: 14.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.schedule_rounded,
+                        size: 14.sp,
+                        color: Colors.white.withValues(alpha: 0.5)),
+                    SizedBox(width: 6.w),
+                    Text(
+                      footnote,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        fontSize: 12.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+              SizedBox(height: 22.h),
+              SizedBox(
+                width: double.infinity,
+                height: 50.h,
+                child: ElevatedButton(
+                  onPressed: onPrimary,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppSurfaces.accentPurple,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r),
                     ),
                   ),
-                ],
+                  child: Text(
+                    primaryLabel,
+                    style:
+                        TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
+                  ),
+                ),
               ),
+              if (secondaryLabel != null)
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: Text(
+                    secondaryLabel,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.6),
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                ),
             ],
-            SizedBox(height: 22.h),
-            SizedBox(
-              width: double.infinity,
-              height: 50.h,
-              child: ElevatedButton(
-                onPressed: onPrimary,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppSurfaces.accentPurple,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14.r),
-                  ),
-                ),
-                child: Text(
-                  primaryLabel,
-                  style:
-                      TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
-            if (secondaryLabel != null)
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: Text(
-                  secondaryLabel,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6),
-                    fontSize: 14.sp,
-                  ),
-                ),
-              ),
-          ],
+          ),
         ),
       ),
     ),

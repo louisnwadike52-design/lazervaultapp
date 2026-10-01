@@ -38,13 +38,26 @@ final class TransferFailure extends TransferState {
   final bool isRetryable;
   final bool isKYCError;
 
+  /// The server REFUSED this spend on its merits — a limit, a cap, an allowance
+  /// or an account state — rather than failing to carry it out.
+  ///
+  /// Set from gRPC FailedPrecondition, which is the code core-payments uses for
+  /// every such refusal. The distinction matters because a refusal has no retry:
+  /// [message] already says what to change, so a screen can show it properly
+  /// instead of flashing it for two seconds the way a transport error deserves.
+  /// Family wallets are where this hurt most — see
+  /// showFamilySpendRefusalDialog.
+  final bool isSpendRefusal;
+
   const TransferFailure(
       {required this.message,
       this.isRetryable = false,
-      this.isKYCError = false});
+      this.isKYCError = false,
+      this.isSpendRefusal = false});
 
   @override
-  List<Object?> get props => [message, isRetryable, isKYCError];
+  List<Object?> get props =>
+      [message, isRetryable, isKYCError, isSpendRefusal];
 }
 
 /// Emitted when a transfer fails specifically due to an incorrect PIN.

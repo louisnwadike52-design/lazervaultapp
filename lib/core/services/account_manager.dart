@@ -47,6 +47,29 @@ class AccountManager {
   bool get isActiveAccountFrozen => _activeAccountFrozen;
   void setActiveAccountFrozen(bool frozen) => _activeAccountFrozen = frozen;
 
+  // Whether the CURRENTLY ACTIVE account is a Family & Friends wallet, and how
+  // that family distributes money ('shared_pool' | 'equal_split' |
+  // 'custom_allocation'). Kept in sync by the account carousel next to the
+  // frozen flag, and for the same reason: a surface that has to explain a
+  // REFUSAL may not have the summaries cubit in scope.
+  //
+  // The concrete case is a bill purchase. The failure dialog lives in
+  // bill_failure_dialog and is called from four different processing screens,
+  // none of which carries the source wallet — so without this the one refusal
+  // that needs family-specific wording ("your allowance", not "check the
+  // details above") could not be told apart from an ordinary one.
+  //
+  // Plain fields, not a stream: they are read at the moment a dialog opens, and
+  // the carousel is the single place the active account changes.
+  bool _activeAccountIsFamily = false;
+  String? _activeFamilyFundMode;
+  bool get isActiveAccountFamily => _activeAccountIsFamily;
+  String? get activeFamilyFundMode => _activeFamilyFundMode;
+  void setActiveFamilyContext({required bool isFamily, String? fundMode}) {
+    _activeAccountIsFamily = isFamily;
+    _activeFamilyFundMode = isFamily ? fundMode : null;
+  }
+
   /// Set the active account by ID
   ///
   /// This should be called when the user selects an account from the account summary.

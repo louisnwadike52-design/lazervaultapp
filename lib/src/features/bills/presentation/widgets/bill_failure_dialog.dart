@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:grpc/grpc.dart';
 
+import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/server_refusal_sheet.dart';
+import 'package:lazervault/src/features/family_account/presentation/widgets/family_spend_refusal_dialog.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 
 /// How a bill purchase failed, from the app's point of view.
@@ -136,6 +139,25 @@ Future<void> showBillFailure(
       return;
 
     case BillFailureKind.correctable:
+      // A FAMILY WALLET refusal is correctable in the gRPC sense and not at all
+      // in the human one: there is nothing on this screen to check. The wallet
+      // may hold plenty while THIS member's allowance does not, and the way out
+      // depends on whether the family runs a shared pool or per-member
+      // allowances — so it gets its own dialog with its own action.
+      //
+      // The active wallet comes off AccountManager, mirrored there by the account
+      // carousel, because this function is called from four processing screens
+      // and none of them carries the source account.
+      final am = serviceLocator<AccountManager>();
+      if (am.isActiveAccountFamily && familyRefusalIsAboutFunds(message)) {
+        if (!context.mounted) return;
+        await showFamilySpendRefusalDialog(
+          context,
+          message: message,
+          mode: familyFundModeFrom(am.activeFamilyFundMode),
+        );
+        return;
+      }
       await showServerRefusal(
         context,
         title: "$serviceLabel couldn't be completed",

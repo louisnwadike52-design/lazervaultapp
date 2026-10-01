@@ -11,6 +11,7 @@ import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/family_account/presentation/widgets/family_spend_refusal_dialog.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
@@ -2386,6 +2387,27 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   }
 
   /// Reset all recurring-related state. Called on failure, cancellation, and cleanup.
+  /// The selected source wallet, but only when it is a Family & Friends one.
+  ///
+  /// Family is the one account type where a refusal has a different cause and a
+  /// different remedy from "you are out of money": the wallet may hold plenty
+  /// while THIS member's allowance does not. Returning null for every other type
+  /// keeps the existing error handling untouched.
+  AccountSummaryEntity? _familySourceAccount() {
+    final st = context.read<AccountCardsSummaryCubit>().state;
+    final summaries = switch (st) {
+      AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+      AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+      _ => <AccountSummaryEntity>[],
+    };
+    if (summaries.isEmpty || selectedCardIndex >= summaries.length) return null;
+    final a = summaries[selectedCardIndex];
+    // isFamilyAccount, not accountType: the family summary sets accountType to
+    // the DISPLAY string 'Family & Friends', so comparing against 'family' here
+    // would never match and the dialog would never appear.
+    return a.isFamilyAccount ? a : null;
+  }
+
   void _resetRecurringState() {
     _recurringSetupPending = false;
     _transferSucceeded = false;
@@ -2510,7 +2532,10 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       child: BlocConsumer<TransferCubit, TransferState>(
         // Only fire listener on actual state transitions (prevents re-firing on rebuild)
         listenWhen: (previous, current) => previous != current,
-        listener: (context, transferState) {
+        // async because a family-wallet refusal is awaited as a dialog rather
+        // than flashed — BlocConsumer ignores the returned future, which is
+        // correct: nothing downstream depends on when the user dismisses it.
+        listener: (context, transferState) async {
           // Access AccountCardsSummaryCubit state inside the listener
           // AccountCardsSummaryCubit is still provided higher up (likely main.dart or AppRouter itself)
           // or needs to be accessed differently if not.
@@ -2810,6 +2835,45 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
 
             // Reset all recurring state to prevent stale flags
             _resetRecurringState();
+
+            // FAMILY WALLET REFUSAL — a dialog, not a two-second flash.
+            //
+            // A member spending beyond their allowance (or beyond a shared pool)
+            // is refused with copy that names the shortfall, and all the user saw
+            // was that sentence appearing in the PIN modal for two seconds before
+            // the modal closed itself. The fix is not a retry, and the way out
+            // depends on how the family distributes money — so this gets a dialog
+            // with an action instead.
+            //
+            // Checked BEFORE the PIN-modal flash, deliberately: showing the flash
+            // and then the dialog would say the same thing twice, the first time
+            // too fast to read. The modal is dismissed silently and the dialog
+            // carries the message.
+            //
+            // Gated on a genuine spend REFUSAL from the server, so a network
+            // failure on a family wallet still behaves like a network failure.
+            if (transferState.isSpendRefusal) {
+              if (!context.mounted) return;
+              final refusalAccount = _familySourceAccount();
+              if (refusalAccount != null) {
+                if (pinModalKey.currentState != null) {
+                  try {
+                    Navigator.of(context).pop();
+                  } catch (_) {}
+                } else if (Get.isDialogOpen ?? false) {
+                  Get.back();
+                }
+                if (!context.mounted) return;
+                await showFamilySpendRefusalDialog(
+                  context,
+                  message: transferState.message,
+                  mode: familyFundModeFrom(
+                      refusalAccount.fundDistributionMode),
+                  familyName: refusalAccount.accountName,
+                );
+                return; // handled — no flash, no snackbar, no error sheet
+              }
+            }
 
             // Show failure in PIN modal if open, otherwise show snackbar
             final modalState = pinModalKey.currentState;

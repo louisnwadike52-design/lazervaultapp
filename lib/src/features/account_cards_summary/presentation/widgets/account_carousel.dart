@@ -407,14 +407,22 @@ class _AccountCarouselState extends State<AccountCarousel> {
   void _syncActiveFrozenFlag() {
     if (widget.accountSummaries.isEmpty) {
       _accountManager.setActiveAccountFrozen(false);
+      _accountManager.setActiveFamilyContext(isFamily: false);
       return;
     }
     final idx =
         _currentIndex >= 0 && _currentIndex < widget.accountSummaries.length
             ? _currentIndex
             : 0;
-    _accountManager
-        .setActiveAccountFrozen(widget.accountSummaries[idx].isFrozen);
+    final active = widget.accountSummaries[idx];
+    _accountManager.setActiveAccountFrozen(active.isFrozen);
+    // Same mirror, for the same reason: a refusal dialog opened from a screen
+    // without the summaries cubit still has to know whether it is explaining a
+    // family allowance or an ordinary wallet.
+    _accountManager.setActiveFamilyContext(
+      isFamily: active.isFamilyAccount,
+      fundMode: active.fundDistributionMode,
+    );
   }
 
   /// Called when user swipes the carousel - automatically sets active account
@@ -428,11 +436,14 @@ class _AccountCarouselState extends State<AccountCarousel> {
     // account (the pool) — that's the source the payments path debits + limits.
     if (widget.accountSummaries.isNotEmpty &&
         index < widget.accountSummaries.length) {
-      final newAccountId = widget.accountSummaries[index].spendingAccountId;
-      _accountManager.setActiveAccount(newAccountId);
+      final active = widget.accountSummaries[index];
+      _accountManager.setActiveAccount(active.spendingAccountId);
       // Keep the global frozen flag aligned with the newly-active account.
-      _accountManager
-          .setActiveAccountFrozen(widget.accountSummaries[index].isFrozen);
+      _accountManager.setActiveAccountFrozen(active.isFrozen);
+      _accountManager.setActiveFamilyContext(
+        isFamily: active.isFamilyAccount,
+        fundMode: active.fundDistributionMode,
+      );
     }
   }
 
