@@ -18,6 +18,7 @@ import 'package:uuid/uuid.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/core/utils/transfer_metadata_keys.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_outcome_notice.dart';
 
 class TransferReceiptScreen extends StatefulWidget {
   const TransferReceiptScreen({super.key});
@@ -101,6 +102,20 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
         AnalyticsService.instance.trackSendFundsSettled(status: 'success');
       }
     }
+
+    // Report the recurring rule's outcome HERE, once this screen is on
+    // screen and staying.
+    //
+    // Both flows used to announce it on the screen they navigated away from:
+    // the long flow raised a snackbar and replaced the route in the next
+    // statement (so it flashed and vanished), and both held a blocking modal
+    // in front of the receipt the user had just paid for. Posted after the
+    // first frame so the sheet has a mounted route to attach to. Does
+    // nothing when the transfer had no recurring rule.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      showRecurringOutcomeNotice(context, transferDetails);
+    });
 
     // Generate QR data on init
     _generateQrData();

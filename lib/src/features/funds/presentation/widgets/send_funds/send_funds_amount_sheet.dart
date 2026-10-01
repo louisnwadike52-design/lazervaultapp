@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/funds/cubit/transfer_state.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_transfer_config.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/schedule_repeat_sheet.dart';
 import 'package:lazervault/src/features/widgets/category_selection.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/insufficient_funds_sheet.dart';
 part 'send_funds_amount_sheet_widgets.dart';
 
 /// Short-flow amount entry — a bottom sheet that collects the transfer amount
@@ -280,6 +281,22 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
     final lastFee = widget.transferCubit.lastFeeLoaded;
     final feeMinor = lastFee?.fee ?? 0;
     if ((minor + feeMinor) / 100.0 > widget.availableBalanceMajor) {
+      // A sheet, not a red line under the field.
+      //
+      // This is a REFUSAL, not a validation hint: the figures matter (amount,
+      // fee, total, balance), the user cannot act on it from here, and "Add
+      // money" is an instruction with somewhere to go. The long flow has
+      // always said it this way; the short flow set six words in red and
+      // offered nothing. Same helper now, so the two cannot drift.
+      showInsufficientFunds(
+        context,
+        currencySymbol: _symbol,
+        amountMajor: minor / 100.0,
+        feeMajor: feeMinor / 100.0,
+        availableMajor: widget.availableBalanceMajor,
+      );
+      // The inline line is still set, so the field stays visibly in an error
+      // state behind the sheet and after it is dismissed.
       setState(() => _error = feeMinor > 0
           ? 'Amount + fee exceeds your available balance'
           : 'Amount exceeds your available balance');

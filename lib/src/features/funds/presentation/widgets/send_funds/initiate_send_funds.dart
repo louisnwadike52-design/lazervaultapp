@@ -47,9 +47,10 @@ import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import 'package:lazervault/src/features/p2p_chat/domain/repositories/p2p_chat_repository.dart';
 import 'package:uuid/uuid.dart';
-import 'package:lazervault/core/shared_widgets/server_refusal_sheet.dart';
 import 'dart:async';
 import 'package:lazervault/core/utils/logger.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/insufficient_funds_sheet.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_outcome_notice.dart';
 
 class InitiateSendFunds extends StatefulWidget {
   final RecipientModel? recipient;
@@ -126,8 +127,15 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   // Guards against duplicate recurring setup and tracks created transfer for rollback
   bool _recurringSetupInitiated = false;
   String? _createdRecurringTransferId;
+
+  /// Attempt counter, kept only for the dispatch log line.
+  ///
+  /// The in-place retry it used to cap is gone: the recurring outcome now
+  /// travels to the receipt, where "Set it up" opens Recurring transfers.
+  /// Retrying here would have needed the transfer's verification token to
+  /// live on in navigation state, which is not somewhere a credential
+  /// belongs.
   int _recurringRetryCount = 0;
-  static const _maxRecurringRetries = 2;
 
   // Tracks the pending recipient save so we can await it before navigation.
   // Prevents race condition where Get.offAllNamed disposes the tree before
@@ -1128,26 +1136,20 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
         transferAmountMajor + (isExternalTransfer ? estimatedFee : 0.0);
 
     if (totalRequired > availableBalance) {
-      final String message;
-      if (isExternalTransfer && estimatedFee > 0) {
-        message =
-            'Insufficient balance. Amount ($currencySymbol${NumberFormat('#,##0.00').format(transferAmountMajor)}) + Fee ($currencySymbol${NumberFormat('#,##0.00').format(estimatedFee)}) = $currencySymbol${NumberFormat('#,##0.00').format(totalRequired)} exceeds your balance of $currencySymbol${NumberFormat('#,##0.00').format(availableBalance)}';
-      } else {
-        message =
-            'Your balance ($currencySymbol${NumberFormat('#,##0.00').format(availableBalance)}) is insufficient for this transfer of $currencySymbol${NumberFormat('#,##0.00').format(transferAmountMajor)}. Please top up your account or use a different account.';
-      }
+      // Wording and presentation moved to insufficient_funds_sheet so the
+      // SHORT flow says exactly this too — it used to set a six-word red line
+      // under its amount field for the same refusal.
       // A refusal, not a failure, and the longest message in this flow: the fee
       // variant names four separate figures and then explains the arithmetic
       // between them. Five seconds of translucent red over the bottom of the form
       // was not enough to read it, let alone act on it — and "top up your account"
       // is an instruction with somewhere to go, so it gets a button.
-      showServerRefusal(
+      showInsufficientFunds(
         context,
-        title: 'Insufficient funds',
-        message: message,
-        hint: 'Nothing has been sent.',
-        actionLabel: 'Add money',
-        onAction: () => Get.toNamed(AppRoutes.depositFunds),
+        currencySymbol: currencySymbol,
+        amountMajor: transferAmountMajor,
+        feeMajor: isExternalTransfer ? estimatedFee : 0,
+        availableMajor: availableBalance,
       );
       return;
     }
@@ -1720,8 +1722,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                         // the PIN sheet then shows what's left
                                         // of THIS member's allocation before
                                         // the PIN is entered.
-                                        final memberAllowance =
-                                            selectedSummary?.memberSpendAllowance;
+                                        final memberAllowance = selectedSummary
+                                            ?.memberSpendAllowance;
 
                                         if (FeatureFlags
                                             .sendFundsPinIsRequired) {
@@ -1735,7 +1737,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                           // the cache only when it matches this amount+type and
                                           // otherwise re-quote. Internal transfers resolve to free.
                                           final bool longIsInternal =
-                                              BrandBank.isOurs(_recipient!.bankName);
+                                              BrandBank.isOurs(
+                                                  _recipient!.bankName);
                                           final longFeeQuote = await context
                                               .read<TransferCubit>()
                                               .ensureFeeForAmount(
@@ -2096,6 +2099,10 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
 
   /// Navigate to receipt screen after transfer success.
   /// Called immediately if no recurring setup, or deferred until recurring resolves.
+  /// How the recurring rule went, handed to the receipt so it can report it
+  /// there rather than on a screen about to be replaced.
+  Map<String, dynamic>? _recurringOutcomeArgs;
+
   void _navigateToReceipt(BuildContext context, TransferSuccess transferState) {
     if (!mounted || _hasNavigatedToReceipt) return;
     _hasNavigatedToReceipt = true;
@@ -2211,7 +2218,12 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     }
 
     // Navigate directly to receipt
-    Get.offAllNamed(AppRoutes.transferProof, arguments: transferDetails);
+    Get.offAllNamed(AppRoutes.transferProof, arguments: {
+      ...transferDetails,
+      // Absent when this transfer had no recurring rule, so the receipt
+      // shows nothing.
+      ...?_recurringOutcomeArgs,
+    });
   }
 
   /// Non-blocking: ensure a P2P financial connection exists for internal recipients.
@@ -2290,100 +2302,6 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
         );
     print(
         "_fireRecurringSetup: Recurring transfer setup initiated (attempt ${_recurringRetryCount + 1}).");
-  }
-
-  /// Show retry dialog when recurring setup fails but transfer succeeded.
-  void _showRecurringRetryDialog(BuildContext context, String errorMessage) {
-    if (!mounted) {
-      // Widget disposed — navigate via Get which works globally
-      if (_pendingTransferSuccess != null) {
-        _navigateToReceipt(context, _pendingTransferSuccess!);
-      }
-      return;
-    }
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        icon: Icon(Icons.warning_amber_rounded,
-            color: const Color(0xFFFB923C), size: 48.sp),
-        title: Text(
-          'Recurring Setup Failed',
-          style: TextStyle(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Your transfer was successful, but the recurring payment could not be set up.',
-              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
-            ),
-            SizedBox(height: 8.h),
-            Container(
-              padding: EdgeInsets.all(10.w),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                errorMessage,
-                style:
-                    TextStyle(color: const Color(0xFFEF4444), fontSize: 12.sp),
-              ),
-            ),
-            if (_recurringRetryCount >= _maxRecurringRetries)
-              Padding(
-                padding: EdgeInsets.only(top: 8.h),
-                child: Text(
-                  'You can set up recurring payments later from the transfer history.',
-                  style: TextStyle(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 12.sp,
-                      fontStyle: FontStyle.italic),
-                ),
-              ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              if (_pendingTransferSuccess != null) {
-                _navigateToReceipt(context, _pendingTransferSuccess!);
-              }
-            },
-            child: Text(
-              'Continue Without Recurring',
-              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
-            ),
-          ),
-          if (_recurringRetryCount < _maxRecurringRetries)
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                _recurringRetryCount++;
-                _recurringSetupInitiated = false;
-                _fireRecurringSetup(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-              ),
-              child: Text(
-                'Retry Setup',
-                style: TextStyle(color: Colors.white, fontSize: 14.sp),
-              ),
-            ),
-        ],
-      ),
-    );
   }
 
   /// Reset all recurring-related state. Called on failure, cancellation, and cleanup.
@@ -2504,21 +2422,34 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
           _recurringSetupPending = false;
           _recurringSetupInitiated = false;
           _createdRecurringTransferId = recurringState.transfer.id;
-          Get.snackbar('Recurring Payment Set', recurringState.message,
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: const Color(0xFF10B981),
-              colorText: Colors.white,
-              duration: const Duration(seconds: 4));
-          // If transfer already succeeded and was waiting for recurring, navigate now
+          // The outcome travels WITH the receipt instead of being announced
+          // here. This snackbar used to be raised on the screen that the very
+          // next statement tears down — exactly the "appears before the
+          // receipt which quickly disappears it" that was reported.
+          _recurringOutcomeArgs =
+              recurringOutcomeArgs(RecurringOutcome.created);
           if (_transferSucceeded && _pendingTransferSuccess != null) {
             _navigateToReceipt(context, _pendingTransferSuccess!);
+          } else {
+            // The transfer has not resolved yet, so there is no receipt to
+            // carry it to. Say it here; this route is staying.
+            Get.snackbar('Recurring payment set', recurringState.message,
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: const Color(0xFF10B981),
+                colorText: Colors.white,
+                duration: const Duration(seconds: 4));
           }
         } else if (recurringState is RecurringTransferError) {
           _recurringSetupPending = false;
           _recurringSetupInitiated = false;
-          // Transfer succeeded but recurring failed — show retry dialog instead of navigating
+          // The transfer succeeded and only the schedule failed. Go to the
+          // receipt FIRST — it is what the user is waiting for — and report
+          // the schedule there, dismissibly, over a screen that stays.
           if (_transferSucceeded && _pendingTransferSuccess != null) {
-            _showRecurringRetryDialog(context, recurringState.message);
+            _recurringOutcomeArgs = recurringOutcomeArgs(
+                RecurringOutcome.failed,
+                error: recurringState.message);
+            _navigateToReceipt(context, _pendingTransferSuccess!);
           } else {
             // Transfer hasn't resolved yet — just show a snackbar
             Get.snackbar('Recurring Payment Failed', recurringState.message,
@@ -2867,8 +2798,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                 await showFamilySpendRefusalDialog(
                   context,
                   message: transferState.message,
-                  mode: familyFundModeFrom(
-                      refusalAccount.fundDistributionMode),
+                  mode: familyFundModeFrom(refusalAccount.fundDistributionMode),
                   familyName: refusalAccount.accountName,
                 );
                 return; // handled — no flash, no snackbar, no error sheet

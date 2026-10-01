@@ -80,6 +80,7 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_outcome_notice.dart';
 
 class SelectRecipients extends StatefulWidget {
   /// When true, render the short send-funds flow: the AddRecipient widget is
@@ -140,7 +141,6 @@ class _SelectRecipientsState extends State<SelectRecipients>
   Map<String, dynamic>? _shortPendingReceipt;
   // Max automatic-retry offers when recurring setup fails after a successful
   // transfer (parity with the long flow's _maxRecurringRetries).
-  static const int _maxShortRecurringRetries = 2;
   // Active method tab inside the embedded AddRecipient — drives which saved
   // recipients show (Bank → external only, Lazervault user → internal only).
   AddRecipientMethod _shortMethod = AddRecipientMethod.bankDetails;
@@ -538,13 +538,21 @@ class _SelectRecipientsState extends State<SelectRecipients>
               // under the search bar on every screen size, pulling everything
               // below it upward.
               final double topInset = MediaQuery.of(context).padding.top;
-              // Long flow: 16 top pad + 40 back row + 24 gap + 48 search bar = 128,
-              // plus an 8px peek so the rounded sheet tucks just under the search
-              // field → 136. Short flow hides the search bar, so there's no field
-              // to tuck under — give the header clear breathing room before the
-              // white sheet begins (16 top + 44 back row + ~30 gap = 90).
+              // Long flow: 16 top pad + 40 back row + 20 gap + 48 search bar
+              // + 20 gap = 144. The gaps above and below the field are EQUAL,
+              // so it reads as centred in the purple band rather than resting
+              // on the sheet.
+              //
+              // It used to be 24 above and an 8px "peek" below, which tucked
+              // the rounded sheet right under the field — the bar looked
+              // stuck to the white edge with no room beneath it. Reported as
+              // "should have spacing between it and the start of the white
+              // widget. Just centralize it vertically."
+              //
+              // Short flow hides the search bar, so there is no field to
+              // centre — it keeps its own breathing room (16 + 44 + ~30 = 90).
               final double sheetTop =
-                  topInset + (widget.shortFlow ? 90.h : 136.h);
+                  topInset + (widget.shortFlow ? 90.h : 144.h);
               return Stack(children: [
                 // Top Purple Section with Gradient.
                 // Height carries extra slack below `sheetTop` so the inner
@@ -715,7 +723,10 @@ class _SelectRecipientsState extends State<SelectRecipients>
                         // flow hides this entirely; there the user picks from the
                         // inline saved list or the quick actions (scan / add user).
                         if (!widget.shortFlow) ...[
-                          SizedBox(height: 24.h),
+                          // Matches the 20 below it in sheetTop — the two
+                          // gaps are what make the field look centred, so
+                          // they move together.
+                          SizedBox(height: 20.h),
                           GestureDetector(
                             onTap: () =>
                                 _openSavedRecipientsSheet(savedOnly: true),
@@ -1278,10 +1289,13 @@ class _SelectRecipientsState extends State<SelectRecipients>
           },
         );
         if (!ok) return;
-        // PIN sheet is closed now — safe to surface the recurring retry dialog
-        // (parity with the long flow) before navigating to the receipt.
+        // Set the recurring rule up, then go STRAIGHT to the receipt carrying
+        // the outcome. It used to hold the user here behind a blocking modal
+        // about the schedule while the receipt — the thing they are waiting
+        // for after paying — had not been shown yet. See
+        // recurring_outcome_notice.
         if (recurring != null && mounted) {
-          await _setupRecurringShortWithRetry(r, active, minor, shortNarration,
+          await _setupRecurringShort(r, active, minor, shortNarration,
               recurring, transactionId, usedToken);
         }
         _navShortReceipt();
@@ -1294,7 +1308,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
             expenseCategory: expenseCategory);
         if (!mounted) return;
         if (recurring != null) {
-          await _setupRecurringShortWithRetry(
+          await _setupRecurringShort(
               r, active, minor, shortNarration, recurring, transactionId, '');
         }
         _navShortReceipt();
@@ -1494,12 +1508,20 @@ class _SelectRecipientsState extends State<SelectRecipients>
     // (parity with the long flow) without racing the PIN sheet dismissal.
   }
 
-  /// Deferred recurring setup for the short flow, AWAITED with a retry dialog —
-  /// parity with the long flow's _fireRecurringSetup + _showRecurringRetryDialog.
-  /// The transfer already succeeded; this only sets up the recurring rule,
-  /// reusing the same transactionId + verificationToken. Returns when the user
-  /// either succeeds or chooses to continue without recurring.
-  Future<void> _setupRecurringShortWithRetry(
+  /// The outcome of the recurring setup, handed to the receipt so it can
+  /// report it there. Null when this transfer had no recurring rule.
+  Map<String, dynamic>? _recurringOutcomeArgs;
+
+  /// Deferred recurring setup for the short flow. The transfer already
+  /// succeeded; this only creates the recurring rule, reusing the same
+  /// transactionId + verificationToken.
+  ///
+  /// It no longer blocks on a retry dialog. The user has just paid and is
+  /// waiting for a receipt — a modal about a schedule, on the screen they
+  /// paid FROM, delays the confirmation they actually want. The outcome
+  /// rides to the receipt instead, where it is shown over a screen that is
+  /// staying put.
+  Future<void> _setupRecurringShort(
     RecipientModel r,
     AccountSummaryEntity active,
     int amountMinor,
@@ -1510,8 +1532,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
   ) async {
     final cubit =
         _recurringTransferCubit ??= serviceLocator<RecurringTransferCubit>();
-    var attempt = 0;
-    while (true) {
+    {
       cubit.createRecurringTransfer(
         // Match the immediate transfer's source (spendingAccountId) for
         // consistency. NOTE: the backend CreateRecurringTransfer resolves the
@@ -1538,98 +1559,19 @@ class _SelectRecipientsState extends State<SelectRecipients>
               s is RecurringTransferCreated || s is RecurringTransferError)
           .timeout(const Duration(seconds: 20), onTimeout: () => cubit.state);
 
-      if (state is RecurringTransferCreated) return; // done — recurring set up
+      if (state is RecurringTransferCreated) {
+        _recurringOutcomeArgs = recurringOutcomeArgs(RecurringOutcome.created);
+        return;
+      }
 
       final message = state is RecurringTransferError
           ? state.message
-          : 'Recurring setup timed out. You can set it up later from transfer history.';
-      attempt++;
-      if (!mounted) return;
-      final retry = await _showShortRecurringRetryDialog(
-        message,
-        canRetry: attempt <= _maxShortRecurringRetries,
+          : 'The request timed out before we heard back.';
+      _recurringOutcomeArgs = recurringOutcomeArgs(
+        RecurringOutcome.failed,
+        error: message,
       );
-      if (retry != true) return; // "Continue Without Recurring"
     }
-  }
-
-  /// Retry dialog shown when short-flow recurring setup fails but the transfer
-  /// succeeded. Returns true to retry, false/null to continue without recurring.
-  /// Mirrors the long flow's _showRecurringRetryDialog.
-  Future<bool?> _showShortRecurringRetryDialog(String errorMessage,
-      {required bool canRetry}) {
-    return showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        icon: Icon(Icons.warning_amber_rounded,
-            color: const Color(0xFFFB923C), size: 48.sp),
-        title: Text(
-          'Recurring Setup Failed',
-          style: TextStyle(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Your transfer was successful, but the recurring payment could not be set up.',
-              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
-            ),
-            SizedBox(height: 8.h),
-            Container(
-              padding: EdgeInsets.all(10.w),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                errorMessage,
-                style:
-                    TextStyle(color: const Color(0xFFEF4444), fontSize: 12.sp),
-              ),
-            ),
-            if (!canRetry)
-              Padding(
-                padding: EdgeInsets.only(top: 8.h),
-                child: Text(
-                  'You can set up recurring payments later from the transfer history.',
-                  style: TextStyle(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 12.sp,
-                      fontStyle: FontStyle.italic),
-                ),
-              ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(
-              'Continue Without Recurring',
-              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
-            ),
-          ),
-          if (canRetry)
-            ElevatedButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-              ),
-              child: Text(
-                'Retry Setup',
-                style: TextStyle(color: Colors.white, fontSize: 14.sp),
-              ),
-            ),
-        ],
-      ),
-    );
   }
 
   /// The logged-in user's REAL name (the actual sender). Used for the receipt's
@@ -1701,7 +1643,11 @@ class _SelectRecipientsState extends State<SelectRecipients>
 
   void _navShortReceipt() {
     if (_shortPendingReceipt != null) {
-      Get.offAllNamed(AppRoutes.transferProof, arguments: _shortPendingReceipt);
+      Get.offAllNamed(AppRoutes.transferProof, arguments: {
+        ..._shortPendingReceipt!,
+        // Null when there was no recurring rule, so the receipt shows nothing.
+        ...?_recurringOutcomeArgs,
+      });
     }
   }
 
