@@ -341,6 +341,7 @@ class CryptoRepositoryImpl implements CryptoRepository {
                 totalAmount:
                     t.fiatValue, // proto uses 'fiatValue' not 'totalAmount'
                 fees: t.fee,
+                counterCurrency: t.fiatCurrency,
                 timestamp: t.timestamp
                     .toDateTime()
                     .toLocal(), // proto Timestamp (UTC) → local for display
@@ -363,6 +364,12 @@ class CryptoRepositoryImpl implements CryptoRepository {
       case 'buy':
         return TransactionType.buy;
       case 'swap':
+      // The engine stores a crypto→crypto trade as "convert". The backend now
+      // normalises it, but an older service or a replayed row can still send
+      // the raw word, and falling through to the default below would label it
+      // a purchase — which is how a USDT→USDC swap rendered as "Buy USDC".
+      case 'convert':
+      case 'exchange':
         return TransactionType.swap;
       case 'sell':
         return TransactionType.sell;
@@ -373,7 +380,10 @@ class CryptoRepositoryImpl implements CryptoRepository {
       case 'deposit':
         return TransactionType.deposit;
       default:
-        return TransactionType.buy;
+        // NOT buy. A type we do not recognise has no known direction, and
+        // claiming "buy" puts a purchase in front of the user for something
+        // that may have been the opposite. A swap claims neither side.
+        return TransactionType.swap;
     }
   }
 

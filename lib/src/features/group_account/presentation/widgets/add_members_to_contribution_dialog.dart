@@ -635,7 +635,7 @@ class _AddMembersToContributionDialogState
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                    '$names hasn\'t finished setting up their LazerVault account, '
+                    '$names hasn\'t finished setting up their Lazervault account, '
                     'so they can\'t be added yet. They\'ll be able to join once they do.'),
                 backgroundColor: const Color(0xFFF59E0B),
                 duration: const Duration(seconds: 5),

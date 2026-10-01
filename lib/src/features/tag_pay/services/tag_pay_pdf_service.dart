@@ -1221,7 +1221,7 @@ class TagPayPdfService {
           metadata['From'],
           currentUserName,
         ])) ??
-        'LazerVault Wallet';
+        'Lazervault Wallet';
 
     // Every metadata entry becomes a label/value row, in insertion order.
     // Minor-unit plumbing (kobo / crypto minor scales) is humanized to naira

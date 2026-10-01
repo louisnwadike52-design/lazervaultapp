@@ -330,9 +330,9 @@ class EscrowPdfService {
                   borderRadius: pw.BorderRadius.circular(6),
                 ),
                 child: pw.Text(
-                  'Funds are held by LazerVault in escrow and released to the '
+                  'Funds are held by Lazervault in escrow and released to the '
                   'seller upon buyer confirmation; disputes are arbitrated by '
-                  'LazerVault.',
+                  'Lazervault.',
                   style: _ts(fontSize: 9, color: PdfColors.grey700),
                   textAlign: pw.TextAlign.justify,
                 ),
@@ -488,7 +488,7 @@ class EscrowPdfService {
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
                 pw.Text(
-                    '(C) ${DateTime.now().year} LazerVault Technologies Ltd',
+                    '(C) ${DateTime.now().year} Lazervault Technologies Ltd',
                     style: _ts(fontSize: 9, color: PdfColors.grey600)),
                 pw.SizedBox(height: 2),
                 pw.Text('Page 1 of 1',
@@ -505,11 +505,11 @@ class EscrowPdfService {
             borderRadius: pw.BorderRadius.circular(4),
           ),
           child: pw.Text(
-            'LazerVault Technologies Ltd is a financial technology company. '
-            'Funds in escrow are held by LazerVault and released to the seller '
-            'upon buyer confirmation; disputes are arbitrated by LazerVault. '
+            'Lazervault Technologies Ltd is a financial technology company. '
+            'Funds in escrow are held by Lazervault and released to the seller '
+            'upon buyer confirmation; disputes are arbitrated by Lazervault. '
             'For any queries regarding this transaction, please contact support '
-            'through the LazerVault app.',
+            'through the Lazervault app.',
             style: _ts(fontSize: 8, color: PdfColors.grey600),
             textAlign: pw.TextAlign.justify,
           ),

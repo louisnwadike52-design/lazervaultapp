@@ -18,6 +18,7 @@ import '../cubit/epin_cubit.dart';
 import '../cubit/epin_state.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/core/utils/ng_msisdn.dart';
 
 /// Single-page recharge-PIN (ePIN) purchase — streamlined "one page, very fast"
 /// flow. Pick network → pick a denomination → set quantity → phone → inline
@@ -169,7 +170,7 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
   }
 
   bool get _phoneValid =>
-      RegExp(r'^0\d{10}$').hasMatch(_phoneController.text.trim());
+      isValidNgMsisdn(_phoneController.text);
   bool get _ready =>
       _network != null && _denomination != null && _quantity > 0 && _phoneValid;
 
@@ -180,7 +181,12 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
     final cubit = context.read<EPinCubit>();
     final n = _network!;
     final denom = _denomination!;
-    final phone = _phoneController.text.trim();
+    // Send the canonical 11-digit form, never the raw field text: the button
+    // now accepts a 10-digit number typed under the +234 prefix, and a
+    // provider that wants 11 would reject it. normaliseNgMsisdn cannot be null
+    // here — the submit path is gated on isValidNgMsisdn.
+    final phone = normaliseNgMsisdn(_phoneController.text) ??
+        _phoneController.text.trim();
     final accountId = serviceLocator<AccountManager>().activeAccountId ?? '';
     final txnId = 'epin_${DateTime.now().millisecondsSinceEpoch}_$phone';
 

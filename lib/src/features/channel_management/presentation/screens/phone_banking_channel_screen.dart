@@ -109,7 +109,7 @@ class _PhoneBankingChannelScreenState extends State<PhoneBankingChannelScreen> {
             children: [
               const ChannelHeader(
                 title: 'Phone Banking',
-                subtitle: 'Call LazerVault and bank by voice',
+                subtitle: 'Call Lazervault and bank by voice',
                 icon: Icons.phone_in_talk_rounded,
                 accent: _accent,
               ),
@@ -150,7 +150,7 @@ class _PhoneBankingChannelScreenState extends State<PhoneBankingChannelScreen> {
     return ChannelSection(
       title: 'Phone banking',
       caption: active
-          ? 'Calls from your profile number reach the LazerVault voice agent.'
+          ? 'Calls from your profile number reach the Lazervault voice agent.'
           : 'Turn this on to bank by calling us. We verify the line with a '
               'one-time code first.',
       child: Column(
@@ -245,7 +245,7 @@ class _PhoneBankingChannelScreenState extends State<PhoneBankingChannelScreen> {
             icon: Icons.tune_rounded,
             title: 'Verification strictness',
             body:
-                'Set by LazerVault and tuned centrally, so a stolen recording '
+                'Set by Lazervault and tuned centrally, so a stolen recording '
                 'cannot pass by lowering your own threshold.',
           ),
         ],
@@ -439,7 +439,7 @@ class _PhoneBankingChannelScreenState extends State<PhoneBankingChannelScreen> {
                 fontSize: 16,
                 fontWeight: FontWeight.w700)),
         content: Text(
-          'Calls from your number will no longer reach the LazerVault voice '
+          'Calls from your number will no longer reach the Lazervault voice '
           'agent. Your account and money are unaffected, and you can switch it '
           'back on at any time.',
           style: GoogleFonts.inter(

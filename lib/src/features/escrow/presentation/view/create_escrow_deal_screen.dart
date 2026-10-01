@@ -545,7 +545,7 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
             Expanded(
               child: picked == null
                   ? Text(
-                      'Search for the seller on LazerVault',
+                      'Search for the seller on Lazervault',
                       style: GoogleFonts.inter(
                           color: EscrowTheme.textSecondary, fontSize: 13.sp),
                     )
@@ -584,7 +584,7 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
     final result = await UnifiedUserSearchSheet.show(
       context,
       title: 'Find seller',
-      subtitle: 'The seller must be on LazerVault to accept and deliver.',
+      subtitle: 'The seller must be on Lazervault to accept and deliver.',
       internalOnly: true,
     );
     if (result == null || !mounted) return;
@@ -592,7 +592,7 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
       // Defensive: internalOnly should preclude this, but committing a buyer's
       // money to an unresolvable counterparty is not a risk worth trusting a
       // flag with.
-      _snack('That recipient is not a LazerVault user', EscrowTheme.error);
+      _snack('That recipient is not a Lazervault user', EscrowTheme.error);
       return;
     }
     // The backend resolves sellerQuery as a STRING: exact username first, then

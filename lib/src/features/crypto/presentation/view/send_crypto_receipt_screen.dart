@@ -282,7 +282,7 @@ class _SendCryptoReceiptScreenState extends State<SendCryptoReceiptScreen> {
     // transaction history as its own wallet debit.)
     final feeVal = double.tryParse(_feeDecimal) ?? 0;
     if (feeVal > 0) {
-      metadata['LazerVault fee'] = '${_fmtCrypto(feeVal)} $sym';
+      metadata['Lazervault fee'] = '${_fmtCrypto(feeVal)} $sym';
       final totalVal = double.tryParse(_totalDecimal) ?? 0;
       if (totalVal > 0) {
         metadata['Total sent'] = '${_fmtCrypto(totalVal)} $sym';

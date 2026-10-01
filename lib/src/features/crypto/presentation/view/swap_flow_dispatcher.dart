@@ -21,6 +21,7 @@ import '../models/crypto_transaction_models.dart';
 import '../widgets/crypto_kyc_gate.dart';
 import '../widgets/quote_timer_card.dart';
 import 'crypto_receipt_screen.dart';
+import 'package:lazervault/src/features/crypto/data/crypto_wallet_label.dart';
 
 // ============================================================================
 // runSwapFlow — entry point used by buy_crypto_screen and sell_crypto_screen
@@ -488,7 +489,7 @@ CryptoTransactionDetails _buildReceiptDetails(
     // to infer it from a balance that did not match the headline.
     tradingFee: isConvert ? 0.0 : amounts.feeInFiat,
     totalAmount: fiatAmount,
-    paymentMethod: 'Lazervault Wallet',
+    paymentMethod: cryptoSettlementAccountLabel(),
     fromCrypto: isConvert ? fromCryptoSymbol.toUpperCase() : null,
     toCrypto: isConvert ? cryptoSymbol.toUpperCase() : null,
   );

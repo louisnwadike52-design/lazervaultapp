@@ -10,6 +10,7 @@ import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../models/crypto_transaction_models.dart';
 import 'crypto_receipt_screen.dart';
+import 'package:lazervault/src/features/crypto/data/crypto_wallet_label.dart';
 
 /// Processing screen shown during crypto transaction execution.
 /// Displays animated progress and handles success/error states.
@@ -23,7 +24,11 @@ class CryptoProcessingScreen extends StatefulWidget {
   final String cryptoId;
   final double cryptoQuantity;
   final String transactionPin;
-  final String paymentMethod;
+
+  /// Null means "the account the server settles on" — resolved at render
+  /// time rather than frozen into a default, so one spelling of the
+  /// account name exists in the app.
+  final String? paymentMethod;
 
   const CryptoProcessingScreen({
     super.key,
@@ -36,7 +41,7 @@ class CryptoProcessingScreen extends StatefulWidget {
     required this.cryptoId,
     required this.cryptoQuantity,
     required this.transactionPin,
-    this.paymentMethod = 'Lazervault Wallet',
+    this.paymentMethod,
   });
 
   @override
@@ -187,7 +192,7 @@ class _CryptoProcessingScreenState extends State<CryptoProcessingScreen>
       totalAmount: widget.transactionType == CryptoTransactionType.buy
           ? total
           : widget.fiatAmount - fee,
-      paymentMethod: widget.paymentMethod,
+      paymentMethod: widget.paymentMethod ?? cryptoSettlementAccountLabel(),
       cryptoId: widget.cryptoId,
       cryptoQuantity: widget.cryptoQuantity,
     );

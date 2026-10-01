@@ -1229,10 +1229,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
     // the tap. _isTransacting covers exactly that window (set before
     // runSwapFlow, cleared after), and _isLoading covers the data loads.
     final busy = _isLoading || _isTransacting;
-    final isEnabled = _fromHolding != null &&
-        _toCrypto != null &&
-        _hasValidAmount &&
-        !busy;
+    final isEnabled =
+        _fromHolding != null && _toCrypto != null && _hasValidAmount && !busy;
 
     return SizedBox(
       width: double.infinity,

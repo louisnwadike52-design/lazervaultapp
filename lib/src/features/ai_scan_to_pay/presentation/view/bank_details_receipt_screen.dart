@@ -508,7 +508,7 @@ class _BankDetailsReceiptScreenState extends State<BankDetailsReceiptScreen>
     );
 
     final shareText = '''
-LazerVault - Payment Receipt
+Lazervault - Payment Receipt
 
 Amount: ${currencyFormatter.format(receipt.amount)}
 Recipient: ${receipt.recipientName}
@@ -519,7 +519,7 @@ Date: ${receipt.formattedDate} at ${receipt.formattedTime}
 Status: ${receipt.statusDisplayText}
 
 ${receipt.description != null && receipt.description!.isNotEmpty ? 'Description: ${receipt.description}\n' : ''}
-Powered by LazerVault
+Powered by Lazervault
     ''';
 
     SharePlus.instance.share(ShareParams(

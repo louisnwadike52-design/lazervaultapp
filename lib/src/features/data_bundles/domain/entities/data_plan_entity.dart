@@ -55,6 +55,13 @@ class DataPlanEntity extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [variationId, name, price, network, availability, planFamily, familyLabel];
+  List<Object?> get props => [
+        variationId,
+        name,
+        price,
+        network,
+        availability,
+        planFamily,
+        familyLabel
+      ];
 }

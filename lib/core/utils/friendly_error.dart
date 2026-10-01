@@ -25,7 +25,7 @@ const String serverErrorMessage =
 /// to choose — a gRPC `unavailable`, a deadline exceeded. Naming both is honest;
 /// picking one and being wrong is what the other two constants exist to avoid.
 const String unreachableErrorMessage =
-    'We could not reach LazerVault. Check your connection, or try again in a '
+    'We could not reach Lazervault. Check your connection, or try again in a '
     'moment.';
 
 /// Shown when a PAYMENT PROVIDER refuses us — an IP allowlist, a revoked

@@ -3859,7 +3859,7 @@ ${contribution != null ? '''
 ''' : ''}
 Thank you for your contribution! 🙏
 
-Powered by LazerVault 🚀
+Powered by Lazervault 🚀
 ''';
   }
 

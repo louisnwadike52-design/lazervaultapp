@@ -828,8 +828,8 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
           : '';
       await SharePlus.instance.share(
         ShareParams(
-          text: 'Join "${widget.group.name}" on LazerVault: ${link.url}$expiry',
-          subject: 'Join ${widget.group.name} on LazerVault',
+          text: 'Join "${widget.group.name}" on Lazervault: ${link.url}$expiry',
+          subject: 'Join ${widget.group.name} on Lazervault',
           sharePositionOrigin: _shareOrigin(),
         ),
       );

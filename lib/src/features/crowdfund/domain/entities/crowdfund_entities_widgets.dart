@@ -128,7 +128,7 @@ class CrowdfundDonor extends Equatable {
   String get displayLabel {
     if (isAnonymous) return 'Anonymous Donor';
     final trimmed = displayName.trim();
-    return trimmed.isEmpty ? 'LazerVault User' : trimmed;
+    return trimmed.isEmpty ? 'Lazervault User' : trimmed;
   }
 
   Map<String, dynamic> toJson() => {

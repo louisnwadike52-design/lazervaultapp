@@ -113,7 +113,7 @@ class AccountUpdateAnnouncementService {
         body: (decoded['body'] ?? '').toString().trim().isNotEmpty
             ? decoded['body'].toString().trim()
             : 'We\'ve upgraded the banking infrastructure behind your '
-                'LazerVault wallet. Your deposit account number has changed as '
+                'Lazervault wallet. Your deposit account number has changed as '
                 'part of this upgrade. Your balance, transaction history and '
                 'everything else remain exactly as they were — only the '
                 'account number you share to receive money is new. Please use '

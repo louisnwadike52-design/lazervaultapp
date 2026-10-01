@@ -294,7 +294,7 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
     return [
       'Hello,',
       '',
-      'Here are my LazerVault account details for your transfer.',
+      'Here are my Lazervault account details for your transfer.',
       '',
       ...details,
       '',
@@ -342,7 +342,7 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
     try {
       await SharePlus.instance.share(ShareParams(
         text: text,
-        subject: 'My LazerVault account details',
+        subject: 'My Lazervault account details',
         sharePositionOrigin: origin,
       ));
     } catch (e) {

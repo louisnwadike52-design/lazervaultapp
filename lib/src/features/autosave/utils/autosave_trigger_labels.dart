@@ -54,10 +54,10 @@ class AutoSaveTriggerLabels {
   static String descriptionOf(TriggerType t) {
     switch (t) {
       case TriggerType.onDeposit:
-        return 'Every time money lands in your LazerVault wallet, save a '
+        return 'Every time money lands in your Lazervault wallet, save a '
             'fixed amount or a percentage of that deposit.';
       case TriggerType.scheduled:
-        return 'Move a fixed amount from your LazerVault wallet into savings '
+        return 'Move a fixed amount from your Lazervault wallet into savings '
             'on a schedule you choose — daily, weekly or monthly.';
       case TriggerType.roundUp:
         return 'Round each wallet spend up to the nearest amount you pick and '
@@ -67,7 +67,7 @@ class AutoSaveTriggerLabels {
             'money lands there. You confirm each save — nothing is pulled '
             'automatically.';
       case TriggerType.scheduledExternal:
-        return 'Pulls your set amount from your linked bank into LazerVault on '
+        return 'Pulls your set amount from your linked bank into Lazervault on '
             'your schedule, using Direct Debit. A bank-debit fee applies per '
             'pull.';
       case TriggerType.unknown:

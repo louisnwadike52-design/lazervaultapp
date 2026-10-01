@@ -250,7 +250,7 @@ class IntlDataPdfService {
   /// so it survives SMS/WhatsApp transcoding intact.
   static Future<void> shareReceipt(IntlDataReceiptData data) async {
     final file = await generateReceipt(data);
-    final summary = StringBuffer('LazerVault international data receipt\n')
+    final summary = StringBuffer('Lazervault international data receipt\n')
       ..writeln('Reference: ${_ascii(data.displayReference)}')
       ..writeln('Recipient: ${_ascii(data.phoneNumber)}')
       ..writeln('Paid: ${_money(data.senderCurrency, data.amountPaid)}');

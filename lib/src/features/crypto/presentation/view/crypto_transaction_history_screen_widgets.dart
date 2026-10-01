@@ -14,6 +14,10 @@ class CryptoTransactionHistory {
   final String? fromCrypto;
   final String? toCrypto;
 
+  /// The other side of the trade: NGN for a buy/sell, the asset given up for
+  /// a crypto→crypto swap. Empty when the backend did not say.
+  final String counterCurrency;
+
   const CryptoTransactionHistory({
     required this.id,
     required this.type,
@@ -26,7 +30,25 @@ class CryptoTransactionHistory {
     required this.fee,
     this.fromCrypto,
     this.toCrypto,
+    this.counterCurrency = '',
   });
+
+  /// True when [gbpAmount] is NOT money in the user's own currency.
+  ///
+  /// A USDT→USDC swap reports its value as 1.5 USDT. Rendering that with the
+  /// global naira symbol produced "₦1.50" for a trade worth about ₦2,000 —
+  /// off by three orders of magnitude and in the wrong unit.
+  bool get valueIsCrypto {
+    final c = counterCurrency.trim().toUpperCase();
+    if (c.isEmpty) return false;
+    return !const {'NGN', 'USD', 'GBP', 'EUR', 'KES', 'GHS', 'ZAR', 'CAD'}
+        .contains(c);
+  }
+
+  /// The value column, in whatever unit the value is actually denominated in.
+  String formattedValue(String fiatSymbol) => valueIsCrypto
+      ? '${gbpAmount.toStringAsFixed(6)} ${counterCurrency.toUpperCase()}'
+      : '$fiatSymbol${gbpAmount.toStringAsFixed(2)}';
 }
 
 /// Single source of truth for turning a history row into the receipt the
@@ -48,8 +70,14 @@ CryptoTransactionReceipt buildCryptoHistoryReceipt(
     // zero-value rows, so only the real fee renders.
     networkFee: 0,
     tradingFee: transaction.fee,
-    totalAmount: transaction.gbpAmount + transaction.fee,
-    paymentMethod: 'LazerVault Wallet',
+    // NOT gbpAmount + fee. gbpAmount is ALREADY the total the backend
+    // reports (CryptoTransaction.totalAmount), and the platform margin is
+    // carried in the RATE the user accepted, never charged on top — see the
+    // policy note in crypto_receipt_screen. Adding the fee here made a sell
+    // receipt read 2,023.02 when 2,017.97 reached the wallet, and made the
+    // Total disagree with the Rate line directly above it.
+    totalAmount: transaction.gbpAmount,
+    paymentMethod: cryptoSettlementAccountLabel(),
     fromCrypto: transaction.fromCrypto,
     toCrypto: transaction.toCrypto,
     cryptoQuantity: qty,

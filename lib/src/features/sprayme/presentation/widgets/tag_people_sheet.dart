@@ -131,7 +131,7 @@ class _TagPeopleSheetState extends State<TagPeopleSheet> {
       final v = (u[k] ?? '').toString().trim();
       if (v.isNotEmpty) return v;
     }
-    return 'LazerVault user';
+    return 'Lazervault user';
   }
 
   static String _idOf(Map<String, dynamic> u) =>

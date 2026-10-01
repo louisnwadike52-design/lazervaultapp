@@ -368,6 +368,15 @@ class CryptoTransaction extends Equatable {
   final DateTime timestamp;
   final String status;
 
+  /// The OTHER side of the trade.
+  ///
+  /// A buy or sell has a fiat counter-currency (NGN). A crypto→crypto swap
+  /// does not — its counter-currency is the asset given up (USDT when
+  /// swapping USDT→USDC). The backend has always sent it; the app dropped it
+  /// and rendered every value with the global naira symbol, so a 1.5 USDT
+  /// swap read as "₦1.50".
+  final String counterCurrency;
+
   const CryptoTransaction({
     required this.id,
     required this.cryptoId,
@@ -380,6 +389,7 @@ class CryptoTransaction extends Equatable {
     required this.fees,
     required this.timestamp,
     required this.status,
+    this.counterCurrency = '',
   });
 
   @override

@@ -11,7 +11,7 @@ import 'package:lazervault/core/services/remote_log_sink.dart';
 /// devices. `debug` stays console-only to avoid flooding Loki. Remote
 /// forwarding is fail-silent and best-effort; it never affects the caller.
 class AppLogger {
-  static const String _tag = 'LazerVault';
+  static const String _tag = 'Lazervault';
 
   static void info(String message,
       {Object? error,

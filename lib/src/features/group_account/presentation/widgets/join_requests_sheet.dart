@@ -253,7 +253,7 @@ class _JoinRequestsSheetState extends State<JoinRequestsSheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  m.userName.isNotEmpty ? m.userName : 'LazerVault user',
+                  m.userName.isNotEmpty ? m.userName : 'Lazervault user',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(

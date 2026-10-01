@@ -20,6 +20,7 @@ import '../cubit/betting_state.dart';
 import '../../domain/repositories/betting_repository.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/core/utils/ng_msisdn.dart';
 
 /// Single-page betting-wallet funding — streamlined "one page, very fast" flow
 /// (mirror of WaterQuickBuy). Pick platform (Bet9ja/SportyBet/…) → enter the
@@ -203,7 +204,7 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
   }
 
   bool get _phoneValid =>
-      RegExp(r'^0\d{10}$').hasMatch(_phoneController.text.trim());
+      isValidNgMsisdn(_phoneController.text);
   bool get _ready =>
       _platform != null && _verification != null && _amountValid && _phoneValid;
 
@@ -223,7 +224,12 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
     final v = _verification!;
     final amount = _amount!;
     final account = _accountController.text.trim();
-    final phone = _phoneController.text.trim();
+    // Send the canonical 11-digit form, never the raw field text: the button
+    // now accepts a 10-digit number typed under the +234 prefix, and a
+    // provider that wants 11 would reject it. normaliseNgMsisdn cannot be null
+    // here — the submit path is gated on isValidNgMsisdn.
+    final phone = normaliseNgMsisdn(_phoneController.text) ??
+        _phoneController.text.trim();
     final accountId = serviceLocator<AccountManager>().activeAccountId ?? '';
     final txnId = 'betting_${DateTime.now().millisecondsSinceEpoch}_$account';
 

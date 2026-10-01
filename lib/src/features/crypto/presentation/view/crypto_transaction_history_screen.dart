@@ -16,6 +16,7 @@ import '../../domain/entities/crypto_entity.dart' as entities;
 import '../models/crypto_transaction_models.dart';
 import 'crypto_receipt_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/crypto/data/crypto_wallet_label.dart';
 part 'crypto_transaction_history_screen_widgets.dart';
 
 class CryptoTransactionHistoryScreen extends StatefulWidget {
@@ -64,6 +65,16 @@ class _CryptoTransactionHistoryScreenState
                 status: _mapStatus(t.status),
                 timestamp: t.timestamp,
                 fee: t.fees,
+                counterCurrency: t.counterCurrency,
+                // A swap's title is "Swap X → Y". cryptoSymbol is the asset
+                // RECEIVED; counterCurrency is the one given up. Both empty
+                // for a buy/sell, where the title names one asset.
+                fromCrypto: t.type == entities.TransactionType.swap
+                    ? t.counterCurrency.toUpperCase()
+                    : null,
+                toCrypto: t.type == entities.TransactionType.swap
+                    ? t.cryptoSymbol.toUpperCase()
+                    : null,
               ))
           .toList();
     }
@@ -352,7 +363,13 @@ class _CryptoTransactionHistoryScreenState
   Widget _buildSummaryStats() {
     final filteredTxns = _filteredTransactions;
     final totalValue =
-        filteredTxns.fold(0.0, (sum, txn) => sum + txn.gbpAmount);
+        // Crypto→crypto swaps are denominated in the asset given up (1.5
+        // USDT), not in naira. Adding them to a naira total produced a figure
+        // that is neither — so they are excluded, and the header counts only
+        // what it can legitimately sum.
+        filteredTxns
+            .where((txn) => !txn.valueIsCrypto)
+            .fold(0.0, (sum, txn) => sum + txn.gbpAmount);
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
@@ -613,7 +630,7 @@ class _CryptoTransactionHistoryScreenState
                       ),
                     ),
                     Text(
-                      '${CurrencySymbols.currentSymbol}${transaction.gbpAmount.toStringAsFixed(2)}',
+                      transaction.formattedValue(CurrencySymbols.currentSymbol),
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
@@ -751,7 +768,10 @@ class _CryptoTransactionHistoryScreenState
     final now = DateTime.now();
     final fiatSym = CurrencySymbols.currentSymbol;
     final fiatCode = CurrencySymbols.currentCurrency.toUpperCase();
-    final totalValue = txns.fold(0.0, (s, t) => s + t.gbpAmount);
+    // Same exclusion as the on-screen header: only fiat-denominated rows sum.
+    final totalValue = txns
+        .where((t) => !t.valueIsCrypto)
+        .fold(0.0, (s, t) => s + t.gbpAmount);
     final purple = PdfColor.fromInt(0xFF4E03D0);
     final grey = PdfColors.grey700;
 
@@ -814,7 +834,7 @@ class _CryptoTransactionHistoryScreenState
                       _pdfLabel(t.type.name),
                       t.cryptoSymbol.toUpperCase(),
                       t.amount,
-                      '$fiatSym${t.gbpAmount.toStringAsFixed(2)}',
+                      t.formattedValue(fiatSym),
                       _pdfLabel(t.status.name),
                     ])
                 .toList(),

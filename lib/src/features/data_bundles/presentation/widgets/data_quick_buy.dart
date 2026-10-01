@@ -32,6 +32,7 @@ import '../../domain/entities/data_beneficiary.dart';
 import '../../data/datasources/data_beneficiary_remote_datasource.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/core/utils/ng_msisdn.dart';
 
 /// Single-page data-bundle purchase — the streamlined "one page, very fast"
 /// flow (mirror of AirtimeQuickBuy). Phone prefilled from profile → network
@@ -250,8 +251,7 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
     context.read<DataBundlesCubit>().getDataPlans(network: code);
   }
 
-  bool get _phoneValid =>
-      RegExp(r'^0\d{10}$').hasMatch(_phoneController.text.trim());
+  bool get _phoneValid => isValidNgMsisdn(_phoneController.text);
   bool get _ready => _phoneValid && _networkCode != null && _plan != null;
 
   String get _netName => _netMeta[_networkCode]?.$1 ?? 'Network';
@@ -323,7 +323,12 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
     FocusScope.of(context).unfocus();
     final cubit = context.read<DataBundlesCubit>();
     final plan = _plan!;
-    final phone = _phoneController.text.trim();
+    // Send the canonical 11-digit form, never the raw field text: the button
+    // now accepts a 10-digit number typed under the +234 prefix, and a
+    // provider that wants 11 would reject it. normaliseNgMsisdn cannot be null
+    // here — the submit path is gated on isValidNgMsisdn.
+    final phone = normaliseNgMsisdn(_phoneController.text) ??
+        _phoneController.text.trim();
     final code = _networkCode!;
     final txnId =
         'data_${DateTime.now().millisecondsSinceEpoch}_${phone.replaceAll(RegExp(r'[^\d]'), '')}';
@@ -419,7 +424,12 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
   Future<void> _openAutoRechargeSheet() async {
     final plan = _plan;
     if (plan == null) return;
-    final phone = _phoneController.text.trim();
+    // Send the canonical 11-digit form, never the raw field text: the button
+    // now accepts a 10-digit number typed under the +234 prefix, and a
+    // provider that wants 11 would reject it. normaliseNgMsisdn cannot be null
+    // here — the submit path is gated on isValidNgMsisdn.
+    final phone = normaliseNgMsisdn(_phoneController.text) ??
+        _phoneController.text.trim();
     await BillAutoRechargeCreateSheet.show(
       context,
       subtitle: '$_netName · $phone',

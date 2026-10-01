@@ -23,6 +23,7 @@ import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../../account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/crypto/data/crypto_wallet_label.dart';
 
 class BuyCryptoScreen extends StatefulWidget {
   final Crypto? selectedCrypto;
@@ -45,7 +46,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
   late Animation<Offset> _slideAnimation;
 
   Crypto? _selectedCrypto;
-  String _selectedPaymentMethod = 'Lazervault Wallet';
+  String _selectedPaymentMethod = cryptoSettlementAccountLabel();
   bool _isAmountInCrypto = false;
   bool _isLoading = false;
   bool _isTransacting = false;
@@ -1275,7 +1276,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                             children: [
                               Expanded(
                                 child: Text(
-                                  'Lazervault Wallet',
+                                  cryptoSettlementAccountLabel(),
                                   style: GoogleFonts.inter(
                                     fontSize: 16.sp,
                                     fontWeight: FontWeight.w600,

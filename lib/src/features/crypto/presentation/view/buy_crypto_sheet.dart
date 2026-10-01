@@ -24,6 +24,7 @@ import '../widgets/network_picker_sheet.dart';
 import '../../../../core/grpc/crypto_grpc_client.dart';
 import '../../../../generated/crypto.pbgrpc.dart' show QuidaxAssetNetwork;
 import 'swap_flow_dispatcher.dart';
+import 'package:lazervault/src/features/crypto/data/crypto_wallet_label.dart';
 
 /// Streamlined BUY bottom sheet — the mirror of [SellCryptoSheet].
 ///
@@ -1131,12 +1132,7 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
       AccountSummaryEntity? account) {
     // Name the ACTUAL funding account ("Personal account") instead of the
     // generic "Lazervault Wallet" so the user knows exactly which wallet pays.
-    String accountLabel = 'Lazervault Wallet';
-    final t = (account?.accountType ?? '').trim();
-    if (t.isNotEmpty) {
-      accountLabel =
-          '${t[0].toUpperCase()}${t.substring(1).toLowerCase()} account';
-    }
+    final accountLabel = cryptoSettlementAccountLabel(account?.accountType);
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(

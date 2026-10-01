@@ -69,7 +69,7 @@ class _SenderIdsScreenState extends State<SenderIdsScreen> {
                       height: 1.4),
                 ),
                 SizedBox(height: 16.h),
-                _field(idController, 'Sender ID (e.g. LazerVault)',
+                _field(idController, 'Sender ID (e.g. Lazervault)',
                     maxLength: 11,
                     formatters: [
                       FilteringTextInputFormatter.allow(

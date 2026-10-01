@@ -23,6 +23,7 @@ import '../../domain/entities/airtime_transaction.dart';
 import '../../domain/repositories/airtime_repository.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/core/utils/ng_msisdn.dart';
 
 /// Single-page airtime purchase — the streamlined "one page, very fast" flow.
 ///
@@ -280,18 +281,16 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
   /// happily showed the auto-detected carrier, and the auto-recharge card
   /// (gated on the same `_ready`) never appeared, with nothing on screen
   /// explaining why. Accept every form a person might reasonably type.
-  String get _normalizedPhone {
-    var p = _phoneController.text.trim().replaceAll(RegExp(r'[^\d]'), '');
-    if (p.startsWith('234') && p.length == 13) {
-      p = '0${p.substring(3)}';
-    } else if (p.length == 10 && RegExp(r'^[789]').hasMatch(p)) {
-      // Subscriber number typed under the visible +234 prefix.
-      p = '0$p';
-    }
-    return p;
-  }
+  /// Now delegates to the shared normaliser so airtime, data, cable, power,
+  /// education, betting and ePINs all accept exactly the same spellings —
+  /// this screen's local copy was the only one of the seven that did.
+  /// Falls back to the stripped digits so a half-typed number still drives
+  /// the carrier badge.
+  String get _normalizedPhone =>
+      normaliseNgMsisdn(_phoneController.text) ??
+      _phoneController.text.trim().replaceAll(RegExp(r'[^\d]'), '');
 
-  bool get _phoneValid => RegExp(r'^0\d{10}$').hasMatch(_normalizedPhone);
+  bool get _phoneValid => isValidNgMsisdn(_phoneController.text);
 
   bool get _amountValid {
     final a = _amount ?? 0;

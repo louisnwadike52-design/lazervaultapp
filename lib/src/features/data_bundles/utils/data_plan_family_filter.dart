@@ -25,7 +25,8 @@ import 'package:lazervault/src/features/data_bundles/domain/entities/data_plan_e
 /// adds appears on its own the first time it ships instead of being invisible
 /// until someone updates the app.
 class DataPlanFamily {
-  const DataPlanFamily({required this.id, required this.label, required this.count});
+  const DataPlanFamily(
+      {required this.id, required this.label, required this.count});
 
   /// The provider's family id, or '' for the synthetic "All" entry.
   final String id;

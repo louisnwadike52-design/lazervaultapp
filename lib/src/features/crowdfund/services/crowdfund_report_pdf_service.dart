@@ -354,7 +354,7 @@ class CrowdfundReportPdfService {
               style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey700)),
           pw.SizedBox(height: 3),
           pw.Text(
-            _safe('Figures are taken from LazerVault campaign records at the '
+            _safe('Figures are taken from Lazervault campaign records at the '
                 'time of generation. Narrative sections are AI-assisted and '
                 'may be edited by the campaign creator.'),
             style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
@@ -384,7 +384,7 @@ class CrowdfundReportPdfService {
         child: pw.Row(
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
-            pw.Text(_safe('LazerVault · ${c.crowdfundCode}'),
+            pw.Text(_safe('Lazervault · ${c.crowdfundCode}'),
                 style:
                     const pw.TextStyle(fontSize: 8, color: PdfColors.grey500)),
             pw.Text('Page ${ctx.pageNumber} of ${ctx.pagesCount}',

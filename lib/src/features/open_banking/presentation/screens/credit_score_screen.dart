@@ -1510,7 +1510,7 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
               isNoLinkedBank
                   ? 'We analyze your transaction history to calculate a personalized credit score with insights and tips.'
                   : isNoScore
-                      ? 'Your credit score will be generated as you use LazerVault. Keep transacting to build your score.'
+                      ? 'Your credit score will be generated as you use Lazervault. Keep transacting to build your score.'
                       : '',
               textAlign: TextAlign.center,
               style: TextStyle(

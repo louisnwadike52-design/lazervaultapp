@@ -24,6 +24,7 @@ class _DataPaymentProcessingScreenState
     extends State<DataPaymentProcessingScreen> with TickerProviderStateMixin {
   late AnimationController _stepController;
   bool _hasFailed = false;
+
   /// Set when the provider has already accepted the purchase, so the Try Again
   /// control must be withheld rather than merely discouraged.
   bool _retryForbidden = false;
@@ -245,7 +246,8 @@ class _DataPaymentProcessingScreenState
                 });
                 showBillFailure(
                   context,
-                  error: null, // no code on this state: treated as ours, retryable
+                  error:
+                      null, // no code on this state: treated as ours, retryable
                   serviceLabel: 'Data purchase',
                   onRetry: () => Get.back(),
                 );

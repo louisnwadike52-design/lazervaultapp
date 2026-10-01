@@ -558,20 +558,29 @@ class _AddRecipientState extends State<AddRecipient>
   // header, and with a white-surface method selector that matches the
   // SelectRecipients sheet it lives inside.
   Widget _buildEmbeddedBody(RecipientState state) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildEmbeddedMethodSelector(),
-        SizedBox(height: 16.h),
-        _swipeableMethodContent(),
-        // Only the Bank method needs an explicit "Verify Recipient" button.
-        // The LazerVault-user form's search field already opens the find-user
-        // sheet on tap, so a separate action button there is redundant.
-        if (_selectedMethod == AddRecipientMethod.bankDetails) ...[
+    // The drag lives on the WHOLE embedded body, not just the form below the
+    // tabs. A swipe that starts on the Bank/Lazervault pills themselves is the
+    // most natural way to ask for the other tab, and it was the one place the
+    // gesture did nothing. translucent so the pills keep their taps and the
+    // fields keep their focus — a horizontal fling is the only thing claimed.
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onHorizontalDragEnd: _handleMethodSwipe,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildEmbeddedMethodSelector(),
           SizedBox(height: 16.h),
-          _buildActionButton(state),
+          _buildSelectedMethodContent(),
+          // Only the Bank method needs an explicit "Verify Recipient" button.
+          // The LazerVault-user form's search field already opens the find-user
+          // sheet on tap, so a separate action button there is redundant.
+          if (_selectedMethod == AddRecipientMethod.bankDetails) ...[
+            SizedBox(height: 16.h),
+            _buildActionButton(state),
+          ],
         ],
-      ],
+      ),
     );
   }
 

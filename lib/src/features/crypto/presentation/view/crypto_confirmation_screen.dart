@@ -12,6 +12,7 @@ import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../models/crypto_transaction_models.dart';
 import 'crypto_receipt_screen.dart';
+import 'package:lazervault/src/features/crypto/data/crypto_wallet_label.dart';
 
 class CryptoConfirmationScreen extends StatefulWidget {
   final CryptoTransactionDetails transactionDetails;
@@ -946,12 +947,15 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
     }
   }
 
+  /// The funding/receiving account, named the way the rest of the app names
+  /// it. Any settlement-account spelling — including the retired
+  /// "Lazervault Wallet" carried by a receipt an older build created — resolves
+  /// to the real account name plus the currency it holds.
   String _getPaymentMethodDetails() {
-    switch (widget.transactionDetails.paymentMethod.toLowerCase()) {
-      case 'lazervault wallet':
-        return 'Lazervault ${CurrencySymbols.currentCurrency} Wallet';
-      default:
-        return 'Lazervault Wallet';
+    final m = widget.transactionDetails.paymentMethod;
+    if (isCryptoSettlementAccount(m)) {
+      return '${cryptoSettlementAccountLabel()} (${CurrencySymbols.currentCurrency})';
     }
+    return m.trim().isEmpty ? cryptoSettlementAccountLabel() : m;
   }
 }

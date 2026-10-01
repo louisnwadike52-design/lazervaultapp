@@ -1745,7 +1745,7 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
           return card(
             icon: Icons.info_outline_rounded,
             color: const Color(0xFFFB923C),
-            title: 'Showing LazerVault only',
+            title: 'Showing Lazervault only',
             body: _externalError ??
                 'We couldn\'t load $bankLabel right now. Pull to refresh to retry.',
             showRetry: true,

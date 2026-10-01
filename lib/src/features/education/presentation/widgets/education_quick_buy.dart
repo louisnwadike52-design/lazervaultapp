@@ -24,6 +24,7 @@ import '../../domain/entities/education_purchase_entity.dart';
 import '../../data/datasources/education_beneficiary_remote_datasource.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/core/utils/ng_msisdn.dart';
 
 /// Single-page education-PIN purchase — streamlined "one page, very fast" flow.
 /// Each [EducationProviderEntity] IS a purchasable PIN product (WAEC result
@@ -163,7 +164,7 @@ class _EducationQuickBuyState extends State<EducationQuickBuy>
   }
 
   bool get _phoneValid =>
-      RegExp(r'^0\d{10}$').hasMatch(_phoneController.text.trim());
+      isValidNgMsisdn(_phoneController.text);
   bool get _ready =>
       _product != null &&
       _phoneValid &&
@@ -210,7 +211,12 @@ class _EducationQuickBuyState extends State<EducationQuickBuy>
     FocusScope.of(context).unfocus();
     final cubit = context.read<EducationCubit>();
     final product = _product!;
-    final phone = _phoneController.text.trim();
+    // Send the canonical 11-digit form, never the raw field text: the button
+    // now accepts a 10-digit number typed under the +234 prefix, and a
+    // provider that wants 11 would reject it. normaliseNgMsisdn cannot be null
+    // here — the submit path is gated on isValidNgMsisdn.
+    final phone = normaliseNgMsisdn(_phoneController.text) ??
+        _phoneController.text.trim();
     final billers = _billersController.text.trim();
     final txnId = 'education_${DateTime.now().millisecondsSinceEpoch}_$phone';
 

@@ -31,6 +31,7 @@ import '../../domain/repositories/electricity_bill_repository.dart'
 import '../../utils/meter_validation.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/core/utils/ng_msisdn.dart';
 
 /// Single-page electricity purchase — the streamlined "one page, very fast"
 /// flow (mirror of AirtimeQuickBuy). Enter the meter number → the disco +
@@ -343,7 +344,7 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
   }
 
   bool get _phoneValid =>
-      RegExp(r'^0\d{10}$').hasMatch(_phoneController.text.trim());
+      isValidNgMsisdn(_phoneController.text);
 
   // A payable target exists when the meter was verified (auto OR manual), or the
   // user picked a disco manually and chose to proceed without name verification.
@@ -400,7 +401,12 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
     FocusScope.of(context).unfocus();
     final cubit = context.read<ElectricityBillCubit>();
     final amount = _amount!;
-    final phone = _phoneController.text.trim();
+    // Send the canonical 11-digit form, never the raw field text: the button
+    // now accepts a 10-digit number typed under the +234 prefix, and a
+    // provider that wants 11 would reject it. normaliseNgMsisdn cannot be null
+    // here — the submit path is gated on isValidNgMsisdn.
+    final phone = normaliseNgMsisdn(_phoneController.text) ??
+        _phoneController.text.trim();
     final providerCode = _effProviderCode;
     final providerName = _effProviderName;
     final meterNumber = _effMeterNumber;

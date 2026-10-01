@@ -1184,6 +1184,14 @@ class _CryptoScreenState extends State<CryptoScreen> {
       status: historyStatus,
       timestamp: txn.timestamp,
       fee: txn.fees,
+      counterCurrency: txn.counterCurrency,
+      // See the view-all screen: a swap names both sides.
+      fromCrypto: historyType == CryptoTransactionType.swap
+          ? txn.counterCurrency.toUpperCase()
+          : null,
+      toCrypto: historyType == CryptoTransactionType.swap
+          ? txn.cryptoSymbol.toUpperCase()
+          : null,
     );
   }
 

@@ -532,7 +532,7 @@ Progress: $progress%
 Deadline: ${dateFormat.format(c.deadline)}
 Members: ${widget.members.length}
 
-Join us on LazerVault to contribute!
+Join us on Lazervault to contribute!
 ${_groupShareUrl()}''';
   }
 

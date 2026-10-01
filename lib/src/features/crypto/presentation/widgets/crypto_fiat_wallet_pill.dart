@@ -7,6 +7,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
+import 'package:lazervault/src/features/crypto/data/crypto_wallet_label.dart';
 
 /// A compact, non-cluttering row that shows the user's LazerVault FIAT wallet
 /// balance for the active currency. Reused across the crypto Sell / Swap / Send
@@ -50,12 +51,7 @@ class CryptoFiatWalletPill extends StatelessWidget {
         final bal = personal.availableBalance;
         // Name the ACTUAL account ("Personal account"), matching the buy
         // sheet's pay-from card; brand casing is "Lazervault", never PascalCase.
-        String label = 'Lazervault Wallet';
-        final t = personal.accountType.trim();
-        if (t.isNotEmpty) {
-          label =
-              '${t[0].toUpperCase()}${t.substring(1).toLowerCase()} account';
-        }
+        final label = cryptoSettlementAccountLabel(personal.accountType);
         if (compact) {
           return Container(
             padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),

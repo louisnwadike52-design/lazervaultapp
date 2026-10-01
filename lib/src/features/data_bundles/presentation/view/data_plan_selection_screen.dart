@@ -251,11 +251,11 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
                       child: ListView(
                         scrollDirection: Axis.horizontal,
                         children: [
-                          _buildVolumePill(null, 'Any size', null,
-                              Color(networkColorValue)),
+                          _buildVolumePill(
+                              null, 'Any size', null, Color(networkColorValue)),
                           for (final b in chips)
-                            _buildVolumePill(b, b.label, b.count,
-                                Color(networkColorValue)),
+                            _buildVolumePill(
+                                b, b.label, b.count, Color(networkColorValue)),
                         ],
                       ),
                     ),
@@ -422,8 +422,8 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
                 ? accent.withValues(alpha: 0.22)
                 : const Color(0xFF161616),
             borderRadius: BorderRadius.circular(18.r),
-            border: Border.all(
-                color: selected ? accent : const Color(0xFF2D2D2D)),
+            border:
+                Border.all(color: selected ? accent : const Color(0xFF2D2D2D)),
           ),
           child: Row(
             children: [

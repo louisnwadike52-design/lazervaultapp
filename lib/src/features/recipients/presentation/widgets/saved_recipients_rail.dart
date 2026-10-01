@@ -37,7 +37,9 @@ class SavedRecipientsViewPreference {
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString('$_prefix$userId');
-      return raw == 'list' ? SavedRecipientsView.list : SavedRecipientsView.rail;
+      return raw == 'list'
+          ? SavedRecipientsView.list
+          : SavedRecipientsView.rail;
     } catch (_) {
       // Storage unavailable: fall back to the default rather than blocking the
       // screen on a preference.
@@ -48,8 +50,8 @@ class SavedRecipientsViewPreference {
   static Future<void> save(String userId, SavedRecipientsView view) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(
-          '$_prefix$userId', view == SavedRecipientsView.list ? 'list' : 'rail');
+      await prefs.setString('$_prefix$userId',
+          view == SavedRecipientsView.list ? 'list' : 'rail');
     } catch (_) {
       // A preference that fails to persist is not worth interrupting a send for.
     }
@@ -98,8 +100,7 @@ class SavedRecipientsRail extends StatelessWidget {
     // Clamped at 1.5 so an extreme setting does not hand a horizontal strip
     // half the screen; past that the text ellipsises, which is the right
     // trade for a preview whose full detail is one tap away.
-    final scale =
-        MediaQuery.textScalerOf(context).scale(14) / 14;
+    final scale = MediaQuery.textScalerOf(context).scale(14) / 14;
     // +4h over the previous 132: the shadow gutters above and below the card
     // grew from 6/6 to 8/14, and a rail that does not grow with them clips the
     // very shadow it just made room for.
@@ -189,17 +190,24 @@ class _RecipientCard extends StatelessWidget {
     // dark theme had no elevation at all, which is where the rail is actually
     // used most. Dark surfaces need a deeper, tighter shadow to read at all,
     // hence the separate alpha rather than reusing the light values.
+    //
+    // Toned down 2026-10-01: the first pass overshot and the rail read as if it
+    // were hovering well off the sheet. The SHAPE is what was being asked for
+    // (ambient on every side, not just below), so both shadows keep their
+    // roles and only lose weight — roughly half the alpha, a shorter key
+    // offset and a tighter blur. Flattening it back to one offset shadow would
+    // bring back the "only bottom elevations are visible" report.
     final ambient = BoxShadow(
-      color: isDark ? const Color(0x66000000) : const Color(0x14101828),
-      blurRadius: 6,
+      color: isDark ? const Color(0x3D000000) : const Color(0x0A101828),
+      blurRadius: 4,
       spreadRadius: 0,
       offset: Offset.zero,
     );
     final key = BoxShadow(
-      color: isDark ? const Color(0x4D000000) : const Color(0x1F101828),
-      blurRadius: 12,
+      color: isDark ? const Color(0x33000000) : const Color(0x12101828),
+      blurRadius: 8,
       spreadRadius: -1,
-      offset: const Offset(0, 4),
+      offset: const Offset(0, 2),
     );
 
     return SizedBox(
@@ -211,96 +219,96 @@ class _RecipientCard extends StatelessWidget {
           boxShadow: [ambient, key],
         ),
         child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(14.r),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(11.w, 10.h, 6.w, 10.h),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 34.w,
-                      height: 34.w,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Color(0xFF4E03D0),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        _initials,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w700,
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(14.r),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(11.w, 10.h, 6.w, 10.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 34.w,
+                        height: 34.w,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFF4E03D0),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          _initials,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
-                    ),
-                    const Spacer(),
-                    // Chat and the three-dot sheet share the top-right, beside
-                    // the avatar. Chat previously owned a full row at the foot
-                    // of the card purely to hold one 20px icon — a whole band
-                    // of height for an action that is secondary to sending.
-                    // Both are small, adjacent targets now, and the card body
-                    // below them is one uninterrupted tap target for "send".
-                    P2PChatIcon(
-                      otherUserId: recipient.internalUserId,
-                      otherUserName: recipient.name,
-                      isInternal: _isInternal,
-                      accountNumber: recipient.accountNumber,
-                    ),
-                    InkWell(
-                      borderRadius: BorderRadius.circular(14.r),
-                      onTap: onMore,
-                      child: Padding(
-                        padding: EdgeInsets.all(3.w),
-                        child: Icon(Icons.more_vert,
-                            size: 17.w, color: secondaryText),
+                      const Spacer(),
+                      // Chat and the three-dot sheet share the top-right, beside
+                      // the avatar. Chat previously owned a full row at the foot
+                      // of the card purely to hold one 20px icon — a whole band
+                      // of height for an action that is secondary to sending.
+                      // Both are small, adjacent targets now, and the card body
+                      // below them is one uninterrupted tap target for "send".
+                      P2PChatIcon(
+                        otherUserId: recipient.internalUserId,
+                        otherUserName: recipient.name,
+                        isInternal: _isInternal,
+                        accountNumber: recipient.accountNumber,
                       ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 7.h),
-                Text(
-                  recipient.name.isNotEmpty ? recipient.name : 'Recipient',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: primaryText,
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w700,
+                      InkWell(
+                        borderRadius: BorderRadius.circular(14.r),
+                        onTap: onMore,
+                        child: Padding(
+                          padding: EdgeInsets.all(3.w),
+                          child: Icon(Icons.more_vert,
+                              size: 17.w, color: secondaryText),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                SizedBox(height: 2.h),
-                Text(
-                  recipient.bankName.isNotEmpty ? recipient.bankName : '—',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: secondaryText, fontSize: 11.sp),
-                ),
-                if (recipient.accountNumber.isNotEmpty)
+                  SizedBox(height: 7.h),
                   Text(
-                    recipient.accountNumber,
+                    recipient.name.isNotEmpty ? recipient.name : 'Recipient',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: secondaryText,
-                      fontSize: 11.sp,
-                      // Account numbers are compared digit by digit; tabular
-                      // figures keep them aligned between cards.
-                      fontFeatures: const [FontFeature.tabularFigures()],
+                      color: primaryText,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-              ],
+                  SizedBox(height: 2.h),
+                  Text(
+                    recipient.bankName.isNotEmpty ? recipient.bankName : '—',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: secondaryText, fontSize: 11.sp),
+                  ),
+                  if (recipient.accountNumber.isNotEmpty)
+                    Text(
+                      recipient.accountNumber,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: secondaryText,
+                        fontSize: 11.sp,
+                        // Account numbers are compared digit by digit; tabular
+                        // figures keep them aligned between cards.
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),
-      ),
       ),
     );
   }

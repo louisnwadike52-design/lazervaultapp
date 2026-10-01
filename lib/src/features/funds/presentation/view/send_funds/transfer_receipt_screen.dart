@@ -1820,9 +1820,9 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
       final collapsed = v.replaceAll(
           RegExp(r'lazervault[\s\-]*(ltd|limited)?\.?', caseSensitive: false),
           'Lazervault');
-      return collapsed.replaceAll('LazerVault', 'Lazervault');
+      return collapsed.replaceAll('Lazervault', 'Lazervault');
     }
-    return v.replaceAll('LazerVault', 'Lazervault');
+    return v.replaceAll('Lazervault', 'Lazervault');
   }
 
   Widget _buildDetailRow(String label, String rawValue) {

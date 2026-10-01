@@ -80,7 +80,7 @@ class AccountDetailsShareSheet extends StatelessWidget {
     return [
       'Hello,',
       '',
-      'Here are my LazerVault account details for your transfer.',
+      'Here are my Lazervault account details for your transfer.',
       '',
       ...details,
       '',
@@ -141,7 +141,7 @@ class AccountDetailsShareSheet extends StatelessWidget {
     try {
       await SharePlus.instance.share(ShareParams(
         text: _shareMessage,
-        subject: 'My LazerVault account details',
+        subject: 'My Lazervault account details',
         sharePositionOrigin: origin,
       ));
     } catch (_) {

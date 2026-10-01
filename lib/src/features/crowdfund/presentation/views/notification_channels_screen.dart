@@ -242,7 +242,7 @@ class _AddChannelBottomSheetState extends State<_AddChannelBottomSheet> {
       children: [
         const Text(
           'To connect Telegram:\n'
-          '1. Add @LazerVaultBot to your group\n'
+          '1. Add @LazervaultBot to your group\n'
           '2. Make it an admin\n'
           '3. Send /start in the group\n'
           '4. Enter the chat ID below',

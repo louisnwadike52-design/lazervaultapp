@@ -260,7 +260,7 @@ class IntlAirtimePdfService {
             pw.SizedBox(height: 6),
             pw.Center(
               child: pw.Text(
-                'This is a computer-generated receipt from LazerVault.',
+                'This is a computer-generated receipt from Lazervault.',
                 style: _style(
                     fontSize: 9, color: const PdfColor.fromInt(0xFF94A3B8)),
               ),

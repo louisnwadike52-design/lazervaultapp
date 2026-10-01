@@ -1,4 +1,3 @@
-
 part of 'transfer_history_bottom_sheet.dart';
 
 class TransferHistoryItem extends StatelessWidget {

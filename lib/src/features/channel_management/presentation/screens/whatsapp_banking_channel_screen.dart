@@ -91,7 +91,7 @@ class _WhatsAppBankingChannelScreenState
             children: [
               ChannelHeader(
                 title: 'WhatsApp Banking',
-                subtitle: 'Bank by chatting with LazerVault on WhatsApp',
+                subtitle: 'Bank by chatting with Lazervault on WhatsApp',
                 icon: Icons.chat_bubble_rounded,
                 accent: _whatsappGreen,
               ),
@@ -131,7 +131,7 @@ class _WhatsAppBankingChannelScreenState
     return ChannelSection(
       title: 'WhatsApp banking',
       caption: active
-          ? 'Messages from your linked number are answered by LazerVault.'
+          ? 'Messages from your linked number are answered by Lazervault.'
           : 'Turn this on to bank from WhatsApp. We verify the number with a '
               'one-time code first.',
       child: Column(
@@ -240,7 +240,7 @@ class _WhatsAppBankingChannelScreenState
       title: 'Account link',
       caption:
           'Registration proves the number is yours. Linking connects it to '
-          'your LazerVault account so WhatsApp knows who is writing.',
+          'your Lazervault account so WhatsApp knows who is writing.',
       child: _actionRow(
         icon: Icons.link_rounded,
         label: 'Manage WhatsApp account link',
@@ -340,7 +340,7 @@ class _WhatsAppBankingChannelScreenState
                 fontSize: 16,
                 fontWeight: FontWeight.w700)),
         content: Text(
-          'LazerVault will stop answering messages from your WhatsApp number. '
+          'Lazervault will stop answering messages from your WhatsApp number. '
           'Your account and money are unaffected, and you can switch it back '
           'on at any time.',
           style: GoogleFonts.inter(

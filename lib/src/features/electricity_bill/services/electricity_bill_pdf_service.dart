@@ -596,7 +596,7 @@ class ElectricityBillPdfService {
         // PlatformException and the share silently fails on iPhone/iPad.
         sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         files: [XFile(file.path)],
-        text: _ascii('LazerVault electricity receipt\n'
+        text: _ascii('Lazervault electricity receipt\n'
             'Provider: ${payment.providerName}\n'
             'Meter: ${payment.meterNumber}\n'
             'Amount: $currencySymbol$amount'),
