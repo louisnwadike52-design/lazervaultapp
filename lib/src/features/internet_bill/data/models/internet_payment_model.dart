@@ -16,6 +16,7 @@ class InternetPaymentModel extends InternetPaymentEntity {
     required super.createdAt,
     required super.newBalance,
     required super.renewalDate,
+    super.refundSource,
   });
 
   factory InternetPaymentModel.fromResponse({
@@ -32,6 +33,8 @@ class InternetPaymentModel extends InternetPaymentEntity {
       reference: payment.reference,
       amount: payment.amount,
       status: payment.status,
+      refundSource:
+          payment.hasRefundSource() ? payment.refundSource : '',
       customerNumber: payment.customerNumber,
       metadata: payment.metadata,
       createdAt: payment.createdAt,

@@ -17,6 +17,7 @@ class CableTVPaymentModel extends CableTVPaymentEntity {
     required super.newBalance,
     required super.renewalDate,
     required super.customerName,
+    super.refundSource,
   });
 
   factory CableTVPaymentModel.fromResponse({
@@ -34,6 +35,8 @@ class CableTVPaymentModel extends CableTVPaymentEntity {
       reference: payment.reference,
       amount: payment.amount,
       status: payment.status,
+      refundSource:
+          payment.hasRefundSource() ? payment.refundSource : '',
       customerNumber: payment.customerNumber,
       metadata: payment.metadata,
       createdAt: payment.createdAt,
@@ -53,6 +56,8 @@ class CableTVPaymentModel extends CableTVPaymentEntity {
       reference: payment.reference,
       amount: payment.amount,
       status: payment.status,
+      refundSource:
+          payment.hasRefundSource() ? payment.refundSource : '',
       customerNumber: payment.customerNumber,
       metadata: payment.metadata,
       createdAt: payment.createdAt,

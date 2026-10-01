@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:lazervault/core/utils/bill_receipt_status.dart';
 import 'package:lazervault/core/utils/receipt_download.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
@@ -115,7 +116,7 @@ class DataBundlesPdfService {
                     flex: 1,
                     child: _buildSummaryTable(
                       paymentDate: paymentDate,
-                      status: _formatStatus(purchase.status),
+                      status: billReceiptStatusLabel(purchase.status, refundSource: purchase.refundSource),
                       receiptNumber: receiptNumber,
                     ),
                   ),
@@ -292,7 +293,7 @@ class DataBundlesPdfService {
               ),
               _buildDetailRow(
                 'Status',
-                _formatStatus(purchase.status),
+                billReceiptStatusLabel(purchase.status, refundSource: purchase.refundSource),
               ),
             ],
           ),
@@ -458,15 +459,6 @@ class DataBundlesPdfService {
         ),
       ],
     );
-  }
-
-  static String _formatStatus(String status) {
-    return status
-        .split('_')
-        .map((word) => word.isNotEmpty
-            ? word[0].toUpperCase() + word.substring(1).toLowerCase()
-            : '')
-        .join(' ');
   }
 
   /// Download the receipt to device storage

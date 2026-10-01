@@ -1,11 +1,11 @@
 import 'dart:io';
+import 'package:lazervault/core/utils/bill_receipt_status.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 import 'package:lazervault/core/utils/receipt_fonts.dart';
 import '../domain/entities/internet_payment_entity.dart';
 import 'dart:ui' show Rect;
@@ -108,7 +108,7 @@ class InternetBillPdfService {
                     flex: 1,
                     child: _buildSummaryTable(
                       paymentDate: paymentDate,
-                      status: _formatStatus(payment.status),
+                      status: billReceiptStatusLabel(payment.status, refundSource: payment.refundSource),
                       receiptNumber: receiptNumber,
                     ),
                   ),
@@ -274,7 +274,7 @@ class InternetBillPdfService {
               ),
               _buildDetailRow(
                 'Status',
-                _formatStatus(payment.status),
+                billReceiptStatusLabel(payment.status, refundSource: payment.refundSource),
               ),
             ],
           ),
@@ -413,15 +413,6 @@ class InternetBillPdfService {
         ),
       ],
     );
-  }
-
-  static String _formatStatus(String status) {
-    return status
-        .split('_')
-        .map((word) => word.isNotEmpty
-            ? word[0].toUpperCase() + word.substring(1).toLowerCase()
-            : '')
-        .join(' ');
   }
 
   /// Download the receipt to device storage

@@ -1,11 +1,11 @@
 import 'dart:io';
+import 'package:lazervault/core/utils/bill_receipt_status.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 import 'package:lazervault/core/utils/receipt_fonts.dart';
 import '../domain/entities/water_payment_entity.dart';
 import 'dart:ui' show Rect;
@@ -65,10 +65,6 @@ class WaterBillPdfService {
     );
   }
 
-  static String _formatStatus(WaterPaymentStatus status) {
-    return status.name[0].toUpperCase() + status.name.substring(1);
-  }
-
   static Future<File> generateReceipt({
     required WaterPaymentEntity payment,
   }) async {
@@ -107,7 +103,7 @@ class WaterBillPdfService {
                     child: _buildSummaryTable(
                       paymentDate: paymentDate,
                       completedDate: completedDate,
-                      status: _formatStatus(payment.status),
+                      status: billReceiptStatusLabel(payment.status.name, isRefunded: payment.isRefunded),
                       receiptNumber: receiptNumber,
                     ),
                   ),
@@ -293,7 +289,7 @@ class WaterBillPdfService {
                 ),
               _buildDetailRow(
                 'Status',
-                _formatStatus(payment.status),
+                billReceiptStatusLabel(payment.status.name, isRefunded: payment.isRefunded),
               ),
             ],
           ),

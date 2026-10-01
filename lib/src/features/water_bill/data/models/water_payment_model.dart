@@ -16,6 +16,7 @@ class WaterPaymentModel extends WaterPaymentEntity {
     required super.createdAt,
     super.completedAt,
     super.transactionReference,
+    super.refundSource,
   });
 
   factory WaterPaymentModel.fromJson(Map<String, dynamic> json) {
@@ -29,6 +30,7 @@ class WaterPaymentModel extends WaterPaymentEntity {
       currency: json['currency'] as String? ?? 'NGN',
       receiptNumber: json['receipt_number'] as String?,
       status: _parseStatus(json['status'] as String?),
+      refundSource: json['refund_source'] as String? ?? '',
       errorMessage: json['error_message'] as String?,
       createdAt: DateTime.parse(
           json['created_at'] as String? ?? DateTime.now().toIso8601String()),
@@ -87,6 +89,8 @@ class WaterPaymentModel extends WaterPaymentEntity {
       receiptNumber:
           receiptNumber.isNotEmpty ? receiptNumber : payment.reference,
       status: _parseStatus(payment.status),
+      refundSource:
+          payment.hasRefundSource() ? payment.refundSource : '',
       createdAt: DateTime.tryParse(payment.createdAt) ?? DateTime.now(),
       transactionReference: payment.reference,
     );
@@ -103,6 +107,8 @@ class WaterPaymentModel extends WaterPaymentEntity {
       currency: 'NGN',
       receiptNumber: payment.reference,
       status: _parseStatus(payment.status),
+      refundSource:
+          payment.hasRefundSource() ? payment.refundSource : '',
       createdAt: DateTime.tryParse(payment.createdAt) ?? DateTime.now(),
       transactionReference: payment.reference,
     );

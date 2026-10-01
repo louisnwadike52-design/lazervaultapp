@@ -9,6 +9,16 @@ class InternetPaymentEntity extends Equatable {
   final String reference;
   final double amount;
   final String status;
+
+  /// Why the money came back, when it did. Empty on a purchase that was never
+  /// refunded.
+  ///
+  /// The backend keeps a refunded purchase as `status = failed` — the PURCHASE
+  /// failed, which is correct — and records the refund here. A receipt that
+  /// renders only `status` tells a customer "Failed" about money they already
+  /// have back. See core/utils/bill_receipt_status.dart.
+  final String refundSource;
+
   final String customerNumber;
   final String metadata;
   final String createdAt;
@@ -24,6 +34,7 @@ class InternetPaymentEntity extends Equatable {
     required this.reference,
     required this.amount,
     required this.status,
+    this.refundSource = '',
     required this.customerNumber,
     required this.metadata,
     required this.createdAt,
@@ -56,6 +67,7 @@ class InternetPaymentEntity extends Equatable {
         metadata,
         createdAt,
         newBalance,
-        renewalDate
+        renewalDate,
+        refundSource,
       ];
 }

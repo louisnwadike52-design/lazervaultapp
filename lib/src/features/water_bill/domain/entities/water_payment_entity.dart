@@ -18,6 +18,16 @@ class WaterPaymentEntity extends Equatable {
   final String currency;
   final String? receiptNumber;
   final WaterPaymentStatus status;
+
+  /// Why the money came back, when it did. Empty on a purchase that was never
+  /// refunded.
+  ///
+  /// The backend keeps a refunded purchase as `status = failed` — the PURCHASE
+  /// failed, which is correct — and records the refund here. A receipt that
+  /// renders only `status` tells a customer "Failed" about money they already
+  /// have back. See core/utils/bill_receipt_status.dart.
+  final String refundSource;
+
   final String? errorMessage;
   final DateTime createdAt;
   final DateTime? completedAt;
@@ -33,6 +43,7 @@ class WaterPaymentEntity extends Equatable {
     required this.currency,
     this.receiptNumber,
     required this.status,
+    this.refundSource = '',
     this.errorMessage,
     required this.createdAt,
     this.completedAt,
@@ -43,7 +54,11 @@ class WaterPaymentEntity extends Equatable {
   bool get isProcessing => status == WaterPaymentStatus.processing;
   bool get isCompleted => status == WaterPaymentStatus.completed;
   bool get isFailed => status == WaterPaymentStatus.failed;
-  bool get isRefunded => status == WaterPaymentStatus.refunded;
+  /// Refunded EITHER by an explicit status or by the backend's refund_source
+  /// on a failed row — the enum only sees the literal string 'refunded', and
+  /// our bill rails record a refund as `failed` plus a source.
+  bool get isRefunded =>
+      status == WaterPaymentStatus.refunded || refundSource.isNotEmpty;
 
   WaterPaymentEntity copyWith({
     String? id,
@@ -92,5 +107,6 @@ class WaterPaymentEntity extends Equatable {
         createdAt,
         completedAt,
         transactionReference,
+        refundSource,
       ];
 }

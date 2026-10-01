@@ -16,6 +16,15 @@ class CableTVPaymentEntity extends Equatable {
   final String renewalDate;
   final String customerName;
 
+  /// Why the money came back, when it did. Empty on a purchase that was never
+  /// refunded.
+  ///
+  /// The backend keeps a refunded purchase as `status = failed` — the PURCHASE
+  /// failed, which is correct — and records the refund here. A receipt that
+  /// renders only `status` therefore tells a customer "Failed" about ₦X they
+  /// already have back. See core/utils/bill_receipt_status.dart.
+  final String refundSource;
+
   const CableTVPaymentEntity({
     required this.id,
     required this.userId,
@@ -31,6 +40,7 @@ class CableTVPaymentEntity extends Equatable {
     required this.newBalance,
     required this.renewalDate,
     required this.customerName,
+    this.refundSource = '',
   });
 
   bool get isCompleted => status == 'completed';
@@ -53,6 +63,7 @@ class CableTVPaymentEntity extends Equatable {
         createdAt,
         newBalance,
         renewalDate,
-        customerName
+        customerName,
+        refundSource,
       ];
 }
