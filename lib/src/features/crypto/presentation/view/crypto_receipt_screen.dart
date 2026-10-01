@@ -225,8 +225,18 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
   /// Fiat codes we trade against. Used to tell a buy/sell (fiat leg) from a
   /// crypto→crypto swap, which has none.
   static const _fiatCodes = {
-    'NGN', 'USD', 'GBP', 'EUR', 'KES', 'GHS', 'ZAR', 'CAD', 'XAF', 'TZS',
-    'UGX', 'RWF',
+    'NGN',
+    'USD',
+    'GBP',
+    'EUR',
+    'KES',
+    'GHS',
+    'ZAR',
+    'CAD',
+    'XAF',
+    'TZS',
+    'UGX',
+    'RWF',
   };
 
   /// "Swap USDT → USDC", degrading to "Swap USDC" rather than
@@ -329,11 +339,25 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
       // Network fee stays: it is a real third-party on-chain cost the user
       // genuinely pays on a send, not our margin.
       if (d.networkFee > 0) 'Network fee': '$sym${_money(d.networkFee)}',
-      // "You sell / You pay" is the OTHER side of a swap: without it the
-      // receipt named only the asset received, so the source crypto appeared
-      // nowhere on the page or in the shared PDF.
-      if (isCryptoToCrypto && d.fiatAmount > 0)
-        'You swap': '${d.fiatAmount.toStringAsFixed(6)} $fromAsset',
+      // The CANONICAL swap keys, not a bespoke label.
+      //
+      // UnifiedTransactionReceipt already renders a crypto→crypto trade as
+      // first-class "From"/"To" rows when it sees op == 'convert', and hides
+      // these five raw keys from the generic metadata dump — that is how the
+      // same trade opened from the DASHBOARD feed has always rendered, because
+      // crypto-service stamps them on the accounts ledger row.
+      //
+      // The crypto page built its own metadata map and stamped none of them,
+      // so the same trade rendered "Swap → USDC" with the source asset absent
+      // from the page AND from the shared PDF. Emitting the same keys here
+      // makes both entry points one mechanism instead of two that drift.
+      if (isCryptoToCrypto) ...{
+        'op': 'convert',
+        'from_currency': fromAsset,
+        'to_currency': toAsset,
+        if (d.fiatAmount > 0) 'from_amount': d.fiatAmount.toStringAsFixed(6),
+        if (heroAmount > 0) 'to_amount': heroAmount.toStringAsFixed(6),
+      },
       if (heroAmount > 0)
         'Total': isCryptoToCrypto
             ? '${heroAmount.toStringAsFixed(6)} $toAsset'
