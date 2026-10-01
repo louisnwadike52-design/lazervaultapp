@@ -102,6 +102,24 @@ class LocaleGating {
         .contains(accountType.trim().toLowerCase());
   }
 
+  /// Whether a money-movement action (`deposit` / `withdraw`) is offered in
+  /// the current region.
+  ///
+  /// NEITHER, by default, outside Naira. There is no per-customer virtual
+  /// account abroad, so a foreign wallet has no number to be paid into — and
+  /// with nothing in it there is nothing to pay out. Every method on the
+  /// deposit sheet (card, Apple Pay, bank transfer) is integrated for NGN
+  /// only, so the buttons lead to a screen whose every route is a dead end.
+  ///
+  /// Hidden rather than dimmed, unlike the bottom nav: nav entries are
+  /// addressed by index and a user needs to see that Beam still exists, while
+  /// a Deposit button is addressed by nothing and carries no such meaning.
+  static bool moneyActionAllowed(String action) {
+    if (!restricted) return true;
+    return FeatureFlags.localeNonNgnMoneyActionNames
+        .contains(action.trim().toLowerCase());
+  }
+
   /// Whether an account denominated in [accountCurrency] belongs on screen in
   /// the CURRENT locale.
   ///

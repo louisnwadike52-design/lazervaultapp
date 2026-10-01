@@ -312,6 +312,10 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
         // empty range never becomes a chip that leads nowhere, and the row
         // disappears entirely when fewer than two ranges are populated.
         secondaryFilters: _volumeFilters(),
+        // 82 MTN plans is the case this exists for: the pills narrow by shape
+        // (how long, how big), the field finds a specific one by name or by
+        // price — "1gb", "sme", "500".
+        searchHint: 'Search by size, name or price',
       ),
     );
     if (picked != null && mounted) setState(() => _plan = picked);

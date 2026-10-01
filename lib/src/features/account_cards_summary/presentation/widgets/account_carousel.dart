@@ -23,6 +23,7 @@ import 'package:lazervault/src/features/family_account/presentation/cubit/family
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/fcy_account/data/fcy_capabilities.dart';
+import 'package:lazervault/core/config/locale_gating.dart';
 part 'account_carousel_widgets.dart';
 
 class AccountCarousel extends StatefulWidget {
@@ -1121,31 +1122,44 @@ class _AccountCarouselState extends State<AccountCarousel> {
                           SizedBox(width: 16.w),
                           Row(
                             children: [
-                              _buildActionButton(
-                                "Deposit",
-                                Icons.add_rounded,
-                                dimmed: frozen,
-                                onTap: frozen
-                                    ? _showFrozenActionBlocked
-                                    : () {
-                                        Get.toNamed(AppRoutes.depositFunds,
-                                            arguments: {
-                                              'selectedCard': cardArguments
-                                            });
-                                      },
-                              ),
-                              SizedBox(width: 12.w),
-                              _buildActionButton(
-                                "Withdraw",
-                                Icons.remove_rounded,
-                                dimmed: frozen,
-                                onTap: frozen
-                                    ? _showFrozenActionBlocked
-                                    : () => Get.toNamed(AppRoutes.withdrawFunds,
-                                            arguments: {
-                                              'selectedCard': cardArguments
-                                            }),
-                              ),
+                              // Withheld where the rail does not exist. There
+                              // is no per-customer virtual account outside
+                              // Naira, so there is no number to deposit INTO
+                              // and nothing to withdraw — and every method on
+                              // the deposit sheet (card, Apple Pay, bank
+                              // transfer) is integrated for NGN only. The
+                              // button led to a screen with no working route
+                              // off it. Admin-tunable via LocaleGating.
+                              if (LocaleGating.moneyActionAllowed('deposit'))
+                                _buildActionButton(
+                                  "Deposit",
+                                  Icons.add_rounded,
+                                  dimmed: frozen,
+                                  onTap: frozen
+                                      ? _showFrozenActionBlocked
+                                      : () {
+                                          Get.toNamed(AppRoutes.depositFunds,
+                                              arguments: {
+                                                'selectedCard': cardArguments
+                                              });
+                                        },
+                                ),
+                              if (LocaleGating.moneyActionAllowed('deposit') &&
+                                  LocaleGating.moneyActionAllowed('withdraw'))
+                                SizedBox(width: 12.w),
+                              if (LocaleGating.moneyActionAllowed('withdraw'))
+                                _buildActionButton(
+                                  "Withdraw",
+                                  Icons.remove_rounded,
+                                  dimmed: frozen,
+                                  onTap: frozen
+                                      ? _showFrozenActionBlocked
+                                      : () => Get.toNamed(
+                                              AppRoutes.withdrawFunds,
+                                              arguments: {
+                                                'selectedCard': cardArguments
+                                              }),
+                                ),
                             ],
                           ),
                         ],
@@ -1955,25 +1969,34 @@ class _AccountCarouselState extends State<AccountCarousel> {
                           const Spacer(),
                           // Deposit / Withdraw target the BUSINESS account (like
                           // the personal card). Manage moved to the top-left.
-                          _buildActionButton(
-                            "Deposit",
-                            Icons.add_rounded,
-                            dimmed: frozen,
-                            onTap: frozen
-                                ? _showFrozenActionBlocked
-                                : () => Get.toNamed(AppRoutes.depositFunds,
-                                    arguments: {'selectedCard': businessCard}),
-                          ),
-                          SizedBox(width: 8.w),
-                          _buildActionButton(
-                            "Withdraw",
-                            Icons.remove_rounded,
-                            dimmed: frozen,
-                            onTap: frozen
-                                ? _showFrozenActionBlocked
-                                : () => Get.toNamed(AppRoutes.withdrawFunds,
-                                    arguments: {'selectedCard': businessCard}),
-                          ),
+                          // Same rail gate as the personal card.
+                          if (LocaleGating.moneyActionAllowed('deposit'))
+                            _buildActionButton(
+                              "Deposit",
+                              Icons.add_rounded,
+                              dimmed: frozen,
+                              onTap: frozen
+                                  ? _showFrozenActionBlocked
+                                  : () => Get.toNamed(AppRoutes.depositFunds,
+                                          arguments: {
+                                            'selectedCard': businessCard
+                                          }),
+                            ),
+                          if (LocaleGating.moneyActionAllowed('deposit') &&
+                              LocaleGating.moneyActionAllowed('withdraw'))
+                            SizedBox(width: 8.w),
+                          if (LocaleGating.moneyActionAllowed('withdraw'))
+                            _buildActionButton(
+                              "Withdraw",
+                              Icons.remove_rounded,
+                              dimmed: frozen,
+                              onTap: frozen
+                                  ? _showFrozenActionBlocked
+                                  : () => Get.toNamed(AppRoutes.withdrawFunds,
+                                          arguments: {
+                                            'selectedCard': businessCard
+                                          }),
+                            ),
                         ],
                       ),
                     ],

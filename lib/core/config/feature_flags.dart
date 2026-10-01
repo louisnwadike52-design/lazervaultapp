@@ -258,6 +258,10 @@ class FeatureFlags {
   static const String localeNonNgnAccountTypes =
       'locale_non_ngn_account_types';
 
+  /// CSV of MONEY-MOVEMENT actions offered outside NGN: `deposit`, `withdraw`.
+  static const String localeNonNgnMoneyActions =
+      'locale_non_ngn_money_actions';
+
   // Whether the Bulk SMS service tile is visible anywhere in the app.
   // Hidden by default (product decision 2026-09-07); an admin can restore it
   // from the dashboard Feature Flags tab without a release.
@@ -409,6 +413,13 @@ class FeatureFlags {
       localeNonNgnNavDisabled,
       localeNonNgnAiScopes,
       localeNonNgnDashboardSections,
+      // These two were DECLARED and READ but never persisted, so the admin
+      // snapshot could not reach them: an operator opening a corridor saved
+      // the row, the dashboard showed it saved, and the app went on using the
+      // built-in default forever. Absent-vs-empty matters here — see _csv —
+      // so a missing key still means "use the default", not "allow none".
+      localeNonNgnAccountTypes,
+      localeNonNgnMoneyActions,
     ]) {
       final v = remote[key];
       if (v == null) continue;
@@ -529,6 +540,20 @@ class FeatureFlags {
   /// another region creates an account that can be opened and then not used.
   static Set<String> get localeNonNgnAccountTypeNames =>
       _csv(localeNonNgnAccountTypes, 'personal');
+
+  /// Money-movement actions offered outside NGN.
+  ///
+  /// EMPTY by default — neither Deposit nor Withdraw. Fincra confirmed they
+  /// cannot issue per-customer virtual accounts outside Nigeria, so a foreign
+  /// wallet has no number to pay INTO; and with nothing in it there is
+  /// nothing to pay out. The deposit sheet's own methods make this concrete:
+  /// card, Apple Pay and bank transfer are all integrated for Naira only, so
+  /// every route off that screen is a dead end.
+  ///
+  /// Admin-tunable because it stops being true the day a corridor opens, and
+  /// that is a commercial fact rather than a property of the code.
+  static Set<String> get localeNonNgnMoneyActionNames =>
+      _csv(localeNonNgnMoneyActions, '');
 
   // ── Bulk SMS visibility ──────────────────────────────────────────────────
   /// Whether the Bulk SMS service is visible anywhere in the app.

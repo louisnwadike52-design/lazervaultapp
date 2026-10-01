@@ -62,6 +62,8 @@ class BillListPickerSheet<T> extends StatefulWidget {
     this.onRetry,
     this.filters,
     this.secondaryFilters,
+    this.searchHint,
+    this.searchMinimum = 8,
   });
 
   final String title;
@@ -100,6 +102,18 @@ class BillListPickerSheet<T> extends StatefulWidget {
   /// Like [filters], the first entry is the "All" pass-through.
   final List<BillListFilter<T>>? secondaryFilters;
 
+  /// Placeholder for the search field. Null keeps the generic wording.
+  ///
+  /// Search narrows WITHIN the active pills rather than replacing them: a
+  /// shopper who has picked "Monthly" and types "5" wants monthly 5GB plans,
+  /// not every plan whose name contains a 5.
+  final String? searchHint;
+
+  /// Below this many fetched items the search field is not rendered — a field
+  /// over a list you can already see is clutter. MTN alone returns 82 plans,
+  /// which is why it exists at all.
+  final int searchMinimum;
+
   @override
   State<BillListPickerSheet<T>> createState() => _BillListPickerSheetState<T>();
 }
@@ -112,6 +126,27 @@ class _BillListPickerSheetState<T> extends State<BillListPickerSheet<T>> {
 
   int _filterIndex = 0;
   int _secondaryIndex = 0;
+  final _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  /// Case-insensitive substring match over the row's visible text — the label
+  /// and the trailing price, because "1700" is how someone looks for a plan
+  /// by what it costs. Whitespace-insensitive on the needle only, so "1 gb"
+  /// and "1gb" both find "1GB (SME)".
+  bool _matchesQuery(T item) {
+    if (_query.isEmpty) return true;
+    final hay = '${widget.labelOf(item)} ${widget.trailingOf(item)} '
+            '${widget.subtitleOf?.call(item) ?? ''}'
+        .toLowerCase()
+        .replaceAll(' ', '');
+    return hay.contains(_query);
+  }
 
   String get title => widget.title;
   IconData get icon => widget.icon;
@@ -145,6 +180,16 @@ class _BillListPickerSheetState<T> extends State<BillListPickerSheet<T>> {
     if (active.isEmpty) return 'No plans in this filter';
     return 'No ${active.join(' + ')} plans. Try another filter.';
   }
+
+  /// One horizontally-scrolling row of pills, at the header's inset.
+  Widget _pillRow(List<Widget> pills) => SizedBox(
+        height: 38.h,
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          children: pills,
+        ),
+      );
 
   Widget _filterPill(String label, int index, {bool secondary = false}) {
     final selected = index == (secondary ? _secondaryIndex : _filterIndex);
@@ -213,30 +258,77 @@ class _BillListPickerSheetState<T> extends State<BillListPickerSheet<T>> {
             ),
           ]),
         ),
+        // Both pill rows share ONE height and ONE inset.
+        //
+        // They were 40.h and 36.h with no gap and a 16.w inset under a 20.w
+        // title, so the two rows sat at different sizes, touching each other
+        // and starting left of everything above them. Same height, same inset
+        // as the header, and a real gap between: the rows read as two axes of
+        // one control rather than two controls that nearly line up.
         if (filters != null && filters.isNotEmpty)
-          SizedBox(
-            height: 40.h,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              children: [
-                for (var i = 0; i < filters.length; i++)
-                  _filterPill(filters[i].label, i),
-              ],
-            ),
-          ),
-        if (secondaryFilters != null && secondaryFilters.isNotEmpty)
-          SizedBox(
-            height: 36.h,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              children: [
-                for (var i = 0; i < secondaryFilters.length; i++)
-                  _filterPill(secondaryFilters[i].label, i, secondary: true),
-              ],
-            ),
-          ),
+          _pillRow([
+            for (var i = 0; i < filters.length; i++)
+              _filterPill(filters[i].label, i),
+          ]),
+        if (secondaryFilters != null && secondaryFilters.isNotEmpty) ...[
+          SizedBox(height: 8.h),
+          _pillRow([
+            for (var i = 0; i < secondaryFilters.length; i++)
+              _filterPill(secondaryFilters[i].label, i, secondary: true),
+          ]),
+        ],
+        ValueListenableBuilder<BillListFetchState<T>>(
+          valueListenable: listenable,
+          builder: (context, state, _) {
+            if (state.items.length < widget.searchMinimum) {
+              return SizedBox(height: 4.h);
+            }
+            return Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 2.h),
+              child: TextField(
+                key: const Key('bill_list_search'),
+                controller: _searchController,
+                onChanged: (v) => setState(
+                    () => _query = v.trim().toLowerCase().replaceAll(' ', '')),
+                style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                textInputAction: TextInputAction.search,
+                decoration: InputDecoration(
+                  isDense: true,
+                  hintText: widget.searchHint ??
+                      'Search ${state.items.length} options',
+                  hintStyle:
+                      GoogleFonts.inter(color: _muted, fontSize: 13.5.sp),
+                  prefixIcon: Icon(Icons.search, color: _muted, size: 19.sp),
+                  suffixIcon: _query.isEmpty
+                      ? null
+                      : IconButton(
+                          icon: Icon(Icons.close, color: _muted, size: 18.sp),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _query = '');
+                          },
+                        ),
+                  filled: true,
+                  fillColor: const Color(0xFF1F1F1F),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 11.h),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide(color: _divider),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide(color: _divider),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide(color: accent),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
         Expanded(
           child: ValueListenableBuilder<BillListFetchState<T>>(
             valueListenable: listenable,
@@ -263,9 +355,12 @@ class _BillListPickerSheetState<T> extends State<BillListPickerSheet<T>> {
               if (secondaryFilters != null &&
                   secondaryFilters.isNotEmpty &&
                   _secondaryIndex < secondaryFilters.length) {
-                items =
-                    items.where(secondaryFilters[_secondaryIndex].test).toList();
+                items = items
+                    .where(secondaryFilters[_secondaryIndex].test)
+                    .toList();
               }
+              // Search narrows WITHIN the pills, it does not replace them.
+              items = items.where(_matchesQuery).toList();
               if (items.isEmpty) {
                 return Center(
                   child: Padding(
@@ -273,7 +368,10 @@ class _BillListPickerSheetState<T> extends State<BillListPickerSheet<T>> {
                     child: Text(
                         state.items.isEmpty
                             ? emptyLabel
-                            : _noMatchLabel(filters, secondaryFilters),
+                            : _query.isNotEmpty
+                                ? 'Nothing matches "${_searchController.text.trim()}"'
+                                    '${_filterIndex > 0 || _secondaryIndex > 0 ? ' in this filter' : ''}.'
+                                : _noMatchLabel(filters, secondaryFilters),
                         textAlign: TextAlign.center,
                         style:
                             GoogleFonts.inter(color: _muted, fontSize: 14.sp)),

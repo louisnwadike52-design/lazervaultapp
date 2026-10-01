@@ -60,6 +60,7 @@ import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/move_money/domain/mandate_auth_attempt_store.dart';
+import 'package:lazervault/core/config/locale_gating.dart';
 part 'deposit_funds_screen_widgets.dart';
 
 class DepositFundsScreen extends StatefulWidget {
@@ -136,6 +137,18 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
         _DepositMethod.bankTransfer,
         _DepositMethod.card,
       ];
+    }
+    // Outside Naira, offer NOTHING until a corridor is actually open.
+    //
+    // Apple Pay and Card were listed here as if they worked. They do not:
+    // neither is integrated for a foreign-currency wallet, so the screen's
+    // every route ended at a provider that refuses the charge — after the
+    // user had chosen a method and often typed an amount. The dashboard
+    // buttons are withheld by the same key, so reaching this screen at all
+    // now means either a deep link or an operator who has opened the
+    // corridor; in the first case the empty state below is the honest answer.
+    if (!LocaleGating.moneyActionAllowed('deposit')) {
+      return const [];
     }
     return [
       if (Platform.isIOS) _DepositMethod.applePay,
@@ -1001,10 +1014,17 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   Widget _buildMethodList(bool isLoading) {
     final methods = _availableMethods;
     if (methods.isEmpty) {
+      // Name the CURRENCY and the way forward. "No methods available" alone
+      // reads as an outage the user should retry, when it is a region we do
+      // not serve yet and switching back to Naira is the actual fix.
       return Text(
-        'No deposit methods are available for this wallet yet.',
+        LocaleGating.restricted
+            ? LocaleGating.reasonFor('Adding money')
+            : 'No deposit methods are available for this wallet yet.',
         style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.6), fontSize: 13.sp),
+            color: Colors.white.withValues(alpha: 0.6),
+            fontSize: 13.sp,
+            height: 1.4),
       );
     }
     return Column(

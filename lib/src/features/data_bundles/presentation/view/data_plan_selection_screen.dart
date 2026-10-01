@@ -24,6 +24,9 @@ class DataPlanSelectionScreen extends StatefulWidget {
 class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
   final _currencyFormat = NumberFormat('#,##0', 'en_NG');
 
+  /// One height for every filter row on this screen.
+  static final double _kPillRowHeight = 36.h;
+
   // Active duration filter pill (All / Daily / Weekly / Monthly), parsed from
   // each plan's name.
   DataPlanDuration _durationFilter = DataPlanDuration.all;
@@ -37,6 +40,25 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
   /// three rows reading "1GB" at three prices side by side with nothing to
   /// distinguish them.
   String _familyFilter = '';
+
+  /// Free-text narrowing WITHIN the pills above.
+  ///
+  /// Three pill rows answer "what shape of plan"; they cannot answer "the one
+  /// that costs 1700" or "the SME 5GB", which is how someone who already knows
+  /// the plan looks for it in a list of 82.
+  final _searchController = TextEditingController();
+  String _query = '';
+
+  /// Matches a plan against [_query] over everything the row shows: its name
+  /// and its price. Spaces are stripped from BOTH sides so "1 gb" finds
+  /// "1GB (SME)" and "1gb" finds "1 GB (CG_LITE)".
+  bool _matchesQuery(DataPlanEntity p) {
+    if (_query.isEmpty) return true;
+    final hay = '${p.name} ${p.price.toStringAsFixed(0)}'
+        .toLowerCase()
+        .replaceAll(' ', '');
+    return hay.contains(_query);
+  }
 
   /// Active data-VOLUME range, null for "any size".
   ///
@@ -91,6 +113,12 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
       default:
         return const Color(0xFF4E03D0).toARGB32();
     }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -195,9 +223,74 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
                 ),
               ),
               SizedBox(height: 10.h),
+              // Search sits ABOVE the pills: it is the broadest control on the
+              // screen (it can reach any plan), and the pills narrow what it
+              // searches within. Only rendered once the catalogue is big
+              // enough to need it.
+              BlocBuilder<DataBundlesCubit, DataBundlesState>(
+                builder: (context, state) {
+                  if (state is! DataPlansLoaded || state.plans.length < 8) {
+                    return const SizedBox.shrink();
+                  }
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: 10.h),
+                    child: TextField(
+                      key: const Key('data_plan_search'),
+                      controller: _searchController,
+                      onChanged: (v) => setState(() =>
+                          _query = v.trim().toLowerCase().replaceAll(' ', '')),
+                      style: GoogleFonts.inter(
+                          color: Colors.white, fontSize: 14.sp),
+                      textInputAction: TextInputAction.search,
+                      decoration: InputDecoration(
+                        isDense: true,
+                        hintText:
+                            'Search ${state.plans.length} plans by size, name or price',
+                        hintStyle: GoogleFonts.inter(
+                            color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+                        prefixIcon: Icon(Icons.search,
+                            color: const Color(0xFF9CA3AF), size: 19.sp),
+                        suffixIcon: _query.isEmpty
+                            ? null
+                            : IconButton(
+                                icon: Icon(Icons.close,
+                                    color: const Color(0xFF9CA3AF),
+                                    size: 18.sp),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() => _query = '');
+                                },
+                              ),
+                        filled: true,
+                        fillColor: const Color(0xFF1F1F1F),
+                        contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12.w, vertical: 11.h),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                          borderSide:
+                              const BorderSide(color: Color(0xFF2D2D2D)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                          borderSide:
+                              const BorderSide(color: Color(0xFF2D2D2D)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                          borderSide:
+                              BorderSide(color: Color(networkColorValue)),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
               // Duration filter pills (parsed from each plan's name).
+              // All three pill rows share ONE height. They were 36/34/34 with
+              // uneven gaps, so three rows of the same control rendered at
+              // three sizes and read as unaligned.
               SizedBox(
-                height: 36.h,
+                height: _kPillRowHeight,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
@@ -222,7 +315,7 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
                   return Padding(
                     padding: EdgeInsets.only(bottom: 10.h),
                     child: SizedBox(
-                      height: 34.h,
+                      height: _kPillRowHeight,
                       child: ListView(
                         scrollDirection: Axis.horizontal,
                         children: [
@@ -247,7 +340,7 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
                   return Padding(
                     padding: EdgeInsets.only(bottom: 10.h),
                     child: SizedBox(
-                      height: 34.h,
+                      height: _kPillRowHeight,
                       child: ListView(
                         scrollDirection: Axis.horizontal,
                         children: [
@@ -289,6 +382,7 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
                           .where((p) => matchesDuration(p, _durationFilter))
                           .where((p) => matchesFamily(p, _familyFilter))
                           .where((p) => matchesVolume(p, _volumeFilter))
+                          .where(_matchesQuery)
                           .toList());
                       if (plans.isEmpty) {
                         // Names BOTH active filters. "No daily plans" when the
@@ -360,6 +454,12 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
     }
     if (_volumeFilter != null) {
       parts.add(_volumeFilter!.label);
+    }
+    if (_query.isNotEmpty) {
+      final q = _searchController.text.trim();
+      return parts.isEmpty
+          ? 'Nothing matches "$q".'
+          : 'Nothing matches "$q" in ${parts.join(' + ')}.';
     }
     if (parts.isEmpty) return 'No plans available';
     return 'No ${parts.join(' + ')} plans. Try another filter.';

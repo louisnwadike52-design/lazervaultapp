@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:motion_tab_bar/MotionTabBar.dart';
 import 'package:motion_tab_bar/MotionTabBarController.dart';
 
+import 'package:lazervault/core/config/locale_gating.dart';
 import 'package:lazervault/src/features/presentation/views/dashboard/dashboard_tabs.dart';
 
 class BottomNavMenu extends StatefulWidget {
@@ -21,8 +22,32 @@ class _BottomNavMenuState extends State<BottomNavMenu>
 
   static final List<String> _labels =
       kDashboardTabs.map((t) => t.label).toList(growable: false);
-  static final List<IconData> _icons =
-      kDashboardTabs.map((t) => t.icon).toList(growable: false);
+
+  /// Icons for the CURRENT region: a destination this region cannot use shows
+  /// a padlock in place of its glyph.
+  ///
+  /// THE GAP THIS CLOSES
+  /// -------------------
+  /// There are two bottom navs. The curved one (tabs 2–4) dimmed disabled
+  /// destinations and drew a lock; THIS one — the bar on Dashboard and AI
+  /// analytics, where a session starts — drew every tab as if it worked.
+  /// `_handleOnTabChange` in the parent did refuse the navigation, so tapping
+  /// Beam in Kenya produced a message and no movement, but nothing on screen
+  /// said so beforehand. Reported as "the nav items should be disabled even
+  /// when the dashboard is the active tab, and not until the chatbot is
+  /// clicked" — the chatbot tab is exactly where the OTHER, gated nav takes
+  /// over.
+  ///
+  /// NOT a static: the region changes at runtime when the user switches their
+  /// account, so this has to be read per build.
+  ///
+  /// The entry is REPLACED, never removed. The nav is addressed by index
+  /// (deep links and receipt returns pass `initialTab`), so dropping one
+  /// would retarget those links at whatever slid into its place.
+  List<IconData> get _icons => [
+        for (final t in kDashboardTabs)
+          LocaleGating.navAllowed(t.label) ? t.icon : Icons.lock_outline_rounded,
+      ];
 
   @override
   void initState() {
@@ -81,6 +106,17 @@ class _BottomNavMenuState extends State<BottomNavMenu>
       tabIconSelectedColor: Colors.white,
       tabBarColor: Colors.white,
       onTabItemSelected: (int value) {
+        // Do NOT move the highlight for a destination we are about to refuse.
+        //
+        // The parent blocks the navigation and explains why, but this bar had
+        // already slid its indicator onto the tab it never opened — the
+        // indicator sat on Beam while the dashboard stayed on screen, which
+        // reads as a broken nav rather than a withheld feature. Mirrors
+        // `letIndexChange` on the curved bar.
+        if (!LocaleGating.navAllowed(dashboardTabLabel(value))) {
+          widget.onTabChange(value); // parent shows the region message
+          return;
+        }
         setState(() {
           _motionTabBarController.index = value;
         });

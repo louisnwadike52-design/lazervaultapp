@@ -221,6 +221,15 @@ class _DashboardState extends State<Dashboard> {
     if (activeAccountId == null || activeAccountId.isEmpty) return false;
     for (final a in summaries) {
       if (a.id == activeAccountId || a.spendingAccountId == activeAccountId) {
+        // An account the carousel is NOT showing cannot be the active
+        // carousel account. Switching region filters the carousel by currency
+        // (LocaleGating.accountCurrencyAllowed) but does not re-point
+        // AccountManager, so a Naira family account stayed "active" after a
+        // switch to KES — and every surface keyed off this predicate acted on
+        // a card that was no longer on screen. Reported as the Family &
+        // Friends CTA appearing on a KES dashboard whose visible card was
+        // Personal.
+        if (!LocaleGating.accountCurrencyAllowed(a.currency)) return false;
         return a.isFamilyAccount ||
             a.accountTypeEnum == VirtualAccountType.family;
       }
@@ -607,6 +616,15 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Widget _buildFamilyFriendsCTA() {
+    // Not offered where the account type cannot be held. A Family & Friends
+    // pot is contributed to, allocated from and spent in ONE currency, and
+    // every rail behind it stops at the Nigerian border — so the CTA abroad
+    // invites someone into a flow whose first step the server refuses.
+    // Same chokepoint the carousel and the create flow use, so a corridor
+    // opening turns all three on at once.
+    if (!LocaleGating.accountTypeAllowed('family')) {
+      return const SizedBox.shrink();
+    }
     final accountManager = serviceLocator<AccountManager>();
 
     return BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
