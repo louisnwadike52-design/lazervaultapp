@@ -6,6 +6,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/server_refusal_sheet.dart';
 import 'package:lazervault/src/features/family_account/presentation/widgets/family_spend_refusal_dialog.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:lazervault/core/utils/budget_refusal.dart';
 
 /// How a bill purchase failed, from the app's point of view.
 ///
@@ -104,6 +105,17 @@ Future<void> showBillFailure(
   VoidCallback? onRetry,
   VoidCallback? onViewHistory,
 }) async {
+  // A budget refusal is checked FIRST and handled whole.
+  //
+  // It is the one refusal the user can lift themselves, and it needs a
+  // different action from every other branch below — "Adjust budget", not
+  // "Try again", because retrying into the same budget fails identically.
+  // Shared with every other money flow so the answer cannot differ by screen.
+  if (await showBudgetRefusalIfAny(context, error,
+      action: '${serviceLabel.toLowerCase()} purchase')) {
+    return;
+  }
+
   final kind = classifyBillFailure(error);
   // friendlyError maps by gRPC CODE, never by raw message, and already strips
   // provider/transport noise — so the backend's deliberate wording reaches the

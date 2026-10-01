@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:async';
+import 'package:lazervault/core/utils/budget_refusal.dart';
 
 /// Categorized transfer error types for appropriate UI treatment.
 enum TransferErrorType {
@@ -191,6 +193,17 @@ void showTransferErrorBottomSheet(
   VoidCallback? onRetry,
   VoidCallback? onDismiss,
 }) {
+  // A budget refusal is handled whole, by the shared classifier, before the
+  // generic parse. It needs a different action from everything this sheet
+  // offers — "Adjust budget", not "Try again", because retrying into the same
+  // budget fails identically — and the same answer has to appear in bills,
+  // crypto and transfers rather than one of them learning it.
+  if (isBudgetRefusal(errorMessage)) {
+    unawaited(
+        showBudgetRefusalIfAny(context, errorMessage, action: 'transfer'));
+    return;
+  }
+
   final info = parseTransferError(errorMessage, onRetry: onRetry);
 
   showModalBottomSheet(
