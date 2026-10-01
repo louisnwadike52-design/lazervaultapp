@@ -974,6 +974,15 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       // ride along in metadata, so the PDF says what the conversion COST rather
       // than only what arrived.
       tx.serviceType == TransactionServiceType.lazerpoints ||
+      // Cross-border RMB: of every type in this list it has the strongest claim
+      // to a real document, and it was the only money movement missing from it.
+      // A payout to a Chinese supplier is the thing a customer is asked to
+      // EVIDENCE — the beneficiary, the ¥ amount received, the ₦/¥ rate, the
+      // fee and the reference — and Share was exporting a flat screenshot of
+      // that page instead. All of those rows are already assembled from the
+      // backend in rmb_receipt_screen's metadata (nothing hardcoded, account
+      // numbers masked), so they flow straight into the branded PDF.
+      tx.serviceType == TransactionServiceType.rmb ||
       tx.serviceType == TransactionServiceType.withdrawal;
 
   /// Invoice-payload rows for the PDF body — mirrored from the metadata the

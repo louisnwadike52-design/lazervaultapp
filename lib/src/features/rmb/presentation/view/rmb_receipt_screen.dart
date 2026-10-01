@@ -109,8 +109,15 @@ class _RmbReceiptScreenState extends State<RmbReceiptScreen> {
     return UnifiedTransactionReceipt(
       transaction: _toUnified(_transfer!),
       fromHistory: widget.fromHistory,
-      // RMB shows Share + Repeat (no Download) per product spec.
-      showDownload: false,
+      // Download, alongside Share and Repeat.
+      //
+      // This was off ("Share + Repeat per product spec") while RMB was also
+      // missing from _supportsPdfReceipt, so the one export that existed
+      // produced a flat screenshot. A cross-border payout is precisely the
+      // transaction a customer is asked to evidence — to a supplier, a bank or
+      // for their own records — and saving that document is not a nicety.
+      // Both now use the same branded PDF, off the same backend rows.
+      showDownload: true,
       repeatColor: RmbUi.accent,
       onRepeat: _transfer!.rail == RmbRail.RAIL_UNSPECIFIED
           ? null
