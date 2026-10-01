@@ -539,8 +539,21 @@ class _AccountCarouselState extends State<AccountCarousel> {
               return _buildAccountCard(context, account);
             },
           ),
-          SizedBox(height: widget.compact ? 12.h : 20.h),
-          _buildCarouselIndicators(_totalItemCount),
+          // Page dots only when there is more than one page.
+          //
+          // Outside NGN the dashboard shows the personal account alone, so the
+          // row rendered a single permanently-active dot: a control that cannot
+          // be used, indicating a position that cannot change, taking vertical
+          // space above the fold. The gap goes with it.
+          //
+          // Keyed on the COUNT rather than the locale because that is the
+          // actual condition — any single-account state (a new user, a filtered
+          // view) has the same non-choice — and it cannot drift out of step
+          // with the locale rules the way a second copy of them would.
+          if (_totalItemCount > 1) ...[
+            SizedBox(height: widget.compact ? 12.h : 20.h),
+            _buildCarouselIndicators(_totalItemCount),
+          ],
         ],
       ),
     );

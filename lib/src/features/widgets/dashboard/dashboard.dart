@@ -391,7 +391,16 @@ class _DashboardState extends State<Dashboard> {
                       // account cannot do. The predicate reads the same
                       // per-account service lists the quick-grid is built from,
                       // so the two can never disagree.
-                      if (LocaleGating.sectionAllowed('crowdfunds') &&
+                      //
+                      // AND on the account being POSITIVELY resolved as the
+                      // personal one. activeAccountSupports answers against a
+                      // null account type by falling back to the personal
+                      // service list, which is fine for the grid (it rebuilds
+                      // the instant the type arrives) but wrong for a section:
+                      // these build before the grid resolves, so a communal
+                      // rail would flash onto a business or savings account.
+                      if (AppServicesBuilder.activeAccountIsPersonal() &&
+                          LocaleGating.sectionAllowed('crowdfunds') &&
                           AppServicesBuilder.activeAccountSupports(
                               AppServiceName.crowdfund)) ...[
                         SizedBox(height: 16.0.h),
@@ -400,7 +409,8 @@ class _DashboardState extends State<Dashboard> {
                           child: const TrendingCrowdfunds(),
                         ),
                       ],
-                      if (LocaleGating.sectionAllowed('public_groups') &&
+                      if (AppServicesBuilder.activeAccountIsPersonal() &&
+                          LocaleGating.sectionAllowed('public_groups') &&
                           AppServicesBuilder.activeAccountSupports(
                               AppServiceName.groupAccount)) ...[
                         SizedBox(height: 16.0.h),

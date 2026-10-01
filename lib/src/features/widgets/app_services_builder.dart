@@ -52,6 +52,23 @@ class AppServicesBuilder extends StatefulWidget {
   static bool activeAccountSupports(AppServiceName name) =>
       _AppServicesBuilderState.activeAccountSupports(name);
 
+  /// True only when the active account is the PERSONAL wallet, and only once
+  /// that has actually been resolved.
+  ///
+  /// Distinct from `activeAccountSupports` on purpose. That one answers "does
+  /// this account offer the service", and when the account type is not yet
+  /// known it resolves against null — which falls to the personal service list
+  /// by default. For the quick-grid that default is harmless (the grid rebuilds
+  /// the moment the type arrives). For a dashboard SECTION it is not: the lower
+  /// sections build before the grid has resolved anything, so a communal rail
+  /// would flash onto a business or savings account for a frame or more.
+  ///
+  /// An unresolved account therefore answers FALSE here. Hiding a section for a
+  /// frame and then showing it is correct; showing it on the wrong account and
+  /// then taking it away is not.
+  static bool activeAccountIsPersonal() =>
+      _AppServicesBuilderState.activeAccountIsPersonal();
+
   /// The curated service list for one account TYPE, before any locale or
   /// feature-flag hiding. Public forwarder, matching the two above.
   ///
@@ -421,6 +438,16 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     if (!raw.any((s) => s.serviceName == name)) return false;
     return !_effectiveHiddenServices.contains(name);
   }
+
+  /// See [AppServicesBuilder.activeAccountIsPersonal].
+  ///
+  /// `main` counts with `personal`: the two share one service list and are the
+  /// same wallet to a customer. NULL does NOT — an unresolved account is not
+  /// yet known to be personal, and the switch above would otherwise default it
+  /// into the personal list.
+  static bool activeAccountIsPersonal() =>
+      _lastResolvedAccountType == VirtualAccountType.personal ||
+      _lastResolvedAccountType == VirtualAccountType.main;
 
   /// The account type the grid most recently resolved.
   ///
