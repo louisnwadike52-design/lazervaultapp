@@ -1,4 +1,5 @@
 import 'package:lazervault/src/features/sprayme/domain/entities/session_invite.dart';
+import 'package:lazervault/src/features/sprayme/domain/entities/session_clock.dart';
 import 'package:lazervault/src/features/sprayme/data/datasources/sprayme_remote_datasource.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_session.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_wallet.dart';
@@ -230,4 +231,22 @@ class SprayMeRepositoryImpl implements ISprayMeRepository {
   @override
   Future<void> toggleRecording(String sessionId, {required bool enabled}) =>
       _dataSource.toggleRecording(sessionId, enabled: enabled);
+
+  @override
+  Future<SessionClockPolicy> getSessionClockPolicy() =>
+      _dataSource.getSessionClockPolicy();
+
+  @override
+  Future<DateTime?> extendSession(
+    String sessionId, {
+    required int minutes,
+    required String sourceAccountId,
+    required String idempotencyKey,
+  }) =>
+      _dataSource.extendSession(
+        sessionId,
+        minutes: minutes,
+        sourceAccountId: sourceAccountId,
+        idempotencyKey: idempotencyKey,
+      );
 }

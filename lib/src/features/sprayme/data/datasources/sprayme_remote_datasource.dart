@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:lazervault/src/features/sprayme/domain/entities/session_clock.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_session.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_wallet.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_gift.dart';
@@ -574,6 +575,52 @@ class SprayMeRemoteDataSource {
       await _dio.post('/api/v1/sprayme/sessions/$sessionId/seat/leave');
     } on DioException catch (e) {
       throw _mapDioError(e, 'leave seat');
+    }
+  }
+
+  /// The platform's session-clock configuration.
+  ///
+  /// Returns the DISABLED policy on any failure rather than throwing: an
+  /// unreachable endpoint must never be the reason a host is told their
+  /// session is about to end, or shown prices that may not be current. The
+  /// server enforces the clock either way.
+  Future<SessionClockPolicy> getSessionClockPolicy() async {
+    try {
+      final res = await _dio.get('/api/v1/sprayme/session-policy');
+      final raw = res.data['policy'];
+      if (raw is Map<String, dynamic>) return SessionClockPolicy.fromJson(raw);
+    } catch (_) {
+      // Fall through to the disabled policy.
+    }
+    return SessionClockPolicy.unknown;
+  }
+
+  /// Host: buy more time on a session that is running out.
+  ///
+  /// Sends only the chosen block and the account to charge — never a price.
+  /// [idempotencyKey] must be REUSED across retries of the same purchase, or
+  /// a flaky connection buys two half hours.
+  ///
+  /// Returns the new expiry.
+  Future<DateTime?> extendSession(
+    String sessionId, {
+    required int minutes,
+    required String sourceAccountId,
+    required String idempotencyKey,
+  }) async {
+    try {
+      final res = await _dio.post(
+        '/api/v1/sprayme/sessions/$sessionId/extend',
+        data: {
+          'minutes': minutes,
+          'source_account_id': sourceAccountId,
+          'idempotency_key': idempotencyKey,
+        },
+      );
+      final raw = res.data['new_expires_at'] as String?;
+      return (raw == null || raw.isEmpty) ? null : DateTime.tryParse(raw);
+    } on DioException catch (e) {
+      throw _mapDioError(e, 'extend session');
     }
   }
 

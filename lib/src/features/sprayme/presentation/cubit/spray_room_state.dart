@@ -1,4 +1,5 @@
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_session.dart';
+import 'package:lazervault/src/features/sprayme/domain/entities/session_clock.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_wallet.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_gift.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/session_participant.dart';
@@ -33,6 +34,18 @@ class SprayRoomState {
   /// countdown — people can keep spraying, and the host coming back cancels it.
   /// Collapsing the two would freeze a room that has not ended.
   final int? endingInSeconds;
+  /// The platform's session-clock configuration.
+  ///
+  /// Defaults to DISABLED so a room renders no countdown until the policy has
+  /// actually been read — an unreachable endpoint must never be the reason a
+  /// host is told their session is about to end.
+  final SessionClockPolicy clockPolicy;
+
+  /// The remaining-minutes mark the server last warned about, or null when
+  /// nothing has been announced. Drives the in-room banner; distinct from the
+  /// countdown, which is always on once a session has a clock.
+  final int? expiryWarningMinutes;
+
   final bool connectionFailed; // true when WebSocket gave up reconnecting
   final bool walletLoadFailed; // true when wallet failed to load
   final bool actionInProgress; // true when a gift/spray/comment is in-flight
@@ -63,6 +76,8 @@ class SprayRoomState {
     this.isLoading = false,
     this.sessionEnded = false,
     this.endingInSeconds,
+    this.clockPolicy = SessionClockPolicy.unknown,
+    this.expiryWarningMinutes,
     this.connectionFailed = false,
     this.walletLoadFailed = false,
     this.actionInProgress = false,
@@ -93,6 +108,9 @@ class SprayRoomState {
     bool? sessionEnded,
     int? endingInSeconds,
     bool clearEndingCountdown = false,
+    SessionClockPolicy? clockPolicy,
+    int? expiryWarningMinutes,
+    bool clearExpiryWarning = false,
     bool? connectionFailed,
     bool? walletLoadFailed,
     bool? actionInProgress,
@@ -123,6 +141,12 @@ class SprayRoomState {
       endingInSeconds: clearEndingCountdown
           ? null
           : (endingInSeconds ?? this.endingInSeconds),
+      clockPolicy: clockPolicy ?? this.clockPolicy,
+      // Cleared explicitly rather than by passing null, so an
+      // extension can silence a warning that is no longer true.
+      expiryWarningMinutes: clearExpiryWarning
+          ? null
+          : (expiryWarningMinutes ?? this.expiryWarningMinutes),
       connectionFailed: connectionFailed ?? this.connectionFailed,
       walletLoadFailed: walletLoadFailed ?? this.walletLoadFailed,
       actionInProgress: actionInProgress ?? this.actionInProgress,

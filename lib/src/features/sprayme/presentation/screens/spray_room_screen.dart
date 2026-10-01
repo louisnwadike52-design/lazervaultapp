@@ -12,6 +12,9 @@ import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/spray_room_cubit.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/session_participant.dart';
+import 'package:lazervault/src/features/sprayme/domain/entities/session_clock.dart';
+import 'package:lazervault/src/features/sprayme/presentation/widgets/session_countdown.dart';
+import 'package:lazervault/src/features/sprayme/presentation/widgets/extend_session_sheet.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/spray_room_state.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/spray_live_cubit.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/spray_live_state.dart';
@@ -187,6 +190,10 @@ class _SprayRoomViewState extends State<_SprayRoomView>
       _roomCubitRef =
           cubit; // captured so dispose can flush pending likes safely
       cubit.initRoom(widget.sessionId, widget.accessToken);
+      // The session-clock configuration, read once per room. Never blocks and
+      // never throws: a failure leaves the disabled policy, which renders no
+      // countdown at all rather than guessing at a deadline.
+      cubit.loadClockPolicy();
     });
   }
 
@@ -1637,6 +1644,20 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                 ),
               )),
               _liveBadgeUnderHeader(),
+              // The session clock, always visible once a session has one. A
+              // deadline nobody can see until it is nearly up is an ambush.
+              if (state.session?.expiresAt != null &&
+                  state.clockPolicy.enabled &&
+                  !state.sessionEnded)
+                Padding(
+                  padding: EdgeInsets.only(top: 6.h),
+                  child: SessionCountdownChip(
+                    expiresAt: state.session!.expiresAt!,
+                    policy: state.clockPolicy,
+                    // Only the host pays, so only the host gets a tap target.
+                    onTap: _isHost(state) ? () => _openExtendSheet(state) : null,
+                  ),
+                ),
             ],
           ),
         ],
@@ -2394,11 +2415,70 @@ class _SprayRoomViewState extends State<_SprayRoomView>
               // with the session title. This overlay is only the invite
               // banner, which does want the full width and the centre.
               if (live.coHostInvitePending) _buildCoHostInviteBanner(context),
+              _buildExpiryBanner(),
             ],
           ),
         );
       },
     );
+  }
+
+  /// Marks the host has already dismissed, so closing the 15-minute notice
+  /// does not also silence the one at five. Per-mark, not permanent.
+  final Set<int> _dismissedExpiryWarnings = <int>{};
+
+  /// The server's expiry warning, with the way out attached.
+  Widget _buildExpiryBanner() {
+    return BlocBuilder<SprayRoomCubit, SprayRoomState>(
+      buildWhen: (p, c) =>
+          p.expiryWarningMinutes != c.expiryWarningMinutes ||
+          p.sessionEnded != c.sessionEnded,
+      builder: (context, state) {
+        final mins = state.expiryWarningMinutes;
+        if (mins == null ||
+            state.sessionEnded ||
+            _dismissedExpiryWarnings.contains(mins)) {
+          return const SizedBox.shrink();
+        }
+        return Padding(
+          padding: EdgeInsets.only(top: 10.h),
+          child: SessionExpiringBanner(
+            minutesLeft: mins,
+            isHost: _isHost(state),
+            onExtend: () => _openExtendSheet(state),
+            onDismiss: () => setState(() => _dismissedExpiryWarnings.add(mins)),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Open the buy-more-time sheet.
+  ///
+  /// Host-only — the session is theirs and so is its cost. A viewer who taps
+  /// the countdown gets nothing, which is why the chip only carries a tap
+  /// target for the host.
+  Future<void> _openExtendSheet(SprayRoomState state) async {
+    final session = state.session;
+    if (session == null || !_isHost(state)) return;
+    if (!state.clockPolicy.enabled) return;
+
+    final bought = await showExtendSessionSheet(
+      context,
+      sessionId: session.id,
+      policy: state.clockPolicy,
+      remaining: session.timeRemaining,
+    );
+    if (bought != true || !mounted) return;
+
+    // Clear every dismissed mark: the deadline has moved, so the warnings
+    // that were silenced are about a session that no longer ends then.
+    setState(_dismissedExpiryWarnings.clear);
+    // Re-read rather than trusting the WS frame to arrive — the host has just
+    // paid and must see the new deadline immediately.
+    await context.read<SprayRoomCubit>().refreshSessionClock();
+    if (!mounted) return;
+    _snack('Time added — the session keeps going', const Color(0xFF10B981));
   }
 
   Widget _buildCoHostInviteBanner(BuildContext context) {

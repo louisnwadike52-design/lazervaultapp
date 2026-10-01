@@ -27,6 +27,21 @@ class SpraySession {
   final bool recordingEnabled;
   final String recordingUrl;
 
+  // ── Session clock ──
+  /// When the session auto-ends, or NULL when it has no clock.
+  ///
+  /// Null is the normal case: no deadline is stamped while the admin has
+  /// session limits switched off, and the room renders no countdown at all
+  /// for a null. Reading a missing field as "expires now" would end every
+  /// session on an older server, so the absence has to mean unlimited.
+  final DateTime? expiresAt;
+
+  /// Minutes of extra time the host has BOUGHT, cumulative.
+  final int extendedMinutes;
+
+  /// How many times they bought it.
+  final int extensionCount;
+
   const SpraySession({
     required this.id,
     required this.hostUserId,
@@ -54,7 +69,24 @@ class SpraySession {
     this.hlsUrl = '',
     this.recordingEnabled = false,
     this.recordingUrl = '',
+    this.expiresAt,
+    this.extendedMinutes = 0,
+    this.extensionCount = 0,
   });
+
+  /// Time left before the session auto-ends, or null when it has no clock.
+  ///
+  /// Clamped at zero: a negative remainder would render as "-3m left", and
+  /// the sweep ends an overdue session within thirty seconds anyway.
+  Duration? get timeRemaining {
+    final at = expiresAt;
+    if (at == null) return null;
+    final left = at.difference(DateTime.now());
+    return left.isNegative ? Duration.zero : left;
+  }
+
+  /// True when the session has a clock at all.
+  bool get hasTimeLimit => expiresAt != null;
 
   double get totalSprayedMajor => totalSprayed / 100;
   bool get isActive => status == 'active';
@@ -107,6 +139,9 @@ class SpraySession {
     String? hlsUrl,
     bool? recordingEnabled,
     String? recordingUrl,
+    DateTime? expiresAt,
+    int? extendedMinutes,
+    int? extensionCount,
   }) {
     return SpraySession(
       id: id,
@@ -135,6 +170,9 @@ class SpraySession {
       hlsUrl: hlsUrl ?? this.hlsUrl,
       recordingEnabled: recordingEnabled ?? this.recordingEnabled,
       recordingUrl: recordingUrl ?? this.recordingUrl,
+      expiresAt: expiresAt ?? this.expiresAt,
+      extendedMinutes: extendedMinutes ?? this.extendedMinutes,
+      extensionCount: extensionCount ?? this.extensionCount,
     );
   }
 
@@ -170,6 +208,13 @@ class SpraySession {
       hlsUrl: json['hls_url'] as String? ?? '',
       recordingEnabled: json['recording_enabled'] as bool? ?? false,
       recordingUrl: json['recording_url'] as String? ?? '',
+      // Empty string and null both mean "no clock" — the gateway omits the
+      // field entirely on an unclocked session and sends "" on a cleared one.
+      expiresAt: (json['expires_at'] as String?)?.isNotEmpty == true
+          ? DateTime.tryParse(json['expires_at'] as String)
+          : null,
+      extendedMinutes: (json['extended_minutes'] as num?)?.toInt() ?? 0,
+      extensionCount: (json['extension_count'] as num?)?.toInt() ?? 0,
     );
   }
 }

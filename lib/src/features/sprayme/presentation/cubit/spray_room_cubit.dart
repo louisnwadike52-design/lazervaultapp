@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/src/features/sprayme/domain/entities/spray_session.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -371,6 +372,25 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
                 (event.data['count'] as num?)?.toInt() ?? state.viewerCount,
           ),
         );
+      // THE CLOCK. The server owns both of these: it decides when to warn
+      // (once per mark — see MarkExpiryWarned) and it is the only thing that
+      // can move a deadline. The room never computes either.
+      case 'session_expiring':
+        emit(state.copyWith(
+          recentEvents: updatedEvents,
+          expiryWarningMinutes:
+              (event.data['minutes_left'] as num?)?.toInt() ?? 1,
+          session: _sessionWithExpiry(event.data['expires_at'] as String?),
+        ));
+      case 'session_extended':
+        // Everyone in the room hears this, not just the host: a viewer who
+        // saw "15 minutes left" needs to know it is no longer true, or they
+        // leave a party that just bought another hour.
+        emit(state.copyWith(
+          recentEvents: updatedEvents,
+          clearExpiryWarning: true,
+          session: _sessionWithExpiry(event.data['expires_at'] as String?),
+        ));
       case 'seat_requested':
       case 'seat_approved':
       case 'seat_declined':
@@ -392,6 +412,47 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
       default:
         emit(state.copyWith(recentEvents: updatedEvents));
     }
+  }
+
+  /// Apply a new expiry from a WS frame, leaving the rest of the session
+  /// alone.
+  ///
+  /// Returns the CURRENT session unchanged when the frame carried nothing
+  /// parseable — a malformed timestamp must never clear a real deadline and
+  /// make the room look unlimited when it is about to end.
+  SpraySession? _sessionWithExpiry(String? raw) {
+    final current = state.session;
+    if (current == null) return null;
+    if (raw == null || raw.isEmpty) return current;
+    final parsed = DateTime.tryParse(raw);
+    if (parsed == null) return current;
+    return current.copyWith(expiresAt: parsed);
+  }
+
+  /// Read the platform's session-clock configuration.
+  ///
+  /// Never throws and never blocks the room: a failure leaves the disabled
+  /// policy in place, which renders no countdown at all.
+  Future<void> loadClockPolicy() async {
+    try {
+      final policy = await _repository.getSessionClockPolicy();
+      if (!isClosed) emit(state.copyWith(clockPolicy: policy));
+    } catch (_) {
+      // Disabled policy stands.
+    }
+  }
+
+  /// Pull the session again after an extension, so the countdown reflects
+  /// what was just bought even if the WS frame was missed.
+  Future<void> refreshSessionClock() async {
+    final id = state.session?.id;
+    if (id == null) return;
+    try {
+      final fresh = await _repository.getSession(id);
+      if (!isClosed) {
+        emit(state.copyWith(session: fresh, clearExpiryWarning: true));
+      }
+    } catch (_) {}
   }
 
   // ─── Guest "boxes" (request-to-join-stage) ──────────────────

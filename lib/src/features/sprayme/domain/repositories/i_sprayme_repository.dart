@@ -1,4 +1,5 @@
 import 'package:lazervault/src/features/sprayme/domain/entities/session_invite.dart';
+import 'package:lazervault/src/features/sprayme/domain/entities/session_clock.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_session.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_wallet.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_gift.dart';
@@ -111,5 +112,18 @@ abstract class ISprayMeRepository {
   Future<void> declineSeat(String sessionId, {required String userId});
   Future<void> leaveSeat(String sessionId);
   Future<void> removeFromSeat(String sessionId, {required String userId});
+
+  /// The platform's session-clock configuration (never throws; a failure
+  /// resolves to the disabled policy).
+  Future<SessionClockPolicy> getSessionClockPolicy();
+
+  /// Host: buy [minutes] more on a session. Charged to [sourceAccountId];
+  /// the price comes from the server, never from the app.
+  Future<DateTime?> extendSession(
+    String sessionId, {
+    required int minutes,
+    required String sourceAccountId,
+    required String idempotencyKey,
+  });
   Future<void> toggleRecording(String sessionId, {required bool enabled});
 }
