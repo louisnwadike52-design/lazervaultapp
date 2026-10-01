@@ -66,10 +66,10 @@ class FCYAccountService {
       bankName: (d['bankName'] ?? '').toString(),
       accountName: (d['accountName'] ?? '').toString(),
       routingDetailsJson: (d['routingDetailsJson'] ?? '').toString(),
-      supportedCurrencies: ((d['supportedCurrencies'] as List?) ?? const [])
-          .map((e) => e.toString().trim().toUpperCase())
-          .where((e) => e.isNotEmpty)
-          .toList(growable: false),
+      supportedCurrencies: _currencyList(d['supportedCurrencies']),
+      activatableCurrencies: _currencyList(d['activatableCurrencies']),
+      gatedCurrencies: _currencyList(d['gatedCurrencies']),
+      currencyGated: d['currencyGated'] == true,
       provider: (d['provider'] ?? '').toString(),
     );
   }
@@ -193,6 +193,12 @@ class FCYAccountService {
     return publicUrl;
   }
 
+  static List<String> _currencyList(Object? raw) =>
+      ((raw as List?) ?? const [])
+          .map((e) => e.toString().trim().toUpperCase())
+          .where((e) => e.isNotEmpty)
+          .toList(growable: false);
+
   static String _imageContentType(String name) {
     final n = name.toLowerCase();
     if (n.endsWith('.png')) return 'image/png';
@@ -232,6 +238,29 @@ class FCYStatus {
   /// rather than showing nothing.
   final List<String> supportedCurrencies;
 
+  /// The subset of [supportedCurrencies] a request would actually be ACCEPTED
+  /// for right now.
+  ///
+  /// The two sets answer different questions and in production they disagree:
+  /// the provider's catalogue lists ten currencies, but its account-level
+  /// entitlement refuses USD, GBP, EUR and CAD outright while GHS, KES, XAF,
+  /// TZS, RWF and UGX are open. The app was offering the KYC wizard for exactly
+  /// the four that are blocked, so every package it collected could only be
+  /// queued, and never offered the six that work.
+  ///
+  /// Empty when the server is older than this field; callers then fall back to
+  /// [supportedCurrencies], which is the behaviour that existed before.
+  final List<String> activatableCurrencies;
+
+  /// The complement — declared by the provider, refused at the account level.
+  /// Carried so a screen can say "not open yet" about a named currency instead
+  /// of silently omitting it, which reads as a bug to someone who knows the
+  /// feature exists.
+  final List<String> gatedCurrencies;
+
+  /// Whether the currency THIS status was read for is one of the gated ones.
+  final bool currencyGated;
+
   /// Which rail would issue this currency ("fincra", "nomba", …), or empty
   /// when none would. Lets a screen name the provider instead of assuming one.
   final String provider;
@@ -244,6 +273,9 @@ class FCYStatus {
     required this.accountName,
     required this.routingDetailsJson,
     this.supportedCurrencies = const [],
+    this.activatableCurrencies = const [],
+    this.gatedCurrencies = const [],
+    this.currencyGated = false,
     this.provider = '',
   });
 }

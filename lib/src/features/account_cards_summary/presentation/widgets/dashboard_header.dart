@@ -20,6 +20,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/widgets/country_locale_bottom_sheet.dart';
 import 'package:lazervault/src/features/multi_country/cubit/multi_country_cubit.dart';
+import 'package:lazervault/src/features/fcy_account/presentation/fcy_activation_offer.dart';
 
 // Dashboard header with notifications bottomsheet - clean white background
 class DashboardHeader extends StatefulWidget {
@@ -235,6 +236,23 @@ class _DashboardHeaderState extends State<DashboardHeader>
                   print(
                       'No accounts found for country: ${selectedCountry.countryCode}');
                 }
+              }
+
+              // The new wallet exists, but a FOREIGN one cannot receive a bank
+              // transfer until the user completes the one-time FCY pack. This is
+              // the moment to say so: switching country is exactly when someone
+              // goes looking for an account number. Until now nothing did, and
+              // the activation flow was reachable only by finding a text link
+              // inside the account-actions sheet — which is why no user has ever
+              // started it.
+              //
+              // The currency comes off the same CountryLocale the LocaleManager
+              // derived from, so this cannot disagree with the wallet in view.
+              if (context.mounted) {
+                await maybeOfferFcyActivation(
+                  context,
+                  currency: selectedCountry.currency,
+                );
               }
             }
           },

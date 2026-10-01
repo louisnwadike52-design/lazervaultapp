@@ -25,6 +25,13 @@ class FcyCapabilities {
 
   /// The last set the server gave us. Null means "never successfully read".
   List<String>? _cached;
+
+  /// The subset of [_cached] a request would actually be ACCEPTED for, and its
+  /// complement. Null means the server never told us, in which case every
+  /// supported currency is treated as activatable — the behaviour that existed
+  /// before the entitlement was measurable.
+  List<String>? _activatable;
+  List<String>? _gated;
   Future<void>? _inFlight;
 
   /// What to show before the server has answered, and if it never does.
@@ -38,10 +45,36 @@ class FcyCapabilities {
 
   List<String> get currencies => _cached ?? fallback;
 
+  /// Currencies the user can be INVITED to activate.
+  ///
+  /// Distinct from [currencies] on purpose. `currencies` is "does this currency
+  /// exist on the rail", which decides whether to acknowledge it at all;
+  /// `activatable` is "would a request be accepted", which decides whether to
+  /// open a three-minute KYC wizard in front of someone. In production those
+  /// differ for four of ten currencies.
+  List<String> get activatable => _activatable ?? currencies;
+
+  /// Currencies the rail carries but will not open right now.
+  List<String> get gated => _gated ?? const [];
+
   bool supports(String currency) {
     final c = currency.trim().toUpperCase();
     if (c.isEmpty) return false;
     return currencies.contains(c);
+  }
+
+  /// Whether activation can be offered for this currency right now.
+  bool canActivate(String currency) {
+    final c = currency.trim().toUpperCase();
+    if (c.isEmpty) return false;
+    return activatable.contains(c);
+  }
+
+  /// Whether this currency is carried but closed to new requests.
+  bool isGated(String currency) {
+    final c = currency.trim().toUpperCase();
+    if (c.isEmpty) return false;
+    return gated.contains(c);
   }
 
   /// Refresh from the server. Never throws — a capability read is not worth
@@ -66,15 +99,48 @@ class FcyCapabilities {
       if (s.supportedCurrencies.isNotEmpty) {
         _cached = s.supportedCurrencies;
       }
+      // Only overwritten when the server actually sent the split. An older
+      // server sends neither, and leaving these null keeps `activatable` equal
+      // to `currencies` rather than emptying the offer.
+      if (s.activatableCurrencies.isNotEmpty || s.gatedCurrencies.isNotEmpty) {
+        _activatable = s.activatableCurrencies;
+        _gated = s.gatedCurrencies;
+      }
     } catch (_) {
       // Keep the last good answer, or the fallback. Silence is correct here:
       // nothing the user did failed.
     }
   }
 
+  /// Adopt a status read someone else already made.
+  ///
+  /// The capability set rides on every status response, so a caller that has
+  /// just read one should not provoke a second round trip to refresh this cache.
+  /// Only non-empty fields overwrite: an older server sends none of them, and
+  /// adopting its silence would empty the offer.
+  void adopt(FCYStatus status) {
+    if (status.supportedCurrencies.isNotEmpty) {
+      _cached = status.supportedCurrencies;
+    }
+    if (status.activatableCurrencies.isNotEmpty ||
+        status.gatedCurrencies.isNotEmpty) {
+      _activatable = status.activatableCurrencies;
+      _gated = status.gatedCurrencies;
+    }
+  }
+
   /// For tests and for an operator-visible settings change mid-session.
-  void invalidate() => _cached = null;
+  void invalidate() {
+    _cached = null;
+    _activatable = null;
+    _gated = null;
+  }
 
   /// Test seam.
-  void seedForTest(List<String>? currencies) => _cached = currencies;
+  void seedForTest(List<String>? currencies,
+      {List<String>? activatable, List<String>? gated}) {
+    _cached = currencies;
+    _activatable = activatable;
+    _gated = gated;
+  }
 }

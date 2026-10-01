@@ -452,7 +452,12 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
                     ),
                   ],
                 ),
-                if (FcyCapabilities.instance.supports(_currency)) ...[
+                // canActivate, not supports. `supports` asks whether the rail
+                // CARRIES this currency; the entitlement to open one is a
+                // separate answer and in production they differ — USD, GBP, EUR
+                // and CAD are carried but refused, so this link used to walk
+                // people into a wizard whose submission could only be queued.
+                if (FcyCapabilities.instance.canActivate(_currency)) ...[
                   SizedBox(height: 8.h),
                   GestureDetector(
                     onTap: () => Get.toNamed(AppRoutes.fcyActivation,
@@ -476,6 +481,31 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
                             color: const Color(0xFF9B6DFF), size: 16.sp),
                       ],
                     ),
+                  ),
+                ]
+                // Carried by the rail but closed to new requests. Said plainly
+                // rather than left blank: an absent line reads as a bug to
+                // someone who knows the feature exists, and a dead link that
+                // opens a wizard nothing can accept is worse than either.
+                else if (FcyCapabilities.instance.isGated(_currency)) ...[
+                  SizedBox(height: 8.h),
+                  Row(
+                    children: [
+                      Icon(Icons.schedule_rounded,
+                          color: Colors.white.withValues(alpha: 0.55),
+                          size: 15.sp),
+                      SizedBox(width: 6.w),
+                      Expanded(
+                        child: Text(
+                          'Deposit accounts open soon',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.55),
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ],
