@@ -10,6 +10,9 @@ import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_ent
 import 'package:lazervault/src/features/funds/services/batch_transfer_pdf_service.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/funds/domain/entities/saved_batch_entity.dart';
+import 'package:lazervault/src/features/funds/domain/repositories/i_saved_batch_repository.dart';
 
 class BatchTransferReceiptScreen extends StatefulWidget {
   const BatchTransferReceiptScreen({super.key});
@@ -1415,7 +1418,126 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                 ),
               ],
             ),
+            SizedBox(height: 10.h),
+            // Save it HERE, not only on the review screen.
+            //
+            // Saving exists on Review, but that is before anyone knows the
+            // batch works — the moment you want to keep a list of payees is
+            // after you have just paid them. Reported as "I didn't see where
+            // to save batch in the batch transfer flow", with zero saved
+            // batches on the account despite a successful run.
+            //
+            // Full width, below the pairs: it is a one-off action, not one
+            // half of a choice.
+            SizedBox(
+              width: double.infinity,
+              child: _buildActionButton(
+                key: const Key('save_batch_from_receipt'),
+                icon: Icons.bookmark_add_outlined,
+                label: 'Save for next time',
+                color: btGreen,
+                onTap: _saveBatchFromReceipt,
+              ),
+            ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// Save the batch just sent as a reusable draft.
+  ///
+  /// Built from the RECEIPT's own recipient list rather than the review
+  /// payload, because that is what exists here — and it is the list that
+  /// actually went out, which is the one worth keeping.
+  Future<void> _saveBatchFromReceipt() async {
+    final transfers = receiptData['transfers'] as List<dynamic>? ?? [];
+    if (transfers.isEmpty) {
+      Get.snackbar('Nothing to save', 'This batch has no recipients.',
+          snackPosition: SnackPosition.TOP);
+      return;
+    }
+
+    final controller = TextEditingController();
+    final name = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: btCard,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Text('Name this batch',
+            style: GoogleFonts.inter(
+                color: btTextPrimary,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w700)),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: GoogleFonts.inter(color: btTextPrimary),
+          decoration: InputDecoration(
+            hintText: 'e.g. Monthly staff payout',
+            hintStyle: GoogleFonts.inter(color: btTextTertiary),
+          ),
+          onSubmitted: (v) => Navigator.of(ctx).pop(v.trim()),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text('Cancel',
+                  style: GoogleFonts.inter(color: btTextSecondary))),
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
+              child: Text('Save', style: GoogleFonts.inter(color: btBlue))),
+        ],
+      ),
+    );
+    if (name == null || name.isEmpty || !mounted) return;
+
+    final items = transfers.whereType<Map>().map((raw) {
+      final t = raw.cast<String, dynamic>();
+      final bankCode = (t['destinationBankCode'] ?? '').toString();
+      return SavedBatchItemInputEntity(
+        // Same routing hint the review screen sends: a destination bank code
+        // is what makes an item external.
+        recipientType:
+            bankCode.isNotEmpty ? 'external_bank' : 'internal_lazervault',
+        recipientUserId: (t['recipientUserId'] ?? '').toString(),
+        bankCode: bankCode,
+        accountNumber: (t['recipientAccount'] ?? '').toString(),
+        beneficiaryName: (t['recipientName'] ?? '').toString(),
+        amount: (t['amount'] as num?)?.toDouble() ?? 0,
+        narration: '',
+      );
+    }).toList();
+
+    final res = await serviceLocator<ISavedBatchRepository>().saveBatchDraft(
+      name: name,
+      currency: (receiptData['currency'] as String?) ?? 'NGN',
+      sourceAccountId: (receiptData['fromAccountId'] as String?) ?? '',
+      items: items,
+    );
+    if (!mounted) return;
+    res.fold(
+      (failure) => Get.snackbar(
+        'Could not save batch',
+        failure.message,
+        backgroundColor: btRed,
+        colorText: btTextPrimary,
+        snackPosition: SnackPosition.TOP,
+      ),
+      (saved) => Get.snackbar(
+        'Batch saved',
+        '${saved.name} is now under Saved Batches.',
+        backgroundColor: btGreen,
+        colorText: btTextPrimary,
+        snackPosition: SnackPosition.TOP,
+        mainButton: TextButton(
+          onPressed: () => Get.toNamed(AppRoutes.savedBatches),
+          child: Text('View',
+              style: GoogleFonts.inter(
+                  color: btTextPrimary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12.sp)),
         ),
       ),
     );
@@ -1587,8 +1709,10 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
     required Color color,
     required VoidCallback onTap,
     bool isLoading = false,
+    Key? key,
   }) {
     return GestureDetector(
+      key: key,
       onTap: isLoading ? null : onTap,
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 12.h),
