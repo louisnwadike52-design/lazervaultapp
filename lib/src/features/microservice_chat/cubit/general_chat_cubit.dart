@@ -42,6 +42,17 @@ class GeneralChatCubit extends Cubit<GeneralChatState> {
 
   StreamSubscription<String?>? _sessionIdSub;
 
+  /// Re-keys the conversation when the user switches REGION.
+  ///
+  /// The session id embeds the locale, and the gateway filters history by it,
+  /// so each region has its own transcript — but this cubit lives on a
+  /// bottom-nav tab and is built ONCE. Switching from Naira to USD left the
+  /// Naira session id in place and the Naira messages on screen, so the user
+  /// read their NGN conversation inside a USD account. Reported exactly that
+  /// way. The id was only ever computed in the constructor path, which never
+  /// runs again.
+  StreamSubscription<String>? _localeSub;
+
   List<GeneralChatMessageEntity> _currentMessages = [];
   late String _sessionId;
 
@@ -125,6 +136,7 @@ class GeneralChatCubit extends Cubit<GeneralChatState> {
     _currentService = null;
     _conversationServices.clear();
     _isSending = false;
+    _watchLocaleChanges();
     emit(GeneralChatInitial(messages: _currentMessages));
 
     // Subscribe to session switches from the drawer. When the user picks
@@ -710,7 +722,32 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
   @override
   Future<void> close() async {
     await _sessionIdSub?.cancel();
+    await _localeSub?.cancel();
     return super.close();
+  }
+
+  /// Start watching for region switches. Safe to call more than once.
+  void _watchLocaleChanges() {
+    _localeSub?.cancel();
+    try {
+      _localeSub = serviceLocator<LocaleManager>().localeStream.listen((_) {
+        if (isClosed) return;
+        final rekeyed = _buildLegacySessionId();
+        if (rekeyed == _sessionId) return;
+        _sessionId = rekeyed;
+        // Drop the previous region's transcript BEFORE the fetch: leaving it
+        // on screen while the new one loads is the same wrong-region read,
+        // just briefer.
+        _currentMessages = [];
+        _currentService = null;
+        _conversationServices.clear();
+        emit(GeneralChatInitial(messages: _currentMessages));
+        loadHistory();
+      });
+    } catch (_) {
+      // LocaleManager unresolvable (early startup, a widget test). The chat
+      // still works; it just will not re-key until it is rebuilt.
+    }
   }
 
   String _getServiceDisplayName(String service) {

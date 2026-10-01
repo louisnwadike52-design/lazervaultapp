@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -33,6 +34,46 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
 
   List<MicroserviceChatMessageEntity> _currentMessages = [];
   late String _sessionId;
+
+  /// Re-keys the conversation when the user switches REGION.
+  ///
+  /// Same reason as GeneralChatCubit: the session id embeds the locale and
+  /// the gateway filters history by it, but a service chat held open across a
+  /// region switch kept the old id and the old messages on screen. A sheet
+  /// re-opened after the switch was always fine — it is the live one that
+  /// lied.
+  StreamSubscription<String>? _localeSub;
+
+  /// The deterministic id for the CURRENT region, used to detect a switch.
+  String _sessionIdForCurrentLocale() {
+    final locale = serviceLocator<LocaleManager>().currentLocale;
+    final authState = authCubit.state;
+    final prefix = isDirect ? 'direct' : 'svc';
+    final scope = (sessionScopeId != null && sessionScopeId!.isNotEmpty)
+        ? '_${sessionScopeId!}'
+        : '';
+    if (authState is AuthenticationSuccess) {
+      return '${prefix}_${authState.profile.user.id}_${sourceContext}$scope\_$locale';
+    }
+    return '${prefix}_unknown_${sourceContext}$scope\_$locale';
+  }
+
+  void _watchLocaleChanges() {
+    _localeSub?.cancel();
+    try {
+      _localeSub = serviceLocator<LocaleManager>().localeStream.listen((_) {
+        if (isClosed) return;
+        final rekeyed = _sessionIdForCurrentLocale();
+        if (rekeyed == _sessionId) return;
+        _sessionId = rekeyed;
+        _currentMessages = [];
+        emit(MicroserviceChatInitial(messages: _currentMessages));
+        loadHistory();
+      });
+    } catch (_) {
+      // LocaleManager unresolvable (early startup, a widget test).
+    }
+  }
 
   /// Entity storage for direct chat round-tripping.
   Map<String, dynamic> _entities = {};
@@ -87,6 +128,10 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
         _sessionId = '${prefix}_unknown_${sourceContext}$scope\_$locale';
       }
     }
+    // Only a DERIVED id can be re-keyed on a region switch. An explicitly
+    // supplied persistentSessionId is the caller's own scope (a P2P thread,
+    // a resumed tab) and is left alone.
+    if (persistentSessionId == null) _watchLocaleChanges();
     _currentMessages = [];
     // Seed scoped context (P2P conversation id / peer) so it round-trips to the
     // agent as entities from the very first message.
@@ -846,5 +891,13 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
     _entities = {};
     _isSending = false;
     emit(MicroserviceChatInitial(messages: _currentMessages));
+  }
+
+  /// Cancel the region watcher so a closed sheet's cubit stops reacting to
+  /// locale switches (and stops holding a reference to itself).
+  @override
+  Future<void> close() async {
+    await _localeSub?.cancel();
+    return super.close();
   }
 }

@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/src/features/voice_session/models/voice_conversation.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 
 /// State for voice chat history
 class VoiceChatHistoryState extends Equatable {
@@ -46,7 +48,29 @@ class VoiceChatHistoryCubit extends Cubit<VoiceChatHistoryState> {
   static const int _maxConversations = 50;
   static const Duration _persistDelay = Duration(seconds: 2);
 
-  VoiceChatHistoryCubit() : super(const VoiceChatHistoryState());
+  /// Dropped when the user switches REGION.
+  ///
+  /// Voice conversations are held in memory for the life of the cubit, which
+  /// outlives a region switch — so a transcript recorded on the Naira account
+  /// stayed on screen and in the history sheet after switching to USD. The
+  /// chat cubits re-key their session and reload; there is nothing to reload
+  /// here, so the honest equivalent is to clear.
+  ///
+  /// A conversation is about one account's money. Carrying it across is not a
+  /// convenience, it is a wrong answer to "what did I ask about this account".
+  StreamSubscription<String>? _localeSub;
+
+  VoiceChatHistoryCubit() : super(const VoiceChatHistoryState()) {
+    try {
+      _localeSub = serviceLocator<LocaleManager>().localeStream.listen((_) {
+        if (isClosed) return;
+        clearAll();
+      });
+    } catch (_) {
+      // LocaleManager unresolvable (early startup, a widget test). The cubit
+      // still works; it just will not clear until it is rebuilt.
+    }
+  }
 
   /// Get or create a conversation for a session
   VoiceConversation _getOrCreateConversation(String sessionId) {
@@ -366,6 +390,7 @@ class VoiceChatHistoryCubit extends Cubit<VoiceChatHistoryState> {
   @override
   Future<void> close() {
     _persistTimer?.cancel();
+    _localeSub?.cancel();
     return super.close();
   }
 }
