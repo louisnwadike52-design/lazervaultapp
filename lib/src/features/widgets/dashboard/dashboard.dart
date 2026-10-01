@@ -206,15 +206,6 @@ class _DashboardState extends State<Dashboard> {
     return null;
   }
 
-  /// True when the account currently shown in the top carousel is Family &
-  /// Friends — detected by the [isFamilyAccount] flag (name-independent), not
-  /// the card's label.
-  ///
-  /// The carousel activates a family card by its [spendingAccountId] (the
-  /// family virtual/pool account), which is NOT the same as the summary [id].
-  /// So we match the active id against BOTH — exactly like [AccountCarousel]
-  /// does when it restores the active page. Matching only [id] meant a family
-  /// card never registered as active and the "create another" CTA stayed hidden.
   /// The communal discovery rails — Trending crowdfunds and Public groups.
   ///
   /// Both are NGN-denominated pots that only a PERSONAL wallet can join, so
@@ -264,6 +255,64 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
+  /// Live exchange rates — PERSONAL ACCOUNTS ONLY.
+  ///
+  /// It was gated on `AppServicesBuilder.activeAccountSupports`, which reads a
+  /// static written as a SIDE EFFECT of the quick-services grid rebuilding.
+  /// This card lives outside that grid, so switching to a Savings or Business
+  /// account left the static saying "personal" and the card stayed on screen —
+  /// the same shape as the Trending crowdfunds / Public groups bug, in a
+  /// section nothing re-runs on an account change.
+  ///
+  /// Converting currency is a personal-wallet action here; offering the rates
+  /// beside a business or savings balance invites a conversion that account
+  /// cannot make.
+  ///
+  /// Gated on the LIVE predicate (active_account_scope.dart) and still subject
+  /// to the service gate, so an admin disabling exchange or a non-NGN locale
+  /// hides it regardless.
+  Widget _exchangeRatesRail() {
+    final accountManager = serviceLocator<AccountManager>();
+    return BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
+      builder: (context, state) {
+        final summaries = _accountSummariesFromState(state);
+        return StreamBuilder<String?>(
+          stream: accountManager.accountIdStream,
+          initialData: accountManager.activeAccountId,
+          builder: (context, snapshot) {
+            if (!activeAccountIsPersonalNow(summaries, snapshot.data)) {
+              return const SizedBox.shrink();
+            }
+            if (!AppServicesBuilder.activeAccountSupports(
+                AppServiceName.exchange)) {
+              return const SizedBox.shrink();
+            }
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(height: 16.0.h),
+                BlocProvider(
+                  create: (_) => serviceLocator<DashboardRatesCubit>()
+                    ..loadRates(_getBaseCurrency()),
+                  child: const ExchangeRates(),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  /// True when the account currently shown in the top carousel is Family &
+  /// Friends — detected by the [isFamilyAccount] flag (name-independent), not
+  /// the card's label.
+  ///
+  /// The carousel activates a family card by its [spendingAccountId] (the
+  /// family virtual/pool account), which is NOT the same as the summary [id].
+  /// So we match the active id against BOTH — exactly like [AccountCarousel]
+  /// does when it restores the active page. Matching only [id] meant a family
+  /// card never registered as active and the "create another" CTA stayed hidden.
   bool _activeCarouselAccountIsFamily(
     List<AccountSummaryEntity> summaries,
     String? activeAccountId,
@@ -480,15 +529,7 @@ class _DashboardState extends State<Dashboard> {
                         SizedBox(height: 16.0.h),
                         Portfolio(),
                       ],
-                      if (AppServicesBuilder.activeAccountSupports(
-                          AppServiceName.exchange)) ...[
-                        SizedBox(height: 16.0.h),
-                        BlocProvider(
-                          create: (_) => serviceLocator<DashboardRatesCubit>()
-                            ..loadRates(_getBaseCurrency()),
-                          child: const ExchangeRates(),
-                        ),
-                      ],
+                      _exchangeRatesRail(),
                       SizedBox(height: 16.0.h),
                       MonthlySummary(),
                     ],
