@@ -11,6 +11,8 @@ import 'ai_scan_camera_screen.dart';
 import 'ai_scan_confirm_screen.dart';
 import 'ai_scan_receipt_screen.dart';
 import 'bank_details_processing_screen.dart';
+import '../widgets/scanned_receipt_dialog.dart';
+import 'package:lazervault/src/core/services/deep_link_service.dart';
 import '../../../presentation/views/dashboard/dashboard_screen.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:get_it/get_it.dart';
@@ -55,21 +57,53 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _cameraAutoOpened) return;
       _cameraAutoOpened = true;
-      _takePhoto();
+      _takePhoto(autoOpened: true);
     });
   }
 
   /// Push the camera screen; on capture (or its built-in gallery Upload) it
   /// calls analyzeImage.
-  void _takePhoto() {
+  ///
+  /// [autoOpened] marks the camera this screen opens for itself on entry. Backing
+  /// out of THAT one must not leave the user here: this screen is a host for the
+  /// flow, not a destination, and the camera is the first thing it shows. Landing
+  /// on it after pressing back reads as a page that exists only to make you tap
+  /// "Scan to pay" again, right after declining it — so the host is popped too,
+  /// which returns the user wherever they came from (the dashboard, usually, or
+  /// send-funds / recipients when launched from there).
+  ///
+  /// A camera opened by the CTA is different: by then the user chose to be here,
+  /// and this screen may be showing scan history they want back.
+  Future<void> _takePhoto({bool autoOpened = false}) async {
     if (!mounted) return;
     _confirmPushed = false;
     _payingScreenPushed = false;
-    Get.to(() => BlocProvider.value(
+    await Get.to(() => BlocProvider.value(
           value: context.read<AiScanCubit>(),
           child: const AiScanCameraScreen(),
         ));
+    if (!autoOpened || !mounted) return;
+    // Only when NOTHING came of it. The camera pops itself the moment analysis
+    // starts, so this future also completes on a successful scan — and in that
+    // case the host must stay, because it owns every screen the flow pushes next.
+    if (_scanIsIdle(context.read<AiScanCubit>().state) &&
+        Navigator.canPop(context)) {
+      Navigator.of(context).pop();
+    }
   }
+
+  /// True when no scan has produced anything yet, so there is nothing for this
+  /// host screen to show or route.
+  ///
+  /// Deliberately a WHITELIST of idle states rather than a blacklist of busy
+  /// ones: a state added later that we have not considered must keep the host
+  /// alive, because popping it mid-flow would strand a payment. AiScanError is
+  /// not idle either — the user needs to see the message that explains it.
+  static bool _scanIsIdle(AiScanState state) =>
+      state is AiScanInitial ||
+      state is AiScanCamera ||
+      state is AiScanTypeSelection ||
+      state is AiScanLocalHistoryLoaded;
 
   @override
   Widget build(BuildContext context) {
@@ -172,6 +206,18 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
               _handleIntentResolved(context, state);
             } else if (state is AiScanOcrResolved) {
               _handleOcrResolved(context, state);
+            } else if (state is AiScanDeepLinkScanned) {
+              // Handed to the app's ONE deep-link router, which already knows
+              // what every link type opens and handles the signed-out case. A
+              // scanner that navigated for itself would be a second router to
+              // keep in step. This screen is a payment host with nothing left to
+              // do, so it steps out of the way first.
+              DeepLinkService.instance.handleExternalLink(state.link);
+              if (Navigator.canPop(context)) Navigator.of(context).pop();
+            } else if (state is AiScanReceiptScanned) {
+              // Not payable, by definition. Shown as a dialog so the reference
+              // can be read; the flow stops here.
+              showScannedReceiptDialog(context, state.receipt);
             } else if (state is AiScanNoDataResult) {
               _handleNoData(context, state);
             } else if (state is AiScanPaying) {

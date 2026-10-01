@@ -12,6 +12,9 @@ enum DeepLinkType {
   crowdfundCampaign,
   lazerSprayJoin,
   groupAccount,
+  /// A link that identifies a COMPLETED payment, not something to open and pay
+  /// — currently the donation receipt's `crowdfund/donation/<txn>`.
+  paymentReceipt,
   unknown,
 }
 
@@ -52,6 +55,10 @@ class DeepLinkData {
   /// custom-scheme form). Null otherwise.
   final String? groupAccountId;
 
+  /// For [DeepLinkType.paymentReceipt], the transaction reference the link
+  /// identifies. Null otherwise.
+  final String? receiptReference;
+
   const DeepLinkData({
     required this.type,
     required this.rawUri,
@@ -62,6 +69,7 @@ class DeepLinkData {
     this.crowdfundCampaignId,
     this.lazerSprayCode,
     this.groupAccountId,
+    this.receiptReference,
   });
 
   /// Get a query parameter value
@@ -168,7 +176,29 @@ class DeepLinkService {
 
   /// Parse a URI exactly as an incoming link would be parsed.
   ///
-  /// Exposed for tests only. Link routing is the kind of logic that is normally
+  /// Public because links no longer arrive only from the OS: a LazerVault link
+  /// can also be READ OFF A QR CODE, and the scanner must reach the same parser
+  /// rather than grow a second understanding of our own URL shapes.
+  DeepLinkData parse(Uri uri) => _parseUri(uri);
+
+  /// Feed a link the app discovered ITSELF — a scanned QR, say — into the same
+  /// stream an OS link arrives on.
+  ///
+  /// This is the whole point: routing already exists, in one place, and it knows
+  /// what every link type should open. A scanner that navigated on its own would
+  /// be a second router to keep in step, and the first one to fall behind.
+  ///
+  /// Returns what it parsed, so the caller can tell an unrecognised link from a
+  /// handled one without listening to the stream.
+  DeepLinkData handleExternalLink(Uri uri) {
+    final data = _parseUri(uri);
+    if (data.type != DeepLinkType.unknown) {
+      _linkController.add(data);
+    }
+    return data;
+  }
+
+  /// Exposed for tests. Link routing is the kind of logic that is normally
   /// verified by hand on a device — which is why `/crowdfund/` reached
   /// production claimed by no platform at all — so it is worth asserting
   /// directly rather than through a stream that needs platform channels.
@@ -239,6 +269,29 @@ class DeepLinkService {
     // Both URI shapes, like the two above: the custom scheme
     // (lazervault://crowdfund/<id>) puts the id in the host's first segment,
     // while the universal link carries [crowdfund, <id>].
+    // The donation RECEIPT link, which must be read before the campaign branch
+    // below. donation_receipt_screen encodes
+    // `lazervault://crowdfund/donation/<txn>`, and app_links turns that into
+    // host='crowdfund' with segments ['donation', '<txn>'] — so the campaign
+    // branch took segments[0] and opened a campaign whose id was literally
+    // "donation". The link went to a dead screen, and it would do the same for
+    // any future `crowdfund/<verb>/…` shape.
+    final isDonationReceipt = (uri.host == 'crowdfund' &&
+            segments.length >= 2 &&
+            segments[0] == 'donation') ||
+        (segments.length >= 3 &&
+            segments[0] == 'crowdfund' &&
+            segments[1] == 'donation');
+    if (isDonationReceipt) {
+      return DeepLinkData(
+        type: DeepLinkType.paymentReceipt,
+        rawUri: uri.toString(),
+        queryParams: queryParams,
+        path: path,
+        receiptReference: segments.last,
+      );
+    }
+
     final isCrowdfund = (uri.host == 'crowdfund' && segments.isNotEmpty) ||
         (segments.length >= 2 && segments[0] == 'crowdfund');
     if (isCrowdfund) {

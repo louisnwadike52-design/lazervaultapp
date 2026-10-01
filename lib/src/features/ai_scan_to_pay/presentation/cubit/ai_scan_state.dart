@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/scan_entities.dart';
+import '../../domain/entities/scanned_receipt.dart';
 
 abstract class AiScanState extends Equatable {
   const AiScanState();
@@ -141,6 +142,35 @@ class AiScanAmbiguousResult extends AiScanState {
 }
 
 /// Nothing payable detected (no QR + OCR no_data, or an unsupported QR).
+/// A LazerVault RECEIPT was scanned — a record of a payment that already
+/// happened, not something to pay.
+///
+/// Its own state, and handled before every payment state, because a receipt
+/// carries a name, an amount and sometimes an account number: exactly the shape
+/// the OCR fallback reads as a payment request. Pointing Scan-to-Pay at a
+/// receipt used to offer to pay it again with its own figures pre-filled.
+class AiScanReceiptScanned extends AiScanState {
+  final ScannedReceipt receipt;
+  const AiScanReceiptScanned(this.receipt);
+
+  @override
+  List<Object?> get props => [receipt];
+}
+
+/// A LazerVault LINK was scanned — a shared escrow offer, a crowdfund campaign,
+/// a family invite, a LazerSpray session, a group report.
+///
+/// Carried as a Uri and routed by the app's existing deep-link handler, so a
+/// scanned link opens exactly what a tapped one opens. Nothing here is paid by
+/// Scan-to-Pay itself.
+class AiScanDeepLinkScanned extends AiScanState {
+  final Uri link;
+  const AiScanDeepLinkScanned(this.link);
+
+  @override
+  List<Object?> get props => [link];
+}
+
 class AiScanNoDataResult extends AiScanState {
   final String message;
   const AiScanNoDataResult({

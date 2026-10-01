@@ -854,6 +854,17 @@ class _MyAppState extends State<MyApp> {
           ));
         }
         break;
+      case DeepLinkType.paymentReceipt:
+        // A link that IDENTIFIES a completed payment (the donation receipt's
+        // crowdfund/donation/<txn>). There is no screen that loads an arbitrary
+        // reference on its own, so this opens history, where the reference can
+        // be found — which is what the receipt QR was printed for. It must not
+        // open anything payable: before this existed the same link was parsed as
+        // a campaign whose id was the word "donation".
+        PendingDeepLink.instance.push(const NotificationTarget(
+          route: AppRoutes.dashboardTransactionHistory,
+        ));
+        break;
       case DeepLinkType.depositCallback:
       case DeepLinkType.paymentCallback:
       case DeepLinkType.quickAction:

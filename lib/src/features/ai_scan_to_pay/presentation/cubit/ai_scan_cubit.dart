@@ -14,6 +14,8 @@ import '../../../profile/domain/repositories/i_profile_repository.dart';
 import '../../../recipients/data/datasources/bank_scan_datasource.dart'
     show SmartScanResult;
 import 'ai_scan_state.dart';
+import '../../domain/entities/scanned_receipt.dart';
+import '../../../../core/services/deep_link_service.dart';
 
 class AiScanCubit extends Cubit<AiScanState> {
   final StartScanSessionUseCase startScanSessionUseCase;
@@ -232,10 +234,29 @@ class AiScanCubit extends Cubit<AiScanState> {
         _runOcr(imagePath, sessionId, lean: lean),
       ]);
 
-      final qrIntent = results[0] as ScanPaymentIntent?;
+      final decoded = results[0] as _DecodedCode;
+      final qrIntent = decoded.intent;
       final analysis = results[1] as ScanAnalysis?;
 
       if (isClosed) return;
+
+      // 0) A RECEIPT beats everything, including a confident bank-details
+      //    extraction. Every receipt in the app carries a QR with a reference,
+      //    an amount and often the payee — the same shape as a payment request —
+      //    so whichever branch ran first would have offered to pay it again with
+      //    its own figures filled in. There is nothing here to pay.
+      if (decoded.receipt != null) {
+        emit(AiScanReceiptScanned(decoded.receipt!));
+        return;
+      }
+
+      // 0b) A LazerVault LINK, for the same reason: it is an exact statement of
+      //     what the code is, so it beats anything OCR might infer from the
+      //     surrounding image.
+      if (decoded.link != null) {
+        emit(AiScanDeepLinkScanned(decoded.link!));
+        return;
+      }
 
       // 1) Bank-details PRIORITY — a confident document extraction wins. Route
       //    it (and every other OCR-derived target below) through the shared
@@ -338,22 +359,54 @@ class AiScanCubit extends Cubit<AiScanState> {
     emit(AiScanIntentResolved(intent));
   }
 
-  /// Decode the first barcode in a still image and classify it. Never throws —
-  /// returns null so the OCR result can still win.
-  Future<ScanPaymentIntent?> _decodeQr(String imagePath) async {
+  /// Decode the barcodes in a still image and classify them. Never throws —
+  /// an empty result lets the OCR result win.
+  ///
+  /// Returns BOTH kinds of answer, because they are decided differently: a
+  /// payment intent competes with OCR and can lose to a confident document
+  /// extraction, while a RECEIPT must beat everything — it is the one result
+  /// that means "do not pay anything".
+  Future<_DecodedCode> _decodeQr(String imagePath) async {
     final controller = MobileScannerController();
     try {
       final capture = await controller.analyzeImage(imagePath);
       final barcodes = capture?.barcodes ?? const [];
+      ScanPaymentIntent? intent;
       for (final b in barcodes) {
         final raw = b.rawValue;
         if (raw == null || raw.isEmpty) continue;
-        final intent = _classifier.classify(raw);
-        if (intent != null) return intent;
+        // Receipts first, and returned immediately: a frame holding a receipt QR
+        // has nothing payable in it, and continuing to look would only find the
+        // receipt's own figures.
+        final receipt = _classifier.classifyReceipt(raw);
+        if (receipt != null) return _DecodedCode(receipt: receipt);
+        // A LazerVault link, but only one the app's own router recognises.
+        // Parsed here (a pure string operation — no platform channels) so an
+        // UNRECOGNISED lazervault.app URL still falls through to OCR instead of
+        // silently ending the scan.
+        final link = _classifier.lazervaultLink(raw);
+        if (link != null) {
+          final parsed = DeepLinkService.instance.parse(link);
+          if (parsed.type == DeepLinkType.paymentReceipt) {
+            // A receipt in link form — the donation receipt's
+            // crowdfund/donation/<txn>. Same conclusion as a receipt QR: there
+            // is nothing to pay.
+            return _DecodedCode(
+                receipt: ScannedReceipt(
+              kind: 'donation',
+              reference: parsed.receiptReference ?? '',
+              raw: raw,
+            ));
+          }
+          if (parsed.type != DeepLinkType.unknown) {
+            return _DecodedCode(link: link);
+          }
+        }
+        intent ??= _classifier.classify(raw);
       }
-      return null;
+      return _DecodedCode(intent: intent);
     } catch (_) {
-      return null;
+      return const _DecodedCode();
     } finally {
       // ignore: discarded_futures
       controller.dispose();
@@ -664,4 +717,18 @@ class AiScanCubit extends Cubit<AiScanState> {
       ));
     }
   }
+}
+
+/// What one still image's barcodes amounted to.
+///
+/// Two fields rather than one union because the caller treats them with opposite
+/// priority — see [AiScanCubit._decodeQr].
+class _DecodedCode {
+  const _DecodedCode({this.intent, this.receipt, this.link});
+
+  final ScanPaymentIntent? intent;
+  final ScannedReceipt? receipt;
+
+  /// A LazerVault deep link the app's router already knows how to open.
+  final Uri? link;
 }
