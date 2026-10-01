@@ -361,12 +361,18 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
           _buildBreakdownRow('Total Net Pay', payRun.formattedTotalNet,
               InvoiceThemeColors.successGreen,
               isBold: true),
-          SizedBox(height: 8.h),
-          _buildBreakdownRow(
-            'Employer Contributions',
-            '\u20A6${payRun.totalEmployerContributions.toStringAsFixed(2)}',
-            InvoiceThemeColors.warningOrange,
-          ),
+          // Hidden when nothing was charged — see PaySlipEntity
+          // .hasEmployerContributions. "Employer Contributions ₦0.00" under a
+          // net-pay total reads as a figure that failed to compute, not as an
+          // employer who is exempt.
+          if (payRun.totalEmployerContributions > 0) ...[
+            SizedBox(height: 8.h),
+            _buildBreakdownRow(
+              'Employer Contributions',
+              '\u20A6${payRun.totalEmployerContributions.toStringAsFixed(2)}',
+              InvoiceThemeColors.warningOrange,
+            ),
+          ],
         ],
       ),
     );

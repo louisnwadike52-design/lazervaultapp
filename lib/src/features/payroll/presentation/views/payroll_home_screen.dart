@@ -1056,13 +1056,21 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
               Icons.account_balance_wallet,
               InvoiceThemeColors.successGreen,
             ),
-            SizedBox(height: 10.h),
-            _buildReportSummaryCard(
-              'Employer Contributions',
-              '\u20A6${totalEmployerContributions.toStringAsFixed(2)}',
-              Icons.business,
-              InvoiceThemeColors.warningOrange,
-            ),
+            // Hidden when the employer owes nothing on top of gross. An
+            // operator can switch off contributions a business is exempt from
+            // (pension needs 15+ employees under PRA 2014 s.2; NSITF and ITF
+            // 5+), and a card reading "Employer Contributions ₦0.00" in a
+            // report reads as a figure that failed rather than one that does
+            // not apply.
+            if (totalEmployerContributions > 0) ...[
+              SizedBox(height: 10.h),
+              _buildReportSummaryCard(
+                'Employer Contributions',
+                '\u20A6${totalEmployerContributions.toStringAsFixed(2)}',
+                Icons.business,
+                InvoiceThemeColors.warningOrange,
+              ),
+            ],
             SizedBox(height: 16.h),
 
             // Stats row

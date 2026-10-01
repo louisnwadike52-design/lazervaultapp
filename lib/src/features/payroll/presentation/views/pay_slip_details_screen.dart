@@ -156,23 +156,42 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
                 ),
                 SizedBox(height: 16.h),
 
-                // Employer Contributions Section
-                _buildSection(
-                  title: 'Employer Contributions',
-                  icon: Icons.business,
-                  iconColor: InvoiceThemeColors.warningOrange,
-                  rows: [
-                    _SectionRow(
-                      'Employer NIC / NSITF',
-                      '\u20A6${slip.employerNIC.toStringAsFixed(2)}',
-                    ),
-                    _SectionRow(
-                      'Employer Pension',
-                      '\u20A6${slip.employerPension.toStringAsFixed(2)}',
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16.h),
+                // Employer Contributions Section.
+                //
+                // A ZERO LINE IS HIDDEN, NOT PRINTED AS ₦0.
+                //
+                // None of these applies to every Nigerian employer — pension
+                // is mandatory at 15+ employees (PRA 2014 s.2), NSITF and ITF
+                // at 5+ (ECA 2010 s.33, ITF Act s.6(1)) — so an operator can
+                // switch off what a business does not owe. The engine then
+                // charges 0 and stores 0, and "Employer Pension ₦0.00" on a
+                // payslip reads as a calculation that failed rather than as an
+                // exemption. The whole block goes when nothing is owed.
+                //
+                // This also fixes the opposite complaint: the figure used to
+                // render whether or not it had been charged, which is how
+                // "Employer Pension ₦100" appeared on a payslip for money that
+                // never moved.
+                if (slip.hasEmployerContributions) ...[
+                  _buildSection(
+                    title: 'Employer Contributions',
+                    icon: Icons.business,
+                    iconColor: InvoiceThemeColors.warningOrange,
+                    rows: [
+                      if (slip.employerNIC > 0)
+                        _SectionRow(
+                          'Employer NIC / NSITF',
+                          '\u20A6${slip.employerNIC.toStringAsFixed(2)}',
+                        ),
+                      if (slip.employerPension > 0)
+                        _SectionRow(
+                          'Employer Pension',
+                          '\u20A6${slip.employerPension.toStringAsFixed(2)}',
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 16.h),
+                ],
 
                 // Additional Info
                 if (slip.hoursWorked > 0)
