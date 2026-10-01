@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/theme/app_surfaces.dart';
 import '../cubit/fcy_kyc_steps.dart';
+import 'package:lazervault/core/utils/iso_date_input_formatter.dart';
 
 /// Renders one KYC field.
 ///
@@ -61,6 +62,20 @@ class FcyKycFieldInput extends StatelessWidget {
               onChanged: onChanged,
               keyboardType: spec.keyboard,
               textCapitalization: spec.capitalization,
+              // The provider needs YYYY-MM-DD, the hint said so, and the
+              // field then left the user to type the dashes — with a wrong
+              // format rejected only at submit, after the whole form was
+              // filled. The separators are inserted as they type instead.
+              inputFormatters:
+                  spec.isDate ? const [IsoDateInputFormatter()] : null,
+              maxLength: spec.isDate ? 10 : null,
+              buildCounter: spec.isDate
+                  ? (_,
+                          {required currentLength,
+                          required isFocused,
+                          required maxLength}) =>
+                      null
+                  : null,
               style: TextStyle(color: Colors.white, fontSize: 15.sp),
               decoration: InputDecoration(
                 hintText: spec.hint,
@@ -163,6 +178,7 @@ class _FieldSpec {
     this.keyboard = TextInputType.text,
     this.capitalization = TextCapitalization.none,
     this.options,
+    this.isDate = false,
   });
 
   final String label;
@@ -171,6 +187,11 @@ class _FieldSpec {
   final TextInputType keyboard;
   final TextCapitalization capitalization;
   final List<String>? options;
+
+  /// Formats as the user types: digits only, dashes inserted at YYYY-MM-DD.
+  /// Set on every date field rather than inferred from the keyboard type,
+  /// which `datetime` shares with fields that are not ISO dates.
+  final bool isDate;
 }
 
 /// Label, hint and keyboard per field.
@@ -197,6 +218,7 @@ _FieldSpec _specFor(FcyKycFieldId id, String currency) {
       return const _FieldSpec(
           label: 'Date of birth',
           hint: 'YYYY-MM-DD',
+          isDate: true,
           keyboard: TextInputType.datetime,
           helper: 'Must match your ID document exactly.');
     case FcyKycFieldId.nationality:
@@ -293,11 +315,13 @@ _FieldSpec _specFor(FcyKycFieldId id, String currency) {
       return const _FieldSpec(
           label: 'Issue date',
           hint: 'YYYY-MM-DD',
+          isDate: true,
           keyboard: TextInputType.datetime);
     case FcyKycFieldId.documentExpiryDate:
       return const _FieldSpec(
           label: 'Expiry date',
           hint: 'YYYY-MM-DD',
+          isDate: true,
           keyboard: TextInputType.datetime,
           helper: 'Your document must still be valid.');
   }
