@@ -18,10 +18,19 @@ class FamilyInviteMemberFlowScreen extends StatefulWidget {
   final String familyId;
   final String? familyName;
 
+  /// The account's fund-distribution mode, as its enum name.
+  ///
+  /// Drives whether step 2 asks for an initial allocation at all: a
+  /// shared-pool account has no per-member balances, so an allocation there
+  /// is money the spend path can never read. Null means unknown, in which
+  /// case the field is shown and the server remains the guard.
+  final String? fundDistributionMode;
+
   const FamilyInviteMemberFlowScreen({
     super.key,
     required this.familyId,
     this.familyName,
+    this.fundDistributionMode,
   });
 
   @override
@@ -36,6 +45,11 @@ class _FamilyInviteMemberFlowScreenState
 
   int _currentStep = 0;
   final int _totalSteps = 3;
+
+  /// True when this account pools its money instead of allocating it.
+  bool get _isSharedPool =>
+      (widget.fundDistributionMode ?? '').toLowerCase() == 'sharedpool' ||
+      (widget.fundDistributionMode ?? '').toLowerCase() == 'shared_pool';
 
   // Form data collected across steps
   final Map<String, dynamic> _formData = {
@@ -201,6 +215,7 @@ class _FamilyInviteMemberFlowScreenState
                     ),
                     AllocationRoleStep(
                       formData: _formData,
+                      sharedPool: _isSharedPool,
                       onNext: (data) {
                         _updateFormData(data);
                         _nextStep();
@@ -284,7 +299,7 @@ class _FamilyInviteMemberFlowScreenState
       case 0:
         return 'Find User';
       case 1:
-        return 'Allocation & Limits';
+        return _isSharedPool ? 'Role & Limits' : 'Allocation & Limits';
       case 2:
         return 'Review & Send';
       default:

@@ -3916,12 +3916,16 @@ class AppRouter {
         final args = Get.arguments as Map<String, dynamic>?;
         final familyId = args?['familyId'] as String? ?? '';
         final familyName = args?['familyName'] as String?;
+        // Null when the caller did not know the mode; the step then falls
+        // back to showing the field, which the server still guards.
+        final mode = args?['fundDistributionMode'] as String?;
 
         return BlocProvider(
           create: (_) => serviceLocator<FamilyAccountCubit>(),
           child: FamilyInviteMemberFlowScreen(
             familyId: familyId,
             familyName: familyName,
+            fundDistributionMode: mode,
           ),
         );
       },

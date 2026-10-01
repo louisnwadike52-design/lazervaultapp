@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 /// Step 2: Allocation, Role & Spending Limits (consolidated)
 /// - Initial allocation amount input
@@ -12,10 +13,22 @@ class AllocationRoleStep extends StatefulWidget {
   final Map<String, dynamic> formData;
   final Function(Map<String, dynamic>) onNext;
 
+  /// True when the account pools its money instead of allocating it.
+  ///
+  /// In a shared pool every member spends from the one pool, so a per-member
+  /// allocation is money the spend path never reads — it belongs to nobody
+  /// and sits outside the pool. The server refuses it (see
+  /// guardAllocationAgainstMode), and asking for it here would mean filling
+  /// in an amount only to have the invitation rejected at the end. This is
+  /// also how a production account ended up holding 20.00 nobody could
+  /// spend: the invite path was writing allocations the guard did not cover.
+  final bool sharedPool;
+
   const AllocationRoleStep({
     super.key,
     required this.formData,
     required this.onNext,
+    this.sharedPool = false,
   });
 
   @override
@@ -75,7 +88,11 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
   void _submitStep() {
     if (_formKey.currentState!.validate()) {
       widget.onNext({
-        'initialAllocation': double.tryParse(_allocationController.text) ?? 0.0,
+        // Always zero in a shared pool: the field is not shown, and sending
+        // a stale controller value would have the server refuse the invite.
+        'initialAllocation': widget.sharedPool
+            ? 0.0
+            : (double.tryParse(_allocationController.text) ?? 0.0),
         'role': _selectedRole,
         'noLimits': _noLimits,
         'dailyLimit': _noLimits
@@ -121,79 +138,84 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
             ),
             SizedBox(height: 24.h),
 
-            // --- Initial Allocation ---
-            _buildSectionLabel('Initial Allocation'),
-            SizedBox(height: 4.h),
-            Text(
-              'Amount to allocate from the family pool',
-              style: TextStyle(
-                color: const Color(0xFF9CA3AF),
-                fontSize: 12.sp,
+            // --- Initial Allocation (allocation modes only) ---
+            if (!widget.sharedPool) ...[
+              _buildSectionLabel('Initial Allocation'),
+              SizedBox(height: 4.h),
+              Text(
+                'Amount to allocate from the family pool',
+                style: TextStyle(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 12.sp,
+                ),
               ),
-            ),
-            SizedBox(height: 12.h),
-            Container(
-              padding: EdgeInsets.all(20.w),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1F1F1F),
-                borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(color: const Color(0xFF2D2D2D)),
-              ),
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: _allocationController,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                          RegExp(r'^\d+\.?\d{0,2}')),
-                    ],
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 36.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    decoration: InputDecoration(
-                      prefixText: '\$ ',
-                      prefixStyle: TextStyle(
-                        color: const Color(0xFF4E03D0),
+              SizedBox(height: 12.h),
+              Container(
+                padding: EdgeInsets.all(20.w),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F1F1F),
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(color: const Color(0xFF2D2D2D)),
+                ),
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _allocationController,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d+\.?\d{0,2}')),
+                      ],
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
                         fontSize: 36.sp,
                         fontWeight: FontWeight.bold,
                       ),
-                      hintText: '0.00',
-                      hintStyle: TextStyle(
-                        color: const Color(0xFFCCCCCC),
-                        fontSize: 36.sp,
-                        fontWeight: FontWeight.bold,
+                      decoration: InputDecoration(
+                        // Was a hardcoded '$' in an app whose home currency is
+                        // the naira.
+                        prefixText: '${CurrencySymbols.currentSymbol} ',
+                        prefixStyle: TextStyle(
+                          color: const Color(0xFF4E03D0),
+                          fontSize: 36.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        hintText: '0.00',
+                        hintStyle: TextStyle(
+                          color: const Color(0xFFCCCCCC),
+                          fontSize: 36.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
                       ),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.zero,
+                      validator: (value) {
+                        if (widget.sharedPool) return null;
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter an amount';
+                        }
+                        final amount = double.tryParse(value);
+                        if (amount == null || amount < 0) {
+                          return 'Please enter a valid amount';
+                        }
+                        return null;
+                      },
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter an amount';
-                      }
-                      final amount = double.tryParse(value);
-                      if (amount == null || amount < 0) {
-                        return 'Please enter a valid amount';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    'Enter 0 to invite without initial funds',
-                    style: TextStyle(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 12.sp,
+                    SizedBox(height: 4.h),
+                    Text(
+                      'Enter 0 to invite without initial funds',
+                      style: TextStyle(
+                        color: const Color(0xFF9CA3AF),
+                        fontSize: 12.sp,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            SizedBox(height: 24.h),
+              SizedBox(height: 24.h),
+            ],
 
             // --- Role Selection ---
             _buildSectionLabel('Member Role'),

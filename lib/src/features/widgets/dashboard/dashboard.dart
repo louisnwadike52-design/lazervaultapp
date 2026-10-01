@@ -42,6 +42,7 @@ import 'package:lazervault/src/features/dashboard/widgets/dashboard_action_sheet
 import 'package:lazervault/src/features/widgets/dashboard/dashboard_refresh_signal.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/widgets/dashboard/active_account_scope.dart';
 part 'dashboard_widgets.dart';
 
 class Dashboard extends StatefulWidget {
@@ -214,6 +215,55 @@ class _DashboardState extends State<Dashboard> {
   /// So we match the active id against BOTH — exactly like [AccountCarousel]
   /// does when it restores the active page. Matching only [id] meant a family
   /// card never registered as active and the "create another" CTA stayed hidden.
+  /// The communal discovery rails — Trending crowdfunds and Public groups.
+  ///
+  /// Both are NGN-denominated pots that only a PERSONAL wallet can join, so
+  /// they are built inside a listener on the active account: the whole point
+  /// is that switching to Savings must take them off screen immediately.
+  /// Guarding at the composition site (rather than inside the widgets) also
+  /// means LeaderboardCubit / GroupAccountCubit are never constructed and
+  /// their fetches never fire for an account that cannot use them.
+  Widget _communalRails() {
+    final accountManager = serviceLocator<AccountManager>();
+    return BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
+      builder: (context, state) {
+        final summaries = _accountSummariesFromState(state);
+        return StreamBuilder<String?>(
+          stream: accountManager.accountIdStream,
+          initialData: accountManager.activeAccountId,
+          builder: (context, snapshot) {
+            if (!activeAccountIsPersonalNow(summaries, snapshot.data)) {
+              return const SizedBox.shrink();
+            }
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (LocaleGating.sectionAllowed('crowdfunds') &&
+                    AppServicesBuilder.activeAccountSupports(
+                        AppServiceName.crowdfund)) ...[
+                  SizedBox(height: 16.0.h),
+                  BlocProvider(
+                    create: (_) => serviceLocator<LeaderboardCubit>(),
+                    child: const TrendingCrowdfunds(),
+                  ),
+                ],
+                if (LocaleGating.sectionAllowed('public_groups') &&
+                    AppServicesBuilder.activeAccountSupports(
+                        AppServiceName.groupAccount)) ...[
+                  SizedBox(height: 16.0.h),
+                  BlocProvider.value(
+                    value: serviceLocator<GroupAccountCubit>(),
+                    child: const PublicGroups(),
+                  ),
+                ],
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   bool _activeCarouselAccountIsFamily(
     List<AccountSummaryEntity> summaries,
     String? activeAccountId,
@@ -408,26 +458,7 @@ class _DashboardState extends State<Dashboard> {
                       // the instant the type arrives) but wrong for a section:
                       // these build before the grid resolves, so a communal
                       // rail would flash onto a business or savings account.
-                      if (AppServicesBuilder.activeAccountIsPersonal() &&
-                          LocaleGating.sectionAllowed('crowdfunds') &&
-                          AppServicesBuilder.activeAccountSupports(
-                              AppServiceName.crowdfund)) ...[
-                        SizedBox(height: 16.0.h),
-                        BlocProvider(
-                          create: (_) => serviceLocator<LeaderboardCubit>(),
-                          child: const TrendingCrowdfunds(),
-                        ),
-                      ],
-                      if (AppServicesBuilder.activeAccountIsPersonal() &&
-                          LocaleGating.sectionAllowed('public_groups') &&
-                          AppServicesBuilder.activeAccountSupports(
-                              AppServiceName.groupAccount)) ...[
-                        SizedBox(height: 16.0.h),
-                        BlocProvider.value(
-                          value: serviceLocator<GroupAccountCubit>(),
-                          child: const PublicGroups(),
-                        ),
-                      ],
+                      _communalRails(),
                       // Cards section: force-hidden in the view layer
                       // regardless of the admin flag. The widget + its
                       // routes/repository + `FeatureFlags.dashboardCardsVisible`

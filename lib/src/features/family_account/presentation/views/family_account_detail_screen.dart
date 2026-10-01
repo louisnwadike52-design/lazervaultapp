@@ -163,8 +163,14 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
 
   void _showAddMemberSheet() {
     // Navigate directly to the new invite member flow screen
+    // Carry the distribution mode: in a shared pool there is nothing to
+    // allocate to a member, and the server refuses an initial allocation
+    // there — so the invite flow must not ask for one. Read from the loaded
+    // account rather than re-fetched, since this screen already has it.
+    final mode = _loadedAccount?.fundDistributionMode;
     Get.toNamed(AppRoutes.familyInviteMemberFlow, arguments: {
       'familyId': widget.familyId,
+      if (mode != null) 'fundDistributionMode': mode.name,
     })?.then((result) {
       // Reload the family account if a member was added
       if (result == true) {
