@@ -10,7 +10,19 @@ enum VirtualAccountType {
   business('Business'),
   usd('USD Wallet'),
   gbp('GBP Wallet'),
-  eur('EUR Wallet');
+  eur('EUR Wallet'),
+  // Crowdfund campaign wallets. The backend has issued these for a while and
+  // this enum did not carry them, so fromString's default swept them into
+  // `personal` — see the note there.
+  campaign('Campaign'),
+  // An account type this build does not know about.
+  //
+  // The default USED to be `personal`, which is a specific, spendable wallet
+  // with its own feature gates (isPersonalAccount, the dashboard's
+  // personal-only sections, send-funds source rules). Guessing it for an
+  // unrecognised type does not just mislabel the card — it grants that wallet
+  // personal-only behaviour. A type we cannot name is named as such instead.
+  unknown('Account');
 
   final String displayName;
   const VirtualAccountType(this.displayName);
@@ -40,8 +52,21 @@ enum VirtualAccountType {
       case 'eur':
       case 'eur wallet':
         return VirtualAccountType.eur;
+      case 'campaign':
+        return VirtualAccountType.campaign;
       default:
-        return VirtualAccountType.personal;
+        // NOT `personal`.
+        //
+        // A campaign account reached here and was returned as personal, so the
+        // dashboard showed a user two cards both titled "Personal" — their real
+        // wallet and their crowdfund campaign — and anything gated on
+        // isPersonalAccount treated the campaign wallet as a personal one.
+        //
+        // The failure was silent in both directions: nothing logged, and the
+        // wrong answer was a plausible one. Returning `unknown` makes an
+        // unmapped type visible as "Account" rather than impersonating a
+        // wallet type with its own rules.
+        return VirtualAccountType.unknown;
     }
   }
 }

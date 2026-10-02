@@ -490,6 +490,10 @@ class _TagPaymentConfirmationScreenState
       VirtualAccountType.eur =>
         Icons.currency_exchange,
       VirtualAccountType.main => Icons.account_balance_wallet,
+      VirtualAccountType.campaign => Icons.campaign,
+      // A type this build does not know — a neutral wallet glyph rather than
+      // borrowing another type's icon and implying it is that kind of account.
+      VirtualAccountType.unknown => Icons.account_balance_wallet_outlined,
     };
   }
 
