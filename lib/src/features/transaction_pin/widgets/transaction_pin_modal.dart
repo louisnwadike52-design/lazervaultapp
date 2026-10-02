@@ -128,8 +128,69 @@ class TransactionPinModalState extends State<TransactionPinModal>
       _failureMessage = message;
       // Honest header: the red X next to a 'Processing...' title read as a
       // contradiction. The body below carries the detailed reason.
-      _statusMessage = 'Transaction Failed';
+      //
+      // A REFUSAL IS NOT A FAILURE. "Transaction Failed / Something went
+      // wrong" over "the minimum for a bank transfer is 100.00 NGN" tells the
+      // user the app broke, when in fact a rule was applied and the fix is
+      // theirs to make. The reported case was ₦10 bank transfers read as "all
+      // transfers are failing" — the reason was on screen and the framing
+      // around it said to ignore the reason and retry.
+      _statusMessage = _isRefusal(message) ? 'Not sent' : 'Transaction Failed';
     });
+  }
+
+  /// Whether a terminal message is a RULE being applied rather than a fault.
+  ///
+  /// A refusal is actionable by the user and will fail identically on every
+  /// retry; a failure may succeed if tried again. Framing the first as the
+  /// second is what turned "the minimum for a bank transfer is 100.00 NGN"
+  /// into a report that transfers were broken platform-wide.
+  ///
+  /// Matched on the business vocabulary the services actually return. An
+  /// unrecognised message stays a FAILURE, which is the safe direction: a
+  /// genuine fault mislabelled "Not sent" would stop someone retrying
+  /// something that would have worked.
+  @visibleForTesting
+  static bool isRefusalMessage(String? message) => _isRefusal(message);
+
+  static bool _isRefusal(String? message) {
+    final m = (message ?? '').toLowerCase();
+    if (m.isEmpty) return false;
+    const refusals = <String>[
+      'minimum',
+      'maximum',
+      'too small',
+      'below',
+      'exceeds',
+      'insufficient',
+      'limit',
+      'same account',
+      'not allowed',
+      'frozen',
+      'suspended',
+      'blocked',
+    ];
+    return refusals.any(m.contains);
+  }
+
+  /// A short subtitle naming the KIND of refusal, so the header and the body
+  /// agree instead of the header calling the body a malfunction.
+  @visibleForTesting
+  static String refusalSubtitleFor(String? message) => _refusalSubtitle(message);
+
+  static String _refusalSubtitle(String? message) {
+    final m = (message ?? '').toLowerCase();
+    if (m.contains('minimum') || m.contains('too small') || m.contains('below')) {
+      return 'Below the minimum amount';
+    }
+    if (m.contains('insufficient')) return 'Not enough balance';
+    if (m.contains('maximum') || m.contains('exceeds') || m.contains('limit')) {
+      return 'Over your limit';
+    }
+    if (m.contains('frozen') || m.contains('suspended') || m.contains('blocked')) {
+      return 'This account is restricted';
+    }
+    return 'This transfer was not allowed';
   }
 
   /// Reset to PIN entry (e.g., on retry after wrong PIN)
@@ -958,6 +1019,12 @@ class TransactionPinModalState extends State<TransactionPinModal>
               transferDefault: 'Your transfer has been completed',
             );
       case PinModalPhase.failed:
+        // For a refusal the body already carries the precise reason, so the
+        // subtitle names the KIND of stop instead of contradicting it with
+        // "something went wrong".
+        if (_isRefusal(_failureMessage)) {
+          return _refusalSubtitle(_failureMessage);
+        }
         return 'Something went wrong';
       default:
         return '';
