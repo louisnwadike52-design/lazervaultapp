@@ -555,7 +555,8 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
           tx.counterpartyName!,
         ),
       if (tx.counterpartyAccount != null && tx.counterpartyAccount!.isNotEmpty)
-        _DetailEntry('Account', tx.counterpartyAccount!),
+        _DetailEntry(_counterpartyAccountLabel(tx.serviceType),
+            tx.counterpartyAccount!),
       if (bankName != null && bankName.isNotEmpty)
         _DetailEntry('Bank', bankName,
             logoBankName: bankName, logoBankCode: bankCode),
@@ -1585,5 +1586,35 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     if (result.isEmpty) return key;
     // Capitalize first letter
     return result[0].toUpperCase() + result.substring(1);
+  }
+}
+
+/// What the counterparty identifier should be CALLED for this service.
+///
+/// It was always "Account", which on a data or airtime receipt labels a phone
+/// number as an account — the row read "Account  09035137654". The identifier a
+/// bill is bought against differs by product, and the receipt is the artefact a
+/// customer checks when something looks wrong, so it should name what it shows.
+String _counterpartyAccountLabel(TransactionServiceType type) {
+  switch (type) {
+    // Bought against a phone line.
+    case TransactionServiceType.data:
+    case TransactionServiceType.airtime:
+      return 'Phone number';
+    // Bought against a meter.
+    case TransactionServiceType.electricity:
+      return 'Meter number';
+    // Bought against a decoder.
+    case TransactionServiceType.tvSubscription:
+      return 'Smartcard number';
+    // Billed against a customer/account number with the utility, which is what
+    // "Account" already meant correctly for these.
+    case TransactionServiceType.water:
+    case TransactionServiceType.internet:
+      return 'Customer number';
+    case TransactionServiceType.betting:
+      return 'Betting ID';
+    default:
+      return 'Account';
   }
 }

@@ -467,4 +467,99 @@ void main() {
       }
     });
   });
+
+  group('utility bill type comes from the reference, not the prose', () {
+    // THE RECEIPT FOR A ₦260 DATA BUNDLE SHOWED A LIGHTNING BOLT AND
+    // "Electricity".
+    //
+    // The whole utility family shares one backend service_name, so everything
+    // collapses onto the first match — electricity — and refineUtilityServiceType
+    // is what is meant to pull it apart. It did that from the description, and
+    // the description a data purchase actually carries is
+    // "Data purchase - mtn-data 09035137654": no "data bundle", no "data plan",
+    // no "mobile data". Every arm missed and it returned electricity unchanged.
+    //
+    // The reference said DATA- the entire time.
+    test('the exact row from the reported receipt resolves to data', () {
+      expect(
+        refineUtilityServiceType(
+          TransactionServiceType.electricity, // what service_name collapsed to
+          'HOLD-DATA-1790882974-9ea81d1e',
+          'Data purchase - mtn-data 09035137654',
+          'Debit',
+        ),
+        TransactionServiceType.data,
+      );
+    });
+
+    test('every reference prefix the backend issues maps to its own product', () {
+      const cases = <String, TransactionServiceType>{
+        'DATA-1-a': TransactionServiceType.data,
+        'IDATA-1-a': TransactionServiceType.data,
+        'AIR-1-a': TransactionServiceType.airtime,
+        'INTA-1-a': TransactionServiceType.airtime,
+        'ELEC-1-a': TransactionServiceType.electricity,
+        'CATV-1-a': TransactionServiceType.tvSubscription,
+        'WTR-1-a': TransactionServiceType.water,
+        'NET-1-a': TransactionServiceType.internet,
+        'EDU-1-a': TransactionServiceType.education,
+        'EPIN-1-a': TransactionServiceType.epin,
+        'BET-1-a': TransactionServiceType.betting,
+      };
+      cases.forEach((ref, want) {
+        expect(
+          refineUtilityServiceType(
+              TransactionServiceType.electricity, ref, '', ''),
+          want,
+          reason: '$ref should resolve to $want',
+        );
+      });
+    });
+
+    test('ledger wrappers are stripped, including a refunded hold', () {
+      for (final ref in [
+        'HOLD-DATA-1-a',
+        'REFUND-DATA-1-a',
+        'REFUND-HOLD-DATA-1-a',
+        'hold-data-1-a', // case is not the caller's problem
+      ]) {
+        expect(
+          refineUtilityServiceType(
+              TransactionServiceType.electricity, ref, '', ''),
+          TransactionServiceType.data,
+          reason: ref,
+        );
+      }
+    });
+
+    // IDATA must not be read as a DATA prefix scan, and vice versa.
+    test('IDATA is not mistaken for DATA by a prefix scan', () {
+      expect(
+        refineUtilityServiceType(
+            TransactionServiceType.unknown, 'IDATA-1-a', '', ''),
+        TransactionServiceType.data,
+      );
+      expect(
+        refineUtilityServiceType(
+            TransactionServiceType.unknown, 'AIR-1-a', '', ''),
+        TransactionServiceType.airtime,
+      );
+    });
+
+    // A reference we do not issue must not be claimed, so non-bill rows and the
+    // text arms are both left alone.
+    test('an unrecognised reference falls through rather than guessing', () {
+      expect(
+        refineUtilityServiceType(TransactionServiceType.electricity,
+            'TRF-1-a', 'Electricity payment - meter 123', ''),
+        TransactionServiceType.electricity,
+      );
+      // and a non-utility input is never touched
+      expect(
+        refineUtilityServiceType(
+            TransactionServiceType.crypto, 'DATA-1-a', '', ''),
+        TransactionServiceType.crypto,
+      );
+    });
+  });
 }

@@ -607,7 +607,20 @@ TransactionServiceType refineUtilityServiceType(
   final text = _textOf(description, category);
   bool has(String kw) => text.contains(kw);
 
-  // Reference prefixes are authoritative.
+  // THE REFERENCE PREFIX IS THE ONLY AUTHORITATIVE SIGNAL, so read it first.
+  //
+  // utility-payments stamps every bill with generateReference("<TYPE>"), and
+  // that token says exactly which product it was. The text arms below are
+  // guesses by comparison, and they were guessing wrong: a data purchase
+  // carries the description "Data purchase - mtn-data 09035137654", which
+  // contains none of "data bundle", "data plan" or "mobile data". It fell
+  // through every arm to `return current` — and `current` is electricity,
+  // because the whole family shares one backend service name and collapses
+  // onto the first match. So the receipt for a ₦260 data bundle showed a
+  // lightning bolt and the word "Electricity".
+  final byPrefix = _utilityTypeFromReference(reference);
+  if (byPrefix != null) return byPrefix;
+
   if (looksLikeEPinRef(reference) || has('recharge card') || has('epin')) {
     return TransactionServiceType.epin;
   }
@@ -636,4 +649,59 @@ TransactionServiceType refineUtilityServiceType(
     return TransactionServiceType.education;
   }
   return current;
+}
+
+/// The bill type encoded in a utility-payments reference, or null.
+///
+/// Every bill reference is `generateReference("<TYPE>")` → `TYPE-<ts>-<rand>`,
+/// so the leading token names the product exactly. Ledger rows wrap it —
+/// `HOLD-DATA-…` on the fund hold, `REFUND-DATA-…` on the return — so those
+/// wrappers are stripped before reading the token.
+///
+/// Returns null rather than a guess when the token is not one we issue, so the
+/// text-based arms still get their turn and a non-bill reference is untouched.
+TransactionServiceType? _utilityTypeFromReference(String reference) {
+  var ref = reference.trim().toUpperCase();
+  if (ref.isEmpty) return null;
+
+  // Strip ledger wrappers, repeatedly: a refunded hold can carry both.
+  for (var stripped = true; stripped;) {
+    stripped = false;
+    for (final w in const ['HOLD-', 'REFUND-', 'REV-', 'REVERSAL-', 'CAPTURE-']) {
+      if (ref.startsWith(w)) {
+        ref = ref.substring(w.length);
+        stripped = true;
+      }
+    }
+  }
+
+  final token = ref.split('-').first;
+  switch (token) {
+    // Longest/most specific first is not needed here because this is an exact
+    // token match, not a prefix scan — IDATA cannot be mistaken for DATA.
+    case 'DATA':
+      return TransactionServiceType.data;
+    case 'IDATA':
+      return TransactionServiceType.data; // international data
+    case 'AIR':
+      return TransactionServiceType.airtime;
+    case 'INTA':
+      return TransactionServiceType.airtime; // international airtime
+    case 'ELEC':
+      return TransactionServiceType.electricity;
+    case 'CATV':
+      return TransactionServiceType.tvSubscription;
+    case 'WTR':
+      return TransactionServiceType.water;
+    case 'NET':
+      return TransactionServiceType.internet;
+    case 'EDU':
+      return TransactionServiceType.education;
+    case 'EPIN':
+      return TransactionServiceType.epin;
+    case 'BET':
+      return TransactionServiceType.betting;
+    default:
+      return null;
+  }
 }
