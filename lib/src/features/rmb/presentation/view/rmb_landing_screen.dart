@@ -12,6 +12,20 @@ import 'package:lazervault/src/features/rmb/presentation/widgets/rmb_send_sheet.
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
+/// Whether an RMB transfer can be priced — and therefore started — right now.
+///
+/// Two different causes, one meaning to the user: nothing can be sent. They
+/// share a single predicate so the hero copy and the rail CTAs cannot drift
+/// apart and show "Temporarily unavailable" above four tappable rails.
+///
+///  - `maintenance` is the admin switch.
+///  - a non-positive `indicativeFxRate` means the live quote FAILED. The
+///    backend returns 0 on any provider error (indicativeNgnPerCny), and the
+///    send flow needs that same quote to price a transfer, so there is nothing
+///    to let the user through to.
+bool rmbTransfersPaused(ProviderConfigResponse config) =>
+    config.maintenance || config.indicativeFxRate <= 0;
+
 /// RMB service landing — hero (indicative rate + provider), quick actions,
 /// and recent payouts. All rails/provider shown here are what the pinned
 /// provider supports; the send flow reuses the same config.
@@ -157,27 +171,92 @@ class _RmbLandingScreenState extends State<RmbLandingScreen> {
             ],
           ),
           SizedBox(height: 18.h),
-          Text('Rates from',
+          // No rate means the service cannot quote, NOT "the rate comes later".
+          //
+          // The hero used to say "Locked in at checkout" whenever the rate was
+          // 0, which reads as a deliberate pricing choice and left every rail
+          // tappable. But 0 is what the backend returns when the live quote
+          // FAILS (see indicativeNgnPerCny — it returns 0 on any error), and
+          // the send flow needs that exact same provider quote to price a
+          // transfer. So the cheerful copy invited the user into a flow that
+          // could not succeed, and they only found out after choosing a rail,
+          // entering an amount and a recipient.
+          //
+          // Say it plainly instead, and disable the rails to match.
+          Text(rmbTransfersPaused(config) ? 'Rates' : 'Rates from',
               style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.7), fontSize: 11.sp)),
           SizedBox(height: 4.h),
           Text(
-              rate > 0
-                  ? '₦${rate.toStringAsFixed(2)} / ¥1'
-                  : 'Locked in at checkout',
+              rmbTransfersPaused(config)
+                  ? 'Temporarily unavailable'
+                  : '₦${rate.toStringAsFixed(2)} / ¥1',
               style: GoogleFonts.inter(
                   color: Colors.white,
-                  fontSize: 22.sp,
+                  fontSize: rmbTransfersPaused(config) ? 19.sp : 22.sp,
                   fontWeight: FontWeight.w700)),
+          if (rmbTransfersPaused(config)) ...[
+            SizedBox(height: 10.h),
+            Row(
+              children: [
+                Icon(Icons.info_outline,
+                    color: Colors.white.withValues(alpha: 0.75), size: 14.sp),
+                SizedBox(width: 6.w),
+                Expanded(
+                  child: Text(
+                    config.maintenance && config.maintenanceMessage.isNotEmpty
+                        ? config.maintenanceMessage
+                        : 'We can\'t reach our rate provider right now, so '
+                            'transfers are paused. Pull down to retry.',
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.75),
+                        fontSize: 11.5.sp,
+                        height: 1.35),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 12.h),
+            GestureDetector(
+              onTap: () => context.read<RmbCubit>().refresh(),
+              child: Container(
+                padding:
+                    EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(10.r),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.28)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.refresh, color: Colors.white, size: 14.sp),
+                    SizedBox(width: 6.w),
+                    Text('Try again',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
+
+
   /// Payment rails directly on the landing — tapping one opens the two-step
   /// send sheet. Alipay and WeChat lead; UnionPay + bank sit on a compact row.
   Widget _railsSection(ProviderConfigResponse config) {
-    final disabled = config.maintenance;
+    // Disabled whenever nothing can be priced — maintenance OR no live rate.
+    // Previously only maintenance disabled these, so a quote outage left four
+    // fully tappable rails leading to a dead end.
+    final disabled = rmbTransfersPaused(config);
     final enabled = config.rails
         .where((r) => r.enabled && r.rail != RmbRail.RAIL_UNSPECIFIED)
         .map((r) => r.rail)
@@ -265,15 +344,22 @@ class _RmbLandingScreenState extends State<RmbLandingScreen> {
                   style:
                       TextStyle(color: RmbUi.textSecondary, fontSize: 11.sp)),
               SizedBox(height: 10.h),
+              // The call to action has to STOP being a call to action when the
+              // card cannot be tapped. Dimming alone still reads as "Send now",
+              // and a user who taps an unresponsive card concludes the app is
+              // broken rather than that the service is paused.
               Row(
                 children: [
-                  Text('Send now',
+                  Text(onTap == null ? 'Unavailable' : 'Send now',
                       style: TextStyle(
-                          color: color,
+                          color: onTap == null ? RmbUi.textSecondary : color,
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w600)),
-                  SizedBox(width: 4.w),
-                  Icon(Icons.arrow_forward_rounded, color: color, size: 14.sp),
+                  if (onTap != null) ...[
+                    SizedBox(width: 4.w),
+                    Icon(Icons.arrow_forward_rounded,
+                        color: color, size: 14.sp),
+                  ],
                 ],
               ),
             ],
