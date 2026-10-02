@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/config/locale_gating.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/widgets/exchange_bottom_action.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/widgets/international_payout_unavailable.dart';
@@ -187,9 +188,31 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
       final key = _mode == ExchangeMode.convert
           ? _prefsKeySourceConvert
           : _prefsKeySourceInternational;
+      if (!mounted) return;
+
+      // A restricted locale pins the source to its own currency, so a stored
+      // choice from before the region was set — or the cubit's NGN default,
+      // which is simply wrong for a non-NGN wallet — must not be restored over
+      // it. Done here as well as in the picker because this runs on open and
+      // would otherwise put the screen into the invalid pair before the user
+      // touches anything.
+      if (LocaleGating.restricted) {
+        final home = LocaleGating.currentCurrency;
+        final cubit = context.read<ExchangeCubit>();
+        if (cubit.fromCurrency.toUpperCase() != home) {
+          cubit.setCurrencyPair(
+            home,
+            cubit.toCurrency.toUpperCase() == home
+                ? cubit.fromCurrency
+                : cubit.toCurrency,
+          );
+          await _fetchRate();
+        }
+        return;
+      }
+
       final stored = prefs.getString(key);
       if (stored == null || stored.isEmpty) return;
-      if (!mounted) return;
       final cubit = context.read<ExchangeCubit>();
       if (stored.toUpperCase() == cubit.fromCurrency.toUpperCase()) return;
       // Avoid bouncing into an invalid pair (source == destination).
@@ -333,6 +356,35 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
     ExchangeCubit cubit,
     List<SupportedCurrencyInfo> currencies,
   ) async {
+    // OUTSIDE NGN THE SOURCE IS THE LOCALE, NOT A CHOICE.
+    //
+    // A restricted locale holds one wallet currency, so "From" has exactly one
+    // honest answer. It was freely selectable and the screen only WARNED after
+    // the fact ("Your active currency is X"), which let a user in a GBP region
+    // set up a USD conversion they have no USD to fund — the warning arrives
+    // after the pair is already wrong.
+    //
+    // NGN is unrestricted and keeps the full picker.
+    if (LocaleGating.restricted) {
+      final home = LocaleGating.currentCurrency;
+      if (cubit.fromCurrency.toUpperCase() != home) {
+        cubit.setCurrencyPair(
+          home,
+          cubit.toCurrency.toUpperCase() == home ? cubit.fromCurrency : cubit.toCurrency,
+        );
+        await _persistSourceCurrency(home);
+        await _fetchRate();
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Your region sends from $home.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     final picked = await SourceCurrencyPicker.show(
       context,
       currentCode: cubit.fromCurrency,
