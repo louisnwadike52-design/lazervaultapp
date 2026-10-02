@@ -267,9 +267,14 @@ class AutoSaveSwipeableCard extends StatelessWidget {
                 (mandate.awaitingUserAuthorization &&
                     (mandate.authAttemptedRecently ||
                         MandateAuthAttemptStore.openedRecently(mandate.id))));
-        // Never-granted awaiting mandate → "finish", terminal/absent → "re-authorize".
-        final needsFinish =
-            !activating && mandate != null && mandate.awaitingUserAuthorization;
+        // "Finish" whenever the user has never actually authorized at the
+        // bank — which covers BOTH an awaiting mandate and a terminal one that
+        // died before authorization. Keying this on status alone labelled an
+        // abandoned setup "Re-authorize", and in production no mandate has
+        // ever been authorized, so that was every terminal mandate there is.
+        final needsFinish = !activating &&
+            mandate != null &&
+            (mandate.awaitingUserAuthorization || !mandate.everAuthorized);
         final color =
             activating ? const Color(0xFF3B82F6) : const Color(0xFFFB923C);
         final label = activating

@@ -109,7 +109,24 @@ class MandateHealthBanner extends StatelessWidget {
         cta: 'Authorize Direct Debit',
       );
     }
-    // null / expired / cancelled / rejected — needs a fresh authorization.
+    // Terminal (expired / cancelled / rejected) or absent.
+    //
+    // "Re-" only if there was ever a working mandate to go back to. A setup
+    // abandoned at the bank reaches these same statuses, and in production
+    // that is in fact the ONLY way they are reached, so the unqualified
+    // "no longer active" told every user they had lost something they never
+    // had. A null mandate keeps the re-authorize wording: nothing is loaded
+    // to prove otherwise, and that branch is reached from surfaces that
+    // already know a mandate once existed.
+    if (mandate != null && !mandate.everAuthorized) {
+      return const _BannerCopy(
+        title: 'Finish setting up Direct Debit',
+        body:
+            'Direct Debit for this bank was never finished, so automatic saves '
+            'can\'t run yet. Authorize once with your bank to complete it.',
+        cta: 'Authorize Direct Debit',
+      );
+    }
     return const _BannerCopy(
       title: 'Re-authorize Direct Debit',
       body:

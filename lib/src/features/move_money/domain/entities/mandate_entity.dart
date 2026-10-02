@@ -204,11 +204,53 @@ class MandateEntity extends Equatable {
       status == MandateStatus.expired ||
       status == MandateStatus.rejected;
 
-  /// A previously-set-up mandate that can no longer be debited and needs a brand
-  /// new authorization. `isExpired` (a field) factors the mandate end date;
-  /// status==expired covers the reconciler/webhook-driven expiry.
-  bool get needsReauthorization =>
+  /// Whether the bank side of authorization ever actually completed.
+  ///
+  /// This is the whole difference between "your Direct Debit stopped working"
+  /// and "you never finished setting it up", and it cannot be read off the
+  /// status: a mandate abandoned at the Mono sheet and later expired or
+  /// cancelled lands in exactly the same terminal status as one that ran for a
+  /// year and then lapsed.
+  ///
+  /// It is not a hypothetical difference. Measured against production on
+  /// 2026-10-02, every one of the 14 mandates ever created had
+  /// `authorized_at` NULL, `ready_to_debit_at` NULL and `debit_count` 0 — so
+  /// every surface that said "re-authorize" was naming something that had
+  /// never once happened, to anyone. A user reads "Re-authorize" as "you are
+  /// already set up", which is the opposite of what they need to be told.
+  ///
+  /// Any one of these is proof the bank completed at least once. Statuses are
+  /// included because a mandate cannot reach them without authorization, and
+  /// they survive even if a timestamp column was missed.
+  bool get everAuthorized =>
+      authorizedAt != null ||
+      readyAt != null ||
+      lastDebitAt != null ||
+      debitCount > 0 ||
+      totalDebited > 0 ||
+      status == MandateStatus.authorized ||
+      status == MandateStatus.active ||
+      status == MandateStatus.readyToDebit ||
+      status == MandateStatus.paused;
+
+  /// Dead, and only a fresh authorization can revive it. `isExpired` (a field)
+  /// factors the mandate end date; status==expired covers the
+  /// reconciler/webhook-driven expiry.
+  ///
+  /// Branch on THIS to decide whether to prompt, and on [everAuthorized] to
+  /// choose the words. Keeping the words off the branch is deliberate: every
+  /// caller wants the same prompt in both cases, and only the wording differs.
+  bool get needsNewAuthorization =>
       isExpired || status == MandateStatus.expired || isCancelled || isRejected;
+
+  /// A previously-WORKING mandate that can no longer be debited. Only this
+  /// case may be described to the user as re-authorizing.
+  bool get needsReauthorization => needsNewAuthorization && everAuthorized;
+
+  /// Setup was started but never completed at the bank, and that attempt is
+  /// now dead. There is no "re-" for the user to do — they are still finishing
+  /// first-time setup, and must be told so.
+  bool get setupNeverCompleted => needsNewAuthorization && !everAuthorized;
 
   @override
   List<Object?> get props => [
@@ -222,6 +264,10 @@ class MandateEntity extends Equatable {
         remainingLimit,
         canDebit,
         isExpired,
+        authorizedAt,
+        readyAt,
+        lastDebitAt,
+        debitCount,
         startDate,
         endDate,
         createdAt,

@@ -2338,15 +2338,28 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       );
       return;
     }
-    if (mandate != null && mandate.needsReauthorization) {
+    if (mandate != null && mandate.needsNewAuthorization) {
+      // Same prompt either way, but never call it "re-authorize" unless the
+      // user actually authorized something once. A setup abandoned at the bank
+      // ends up cancelled/expired exactly like a lapsed working mandate, and
+      // telling someone mid-setup to "re-authorize" their "saved Direct Debit"
+      // reads as "you are already set up" — which is why this card showed
+      // "Re-authorize" beside a chip still saying "One-time".
+      final resumed = mandate.everAuthorized;
       _showMandateActionSheet(
         screenCtx,
-        title: 'Direct Debit ${mandate.isExpired ? 'expired' : 'ended'}',
-        body:
-            'Your saved Direct Debit for ${account.bankName} can no longer be '
-            'used. Re-authorize once to keep depositing without a bank login '
-            'each time.',
-        actionLabel: 'Re-authorize Direct Debit',
+        title: resumed
+            ? 'Direct Debit ${mandate.isExpired ? 'expired' : 'ended'}'
+            : 'Finish setting up Direct Debit',
+        body: resumed
+            ? 'Your saved Direct Debit for ${account.bankName} can no longer '
+                'be used. Re-authorize once to keep depositing without a bank '
+                'login each time.'
+            : 'Direct Debit for ${account.bankName} was never finished, so '
+                'deposits still need a bank login each time. Authorize once '
+                'with your bank to complete it.',
+        actionLabel:
+            resumed ? 'Re-authorize Direct Debit' : 'Authorize Direct Debit',
         onAction: () => _reauthorizeMandateThenRedeposit(account),
       );
       return;
