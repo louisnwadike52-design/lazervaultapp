@@ -741,10 +741,25 @@ class _AddRecipientState extends State<AddRecipient>
                               ),
                             ),
                             counterText: '',
-                            // Only the completion check lives inside the field
-                            // now; the scan action moved to its own button.
-                            suffixIcon: _isAccountNumberComplete(
-                                    _accountController.text)
+                            // A GREEN TICK MUST MEAN VERIFIED, NOT "TEN DIGITS".
+                            //
+                            // This rendered Icons.check_circle in green as soon
+                            // as _isAccountNumberComplete passed — and that is
+                            // a pure LENGTH check. Typing any ten digits, with
+                            // no bank resolved and nothing sent to the
+                            // provider, produced the universal "verified"
+                            // affordance next to an account that does not
+                            // exist. On the screen where someone is about to
+                            // send money to a stranger, that is the one place
+                            // the mark has to be earned.
+                            //
+                            // It is now bound to _verificationResult — the same
+                            // state behind the "Account Verified" panel below —
+                            // so the tick and the panel can never disagree.
+                            // Before verification the field shows nothing; the
+                            // "Verify Recipient" button is the next step and
+                            // says so itself.
+                            suffixIcon: _verificationResult != null
                                 ? Padding(
                                     padding: EdgeInsets.only(right: 8.w),
                                     child: Icon(Icons.check_circle,
