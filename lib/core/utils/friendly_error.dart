@@ -249,6 +249,20 @@ bool looksTechnical(String? msg) {
       m.contains('":"')) {
     return true;
   }
+  // Dart runtime type failures. "type 'Null' is not a subtype of type 'String'"
+  // carries no "exception", no "error:" and no JSON, so every filter above let
+  // it through — it only stayed hidden because the sole caller unwrapped just
+  // GrpcError and DioException, and anything else became a generic line before
+  // reaching here. Now that a WRAPPED message is judged on its merits, the gap
+  // is reachable, and a null-safety bug would be shown to a customer verbatim.
+  if (m.contains('is not a subtype of') ||
+      m.contains('noSuchMethodError'.toLowerCase()) ||
+      m.contains('rangeerror') ||
+      m.contains('formatexception') ||
+      m.contains('_typeerror') ||
+      m.contains('unhandled ')) {
+    return true;
+  }
   return _messageLooksLikeNetwork(m);
 }
 
@@ -430,8 +444,62 @@ String friendlyError(Object? error, {String? context}) {
     return contextual();
   }
 
-  // --- everything else ------------------------------------------------------
+  // --- a WRAPPED business error still carries a sentence meant for the user --
+  //
+  // A service's precise, actionable refusal reached this point and was thrown
+  // away. Only GrpcError and DioException were unwrapped above, so by the time
+  // a repository had turned the gRPC status into a Failure/Exception, the
+  // message was invisible here and everything collapsed to "We couldn't …
+  // right now. Please try again."
+  //
+  // Measured 2026-10-02 on send-funds. core-payments returned:
+  //
+  //   InvalidArgument: "the minimum for a bank transfer is 100.00 NGN
+  //                     (you entered 10.00) — payout providers reject
+  //                     smaller amounts"     retryable=false
+  //
+  // and the user was shown "Something went wrong … Please try again" after
+  // entering their PIN. Telling someone to retry a NON-RETRYABLE refusal is
+  // worse than saying nothing: every retry fails identically, and it reads as
+  // the app being broken rather than the amount being too small. Three days of
+  // "all transfers are failing" came from exactly this.
+  //
+  // sanitizeUserFacingError is the existing arbiter of "is this fit to show":
+  // genuine sentences pass, raw transport/technical text collapses. Running the
+  // wrapped text through it recovers the real reason without loosening what may
+  // be displayed — anything it rejects still falls to the contextual line.
+  final wrapped = sanitizeUserFacingError(_unwrappedMessage(error));
+  if (wrapped.isNotEmpty && wrapped != generic) return wrapped;
+
   return contextual();
+}
+
+/// Best-effort user-facing text out of an arbitrary thrown object.
+///
+/// Strips the wrapper noise Dart prepends — "Exception: ", "StateError: " and
+/// the like — so the sentence underneath is judged on its own merits rather
+/// than being rejected as technical because of its envelope.
+String _unwrappedMessage(Object? error) {
+  if (error == null) return '';
+  String text;
+  try {
+    // Most Failure/exception types in this codebase expose `.message`; fall
+    // back to toString() for the rest.
+    final dynamic d = error;
+    final dynamic m = d.message;
+    text = m is String ? m : error.toString();
+  } catch (_) {
+    text = error.toString();
+  }
+  text = text.trim();
+  // "Exception: foo", "_TypeError: foo", "SomeFailure: foo"
+  final match = RegExp(r'^[A-Za-z_][A-Za-z0-9_]*(Exception|Error|Failure)?\s*:\s*(.+)$',
+          dotAll: true)
+      .firstMatch(text);
+  if (match != null && (match.group(2) ?? '').trim().isNotEmpty) {
+    text = match.group(2)!.trim();
+  }
+  return text;
 }
 
 /// Sanitize an ALREADY-EXTRACTED message string for display. Use at the sink
