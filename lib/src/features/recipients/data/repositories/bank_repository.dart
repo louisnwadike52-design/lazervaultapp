@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/utilities/banks_data.dart';
 import 'package:lazervault/src/features/open_banking/data/datasources/open_banking_remote_datasource.dart';
@@ -7,12 +9,26 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Single source for the selectable bank list.
 ///
-/// Fetches the live list from the backend (`/api/v1/banks`, which the
-/// banking-service now serves from Flutterwave — the SAME provider that
-/// executes payouts, so each `code` is valid for a transfer's `account_bank`),
-/// caches it in `SharedPreferences` for 24h, and falls back to the bundled
-/// static [BanksData] list when offline or on any error. Banks are returned as
-/// `{'name': ..., 'code': ...}` maps to match the existing dropdown shape.
+/// Fetches the live list from the backend (`/api/v1/banks`), which serves it
+/// from whichever rail is CURRENTLY carrying payouts — not from any particular
+/// provider. That matters because bank codes are per-rail rather than a shared
+/// standard: Kuda is 50211 on Flutterwave and 090267 on Nomba, and only ~39 of
+/// the 155 codes in the bundled list resolve against Nomba at all. So each
+/// `code` is valid for a transfer's `account_bank` only against the rail that
+/// issued it, and the response names that rail.
+///
+/// The list is cached in `SharedPreferences` for 24h AND under the rail that
+/// produced it, revalidated once per app session so a provider switch is picked
+/// up on the next launch rather than up to a day later, and falls back to the
+/// bundled static [BanksData] list when offline or on any error. Banks are
+/// returned as `{'name': ..., 'code': ...}` maps to match the existing dropdown
+/// shape.
+///
+/// NOTE on the static fallback: it is Flutterwave-shaped and contains no Nomba
+/// entries, so on a Nomba rail it is a LAST resort that will mis-code fintech
+/// destinations. It is still preferable to an empty picker, and the backend
+/// refuses to resolve a code it does not recognise, so the failure is a
+/// declined transfer rather than misrouted money.
 ///
 /// Only Nigeria (`NG`) has a dynamic backend source today; other countries
 /// always use the static list.
@@ -33,6 +49,36 @@ class BankRepository {
   String _cacheKey(String country) => 'banks_cache_${country.toUpperCase()}';
   String _cacheAtKey(String country) =>
       'banks_cache_at_${country.toUpperCase()}';
+
+  /// Which payout rail the cached list belongs to.
+  ///
+  /// Bank codes are NOT a shared standard — each rail publishes its own, and
+  /// only ~39 of the 155 codes this app can send resolve against Nomba. So a
+  /// list is meaningless without the name of the rail that issued it, and a
+  /// cache that stores one without the other cannot tell when it has gone
+  /// wrong.
+  String _cacheProviderKey(String country) =>
+      'banks_cache_provider_${country.toUpperCase()}';
+
+  /// Countries already revalidated against the server in this app session.
+  ///
+  /// The 24h TTL alone let a provider switch go unnoticed for a full day: a
+  /// fresh cache was served without ever asking the server, so the app kept
+  /// offering the OLD rail's codes and every transfer to a fintech was refused
+  /// while the screens looked perfectly normal. Revalidating once per session
+  /// bounds that to a single app launch, and the TTL still does its real job of
+  /// keeping the list off the network on every picker open.
+  final Set<String> _revalidated = {};
+
+  /// Bumped whenever the cached list is REPLACED because the rail changed, so
+  /// a picker that is already open can repaint instead of showing codes that
+  /// have just been invalidated underneath it.
+  final ValueNotifier<int> listRevision = ValueNotifier<int>(0);
+
+  /// The rail the in-memory list came from, for diagnostics and tests.
+  String? providerOf(String country) => _memProvider[country.toUpperCase()];
+
+  final Map<String, String> _memProvider = {};
 
   /// Synchronous best-effort list: the in-memory dynamic list if the repository
   /// has been warmed this session, otherwise the bundled static list. Pair with
@@ -74,10 +120,17 @@ class BankRepository {
     final isFresh =
         DateTime.now().millisecondsSinceEpoch - cachedAt < _ttl.inMilliseconds;
 
-    if (isFresh) {
+    final key = country.toUpperCase();
+    final cachedProvider = prefs.getString(_cacheProviderKey(country)) ?? '';
+
+    // A fresh cache still serves immediately — but only ONCE per session is it
+    // trusted without asking the server, so an admin's provider switch is
+    // picked up on the next app launch instead of up to 24 hours later.
+    if (isFresh && _revalidated.contains(key)) {
       final decoded = _tryDecode(cachedRaw);
       if (decoded != null && decoded.isNotEmpty) {
-        _mem[country.toUpperCase()] = decoded;
+        _mem[key] = decoded;
+        if (cachedProvider.isNotEmpty) _memProvider[key] = cachedProvider;
         return decoded;
       }
     }
@@ -85,21 +138,32 @@ class BankRepository {
     try {
       final token = await _storage.getAccessToken();
       if (token != null && token.isNotEmpty) {
-        final banks = await _remote.getBanks(accessToken: token);
+        final res = await _remote.getBanksWithProvider(accessToken: token);
         // NB: do NOT filter on isActive — the backend currently returns it as
-        // false for every bank; the Flutterwave list is already curated to
+        // false for every bank; the rail's own list is already curated to
         // transfer-eligible banks.
-        final list = banks
+        final list = res.banks
             .where((b) => b.code.isNotEmpty && b.name.isNotEmpty)
             .map((b) => {'name': b.name, 'code': b.code})
             .toList();
         if (list.isNotEmpty) {
+          final railChanged =
+              cachedProvider.isNotEmpty && res.provider.isNotEmpty &&
+                  cachedProvider != res.provider;
           await prefs.setString(_cacheKey(country), jsonEncode(list));
           await prefs.setInt(
             _cacheAtKey(country),
             DateTime.now().millisecondsSinceEpoch,
           );
-          _mem[country.toUpperCase()] = list;
+          await prefs.setString(_cacheProviderKey(country), res.provider);
+          _mem[key] = list;
+          if (res.provider.isNotEmpty) _memProvider[key] = res.provider;
+          _revalidated.add(key);
+          if (railChanged) {
+            // The codes just changed meaning. Anything already painted from the
+            // old rail is now wrong, so tell it to repaint.
+            listRevision.value++;
+          }
           return list;
         }
       }

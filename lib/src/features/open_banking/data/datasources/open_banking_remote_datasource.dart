@@ -426,6 +426,32 @@ class OpenBankingRemoteDataSource {
         .toList();
   }
 
+  /// The bank list together with the PAYOUT RAIL that sourced it.
+  ///
+  /// Bank codes are per-rail, not a shared standard (Kuda is 50211 on
+  /// Flutterwave and 090267 on Nomba), so a list is only meaningful alongside
+  /// the rail it came from. Dropping that label — which [getBanks] does — makes
+  /// it impossible for a cache to know its contents have gone stale after an
+  /// admin switches the payout provider.
+  Future<({List<Bank> banks, String provider})> getBanksWithProvider({
+    required String accessToken,
+  }) async {
+    final response = await _client.get(
+      Uri.parse('$_baseUrl/banks'),
+      headers: await _getHeaders(),
+      retryConfig: RetryConfig.aggressive,
+    );
+
+    final data = response.parseJsonOrThrow();
+    final banksList = data['banks'] as List? ?? [];
+    return (
+      banks: banksList
+          .map((e) => Bank.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      provider: (data['provider'] as String? ?? '').trim().toLowerCase(),
+    );
+  }
+
   /// Resolve account name (name inquiry)
   /// Throws [AccountVerificationException] if account cannot be verified
   /// Throws [BankingException] on other failures
