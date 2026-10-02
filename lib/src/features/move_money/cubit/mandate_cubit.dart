@@ -29,6 +29,36 @@ class MandateCubit extends Cubit<MandateState> {
       _dataSource.markMandateAuthAttempt(
           mandateId: mandateId, cleared: cleared);
 
+  /// Ask the PROVIDER what actually happened, once, right now.
+  ///
+  /// The only trustworthy answer to "is this mandate authorized?" comes from
+  /// Mono, and the server's GetMandate refreshes from Mono before replying.
+  /// Neither of the two things the UI is tempted to believe is evidence:
+  ///
+  ///  - the webview's redirect, which for a mandate carries no status at all;
+  ///  - the user's own "yes, I finished it", which they answer in good faith
+  ///    about a transfer that may have failed, been reversed, or never left
+  ///    their bank app.
+  ///
+  /// Returns the refreshed mandate, or null if the provider could not be
+  /// reached — null means UNKNOWN, never "no". Callers must not downgrade a
+  /// mandate on a null.
+  Future<MandateEntity?> verifyWithProvider({
+    required String mandateId,
+    required String userId,
+  }) async {
+    try {
+      final mandate =
+          await _dataSource.getMandate(mandateId: mandateId, userId: userId);
+      _mandatesByAccountId[mandate.linkedAccountId] = mandate;
+      return mandate;
+    } catch (e, st) {
+      AppLogger.error('mandate: provider verification failed',
+          error: e, stackTrace: st);
+      return null;
+    }
+  }
+
   /// Classify a mandate failure, log it to Loki (flow: 'mandate'), and build a
   /// user-facing [MandateError]. A backend KYC_REQUIRED (the "no fake customer
   /// data" gate — Direct Debit needs a real email/phone/address on file) is

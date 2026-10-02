@@ -2711,7 +2711,51 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
           outcome: MandateOutcome.unconfirmed,
           bankName: account.bankName,
         );
-        if ((alreadySent == false || alreadySent == null) && mounted) {
+        if (alreadySent == true && mounted) {
+          // "Yes, I finished it" is an honest answer to a question the user
+          // cannot actually answer. The bank transfer that authorizes a
+          // transfer-verified mandate can fail, be reversed, or never leave
+          // their banking app, and NIBSS is the only party that knows. So
+          // confirm with Mono and report what MONO says, not what was tapped.
+          final confirmed = await serviceLocator<MandateCubit>()
+              .verifyWithProvider(mandateId: m.id, userId: user.id);
+          if (!mounted) return;
+          if (confirmed != null && confirmed.everAuthorized) {
+            _loadUserMandates();
+            Get.snackbar(
+              'Confirmed',
+              '${account.bankName} approved your Direct Debit. It activates '
+                  'shortly and future deposits will skip the bank login.',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.92),
+              colorText: Colors.white,
+              duration: const Duration(seconds: 5),
+            );
+          } else {
+            // Not confirmed — and that is NOT an accusation. A transfer can
+            // take a few minutes to reach NIBSS, so say "not yet", keep
+            // polling, and above all do not tell them to pay again.
+            Get.snackbar(
+              confirmed == null ? 'Could not check right now' : 'Not confirmed yet',
+              confirmed == null
+                  ? 'We could not reach your bank to check. Nothing was lost — '
+                      'we keep checking in the background.'
+                  : '${account.bankName} has not confirmed it yet. This can take '
+                      'a few minutes. Do not send it again — we will finish '
+                      'automatically once it lands.',
+              snackPosition: SnackPosition.BOTTOM,
+              duration: const Duration(seconds: 6),
+              backgroundColor: const Color(0xFF1F1F1F),
+              colorText: Colors.white,
+              borderColor: Colors.white.withValues(alpha: 0.08),
+              borderWidth: 1,
+              margin: EdgeInsets.all(12.w),
+              borderRadius: 14.r,
+              icon: const Icon(Icons.schedule, color: Color(0xFF8B5CF6)),
+              snackStyle: SnackStyle.FLOATING,
+            );
+          }
+        } else if ((alreadySent == false || alreadySent == null) && mounted) {
           // "Not yet" / dismissed — do NOT re-open the Direct Debit flow.
           //
           // The old code re-called _switchToDirectDebit here, which re-opened

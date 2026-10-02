@@ -90,7 +90,18 @@ class _MandateOutcomeSheetState extends State<_MandateOutcomeSheet> {
   void _resolve(bool result, {bool thenResume = false}) {
     if (_resolved) return;
     _resolved = true;
-    Navigator.of(context).pop(result);
+    // Close THIS sheet, not whatever is on top. `_resolved` stops a double tap
+    // popping twice, but it cannot help when something else was pushed above
+    // the sheet while it was open — the app being killed in the background and
+    // relaunching onto the login screen is the case seen in the field, and a
+    // bare pop there closes the login route and unwinds into a black screen.
+    final navigator = Navigator.of(context);
+    final route = ModalRoute.of(context);
+    if (route != null && !route.isCurrent) {
+      navigator.removeRoute(route);
+    } else {
+      navigator.pop(result);
+    }
     if (thenResume) onResume?.call();
   }
 

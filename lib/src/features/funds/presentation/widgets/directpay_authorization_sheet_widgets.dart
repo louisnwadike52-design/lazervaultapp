@@ -46,12 +46,33 @@ class DirectPayAuthResult {
   final String? reference;
   final String? errorMessage;
 
+  /// The widget handed back control without telling us the outcome.
+  ///
+  /// NOT a failure and NOT a success — "we do not know, go and ask the
+  /// provider". Mono's mandate redirect is a bare `lazervault://mandate/
+  /// callback` with no status parameter, so inferring either way from it is a
+  /// guess. For money and for mandates a guess is not good enough: the
+  /// authoritative answer is one GET away.
+  final bool unverified;
+
   const DirectPayAuthResult({
     required this.success,
     this.paymentId,
     this.reference,
     this.errorMessage,
+    this.unverified = false,
   });
+
+  /// The flow ended with no verdict of its own — the caller MUST confirm with
+  /// the provider before telling the user anything.
+  factory DirectPayAuthResult.unverified({String? paymentId, String? reference}) {
+    return DirectPayAuthResult(
+      success: false,
+      unverified: true,
+      paymentId: paymentId,
+      reference: reference,
+    );
+  }
 
   factory DirectPayAuthResult.success({String? paymentId, String? reference}) {
     return DirectPayAuthResult(

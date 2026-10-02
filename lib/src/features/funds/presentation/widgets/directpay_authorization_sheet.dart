@@ -393,6 +393,36 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
     ).then((_) => _blockedDialogOpen = false);
   }
 
+  /// Close THIS sheet — never whatever happens to be on top.
+  ///
+  /// Every exit below used a bare `Navigator.pop`, which pops the TOPMOST
+  /// route. That is this sheet only while nothing sits above it, and several
+  /// things do: the Prove "blocked" dialog, a second exit path racing the
+  /// first, or — the one seen in the field — the app being killed in the
+  /// background while the user is in their bank app and relaunching onto the
+  /// login screen. The 2-second close debounce makes it easy to hit, because
+  /// it fires long after the moment that scheduled it.
+  ///
+  /// When that happens the pop closes someone else's route, and the stack
+  /// unwinds past the end into a black screen.
+  ///
+  /// `mounted` does not protect against this: a State stays mounted while its
+  /// route is buried under another. Only route identity does.
+  void _popSelf(DirectPayAuthResult result) {
+    if (!mounted) return;
+    final navigator = Navigator.of(context);
+    final route = ModalRoute.of(context);
+    if (route == null) return;
+    if (!route.isCurrent) {
+      // Buried. Removing is the only safe way to retire it; the caller's await
+      // then completes with the sheet's default (cancelled), which for the
+      // mandate flow is re-checked against Mono anyway.
+      navigator.removeRoute(route);
+      return;
+    }
+    navigator.pop(result);
+  }
+
   bool _isRedirectUrl(String url) {
     final lowerUrl = url.toLowerCase();
 
@@ -443,7 +473,7 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
       HapticFeedback.mediumImpact();
       debugPrint('[DirectPay] Success redirect: $url');
       final q = Uri.tryParse(url)?.queryParameters ?? {};
-      Navigator.of(context).pop(DirectPayAuthResult.success(
+      _popSelf(DirectPayAuthResult.success(
         paymentId: q['payment_id'] ?? widget.paymentId,
         reference: q['reference'] ?? widget.reference,
       ));
@@ -457,10 +487,10 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
       debugPrint('[DirectPay] Failure redirect: $url');
       // An explicit user cancel is not an alarming error.
       if (lowerUrl.contains('cancel') || lowerUrl.contains('dismiss')) {
-        Navigator.of(context).pop(DirectPayAuthResult.cancelled());
+        _popSelf(DirectPayAuthResult.cancelled());
       } else {
         final q = Uri.tryParse(url)?.queryParameters ?? {};
-        Navigator.of(context).pop(DirectPayAuthResult.failed(
+        _popSelf(DirectPayAuthResult.failed(
           q['error'] ?? q['message'] ?? 'Payment authorization failed',
         ));
       }
@@ -477,21 +507,66 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
       _closeDebounce = Timer(const Duration(milliseconds: 2000), () {
         if (!mounted || _redirectHandled) return;
         _redirectHandled = true;
+        if (widget.flow == DirectPayFlow.mandate) {
+          // Closing the Mono page is part of the HAPPY path for a mandate
+          // verified by transfer: the user has to leave it to make the payment
+          // in their own bank app, and NIBSS confirms it without them ever
+          // coming back to press anything. Calling that "cancelled" writes off
+          // a setup that may already be complete, so hand back "unverified"
+          // and let the caller ask Mono what actually happened.
+          debugPrint(
+              '[DirectPay] Mandate closed with no verdict — unverified');
+          _popSelf(DirectPayAuthResult.unverified(
+            paymentId: widget.paymentId,
+            reference: widget.reference,
+          ));
+          return;
+        }
         debugPrint(
             '[DirectPay] No success/failure after close — treating as cancelled');
-        Navigator.of(context).pop(DirectPayAuthResult.cancelled());
+        _popSelf(DirectPayAuthResult.cancelled());
       });
       return;
     }
 
-    // Hit our redirect path with no explicit status — some providers redirect on
-    // success without a status param, so default to success.
+    // Hit our redirect path with NO explicit status.
+    //
+    // For a mandate this must never be read as success. Mono's configured
+    // redirect for the mandate flow is a bare `lazervault://mandate/callback`
+    // with no query string at all, so this branch fires whether the user
+    // completed the bank's verification or merely backed out of it — and
+    // calling that "success" is how a user who authorized nothing ends up
+    // stamped as having authorized.
+    //
+    // That stamp is not cosmetic: it flips the card to "Setting up" and arms
+    // the 40-minute spent-link guard, which then refuses to reopen the
+    // authorization. The user is locked out of the only screen that could
+    // finish their setup, and the mandate sits awaiting_authorization until it
+    // expires. Measured on a live account: Mono reported
+    // `approved: false, ready_to_debit: false` the whole time the app was
+    // showing "Setting up", across repeated attempts over months.
+    //
+    // So: hand back "unverified" and let the caller ask Mono. The answer is a
+    // single GET and it is the only thing that can actually be trusted.
     _closeDebounce?.cancel();
     _redirectHandled = true;
     HapticFeedback.mediumImpact();
+    if (widget.flow == DirectPayFlow.mandate) {
+      debugPrint(
+          '[DirectPay] Mandate redirect with no status — unverified, '
+          'caller must confirm with Mono: $url');
+      _popSelf(DirectPayAuthResult.unverified(
+        paymentId: widget.paymentId,
+        reference: widget.reference,
+      ));
+      return;
+    }
+    // Deposit/KYC keep the optimistic default: those providers DO redirect on
+    // success without a status param, and both have a server-side reconciler
+    // that corrects an optimistic client.
     debugPrint(
         '[DirectPay] Redirect (no explicit status) — default success: $url');
-    Navigator.of(context).pop(DirectPayAuthResult.success(
+    _popSelf(DirectPayAuthResult.success(
       paymentId: widget.paymentId,
       reference: widget.reference,
     ));
@@ -512,7 +587,7 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
-              Navigator.of(context).pop(DirectPayAuthResult.cancelled());
+              _popSelf(DirectPayAuthResult.cancelled());
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: Text(widget.flow.cancelConfirmLabel),

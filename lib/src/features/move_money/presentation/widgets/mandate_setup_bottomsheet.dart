@@ -183,9 +183,39 @@ class _MandateSetupSheetState extends State<_MandateSetupSheet> {
             // bank/NIBSS, so surfaces show "Setting up" while Mono converges.
             // Server-side stamp so ANY device (relogin, other phone) sees it —
             // the local store is only the offline fallback.
-            if (authResult.success) {
+            // ASK MONO. Do not believe the webview.
+            //
+            // The redirect is not evidence: Mono's mandate callback is a bare
+            // `lazervault://mandate/callback` with no status, so the sheet
+            // cannot tell a completed verification from an abandoned one and
+            // now says so (`unverified`). Stamping an attempt on that guess is
+            // what locked users out: the stamp arms the 40-minute spent-link
+            // guard, so the next attempt is answered with "no need to
+            // authorize again" and the authorization screen — the only place
+            // the setup could be finished — becomes unreachable.
+            //
+            // One GET settles it, and the server refreshes from Mono before
+            // answering.
+            final verified = await cubit.verifyWithProvider(
+              mandateId: state.mandate.id,
+              userId: widget.userId,
+            );
+            // Null means the provider was unreachable — UNKNOWN, not "no".
+            // Treat it as not-yet-authorized (the safe direction: the user is
+            // offered the flow again rather than told they are set up), but
+            // never stamp, so nothing is locked.
+            final authorized = verified?.everAuthorized ?? false;
+            if (authorized) {
+              // Only a provider-confirmed authorization may stamp. From here
+              // the mandate really is provisioning with the bank/NIBSS and
+              // "Setting up" is the honest thing to show.
               await MandateAuthAttemptStore.markOpened(state.mandate.id);
               unawaited(cubit.markAuthAttempt(state.mandate.id));
+            }
+            if (authorized || authResult.unverified) {
+              // Keep watching in the unverified case too: a transfer-verified
+              // mandate completes at NIBSS minutes after the user leaves, with
+              // no further action in the app.
               cubit.pollMandateStatus(
                 mandateId: state.mandate.id,
                 userId: widget.userId,
@@ -195,7 +225,7 @@ class _MandateSetupSheetState extends State<_MandateSetupSheet> {
             // the user closes the Mono webview, the mandate is stranded in
             // awaiting_authorization and callers must not treat the setup as
             // done (the deposit card shows "Finish setup" to resume it).
-            if (mounted) navigator.pop(authResult.success);
+            if (mounted) navigator.pop(authorized);
             return;
           }
           if (mounted) navigator.pop(true);
