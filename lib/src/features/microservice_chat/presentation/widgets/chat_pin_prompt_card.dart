@@ -68,13 +68,61 @@ class ChatPinPromptCard extends StatefulWidget {
     }
   }
 
-  /// Auto-open the PIN modal for an already-rendered card identified by
-  /// [transactionId]. No-op if the card isn't mounted yet, is already open,
-  /// or has already completed. Reuses the card's own [_openPinModal] so the
-  /// auto-open and the manual "Enter PIN" tap share one implementation.
+  /// Transactions asked to auto-open before their card existed.
+  ///
+  /// THE REQUEST HAS TO OUTLIVE THE RACE.
+  ///
+  /// This used to be `state?.openModal()` — a null-safe call that did NOTHING
+  /// when the card was not mounted yet, and said nothing about it. The opener
+  /// marks the transaction as opened BEFORE its post-frame callback runs, so a
+  /// single missed attempt was permanent: the sheet never came up again for
+  /// that transaction and the user had to tap "Enter PIN" by hand, every time.
+  ///
+  /// The card is routinely not mounted at that moment. The transcript is a lazy
+  /// list, so a newly appended prompt is only built once it is scrolled into
+  /// view, and `_scrollToBottom()` has not landed when the post-frame callback
+  /// fires. Short conversations fit on screen and worked; real ones did not —
+  /// which is exactly how this shipped looking fine.
+  ///
+  /// So a request for an unmounted card is REMEMBERED, and the card consumes it
+  /// when it mounts. One shot: [_consumePendingAutoOpen] removes the id, so a
+  /// card rebuilt later (scrolling back through history) does not reopen it.
+  static final Set<String> _pendingAutoOpen = <String>{};
+
+  /// Auto-open the PIN modal for the card identified by [transactionId].
+  ///
+  /// Opens immediately when the card is already mounted; otherwise the request
+  /// is held until it is. Already-open, completed and expired cards are no-ops
+  /// either way, because the guards live in the card's own [_openPinModal] —
+  /// auto-open and the manual tap share one implementation.
   static void autoOpenFor(String transactionId) {
+    if (transactionId.isEmpty) return;
     final state = _cardKeys[transactionId]?.currentState;
-    state?.openModal();
+    if (state != null) {
+      state.openModal();
+      return;
+    }
+    _pendingAutoOpen.add(transactionId);
+  }
+
+  /// Whether [transactionId] was asked to open while unmounted; clears it.
+  static bool _consumePendingAutoOpen(String transactionId) =>
+      _pendingAutoOpen.remove(transactionId);
+
+  /// Drop a pending request without acting on it — used when the user cancels,
+  /// so a card that remounts afterwards does not spring the sheet on them.
+  static void cancelPendingAutoOpen(String transactionId) {
+    _pendingAutoOpen.remove(transactionId);
+  }
+
+  @visibleForTesting
+  static Set<String> get debugPendingAutoOpen =>
+      Set.unmodifiable(_pendingAutoOpen);
+
+  @visibleForTesting
+  static void debugResetAutoOpen() {
+    _pendingAutoOpen.clear();
+    _cardKeys.clear();
   }
 
   final Map<String, dynamic> payload;
@@ -111,6 +159,27 @@ class ChatPinPromptCardState extends State<ChatPinPromptCard>
   /// AI-chat auto-open listener. Guards (`_isOpen` / `_completed` / mounted)
   /// live inside [_openPinModal] so repeated calls are safe.
   Future<void> openModal() => _openPinModal();
+
+  @override
+  void initState() {
+    super.initState();
+    // Claim an auto-open that was requested before this card existed.
+    //
+    // The opener fires one post-frame callback and never retries, and the
+    // transcript is a lazy list — so when a prompt is appended below the fold
+    // the request arrives before the card is built. Without this the request
+    // was silently dropped and the sheet only ever opened by hand.
+    //
+    // After the first frame, not during initState: _openPinModal shows a modal
+    // route, which needs this element's context to be mounted and the current
+    // build to have finished.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (ChatPinPromptCard._consumePendingAutoOpen(_s('transaction_id'))) {
+        _openPinModal();
+      }
+    });
+  }
 
   @override
   ITransactionPinService get transactionPinService =>
@@ -244,6 +313,11 @@ class ChatPinPromptCardState extends State<ChatPinPromptCard>
     if (!mounted) return;
     setState(() => _isOpen = false);
     if (!success && !_completed) {
+      // Dismissing means "not now", and that has to stick. Without dropping any
+      // queued request, a card rebuilt moments later — scrolling, a new message
+      // arriving — would consume a stale pending open and put the sheet straight
+      // back in the user's face.
+      ChatPinPromptCard.cancelPendingAutoOpen(_s('transaction_id'));
       widget.onCancelled?.call();
     }
   }

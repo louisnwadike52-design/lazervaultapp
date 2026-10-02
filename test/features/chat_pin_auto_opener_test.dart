@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_pin_auto_opener.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_pin_prompt_card.dart';
 
 /// The PIN sheet opens itself now, so the rules about WHEN it may do that are the whole
 /// safety story. Each of these is a way an auto-opening modal goes wrong in a way that is
@@ -336,6 +337,55 @@ void main() {
       opener.reset();
       expect(opener.debugOpened, isEmpty);
       expect(opener.debugOpenCounts, isEmpty);
+    });
+  });
+
+/// THE REQUEST HAS TO SURVIVE AN UNMOUNTED CARD.
+///
+/// `autoOpenFor` used to be `state?.openModal()` — a null-safe call that did
+/// nothing, and said nothing, when the card was not mounted yet. The opener
+/// marks a transaction opened BEFORE its post-frame callback runs and never
+/// retries, so one missed attempt was permanent: the sheet never came up for
+/// that transaction and the user tapped "Enter PIN" by hand every time.
+///
+/// The card is routinely unmounted at that moment. The transcript is a lazy
+/// list, so a prompt appended below the fold is not built until it scrolls into
+/// view, and _scrollToBottom() has not landed when the callback fires. Short
+/// conversations fit on screen and worked, which is how it shipped looking fine.
+
+  group('auto-open survives a card that is not mounted yet', () {
+    setUp(ChatPinPromptCard.debugResetAutoOpen);
+    tearDown(ChatPinPromptCard.debugResetAutoOpen);
+
+    test('a request for an unmounted card is remembered, not dropped', () {
+      ChatPinPromptCard.autoOpenFor('tx-below-the-fold');
+      expect(
+        ChatPinPromptCard.debugPendingAutoOpen,
+        contains('tx-below-the-fold'),
+        reason: 'the request was dropped — this is the bug: the card mounts a '
+            'moment later and never learns it was asked to open',
+      );
+    });
+
+    test('cancelling drops the queued request so it cannot spring back', () {
+      ChatPinPromptCard.autoOpenFor('tx-dismissed');
+      ChatPinPromptCard.cancelPendingAutoOpen('tx-dismissed');
+      expect(
+        ChatPinPromptCard.debugPendingAutoOpen,
+        isNot(contains('tx-dismissed')),
+        reason: 'dismissing means "not now"; a rebuild must not reopen it',
+      );
+    });
+
+    test('an empty transaction id is never queued', () {
+      ChatPinPromptCard.autoOpenFor('');
+      expect(ChatPinPromptCard.debugPendingAutoOpen, isEmpty);
+    });
+
+    test('queuing is idempotent — a re-ask does not stack duplicates', () {
+      ChatPinPromptCard.autoOpenFor('tx-1');
+      ChatPinPromptCard.autoOpenFor('tx-1');
+      expect(ChatPinPromptCard.debugPendingAutoOpen.length, 1);
     });
   });
 }
