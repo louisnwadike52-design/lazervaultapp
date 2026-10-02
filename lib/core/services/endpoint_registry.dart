@@ -57,6 +57,12 @@ class EndpointRegistry {
   /// for app-wide runtime knobs that must be admin-tunable without a release.
   static const Set<String> _persistedNonUrlKeys = {
     'session_inactivity_logout_seconds',
+    // The payout provider's floor for an NGN bank transfer, in kobo. Cached so
+    // the amount screen can refuse a too-small transfer on the FIRST frame
+    // rather than after the PIN — and so it refuses against the SAME number
+    // core-payments enforces, read from one system_settings row, instead of a
+    // constant of its own that can drift out of agreement with the server.
+    'external_payout_floor_minor',
     'splitbill_external_receiver_enabled',
     // Whether Split Bills appears as a quick action INSIDE the send-funds flow.
     // Cached like the other admin knobs so the send-funds screen can decide on

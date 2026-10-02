@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/shared_widgets/server_refusal_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 // For serviceLocator
 import 'package:lazervault/core/config/feature_flags.dart';
@@ -1130,6 +1131,40 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     double estimatedFee = 0.0;
     if (isExternalTransfer && transferCubitState is TransferFeeLoaded) {
       estimatedFee = transferCubitState.fee / 100.0;
+    }
+
+    // THE PAYOUT FLOOR, BEFORE THE PIN.
+    //
+    // A bank transfer under the provider's minimum is refused by
+    // core-payments with an exact, NON-RETRYABLE reason — but it was only
+    // refused after the user had entered their PIN, and the sheet then said
+    // "Something went wrong … Please try again". Retrying a non-retryable
+    // refusal fails identically every time, which is how three ₦10 attempts
+    // were reported as "all transfers are failing".
+    //
+    // The floor comes from the SERVER (external_payout_floor_minor, the same
+    // system_settings row core-payments enforces), not a constant here. A
+    // second copy is how the UI comes to permit what the server refuses; when
+    // the real Nomba minimum is measured and set, both sides move together.
+    //
+    // Internal Lazervault-to-Lazervault transfers never touch a payout
+    // provider and are deliberately not subject to this.
+    if (isExternalTransfer) {
+      final floorMajor = FeatureFlags.externalPayoutFloorMinor / 100.0;
+      if (transferAmountMajor < floorMajor) {
+        final f = NumberFormat('#,##0.00');
+        await showServerRefusal(
+          context,
+          title: 'Amount too small',
+          message:
+              'Bank transfers have to be at least $currencySymbol${f.format(floorMajor)}. '
+              'You entered $currencySymbol${f.format(transferAmountMajor)} — the banks we '
+              'pay through refuse anything smaller, so this would be declined.',
+          hint: 'Nothing has been sent.',
+          actionLabel: 'Change amount',
+        );
+        return;
+      }
     }
 
     final double totalRequired =

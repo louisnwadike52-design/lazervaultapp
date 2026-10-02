@@ -121,6 +121,16 @@ class FeatureFlags {
   //   core-payments-service SendFunds. Default ON for safety.
   static const String sendFundsPinRequired = 'send_funds_pin_required';
 
+  // The payout provider's floor for an NGN bank transfer, in KOBO.
+  //
+  // Mirrored from the SAME system_settings row core-payments enforces
+  // (external_payout_floor_minor) so the amount screen can refuse a too-small
+  // transfer before the PIN, against the server's number rather than one of
+  // its own. A second copy of this value is how the UI comes to permit what
+  // the server refuses.
+  static const String externalPayoutFloorMinorKey =
+      'external_payout_floor_minor';
+
   // spraymeLikeSoundKey: false (DEFAULT) = tapping to like in a Lazerspray room
   //   is silent. Admin-tunable so the sound can be restored without a release.
   static const String spraymeLikeSoundKey = 'sprayme_like_sound_enabled';
@@ -420,6 +430,10 @@ class FeatureFlags {
       // Unavailability scope is a string enum ('generic'|'account'|'country'),
       // mirrored verbatim; FeatureFlags.intlPayoutScope normalises on read.
       intlPayoutUnavailableScope,
+      // The bank-payout floor is a number; stored verbatim and parsed on
+      // read so a malformed admin value degrades to the default instead of
+      // throwing during boot.
+      externalPayoutFloorMinorKey,
       // Locale gating lists are CSVs, stored verbatim and parsed on read.
       localeNonNgnServices,
       localeNonNgnNavDisabled,
@@ -585,6 +599,20 @@ class FeatureFlags {
   /// resolves, offline, and on cold start. The screens and routes remain
   /// compiled in; only the entry points are withheld, so flipping the admin
   /// switch restores it without a release.
+  /// The smallest NGN bank transfer a payout provider will accept, in kobo.
+  ///
+  /// Defaults to the MEASURED Flutterwave floor (₦100.00) when the admin
+  /// snapshot has not resolved — cold start, offline, first launch. Defaulting
+  /// to the known floor rather than to zero matters: zero would let the amount
+  /// screen wave through a transfer the server then refuses after the PIN,
+  /// which is the exact failure this value exists to prevent.
+  static int get externalPayoutFloorMinor {
+    final raw = _prefs?.getString(externalPayoutFloorMinorKey);
+    final parsed = int.tryParse((raw ?? '').trim());
+    if (parsed == null || parsed <= 0) return 10000; // NGN 100.00
+    return parsed;
+  }
+
   static bool get bulkSmsVisible {
     return _prefs?.getBool(bulkSmsVisibleKey) ?? false;
   }
