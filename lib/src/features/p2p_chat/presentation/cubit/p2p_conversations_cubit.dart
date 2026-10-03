@@ -132,8 +132,35 @@ class P2PConversationsCubit extends Cubit<P2PConversationsState> {
     if (ws != null && !ws.isConnected) {
       try {
         final token = await _secureStorage?.getAccessToken();
-        if (token != null && token.isNotEmpty) await ws.connect(token);
-      } catch (_) {}
+        if (token != null && token.isNotEmpty) {
+          // BOUNDED, and never fatal to the load.
+          //
+          // This was a bare `await ws.connect(token)` on the critical path of
+          // the screen's first load: the conversation list could not render
+          // until a REALTIME socket finished handshaking. On a weak connection
+          // — or any time the socket stalls rather than fails — the whole
+          // screen sat there and ended as "Request timed out. Try again.",
+          // even though the list itself is a plain HTTP GET that answers in
+          // milliseconds.
+          //
+          // Realtime is an enhancement: it makes the list update live. The
+          // list does not need it to EXIST. So cap the wait and carry on —
+          // a user with no socket sees their conversations and simply has to
+          // pull to refresh, instead of seeing nothing at all.
+          await ws.connect(token).timeout(
+            const Duration(seconds: 4),
+            onTimeout: () {
+              debugPrint('[p2p] realtime connect timed out — '
+                  'loading conversations over HTTP anyway');
+            },
+          );
+        }
+      } catch (e) {
+        // Same reasoning: a socket that refuses must not take the list with
+        // it. Logged rather than swallowed silently, because a permanently
+        // failing socket is worth seeing in the logs.
+        debugPrint('[p2p] realtime connect failed: $e — list still loading');
+      }
     }
   }
 

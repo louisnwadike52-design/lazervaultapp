@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
@@ -11,6 +13,29 @@ import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_message_ent
 class P2PChatRemoteDatasource {
   final http.Client _client;
   static const _timeout = Duration(seconds: 15);
+
+  /// Time every call and say which URL and how long.
+  ///
+  /// "Request timed out. Try again." told us nothing: not which endpoint, not
+  /// whether the request left the device, not whether it was slow or refused.
+  /// A user reported this screen timing out repeatedly while every endpoint
+  /// answered in ~0.1s from the server side — undiagnosable without knowing
+  /// what the DEVICE saw.
+  static Future<T> _timed<T>(
+      String label, String url, Future<T> Function() run) async {
+    final sw = Stopwatch()..start();
+    try {
+      final out = await run();
+      debugPrint('[p2p] $label OK in ${sw.elapsedMilliseconds}ms  $url');
+      return out;
+    } on TimeoutException {
+      debugPrint('[p2p] $label TIMED OUT after ${sw.elapsedMilliseconds}ms  $url');
+      rethrow;
+    } catch (e) {
+      debugPrint('[p2p] $label FAILED in ${sw.elapsedMilliseconds}ms  $url  $e');
+      rethrow;
+    }
+  }
 
   P2PChatRemoteDatasource({http.Client? client})
       : _client = client ?? http.Client();
@@ -107,12 +132,14 @@ class P2PChatRemoteDatasource {
 
   Future<List<P2PConversationModel>> listConversations(String accessToken,
       {int page = 1, int limit = 20}) async {
-    final response = await _client
-        .get(
-          Uri.parse('$_baseUrl/conversations?page=$page&limit=$limit'),
-          headers: _headers(accessToken),
-        )
-        .timeout(_timeout);
+    final url = '$_baseUrl/conversations?page=$page&limit=$limit';
+    final response = await _timed(
+      'listConversations',
+      url,
+      () => _client
+          .get(Uri.parse(url), headers: _headers(accessToken))
+          .timeout(_timeout),
+    );
 
     _checkAuth(response);
 
@@ -132,12 +159,13 @@ class P2PChatRemoteDatasource {
     final url = '$_baseUrl/connections?page=$page&limit=$limit';
     print(
         'P2P_DEBUG listConnections: url=$url token_len=${accessToken.length} token_prefix=${accessToken.substring(0, accessToken.length > 30 ? 30 : accessToken.length)}');
-    final response = await _client
-        .get(
-          Uri.parse(url),
-          headers: _headers(accessToken),
-        )
-        .timeout(_timeout);
+    final response = await _timed(
+      'listConnections',
+      url,
+      () => _client
+          .get(Uri.parse(url), headers: _headers(accessToken))
+          .timeout(_timeout),
+    );
 
     _debugLog('GET', url, response);
     _checkAuth(response);
