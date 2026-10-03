@@ -246,12 +246,18 @@ class Bank {
     this.isActive = true,
   });
 
+  /// Accepts BOTH namings.
+  ///
+  /// The server is grpc-gateway, which emits lowerCamelCase by default
+  /// (`nipCode`, `isActive`) — so reading only `nip_code` / `is_active` meant
+  /// `nipCode` was always null and `isActive` always fell back to its default,
+  /// silently, on every bank in the list.
   factory Bank.fromJson(Map<String, dynamic> json) {
     return Bank(
-      code: json['code'] as String,
-      name: json['name'] as String,
-      nipCode: json['nip_code'] as String?,
-      isActive: json['is_active'] as bool? ?? true,
+      code: (json['code'] ?? '').toString(),
+      name: (json['name'] ?? '').toString(),
+      nipCode: (json['nip_code'] ?? json['nipCode']) as String?,
+      isActive: (json['is_active'] ?? json['isActive']) as bool? ?? true,
     );
   }
 
@@ -279,12 +285,18 @@ class AccountNameInquiry {
     required this.bankName,
   });
 
+  /// Accepts both namings, for the same reason as [Bank.fromJson]: the server
+  /// is grpc-gateway and answers `accountName`, not `account_name`. The three
+  /// `as String` casts also made this throw on an absent field rather than
+  /// report an empty name.
   factory AccountNameInquiry.fromJson(Map<String, dynamic> json) {
     return AccountNameInquiry(
-      accountNumber: json['account_number'] as String,
-      accountName: json['account_name'] as String,
-      bankCode: json['bank_code'] as String,
-      bankName: json['bank_name'] as String? ?? '',
+      accountNumber:
+          (json['account_number'] ?? json['accountNumber'] ?? '').toString(),
+      accountName:
+          (json['account_name'] ?? json['accountName'] ?? '').toString(),
+      bankCode: (json['bank_code'] ?? json['bankCode'] ?? '').toString(),
+      bankName: (json['bank_name'] ?? json['bankName'] ?? '').toString(),
     );
   }
 }

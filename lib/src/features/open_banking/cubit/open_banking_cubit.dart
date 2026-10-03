@@ -808,7 +808,16 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     emit(OpenBankingLoading());
 
     try {
-      _banks = await _restDataSource!.getBanks(accessToken: accessToken);
+      // The app registers this cubit with `withGrpc`, so `_restDataSource` is
+      // ALWAYS null in production — `_restDataSource!` here threw a null-check
+      // error on every call, which the catch below turned into a generic
+      // "could not load banks". And even with a REST data source, the path it
+      // uses 404s at the edge. gRPC is the transport that works.
+      if (useGrpc && _grpcDataSource != null) {
+        _banks = (await _grpcDataSource!.getBanksWithProvider()).banks;
+      } else {
+        _banks = await _restDataSource!.getBanks(accessToken: accessToken);
+      }
 
       if (isClosed) return;
       emit(BanksLoaded(banks: _banks));
@@ -828,11 +837,21 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     emit(OpenBankingLoading());
 
     try {
-      final inquiry = await _restDataSource!.resolveAccountName(
-        accountNumber: accountNumber,
-        bankCode: bankCode,
-        accessToken: accessToken,
-      );
+      // Same two problems as fetchBanks: `_restDataSource` is null in the live
+      // app (the cubit is registered `withGrpc`), and the REST route this used
+      // to call — `/api/v1/banks/resolve-account` — is not implemented by any
+      // service. banking-service publishes `POST /api/v1/verify/account`
+      // (rpc VerifyBankAccount), which is what the gRPC branch calls.
+      final inquiry = (useGrpc && _grpcDataSource != null)
+          ? await _grpcDataSource!.verifyBankAccount(
+              accountNumber: accountNumber,
+              bankCode: bankCode,
+            )
+          : await _restDataSource!.resolveAccountName(
+              accountNumber: accountNumber,
+              bankCode: bankCode,
+              accessToken: accessToken,
+            );
 
       if (isClosed) return;
       emit(AccountNameResolved(inquiry: inquiry));

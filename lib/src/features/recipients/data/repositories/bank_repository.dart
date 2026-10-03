@@ -4,7 +4,9 @@ import 'package:flutter/foundation.dart';
 
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/utilities/banks_data.dart';
+import 'package:lazervault/src/features/open_banking/data/datasources/open_banking_grpc_datasource.dart';
 import 'package:lazervault/src/features/open_banking/data/datasources/open_banking_remote_datasource.dart';
+import 'package:lazervault/src/features/open_banking/domain/entities/withdrawal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Single source for the selectable bank list.
@@ -33,10 +35,25 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Only Nigeria (`NG`) has a dynamic backend source today; other countries
 /// always use the static list.
 class BankRepository {
-  BankRepository(this._remote, this._storage);
+  BankRepository(this._remote, this._storage, {this.grpc});
 
   final OpenBankingRemoteDataSource _remote;
   final SecureStorageService _storage;
+
+  /// PRIMARY transport for the directory.
+  ///
+  /// `GET /api/v1/banks` is implemented and correct on banking-service, but the
+  /// public edge carried no ingress rule for that path, so through
+  /// api.lazervault.app it fell to the catch-all gateway and answered
+  /// `{"code":5,"message":"Not Found"}`. Measured 2026-10-03: REST 404 at the
+  /// edge, 200 with 633 banks on the service itself, and gRPC
+  /// `banking.BankingService/GetBanks` 200 with `provider=nomba` and
+  /// `Kuda Microfinance Bank = 090267` through the SAME public hostname.
+  ///
+  /// So the transport that actually reaches the rail is gRPC, and REST is now
+  /// the second attempt rather than the only one. Nullable so tests and any
+  /// caller without a gRPC channel keep working.
+  final OpenBankingGrpcDataSource? grpc;
 
   static const Duration _ttl = Duration(hours: 24);
 
@@ -146,7 +163,7 @@ class BankRepository {
       }
       if (token != null && token.isNotEmpty) {
         final sw = Stopwatch()..start();
-        final res = await _remote.getBanksWithProvider(accessToken: token);
+        final res = await _fetchFromAnyTransport(token);
         debugPrint('[banks] fetched ${res.banks.length} banks '
             'from provider=${res.provider} in ${sw.elapsedMilliseconds}ms');
         // NB: do NOT filter on isActive — the backend currently returns it as
@@ -210,6 +227,35 @@ class BankRepository {
           'in this list will be refused');
     }
     return BanksData.getBanksForCountry(country);
+  }
+
+  /// gRPC first, REST second.
+  ///
+  /// Both are tried on every refresh rather than one being picked up front,
+  /// because the failure that caused this bug was invisible: REST 404'd at the
+  /// edge while the service behind it was perfectly healthy, and the app
+  /// quietly used its bundled Flutterwave list instead — which is how a user on
+  /// the Nomba rail got a normal-looking picker full of codes Nomba refuses,
+  /// and no Nombank row at all. If EITHER transport can reach the live
+  /// directory, the user gets the live directory.
+  Future<({List<Bank> banks, String provider})> _fetchFromAnyTransport(
+    String token,
+  ) async {
+    var grpcFailed = false;
+    if (grpc != null) {
+      try {
+        return await grpc!.getBanksWithProvider();
+      } catch (e) {
+        grpcFailed = true;
+        debugPrint('[banks] gRPC GetBanks failed: $e — trying REST');
+      }
+    }
+    try {
+      return await _remote.getBanksWithProvider(accessToken: token);
+    } catch (e) {
+      if (grpcFailed) debugPrint('[banks] REST /banks also failed: $e');
+      rethrow;
+    }
   }
 
   List<Map<String, String>>? _tryDecode(String? raw) {

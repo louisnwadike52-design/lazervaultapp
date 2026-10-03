@@ -1785,20 +1785,28 @@ Future<void> init() async {
     ),
   );
 
-  // Dynamic bank list (Flutterwave-backed via /api/v1/banks) with 24h cache +
-  // static fallback. Used by recipient/bank-picker dropdowns.
-  serviceLocator.registerLazySingleton<BankRepository>(
-    () => BankRepository(
-      serviceLocator<OpenBankingRemoteDataSource>(),
-      serviceLocator<SecureStorageService>(),
-    ),
-  );
-
-  // Data Sources - gRPC (preferred for deposits)
+  // Data Sources - gRPC (preferred for deposits). Registered BEFORE
+  // BankRepository because the repository now takes it as its primary
+  // transport.
   serviceLocator.registerLazySingleton<OpenBankingGrpcDataSource>(
     () => OpenBankingGrpcDataSource(
       serviceLocator<banking_grpc.BankingServiceClient>(),
       serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // The ACTIVE payout rail's bank list — NOT Flutterwave's. The rail is
+  // whatever `GetBanks` reports (`provider` on the response), cached for 24h
+  // keyed by that rail name, with the bundled list only as a last resort.
+  //
+  // gRPC is passed in because REST `/api/v1/banks` 404s at the public edge
+  // (no ingress rule for the path) while gRPC GetBanks answers correctly
+  // through the same hostname — see BankRepository.grpc for the measurement.
+  serviceLocator.registerLazySingleton<BankRepository>(
+    () => BankRepository(
+      serviceLocator<OpenBankingRemoteDataSource>(),
+      serviceLocator<SecureStorageService>(),
+      grpc: serviceLocator<OpenBankingGrpcDataSource>(),
     ),
   );
 

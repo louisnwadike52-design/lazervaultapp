@@ -460,8 +460,13 @@ class OpenBankingRemoteDataSource {
     required String bankCode,
     required String accessToken,
   }) async {
+    // `/banks/resolve-account` was never implemented by any service — the
+    // route banking-service publishes for name inquiry is
+    // `POST /api/v1/verify/account` (rpc VerifyBankAccount). Measured
+    // 2026-10-03: the old path 404'd even when called directly on
+    // banking-service, so this call could never have succeeded.
     final response = await _client.post(
-      Uri.parse('$_baseUrl/banks/resolve-account'),
+      Uri.parse('$_baseUrl/verify/account'),
       headers: await _getHeaders(),
       body: jsonEncode({
         'account_number': accountNumber,

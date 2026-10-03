@@ -10,6 +10,7 @@ import 'package:lazervault/src/generated/banking.pbgrpc.dart' as banking;
 import 'package:lazervault/src/generated/banking.pb.dart' as banking_pb;
 import '../../domain/entities/linked_bank_account.dart';
 import '../../domain/entities/deposit.dart';
+import '../../domain/entities/withdrawal.dart';
 import '../../domain/entities/credit_score.dart';
 import '../../domain/entities/sync_results.dart';
 import '../../domain/entities/external_bank_transaction.dart';
@@ -1652,5 +1653,118 @@ class OpenBankingGrpcDataSource {
       }
       return _client.getExternalBankAnalytics(req, options: callOptions);
     });
+  }
+
+  // =====================================================
+  // BANK DIRECTORY + ACCOUNT VERIFICATION
+  // =====================================================
+
+  /// The ACTIVE payout rail's bank list, with the name of that rail.
+  ///
+  /// WHY THIS IS ON gRPC AND NOT REST
+  /// --------------------------------
+  /// `GET /api/v1/banks` is implemented by banking-service and answers
+  /// correctly on the service itself, but the public edge had no ingress rule
+  /// for the path, so through api.lazervault.app it fell to the catch-all
+  /// gateway and returned `{"code":5,"message":"Not Found"}`. Measured
+  /// 2026-10-03: 404 at the edge, 200 with 633 banks on the service.
+  ///
+  /// The app caught that 404, fell back to its bundled list — which is
+  /// Flutterwave-shaped — and offered Flutterwave codes while the live rail
+  /// was Nomba. Kuda is 50211 on Flutterwave and 090267 on Nomba, so the
+  /// picker looked perfectly normal and the transfer was refused. "Nomba MFB
+  /// is not in the list" is the same bug seen from the other end: Nombank
+  /// (090645) exists only in Nomba's directory.
+  ///
+  /// gRPC `banking.BankingService/GetBanks` reaches the service through the
+  /// nginx terminator and was verified working at the edge on the same day
+  /// (provider=nomba, 633 banks, Kuda=090267). It is therefore the PRIMARY
+  /// transport for the bank list, with REST kept only as a second attempt.
+  Future<({List<Bank> banks, String provider})> getBanksWithProvider({
+    String country = 'NG',
+  }) async {
+    try {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.getBanks(
+          banking_pb.GetBanksRequest(country: country),
+          // A bank picker must not hang. The directory is cached for a day, so
+          // a slow call costs nothing to abandon — the previous list is still
+          // correct for the same rail.
+          options: callOptions.mergedWith(
+            CallOptions(timeout: const Duration(seconds: 12)),
+          ),
+        );
+      });
+      if (!response.success) {
+        throw GenericBankingException(
+          message: response.errorMessage.isNotEmpty
+              ? response.errorMessage
+              : 'Could not load the bank list',
+          isRetryable: true,
+        );
+      }
+      return (
+        banks: response.banks
+            .map((b) => Bank(
+                  code: b.code,
+                  name: b.name,
+                  nipCode: b.nipCode.isEmpty ? null : b.nipCode,
+                  isActive: b.isActive,
+                ))
+            .toList(),
+        provider: response.provider.trim().toLowerCase(),
+      );
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, 'getBanks');
+    }
+  }
+
+  /// Name inquiry on a destination account, against the active rail.
+  ///
+  /// The REST twin of this call pointed at `/api/v1/banks/resolve-account`,
+  /// which no service has ever implemented — banking-service publishes
+  /// `POST /api/v1/verify/account` (rpc VerifyBankAccount). So the withdrawal
+  /// screen's name check could not have succeeded on REST even with the
+  /// ingress fixed.
+  Future<AccountNameInquiry> verifyBankAccount({
+    required String accountNumber,
+    required String bankCode,
+  }) async {
+    try {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.verifyBankAccount(
+          banking_pb.VerifyBankAccountRequest(
+            accountNumber: accountNumber,
+            bankCode: bankCode,
+          ),
+          options: callOptions.mergedWith(
+            CallOptions(timeout: const Duration(seconds: 20)),
+          ),
+        );
+      });
+      if (!response.success || !response.isValid) {
+        // The provider's own sentence is the useful one ("Account not found"),
+        // so carry it rather than replacing it with a generic failure.
+        throw AccountVerificationException(
+          message: response.errorMessage.isNotEmpty
+              ? response.errorMessage
+              : 'Could not verify this account',
+        );
+      }
+      return AccountNameInquiry(
+        accountNumber: response.accountNumber.isNotEmpty
+            ? response.accountNumber
+            : accountNumber,
+        accountName: response.accountName,
+        bankCode: response.bankCode.isNotEmpty ? response.bankCode : bankCode,
+        bankName: response.bankName,
+      );
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, 'verifyBankAccount');
+    }
   }
 }
