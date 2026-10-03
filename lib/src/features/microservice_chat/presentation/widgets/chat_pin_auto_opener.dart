@@ -43,6 +43,83 @@ import 'chat_pin_prompt_card.dart';
 ///   * EXPIRY — an expired prompt cannot be completed; the card renders it as expired and
 ///     the sheet would only fail.
 class ChatPinAutoOpener {
+  ChatPinAutoOpener() : _attachedAt = DateTime.now().toUtc();
+
+  /// When this opener started watching its conversation.
+  ///
+  /// THE AUTHORITATIVE LIVENESS TEST, replacing a stack of heuristics.
+  ///
+  /// A prompt minted BEFORE we attached is history; one minted after is live.
+  /// That is arithmetic on a server timestamp, and it holds no matter which
+  /// state class carried the prompt — which matters because `loadHistory`
+  /// finishes on the SAME success state a live reply does, so the state class
+  /// never could distinguish them.
+  ///
+  /// What it replaces: "record whatever is in the transcript on the first
+  /// observation, and only open ids that appear later". That worked only if the
+  /// first observation happened to be an empty or history-only transcript. Two
+  /// of the five chat surfaces drive this from `BlocConsumer.listener`, which
+  /// is NOT called for the initial state — so their first observation is
+  /// whichever state change arrives first, and when that one already carried a
+  /// fresh prompt, priming swallowed it: the card rendered with its "Enter PIN"
+  /// button and the pad never opened by itself. Exactly the reported symptom,
+  /// and invisible because declining was silent.
+  DateTime _attachedAt;
+
+  /// Highest `prompt_seq` this opener has acted on — the compare-and-swap cell.
+  ///
+  /// The server mints a monotonic seq per prompt, so "already opened" and
+  /// "asked again" are distinguishable by a single integer comparison. The swap
+  /// happens BEFORE the open, so a rebuild in the same frame cannot double-fire.
+  ///
+  /// The counting it replaces was defeated by design: the chat derives a
+  /// prompt's transaction_id from a 60-second bucket (deliberately — it is the
+  /// saga's double-send guard), so a re-ask inside a minute produces the SAME
+  /// id, and the opener had to infer a re-ask from how many times that id
+  /// appeared in the transcript.
+  int _handledSeq = 0;
+
+  /// Highest seq the user dismissed. A later prompt re-arms; this one does not.
+  int _cancelledSeq = 0;
+
+  /// Seq of the newest prompt seen, so [noteCancelled] can stamp it without the
+  /// card needing to know about sequences.
+  int _lastSeenSeq = 0;
+
+  /// Why the last [sync] declined to open, for diagnosis.
+  ///
+  /// Every decline path writes here and logs. Three rounds of fixes went into
+  /// this component without anyone being able to say WHICH guard was biting,
+  /// because declining produced no output at all.
+  String? lastDeclineReason;
+
+  void _decline(String reason) {
+    lastDeclineReason = reason;
+    debugPrint('[chat-pin] not opening the pad: $reason');
+  }
+
+  /// The server's mint time for a prompt, or null when it did not supply one.
+  static DateTime? issuedAtOf(Map<String, dynamic> payload) {
+    final raw = payload['issued_at']?.toString().trim() ?? '';
+    if (raw.isEmpty) return null;
+    return DateTime.tryParse(raw)?.toUtc();
+  }
+
+  /// The server's monotonic sequence for a prompt; 0 when not supplied.
+  static int seqOf(Map<String, dynamic> payload) {
+    final raw = payload['prompt_seq'];
+    if (raw is int) return raw;
+    return int.tryParse(raw?.toString() ?? '') ?? 0;
+  }
+
+  /// True when the payload carries BOTH authoritative fields.
+  ///
+  /// Both or neither: a seq with no issued_at cannot be tested for liveness,
+  /// and an issued_at with no seq cannot be compare-and-swapped. Falling back
+  /// wholesale is safer than running half the new scheme.
+  static bool hasAuthoritativeOrdering(Map<String, dynamic> payload) =>
+      seqOf(payload) > 0 && issuedAtOf(payload) != null;
+
   /// How many times each id had APPEARED in the transcript when it was opened.
   ///
   /// A count rather than a flag, because "already opened" and "asked again" are
@@ -121,6 +198,9 @@ class ChatPinAutoOpener {
     // Stamped at the count the prompt was at when dismissed, so only a LATER
     // appearance — a genuine re-ask — can reopen it.
     _cancelledAt[transactionId] = _lastSeenCount[transactionId] ?? 1;
+    // And on the authoritative cell, so a prompt with a HIGHER seq still
+    // re-arms while this one stays dismissed.
+    if (_lastSeenSeq > _cancelledSeq) _cancelledSeq = _lastSeenSeq;
   }
 
   /// Forget everything. Call when the conversation changes.
@@ -135,6 +215,13 @@ class ChatPinAutoOpener {
     _lastSeenCount.clear();
     _preexisting.clear();
     _primed = false;
+    // The authoritative cells too. Re-attaching is the point of a reset: a
+    // prompt minted before NOW belongs to the conversation we just left.
+    _attachedAt = DateTime.now().toUtc();
+    _handledSeq = 0;
+    _cancelledSeq = 0;
+    _lastSeenSeq = 0;
+    lastDeclineReason = null;
   }
 
   /// Open the sheet for the newest live prompt, if one is eligible.
@@ -146,6 +233,26 @@ class ChatPinAutoOpener {
     required List<Map<String, dynamic>> prompts,
     required bool isLiveTurn,
   }) {
+    lastDeclineReason = null;
+
+    // AUTHORITATIVE PATH — taken whenever the server supplied issued_at +
+    // prompt_seq. It needs no priming, no occurrence counting and no
+    // `isLiveTurn`, which is what makes it immune to the surface-specific
+    // ordering that broke the heuristic below.
+    if (prompts.isNotEmpty && hasAuthoritativeOrdering(prompts.last)) {
+      // Prime the LEGACY sets anyway, so a conversation that later receives a
+      // prompt from an older service (mid-rollout) is not treated as brand new.
+      if (!_primed) {
+        _primed = true;
+        for (final p in prompts) {
+          final id = transactionIdOf(p);
+          if (id.isNotEmpty) _preexisting.add(id);
+        }
+      }
+      _syncAuthoritative(context: context, payload: prompts.last);
+      return;
+    }
+
     // First observation of this conversation: record what is already in the transcript
     // and open nothing. See [_preexisting] — history finishes on the same success state
     // a live reply does, so appearance is the only trustworthy signal.
@@ -155,10 +262,18 @@ class ChatPinAutoOpener {
         final id = transactionIdOf(p);
         if (id.isNotEmpty) _preexisting.add(id);
       }
+      _decline('first observation of this conversation (legacy heuristic)');
       return;
     }
 
-    if (!isLiveTurn || prompts.isEmpty) return;
+    if (!isLiveTurn) {
+      _decline('not a live turn (legacy heuristic)');
+      return;
+    }
+    if (prompts.isEmpty) {
+      _decline('no pin prompts in the transcript');
+      return;
+    }
 
     // Newest only. An older prompt in the same conversation has either been completed or
     // superseded — "make it 200" leaves the ₦500 prompt above it in the transcript, and
@@ -198,6 +313,68 @@ class ChatPinAutoOpener {
 
       // Drives the CARD's own modal via its GlobalKey, so the auto-open and the manual
       // tap share one implementation and one set of guards.
+      ChatPinPromptCard.autoOpenFor(txId);
+    });
+  }
+
+  /// The compare-and-swap open. Only called when the payload carries both
+  /// `issued_at` and `prompt_seq`.
+  void _syncAuthoritative({
+    required BuildContext context,
+    required Map<String, dynamic> payload,
+  }) {
+    final txId = transactionIdOf(payload);
+    if (txId.isEmpty) {
+      _decline('prompt carries no transaction_id');
+      return;
+    }
+    if (isExpired(payload)) {
+      _decline('prompt $txId has expired');
+      return;
+    }
+
+    final seq = seqOf(payload);
+    final issuedAt = issuedAtOf(payload)!;
+    if (seq > _lastSeenSeq) _lastSeenSeq = seq;
+
+    // Minted before we attached: this is a replayed prompt from history, and
+    // opening a pad for a transfer the user may have completed days ago is the
+    // single worst thing this component could do.
+    if (!issuedAt.isAfter(_attachedAt)) {
+      _decline('prompt $txId was minted at $issuedAt, before this conversation '
+          'was attached at $_attachedAt — history, not a live turn');
+      return;
+    }
+
+    // THE SWAP. Strictly greater, and written before the open so a rebuild in
+    // the same frame cannot fire twice.
+    if (seq <= _handledSeq) {
+      _decline('seq $seq already handled (at $_handledSeq) — a rebuild, '
+          'not a new ask');
+      return;
+    }
+    if (seq <= _cancelledSeq) {
+      _decline('seq $seq was dismissed by the user — their "Enter PIN" tap '
+          'still works');
+      return;
+    }
+    _handledSeq = seq;
+    _openedAt[txId] = (_openedAt[txId] ?? 0) + 1;
+    _openCounts[txId] = (_openCounts[txId] ?? 0) + 1;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!context.mounted) {
+        _decline('the chat surface was disposed before the pad could open');
+        return;
+      }
+      final route = ModalRoute.of(context);
+      if (route != null && !route.isCurrent) {
+        // A modal over an unrelated screen is worse than a missed auto-open,
+        // and the card's button is still there when they come back.
+        _decline('the chat is no longer the current route');
+        return;
+      }
+      debugPrint('[chat-pin] opening the pad for $txId (seq $seq)');
       ChatPinPromptCard.autoOpenFor(txId);
     });
   }

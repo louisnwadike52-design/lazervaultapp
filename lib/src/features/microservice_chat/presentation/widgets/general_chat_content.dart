@@ -46,6 +46,10 @@ class _GeneralChatContentState extends State<GeneralChatContent>
   /// behave differently depending on which assistant you asked.
   final ChatPinAutoOpener _pinAutoOpener = ChatPinAutoOpener();
 
+  /// The session the opener's guard cells belong to. A drawer switch keeps this
+  /// State alive, so the opener has to be told the conversation changed.
+  String? _pinOpenerSessionId;
+
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   late AnimationController _typingDotsController;
@@ -306,6 +310,18 @@ class _GeneralChatContentState extends State<GeneralChatContent>
           // state, so the opener's own appearance-based priming is what keeps a
           // replayed historical prompt from popping a PIN pad. Passing the state
           // through as well means both guards have to agree before a sheet opens.
+          // Switching sessions in the drawer keeps THIS State alive, so the
+          // opener would carry the previous conversation's guard cells into the
+          // new one — `reset()` existed for exactly this and was called from
+          // nowhere. Without it the swap cell stays high, and a new
+          // conversation whose prompt happens to carry a lower sequence is
+          // declined as "already handled".
+          final sessionId = context.read<GeneralChatCubit>().currentSessionId;
+          if (sessionId != _pinOpenerSessionId) {
+            _pinOpenerSessionId = sessionId;
+            _pinAutoOpener.reset();
+          }
+
           _pinAutoOpener.sync(
             context: context,
             prompts: _pinPromptsIn(state.messages),

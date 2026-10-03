@@ -523,7 +523,6 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
                 'receipt_card': response.receiptCard,
               'recipient_card': response.recipientCard,
               'analytics_card': response.analyticsCard,
-              'analytics_card': response.analyticsCard,
             },
           );
           _currentMessages.add(botMessage);
