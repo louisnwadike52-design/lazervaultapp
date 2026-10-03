@@ -191,23 +191,28 @@ class _RecipientCard extends StatelessWidget {
     // used most. Dark surfaces need a deeper, tighter shadow to read at all,
     // hence the separate alpha rather than reusing the light values.
     //
-    // Toned down 2026-10-01: the first pass overshot and the rail read as if it
-    // were hovering well off the sheet. The SHAPE is what was being asked for
-    // (ambient on every side, not just below), so both shadows keep their
-    // roles and only lose weight — roughly half the alpha, a shorter key
-    // offset and a tighter blur. Flattening it back to one offset shadow would
-    // bring back the "only bottom elevations are visible" report.
+    // Toned down twice. The first pass overshot and the rail read as if it
+    // were hovering well off the sheet; 2026-10-01 roughly halved it; this
+    // halves it again, because it still read heavier than the surfaces around
+    // it.
+    //
+    // Both shadows keep their ROLES through every reduction — that shape is
+    // the thing that was actually asked for originally (ambient on every side,
+    // not only below). Only the weight changes: alpha down, blur tighter, key
+    // offset shorter. Flattening to a single offset shadow would be lighter
+    // still and would bring straight back the "only bottom elevations are
+    // visible" report this two-shadow form was built to fix.
     final ambient = BoxShadow(
-      color: isDark ? const Color(0x3D000000) : const Color(0x0A101828),
-      blurRadius: 4,
+      color: isDark ? const Color(0x1F000000) : const Color(0x05101828),
+      blurRadius: 3,
       spreadRadius: 0,
       offset: Offset.zero,
     );
     final key = BoxShadow(
-      color: isDark ? const Color(0x33000000) : const Color(0x12101828),
-      blurRadius: 8,
+      color: isDark ? const Color(0x1A000000) : const Color(0x0A101828),
+      blurRadius: 5,
       spreadRadius: -1,
-      offset: const Offset(0, 2),
+      offset: const Offset(0, 1),
     );
 
     return SizedBox(
