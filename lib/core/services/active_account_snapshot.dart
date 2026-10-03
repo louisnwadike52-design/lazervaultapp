@@ -1,6 +1,7 @@
 library;
 
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
@@ -111,6 +112,38 @@ ActiveAccountSnapshot? activeAccountSnapshot() {
   } catch (_) {
     return null;
   }
+}
+
+/// Resolve the active account, FETCHING the summaries first if they are not
+/// loaded yet.
+///
+/// [activeAccountSnapshot] is synchronous: it reads
+/// AccountCardsSummaryCubit's current state and answers null whenever that
+/// cubit has not loaded. Which surfaces have loaded it is an accident of
+/// navigation — the dashboard does, so a money sheet reached from the
+/// dashboard resolves an account and the SAME sheet reached directly does
+/// not. Lazerspray's funding sheet was reported stuck on "No account
+/// selected" for exactly that reason: its own balance rendered fine from its
+/// own repository, above a source-account row that could never resolve.
+///
+/// Use this from any sheet that needs an account to ACT on. Use the
+/// synchronous form only where null degrades harmlessly (a currency
+/// fallback, say).
+///
+/// Best-effort: returns whatever it can and never throws. A fetch failure
+/// yields null, exactly as before, and the server still validates.
+Future<ActiveAccountSnapshot?> ensureActiveAccountSnapshot() async {
+  final existing = activeAccountSnapshot();
+  if (existing != null) return existing;
+  try {
+    final userId = serviceLocator<AuthenticationCubit>().userId ?? '';
+    if (userId.isEmpty) return null;
+    await serviceLocator<AccountCardsSummaryCubit>()
+        .fetchAccountSummaries(userId: userId, silent: true);
+  } catch (_) {
+    return null;
+  }
+  return activeAccountSnapshot();
 }
 
 /// Build a snapshot from a summary row. Exposed so a caller that already has

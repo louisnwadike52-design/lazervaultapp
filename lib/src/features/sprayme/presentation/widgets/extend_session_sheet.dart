@@ -84,6 +84,16 @@ class _ExtendSessionSheetState extends State<ExtendSessionSheet>
   void initState() {
     super.initState();
     _account = activeAccountSnapshot();
+    // Same trap as the funding sheet: the synchronous read answers null
+    // whenever AccountCardsSummaryCubit has not loaded, and nothing in
+    // Lazerspray loads it — so a host who came straight into a room, rather
+    // than via the dashboard, saw "No account selected" and could not extend.
+    // Load and re-resolve when it is missing.
+    if (_account == null) {
+      ensureActiveAccountSnapshot().then((a) {
+        if (mounted && a != null) setState(() => _account = a);
+      });
+    }
     // Pre-select the shorter block. A host deciding under time pressure
     // should be one tap from the cheapest option, not from the dearest.
     final opts = widget.policy.options;

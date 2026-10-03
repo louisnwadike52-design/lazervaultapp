@@ -71,6 +71,7 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
   String _accountDisplay = '';
   String _currency = 'NGN';
   bool _submitting = false;
+  bool _loadingAccounts = false;
   SprayWallet? _result;
 
   bool get _isFund => widget.action == SprayWalletAction.fund;
@@ -78,14 +79,49 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
   @override
   void initState() {
     super.initState();
-    _account = activeAccountSnapshot();
-    final a = _account;
-    if (a != null) {
-      _accountId = a.id;
-      _accountDisplay = a.display;
-      _currency = a.currency;
-    }
+    _adoptSnapshot(activeAccountSnapshot());
+    // A null snapshot does NOT mean "this user has no account".
+    //
+    // activeAccountSnapshot() reads AccountCardsSummaryCubit synchronously and
+    // answers null whenever that cubit has not loaded yet. Nothing anywhere in
+    // Lazerspray ever loaded it — the dashboard does, so the sheet worked if
+    // you had been there first and showed "No account selected" forever if you
+    // had not, which is exactly how it was reported: the spray balance
+    // rendered fine (its own repository) above a funding row that could never
+    // resolve a source account.
+    //
+    // Reading once in initState made that permanent: even when the summaries
+    // arrived a moment later, nothing re-read them.
+    //
+    // So: load them if they are missing, and listen so the row fills in when
+    // they land.
+    if (_account == null) _loadAccounts();
     _amountController.addListener(() => setState(() {}));
+  }
+
+  /// Copy a resolved snapshot into the fields the sheet renders from.
+  void _adoptSnapshot(ActiveAccountSnapshot? a) {
+    _account = a;
+    if (a == null) return;
+    _accountId = a.id;
+    _accountDisplay = a.display;
+    _currency = a.currency;
+  }
+
+  /// Fetch the account summaries this sheet depends on, then re-resolve.
+  ///
+  /// Best-effort and non-blocking: a failure leaves the row reading "No
+  /// account selected" exactly as before, and the server still validates the
+  /// funding request, so this can only ever improve the outcome.
+  Future<void> _loadAccounts() async {
+    if (_loadingAccounts) return;
+    setState(() => _loadingAccounts = true);
+    final resolved = await ensureActiveAccountSnapshot();
+    if (!mounted) return;
+    setState(() {
+      _loadingAccounts = false;
+      _adoptSnapshot(resolved);
+    });
   }
 
   @override
@@ -403,9 +439,14 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
                         color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
                 SizedBox(height: 2.h),
                 Text(
-                  _accountDisplay.isEmpty
-                      ? 'No account selected'
-                      : _accountDisplay,
+                  _accountDisplay.isNotEmpty
+                      ? _accountDisplay
+                      // "No account selected" is a lie while we are still
+                      // fetching, and it reads as "you have no account" rather
+                      // than "we have not looked yet".
+                      : _loadingAccounts
+                          ? 'Loading your accounts…'
+                          : 'No account selected',
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 14.sp,
