@@ -1,5 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/types/services.dart';
+import 'package:lazervault/core/shared_widgets/service_unavailable_modal.dart';
+import 'package:lazervault/core/types/route_service_map.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 
 import 'package:lazervault/core/notifications/notification_route_resolver.dart';
 import 'package:lazervault/core/notifications/notification_target.dart';
@@ -127,6 +131,30 @@ class PendingDeepLink {
     // app ignoring their tap.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
+        // ADMIN UNAVAILABILITY GATE — the deep-link half.
+        //
+        // The tile dispatcher already refuses to open a service an admin has
+        // taken offline, which covers the grid and the all-services search.
+        // A notification bypasses both: it names a route and pushes it. So an
+        // admin could mark a service unavailable and still have users land
+        // inside it from a push, which is exactly the confusion the modal
+        // exists to prevent.
+        //
+        // Explained, not silently swallowed: a tap that does nothing reads as
+        // the app ignoring the user. They get the same modal they would have
+        // got from the tile, with the admin's own message.
+        final gated = serviceForRoute(confirmed.route);
+        if (gated != null && !FeatureFlags.quickServiceAvailable(gated.name)) {
+          final ctx = Get.context;
+          if (ctx != null) {
+            showServiceUnavailableModal(
+              ctx,
+              serviceName: gated.displayName,
+              message: FeatureFlags.quickServiceMessage(gated.name),
+            );
+          }
+          return;
+        }
         // `toNamed`, not `offNamed`: the destination stacks over the dashboard
         // so Back returns there rather than out of the app or onto the login
         // gate.
