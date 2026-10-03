@@ -384,6 +384,29 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     // Doing it HERE rather than by editing the per-account service lists keeps
     // the grid and the swipe-down search corpus consistent by construction —
     // the same reason the insurance and bulk-SMS gates live here.
+    // Per-account-type admin gating.
+    //
+    // An admin can withhold any quick service from specific account types
+    // without a release — "no Lazerspray on a business wallet", say. Done
+    // HERE, at the same chokepoint as the insurance/bulk-SMS/locale gates, so
+    // the grid and the swipe-down search corpus cannot disagree: a service
+    // hidden from the grid must not remain findable by search, or the gate is
+    // decorative.
+    //
+    // Keyed off the account type the grid is CURRENTLY rendering
+    // (_lastResolvedAccountType), not the dashboard's notion of active, so
+    // switching wallets re-evaluates. An unset gate hides nothing.
+    final activeTypeToken =
+        (_AppServicesBuilderState._lastResolvedAccountType ??
+                VirtualAccountType.personal)
+            .name
+            .toLowerCase();
+    for (final s in getAllServicesUnfiltered()) {
+      if (FeatureFlags.quickServiceHiddenFor(s.serviceName.name)
+          .contains(activeTypeToken)) {
+        hidden.add(s.serviceName);
+      }
+    }
     if (LocaleGating.restricted) {
       final allowed = FeatureFlags.localeNonNgnServiceNames;
       for (final s in getAllServicesUnfiltered()) {

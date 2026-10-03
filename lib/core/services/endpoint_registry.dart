@@ -55,6 +55,24 @@ class EndpointRegistry {
   /// Non-`url_` admin keys that the registry also caches (read at startup and
   /// refreshed in the background exactly like the URLs). Keep this tiny — it's
   /// for app-wide runtime knobs that must be admin-tunable without a release.
+  /// Admin keys whose NAMES are not knowable ahead of time.
+  ///
+  /// The per-service quick-service gates are one key family per service
+  /// (`quick_service_<service>_hidden_for` / `_available` / `_message`), and
+  /// services are added over time — enumerating them here would mean a release
+  /// every time one is added, which is exactly what an admin-tunable flag is
+  /// supposed to avoid.
+  ///
+  /// Matched by prefix in [nonUrlSnapshot] and in the persistence filter, so a
+  /// key an admin creates tomorrow reaches the app without a code change.
+  static const Set<String> _persistedNonUrlKeyPrefixes = {
+    'quick_service_',
+  };
+
+  static bool _isPersistedNonUrlKey(String key) =>
+      _persistedNonUrlKeys.contains(key) ||
+      _persistedNonUrlKeyPrefixes.any(key.startsWith);
+
   static const Set<String> _persistedNonUrlKeys = {
     'session_inactivity_logout_seconds',
     // The payout provider's floor for an NGN bank transfer, in kobo. Cached so
@@ -180,6 +198,17 @@ class EndpointRegistry {
     for (final k in _persistedNonUrlKeys) {
       final v = _cache[k];
       if (v != null && v.isNotEmpty) out[k] = v;
+    }
+    // Prefix families: iterate the CACHE, because these key names are not
+    // known in advance.
+    //
+    // Empty is kept here, unlike the exact keys above. For a CSV gate "" is a
+    // deliberate value — "hidden for no account type" — and dropping it would
+    // silently restore a default the admin had just cleared.
+    for (final e in _cache.entries) {
+      if (_persistedNonUrlKeyPrefixes.any(e.key.startsWith)) {
+        out[e.key] = e.value;
+      }
     }
     return out;
   }
@@ -456,7 +485,7 @@ class EndpointRegistry {
         final key = raw['key'];
         final value = raw['value'];
         if (key is! String || value is! String) continue;
-        if (!key.startsWith('url_') && !_persistedNonUrlKeys.contains(key))
+        if (!key.startsWith('url_') && !_isPersistedNonUrlKey(key))
           continue;
         if (_cache[key] == value) continue;
         _cache[key] = value;

@@ -407,6 +407,14 @@ class FeatureFlags {
       if (v == null) continue;
       await prefs.setBool(key, v.toLowerCase() == 'true');
     }
+    // Quick-service gates: a KEY FAMILY, not a fixed list. Persisted verbatim
+    // (CSV / "true"|"false" / free text) and parsed on read, so a service
+    // configured for the first time tomorrow needs no app change.
+    for (final e in remote.entries) {
+      if (e.key.startsWith('quick_service_')) {
+        await prefs.setString(e.key, e.value);
+      }
+    }
     // insurance_hosted_link is a string (a URL), not a boolean — store verbatim.
     final hostedLink = remote[insuranceHostedLink];
     if (hostedLink != null) {
@@ -505,6 +513,69 @@ class FeatureFlags {
   /// another region a dashboard full of services that dead-end.
   static bool get localeGatingOn =>
       _prefs?.getBool(localeGatingEnabled) ?? true;
+
+  // ── Quick-service gating (admin-tunable, per service) ──────────────────
+  //
+  // ONE key family per service rather than a boolean per (service, account
+  // type): 39 services across 11 account types would be 429 booleans, which is
+  // unusable both as settings rows and as an admin screen. The account types a
+  // service is withheld from are a CSV on a single key instead.
+  //
+  //   quick_service_<service>_hidden_for  CSV of account types ("savings,investment")
+  //   quick_service_<service>_available   "false" marks it temporarily unavailable
+  //   quick_service_<service>_message     what the unavailable modal says
+  //
+  // <service> is the AppServiceName enum name, which is already the app's
+  // stable identifier for a service.
+  //
+  // Absent keys mean "visible everywhere, available" — so nothing needs
+  // seeding, and a service added later is live by default rather than
+  // invisible until someone remembers to configure it. That direction is
+  // deliberate: an unconfigured NEW service silently missing from the grid is
+  // far harder to notice than one that is present.
+  static String quickServiceHiddenForKey(String service) =>
+      'quick_service_${service}_hidden_for';
+  static String quickServiceAvailableKey(String service) =>
+      'quick_service_${service}_available';
+  static String quickServiceMessageKey(String service) =>
+      'quick_service_${service}_message';
+
+  /// Account types this service is hidden from. Empty = shown to all.
+  ///
+  /// Values are compared lower-cased and trimmed so an admin typing
+  /// "Savings, Investment" behaves the same as "savings,investment".
+  static Set<String> quickServiceHiddenFor(String service) {
+    final raw = _prefs?.getString(quickServiceHiddenForKey(service));
+    if (raw == null || raw.trim().isEmpty) return const <String>{};
+    return raw
+        .split(',')
+        .map((e) => e.trim().toLowerCase())
+        .where((e) => e.isNotEmpty)
+        .toSet();
+  }
+
+  /// Whether the service is currently offered. Default TRUE.
+  ///
+  /// Only the exact string "false" disables it. Anything unparseable leaves
+  /// the service available, because a typo in an admin field must not take a
+  /// working service off the grid — and the backend still refuses whatever it
+  /// would refuse anyway.
+  static bool quickServiceAvailable(String service) {
+    final raw = _prefs?.getString(quickServiceAvailableKey(service));
+    if (raw == null) return true;
+    return raw.trim().toLowerCase() != 'false';
+  }
+
+  /// Copy for the "temporarily unavailable" modal. Falls back to a neutral
+  /// sentence so the modal is never blank when an admin disables a service
+  /// without writing a message.
+  static String quickServiceMessage(String service) {
+    final raw = _prefs?.getString(quickServiceMessageKey(service))?.trim();
+    if (raw == null || raw.isEmpty) {
+      return 'This service is temporarily unavailable. Please try again later.';
+    }
+    return raw;
+  }
 
   static Set<String> _csv(String key, String fallback) {
     // ABSENT and EMPTY mean different things, and conflating them would

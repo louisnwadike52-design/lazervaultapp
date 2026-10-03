@@ -14,6 +14,7 @@ import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/service_usage_service.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/shared_widgets/service_unavailable_modal.dart';
 import 'package:lazervault/core/types/services.dart';
 import 'package:lazervault/src/features/uplift/presentation/views/uplift_home_screen.dart';
 
@@ -70,6 +71,29 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
     if (_frozenBlockedServices.contains(widget.appService.serviceName) &&
         serviceLocator<AccountManager>().isActiveAccountFrozen) {
       _showFrozenServiceBlocked();
+      return;
+    }
+    // ADMIN UNAVAILABILITY GATE. Checked here, at the single tap dispatcher,
+    // so EVERY way into a service honours it — the grid, the swipe-down
+    // all-services search, and anything else that renders a tile.
+    //
+    // Before the usage recorder on purpose: a tap that cannot open the service
+    // is not usage, and counting it would promote a dead service up the
+    // adaptive ordering.
+    //
+    // Note this gate is separate from hiding. An admin can HIDE a service from
+    // an account type (it never appears), or mark it UNAVAILABLE (it appears
+    // and explains itself). Those are different messages: a hidden service is
+    // "not for this wallet", an unavailable one is "not right now" — and a
+    // service silently missing during an outage looks like a bug, which is why
+    // unavailable is shown rather than hidden.
+    final serviceKey = widget.appService.serviceName.name;
+    if (!FeatureFlags.quickServiceAvailable(serviceKey)) {
+      showServiceUnavailableModal(
+        context,
+        serviceName: widget.appService.serviceName.displayName,
+        message: FeatureFlags.quickServiceMessage(serviceKey),
+      );
       return;
     }
     // Record usage for adaptive quick-services ordering (no-op unless the user
