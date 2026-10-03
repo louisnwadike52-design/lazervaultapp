@@ -120,7 +120,11 @@ class TransferRequirementsService {
     String? baseUrl,
   })  : _dio = dio,
         _callOptionsHelper = callOptionsHelper,
-        baseUrl = baseUrl ?? endpointRegistry.httpFinancial;
+        // `/v1/exchange/...` is annotated BARE in the exchange proto, so the
+        // base must not carry an `/api/v1` suffix — appending to one gave
+        // `/api/v1/v1/exchange/...`, which the edge's `^/api/v1(/.*)?$` catch-all
+        // sent to core-gateway for a 404. See EndpointRegistry.httpFinancialRoot.
+        baseUrl = baseUrl ?? endpointRegistry.httpFinancialRoot;
 
   static String _key(String source, String dest) =>
       '${source.toUpperCase()}|${dest.toUpperCase()}';
@@ -215,7 +219,11 @@ class PayoutBankDirectoryService {
     String? baseUrl,
   })  : _dio = dio,
         _callOptionsHelper = callOptionsHelper,
-        baseUrl = baseUrl ?? endpointRegistry.httpFinancial;
+        // `/v1/exchange/...` is annotated BARE in the exchange proto, so the
+        // base must not carry an `/api/v1` suffix — appending to one gave
+        // `/api/v1/v1/exchange/...`, which the edge's `^/api/v1(/.*)?$` catch-all
+        // sent to core-gateway for a 404. See EndpointRegistry.httpFinancialRoot.
+        baseUrl = baseUrl ?? endpointRegistry.httpFinancialRoot;
 
   static String _key(String source, String dest) =>
       '${source.toUpperCase()}|${dest.toUpperCase()}';

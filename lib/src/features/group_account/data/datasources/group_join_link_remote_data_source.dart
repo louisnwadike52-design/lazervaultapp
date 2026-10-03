@@ -114,14 +114,21 @@ class GroupJoinLinkRemoteDataSource {
 
   late final String _base = _resolveBase();
 
+  /// Every path below is annotated in the group-accounts proto as a BARE
+  /// `/v1/...`, so the base must NOT carry an `/api/v1` suffix — appending to
+  /// one produced `/api/v1/v1/group-join-links/{token}`, which matched the
+  /// edge's `^/api/v1(/.*)?$` catch-all, landed on core-gateway, and answered
+  /// `{"code":5,"message":"Not Found"}`. Resolving an invite token is the FIRST
+  /// call the app makes when a group link is opened, so this is why group deep
+  /// links did nothing.
   String _resolveBase() {
     for (final k in const ['FINANCIAL_GATEWAY_HTTP', 'FINANCIAL_HTTP_URL']) {
       final v = dotenv.maybeGet(k);
       if (v != null && v.trim().isNotEmpty) {
-        return v.trim().replaceAll(RegExp(r'/$'), '');
+        return EndpointRegistry.stripApiV1Suffix(v.trim());
       }
     }
-    return endpointRegistry.httpFinancial;
+    return endpointRegistry.httpFinancialRoot;
   }
 
   Map<String, String> _headers(String token) => {

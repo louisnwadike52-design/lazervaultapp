@@ -242,21 +242,12 @@ class ContributionChatRemoteDataSource {
     for (final k in const ['FINANCIAL_GATEWAY_HTTP', 'FINANCIAL_HTTP_URL']) {
       final v = dotenv.maybeGet(k);
       if (v != null && v.trim().isNotEmpty) {
-        return _stripApiV1(v.trim());
+        return EndpointRegistry.stripApiV1Suffix(v.trim());
       }
     }
-    return _stripApiV1(endpointRegistry.httpFinancial);
+    return endpointRegistry.httpFinancialRoot;
   }
 
-  /// Remove a trailing "/api/v1" (and any trailing slash) so callers can append
-  /// the gateway's own "/v1/..." path without doubling it.
-  static String _stripApiV1(String base) {
-    var b = base.replaceAll(RegExp(r'/+$'), '');
-    if (b.endsWith('/api/v1')) {
-      b = b.substring(0, b.length - '/api/v1'.length);
-    }
-    return b;
-  }
 
   Map<String, String> _headers(String token) => {
         'Authorization': 'Bearer $token',

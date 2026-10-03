@@ -593,6 +593,43 @@ class EndpointRegistry {
       _get('url_transfer_gateway', '${_tierBase('https')}/api/v1');
   String get httpFinancial =>
       _get('url_financial_gateway', '${_tierBase('https')}/api/v1');
+
+  /// The financial gateway's HOST ROOT — [httpFinancial] without its trailing
+  /// `/api/v1`.
+  ///
+  /// financial-gateway serves two differently-shaped route families. Most are
+  /// annotated `/api/v1/...` and belong on [httpFinancial]. But the
+  /// group-accounts and exchange protos annotate theirs as a BARE `/v1/...`
+  /// (`/v1/group-join-links/{token}`, `/v1/exchange/payout-banks`,
+  /// `/v1/contributions/{id}/messages`, `/v1/me/past-groups`), and appending
+  /// those to [httpFinancial] produces `/api/v1/v1/...` — a doubled prefix that
+  /// matches the edge's `^/api/v1(/.*)?$` catch-all, lands on core-gateway, and
+  /// answers `{"code":5,"message":"Not Found"}`. The caller sees a 404 from a
+  /// route that exists and is healthy.
+  ///
+  /// That bug was found and fixed twice already, each time by copying a private
+  /// `_stripApiV1` into one more data source — contribution chat, then past
+  /// memberships — while three call sites still had it (group join links, group
+  /// fee quotes, exchange transfer requirements / payout banks / report issue).
+  /// A per-file copy cannot fix the next one, so the strip lives here, once,
+  /// next to the value it corrects.
+  ///
+  /// Use this ONLY for routes whose proto annotation starts `/v1/`.
+  String get httpFinancialRoot => stripApiV1Suffix(httpFinancial);
+
+  /// Removes a trailing `/api/v1` (and any trailing slashes) from [base].
+  ///
+  /// Exposed so a data source that resolves its own base from a dotenv override
+  /// can apply the same correction to that override, which is just as likely to
+  /// carry the suffix.
+  static String stripApiV1Suffix(String base) {
+    var b = base.replaceAll(RegExp(r'/+$'), '');
+    if (b.endsWith('/api/v1')) {
+      b = b.substring(0, b.length - '/api/v1'.length);
+    }
+    return b;
+  }
+
   String get httpBanking =>
       _get('url_banking_gateway', '${_tierBase('https')}/api/v1');
   String get httpCommerce =>

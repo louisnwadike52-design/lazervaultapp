@@ -54,14 +54,20 @@ class GroupFeeRemoteDataSource {
 
   late final String _base = _resolveBase();
 
+  /// `/v1/group-funds/fee-quote` is annotated bare in the group-accounts proto,
+  /// so the base must not carry an `/api/v1` suffix — see
+  /// [EndpointRegistry.httpFinancialRoot]. Appending to one produced
+  /// `/api/v1/v1/group-funds/fee-quote` and a 404 from core-gateway, which this
+  /// data source turns into `GroupFeeQuote.none` — so the fee simply never
+  /// showed, silently, with no error anywhere.
   String _resolveBase() {
     for (final k in const ['FINANCIAL_GATEWAY_HTTP', 'FINANCIAL_HTTP_URL']) {
       final v = dotenv.maybeGet(k);
       if (v != null && v.trim().isNotEmpty) {
-        return v.trim().replaceAll(RegExp(r'/$'), '');
+        return EndpointRegistry.stripApiV1Suffix(v.trim());
       }
     }
-    return endpointRegistry.httpFinancial;
+    return endpointRegistry.httpFinancialRoot;
   }
 
   /// Quote the fee on [amount] (major units) for [leg].
