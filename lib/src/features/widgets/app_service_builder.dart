@@ -88,7 +88,11 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
     // service silently missing during an outage looks like a bug, which is why
     // unavailable is shown rather than hidden.
     final serviceKey = widget.appService.serviceName.name;
-    if (!FeatureFlags.quickServiceAvailable(serviceKey)) {
+    // Whitelisted testers are exactly who should still get in while a service
+    // is switched off for everyone else, so the same override applies here.
+    final whitelisted = FeatureFlags.whitelisted(
+        'quick_service_$serviceKey', FeatureFlags.currentUserEmail());
+    if (!whitelisted && !FeatureFlags.quickServiceAvailable(serviceKey)) {
       showServiceUnavailableModal(
         context,
         serviceName: widget.appService.serviceName.displayName,

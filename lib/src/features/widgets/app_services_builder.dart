@@ -401,9 +401,13 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                 VirtualAccountType.personal)
             .name
             .toLowerCase();
+    // A whitelisted email OVERRIDES the hide. That is the whole point: ship a
+    // service to a few testers while it stays invisible to everyone else.
+    final email = FeatureFlags.currentUserEmail();
     for (final s in getAllServicesUnfiltered()) {
-      if (FeatureFlags.quickServiceHiddenFor(s.serviceName.name)
-          .contains(activeTypeToken)) {
+      final key = s.serviceName.name;
+      if (FeatureFlags.whitelisted('quick_service_$key', email)) continue;
+      if (FeatureFlags.quickServiceHiddenFor(key).contains(activeTypeToken)) {
         hidden.add(s.serviceName);
       }
     }

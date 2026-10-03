@@ -63,6 +63,20 @@ class LocaleGating {
   /// addressed by index (deep links and receipt returns pass `initialTab`), so
   /// removing an entry would silently retarget those at the wrong screen.
   static bool navAllowed(String tabLabel) {
+    // ADMIN GATE FIRST, and in THIS function rather than at the call sites.
+    //
+    // navAllowed is consulted at five places — the icon, the tap handler, the
+    // deep-link path, letIndexChange and the highlight guard — and a gate
+    // added to only some of them lets a disabled destination still be reached
+    // by a deep link while its icon shows a lock.
+    //
+    // Destinations are DISABLED, never removed: the nav is addressed by INDEX
+    // and deep links pass `initialTab`, so dropping an entry would silently
+    // retarget those links at the wrong screen.
+    if (!FeatureFlags.bottomNavEnabled(tabLabel,
+        email: FeatureFlags.currentUserEmail())) {
+      return false;
+    }
     if (!restricted) return true;
     return !FeatureFlags.localeNonNgnDisabledNav
         .contains(tabLabel.toLowerCase());

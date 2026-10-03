@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+
 /// Lightweight client-side feature-flag cache.
 ///
 /// Backed by SharedPreferences so admin-side flips survive cold-start, and
@@ -424,6 +427,15 @@ class FeatureFlags {
       if (e.key.startsWith('chat_icon_') || e.key.startsWith('voice_agent_')) {
         await prefs.setBool(e.key, e.value.trim().toLowerCase() != 'false');
       }
+      // Whitelists are CSV strings; their _enabled companions and the
+      // bottom-nav switches are booleans. Split on the suffix rather than the
+      // prefix, because both shapes share the bottom_nav_ prefix.
+      if (e.key.endsWith('_whitelist')) {
+        await prefs.setString(e.key, e.value);
+      } else if (e.key.endsWith('_whitelist_enabled') ||
+          e.key.startsWith('bottom_nav_')) {
+        await prefs.setBool(e.key, e.value.trim().toLowerCase() != 'false');
+      }
     }
     // insurance_hosted_link is a string (a URL), not a boolean — store verbatim.
     final hostedLink = remote[insuranceHostedLink];
@@ -523,6 +535,86 @@ class FeatureFlags {
   /// another region a dashboard full of services that dead-end.
   static bool get localeGatingOn =>
       _prefs?.getBool(localeGatingEnabled) ?? true;
+
+  /// The signed-in user's email, for whitelist checks.
+  ///
+  /// Read through the locator and swallowed on failure: these gates run
+  /// during build, and a thrown lookup there is a blank screen. An unknown
+  /// email simply means no whitelist can match, which falls back to the
+  /// ordinary rules rather than granting or denying anything.
+  static String? currentUserEmail() {
+    try {
+      return serviceLocator<AuthenticationCubit>().currentProfile?.user.email;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // ── Email whitelists (admin-tunable, per surface) ─────────────────────
+  //
+  // A whitelist is an OVERRIDE, not a filter. An email on an enabled
+  // whitelist sees the thing even when it is hidden from their account type
+  // or switched off for everyone — which is the point: ship a service to a
+  // handful of testers while it stays invisible to everyone else.
+  //
+  //   <prefix>_whitelist           CSV of emails
+  //   <prefix>_whitelist_enabled   false parks the list without deleting it
+  //
+  // The list is kept when disabled on purpose. Turning a pilot off and back
+  // on must not mean retyping twenty addresses, and deleting the list to
+  // pause it is how you lose who was in it.
+  //
+  // Prefixes: quick_service_<service>  ·  bottom_nav_<label>
+  static String whitelistKey(String prefix) => '${prefix}_whitelist';
+  static String whitelistEnabledKey(String prefix) =>
+      '${prefix}_whitelist_enabled';
+
+  /// Emails on this surface's whitelist, lower-cased and trimmed.
+  static Set<String> whitelistEmails(String prefix) {
+    final raw = _prefs?.getString(whitelistKey(prefix));
+    if (raw == null || raw.trim().isEmpty) return const <String>{};
+    return raw
+        .split(',')
+        .map((e) => e.trim().toLowerCase())
+        .where((e) => e.isNotEmpty)
+        .toSet();
+  }
+
+  /// Whether the list is currently in force. Default TRUE: an admin who adds
+  /// addresses means them to take effect, and a list that silently did
+  /// nothing until a second toggle was found would read as a broken feature.
+  static bool whitelistActive(String prefix) =>
+      _prefs?.getBool(whitelistEnabledKey(prefix)) ?? true;
+
+  /// Whether [email] is granted access to [prefix] by its whitelist.
+  ///
+  /// False whenever we cannot be sure — an empty list, a disabled list, or an
+  /// unknown email. Fail-closed on purpose: a whitelist that accidentally
+  /// matched everyone would publish a service that was deliberately hidden,
+  /// which is the one outcome worse than it not working at all.
+  static bool whitelisted(String prefix, String? email) {
+    final e = email?.trim().toLowerCase() ?? '';
+    if (e.isEmpty) return false;
+    if (!whitelistActive(prefix)) return false;
+    final list = whitelistEmails(prefix);
+    if (list.isEmpty) return false;
+    return list.contains(e);
+  }
+
+  // ── Bottom-nav gating (admin-tunable, per destination) ────────────────
+  //
+  // Destinations are DISABLED, never removed. The nav is addressed by INDEX —
+  // deep links and receipt returns pass `initialTab` — so dropping an entry
+  // silently retargets those links at the wrong screen. Same reason the
+  // locale gate dims rather than deletes.
+  static String bottomNavPrefix(String label) =>
+      'bottom_nav_${assistantSlug(label)}';
+
+  static bool bottomNavEnabled(String label, {String? email}) {
+    final prefix = bottomNavPrefix(label);
+    if (whitelisted(prefix, email)) return true;
+    return _prefs?.getBool('${prefix}_enabled') ?? true;
+  }
 
   // ── Per-service assistant entry points (admin-tunable) ────────────────
   //
