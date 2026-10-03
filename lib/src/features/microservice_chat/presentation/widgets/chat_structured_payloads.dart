@@ -121,7 +121,7 @@ class ChatStructuredPayloads extends StatelessWidget {
     return ChatPinPromptCard(
       // Stable key per transaction_id. Without it autoOpenFor() has no card to
       // drive and the pad silently never appears.
-      key: ChatPinPromptCard.keyFor(txId),
+      // Self-registers by transaction_id on mount — see ChatPinPromptCard.
       payload: payload,
       onCancelled: () => onPinCancelled(txId),
       onPinVerified: (token) =>

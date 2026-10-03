@@ -28,65 +28,44 @@ import 'package:lazervault/src/features/widgets/user_avatar.dart';
 /// `onPinVerified` callback is wired by the parent (see
 /// general_chat_content.dart). Keeps the widget testable in isolation.
 class ChatPinPromptCard extends StatefulWidget {
-  /// Resolve (and lazily create) the stable [GlobalKey] used to drive a
-  /// rendered card's PIN modal from outside the widget tree — e.g. the
-  /// AI-chat listener that AUTO-opens the sheet the moment a `pin_prompt`
-  /// arrives. Keyed by the prompt's `transaction_id` so the same card
-  /// instance is targeted across rebuilds and there is exactly ONE code
-  /// path into the modal (the card's own [_openPinModal]).
-  static GlobalKey<ChatPinPromptCardState> keyFor(String transactionId) {
-    return _cardKeys.putIfAbsent(
-      transactionId,
-      () => GlobalKey<ChatPinPromptCardState>(
-        debugLabel: 'pin_prompt_$transactionId',
-      ),
-    );
+  /// Cards currently in the tree, by `transaction_id`.
+  ///
+  /// THIS USED TO BE A SHARED GlobalKey, AND THAT BROKE THE CARD.
+  ///
+  /// `keyFor(txId)` handed the SAME GlobalKey to every card with that
+  /// transaction id. A GlobalKey may be attached to only one widget at a
+  /// time — Flutter throws "Multiple widgets used the same GlobalKey" and the
+  /// offending subtree fails to build, so the card simply does not appear.
+  ///
+  /// Two cards with one transaction id is not exotic, it is the normal retry
+  /// path: the user says "try it again", the agent re-emits a `pin_prompt`
+  /// for the SAME transfer, and now two prompts with one id sit in the
+  /// transcript. Both claimed the key, both failed to render, and the
+  /// confirmation card vanished — taking the "Enter PIN" button with it, which
+  /// is why the sheet stopped coming up too.
+  ///
+  /// A plain registry of live States has none of that: duplicates are
+  /// representable, nothing is attached to the element tree, and the last card
+  /// to mount is the one auto-open drives — which is the newest prompt, the
+  /// right one.
+  static final Map<String, ChatPinPromptCardState> _active = {};
+
+  static void _register(String transactionId, ChatPinPromptCardState state) {
+    if (transactionId.isEmpty) return;
+    _active[transactionId] = state;
   }
 
-  static final Map<String, GlobalKey<ChatPinPromptCardState>> _cardKeys = {};
-
-  /// Drop the key for a transaction whose card has left the tree.
+  /// Deregister on dispose, but ONLY if this state is still the holder.
   ///
-  /// Without this the map is append-only for the life of the process: one entry per
-  /// money move the user ever makes in a session, each pinning a GlobalKey. Pruning on
-  /// dispose is safe because [keyFor] recreates the entry the moment the card is built
-  /// again — and a card that is not in the tree has no state for [autoOpenFor] to drive
-  /// anyway, so a stale key could only ever be a silent no-op.
-  static void _releaseKey(String transactionId, State state) {
-    final existing = _cardKeys[transactionId];
-    // Only the CURRENT holder may release it. During a list rebuild the replacement
-    // card can be built before the old one disposes, and releasing then would drop the
-    // new card's key and silently break its auto-open.
-    if (existing == null) return;
-    final holder = existing.currentState;
-    // Two safe cases: nothing is attached, or the thing attached is the very state
-    // that is disposing. Anything else means a replacement card already claimed the
-    // key during a list rebuild, and dropping it there would silently break ITS
-    // auto-open — the failure would look exactly like the bug this whole change fixes.
-    if (holder == null || identical(holder, state)) {
-      _cardKeys.remove(transactionId);
+  /// During a list rebuild the replacement card mounts before the old one
+  /// disposes, so an unconditional remove would delete the NEW card's entry
+  /// and silently break its auto-open — the same class of bug as before.
+  static void _deregister(String transactionId, ChatPinPromptCardState state) {
+    if (identical(_active[transactionId], state)) {
+      _active.remove(transactionId);
     }
   }
 
-  /// Transactions asked to auto-open before their card existed.
-  ///
-  /// THE REQUEST HAS TO OUTLIVE THE RACE.
-  ///
-  /// This used to be `state?.openModal()` — a null-safe call that did NOTHING
-  /// when the card was not mounted yet, and said nothing about it. The opener
-  /// marks the transaction as opened BEFORE its post-frame callback runs, so a
-  /// single missed attempt was permanent: the sheet never came up again for
-  /// that transaction and the user had to tap "Enter PIN" by hand, every time.
-  ///
-  /// The card is routinely not mounted at that moment. The transcript is a lazy
-  /// list, so a newly appended prompt is only built once it is scrolled into
-  /// view, and `_scrollToBottom()` has not landed when the post-frame callback
-  /// fires. Short conversations fit on screen and worked; real ones did not —
-  /// which is exactly how this shipped looking fine.
-  ///
-  /// So a request for an unmounted card is REMEMBERED, and the card consumes it
-  /// when it mounts. One shot: [_consumePendingAutoOpen] removes the id, so a
-  /// card rebuilt later (scrolling back through history) does not reopen it.
   static final Set<String> _pendingAutoOpen = <String>{};
 
   /// Auto-open the PIN modal for the card identified by [transactionId].
@@ -97,7 +76,7 @@ class ChatPinPromptCard extends StatefulWidget {
   /// auto-open and the manual tap share one implementation.
   static void autoOpenFor(String transactionId) {
     if (transactionId.isEmpty) return;
-    final state = _cardKeys[transactionId]?.currentState;
+    final state = _active[transactionId];
     if (state != null) {
       state.openModal();
       return;
@@ -122,7 +101,7 @@ class ChatPinPromptCard extends StatefulWidget {
   @visibleForTesting
   static void debugResetAutoOpen() {
     _pendingAutoOpen.clear();
-    _cardKeys.clear();
+    _active.clear();
   }
 
   final Map<String, dynamic> payload;
@@ -163,6 +142,7 @@ class ChatPinPromptCardState extends State<ChatPinPromptCard>
   @override
   void initState() {
     super.initState();
+    ChatPinPromptCard._register(_s('transaction_id'), this);
     // Claim an auto-open that was requested before this card existed.
     //
     // The opener fires one post-frame callback and never retries, and the
@@ -268,9 +248,9 @@ class ChatPinPromptCardState extends State<ChatPinPromptCard>
 
   @override
   void dispose() {
-    // Release this transaction's GlobalKey so the static map does not grow for the life
-    // of the process. See [_releaseKey] for why the current-holder check matters.
-    ChatPinPromptCard._releaseKey(_s('transaction_id'), this);
+    // Drop this card from the registry so it cannot grow for the life of the
+    // process. See [_deregister] for why the current-holder check matters.
+    ChatPinPromptCard._deregister(_s('transaction_id'), this);
     super.dispose();
   }
 

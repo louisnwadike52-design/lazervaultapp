@@ -1803,12 +1803,13 @@ class _AiChatContentState extends State<AiChatContent>
             // transaction continues in this same conversation.
             if (!isUser && message.pinPrompt != null)
               ChatPinPromptCard(
-                // Stable key per transaction_id so the auto-open listener can
-                // drive THIS card's modal — keeps one code path into the PIN
-                // sheet shared by the manual tap and the auto-open.
-                key: ChatPinPromptCard.keyFor(
-                  message.pinPrompt!['transaction_id']?.toString() ?? '',
-                ),
+                // NO shared key here. The card registers itself by
+                // transaction_id when it mounts, so the auto-open listener can
+                // still drive it. A GlobalKey keyed on transaction_id could be
+                // claimed by two cards at once — the agent re-emits a prompt
+                // for the SAME transfer on a retry — and Flutter then refuses
+                // to build either of them, which is how the confirmation card
+                // disappeared.
                 payload: message.pinPrompt!,
                 // Dismissing means "not now". Recorded so no rebuild reopens the sheet
                 // the user just closed; their own "Enter PIN" tap still works.

@@ -57,16 +57,44 @@ void main() {
     expect(find.byType(ChatPinPromptCard), findsOneWidget);
   });
 
-  testWidgets('the card carries the keyed GlobalKey the auto-opener drives',
-      (tester) async {
-    // Without this key the pad cannot be opened programmatically at all — the
-    // exact failure the user hit. Asserting the type is not enough.
+  testWidgets('the card carries NO shared GlobalKey', (tester) async {
+    // It used to be given ChatPinPromptCard.keyFor(transactionId) — one
+    // GlobalKey per transaction id, shared by every card with that id.
+    //
+    // A GlobalKey can be attached to only one widget at a time. Two cards with
+    // the same transaction id is the ordinary RETRY path (the user says "try
+    // it again" and the agent re-emits a pin_prompt for the same transfer), so
+    // both cards claimed one key, Flutter refused to build them, and the
+    // confirmation card vanished — taking its "Enter PIN" button with it.
+    //
+    // The card now registers itself by transaction id on mount, so the
+    // auto-opener can still reach it without any key at all.
     await _pump(tester, metadata: const {'pin_prompt': pinPrompt},
         isUser: false);
     final card = tester.widget<ChatPinPromptCard>(
       find.byType(ChatPinPromptCard),
     );
-    expect(card.key, same(ChatPinPromptCard.keyFor('TX-CHAT-1')));
+    expect(card.key, isNot(isA<GlobalKey>()),
+        reason: 'a GlobalKey here is exactly what two cards collided on');
+  });
+
+  testWidgets('TWO prompts for the SAME transfer both render', (tester) async {
+    // The reproduction. Under the shared GlobalKey this threw
+    // "Multiple widgets used the same GlobalKey" and neither card appeared.
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: Column(
+          children: const [
+            ChatPinPromptCard(payload: pinPrompt),
+            ChatPinPromptCard(payload: pinPrompt),
+          ],
+        ),
+      ),
+    ));
+    await tester.pump();
+    expect(tester.takeException(), isNull,
+        reason: 'a duplicate transaction id must not throw');
+    expect(find.byType(ChatPinPromptCard), findsNWidgets(2));
   });
 
   testWidgets('a USER message renders no payloads', (tester) async {

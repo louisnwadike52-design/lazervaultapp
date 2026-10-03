@@ -546,9 +546,9 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
             // round-trips to the agent and the transfer continues in-conversation.
             if (!isUser && message.pinPrompt != null)
               ChatPinPromptCard(
-                key: ChatPinPromptCard.keyFor(
-                  message.pinPrompt!['transaction_id']?.toString() ?? '',
-                ),
+                // The card self-registers by transaction_id on mount; a shared
+                // GlobalKey here collided whenever the agent re-emitted a
+                // prompt for the same transfer, and neither card rendered.
                 payload: message.pinPrompt!,
                 // Dismissing means "not now" — recorded so no rebuild reopens it.
                 onCancelled: () => _pinAutoOpener.noteCancelled(

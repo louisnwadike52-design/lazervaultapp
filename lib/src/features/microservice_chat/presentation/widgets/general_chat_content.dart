@@ -782,10 +782,8 @@ class _GeneralChatContentState extends State<GeneralChatContent>
         : <String, dynamic>{};
     final txId = ChatPinAutoOpener.transactionIdOf(payload);
     return ChatPinPromptCard(
-      // Stable key per transaction_id. Without it keyFor() never registers this card's
-      // state and autoOpenFor() has nothing to drive — which is why auto-open could not
-      // have worked on this surface even once it was called.
-      key: ChatPinPromptCard.keyFor(txId),
+      // Self-registers by transaction_id on mount, so autoOpenFor() can drive
+      // it without a GlobalKey that two cards could claim at once.
       payload: payload,
       // Dismissing means "not now". Recorded so a rebuild cannot reopen the sheet the
       // user just closed; their own "Enter PIN" tap still works.
