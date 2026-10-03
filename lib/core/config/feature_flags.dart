@@ -415,6 +415,16 @@ class FeatureFlags {
         await prefs.setString(e.key, e.value);
       }
     }
+    // Assistant entry-point toggles are BOOLEAN families, so they are stored
+    // as bools and read with getBool — unlike the quick_service_ family above,
+    // whose values are CSV/free text. Only an explicit "false" disables;
+    // anything unparseable leaves the entry point visible, because a typo must
+    // not silently remove a user's way into an assistant.
+    for (final e in remote.entries) {
+      if (e.key.startsWith('chat_icon_') || e.key.startsWith('voice_agent_')) {
+        await prefs.setBool(e.key, e.value.trim().toLowerCase() != 'false');
+      }
+    }
     // insurance_hosted_link is a string (a URL), not a boolean — store verbatim.
     final hostedLink = remote[insuranceHostedLink];
     if (hostedLink != null) {
@@ -513,6 +523,65 @@ class FeatureFlags {
   /// another region a dashboard full of services that dead-end.
   static bool get localeGatingOn =>
       _prefs?.getBool(localeGatingEnabled) ?? true;
+
+  // ── Per-service assistant entry points (admin-tunable) ────────────────
+  //
+  // Two independent toggles per service — the chat icon and the voice button
+  // — plus one master switch each that withholds EVERY per-service entry
+  // point at once, leaving only the central assistant (NOVA, which is its own
+  // bottom-nav screen rather than one of these icons, so it is untouched by
+  // definition).
+  //
+  //   chat_icon_<slug>_enabled      one service's chat icon
+  //   chat_icon_all_enabled         false ⇒ every per-service chat icon off
+  //   voice_agent_<slug>_enabled    one service's voice button
+  //   voice_agent_all_enabled       false ⇒ every per-service voice button off
+  //
+  // `all` is a RESERVED slug for that reason; no service may use it.
+  //
+  // The slug is the widget's own serviceName lowercased with non-alphanumerics
+  // stripped, because the two widgets do not agree on names for the same
+  // service ('Auto-Save' vs 'autosave', 'Currency Exchange' vs 'exchange').
+  // Normalising inside each widget means an admin never has to know which
+  // spelling a given surface happens to use, and the two key spaces stay
+  // separate — which they should, since the toggles are independent.
+  static const String chatIconsAllEnabled = 'chat_icon_all_enabled';
+  static const String voiceAgentsAllEnabled = 'voice_agent_all_enabled';
+
+  /// Normalise a widget's serviceName into a settings-key token.
+  static String assistantSlug(String serviceName) {
+    final buf = StringBuffer();
+    for (final c in serviceName.toLowerCase().codeUnits) {
+      final isDigit = c >= 0x30 && c <= 0x39;
+      final isLower = c >= 0x61 && c <= 0x7a;
+      if (isDigit || isLower) buf.writeCharCode(c);
+    }
+    return buf.toString();
+  }
+
+  static String chatIconKey(String slug) => 'chat_icon_${slug}_enabled';
+  static String voiceAgentKey(String slug) => 'voice_agent_${slug}_enabled';
+
+  /// Whether a per-service CHAT icon should render.
+  ///
+  /// The master switch wins: an admin turning per-service chat off expects
+  /// silence everywhere, not "everywhere except the ones I also ticked".
+  /// Defaults to true at both levels, so nothing needs seeding and a service
+  /// added later keeps its assistant.
+  static bool chatIconVisible(String serviceName) {
+    if (_prefs?.getBool(chatIconsAllEnabled) == false) return false;
+    final slug = assistantSlug(serviceName);
+    if (slug.isEmpty) return true;
+    return _prefs?.getBool(chatIconKey(slug)) ?? true;
+  }
+
+  /// Whether a per-service VOICE button should render. Same rules.
+  static bool voiceAgentVisible(String serviceName) {
+    if (_prefs?.getBool(voiceAgentsAllEnabled) == false) return false;
+    final slug = assistantSlug(serviceName);
+    if (slug.isEmpty) return true;
+    return _prefs?.getBool(voiceAgentKey(slug)) ?? true;
+  }
 
   // ── Quick-service gating (admin-tunable, per service) ──────────────────
   //

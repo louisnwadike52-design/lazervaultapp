@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'service_chat_bottom_sheet.dart';
 
 class MicroserviceChatIcon extends StatelessWidget {
@@ -54,6 +56,20 @@ class MicroserviceChatIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ADMIN GATE, inside the widget rather than at each call site.
+    //
+    // There are 42 of those, and a gate added to each is a gate that will be
+    // missed by the forty-third. Returning nothing here covers every surface
+    // that renders a per-service chat icon by construction — including the
+    // bottom-nav pages — and keeps the grid-style consistency the quick
+    // services gate gets from _effectiveHiddenServices.
+    //
+    // The CENTRAL assistant is its own bottom-nav screen, not one of these
+    // icons, so it is unaffected: turning every per-service icon off leaves
+    // exactly the central one, which is what the master switch is for.
+    if (!FeatureFlags.chatIconVisible(serviceName)) {
+      return const SizedBox.shrink();
+    }
     return GestureDetector(
       onTap: () {
         showServiceChatBottomSheet(

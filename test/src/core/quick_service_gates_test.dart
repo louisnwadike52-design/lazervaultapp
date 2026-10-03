@@ -13,7 +13,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
-    await FeatureFlags.init();
+    // See assistant_entrypoint_toggles_test: init() never rebinds, so a
+    // shared store would leak gates between tests.
+    await FeatureFlags.debugResetForTest();
   });
 
   group('defaults', () {

@@ -67,6 +67,11 @@ class EndpointRegistry {
   /// key an admin creates tomorrow reaches the app without a code change.
   static const Set<String> _persistedNonUrlKeyPrefixes = {
     'quick_service_',
+    // Per-service assistant entry points (chat icon / voice button), plus
+    // their `_all_` master switches. One key per service per surface, so the
+    // names are as unknowable in advance as the quick-service gates.
+    'chat_icon_',
+    'voice_agent_',
   };
 
   static bool _isPersistedNonUrlKey(String key) =>

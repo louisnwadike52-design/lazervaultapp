@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -73,6 +75,16 @@ class ServiceVoiceButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ADMIN GATE — see MicroserviceChatIcon for why this lives in the widget
+    // rather than at each of the 45 call sites. Covers every surface that
+    // renders a per-service voice button, bottom-nav pages included.
+    //
+    // Both variants are gated: ServiceVoiceButtonCompact is the same entry
+    // point in a smaller shape, and gating only one would leave the service
+    // reachable from whichever screens happen to use the other.
+    if (!FeatureFlags.voiceAgentVisible(serviceName)) {
+      return const SizedBox.shrink();
+    }
     final size = buttonSize ?? 44.w;
     final iconSz = iconSize ?? 20.sp;
 
@@ -247,6 +259,16 @@ class ServiceVoiceButtonCompact extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ADMIN GATE — see MicroserviceChatIcon for why this lives in the widget
+    // rather than at each of the 45 call sites. Covers every surface that
+    // renders a per-service voice button, bottom-nav pages included.
+    //
+    // Both variants are gated: ServiceVoiceButtonCompact is the same entry
+    // point in a smaller shape, and gating only one would leave the service
+    // reachable from whichever screens happen to use the other.
+    if (!FeatureFlags.voiceAgentVisible(serviceName)) {
+      return const SizedBox.shrink();
+    }
     return ServiceVoiceButton(
       serviceName: serviceName,
       suggestions: suggestions,
