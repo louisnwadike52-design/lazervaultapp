@@ -163,6 +163,16 @@ class TransactionPinModalState extends State<TransactionPinModal>
       'below',
       'exceeds',
       'insufficient',
+      // Services say this in plain English rather than with the word
+      // "insufficient". utility-payments returns "The family pool has ₦80.00
+      // left, which doesn't cover this payment" — a textbook refusal that
+      // matched nothing here and was therefore framed as a malfunction, so a
+      // user who simply needed to top the pool up was told the app had
+      // failed and told to try again, which could only fail identically.
+      'cover this payment',
+      'doesn\'t cover',
+      'does not cover',
+      'not enough',
       'limit',
       'same account',
       'not allowed',
@@ -183,7 +193,11 @@ class TransactionPinModalState extends State<TransactionPinModal>
     if (m.contains('minimum') || m.contains('too small') || m.contains('below')) {
       return 'Below the minimum amount';
     }
-    if (m.contains('insufficient')) return 'Not enough balance';
+    if (m.contains('insufficient') ||
+        m.contains('cover') ||
+        m.contains('not enough')) {
+      return 'Not enough balance';
+    }
     if (m.contains('maximum') || m.contains('exceeds') || m.contains('limit')) {
       return 'Over your limit';
     }

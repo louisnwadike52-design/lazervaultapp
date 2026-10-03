@@ -492,6 +492,42 @@ String _unwrappedMessage(Object? error) {
     text = error.toString();
   }
   text = text.trim();
+  // A gRPC error that was CAUGHT AND RETHROWN loses its type but keeps its
+  // sentence inside an envelope:
+  //
+  //   rpc error: code = FailedPrecondition desc = <the message for the user>
+  //
+  // The typed branch above only fires for a live GrpcError. Once a repository
+  // wraps it — `Exception(e.toString())`, which is ordinary — that branch is
+  // skipped and the envelope reaches the sanitizer, which correctly rejects
+  // "rpc error: code = ..." as technical. The service's own actionable
+  // sentence is then thrown away and replaced with the generic line.
+  //
+  // Measured on a real failure: utility-payments returned
+  // "The family pool has ₦80.00 left, which doesn't cover this payment.
+  // Anyone in the family can add money to the pool." and the user was shown
+  // "We couldn't complete your transfer right now. Please try again." — a
+  // precise, fixable refusal reported as an unexplained fault, which is how
+  // it was reported to us as a broken airtime purchase.
+  //
+  // ONLY for the codes that carry text written FOR the user, exactly as the
+  // typed GrpcError branch above does. This gate is load-bearing: without it,
+  // unwrapping also frees internal text from codes that never carry a user
+  // message — `code = Internal desc = pq: duplicate key value violates unique
+  // constraint` reached the user in testing — which is the leak the sanitizer
+  // was catching only because the envelope made the whole string look
+  // technical. Mirroring the typed branch keeps one rule in both places.
+  //
+  // Take the LAST `desc =`, because a message nested through two services
+  // carries two envelopes and the innermost one is the real sentence.
+  final lower = text.toLowerCase();
+  final descIndex = text.lastIndexOf('desc = ');
+  final carriesUserText = lower.contains('code = failedprecondition') ||
+      lower.contains('code = invalidargument');
+  if (descIndex >= 0 && lower.contains('rpc error') && carriesUserText) {
+    final inner = text.substring(descIndex + 'desc = '.length).trim();
+    if (inner.isNotEmpty) text = inner;
+  }
   // "Exception: foo", "_TypeError: foo", "SomeFailure: foo"
   final match = RegExp(r'^[A-Za-z_][A-Za-z0-9_]*(Exception|Error|Failure)?\s*:\s*(.+)$',
           dotAll: true)
