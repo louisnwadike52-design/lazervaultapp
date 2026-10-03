@@ -59,6 +59,11 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
 
   /// The account the money moves to or from, read LIVE.
   ///
+  /// ALWAYS the personal wallet, never whatever the dashboard has active.
+  /// Spray funding tops a spray balance up from your own main money; silently
+  /// following a savings or campaign selection would surprise the user and,
+  /// on a savings wallet, be a debit the payment path may refuse outright.
+  ///
   /// This used to come from `AccountManager.activeAccountDetails`, a field
   /// nothing in the app ever writes — so it was always null, the sheet always
   /// took its fallback branch, and "From account: Personal account" appeared
@@ -79,7 +84,7 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
   @override
   void initState() {
     super.initState();
-    _adoptSnapshot(activeAccountSnapshot());
+    _adoptSnapshot(personalAccountSnapshot());
     // A null snapshot does NOT mean "this user has no account".
     //
     // activeAccountSnapshot() reads AccountCardsSummaryCubit synchronously and
@@ -116,7 +121,7 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
   Future<void> _loadAccounts() async {
     if (_loadingAccounts) return;
     setState(() => _loadingAccounts = true);
-    final resolved = await ensureActiveAccountSnapshot();
+    final resolved = await ensurePersonalAccountSnapshot();
     if (!mounted) return;
     setState(() {
       _loadingAccounts = false;

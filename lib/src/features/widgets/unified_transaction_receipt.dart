@@ -902,7 +902,31 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   /// Check if this transaction type supports PDF receipts. Crypto (buy/sell/
   /// swap/send/deposit) renders a dedicated crypto PDF (metadata-driven rows +
   /// sender/recipient addresses); transfers use the fund-transfer PDF.
+  /// Bill purchases. Every one of these was missing, so Download/Share on an
+  /// airtime, data, electricity, cable, internet, water, betting, e-PIN or
+  /// exam-PIN receipt exported a flat PNG SCREENSHOT of this dark page —
+  /// reported on an exam-PIN receipt, where the "document" was an image of
+  /// the screen rather than a receipt anyone could file.
+  ///
+  /// They are real money movements with a reference, a provider and a
+  /// counterparty (the phone number, meter, smartcard or candidate), which is
+  /// exactly what the unified document prints. The service-specific identity
+  /// rows ride along as extraRows via [_billRows], so the PDF carries the
+  /// detail rather than a bare debit.
+  static const Set<TransactionServiceType> _billServiceTypes = {
+    TransactionServiceType.airtime,
+    TransactionServiceType.data,
+    TransactionServiceType.electricity,
+    TransactionServiceType.water,
+    TransactionServiceType.tvSubscription,
+    TransactionServiceType.internet,
+    TransactionServiceType.education,
+    TransactionServiceType.betting,
+    TransactionServiceType.epin,
+  };
+
   bool get _supportsPdfReceipt =>
+      _billServiceTypes.contains(tx.serviceType) ||
       tx.serviceType == TransactionServiceType.transfer ||
       tx.serviceType == TransactionServiceType.crypto ||
       // QR Pay + PayID receipts render the same Revolut-style unified
@@ -1007,6 +1031,49 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
         if ((md[k] ?? '').toString().trim().isNotEmpty)
           MapEntry(k, md[k].toString()),
     ];
+  }
+
+  /// Bill-payload rows for the PDF body, mirroring [_invoiceRows].
+  ///
+  /// Without these the exported document is an anonymous debit for an
+  /// arbitrary amount — useless as proof that a specific exam PIN, meter top-up
+  /// or data bundle was bought. The keys are read defensively in BOTH the
+  /// snake_case the services write and the Title Case some already normalise
+  /// to, because the metadata shape differs per bill type and a missing row is
+  /// silently invisible.
+  ///
+  /// Only non-empty values are emitted, so a bill type that does not carry a
+  /// given field simply omits the row rather than printing a blank one.
+  List<MapEntry<String, String>> get _billRows {
+    if (!_billServiceTypes.contains(tx.serviceType)) return const [];
+    final md = tx.metadata ?? {};
+    // label -> the keys that may hold it, most specific first.
+    const spec = <String, List<String>>{
+      'Service': ['service_name', 'Service', 'bill_type', 'provider_name'],
+      'Provider': ['provider', 'Provider', 'final_provider'],
+      'Recipient': ['phone_number', 'Recipient', 'customer_name', 'recipient'],
+      'Account/Meter': ['meter_number', 'smartcard_number', 'customer_id',
+          'billers_code', 'Account'],
+      'Plan': ['plan_name', 'variation_name', 'Plan', 'data_plan', 'bouquet'],
+      'Candidate': ['candidate_name', 'Candidate'],
+      'Quantity': ['quantity', 'Quantity', 'units'],
+      'Token': ['token', 'Token', 'purchased_code'],
+      'PIN': ['pin', 'Pin'],
+      'Serial': ['serial', 'Serial'],
+      'Provider reference': ['provider_reference', 'provider_ref',
+          'Provider Reference'],
+    };
+    final rows = <MapEntry<String, String>>[];
+    for (final e in spec.entries) {
+      for (final k in e.value) {
+        final v = (md[k] ?? '').toString().trim();
+        if (v.isNotEmpty && v.toLowerCase() != 'null') {
+          rows.add(MapEntry(e.key, v));
+          break;
+        }
+      }
+    }
+    return rows;
   }
 
   /// Contribution-payload rows for the PDF body, mirroring _invoiceRows.
@@ -1498,7 +1565,8 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
               format: _chosenFormat,
               // The card the on-screen receipt resolved, so the SAVED document
               // names it too rather than being a strictly poorer copy.
-              extraRows: _giftCard?.rows ?? _invoiceRows + _contributionRows,
+              extraRows: _giftCard?.rows ??
+                  _invoiceRows + _contributionRows + _billRows,
               currentUserName: _currentUserName,
             );
 
@@ -1527,7 +1595,8 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
           transaction: tx,
           copyType: _chosenCopy,
           format: _chosenFormat,
-          extraRows: _giftCard?.rows ?? _invoiceRows + _contributionRows,
+          extraRows: _giftCard?.rows ??
+                  _invoiceRows + _contributionRows + _billRows,
           currentUserName: _currentUserName,
           // Anchors the iPad share popover; omitted it anchored top-left.
           sharePositionOrigin: _shareOrigin(),

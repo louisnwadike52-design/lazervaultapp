@@ -618,6 +618,16 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       accountNumber:
           proto.accountNumber.isNotEmpty ? proto.accountNumber : null,
       bankName: proto.bankName.isNotEmpty ? proto.bankName : null,
+      // The PROVIDER's registered name for the pool NUBAN — what a sender
+      // actually sees at their own bank when they key in the number.
+      //
+      // This mapping was simply missing. The proto carries it (field 26) and
+      // the server fills it, but the gRPC path dropped it, so accountName was
+      // always null and every share sheet fell back to the pool's display
+      // name under a "Pool name" label. A member funding the pool was shown a
+      // name their bank would never echo back, which is exactly the moment a
+      // sender aborts a transfer.
+      accountName: proto.accountName.isNotEmpty ? proto.accountName : null,
       virtualAccountStatus: proto.virtualAccountStatus.isNotEmpty
           ? proto.virtualAccountStatus
           : null,

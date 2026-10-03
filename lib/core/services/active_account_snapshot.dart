@@ -146,6 +146,57 @@ Future<ActiveAccountSnapshot?> ensureActiveAccountSnapshot() async {
   return activeAccountSnapshot();
 }
 
+/// The PERSONAL wallet, regardless of which account the dashboard has active.
+///
+/// Some flows are not "spend from whatever is selected" — they always draw on
+/// the user's own main wallet. Lazerspray funding is one: you top up a spray
+/// balance from your personal money, and having it silently follow a savings
+/// or campaign selection on the dashboard is both surprising and, for a
+/// savings wallet, a debit the payment path may refuse outright.
+///
+/// Falls back to the ordinary active account when the user genuinely has no
+/// personal wallet (a business-only profile). Blocking there would strand a
+/// user who has money and nothing wrong with them, and the server still
+/// validates the debit either way.
+///
+/// Returns null only when no accounts are loaded at all — use
+/// [ensurePersonalAccountSnapshot] from a sheet that needs to act.
+ActiveAccountSnapshot? personalAccountSnapshot() {
+  try {
+    final summaries = _summaries();
+    if (summaries.isEmpty) return null;
+    for (final a in summaries) {
+      if (a.isPersonalAccount && a.status.toLowerCase() == 'active') {
+        return snapshotOf(a);
+      }
+    }
+    // A frozen/closed personal wallet still beats silently charging a
+    // different one: show it, and let the spendable guards refuse.
+    for (final a in summaries) {
+      if (a.isPersonalAccount) return snapshotOf(a);
+    }
+    return activeAccountSnapshot();
+  } catch (_) {
+    return null;
+  }
+}
+
+/// [personalAccountSnapshot], fetching the summaries first if they are not
+/// loaded. See [ensureActiveAccountSnapshot] for why that is necessary.
+Future<ActiveAccountSnapshot?> ensurePersonalAccountSnapshot() async {
+  final existing = personalAccountSnapshot();
+  if (existing != null) return existing;
+  try {
+    final userId = serviceLocator<AuthenticationCubit>().userId ?? '';
+    if (userId.isEmpty) return null;
+    await serviceLocator<AccountCardsSummaryCubit>()
+        .fetchAccountSummaries(userId: userId, silent: true);
+  } catch (_) {
+    return null;
+  }
+  return personalAccountSnapshot();
+}
+
 /// Build a snapshot from a summary row. Exposed so a caller that already has
 /// the entity (a picker, say) does not have to go back through the locator.
 ActiveAccountSnapshot snapshotOf(AccountSummaryEntity a) {
