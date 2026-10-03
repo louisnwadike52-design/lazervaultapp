@@ -137,8 +137,18 @@ class BankRepository {
 
     try {
       final token = await _storage.getAccessToken();
+      if (token == null || token.isEmpty) {
+        // Said out loud. A bank list fetched with no session silently falls
+        // back to the bundled list, and on a non-Flutterwave rail every
+        // fintech code in that list is wrong — so this is the difference
+        // between a working transfer and a declined one.
+        debugPrint('[banks] no access token — cannot refresh, using fallback');
+      }
       if (token != null && token.isNotEmpty) {
+        final sw = Stopwatch()..start();
         final res = await _remote.getBanksWithProvider(accessToken: token);
+        debugPrint('[banks] fetched ${res.banks.length} banks '
+            'from provider=${res.provider} in ${sw.elapsedMilliseconds}ms');
         // NB: do NOT filter on isActive — the backend currently returns it as
         // false for every bank; the rail's own list is already curated to
         // transfer-eligible banks.
@@ -167,12 +177,38 @@ class BankRepository {
           return list;
         }
       }
-    } catch (_) {
-      // fall through to stale cache / static
+    } catch (e) {
+      // Name it. This used to fall through silently to a list whose codes the
+      // active rail rejects, so a user saw a normal-looking bank picker and a
+      // transfer that failed for no visible reason.
+      debugPrint('[banks] refresh FAILED: $e — falling back');
     }
 
     final stale = _tryDecode(cachedRaw);
-    if (stale != null && stale.isNotEmpty) return stale;
+    if (stale != null && stale.isNotEmpty) {
+      // A stale list from the SAME rail is fine — bank codes change a few
+      // times a year, not hourly.
+      debugPrint('[banks] serving stale cache from provider=$cachedProvider');
+      return stale;
+    }
+    // LAST RESORT, and a knowingly wrong one on a non-Flutterwave rail.
+    //
+    // The bundled list is Flutterwave-shaped: Kuda is 50211 there and 090267
+    // on Nomba, OPay 999992 vs 305, Moniepoint 50515 vs 090405. Only ~39 of
+    // its 155 codes resolve against Nomba at all, and the ones that fail are
+    // the most-used destinations in the country.
+    //
+    // It is still returned rather than nothing — an empty picker helps no one
+    // and the backend refuses a code it cannot resolve, so the failure is a
+    // declined transfer rather than misrouted money — but it is now ANNOUNCED,
+    // because "the list looks normal and transfers fail" is the worst
+    // possible shape for this bug and it is exactly what was reported.
+    if (cachedProvider.isNotEmpty &&
+        cachedProvider.toLowerCase() != 'flutterwave') {
+      debugPrint('[banks] WARNING: falling back to the bundled Flutterwave '
+          'list while the active rail is "$cachedProvider" — fintech codes '
+          'in this list will be refused');
+    }
     return BanksData.getBanksForCountry(country);
   }
 
