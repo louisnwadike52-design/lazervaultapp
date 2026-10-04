@@ -286,6 +286,11 @@ class _P2PChatBottomSheetState extends State<P2PChatBottomSheet>
               // Name + status
               Expanded(
                 child: Column(
+                  // Centred against the avatar: with the static subtitle gone
+                  // this is usually a single line, and a top-aligned single
+                  // line sits visibly high next to a 40px avatar.
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -296,16 +301,23 @@ class _P2PChatBottomSheetState extends State<P2PChatBottomSheet>
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(height: 2.h),
-                    Text(
-                      _otherUserTyping ? 'Typing...' : 'Lazervault User',
-                      style: GoogleFonts.inter(
-                        color: _otherUserTyping
-                            ? const Color(0xFF3B82F6)
-                            : const Color(0xFF9CA3AF),
-                        fontSize: 12.sp,
+                    // Second line ONLY while they are typing. "Lazervault
+                    // User" was true of everyone in the app, so it told the
+                    // reader nothing while permanently occupying the line
+                    // under their name — and the SizedBox above it held that
+                    // gap open even when there was nothing to show.
+                    if (_otherUserTyping) ...[
+                      SizedBox(height: 2.h),
+                      Text(
+                        'Typing...',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF3B82F6),
+                          fontSize: 12.sp,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),

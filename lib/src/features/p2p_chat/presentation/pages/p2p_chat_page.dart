@@ -312,6 +312,7 @@ class _P2PChatPageState extends State<P2PChatPage>
               onTap: _openProfileModal,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
@@ -324,17 +325,25 @@ class _P2PChatPageState extends State<P2PChatPage>
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  Text(
-                    _otherUserTyping ? 'Typing...' : 'Lazervault User',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      color: _otherUserTyping
-                          ? const Color(0xFF3B82F6)
-                          : const Color(0xFF9CA3AF),
-                      fontSize: 11.sp,
+                  // The second line appears ONLY while the other person is
+                  // typing.
+                  //
+                  // It used to read "Lazervault User" the rest of the time —
+                  // a label that is true of everyone in the app and therefore
+                  // tells the reader nothing, while permanently occupying the
+                  // line under their name. With it gone the header is the name
+                  // alone, vertically centred against the avatar, and the
+                  // typing state is the only thing that ever pushes it up.
+                  if (_otherUserTyping)
+                    Text(
+                      'Typing...',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF3B82F6),
+                        fontSize: 11.sp,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
