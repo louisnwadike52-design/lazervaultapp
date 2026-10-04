@@ -547,7 +547,13 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           ]
         : isMember
             ? const ['Make payments', 'View payments', 'Download receipts']
-            : const ['View contribution', 'Request to join'];
+            // NOT 'Request to join'. Membership of a contribution is granted
+            // by an admin — either when the contribution is created or by
+            // adding members to it afterwards — and that sends an invite. A
+            // self-service request was a second, parallel way in that nobody
+            // administers: it added the requester immediately with no admin
+            // decision, which is not "requesting" anything.
+            : const ['View contribution'];
     final color = _roleColor(isCreator, isMember);
     final icon = _roleIcon(isCreator, isMember);
     final label = _roleLabel(isCreator, isMember);
@@ -570,15 +576,9 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             bullets: permissions,
           ),
         ],
-        primaryAction: !isMember && !isCreator
-            ? _DialogAction(
-                label: 'Request to join',
-                onTap: () {
-                  Navigator.of(dialogCtx, rootNavigator: false).pop();
-                  _showJoinContributionDialog(contribution);
-                },
-              )
-            : null,
+        // No action for a non-member. An admin adds them and the invite
+        // arrives; there is nothing for them to do from here.
+        primaryAction: null,
       ),
     );
   }
@@ -612,68 +612,6 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         title: title,
         sections: [
           _DialogSection(heading: 'How it works', body: body),
-        ],
-      ),
-    );
-  }
-
-  void _showJoinContributionDialog(Contribution contribution) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1F1F1F),
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        title: Text(
-          'Join Contribution',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        content: Text(
-          'Would you like to join "${contribution.title}"? This will add you as a contributing member.',
-          style: GoogleFonts.inter(
-            color: Colors.grey[400],
-            fontSize: 14.sp,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(color: Colors.grey[400]),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              final cubit = context.read<GroupAccountCubit>();
-              final userId = cubit.currentUserId;
-              if (userId != null && userId.isNotEmpty) {
-                cubit.addMembersToContributionAccount(
-                  contributionId: contribution.id,
-                  groupId: contribution.groupId,
-                  memberUserIds: [userId],
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Unable to join: user not authenticated'),
-                    backgroundColor: Color(0xFFEF4444),
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-            ),
-            child: Text(
-              'Join',
-              style: GoogleFonts.inter(color: Colors.white),
-            ),
-          ),
         ],
       ),
     );
