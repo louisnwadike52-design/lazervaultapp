@@ -264,6 +264,8 @@ import 'package:lazervault/src/features/funds/domain/usecases/initiate_withdrawa
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/data/datasources/open_banking_remote_datasource.dart';
 import 'package:lazervault/src/features/open_banking/data/datasources/open_banking_grpc_datasource.dart';
+import 'package:lazervault/src/features/impersonation/data/impersonation_service.dart';
+import 'package:lazervault/src/features/impersonation/presentation/impersonation_session.dart';
 import 'package:lazervault/src/features/open_banking/data/datasources/credit_score_ai_service.dart';
 
 // Card Settings Imports
@@ -1783,6 +1785,20 @@ Future<void> init() async {
     () => OpenBankingRemoteDataSource(
       secureStorage: serviceLocator<SecureStorageService>(),
     ),
+  );
+
+  // ================== Feature: read-only "view as user" ==================
+  //
+  // Admin-only. The role is enforced server-side at both endpoints and again
+  // at the mint; the client-side check only decides whether to show the entry
+  // point.
+  serviceLocator.registerLazySingleton<ImpersonationService>(
+    () => ImpersonationService(serviceLocator<SecureStorageService>()),
+  );
+  // Singleton: the banner sits above the navigator and must survive every
+  // route change, so one instance for the life of the app.
+  serviceLocator.registerLazySingleton<ImpersonationSession>(
+    () => ImpersonationSession(serviceLocator<SecureStorageService>()),
   );
 
   // Data Sources - gRPC (preferred for deposits). Registered BEFORE

@@ -3,6 +3,9 @@
 // via `--flavor`, so those checks are gone — see `currentAppEnvironment`.
 
 import 'dart:ui' show PlatformDispatcher;
+import 'package:lazervault/src/features/impersonation/presentation/impersonation_entry_tile.dart';
+import 'package:lazervault/src/features/impersonation/presentation/impersonation_session.dart';
+import 'package:lazervault/src/features/impersonation/presentation/impersonation_banner.dart';
 import 'package:flutter/foundation.dart'
     show kDebugMode, kReleaseMode, debugPrint;
 import 'package:flutter/material.dart';
@@ -374,6 +377,32 @@ void main() {
     // first frame the destination paints. Net effect: ONE splash, no
     // visible handoff.
     final initialRoute = await _determineInitialRoute();
+
+    // Restore (or clean up) a read-only "view as user" session from a previous
+    // run, BEFORE any UI mounts.
+    //
+    // THE CRASH CASE, and the worst failure this feature can have: if the app
+    // died mid-session the stored ACTIVE token is the TARGET's. Without this
+    // the admin resumes as them with no banner and no exit — someone else's
+    // account presented as their own. restore() either brings the banner back
+    // (session still valid) or ends the session and restores the admin's own
+    // tokens (expired), and never leaves the target's token active silently.
+    //
+    // Best-effort: a failure here must not stop the app booting, so it falls
+    // back to ending the session, which is the safe direction.
+    try {
+      final session = serviceLocator<ImpersonationSession>();
+      session.onExpired = () {
+        final ctx = Get.context;
+        if (ctx != null) exitImpersonation(ctx);
+      };
+      await session.restore();
+    } catch (e) {
+      debugPrint('[impersonation] restore failed, ending any session: $e');
+      try {
+        await serviceLocator<SecureStorageService>().endImpersonation();
+      } catch (_) {}
+    }
 
     runApp(MyApp(initialRoute: initialRoute));
 
@@ -943,9 +972,22 @@ class _MyAppState extends State<MyApp> {
                 // screens (tablets, desktop windows) so it never stretches and
                 // loses proportion; the gate's own overlays stay full-screen.
                 child: AppStartupGate(
-                  child: _MaxWidthShell(
-                    maxWidth: kMaxContentWidth,
-                    child: child ?? const SizedBox.shrink(),
+                  // The read-only "view as user" banner sits ABOVE the
+                  // navigator so it renders on every screen. An admin who
+                  // forgets they are impersonating will read another person's
+                  // balance as their own; this bar and its Exit are the only
+                  // thing preventing that, so it is never route-specific and
+                  // never dismissible.
+                  child: ImpersonationBannerHost(
+                    session: serviceLocator<ImpersonationSession>(),
+                    onExit: () async {
+                      final ctx = Get.context;
+                      if (ctx != null) await exitImpersonation(ctx);
+                    },
+                    child: _MaxWidthShell(
+                      maxWidth: kMaxContentWidth,
+                      child: child ?? const SizedBox.shrink(),
+                    ),
                   ),
                 ),
               ),

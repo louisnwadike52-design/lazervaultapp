@@ -1,4 +1,5 @@
 import 'package:lazervault/src/features/uplift/data/services/uplift_guide_preference.dart';
+import 'package:lazervault/src/features/impersonation/presentation/impersonation_entry_tile.dart';
 import 'package:lazervault/src/features/voice_session/data/voice_guide_preference.dart';
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
@@ -841,6 +842,11 @@ class _SettingsViewState extends State<_SettingsView> {
     );
   }
 
+  /// Admin-only "View as user" entry. Renders NOTHING for everyone else, so
+  /// the settings list is unchanged for ordinary users.
+  Widget _viewAsUserTile() =>
+      const ImpersonationEntryTile(brandColor: _kBrand);
+
   /// "Customize" section — groups all flow customizations in one place:
   ///  • Send money: transfer style (classic short flow vs standard long flow)
   ///  • Login: login method (email+password vs phone+passcode)
@@ -1262,6 +1268,9 @@ class _SettingsViewState extends State<_SettingsView> {
                 );
               },
             ),
+          // Admin-only. Renders nothing at all for everyone else, so the
+          // Security section is unchanged for ordinary users.
+          _viewAsUserTile(),
           _navTile(
             icon: Icons.pin_outlined,
             title: 'Passcode',

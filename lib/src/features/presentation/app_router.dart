@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/impersonation/presentation/impersonation_search_screen.dart';
 import 'package:lazervault/src/features/contactless_payment/services/contactless_websocket_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart' hide Transition;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -675,6 +676,14 @@ class AppRouter {
       name: AppRoutes.root,
       page: () => serviceLocator<EmailSignInScreen>(),
       transition: Transition.fade,
+    ),
+    // Admin-only read-only "view as user" directory. Registered like any other
+    // page: the gate is the role check at the entry point plus the server's
+    // own 403, never route obscurity.
+    GetPage(
+      name: AppRoutes.impersonationSearch,
+      page: () => const ImpersonationSearchScreen(),
+      transition: Transition.rightToLeft,
     ),
     // First-launch intro carousel (shown once per install by
     // _determineInitialRoute, before the auth entry). Self-contained: on

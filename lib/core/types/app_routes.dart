@@ -219,6 +219,10 @@ abstract class AppRoutes {
   static const String profileSettings = '/profile-settings';
   static const String languages = '/profile-settings/languages';
   static const String myAccount = '/profile-settings/my-account';
+  /// Admin-only read-only "view as user" directory. Gated before push and
+  /// enforced server-side at both endpoints; a non-admin who reaches it sees
+  /// an empty list and a 403.
+  static const String impersonationSearch = '/admin/view-as-user';
   static const String setFingerPrint = '/profile-settings/set-fingerprint';
   static const String changePin = '/profile-settings/change-pin';
   static const String depositFunds = '/profile-settings/deposit-funds';

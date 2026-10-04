@@ -341,6 +341,106 @@ class SecureStorageService {
     return await _storage.read(key: _keyRefreshToken);
   }
 
+  // ── read-only "view as user" session ───────────────────────────────────
+  //
+  // The ADMIN's own tokens are stashed under separate keys while they view
+  // someone else's account, so Exit restores their session instead of logging
+  // them out — and so a crash mid-session cannot leave the app holding only a
+  // stranger's token with no way back to the admin's own identity.
+  static const String _keyImpAdminAccess = 'imp_admin_access_token';
+  static const String _keyImpAdminRefresh = 'imp_admin_refresh_token';
+  static const String _keyImpSessionId = 'imp_session_id';
+  static const String _keyImpTargetLabel = 'imp_target_label';
+  static const String _keyImpExpiresAt = 'imp_expires_at';
+
+  /// Stash the admin's own tokens and the session facts, then make [impToken]
+  /// the active session.
+  ///
+  /// Written in THIS order deliberately: the admin's tokens are saved BEFORE
+  /// the active token is replaced, so a failure part-way through leaves the
+  /// admin's own session intact rather than unrecoverable.
+  Future<void> beginImpersonation({
+    required String impersonationToken,
+    required String sessionId,
+    required String targetLabel,
+    required String expiresAtIso,
+  }) async {
+    final adminAccess = await getAccessToken();
+    final adminRefresh = await getRefreshToken();
+    if (adminAccess != null && adminAccess.isNotEmpty) {
+      await _storage.write(key: _keyImpAdminAccess, value: adminAccess);
+    }
+    if (adminRefresh != null && adminRefresh.isNotEmpty) {
+      await _storage.write(key: _keyImpAdminRefresh, value: adminRefresh);
+    }
+    await _storage.write(key: _keyImpSessionId, value: sessionId);
+    await _storage.write(key: _keyImpTargetLabel, value: targetLabel);
+    await _storage.write(key: _keyImpExpiresAt, value: expiresAtIso);
+    // Only now does the app start acting as the target.
+    await _storage.write(key: _keyAccessToken, value: impersonationToken);
+    // The impersonation token has NO refresh token — the server issues none on
+    // purpose. Clearing it stops a refresh attempt from resurrecting the
+    // ADMIN's session under the target's identity, which would be a genuine
+    // identity mix-up rather than a failed refresh.
+    await _storage.delete(key: _keyRefreshToken);
+  }
+
+  /// Restore the admin's own session. Safe to call when no session is active.
+  ///
+  /// Returns the session id that was active, or null if there was none — the
+  /// caller needs it to tell the server to revoke, and it is read BEFORE the
+  /// keys are cleared.
+  Future<String?> endImpersonation() async {
+    final sessionId = await _storage.read(key: _keyImpSessionId);
+    final adminAccess = await _storage.read(key: _keyImpAdminAccess);
+    final adminRefresh = await _storage.read(key: _keyImpAdminRefresh);
+
+    if (adminAccess != null && adminAccess.isNotEmpty) {
+      await _storage.write(key: _keyAccessToken, value: adminAccess);
+      if (adminRefresh != null && adminRefresh.isNotEmpty) {
+        await _storage.write(key: _keyRefreshToken, value: adminRefresh);
+      }
+    } else {
+      // No stashed admin token. Rather than leave the target's token active —
+      // which would keep the app signed in as someone else — clear the session
+      // so the user lands on login. Losing a session is recoverable; silently
+      // remaining as another user is not.
+      await _storage.delete(key: _keyAccessToken);
+      await _storage.delete(key: _keyRefreshToken);
+    }
+
+    await _storage.delete(key: _keyImpAdminAccess);
+    await _storage.delete(key: _keyImpAdminRefresh);
+    await _storage.delete(key: _keyImpSessionId);
+    await _storage.delete(key: _keyImpTargetLabel);
+    await _storage.delete(key: _keyImpExpiresAt);
+    return sessionId;
+  }
+
+  /// The ADMIN's stashed access token, while a session is active.
+  ///
+  /// Needed because the ACTIVE token during a session is the target's, and an
+  /// impersonated token is refused by the admin routes — it carries the
+  /// target's roles, which is exactly the point. So revoking must authenticate
+  /// as the admin explicitly.
+  Future<String?> getStashedAdminAccessToken() =>
+      _storage.read(key: _keyImpAdminAccess);
+
+  /// The active session's id, or null.
+  Future<String?> getImpersonationSessionId() =>
+      _storage.read(key: _keyImpSessionId);
+
+  /// Who is being viewed, for the banner.
+  Future<String?> getImpersonationTargetLabel() =>
+      _storage.read(key: _keyImpTargetLabel);
+
+  /// When the session's token expires, or null.
+  Future<DateTime?> getImpersonationExpiresAt() async {
+    final raw = await _storage.read(key: _keyImpExpiresAt);
+    if (raw == null || raw.isEmpty) return null;
+    return DateTime.tryParse(raw)?.toUtc();
+  }
+
   Future<void> deleteTokens() async {
     await _storage.delete(key: _keyAccessToken);
     await _storage.delete(key: _keyRefreshToken);
