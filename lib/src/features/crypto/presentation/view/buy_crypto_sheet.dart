@@ -653,6 +653,11 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
                   _buildHeader(),
                   SizedBox(height: 16.h),
                   PriceQuoteCard(
+                    // Show the rate this trade actually FILLS at, not the raw
+                    // order-book ticker. The sheet's own maths already applies
+                    // the swap margin, so displaying the unadjusted ticker put
+                    // two different rates on one screen.
+                    side: 'buy',
                     cryptoId: widget.crypto.id,
                     cryptoSymbol: widget.crypto.symbol,
                     onSwapMarginUpdated: (m) {

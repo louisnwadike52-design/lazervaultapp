@@ -22,6 +22,7 @@ import '../widgets/network_picker_sheet.dart';
 import '../widgets/price_quote_card.dart';
 import '../widgets/crypto_flow_guidance.dart';
 import 'swap_flow_dispatcher.dart';
+import '../../domain/trade_precision.dart';
 
 /// Streamlined SELL bottom sheet.
 ///
@@ -226,15 +227,26 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
   /// Crypto quantity being sold — the field value directly in crypto mode, or
   /// the fiat value divided by the live price in fiat mode.
   double get _cryptoAmount {
-    if (_isAmountInCrypto) return _typedAmount;
-    final p = _price();
-    return p > 0 ? _typedAmount / p : 0.0;
+    final raw = _isAmountInCrypto
+        ? _typedAmount
+        : (_price() > 0 ? _typedAmount / _price() : 0.0);
+    // Quantise to what the EXCHANGE will actually accept.
+    //
+    // The backend truncates the order quantity to quidax.CurrencyDecimals
+    // (USDT=2) before placing it. Previewing an un-quantised figure promised a
+    // trade that could not happen: 29.019794 USDT previewed ₦38,901.04 and the
+    // Confirm sheet then showed 29.01 USDT / ₦38,887.92. Quantising HERE means
+    // the preview, the fee estimate and the confirm all describe one trade.
+    return floorToOrderPrecision(raw, widget.crypto.symbol);
   }
 
   /// Fiat proceeds — the field value directly in fiat mode, or the crypto
   /// quantity times the live price in crypto mode.
   double get _fiatAmount {
-    if (_isAmountInCrypto) return _typedAmount * _price();
+    // From the QUANTISED quantity in crypto mode, so the proceeds shown match
+    // the quantity that will actually be sold. In fiat mode the typed figure
+    // is the target and the quantity is derived from it.
+    if (_isAmountInCrypto) return _cryptoAmount * _price();
     return _typedAmount;
   }
 
@@ -327,6 +339,11 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
                   _buildAssetHeader(h),
                   SizedBox(height: 16.h),
                   PriceQuoteCard(
+                    // Show the rate this trade actually FILLS at, not the raw
+                    // order-book ticker. The sheet's own maths already applies
+                    // the swap margin, so displaying the unadjusted ticker put
+                    // two different rates on one screen.
+                    side: 'sell',
                     cryptoId: widget.crypto.id,
                     cryptoSymbol: widget.crypto.symbol,
                     // The card already refetches every 30s; listen to it so
@@ -397,7 +414,14 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
               SizedBox(height: 2.h),
               Text(
                 h != null
-                    ? 'You hold ${h.quantity.toStringAsFixed(6)} ${widget.crypto.symbol.toUpperCase()} ≈ ${CurrencySymbols.currentSymbol}${(h.quantity * _price()).toStringAsFixed(2)}'
+                    // "at the sell rate" is load-bearing, not decoration.
+                    // The portfolio screen values the same holding at the
+                    // MARKET price, so this figure is lower — 29.0198 USDT
+                    // showed ₦39,446 there and ₦38,998 here. Unexplained, a
+                    // ₦448 drop between two screens reads as money going
+                    // missing; named, it is the spread, which is what every
+                    // exchange charges and what the user is choosing to accept.
+                    ? 'You hold ${h.quantity.toStringAsFixed(6)} ${widget.crypto.symbol.toUpperCase()} ≈ ${CurrencySymbols.currentSymbol}${(h.quantity * _price()).toStringAsFixed(2)} at the sell rate'
                     : (_holdingLoaded
                         ? 'You don’t hold any ${widget.crypto.symbol.toUpperCase()}'
                         : 'Loading your balance…'),
@@ -470,10 +494,17 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
   void _fillMax(CryptoHolding h) {
     setState(() {
       if (_isAmountInCrypto) {
-        // FLOOR to the field's 6-dp precision. _trimNum rounds, so a holding
-        // like 1.0000005 → "1.000001" would parse back ABOVE h.quantity and
-        // trip the over-hold guard — blocking the user from selling all of it.
-        final floored = (h.quantity * 1e6).floorToDouble() / 1e6;
+        // FLOOR to the precision the EXCHANGE accepts, not the field's 6 dp.
+        //
+        // Two reasons. _trimNum rounds, so 1.0000005 → "1.000001" parses back
+        // ABOVE h.quantity and trips the over-hold guard — blocking the one
+        // tap that should always work. And flooring to 6 dp offered a quantity
+        // the exchange would truncate anyway (29.019794 → 29.01), so Max
+        // promised ₦13 more than the trade could deliver. Flooring to the
+        // order precision makes Max exactly the largest executable sale; any
+        // remainder is sub-order-precision dust that cannot be sold at all.
+        final floored =
+            floorToOrderPrecision(h.quantity, widget.crypto.symbol);
         _amountController.text = _trimNum(floored);
       } else {
         // FLOOR the fiat to 2 dp. Rounding UP makes implied crypto (fiat/price)

@@ -35,6 +35,23 @@ class PriceQuoteCard extends StatefulWidget {
   /// quote instead of the (unobtainable) ticker.
   final ValueChanged<double>? onSwapMarginUpdated;
 
+  /// Which direction this card is quoting for: 'buy', 'sell', or null for a
+  /// neutral/market context (asset details, watchlists).
+  ///
+  /// WHY THIS EXISTS. The card fetches the order-book TICKER, and a trade
+  /// never fills there — Quidax applies a swap margin, which the sheets then
+  /// apply themselves (sell: rate*(1-margin), buy: rate*(1+margin)) so their
+  /// arithmetic matches the binding quote. The card went on displaying the raw
+  /// ticker, so the SAME SCREEN showed "1 USDT ≈ 1,359 NGN" directly above an
+  /// amount computed at 1,343.86 — and the Confirm sheet then showed 1,343.86
+  /// again. Reported by a user as "different rates within one screen, this may
+  /// cause distrust", and they were right: two of the three numbers were the
+  /// executable rate and the headline was not.
+  ///
+  /// With a side set, the card shows the rate the trade will ACTUALLY fill at.
+  /// Null keeps the raw ticker, which is correct where nothing is being traded.
+  final String? side;
+
   const PriceQuoteCard({
     super.key,
     required this.cryptoId,
@@ -42,6 +59,7 @@ class PriceQuoteCard extends StatefulWidget {
     this.overrideFiat,
     this.onRateUpdated,
     this.onSwapMarginUpdated,
+    this.side,
   });
 
   @override
@@ -104,7 +122,28 @@ class _PriceQuoteCardState extends State<PriceQuoteCard> {
   // Surface the current effective rate to the parent. Null = loading
   // OR error-with-no-fallback. Non-null = live or stale-but-usable.
   void _notifyRate() {
+    // Still the RAW ticker. The sheets apply the margin themselves (and must
+    // keep doing so — they also use it for min/max bounds and the fee
+    // estimate), so changing what is reported here would double-apply it.
+    // Only the DISPLAY is direction-adjusted.
     widget.onRateUpdated?.call(_price);
+  }
+
+  /// Ticker adjusted by the swap margin in the direction being traded.
+  ///
+  /// Mirrors exactly what buy_crypto_sheet._rate and sell_crypto_sheet._rate
+  /// compute, so the headline, the amount conversion and the Confirm sheet all
+  /// show one number.
+  double _effectiveRate(double ticker) {
+    switch (widget.side) {
+      case 'sell':
+        return ticker * (1 - _swapMargin);
+      case 'buy':
+        return ticker * (1 + _swapMargin);
+      default:
+        // No trade direction — the market price is the honest figure.
+        return ticker;
+    }
   }
 
   Future<void> _load() async {
@@ -216,7 +255,11 @@ class _PriceQuoteCardState extends State<PriceQuoteCard> {
                 color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
       );
     }
-    final priceStr = _formatPrice(_price!);
+    // The rate a trade in THIS direction actually fills at. Without the
+    // margin the headline contradicts the sheet's own arithmetic directly
+    // beneath it.
+    final effective = _effectiveRate(_price!);
+    final priceStr = _formatPrice(effective);
     final changeStr = _change24h == null
         ? ''
         : '${_change24h! >= 0 ? '+' : ''}${_change24h!.toStringAsFixed(2)}%';

@@ -313,6 +313,11 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                           if (_selectedCrypto != null) ...[
                             SizedBox(height: 12.h),
                             PriceQuoteCard(
+                              // Show the rate this trade actually FILLS at, not the raw
+                              // order-book ticker. The sheet's own maths already applies
+                              // the swap margin, so displaying the unadjusted ticker put
+                              // two different rates on one screen.
+                              side: 'buy',
                               cryptoId: _selectedCrypto!.id,
                               cryptoSymbol: _selectedCrypto!.symbol,
                               onRateUpdated: (rate) {
