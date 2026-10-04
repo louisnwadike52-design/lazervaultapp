@@ -23,6 +23,7 @@ import 'package:lazervault/src/features/voice_session/widgets/voice_customizatio
     show kMyVoiceSentinelId;
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_guidance_section.dart';
+import 'package:lazervault/src/features/voice/widgets/voice_allowance_section.dart';
 import 'package:lazervault/core/services/injection_container.dart'
     show serviceLocator;
 
@@ -483,6 +484,26 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
         // Central voice settings screen stays dark — render the PIN section in
         // its dark palette (the settings-hub accordion uses the light default).
         const VoiceTxPinSection(dark: true),
+
+        SizedBox(height: 28.h),
+        // Monthly voice allowance + the way to turn pay-as-you-go OFF.
+        //
+        // The opt-in sheet tells the user "you can turn this off any time in
+        // Voice settings" — and until now that setting did not exist. The
+        // server always accepted a withdrawal; nothing in the app offered one.
+        // Consent you cannot withdraw where you were told you could is not
+        // consent. It also answers the question the sheet could only answer
+        // too late: how many minutes are left.
+        //
+        // Renders nothing when billing is off, which is the shipped default.
+        _buildSectionHeader('Voice minutes'),
+        SizedBox(height: 12.h),
+        VoiceAllowanceSection(
+          loadStatus: () =>
+              context.read<VoiceSessionCubit>().fetchVoiceBillingStatus(),
+          setOptIn: (on) =>
+              context.read<VoiceSessionCubit>().setVoicePaygOptIn(on),
+        ),
 
         SizedBox(height: 28.h),
         // Guidance replay. The standing on/off switch lives in the settings hub's
