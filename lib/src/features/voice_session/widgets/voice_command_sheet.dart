@@ -13,6 +13,7 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/c
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card_v2.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_state.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_quota_sheet.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_chat_history_cubit.dart';
 import 'package:lazervault/src/features/voice_session/models/voice_language.dart';
 import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
@@ -164,6 +165,10 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   // One-shot guard so the biometric low-confidence warning modal shows once
   // per session rather than re-popping if the event repeats.
   bool _lowConfidenceWarned = false;
+  /// Once per refusal. The quota state can be re-delivered (a caption-wrapped
+  /// rebuild, a listener firing again on the same state) and a modal stacking
+  /// on itself is unrecoverable for the user. Cleared when a new call starts.
+  bool _quotaSheetShown = false;
   final TextEditingController _feedbackController = TextEditingController();
 
   /// Resolved voice interaction mode ('continuous'|'hold'|'tap'|'double_tap').
@@ -464,6 +469,32 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     context.read<VoiceSessionCubit>().endSession(endReason: reason);
   }
 
+  /// Show the monthly-allowance sheet for a refused call.
+  ///
+  /// Three outcomes, all of which must leave the user somewhere sensible:
+  /// opted in → start the call they were trying to make; declined, or no
+  /// pay-as-you-go offered → close the voice sheet rather than leave them on a
+  /// dead screen.
+  Future<void> _showQuotaSheet(BuildContext context, VoiceQuotaInfo info) async {
+    final cubit = context.read<VoiceSessionCubit>();
+    final optedIn = await showVoiceQuotaSheet(
+      context,
+      info: info,
+      onOptIn: () => cubit.setVoicePaygOptIn(true),
+    );
+    if (!mounted) return;
+    if (optedIn) {
+      // Consent recorded, so the gate will now pass. Retry the call they asked
+      // for in the first place.
+      _quotaSheetShown = false;
+      _startNewCall();
+      return;
+    }
+    // Declined (or nothing to accept). Close out rather than sitting on a
+    // screen with no live call behind it.
+    _closeSheet();
+  }
+
   /// Start a new call from the ended screen.
   void _startNewCall() {
     if (_isClosing) return; // Prevent starting new call while closing
@@ -476,6 +507,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     _selectedRating = 0;
     _isSubmittingRating = false;
     _ratingSubmitted = false;
+    _quotaSheetShown = false;
     _feedbackController.clear();
     context.read<VoiceSessionCubit>().startNewSession(
           accessToken: authState.profile.session.accessToken,
@@ -1121,6 +1153,14 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           // Voice biometrics confirmed the speaker — show a brief success
           // confirmation (auto-dismisses after 3s, OK closes it sooner).
           _showVerificationSuccessDialog(context, state.message);
+        } else if (state is VoiceSessionQuotaExceeded) {
+          // The server DECLINED to start this call: out of monthly voice
+          // minutes. Not an error snackbar — a sheet with the numbers and, when
+          // the operator allows it, the way to continue.
+          if (!_quotaSheetShown) {
+            _quotaSheetShown = true;
+            _showQuotaSheet(context, state.info);
+          }
         } else if (state is VoiceSessionCloneDegraded) {
           // Cloned voice dropped to a standard voice mid-call — a brief, non-blocking
           // notice (mirrors the language-unavailable snackbar). The call continues.

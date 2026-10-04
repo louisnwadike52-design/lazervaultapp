@@ -17,6 +17,7 @@ import 'package:lazervault/core/services/voice_biometrics_service.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
 import 'voice_session_state.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_quota_sheet.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_customization_sheet.dart'
     show kMyVoiceSentinelId;
 
@@ -145,6 +146,26 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// if it fires while the flag is still set, the flag is cleared so a dropped
   /// terminal event can't freeze the UI indefinitely. When [active] is false
   /// the flag is cleared and the watchdog cancelled.
+  /// Set when the SERVER refused to start this session for quota. Terminal for
+  /// the session, and load-bearing: the agent closes its side immediately
+  /// after sending the refusal, so a RoomDisconnectedEvent follows within
+  /// milliseconds and would otherwise replace the quota sheet's state with a
+  /// generic "disconnected". The user would see a dead call instead of the
+  /// reason and the way to continue.
+  VoiceQuotaInfo? _quotaRefusal;
+
+  VoiceQuotaInfo? get quotaRefusal => _quotaRefusal;
+
+  /// Emit a session-death state unless this session was refused for quota.
+  void _emitSessionDeath(VoiceSessionState state) {
+    if (_quotaRefusal != null) {
+      print('VoiceSessionCubit: suppressing ${state.runtimeType} — '
+          'session was refused for quota');
+      return;
+    }
+    emit(state);
+  }
+
   void _setVisualFeedbackActive(bool active) {
     _isVisualFeedbackActive = active;
     _visualFeedbackTimer?.cancel();
@@ -1030,6 +1051,10 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       return;
     }
     _isStartingSession = true;
+    // A previous attempt's quota refusal must not silence this one's states.
+    // Cleared here rather than only in startNewSession because the sheet can
+    // be reopened from scratch, which comes through this entry point.
+    _quotaRefusal = null;
 
     emit(VoiceSessionLoadingCredentials());
 
@@ -1286,7 +1311,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         _localUserSpeaking = false;
         if (isClosed) return;
         _disconnectWebSocket();
-        emit(VoiceSessionDisconnected());
+        _emitSessionDeath(VoiceSessionDisconnected());
       })
       ..on<SpeakingChangedEvent>((event) {
         if (event.participant == _room?.localParticipant) {
@@ -2573,7 +2598,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
               // Agent signaled session end
               _setVisualFeedbackActive(false);
               _disconnectWebSocket();
-              emit(VoiceSessionDisconnected());
+              _emitSessionDeath(VoiceSessionDisconnected());
             }
           }
           break;
@@ -2874,6 +2899,25 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           // endSession disposes the LiveKit room (closes all connections for this
           // session) and emits VoiceSessionEnded.
           unawaited(endSession(endReason: reason));
+          break;
+        case 'voice_quota_exceeded':
+          // The SERVER declined to start this session: the user is out of
+          // monthly voice minutes. Not an error — a decision, with a way
+          // forward. Recorded BEFORE the teardown so the RoomDisconnectedEvent
+          // the agent is about to cause cannot replace this state.
+          final quota = VoiceQuotaInfo.fromEvent(eventData);
+          print('VoiceSessionCubit: voice quota exceeded '
+              '(used=${quota.usedMinutes}/${quota.freeMinutes}, '
+              'payg=${quota.needsPaygOptIn}, reason=${quota.reason})');
+          _quotaRefusal = quota;
+          _setVisualFeedbackActive(false);
+          _clearCaptions();
+          emit(VoiceSessionQuotaExceeded(quota));
+          // Tear the room down so we are not holding a LiveKit connection the
+          // agent has already left. Fire-and-forget to avoid reentrancy on the
+          // active WS-message stack; _emitSessionDeath keeps the teardown from
+          // emitting over the state just set.
+          unawaited(endSession(endReason: 'quota_exceeded'));
           break;
         case 'error':
           _setVisualFeedbackActive(false);
@@ -3389,7 +3433,92 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     await _disposeRoomResources();
     _isMuted = false;
     if (isClosed) return;
-    emit(VoiceSessionEnded(sessionId: sessionId, endReason: endReason));
+    // Suppressed on a quota refusal: VoiceSessionEnded shows the call-ended /
+    // rating screen, and asking someone to rate a call that was never allowed
+    // to start is absurd.
+    _emitSessionDeath(
+        VoiceSessionEnded(sessionId: sessionId, endReason: endReason));
+  }
+
+  /// This user's voice allowance and the current price terms.
+  ///
+  /// Returns null when it cannot be read — callers must treat that as "unknown",
+  /// never as "no allowance left" or "already opted in".
+  Future<Map<String, dynamic>?> fetchVoiceBillingStatus(
+      {String? accessToken}) async {
+    final token = accessToken ?? _currentAccessToken ?? '';
+    if (token.isEmpty) return null;
+    try {
+      final response = await http.get(
+        Uri.parse('$_voiceAgentGatewayUrl/voice/billing/status'),
+        headers: {'Authorization': 'Bearer $token'},
+      ).timeout(const Duration(seconds: 10));
+      if (response.statusCode != 200) {
+        print(
+            'VoiceSessionCubit: billing status HTTP ${response.statusCode}');
+        return null;
+      }
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      print('VoiceSessionCubit: billing status error: $e');
+      return null;
+    }
+  }
+
+  /// Accept or withdraw pay-as-you-go consent. Returns true when saved.
+  ///
+  /// The terms version is read from the server IN THIS CALL rather than taken
+  /// from the caller, and the server checks it again before recording. Two
+  /// reads of the same thing on purpose: the app must not be the one asserting
+  /// what price the user agreed to, and the second check closes the window
+  /// where a rate changes between the sheet rendering and the tap.
+  ///
+  /// Throws on transport failure so the sheet can distinguish "server not
+  /// reachable" from a deliberate refusal, which return false.
+  Future<bool> setVoicePaygOptIn(bool optedIn, {String? accessToken}) async {
+    final token = accessToken ?? _currentAccessToken ?? '';
+    if (token.isEmpty) {
+      print('VoiceSessionCubit: cannot set payg opt-in — no token');
+      return false;
+    }
+
+    String? termsVersion;
+    if (optedIn) {
+      // Required to opt IN. Withdrawing needs no version — nobody should be
+      // held in a paid mode because the rates moved while they cancelled.
+      final status = await fetchVoiceBillingStatus(accessToken: token);
+      termsVersion =
+          (status?['terms'] as Map<String, dynamic>?)?['version'] as String?;
+      if (termsVersion == null || termsVersion.isEmpty) {
+        print('VoiceSessionCubit: payg opt-in aborted — no terms version');
+        return false;
+      }
+    }
+
+    final response = await http
+        .post(
+          Uri.parse('$_voiceAgentGatewayUrl/voice/billing/payg'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode({
+            'opted_in': optedIn,
+            if (termsVersion != null) 'terms_version': termsVersion,
+          }),
+        )
+        .timeout(const Duration(seconds: 15));
+
+    if (response.statusCode == 200) {
+      if (optedIn) {
+        // The refusal is spent: the next start is allowed to run.
+        _quotaRefusal = null;
+      }
+      return true;
+    }
+    print('VoiceSessionCubit: payg opt-in HTTP ${response.statusCode}: '
+        '${response.body}');
+    return false;
   }
 
   /// Submit a session rating to the backend.
@@ -3431,6 +3560,9 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// Start a fresh session (used from the "Call Again" button on the ended screen).
   Future<void> startNewSession({required String accessToken}) async {
     // Ensure old session is fully cleaned up before starting new one
+    // Cleared FIRST: a retry after opting into pay-as-you-go must not be
+    // silenced by the previous attempt's refusal.
+    _quotaRefusal = null;
     _disconnectWebSocket();
     await _disposeRoomResources();
     _currentSessionId = null;

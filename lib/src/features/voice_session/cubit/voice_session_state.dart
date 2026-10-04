@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:livekit_client/livekit_client.dart';
 import 'package:lazervault/src/features/voice_session/models/voice_language.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_quota_sheet.dart';
 
 abstract class VoiceSessionState extends Equatable {
   const VoiceSessionState();
@@ -322,4 +323,21 @@ class VoiceSessionWithCaption extends VoiceSessionState {
   @override
   List<Object?> get props =>
       [baseState, userCaption, agentCaption, isAgentSpeaking];
+}
+
+/// The server refused to START this session because the user is out of their
+/// monthly voice allowance.
+///
+/// Carries the numbers rather than a message so the sheet can render the real
+/// figures and the opt-in; a bare error string would leave the user with
+/// "something went wrong" on a call that was deliberately declined.
+///
+/// Terminal: the agent has already closed its side, so this must not be
+/// followed by a generic error or ended state overwriting it.
+class VoiceSessionQuotaExceeded extends VoiceSessionState {
+  final VoiceQuotaInfo info;
+  const VoiceSessionQuotaExceeded(this.info);
+  @override
+  List<Object?> get props =>
+      [info.freeMinutes, info.usedMinutes, info.needsPaygOptIn, info.reason];
 }
