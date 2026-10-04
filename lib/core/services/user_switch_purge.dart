@@ -96,6 +96,52 @@ bool isUserSwitch({
 /// purge can never block (or crash) the new user's sign-in. Callers must still
 /// treat their own identity assignment as separate from this — a failure here
 /// must not leave the app authenticated as nobody.
+/// The CACHE half of [purgeStaleUserCache], without touching credentials.
+///
+/// For a switch that is TEMPORARY and must leave the operator's own login
+/// intact — impersonation. Entering and leaving someone else's account is a
+/// user switch in every way that matters to these caches:
+///
+///   * SWR holds the previous person's profile, accounts, tier, limits and
+///     BALANCES. Without this, an admin entering impersonation is shown their
+///     OWN cached figures while authenticated as the target — which defeats
+///     the entire point of a feature whose purpose is to see what the user
+///     sees, and sends support off to answer the wrong question. On the way
+///     out, the target's figures persist into the admin's own session.
+///   * AccountManager holds an ACTIVE ACCOUNT ID belonging to the other
+///     person. Impersonation is read-only server-side (every write is refused
+///     with IMPERSONATION_READ_ONLY), so this cannot move money — but it can
+///     scope a read to an account the signed-in user does not own.
+///
+/// Deliberately does NOT delete [kPerUserStorageKeys] or the biometric
+/// session, which [purgeStaleUserCache] does. Those are the admin's OWN
+/// remembered identity — `stored_email`, `user_passcode`, `login_method` — and
+/// clearing them on the way into a 15-minute impersonation session would log
+/// the admin out of their own remembered login to come back to. A permanent
+/// switch wants them gone; a temporary one must not touch them.
+Future<void> purgeUserScopedCaches() async {
+  try {
+    if (serviceLocator.isRegistered<SWRCacheManager>()) {
+      await serviceLocator<SWRCacheManager>().invalidateAll();
+    }
+  } catch (_) {/* best-effort */}
+  try {
+    if (serviceLocator.isRegistered<AccountManager>()) {
+      serviceLocator<AccountManager>().clearActiveAccount();
+    }
+  } catch (_) {/* best-effort */}
+  try {
+    if (serviceLocator.isRegistered<CurrencySyncService>()) {
+      serviceLocator<CurrencySyncService>().clear();
+    }
+  } catch (_) {/* best-effort */}
+  try {
+    if (serviceLocator.isRegistered<GroupAccountCubit>()) {
+      serviceLocator<GroupAccountCubit>().clearOnLogout();
+    }
+  } catch (_) {/* best-effort */}
+}
+
 Future<void> purgeStaleUserCache(FlutterSecureStorage storage) async {
   // 1. Per-user secure-storage keys. A same-user re-login deliberately KEEPS
   // these (the "remember me" UX); only a confirmed SWITCH gets here.

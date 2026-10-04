@@ -107,6 +107,29 @@ void main() {
       expect(code, contains('showVoiceQuotaSheet'));
     });
 
+
+    test('the opt-in path handles a restart that refuses', () {
+      // _startNewCall() returns early when the sheet is already closing or
+      // auth has lapsed. The modal is gone by then, so a silent refusal left
+      // the user on a voice screen with no session immediately after agreeing
+      // to be charged. It must return a bool and the caller must react.
+      final code = codeOf(sheetPath);
+      expect(code, contains('bool _startNewCall()'),
+          reason: '_startNewCall must report whether it actually started');
+      expect(code, contains('if (_startNewCall()) return;'),
+          reason: 'the quota opt-in path must check the restart result');
+    });
+
+    test('the quota sheet does not take a BuildContext parameter', () {
+      // `mounted` is the State's flag and only certifies State.context.
+      // Guarding a passed-in context with it is meaningless — that element can
+      // be gone while the State is alive, and using it then throws.
+      final code = codeOf(sheetPath);
+      expect(code, isNot(contains('_showQuotaSheet(BuildContext context')),
+          reason: 'take State.context so the mounted guard applies');
+      expect(code, contains('Future<void> _showQuotaSheet(VoiceQuotaInfo info)'));
+    });
+
     test('the comment strip actually strips (self-check)', () {
       // Mutation guard. If codeOf stopped removing comments, every test above
       // would pass on a commented-out handler.

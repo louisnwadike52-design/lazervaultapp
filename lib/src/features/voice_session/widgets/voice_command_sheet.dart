@@ -475,7 +475,13 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   /// opted in → start the call they were trying to make; declined, or no
   /// pay-as-you-go offered → close the voice sheet rather than leave them on a
   /// dead screen.
-  Future<void> _showQuotaSheet(BuildContext context, VoiceQuotaInfo info) async {
+  /// Deliberately takes NO BuildContext parameter.
+  ///
+  /// `mounted` is the State's flag, so it only certifies `State.context`.
+  /// Guarding a passed-in context with it is the unrelated-mounted-check the
+  /// analyzer warns about: that element can be gone while the State is alive,
+  /// and showing a snackbar or reading a provider off it then throws.
+  Future<void> _showQuotaSheet(VoiceQuotaInfo info) async {
     final cubit = context.read<VoiceSessionCubit>();
     final optedIn = await showVoiceQuotaSheet(
       context,
@@ -487,7 +493,21 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       // Consent recorded, so the gate will now pass. Retry the call they asked
       // for in the first place.
       _quotaSheetShown = false;
-      _startNewCall();
+      if (_startNewCall()) return;
+      // It refused: the user closed the sheet with X while this was open, or
+      // their auth lapsed. The modal is already gone, so doing nothing leaves
+      // them on a voice screen with no session right after agreeing to be
+      // charged. Say so and close out.
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Pay-as-you-go is on. Tap the mic to start a new conversation.'),
+          backgroundColor: Color(0xFF5B45C9),
+          duration: Duration(seconds: 4),
+        ),
+      );
+      _closeSheet();
       return;
     }
     // Declined (or nothing to accept). Close out rather than sitting on a
@@ -496,10 +516,15 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   }
 
   /// Start a new call from the ended screen.
-  void _startNewCall() {
-    if (_isClosing) return; // Prevent starting new call while closing
+  ///
+  /// Returns false when it could NOT start. Callers that have already closed a
+  /// modal on the assumption a call follows need to know — see
+  /// _showQuotaSheet, where a silent refusal left the user on a voice screen
+  /// with no session after they had just consented to be charged.
+  bool _startNewCall() {
+    if (_isClosing) return false; // Prevent starting new call while closing
     final authState = context.read<AuthenticationCubit>().state;
-    if (authState is! AuthenticationSuccess) return;
+    if (authState is! AuthenticationSuccess) return false;
     // Reset local state
     _isClosing = false;
     _isDialogShowing = false;
@@ -512,6 +537,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     context.read<VoiceSessionCubit>().startNewSession(
           accessToken: authState.profile.session.accessToken,
         );
+    return true;
   }
 
   Future<void> _proceedAfterEnrollment() async {
@@ -1159,7 +1185,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           // the operator allows it, the way to continue.
           if (!_quotaSheetShown) {
             _quotaSheetShown = true;
-            _showQuotaSheet(context, state.info);
+            _showQuotaSheet(state.info);
           }
         } else if (state is VoiceSessionCloneDegraded) {
           // Cloned voice dropped to a standard voice mid-call — a brief, non-blocking

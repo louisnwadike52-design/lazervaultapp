@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/services/user_switch_purge.dart';
 
 /// One row in the admin's searchable user directory.
 @immutable
@@ -284,6 +285,20 @@ class ImpersonationService {
       expiresAtIso: expiresAt,
     );
 
+    // Entering someone else's account is a USER SWITCH, and the app caches
+    // per-user state that must not cross it. Without this the admin is shown
+    // their OWN cached profile, accounts, limits and balances while
+    // authenticated as the target — which defeats the point of a feature whose
+    // purpose is to see what the user sees, and sends support off to answer
+    // the wrong question. AccountManager's active account id would also still
+    // be the admin's, scoping reads to an account the authenticated user does
+    // not own.
+    //
+    // The CACHE-only purge, not purgeStaleUserCache: that one also deletes the
+    // admin's remembered login (stored_email, user_passcode, login_method) and
+    // their biometric session, which they need intact to come back to.
+    await purgeUserScopedCaches();
+
     return ImpersonationStartResult(
       sessionId: sessionId,
       targetLabel: candidate.displayName,
@@ -332,6 +347,10 @@ class ImpersonationService {
     }
 
     await _storage.endImpersonation();
+    // Symmetry matters as much as the entry purge: without it the TARGET's
+    // cached balances and active account persist into the admin's own session
+    // after they exit.
+    await purgeUserScopedCaches();
     return ImpersonationExitResult(
       revoked: revokeError == null,
       warning: revokeError,
