@@ -214,6 +214,30 @@ void main() {
       }
     });
 
+    test('send quantises at its own chokepoint', () {
+      // Send does NOT go through runSwapFlow — it runs via
+      // crypto_withdraw_cubit — so the dispatcher chokepoint does not cover
+      // it. _toMinor is where every send amount becomes minor units.
+      final code = codeOf(
+          'lib/src/features/crypto/presentation/view/send_crypto_screen.dart');
+      expect(code, contains('major = floorToOrderPrecision('),
+          reason: 'an un-quantised send quotes a figure the provider will '
+              'truncate, exactly like the reported sell');
+      expect(code, isNot(contains('(maxQty * 1e8).floorToDouble() / 1e8')),
+          reason: 'Max floored to a flat 8 dp, offering more than would send');
+    });
+
+    test('every crypto leg in the dispatcher is quantised', () {
+      final code = codeOf(
+          'lib/src/features/crypto/presentation/view/swap_flow_dispatcher.dart');
+      // buy to-leg, sell from-leg, convert from-leg.
+      expect(code, contains('toMinorUnits(qCryptoAmount, lowerCrypto)'));
+      expect(code, contains('toMinorUnits(qConvertFromAmount, lowerFromCrypto)'));
+      // The raw values must not reach toMinorUnits any more.
+      expect(code, isNot(contains('toMinorUnits(cryptoAmount, lowerCrypto)')),
+          reason: 'a raw crypto amount reaching minor units is the bug');
+    });
+
     test('the comment strip actually strips (self-check)', () {
       const commented = '// floorToOrderPrecision(x)\n  final y = 1;\n';
       final stripped = commented

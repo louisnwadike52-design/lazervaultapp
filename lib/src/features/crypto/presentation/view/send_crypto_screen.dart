@@ -35,6 +35,7 @@ import 'package:lazervault/src/generated/crypto.pbgrpc.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 import 'package:grpc/grpc.dart' show GrpcError;
+import '../../domain/trade_precision.dart';
 part 'send_crypto_screen_widgets.dart';
 
 // SendCryptoScreen (PR6) — single-screen send flow:
@@ -331,6 +332,15 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
   }
 
   int _toMinor(double major) {
+    // QUANTISE FIRST — send's chokepoint, the equivalent of what
+    // runSwapFlow does for buy/sell/swap (send does not go through it; it
+    // runs via crypto_withdraw_cubit).
+    //
+    // The backend truncates the amount to quidax.CurrencyDecimals before the
+    // provider call, so an un-quantised send quotes and confirms a figure it
+    // will then shrink — the same shape as the reported sell. Flooring can
+    // only leave sub-precision dust behind, never over-send.
+    major = floorToOrderPrecision(major, _selected?.cryptoSymbol ?? 'usdt');
     try {
       return GetIt.I<CryptoConfigCubit>().config.toMinorUnits(
             major,
@@ -1579,7 +1589,12 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                         _amountController.text = _amountInFiat
                             ? ((maxQty * _priceOf * 100).floorToDouble() / 100)
                                 .toStringAsFixed(2)
-                            : _trimNum((maxQty * 1e8).floorToDouble() / 1e8);
+                            // Floored to the EXCHANGE's precision, not a
+                            // flat 8 dp. Offering 29.0198 USDT when the
+                            // provider accepts 2 dp made Max promise more
+                            // than the send would move.
+                            : _trimNum(floorToOrderPrecision(
+                                maxQty, _selected?.cryptoSymbol ?? 'usdt'));
                       }),
                       child: Container(
                         padding: EdgeInsets.symmetric(
