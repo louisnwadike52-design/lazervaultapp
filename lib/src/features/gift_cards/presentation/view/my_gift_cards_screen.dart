@@ -493,8 +493,16 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
       // still surface this status, so we keep it parseable.
       case 'transferred':
         return const _Tone(bg: Color(0x206B7280), fg: Color(0xFF9CA3AF));
+      // REFUNDED is not an alarm. The purchase did not happen and the money
+      // is back — that is resolved, not something to act on. Sharing the red
+      // FAILED tone told a user whose funds had already been returned that
+      // something was still wrong. Distinct, calmer tone; it stays in the
+      // Failed tab so the card remains findable.
       case 'reversed': // legacy alias pre giftcards-service migration 013
       case 'refunded':
+        return const _Tone(bg: Color(0x203B82F6), fg: Color(0xFF60A5FA));
+      // FAILED now means what it says: the purchase did not happen AND the
+      // hold was not released, so the money may still be held.
       case 'failed':
         return const _Tone(bg: Color(0x20EF4444), fg: Color(0xFFEF4444));
       case 'pending_verification': // legacy alias pre giftcards-service migration 013

@@ -52,6 +52,101 @@ class UpliftGuideCopy {
   };
 }
 
+/// Shows one tab's explainer in a dialog, on demand.
+///
+/// The inline [UpliftGuideCard] is a FIRST-RUN affordance: it appears once and
+/// the user can dismiss it, or turn the set off entirely. That left the copy
+/// unreachable the moment it was dismissed — and the moment someone wants to
+/// know what "My Funds" means is rarely the first second they land on it.
+///
+/// A dialog rather than the inline card here, because this one was ASKED for:
+/// an explainer you opened deliberately should take focus and be dismissed
+/// deliberately, where one that appears on its own must not block the content
+/// you came to read.
+///
+/// Same [UpliftGuideCopy] as the card — one source for the words, so the
+/// dialog and the banner can never drift into describing the tab differently.
+Future<void> showUpliftTabInfo(BuildContext context, String tabId) {
+  final copy = UpliftGuideCopy.byTab[tabId];
+  if (copy == null) return Future<void>.value();
+  return showDialog<void>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      backgroundColor: const Color(0xFF17151F),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: Row(
+        children: [
+          Icon(copy.icon, color: kUpPrimary, size: 20.sp),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Text(
+              copy.title,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+      content: Text(
+        copy.body,
+        style: GoogleFonts.inter(
+          color: Colors.white.withValues(alpha: 0.75),
+          fontSize: 13.sp,
+          height: 1.5,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(),
+          child: Text('Got it',
+              style: GoogleFonts.inter(
+                  color: kUpPrimary, fontWeight: FontWeight.w600)),
+        ),
+      ],
+    ),
+  );
+}
+
+/// The compact, permanent way back to a tab's explainer.
+///
+/// Rendered where the dismissed [UpliftGuideCard] used to sit, so the space
+/// collapses to one line instead of vanishing — the information stays
+/// reachable without the banner being permanent.
+class UpliftTabInfoLink extends StatelessWidget {
+  const UpliftTabInfoLink({super.key, required this.tabId});
+
+  final String tabId;
+
+  @override
+  Widget build(BuildContext context) {
+    final copy = UpliftGuideCopy.byTab[tabId];
+    if (copy == null) return const SizedBox.shrink();
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton.icon(
+        onPressed: () => showUpliftTabInfo(context, tabId),
+        style: TextButton.styleFrom(
+          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        icon: Icon(Icons.info_outline,
+            size: 15.sp, color: Colors.white.withValues(alpha: 0.45)),
+        label: Text(
+          'About ${copy.title.toLowerCase()}',
+          style: GoogleFonts.inter(
+            color: Colors.white.withValues(alpha: 0.45),
+            fontSize: 11.sp,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// The first-run explainer for one LazerFunds tab.
 ///
 /// An inline card rather than a modal or a coach-mark overlay. A modal on

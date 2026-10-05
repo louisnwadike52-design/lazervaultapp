@@ -103,9 +103,14 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
   /// two nearly identical states is a flash, not feedback.
   Future<void> _refreshAfterFundChange() => _cubit.refreshAfterFundChange();
 
-  /// Builds the card for a tab, or nothing when it is not due.
+  /// The card while it is due, and a permanent way back to it afterwards.
+  ///
+  /// Dismissing the card used to return SizedBox.shrink() — the copy became
+  /// unreachable, and the moment someone wants to know what "My Funds" means
+  /// is rarely the first second they land on it. The row collapses to a single
+  /// info link instead of vanishing, which opens the same copy in a dialog.
   Widget _guideFor(String tab) {
-    if (_showGuide[tab] != true) return const SizedBox.shrink();
+    if (_showGuide[tab] != true) return UpliftTabInfoLink(tabId: tab);
     return UpliftGuideCard(
       tabId: tab,
       onDismiss: () => _dismissGuide(tab),
