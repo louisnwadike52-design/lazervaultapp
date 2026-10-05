@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/src/core/services/analytics_service.dart';
+import 'package:lazervault/src/features/transaction_pin/domain/pin_lockout.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/transaction_pin/widgets/transaction_pin_modal.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -476,11 +477,14 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
   }
 
   /// Show message when PIN is locked
-  void _showPinLockedMessage(BuildContext context, DateTime lockedUntil) {
+  void _showPinLockedMessage(BuildContext context, DateTime? lockedUntil) {
     if (!mounted) return;
-    final remainingTime = lockedUntil.difference(DateTime.now());
-    final minutes = remainingTime.inMinutes;
-    final seconds = remainingTime.inSeconds % 60;
+    // Sanitised, never raw. This dialog once told a user to "try again in
+    // -29854057 minutes and 14 seconds" because the server left the expiry
+    // unset and protobuf decoded it as 1970. pinLockRemaining returns null
+    // when there is no usable expiry, and the copy then states the policy
+    // instead of inventing a countdown.
+    final remaining = pinLockRemaining(lockedUntil);
 
     showDialog(
       context: context,
@@ -491,25 +495,45 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
           size: 48,
         ),
         title: const Text('PIN Locked'),
-        content: Text(
-            'Your transaction PIN has been locked due to too many failed attempts. '
-            'Please try again in $minutes minute${minutes == 1 ? "" : "s"} '
-            'and $seconds second${seconds == 1 ? "" : "s"}.'),
+        content: Text(pinLockedMessage(remaining)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('OK'),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Get.toNamed(AppRoutes.forgotPin);
-            },
-            child: const Text('Forgot PIN?'),
+            onPressed: () => _goResetPin(context),
+            child: const Text('Reset PIN'),
           ),
         ],
       ),
     );
+  }
+
+  /// Leave a locked-PIN dialog for the reset flow.
+  ///
+  /// A locked PIN used to be a dead end: the dialog said "contact support or
+  /// use the forgot PIN option" and the only button that moved anywhere was a
+  /// link the user had to notice. Being locked is the moment a reset is MOST
+  /// needed, so it is now a first-class action on both dialogs.
+  ///
+  /// The dialog is popped first so the reset screen does not race its
+  /// dismissal — the same ordering the in-flow reset path already relies on.
+  ///
+  /// On a completed reset the payment sheets underneath are dismissed. The pad
+  /// beneath is bound to the OLD, locked PIN and its attempt counter; sending
+  /// the user back to it would invite a retry against a credential that no
+  /// longer exists. They return to the page with a working PIN and can start
+  /// the payment cleanly. Backing out without resetting leaves everything
+  /// standing, because nothing has changed.
+  Future<void> _goResetPin(BuildContext context) async {
+    Navigator.of(context).pop();
+    AnalyticsService.instance.trackPinOutcome('pin_reset_requested_from_lock');
+    final didReset = await Get.toNamed(AppRoutes.forgotPin);
+    if (!mounted) return;
+    if (didReset == true && context.mounted) {
+      _dismissPaymentSheets(context);
+    }
   }
 
   /// Show message when attempts are exhausted
@@ -524,22 +548,15 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
           size: 48,
         ),
         title: const Text('Too Many Attempts'),
-        content: const Text(
-          'You have exceeded the maximum number of PIN attempts. '
-          'For your security, your PIN has been locked. '
-          'Please contact support or use the forgot PIN option.',
-        ),
+        content: Text(pinLockedMessage(null)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('OK'),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Get.toNamed(AppRoutes.forgotPin);
-            },
-            child: const Text('Forgot PIN?'),
+            onPressed: () => _goResetPin(context),
+            child: const Text('Reset PIN'),
           ),
         ],
       ),

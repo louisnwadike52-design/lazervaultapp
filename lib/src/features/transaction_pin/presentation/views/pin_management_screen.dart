@@ -13,6 +13,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utilities/auth_background.dart';
 import 'package:lazervault/core/utilities/passcode_policy.dart';
 import 'package:lazervault/src/features/transaction_pin/cubit/transaction_pin_cubit.dart';
+import 'package:lazervault/src/features/transaction_pin/domain/pin_lockout.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/transaction_pin/widgets/pin_success_view.dart';
 part 'pin_management_screen_widgets.dart';
@@ -304,10 +305,14 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
       if (res.success) {
         setState(() => _stage = _PinStage.enterNew);
       } else if (res.isLocked || res.isLockedUntil) {
-        final secs = res.lockedUntil != null
-            ? res.lockedUntil!.difference(DateTime.now()).inSeconds
-            : 15 * 60;
-        _startLockout(secs > 0 ? secs : 15 * 60);
+        // Sanitised through the shared helper: it rejects an epoch-0 timestamp
+        // (an unset server field, which is what produced the "-29854057
+        // minutes" dialog), floors at zero and caps at the policy maximum. The
+        // fallback when the server tells us nothing is that same maximum —
+        // previously a hardcoded 15 minutes, which stopped being the policy.
+        final remaining = pinLockRemaining(res.lockedUntil);
+        final secs = (remaining ?? kMaxPinLockout).inSeconds;
+        _startLockout(secs > 0 ? secs : kMaxPinLockout.inSeconds);
       } else {
         setState(() {
           _currentPin = '';
@@ -331,8 +336,10 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
         _verifyingCurrent = false;
         _currentPin = '';
         if (e.code == StatusCode.permissionDenied) {
-          // Locked but no structured timestamp — fall back to the default window.
-          _startLockout(15 * 60);
+          // Locked but no structured timestamp — fall back to the policy
+          // window. Hardcoding 15 minutes here meant the app kept counting
+          // down long after the server had unlocked the PIN at 5.
+          _startLockout(kMaxPinLockout.inSeconds);
           return;
         }
         if (e.code == StatusCode.notFound) {
@@ -442,10 +449,10 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
         return;
       case StatusCode.permissionDenied:
         // Locked — start the countdown + disable the keypad (no structured
-        // timestamp from this RPC, so use the default lockout window).
+        // timestamp from this RPC, so use the policy window).
         _newPin = '';
         _confirmPin = '';
-        _startLockout(15 * 60);
+        _startLockout(kMaxPinLockout.inSeconds);
         return;
       case StatusCode.deadlineExceeded:
       case StatusCode.unavailable:
