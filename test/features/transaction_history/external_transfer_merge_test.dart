@@ -21,6 +21,7 @@ UnifiedTransaction _tx({
   Map<String, dynamic>? metadata,
   String? counterpartyName,
   String title = 'Transfer',
+  UnifiedTransactionStatus status = UnifiedTransactionStatus.pending,
 }) =>
     UnifiedTransaction(
       id: id,
@@ -29,7 +30,7 @@ UnifiedTransaction _tx({
       amount: amount,
       currency: 'NGN',
       createdAt: DateTime(2026, 9, 29, 13, 7),
-      status: UnifiedTransactionStatus.pending,
+      status: status,
       flow: TransactionFlow.outgoing,
       transactionReference: reference,
       metadata: metadata,
@@ -37,6 +38,8 @@ UnifiedTransaction _tx({
     );
 
 void main() {
+  _refundedStatusTests();
+
   test('a pending transfer collapses to ONE row once the hold carries the reference', () {
     final ledger = _tx(
       id: 'ledger-1',
@@ -107,5 +110,71 @@ void main() {
     );
     expect(merged, hasLength(1));
     expect(merged.single.counterpartyName, 'Ada');
+  });
+}
+
+// ── the ledger row owns the STATUS, which is what makes the backend fix visible
+//
+// accounts-service used to mark a released hold's display row `failed`. It now
+// marks it `refunded`, because releasing the reservation IS the refund and the
+// user is whole. Reported from Send Funds history: three external transfers
+// (₦223, ₦513, ₦1013) all read Failed after their holds came back — the ₦223
+// having failed on OUR Nomba payout float, not the sender's balance.
+//
+// That fix only reaches the user if the merge lets the LEDGER row's status win.
+// The payments side keeps its own view of the same transfer and will still say
+// `failed` — it describes the PAYMENT, which genuinely did not happen. Both
+// sentences are true; only one is about the user's money, and that is the one
+// the history row must show.
+void _refundedStatusTests() {
+  test('a refunded ledger row wins over the payment row still marked failed', () {
+    final ledger = _tx(
+      id: 'ledger-223',
+      reference: 'HOLD-CAP-f6417e2b-97e7-45cc-ac89-08e80687e0e2',
+      amount: 223,
+      metadata: const {'reference': 'TRF-transfer_chris_grace'},
+      title: 'External transfer',
+      status: UnifiedTransactionStatus.refunded,
+    );
+    final payment = _tx(
+      id: 'payment-223',
+      reference: 'TRF-transfer_chris_grace',
+      amount: 223,
+      counterpartyName: 'GRACE C. ONYEKACHI',
+      title: 'Transfer to GRACE C. ONYEKACHI',
+      status: UnifiedTransactionStatus.failed,
+    );
+
+    final merged = mergeExternalTransfers([ledger], [payment]);
+
+    expect(merged, hasLength(1), reason: 'one transfer, one row');
+    expect(merged.single.status, UnifiedTransactionStatus.refunded,
+        reason: 'the ledger row is the money that moved, so its status is the '
+            'one the user sees — otherwise the accounts-service fix is invisible');
+    // And the payee still comes across, which is the whole reason for the merge.
+    expect(merged.single.counterpartyName, 'GRACE C. ONYEKACHI');
+    // The ledger amount (principal + fee) is kept, not the payment's.
+    expect(merged.single.amount, 223);
+  });
+
+  test('Refunded renders distinctly from Failed, so the two never read alike', () {
+    // If these collided the fix would be invisible even with the right status.
+    expect(UnifiedTransactionStatus.refunded.displayName, 'Refunded');
+    expect(UnifiedTransactionStatus.failed.displayName, 'Failed');
+    expect(UnifiedTransactionStatus.refunded.color,
+        isNot(UnifiedTransactionStatus.failed.color));
+    // And not confusable with Pending either — refunded is a resolved state.
+    expect(UnifiedTransactionStatus.refunded.color,
+        isNot(UnifiedTransactionStatus.pending.color));
+  });
+
+  test('the backend status string parses to refunded, not to the pending fallback', () {
+    // fromString falls back to `pending` for anything unknown, so a typo in the
+    // Go write (or a rename of the enum value) would silently show Pending on a
+    // finished transfer rather than failing anywhere.
+    expect(UnifiedTransactionStatus.fromString('refunded'),
+        UnifiedTransactionStatus.refunded);
+    expect(UnifiedTransactionStatus.fromString('REFUNDED'),
+        UnifiedTransactionStatus.refunded);
   });
 }
