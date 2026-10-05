@@ -22,6 +22,7 @@ import '../widgets/crypto_kyc_gate.dart';
 import '../widgets/quote_timer_card.dart';
 import 'crypto_receipt_screen.dart';
 import 'package:lazervault/src/features/crypto/data/crypto_wallet_label.dart';
+import '../../domain/trade_precision.dart';
 
 // ============================================================================
 // runSwapFlow — entry point used by buy_crypto_screen and sell_crypto_screen
@@ -153,6 +154,27 @@ Future<SwapFlowResult> runSwapFlow({
   final lowerFiat = fiatCurrency.toLowerCase();
   final lowerCrypto = cryptoSymbol.toLowerCase();
 
+  // QUANTISE EVERY CRYPTO LEG TO WHAT THE EXCHANGE ACCEPTS — the chokepoint.
+  //
+  // Each entry surface (sell sheet, sell screen, buy sheet, buy screen, swap,
+  // convert) builds its own amount, and the backend truncates the crypto leg
+  // to quidax.CurrencyDecimals before placing the order. A surface that does
+  // not quantise therefore quotes and previews a trade the exchange will
+  // shrink — which is how a sell previewed 29.019794 USDT / ₦38,901.04 and
+  // executed 29.01 / ₦38,887.92.
+  //
+  // Doing it HERE means no surface can diverge from the executed trade, even
+  // one added later that forgets. Flooring is the only safe direction: it can
+  // leave sub-precision dust unsold, never over-send. Fiat legs are untouched
+  // — the exchange is given a crypto amount and returns the fiat.
+  final double qCryptoAmount =
+      cryptoAmount > 0 ? floorToOrderPrecision(cryptoAmount, cryptoSymbol) : 0;
+  // For `convert`, `fiatAmount` is reinterpreted as the FROM-ASSET major
+  // units, so it is a crypto leg too and quantises against that asset.
+  final double qConvertFromAmount = (side == 'convert' && fiatAmount > 0)
+      ? floorToOrderPrecision(fiatAmount, fromCryptoSymbol)
+      : fiatAmount;
+
   // For Buy: from = fiat, to = crypto. For Sell: from = crypto, to = fiat.
   // The amount passed by the screen is always in fiat major units; for Sell
   // we still send the from_amount in crypto micro units, but the existing
@@ -180,7 +202,8 @@ Future<SwapFlowResult> runSwapFlow({
     }
     fromCurrency = lowerFromCrypto;
     toCurrency = lowerCrypto;
-    fromAmountMinor = cryptoConfig.toMinorUnits(fiatAmount, lowerFromCrypto);
+    fromAmountMinor =
+        cryptoConfig.toMinorUnits(qConvertFromAmount, lowerFromCrypto);
   } else if (side == 'buy') {
     fromCurrency = lowerFiat;
     toCurrency = lowerCrypto;
@@ -188,7 +211,7 @@ Future<SwapFlowResult> runSwapFlow({
       // The saga rejects both amounts being set, so the fiat leg stays 0 and
       // Quidax returns the cost.
       fromAmountMinor = 0;
-      toAmountMinor = cryptoConfig.toMinorUnits(cryptoAmount, lowerCrypto);
+      toAmountMinor = cryptoConfig.toMinorUnits(qCryptoAmount, lowerCrypto);
     } else {
       fromAmountMinor = cryptoConfig.toMinorUnits(fiatAmount, lowerFiat);
     }
@@ -202,12 +225,17 @@ Future<SwapFlowResult> runSwapFlow({
     // quantity.) The fiat received and the platform spread are derived
     // server-side from the quote's to_amount; `fiatAmount` above is used only
     // for the min-order pre-check and receipt display.
-    if (cryptoAmount <= 0) {
-      return const SwapFlowResult.error('Enter the amount of crypto to sell.');
+    if (qCryptoAmount <= 0) {
+      // Also catches a holding smaller than one unit of order precision —
+      // genuinely untradable, rather than "you entered nothing".
+      return SwapFlowResult.error(cryptoAmount > 0
+          ? 'That amount is below the smallest ${cryptoSymbol.toUpperCase()} '
+              'the exchange will trade.'
+          : 'Enter the amount of crypto to sell.');
     }
     fromCurrency = lowerCrypto;
     toCurrency = lowerFiat;
-    fromAmountMinor = cryptoConfig.toMinorUnits(cryptoAmount, lowerCrypto);
+    fromAmountMinor = cryptoConfig.toMinorUnits(qCryptoAmount, lowerCrypto);
   }
 
   // Dedicated, ISOLATED swap cubit. The swap flow's states (SwapQuotePending /
