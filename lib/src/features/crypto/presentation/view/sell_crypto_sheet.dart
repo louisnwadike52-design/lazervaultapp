@@ -226,6 +226,26 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
 
   /// Crypto quantity being sold — the field value directly in crypto mode, or
   /// the fiat value divided by the live price in fiat mode.
+  /// The largest quantity that can ACTUALLY be sold, and the single precision
+  /// this whole sheet is governed by.
+  ///
+  /// Two precisions exist and only one may ever reach the user: the LEDGER
+  /// scale (USDT=6) is a lossless transport encoding for
+  /// `from_amount_minor_units`, an implementation detail; the ORDER precision
+  /// (USDT=2) is what the exchange accepts, and the backend truncates to it
+  /// before placing the order. Every figure here — amount, proceeds, fee, Max
+  /// and the Min/Max hint — derives from THIS, so the ledger scale can never
+  /// produce a number the order precision would then change.
+  double get _sellableQuantity {
+    final h = _holding;
+    if (h == null) return 0;
+    return floorToOrderPrecision(h.quantity, widget.crypto.symbol);
+  }
+
+  /// Fiat value of the largest executable sale — NOT `holding * price`, which
+  /// describes a trade the exchange would truncate.
+  double _maxSellableFiat() => _sellableQuantity * _price();
+
   double get _cryptoAmount {
     final raw = _isAmountInCrypto
         ? _typedAmount
@@ -237,17 +257,28 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
     // trade that could not happen: 29.019794 USDT previewed ₦38,901.04 and the
     // Confirm sheet then showed 29.01 USDT / ₦38,887.92. Quantising HERE means
     // the preview, the fee estimate and the confirm all describe one trade.
-    return floorToOrderPrecision(raw, widget.crypto.symbol);
+    final q = floorToOrderPrecision(raw, widget.crypto.symbol);
+
+    // CAP at the sellable quantity. In fiat mode the quantity is derived by
+    // dividing a kobo-rounded fiat figure by the rate, and that round trip
+    // OVERSHOOTS when one kobo is worth more than one unit of order precision
+    // — at a rate of 0.37, Max's fiat divides back to 29.027 and floors to
+    // 29.02 against a holding of 29.0198, tripping the over-hold guard and
+    // breaking the one tap that must always work. Ceiling the Max fiat
+    // prevents the opposite (undershoot) at high rates. Both are required;
+    // neither rounding direction is safe alone.
+    final cap = _sellableQuantity;
+    return (cap > 0 && q > cap) ? cap : q;
   }
 
   /// Fiat proceeds — the field value directly in fiat mode, or the crypto
   /// quantity times the live price in crypto mode.
   double get _fiatAmount {
-    // From the QUANTISED quantity in crypto mode, so the proceeds shown match
-    // the quantity that will actually be sold. In fiat mode the typed figure
-    // is the target and the quantity is derived from it.
-    if (_isAmountInCrypto) return _cryptoAmount * _price();
-    return _typedAmount;
+    // ALWAYS from the quantised quantity, in both input modes. Returning the
+    // typed fiat left the last inconsistency: typing ₦38,998.54 implies
+    // 29.019794 USDT, which quantises to 29.01 — so the sheet said "You sell
+    // 29.01" while computing proceeds and fee from a figure 0.009794 larger.
+    return _cryptoAmount * _price();
   }
 
   bool get _hasValidAmount {
@@ -264,13 +295,20 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
     final h = _holding;
     if (h == null || _amountController.text.isEmpty) return null;
     if (_cryptoAmount <= 0) return null;
+    // A holding smaller than one unit of the exchange's order precision
+    // cannot be sold at all (0.5 SHIB where SHIB trades in whole units). The
+    // CTA would otherwise sit disabled with nothing explaining why.
+    if (h.quantity > 0 && _sellableQuantity <= 0) {
+      return 'Your ${h.quantity} ${widget.crypto.symbol.toUpperCase()} is below '
+          'the smallest amount the exchange will trade.';
+    }
     if (_cryptoAmount > h.quantity) {
       return 'You only hold ${h.quantity.toStringAsFixed(6)} ${widget.crypto.symbol.toUpperCase()}';
     }
     final min = _minFiat();
     // Whole holding below the sell minimum → one clear message instead of an
     // unreachable "Minimum is ₦X" the user can never satisfy.
-    final maxFiat = h.quantity * _price();
+    final maxFiat = _maxSellableFiat();
     if (min > 0 && maxFiat > 0 && maxFiat < min) {
       return 'Your ${widget.crypto.symbol.toUpperCase()} holding '
           '(≈${CurrencySymbols.currentSymbol}${maxFiat.toStringAsFixed(2)}) is below the '
@@ -511,7 +549,14 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
         // exceed the holding, which fails validation on Max — the one tap that
         // must always yield a sellable amount. Flooring leaves at most sub-kobo
         // dust unsold (money-safe: never an over-sell).
-        final maxFiat = (h.quantity * _price() * 100).floorToDouble() / 100;
+        // From the SELLABLE quantity, and CEILED to the kobo. Flooring loses
+        // a unit on the round trip the sheet then performs: 29.01 x 1343.86
+        // floors to ₦38,985.37, which divides back to 29.0099936 and floors to
+        // 29.00 — 0.01 USDT (₦13) dropped by the Max button itself. Ceiling
+        // lands the implied quantity a hair above, so it floors back to
+        // exactly 29.01; the cap in _cryptoAmount handles the low-rate
+        // overshoot. Only the displayed fiat moves, by one kobo.
+        final maxFiat = (_maxSellableFiat() * 100).ceilToDouble() / 100;
         _amountController.text = maxFiat.toStringAsFixed(2);
       }
     });
@@ -752,7 +797,7 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
                   fontSize: 12.sp, color: Colors.white.withValues(alpha: 0.4)));
         }
         final min = _minFiat();
-        final maxFiat = (h?.quantity ?? 0) * _price();
+        final maxFiat = _maxSellableFiat();
         final price = _price();
         final tkr = widget.crypto.symbol.toUpperCase();
         final minC = price > 0 && min > 0 ? min / price : 0.0;
@@ -896,7 +941,9 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
       fiatAmount: netProceeds,
       cryptoAmount: quantity,
       description:
-          'Sell ${quantity.toStringAsFixed(6)} ${h.cryptoSymbol.toUpperCase()}',
+          // Trimmed, not 6 dp: "Sell 29.010000 USDT" implies a precision the
+          // exchange does not trade in and does not match the sheet above it.
+          'Sell ${_trimNum(quantity)} ${h.cryptoSymbol.toUpperCase()}',
       clientIntentId: intentId,
       // Dismiss this bottom sheet the instant the trade confirms, so the
       // processing→receipt screens render on a clean stack (Get.off can't
@@ -915,7 +962,7 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
           currency: CurrencySymbols.currentCurrency,
           title: 'Confirm Sell Order',
           message:
-              'Confirm sale of ${quantity.toStringAsFixed(6)} ${h.cryptoSymbol.toUpperCase()}',
+              'Confirm sale of ${_trimNum(quantity)} ${h.cryptoSymbol.toUpperCase()}',
           fee: fee,
           totalAmount: netProceeds,
           showProcessingPhase: true,

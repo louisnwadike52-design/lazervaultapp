@@ -68,6 +68,80 @@ void main() {
     });
   });
 
+  group('no value is lost anywhere in the flow', () {
+    // The amount must survive every conversion the sheet performs. Quantising
+    // introduced a NEW way to lose a unit: Max fills a fiat figure, the sheet
+    // divides it back into a quantity, and floors that — so flooring the fiat
+    // too drops 0.01 USDT on the round trip.
+    const rate = 1343.86;
+
+    double maxFiatCeil(double sellable) =>
+        (sellable * rate * 100).ceilToDouble() / 100;
+
+    test('fiat Max round-trips back to the SAME quantity', () {
+      final sellable = floorToOrderPrecision(29.0198, 'usdt'); // 29.01
+      final filled = maxFiatCeil(sellable);
+      final back = floorToOrderPrecision(filled / rate, 'usdt');
+      expect(back, sellable,
+          reason: 'Max filled $filled, which divided back to ${filled / rate} '
+              'and floored to $back — the Max button itself would have '
+              'dropped ${(sellable - back).toStringAsFixed(2)} USDT');
+    });
+
+    test('flooring the fiat instead would lose a unit (the bug)', () {
+      // Pins WHY it ceils, so nobody "tidies" it back to floor.
+      final sellable = floorToOrderPrecision(29.0198, 'usdt');
+      final flooredFiat = (sellable * rate * 100).floorToDouble() / 100;
+      final back = floorToOrderPrecision(flooredFiat / rate, 'usdt');
+      expect(back, lessThan(sellable),
+          reason: 'if this no longer loses a unit the ceil may be removable, '
+              'but verify across rates before doing so');
+    });
+
+    test('the round trip lands EXACTLY on the sellable quantity, any rate', () {
+      // Ceil alone undershoots at high rates; cap alone overshoots at low
+      // ones. At rate 0.37 one kobo is worth MORE than one unit of order
+      // precision, so Max's fiat divides back to 29.027 → floors to 29.02
+      // against a holding of 29.0198, tripping the over-hold guard. The sheet
+      // ceils the fiat AND caps the quantity; both are required.
+      double sheetQuantity(double filledFiat, double rate, double sellable) {
+        final q = floorToOrderPrecision(filledFiat / rate, 'usdt');
+        return (sellable > 0 && q > sellable) ? sellable : q;
+      }
+
+      for (final r in [1343.86, 1.0, 0.37, 98765.4321, 1600.0, 0.0001]) {
+        for (final qty in [29.0198, 0.9999, 1.0, 123.456789, 7.07]) {
+          final sellable = floorToOrderPrecision(qty, 'usdt');
+          if (sellable <= 0) continue;
+          final filled = (sellable * r * 100).ceilToDouble() / 100;
+          final got = sheetQuantity(filled, r, sellable);
+          expect(got, sellable,
+              reason: 'rate $r, qty $qty: Max round-tripped to $got, not the '
+                  'sellable $sellable');
+          expect(got, lessThanOrEqualTo(qty + 1e-9),
+              reason: 'rate $r, qty $qty: round trip exceeded the holding');
+        }
+      }
+    });
+
+    test('quantising never sells more than the user holds', () {
+      for (final qty in [29.0198, 0.004, 1.0, 999.999999]) {
+        expect(floorToOrderPrecision(qty, 'usdt'), lessThanOrEqualTo(qty));
+      }
+    });
+
+    test('quantising loses nothing that could have been sold anyway', () {
+      // The remainder is below the exchange's order precision, so it was
+      // never sellable. It stays in the wallet — not lost, just not tradable.
+      final sellable = floorToOrderPrecision(29.0198, 'usdt');
+      final dust = 29.0198 - sellable;
+      expect(dust, lessThan(0.01),
+          reason: 'anything at or above one unit of precision WAS sellable '
+              'and must not be left behind');
+      expect(dust, greaterThan(0));
+    });
+  });
+
   group('sell flow wiring', () {
     String codeOf(String p) => File(p)
         .readAsStringSync()
@@ -89,6 +163,19 @@ void main() {
       expect(code, isNot(contains('(h.quantity * 1e6).floorToDouble() / 1e6')),
           reason: 'Max floored to 6dp, offering a quantity the exchange '
               'would truncate anyway');
+    });
+
+    test('the sheet both ceils the Max fiat and caps the quantity', () {
+      // The round-trip test above proves the ALGORITHM; this pins the SHEET
+      // to it. Without that distinction, deleting the cap from the sheet
+      // leaves every arithmetic test passing.
+      final code = codeOf(sheet);
+      expect(code, contains('ceilToDouble() / 100'),
+          reason: 'flooring the Max fiat loses a unit on the round trip at '
+              'high rates (29.01 -> 29.00)');
+      expect(code, contains('(cap > 0 && q > cap) ? cap : q'),
+          reason: 'without the cap, a low rate overshoots the holding '
+              '(29.0198 -> 29.02) and the over-hold guard blocks Max');
     });
 
     test('the rate chip shows the rate the trade fills at', () {
