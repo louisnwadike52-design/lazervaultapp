@@ -564,6 +564,15 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
         _DetailEntry('Description', _cleanDescription(tx.description!)),
       if (tx.transactionReference != null)
         _DetailEntry('Reference', tx.transactionReference!, copyable: true),
+      // Wallet balance either side of the movement. Shown as a PAIR or not at
+      // all — one half on its own cannot be reconciled against anything, and a
+      // crypto leg has no naira balance to state (both are null there).
+      if (tx.hasBalances) ...[
+        _DetailEntry('Balance before',
+            '$_currencySymbol${NumberFormat('#,##0.00').format(tx.balanceBefore!)}'),
+        _DetailEntry('Balance after',
+            '$_currencySymbol${NumberFormat('#,##0.00').format(tx.balanceAfter!)}'),
+      ],
       // WHICH gift card this was. Placed above the generic rows because it is
       // the detail that makes the transaction recognisable; Type/Category say
       // the same thing for every gift-card row.

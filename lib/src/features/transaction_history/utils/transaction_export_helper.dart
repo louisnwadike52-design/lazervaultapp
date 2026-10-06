@@ -3,6 +3,7 @@ import 'dart:ui' show Rect;
 import 'package:csv/csv.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/core/utils/receipt_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -66,6 +67,8 @@ class TransactionExportHelper {
         'Type',
         'Description',
         'Amount',
+        'Balance before',
+        'Balance after',
         'Currency',
         'Status',
         'Reference'
@@ -79,6 +82,10 @@ class TransactionExportHelper {
         tx.serviceType.displayName,
         tx.description ?? tx.title,
         '${tx.flow == TransactionFlow.outgoing ? "-" : ""}${tx.amount.toStringAsFixed(2)}',
+        // Raw, unformatted and unseparated: a CSV cell is going into a
+        // spreadsheet, where "1,234.00" becomes text and stops adding up.
+        tx.balanceBefore?.toStringAsFixed(2) ?? '',
+        tx.balanceAfter?.toStringAsFixed(2) ?? '',
         tx.currency,
         tx.status.displayName,
         tx.transactionReference ?? '',
@@ -94,12 +101,38 @@ class TransactionExportHelper {
     return file;
   }
 
+  /// A balance cell for the statement.
+  ///
+  /// Prints an em dash for a row that has no wallet balance — a crypto leg, or
+  /// a service-local record. "0.00" there would read as an emptied account,
+  /// which is the one thing a statement must never imply by accident.
+  static String _balanceCell(double? value) {
+    if (value == null) return '—';
+    return NumberFormat('#,##0.00').format(value);
+  }
+
   static Future<File> _exportPdf(
     List<UnifiedTransaction> transactions,
     DateTime startDate,
     DateTime endDate,
   ) async {
-    final pdf = pw.Document();
+    // EMBED A REAL TYPEFACE.
+    //
+    // pw.Document() with no theme draws with the PDF built-in Helvetica, which
+    // has no glyph for most of what this statement actually contains — so
+    // "Voice assistant usage — session …" printed the em dash as a hollow box,
+    // and the same would happen to ₦, curly quotes and accented names. Inter is
+    // already bundled and already shared by every receipt in the app
+    // (ReceiptFonts); this export simply never asked for it.
+    await ReceiptFonts.load();
+    final pdf = pw.Document(
+      theme: ReceiptFonts.embedded
+          ? pw.ThemeData.withFont(
+              base: ReceiptFonts.regular!,
+              bold: ReceiptFonts.bold!,
+            )
+          : null,
+    );
     final dateRange =
         '${DateFormat('d MMM yyyy').format(startDate)} - ${DateFormat('d MMM yyyy').format(endDate)}';
 
@@ -160,18 +193,22 @@ class TransactionExportHelper {
                   ),
                   cellHeight: 22,
                   columnWidths: {
-                    0: const pw.FlexColumnWidth(2),
-                    1: const pw.FlexColumnWidth(2.5),
-                    2: const pw.FlexColumnWidth(3),
-                    3: const pw.FlexColumnWidth(1.8),
-                    4: const pw.FlexColumnWidth(1.2),
-                    5: const pw.FlexColumnWidth(1.5),
+                    0: const pw.FlexColumnWidth(1.7),
+                    1: const pw.FlexColumnWidth(1.9),
+                    2: const pw.FlexColumnWidth(3.1),
+                    3: const pw.FlexColumnWidth(1.6),
+                    4: const pw.FlexColumnWidth(1.7),
+                    5: const pw.FlexColumnWidth(1.7),
+                    6: const pw.FlexColumnWidth(1.0),
+                    7: const pw.FlexColumnWidth(1.3),
                   },
                   headers: [
                     'Date',
                     'Type',
                     'Description',
                     'Amount',
+                    'Balance before',
+                    'Balance after',
                     'Currency',
                     'Status'
                   ],
@@ -183,6 +220,8 @@ class TransactionExportHelper {
                       tx.serviceType.displayName,
                       tx.description ?? tx.title,
                       '$sign${tx.amount.toStringAsFixed(2)}',
+                      _balanceCell(tx.balanceBefore),
+                      _balanceCell(tx.balanceAfter),
                       tx.currency,
                       tx.status.displayName,
                     ];

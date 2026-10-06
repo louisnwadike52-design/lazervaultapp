@@ -35,6 +35,24 @@ class UnifiedTransaction extends Equatable {
   /// fallback when [assetImageUrl] is absent or fails to load.
   final String? assetSymbol;
 
+  /// Wallet balance immediately BEFORE this transaction, in major units.
+  ///
+  /// Comes from `transactions.balance_before`, which accounts-service has
+  /// recorded all along and already returns on the wire — every one of the 246
+  /// transactions in the last 30 days carries it. It is nullable because not
+  /// every row in a unified history is a wallet movement: a crypto leg or a
+  /// service-local record has no wallet balance to state, and inventing 0.00
+  /// for those would read as "the account was emptied".
+  final double? balanceBefore;
+
+  /// Wallet balance immediately AFTER this transaction, in major units.
+  /// Nullable for the same reason as [balanceBefore].
+  final double? balanceAfter;
+
+  /// True when both balances are present, so a surface can decide to show the
+  /// pair or omit the section entirely rather than printing a half row.
+  bool get hasBalances => balanceBefore != null && balanceAfter != null;
+
   const UnifiedTransaction({
     required this.id,
     required this.serviceType,
@@ -52,6 +70,8 @@ class UnifiedTransaction extends Equatable {
     this.amountDisplayOverride,
     this.assetImageUrl,
     this.assetSymbol,
+    this.balanceBefore,
+    this.balanceAfter,
   });
 
   /// Format amount with currency symbol and flow indicator
@@ -97,6 +117,8 @@ class UnifiedTransaction extends Equatable {
         amountDisplayOverride,
         assetImageUrl,
         assetSymbol,
+        balanceBefore,
+        balanceAfter,
       ];
 
   /// Convert to JSON
@@ -118,6 +140,8 @@ class UnifiedTransaction extends Equatable {
       'amountDisplayOverride': amountDisplayOverride,
       'assetImageUrl': assetImageUrl,
       'assetSymbol': assetSymbol,
+      'balanceBefore': balanceBefore,
+      'balanceAfter': balanceAfter,
     };
   }
 
@@ -147,6 +171,8 @@ class UnifiedTransaction extends Equatable {
       amountDisplayOverride: json['amountDisplayOverride'] as String?,
       assetImageUrl: json['assetImageUrl'] as String?,
       assetSymbol: json['assetSymbol'] as String?,
+      balanceBefore: (json['balanceBefore'] as num?)?.toDouble(),
+      balanceAfter: (json['balanceAfter'] as num?)?.toDouble(),
     );
   }
 

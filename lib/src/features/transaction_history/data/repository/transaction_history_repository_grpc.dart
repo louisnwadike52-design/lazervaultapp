@@ -1025,6 +1025,19 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       counterpartyAccount: counterpartyAccount,
       amountDisplayOverride: amountDisplayOverride,
       assetSymbol: assetSymbol,
+      // Wallet balance either side of this movement.
+      //
+      // accounts-service has recorded these all along (transactions
+      // .balance_before / .balance_after — populated on every one of the 246
+      // rows in the last 30 days) and already returns them on the wire; nothing
+      // read them. A statement that shows what moved but not what it moved
+      // FROM cannot be reconciled against a bank's own statement.
+      //
+      // A crypto leg is deliberately left null: it has no NGN wallet balance,
+      // and printing 0.00 there would read as an emptied account. assetSymbol
+      // is set exactly for those rows, so it is the marker used here.
+      balanceBefore: assetSymbol != null ? null : protoTx.balanceBefore,
+      balanceAfter: assetSymbol != null ? null : protoTx.balanceAfter,
     );
   }
 
