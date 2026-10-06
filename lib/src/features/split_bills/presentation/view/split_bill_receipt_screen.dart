@@ -70,7 +70,6 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
     // this same screen doubles as a read-only receipt viewer, where nothing
     // changed and a refetch would be pure noise.
     if (!_viewOnly) refreshPendingActions();
-    _listenForStatusChanges();
 
     // Preferred path: derive every field from the authoritative bill + the
     // target payer's participant record (real paidAt / reference / status /
@@ -113,6 +112,14 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
       paidCount = args['paidCount'] as int? ?? 0;
       totalParticipants = args['totalParticipants'] as int? ?? 0;
     }
+
+    // AFTER the branch above, not before it. _listenForStatusChanges returns
+    // immediately when _billId is null, and _billId is only assigned inside
+    // that branch — so calling it first meant the subscription was never made
+    // and the receipt never updated itself. A share paid seconds ago sat on
+    // "Pending" until the user thought to pull down, which is the exact
+    // complaint the websocket was added to answer.
+    _listenForStatusChanges();
   }
 
   /// Leaves the receipt: pop back when just viewing an existing payer's receipt,

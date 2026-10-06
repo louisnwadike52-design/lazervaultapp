@@ -34,6 +34,22 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
   /// failure twice, once inside the sheet and once behind it.
   bool _settlingInPinSheet = false;
 
+  /// A completed payment that must not navigate yet.
+  ///
+  /// Get.offAllNamed clears EVERY route — including the transaction-PIN sheet
+  /// that is still running. The mixin pops that sheet when onPinValidated
+  /// returns, so if we navigate first its pop lands on the receipt instead and
+  /// the user is left on an empty stack: the receipt appears for an instant and
+  /// then the screen is blank.
+  ///
+  /// It only bites when settlement is fast enough to finish while the sheet is
+  /// still up, which is why it showed on INTERNAL receivers (synchronous) and
+  /// not on external payouts (async, resolved later by webhook).
+  ///
+  /// So the listener parks the result here and the navigation happens once
+  /// validateTransactionPin has returned and the sheet has closed itself.
+  SplitBillSharePaid? _paidAwaitingNav;
+
   late final String splitBillId;
   late final double amount;
   late final String currency;
@@ -231,6 +247,38 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
       _settlingInPinSheet = false;
       if (mounted) setState(() => _isProcessing = false);
     }
+    // The sheet has closed itself by now, so the route it popped was its own.
+    // Only then is it safe to clear the stack and show the receipt.
+    final paid = _paidAwaitingNav;
+    if (paid != null) _goToReceipt(paid);
+  }
+
+  /// Leaves for the receipt. Sole navigation path after a successful payment,
+  /// so the PIN-sheet and non-PIN routes cannot drift apart.
+  void _goToReceipt(SplitBillSharePaid state) {
+    if (!mounted) return;
+    _paidAwaitingNav = null;
+    final payerUserId = context.read<AuthenticationCubit>().userId ?? '';
+    Get.offAllNamed(
+      AppRoutes.splitBillReceipt,
+      arguments: {
+        // Authoritative source: the refreshed bill + this payer's id. The
+        // receipt reads real paidAt / reference / status / amount from the
+        // participant record; the scalars below are a legacy fallback only.
+        'bill': state.updatedBill,
+        'payerUserId': payerUserId,
+        'transactionReference': state.transactionReference,
+        'amount': amount,
+        'currency': currency,
+        'creatorName': creatorName,
+        'receiverName': receiverName,
+        'receiverAccountMasked': receiverAccountMasked,
+        'receiverBankName': receiverBankName,
+        'description': description,
+        'paidCount': state.updatedBill.paidCount,
+        'totalParticipants': state.updatedBill.totalParticipants,
+      },
+    );
   }
 
   @override
@@ -279,29 +327,13 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
           if (!mounted) return;
           if (state is SplitBillSharePaid) {
             setState(() => _isProcessing = false);
-            final payerUserId =
-                context.read<AuthenticationCubit>().userId ?? '';
-            Get.offAllNamed(
-              AppRoutes.splitBillReceipt,
-              arguments: {
-                // Authoritative source: the refreshed bill + this payer's id.
-                // The receipt reads real paidAt / reference / status / amount
-                // from the participant record; the scalars below are a legacy
-                // fallback only.
-                'bill': state.updatedBill,
-                'payerUserId': payerUserId,
-                'transactionReference': state.transactionReference,
-                'amount': amount,
-                'currency': currency,
-                'creatorName': creatorName,
-                'receiverName': receiverName,
-                'receiverAccountMasked': receiverAccountMasked,
-                'receiverBankName': receiverBankName,
-                'description': description,
-                'paidCount': state.updatedBill.paidCount,
-                'totalParticipants': state.updatedBill.totalParticipants,
-              },
-            );
+            if (_settlingInPinSheet) {
+              // The sheet is still on screen and will pop itself. Navigating
+              // now would delete the route it is about to pop.
+              _paidAwaitingNav = state;
+              return;
+            }
+            _goToReceipt(state);
           } else if (state is SplitBillError) {
             setState(() => _isProcessing = false);
             // The PIN sheet is showing this same failure inline; a snackbar on
