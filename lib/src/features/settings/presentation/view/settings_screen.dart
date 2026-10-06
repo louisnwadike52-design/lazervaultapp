@@ -844,8 +844,30 @@ class _SettingsViewState extends State<_SettingsView> {
 
   /// Admin-only "View as user" entry. Renders NOTHING for everyone else, so
   /// the settings list is unchanged for ordinary users.
-  Widget _viewAsUserTile() =>
-      const ImpersonationEntryTile(brandColor: _kBrand);
+  /// Admin-only "View as user". Built through _navTile like every other row so
+  /// it inherits this screen's colours, spacing and — importantly — its search
+  /// filtering. It previously drew its own ListTile in hardcoded white, which
+  /// on the light Settings card showed as a lone icon with blank space beside
+  /// it, and which no search query could filter away.
+  Widget _viewAsUserTile() => ImpersonationEntryTile(
+        brandColor: _kBrand,
+        builder: (context, onTap) => _navTile(
+          icon: Icons.visibility_outlined,
+          title: 'View as user',
+          subtitle: 'Open a customer’s account read-only. Recorded against you.',
+          onTap: onTap,
+          keywords: const [
+            'impersonate',
+            'impersonation',
+            'view as',
+            'view as user',
+            'admin',
+            'support',
+            'read-only',
+            'customer account',
+          ],
+        ),
+      );
 
   /// "Customize" section — groups all flow customizations in one place:
   ///  • Send money: transfer style (classic short flow vs standard long flow)
