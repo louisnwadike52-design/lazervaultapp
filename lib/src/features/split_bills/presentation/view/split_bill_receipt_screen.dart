@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -34,6 +35,15 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
   /// and for bills created before it was captured.
   late final String receiverBankName;
   late final String description;
+
+  /// Transfer fee the co-payer ALSO paid, in minor units.
+  ///
+  /// External-bank bills only: that leg settles through SendFundsExternal and
+  /// the fee comes off the payer's own hold, so the share alone is not what
+  /// left their account. Null for an internal receiver (no payout provider, no
+  /// fee) and for a receipt opened later in view-only mode, where we were not
+  /// the ones who quoted it — the row is omitted rather than guessed.
+  int? transferFeeMinor;
   int paidCount = 0;
   int totalParticipants = 0;
   // Authoritative (bill-derived) fields — null/'Paid' when built from legacy args.
@@ -112,6 +122,7 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
       paidCount = args['paidCount'] as int? ?? 0;
       totalParticipants = args['totalParticipants'] as int? ?? 0;
     }
+    transferFeeMinor = (args['transferFeeMinor'] as num?)?.toInt();
 
     // AFTER the branch above, not before it. _listenForStatusChanges returns
     // immediately when _billId is null, and _billId is only assigned inside
@@ -237,6 +248,7 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
         totalParticipants: totalParticipants,
         paidAt: _authoritative ? _paidAt : null,
         status: _statusLabel,
+        transferFeeMinor: transferFeeMinor,
       );
       Get.snackbar(
         'Download Complete',
@@ -280,6 +292,7 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
         totalParticipants: totalParticipants,
         paidAt: _authoritative ? _paidAt : null,
         status: _statusLabel,
+        transferFeeMinor: transferFeeMinor,
         sharePositionOrigin: origin,
       );
     } catch (e) {
@@ -301,6 +314,10 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
 
   /// Shared resolver — see SplitBillEntity._currencySymbol.
   String _currencySymbol(String code) => CurrencyUtils.getSymbol(code);
+
+  /// Formats a major-unit figure in this receipt's currency, with separators.
+  String _money(double major) =>
+      '${_currencySymbol(currency)}${NumberFormat('#,##0.00').format(major)}';
 
   String _formatDate(DateTime dt) {
     final day = dt.day.toString().padLeft(2, '0');
@@ -488,6 +505,13 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
             _buildDetailRow('Bank', receiverBankName),
           if (receiverAccountMasked.isNotEmpty)
             _buildDetailRow('Account', receiverAccountMasked),
+          if (transferFeeMinor != null) ...[
+            const SizedBox(height: 12),
+            _buildDetailRow('Transfer fee', _money(transferFeeMinor! / 100.0)),
+            const SizedBox(height: 12),
+            _buildDetailRow(
+                'Total paid', _money(amount + transferFeeMinor! / 100.0)),
+          ],
           const SizedBox(height: 12),
           _buildDetailRow('Reference', transactionReference),
           const SizedBox(height: 12),

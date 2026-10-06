@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
+import 'package:intl/intl.dart';
+import 'package:lazervault/src/features/funds/data/datasources/payments_transfer_data_source.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
@@ -66,6 +68,24 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
   late final String description;
   bool _invalidArgs = false;
 
+  /// The transfer fee this co-payer will ALSO be charged, in minor units.
+  ///
+  /// Only external-bank receivers have one: that leg goes out through
+  /// SendFundsExternal, and the co-payer bears the fee on their own hold
+  /// exactly as in Send Funds. An internal receiver never touches a payout
+  /// provider, so there is no fee and this stays null.
+  ///
+  /// Quoted from the SAME backend call Send Funds uses, with the paying
+  /// account id attached — the quote resolves the provider fee from that
+  /// wallet's rail, and omitting it silently falls back to the admin default
+  /// rail, which is how a quoted fee and a charged fee come to disagree.
+  int? _externalFeeMinor;
+  bool _feeLoading = false;
+  bool _feeFailed = false;
+
+  /// True when this bill pays out to a bank — the only case that carries a fee.
+  bool get _isExternalReceiver => receiverBankName.trim().isNotEmpty;
+
   final _accountManager = GetIt.I<AccountManager>();
 
   /// Who the co-payer is paying TO. Prefer an explicit receiver name; fall back
@@ -89,6 +109,8 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
       _invalidArgs = true;
     }
 
+    if (!_invalidArgs && _isExternalReceiver) _loadExternalFee();
+
     // Ensure the accounts list is loaded so the switcher can show alternatives.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -107,6 +129,10 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
   String get _formattedAmount {
     return '${_currencySymbol(currency)}${amount.toStringAsFixed(2)}';
   }
+
+  /// Formats a major-unit figure in this bill's currency, with separators.
+  String _money(double major) =>
+      '${_currencySymbol(currency)}${NumberFormat('#,##0.00').format(major)}';
 
   /// Shared resolver — see SplitBillEntity._currencySymbol. This copy matched
   /// on the RAW code, so a lowercase or display-name currency silently fell
@@ -253,6 +279,42 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
     if (paid != null) _goToReceipt(paid);
   }
 
+  /// Quotes the transfer fee for an external payout.
+  ///
+  /// Failure is NOT fatal: the share is still payable, and core-payments
+  /// charges the real fee whatever we managed to display. What it must never
+  /// do is show a confident 0.00 — the co-payer would be debited more than the
+  /// screen said. A failed quote says so instead.
+  Future<void> _loadExternalFee() async {
+    if (!mounted) return;
+    setState(() {
+      _feeLoading = true;
+      _feeFailed = false;
+    });
+    try {
+      final fee = await GetIt.I<IPaymentsTransferDataSource>().getTransferFee(
+        amountMinorUnits: (amount * 100).round(),
+        currency: currency,
+        // The split-bill external leg is a domestic bank payout, the same
+        // transfer type Send Funds quotes for a Nigerian bank.
+        transferType: 'domestic',
+        sourceAccountId: _accountManager.activeAccountId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _externalFeeMinor = fee;
+        _feeLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _feeLoading = false;
+        _feeFailed = true;
+        _externalFeeMinor = null;
+      });
+    }
+  }
+
   /// Leaves for the receipt. Sole navigation path after a successful payment,
   /// so the PIN-sheet and non-PIN routes cannot drift apart.
   void _goToReceipt(SplitBillSharePaid state) {
@@ -277,6 +339,10 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
         'description': description,
         'paidCount': state.updatedBill.paidCount,
         'totalParticipants': state.updatedBill.totalParticipants,
+        // External bills only, and only when we actually quoted it. The
+        // receipt omits the row rather than printing a fee it is unsure of.
+        if (_isExternalReceiver && _externalFeeMinor != null)
+          'transferFeeMinor': _externalFeeMinor,
       },
     );
   }
@@ -407,6 +473,42 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
             const SizedBox(height: 12),
           ],
           _buildDetailRow('Currency', currency),
+          // THE TRANSFER FEE, ON EXTERNAL BILLS ONLY.
+          //
+          // This leg settles through SendFundsExternal and the co-payer bears
+          // the fee on their own hold, exactly as in Send Funds — so the figure
+          // above is NOT what leaves their account. It was never shown, which
+          // made the debit larger than the screen said with no explanation.
+          // An internal receiver never touches a payout provider and has no
+          // fee, so none of this renders for one.
+          if (_isExternalReceiver) ...[
+            const SizedBox(height: 12),
+            if (_feeLoading)
+              _buildDetailRow('Transfer fee', 'Checking…')
+            else if (_externalFeeMinor != null)
+              _buildDetailRow(
+                  'Transfer fee', _money(_externalFeeMinor! / 100.0))
+            else
+              // Never print a 0.00 we are not sure of — the co-payer would be
+              // debited more than the screen promised. Say which it is: a
+              // failed quote is a different thing from one not asked for.
+              _buildDetailRow(
+                'Transfer fee',
+                _feeFailed
+                    ? 'Couldn\'t check — charged at payment'
+                    : 'Charged at payment',
+              ),
+            if (_externalFeeMinor != null) ...[
+              const SizedBox(height: 12),
+              const Divider(color: Color(0xFF2D2D2D), thickness: 1),
+              const SizedBox(height: 12),
+              _buildDetailRow(
+                'Total to pay',
+                _money(amount + _externalFeeMinor! / 100.0),
+                emphasise: true,
+              ),
+            ],
+          ],
         ],
       ),
     );
@@ -569,26 +671,26 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
     return _accountManager.getAccountDisplayText();
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(String label, String value, {bool emphasise = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: Color(0xFF9CA3AF),
+          style: TextStyle(
+            color: emphasise ? Colors.white : const Color(0xFF9CA3AF),
             fontSize: 14,
-            fontWeight: FontWeight.w500,
+            fontWeight: emphasise ? FontWeight.w700 : FontWeight.w500,
           ),
         ),
         Flexible(
           child: Text(
             value,
             textAlign: TextAlign.right,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+              fontSize: emphasise ? 16 : 14,
+              fontWeight: emphasise ? FontWeight.w700 : FontWeight.w600,
             ),
           ),
         ),

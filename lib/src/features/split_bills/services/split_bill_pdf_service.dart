@@ -84,6 +84,12 @@ class SplitBillPdfService {
     required String description,
     required int paidCount,
     required int totalParticipants,
+
+    /// External-bank bills only, and only when it was actually quoted. The
+    /// shared file must say the same thing as the screen it was shared from,
+    /// so when the receipt shows a fee the PDF shows it too — and when it
+    /// does not, neither invents one.
+    int? transferFeeMinor,
     DateTime? paidAt,
     String status = 'Paid',
   }) async {
@@ -186,6 +192,14 @@ class SplitBillPdfService {
               if (receiverAccountMasked.trim().isNotEmpty) ...[
                 pw.SizedBox(height: 8),
                 _buildRow('Account', _safeMask(receiverAccountMasked.trim())),
+              ],
+              if (transferFeeMinor != null) ...[
+                pw.SizedBox(height: 8),
+                _buildRow('Transfer fee',
+                    '$currencySymbol${(transferFeeMinor / 100.0).toStringAsFixed(2)}'),
+                pw.SizedBox(height: 8),
+                _buildRow('Total paid',
+                    '$currencySymbol${(amount + transferFeeMinor / 100.0).toStringAsFixed(2)}'),
               ],
               pw.SizedBox(height: 8),
               _buildRow('Reference', transactionReference),
@@ -307,6 +321,12 @@ class SplitBillPdfService {
     required String description,
     required int paidCount,
     required int totalParticipants,
+
+    /// External-bank bills only, and only when it was actually quoted. The
+    /// shared file must say the same thing as the screen it was shared from,
+    /// so when the receipt shows a fee the PDF shows it too — and when it
+    /// does not, neither invents one.
+    int? transferFeeMinor,
     DateTime? paidAt,
     String status = 'Paid',
   }) async {
@@ -323,6 +343,7 @@ class SplitBillPdfService {
       totalParticipants: totalParticipants,
       paidAt: paidAt,
       status: status,
+      transferFeeMinor: transferFeeMinor,
     );
 
     final safeRef =
@@ -342,6 +363,12 @@ class SplitBillPdfService {
     required String description,
     required int paidCount,
     required int totalParticipants,
+
+    /// External-bank bills only, and only when it was actually quoted. The
+    /// shared file must say the same thing as the screen it was shared from,
+    /// so when the receipt shows a fee the PDF shows it too — and when it
+    /// does not, neither invents one.
+    int? transferFeeMinor,
     DateTime? paidAt,
     String status = 'Paid',
     // iPad requires an anchor rect for the share sheet or share_plus throws; harmless elsewhere.
@@ -360,6 +387,7 @@ class SplitBillPdfService {
       totalParticipants: totalParticipants,
       paidAt: paidAt,
       status: status,
+      transferFeeMinor: transferFeeMinor,
     );
 
     final currencySymbol = _currencySymbolFor(currency);
