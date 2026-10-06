@@ -8,6 +8,12 @@ import '../../domain/exceptions/split_bill_exceptions.dart';
 import '../../domain/repositories/split_bill_repository.dart';
 
 class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
+  /// Deadline for split-bill actions a user is actively waiting on.
+  ///
+  /// Short on purpose. The shared authed default is 90s, which is sized for
+  /// background reads; on an interactive button it just hides the failure.
+  static const Duration _interactiveDeadline = Duration(seconds: 20);
+
   final GrpcClient grpcClient;
 
   SplitBillRepositoryGrpcImpl({required this.grpcClient});
@@ -222,10 +228,23 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
   @override
   Future<void> cancelSplitBill({required String splitBillId}) async {
     return retryWithBackoff(
+      // A PERSON IS WATCHING A SPINNER. Bound the wait.
+      //
+      // The default authed deadline is 90s and deadlineExceeded is retryable,
+      // so with the default maxRetries of 3 a cancel against a slow or
+      // unreachable service sat there for roughly six minutes before it
+      // surfaced anything at all. That reads as "it never finishes", and it is
+      // what made cancelling look like it hung.
+      //
+      // One retry covers a dropped connection; beyond that the honest answer is
+      // an error the user can act on. The service re-validates the bill's
+      // status under a row lock, so a retry cannot cancel twice.
+      maxRetries: 1,
       operation: () async {
         final request = pb.CancelSplitBillRequest()..splitBillId = splitBillId;
 
-        final options = await grpcClient.callOptions;
+        final options = (await grpcClient.callOptions)
+            .mergedWith(CallOptions(timeout: _interactiveDeadline));
         try {
           final response = await grpcClient.splitBillClient.cancelSplitBill(
             request,
@@ -250,6 +269,8 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
     String? reason,
   }) async {
     return retryWithBackoff(
+      // Same reasoning as cancelSplitBill: the user is waiting on this one.
+      maxRetries: 1,
       operation: () async {
         final request = pb.DeclineSplitBillShareRequest()
           ..splitBillId = splitBillId;

@@ -80,6 +80,24 @@ class _SplitBillDetailView extends StatelessWidget {
         centerTitle: true,
       ),
       body: BlocConsumer<SplitBillCubit, SplitBillState>(
+        // ONLY rebuild for states that describe this screen's content.
+        //
+        // The builder's fallback is "show a loader", and this cubit also emits
+        // ACTION results — Cancelled, ShareDeclined, ReminderSent — which say
+        // nothing about what the page should render. Rebuilding on those
+        // replaced the whole page with a spinner that nothing would ever clear:
+        // the detail had already loaded, no further state was coming, and the
+        // user sat on a loader forever after cancelling.
+        //
+        // Action results are still delivered to the listener below, which is
+        // where they belong; they just no longer blank the page.
+        buildWhen: (_, state) =>
+            state is SplitBillInitial ||
+            state is SplitBillLoading ||
+            state is SplitBillDetailLoading ||
+            state is SplitBillPaymentProcessing ||
+            state is SplitBillDetailLoaded ||
+            state is SplitBillError,
         listener: (context, state) {
           if (state is SplitBillCancelled) {
             showAppSnackbar(
@@ -87,14 +105,14 @@ class _SplitBillDetailView extends StatelessWidget {
               state.message,
               type: AppSnackbarType.success,
             );
-            Get.back();
+            _leaveAfterTerminalAction(context);
           } else if (state is SplitBillShareDeclined) {
             showAppSnackbar(
               'Declined',
               state.message,
               type: AppSnackbarType.info,
             );
-            Get.back();
+            _leaveAfterTerminalAction(context);
           } else if (state is SplitBillReminderSent) {
             showAppSnackbar(
               'Reminder Sent',
@@ -128,6 +146,8 @@ class _SplitBillDetailView extends StatelessWidget {
             return _buildErrorContent(context, state.message);
           }
 
+          // Only SplitBillInitial can reach here (buildWhen filters the rest),
+          // and it is genuinely "the first load has not answered yet".
           return const Center(
             child: LazerVaultLoader.small(),
           );
@@ -1400,6 +1420,21 @@ class _SplitBillDetailView extends StatelessWidget {
     final hour = dt.hour.toString().padLeft(2, '0');
     final minute = dt.minute.toString().padLeft(2, '0');
     return '$day/$month/$year at $hour:$minute';
+  }
+
+  /// Leaves the screen after an action that ends the bill for this user.
+  ///
+  /// `Get.back()` on its own is not enough: when this screen is the only route
+  /// (opened from a notification tap or a deep link) there is nothing to pop,
+  /// the call silently does nothing, and the user is left looking at a page for
+  /// a bill that no longer exists. Re-reading the bill in that case shows its
+  /// final, cancelled state instead.
+  void _leaveAfterTerminalAction(BuildContext context) {
+    if (Navigator.of(context).canPop()) {
+      Get.back();
+      return;
+    }
+    context.read<SplitBillCubit>().loadBillDetail(splitBillId);
   }
 
   Widget _buildErrorContent(BuildContext context, String message) {
