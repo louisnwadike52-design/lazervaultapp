@@ -400,6 +400,10 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
         children: [
           _accountSection(),
           _reveal(_accountStarted && _saved == null, _nameSection),
+          // Say WHY the pay button is missing. A CTA that silently fails to
+          // appear reads as a broken screen; the shortfall, named in naira, is
+          // something the user can act on.
+          _reveal(_fundingGuard() != null && _recipientReady, _fundingNotice),
           _reveal(_readyToPay, _finishSection),
         ],
       ),
@@ -460,7 +464,11 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
   }
 
   bool get _readyToPay =>
-      _amountValid && !_quoting && _quote != null && _recipientReady;
+      _amountValid &&
+      !_quoting &&
+      _quote != null &&
+      _recipientReady &&
+      _fundingGuard() == null;
 
   // 2 — Rate section (live quote breakdown + funding source) ─────────────
   Widget _rateSection() {
@@ -742,6 +750,35 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
   }
 
   // 5 — Finish section (save toggle + Pay) ──────────────────────────────
+  Widget _fundingNotice() {
+    final msg = _fundingGuard();
+    if (msg == null) return const SizedBox.shrink();
+    return Padding(
+      padding: EdgeInsets.only(top: 22.h),
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: RmbUi.card,
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: RmbUi.error.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.account_balance_wallet_outlined,
+                color: RmbUi.error, size: 18.sp),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Text(msg,
+                  style: TextStyle(
+                      color: RmbUi.textSecondary, fontSize: 12.5.sp, height: 1.4)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _finishSection() {
     return Padding(
       padding: EdgeInsets.only(top: 22.h),
@@ -1547,6 +1584,15 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
       _snack('No active account selected');
       return;
     }
+    // Re-check funding here, not only when the button rendered: the stale-quote
+    // refresh above can raise the total, and the compliance sheet can sit open
+    // long enough for a balance to move. Asking for a PIN we already know will
+    // be refused spends one of three attempts on a transfer that cannot happen.
+    final funding = _fundingGuard();
+    if (funding != null) {
+      _snack(funding);
+      return;
+    }
     if (!mounted) return;
 
     final cnyMajor = q.destAmountMinor.toInt() / 100.0;
@@ -1777,6 +1823,38 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
       if (idErr != null) return idErr;
     }
     return null;
+  }
+
+  /// Whether the active wallet can actually fund the quoted transfer.
+  ///
+  /// Returns null until a quote exists — the real figure is the quote's total
+  /// (principal + the provider's flat fee + our spread), and guessing from the
+  /// yuan amount alone would refuse transfers the user can afford.
+  ///
+  /// This runs BEFORE the PIN sheet, and that ordering is the whole point. The
+  /// flow previously took an amount, a recipient's phone number, their surname
+  /// and given name, and a transaction PIN, and only THEN discovered the wallet
+  /// held ₦967 against a ₦120,692 transfer. A mistyped PIN along the way spends
+  /// a real attempt, so a transfer that was never possible could lock the user
+  /// out of every other payment in the app.
+  String? _fundingGuard() {
+    final q = _quote;
+    if (q == null) return null;
+    final acct = activeAccountSnapshot();
+    if (acct == null) return null; // nothing selected yet; other guards cover it
+    final totalMajor = q.totalMinor.toInt() / 100.0;
+    if (acct.covers(totalMajor)) return null;
+    if (!acct.isSpendable) {
+      return 'This account can’t send money right now. Pick another account on '
+          'the dashboard, or contact support if this looks wrong.';
+    }
+    if (acct.isProvisioning) {
+      return 'This account is still being set up and can’t send money yet.';
+    }
+    final short = totalMajor - acct.balanceMajor;
+    return 'You need ${RmbUi.ngn((totalMajor * 100).round())} for this transfer '
+        'but ${acct.display} has ${RmbUi.ngn((acct.balanceMajor * 100).round())}. '
+        'Add ${RmbUi.ngn((short * 100).round())} to continue, or send a smaller amount.';
   }
 
   String? _sourceCurrencyGuard() {
