@@ -71,6 +71,9 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
   final _phoneController = TextEditingController();
 
   String? _networkCode;
+  // Tracks the field's empty state so _onPhoneChanged can rebuild exactly on
+  // the transition the clear button depends on.
+  bool _phoneWasEmpty = true;
   // True when the user picked the network from the manual pills (prefix couldn't
   // be auto-detected) — changes the row label from "auto-detected" to "selected".
   bool _networkManual = false;
@@ -196,6 +199,22 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
   }
 
   void _onPhoneChanged() {
+    // The clear button appears only when the field is non-empty, so the
+    // empty <-> non-empty transition has to rebuild. Nothing else does it
+    // reliably: _recomputeExistingBeneficiary calls setState only when the
+    // MATCHED beneficiary changes (null -> null for most numbers), and
+    // _detectAndLoad only when the detected network changes, 350ms later.
+    // Without this the X would not show after the first digit, or would
+    // linger after the field was cleared from code.
+    //
+    // Gated on the transition rather than firing on every keystroke — this
+    // runs on an 11-digit field with network detection and a plan list
+    // underneath it.
+    final nowEmpty = _phoneController.text.isEmpty;
+    if (nowEmpty != _phoneWasEmpty) {
+      _phoneWasEmpty = nowEmpty;
+      if (mounted) setState(() {});
+    }
     _recomputeExistingBeneficiary();
     _detectDebounce?.cancel();
     _detectDebounce = Timer(const Duration(milliseconds: 350), _detectAndLoad);
@@ -632,6 +651,31 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
           prefixIcon: _dialCodePrefix(),
           prefixIconConstraints:
               const BoxConstraints(minWidth: 0, minHeight: 0),
+          // Clear the whole number in one tap, as the airtime field already
+          // does. Correcting a mistyped 11-digit number by backspacing is
+          // eleven taps, and this screen auto-detects the network from it —
+          // so a wrong number also leaves a wrong network badge and a plan
+          // list for the wrong carrier sitting underneath.
+          //
+          // Clearing therefore resets the DERIVED state too. Leaving
+          // _networkCode and _plan behind would show MTN plans against an
+          // empty field, and _plan is half of the `_ready` gate that enables
+          // Buy — the user could return to a cleared field with a stale plan
+          // still selected. _networkManual is reset so a fresh number is
+          // auto-detected again rather than pinned to the previous override.
+          suffixIcon: _phoneController.text.isEmpty
+              ? null
+              : IconButton(
+                  icon: Icon(Icons.clear,
+                      color: const Color(0xFF6B7280), size: 18.sp),
+                  tooltip: 'Clear number',
+                  onPressed: () => setState(() {
+                    _phoneController.clear();
+                    _networkCode = null;
+                    _networkManual = false;
+                    _plan = null;
+                  }),
+                ),
           border: InputBorder.none,
           contentPadding:
               EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),

@@ -132,22 +132,31 @@ class _DataBundlesHomeScreenState extends State<DataBundlesHomeScreen> {
               children: [
                 Text(
                   'Data Bundles',
+                  // 24sp crowded the row: with the back button, the voice and
+                  // chat icons beside it, the title ran to the edge and the
+                  // subtitle clipped on narrower phones. 20/12 keeps the same
+                  // hierarchy in noticeably less vertical space, which matters
+                  // here because the plan sheet opens over this screen.
                   style: GoogleFonts.inter(
-                    fontSize: 24.sp,
+                    fontSize: 20.sp,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
-                    letterSpacing: 0.5,
+                    letterSpacing: 0.3,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: 2.h),
                 Text(
                   _selectedTab == 0
                       ? 'Buy data for Nigerian networks'
                       : 'Top up data in 100+ countries',
                   style: GoogleFonts.inter(
-                    fontSize: 14.sp,
+                    fontSize: 12.sp,
                     color: Colors.white.withValues(alpha: 0.6),
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),

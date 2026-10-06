@@ -62,6 +62,9 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
   static const _quickAmounts = <int>[100, 200, 500, 1000, 2000, 5000];
 
   final _phoneController = TextEditingController();
+  // Tracks the field's empty state so _onPhoneChanged rebuilds exactly on
+  // the transition the clear button depends on.
+  bool _phoneWasEmpty = true;
   final _amountController = TextEditingController();
 
   NetworkProvider? _network;
@@ -228,6 +231,23 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
   }
 
   void _onPhoneChanged() {
+    // Rebuild on the empty <-> non-empty transition so the clear button is
+    // right immediately.
+    //
+    // This field already had the X, but nothing rebuilt reliably when it
+    // should appear: _recomputeExistingBeneficiary calls setState only when
+    // the MATCHED beneficiary changes (null -> null for most numbers), and
+    // _detectNetwork only resolves 350ms later and only for a recognised
+    // prefix. So the X surfaced late, or not at all for an unrecognised
+    // number, and lingered after a programmatic clear.
+    //
+    // Gated on the transition rather than every keystroke — this runs on an
+    // 11-digit field with network detection behind it.
+    final nowEmpty = _phoneController.text.isEmpty;
+    if (nowEmpty != _phoneWasEmpty) {
+      _phoneWasEmpty = nowEmpty;
+      if (mounted) setState(() {});
+    }
     _recomputeExistingBeneficiary();
     _detectDebounce?.cancel();
     _detectDebounce = Timer(const Duration(milliseconds: 350), _detectNetwork);
