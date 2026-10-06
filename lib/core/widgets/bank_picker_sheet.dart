@@ -445,6 +445,10 @@ class _BankPickerSheetState extends State<BankPickerSheet> {
                     country: widget.country,
                     size: 44,
                     borderRadius: 10,
+                    // The backend-served mark. Most banks on the active rail
+                    // have no bundled asset, so this is the only path that
+                    // gives them a real logo.
+                    logoUrl: bank['logo_url'],
                   ),
                 ),
               ),

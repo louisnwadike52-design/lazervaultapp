@@ -1,21 +1,41 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../utilities/bank_logo_lookup.dart';
 import '../utilities/bank_logo_manifest.dart';
 import '../utilities/banks_data.dart';
 
 /// A widget that displays a bank logo.
 ///
-/// Prefers a bundled logo asset (`assets/images/banks/<code>.webp`) keyed by
-/// bank code; falls back to a gradient container with the bank's initials when
-/// no logo is bundled (or the asset fails to decode). Logos ship in the app
-/// binary so there are no remote calls.
+/// Three sources, in order:
+///
+///  1. [logoUrl] — served by our backend, cached on device after the first
+///     fetch. This is where the breadth is: the store holds ~280 logos against
+///     the 38 that ship in the binary, so most of the banks the active rail
+///     offers only have a logo through this path.
+///  2. A bundled asset (`assets/images/banks/<code>.webp`). Kept as the
+///     OFFLINE answer, not as dead weight — a bank picker opened with no
+///     network still shows real marks for the most-used banks, which a
+///     URL-only design could not.
+///  3. The bank's initials on a coloured tile. Better than a broken image or a
+///     generic bank glyph, which would make every unknown bank look alike.
+///
+/// The URL is keyed server-side by normalised bank NAME rather than by code,
+/// because codes are per-rail: Kuda is 50211 on Flutterwave and 090267 on
+/// Nomba, so a code-keyed logo would disappear the day the payout provider
+/// changed.
 class BankLogo extends StatelessWidget {
   final String bankName;
   final String? bankCode;
   final String country;
   final double size;
   final double borderRadius;
+
+  /// Backend-served logo URL, when the caller has one (bank lists carry it).
+  /// Null simply means "fall through to the bundled asset", so every existing
+  /// call site keeps its current behaviour.
+  final String? logoUrl;
 
   const BankLogo({
     super.key,
@@ -24,10 +44,48 @@ class BankLogo extends StatelessWidget {
     this.country = 'NG',
     this.size = 44,
     this.borderRadius = 10,
+    this.logoUrl,
   });
+
+  /// The URL to use: the one passed in, else whatever the bank-list index
+  /// holds for this bank.
+  ///
+  /// The index is what gets logos onto the screens that matter — a saved
+  /// recipient, transfer history, a confirm sheet — none of which have a `Bank`
+  /// object to take a URL from.
+  String? get _effectiveUrl {
+    final passed = logoUrl?.trim() ?? '';
+    if (passed.isNotEmpty) return passed;
+    return BankLogoLookup.urlFor(bankName: bankName, bankCode: bankCode);
+  }
+
+  /// True when [_effectiveUrl] is a usable absolute http(s) URL.
+  ///
+  /// Checked rather than assumed: a relative path or a stray placeholder would
+  /// make CachedNetworkImage throw during layout, taking the whole bank list
+  /// down over a cosmetic field.
+  bool get _hasRemoteLogo {
+    final u = _effectiveUrl ?? '';
+    if (u.isEmpty) return false;
+    final parsed = Uri.tryParse(u);
+    return parsed != null &&
+        parsed.hasScheme &&
+        (parsed.scheme == 'https' || parsed.scheme == 'http') &&
+        parsed.host.isNotEmpty;
+  }
 
   @override
   Widget build(BuildContext context) {
+    // The index is usually empty on first paint (the bank list is still
+    // loading), so without this a recipient tile would keep its initials for
+    // the rest of the session even once the real logo was known.
+    return ValueListenableBuilder<int>(
+      valueListenable: BankLogoLookup.revision,
+      builder: (_, __, ___) => _buildTile(),
+    );
+  }
+
+  Widget _buildTile() {
     final logoAsset = _resolveLogoAsset();
     return Container(
       width: size.w,
@@ -44,8 +102,7 @@ class BankLogo extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius.r),
-        child:
-            logoAsset != null ? _buildAssetLogo(logoAsset) : _buildFallback(),
+        child: _buildImage(logoAsset),
       ),
     );
   }
@@ -65,6 +122,43 @@ class BankLogo extends StatelessWidget {
     if (byNameAsCode != null) return byNameAsCode;
     return bundledBankLogoAsset(
       BanksData.getBankCodeByName(bankName, country: country),
+    );
+  }
+
+  Widget _buildImage(String? logoAsset) {
+    // Our own logo for internal transfers always wins — it is an asset and
+    // there is no remote equivalent.
+    final isInternal = logoAsset == 'assets/images/logo.png';
+    if (!isInternal && _hasRemoteLogo) {
+      return Container(
+        color: Colors.white,
+        padding: EdgeInsets.all((size * 0.12).w),
+        child: CachedNetworkImage(
+          imageUrl: _effectiveUrl!,
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.medium,
+          // No spinner. A bank list renders dozens of these at once and a grid
+          // of spinners reads as a broken screen; the bundled asset or the
+          // initials is a complete, correct tile to show meanwhile.
+          placeholder: (_, __) =>
+              logoAsset != null ? _rawAsset(logoAsset) : _buildFallback(),
+          // Same answer on failure — offline, a 404, or a logo we no longer
+          // hold all land here, and all of them mean "use what we have".
+          errorWidget: (_, __, ___) =>
+              logoAsset != null ? _rawAsset(logoAsset) : _buildFallback(),
+        ),
+      );
+    }
+    return logoAsset != null ? _buildAssetLogo(logoAsset) : _buildFallback();
+  }
+
+  /// The asset without the white card/padding wrapper, for use INSIDE one.
+  Widget _rawAsset(String asset) {
+    return Image.asset(
+      asset,
+      fit: BoxFit.contain,
+      filterQuality: FilterQuality.medium,
+      errorBuilder: (_, __, ___) => _buildFallback(),
     );
   }
 

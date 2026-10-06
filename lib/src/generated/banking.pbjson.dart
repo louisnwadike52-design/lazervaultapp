@@ -861,6 +861,7 @@ const Bank$json = {
     {'1': 'country', '3': 3, '4': 1, '5': 9, '10': 'country'},
     {'1': 'nip_code', '3': 4, '4': 1, '5': 9, '10': 'nipCode'},
     {'1': 'is_active', '3': 5, '4': 1, '5': 8, '10': 'isActive'},
+    {'1': 'logo_url', '3': 6, '4': 1, '5': 9, '10': 'logoUrl'},
   ],
 };
 
@@ -868,7 +869,7 @@ const Bank$json = {
 final $typed_data.Uint8List bankDescriptor = $convert.base64Decode(
     'CgRCYW5rEhIKBGNvZGUYASABKAlSBGNvZGUSEgoEbmFtZRgCIAEoCVIEbmFtZRIYCgdjb3VudH'
     'J5GAMgASgJUgdjb3VudHJ5EhkKCG5pcF9jb2RlGAQgASgJUgduaXBDb2RlEhsKCWlzX2FjdGl2'
-    'ZRgFIAEoCFIIaXNBY3RpdmU=');
+    'ZRgFIAEoCFIIaXNBY3RpdmUSGQoIbG9nb191cmwYBiABKAlSB2xvZ29Vcmw=');
 
 @$core.Deprecated('Use verifyBVNRequestDescriptor instead')
 const VerifyBVNRequest$json = {

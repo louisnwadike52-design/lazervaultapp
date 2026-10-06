@@ -1712,6 +1712,7 @@ class OpenBankingGrpcDataSource {
                   name: b.name,
                   nipCode: b.nipCode.isEmpty ? null : b.nipCode,
                   isActive: b.isActive,
+                  logoUrl: b.logoUrl.isEmpty ? null : b.logoUrl,
                 ))
             .toList(),
         provider: response.provider.trim().toLowerCase(),

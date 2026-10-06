@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/utilities/bank_logo_lookup.dart';
 import 'package:lazervault/core/utilities/banks_data.dart';
 import 'package:lazervault/src/features/open_banking/data/datasources/open_banking_grpc_datasource.dart';
 import 'package:lazervault/src/features/open_banking/data/datasources/open_banking_remote_datasource.dart';
@@ -63,7 +64,14 @@ class BankRepository {
   /// static list.
   final Map<String, List<Map<String, String>>> _mem = {};
 
-  String _cacheKey(String country) => 'banks_cache_${country.toUpperCase()}';
+  /// Cache key, VERSIONED.
+  ///
+  /// Bumped to v2 when banks gained `logo_url`. Without the bump a user with a
+  /// warm cache would see no logos for up to 24 hours after updating — the
+  /// stored list is structurally valid, just missing the new field, so nothing
+  /// would mark it stale. The cost of the bump is one extra bank-list fetch,
+  /// once, per device.
+  String _cacheKey(String country) => 'banks_cache_v2_${country.toUpperCase()}';
   String _cacheAtKey(String country) =>
       'banks_cache_at_${country.toUpperCase()}';
 
@@ -118,6 +126,9 @@ class BankRepository {
     final decoded = _tryDecode(raw);
     if (decoded != null && decoded.isNotEmpty) {
       _mem[country.toUpperCase()] = decoded;
+      // Publish the logo URLs so every BankLogo on screen can find one — see
+      // BankLogoLookup for why this is an index rather than a parameter.
+      BankLogoLookup.ingest(decoded);
       return decoded;
     }
     return BanksData.getBanksForCountry(country);
@@ -147,6 +158,7 @@ class BankRepository {
       final decoded = _tryDecode(cachedRaw);
       if (decoded != null && decoded.isNotEmpty) {
         _mem[key] = decoded;
+        BankLogoLookup.ingest(decoded);
         if (cachedProvider.isNotEmpty) _memProvider[key] = cachedProvider;
         return decoded;
       }
@@ -171,7 +183,16 @@ class BankRepository {
         // transfer-eligible banks.
         final list = res.banks
             .where((b) => b.code.isNotEmpty && b.name.isNotEmpty)
-            .map((b) => {'name': b.name, 'code': b.code})
+            .map((b) => {
+                  'name': b.name,
+                  'code': b.code,
+                  // Carried through so the picker can show the real mark. The
+                  // backend keys it by normalised bank NAME, so it survives a
+                  // payout-provider switch — unlike the code beside it, which
+                  // changes meaning entirely (Kuda is 50211 on Flutterwave and
+                  // 090267 on Nomba).
+                  if ((b.logoUrl ?? '').isNotEmpty) 'logo_url': b.logoUrl!,
+                })
             .toList();
         if (list.isNotEmpty) {
           final railChanged = cachedProvider.isNotEmpty &&
@@ -184,6 +205,7 @@ class BankRepository {
           );
           await prefs.setString(_cacheProviderKey(country), res.provider);
           _mem[key] = list;
+          BankLogoLookup.ingest(list);
           if (res.provider.isNotEmpty) _memProvider[key] = res.provider;
           _revalidated.add(key);
           if (railChanged) {
@@ -266,6 +288,11 @@ class BankRepository {
           .map((e) => {
                 'name': (e['name'] ?? '').toString(),
                 'code': (e['code'] ?? '').toString(),
+                // Absent on a cache written before logos existed — the picker
+                // then falls back to the bundled asset or initials, exactly as
+                // it did before, until the next 24h revalidation refills it.
+                if ((e['logo_url'] ?? '').toString().isNotEmpty)
+                  'logo_url': e['logo_url'].toString(),
               })
           .where((m) => m['code']!.isNotEmpty && m['name']!.isNotEmpty)
           .toList();

@@ -573,6 +573,134 @@ service BankingService {
             get: "/api/v1/users/{user_id}/credit-score/multi-source"
         };
     }
+
+    // =====================================================
+    // CARD ACCEPTANCE (SoftPOS) — the phone acts as the terminal.
+    //
+    // Reading the card happens in the provider's certified SDK inside the app;
+    // it returns an encrypted payload we forward verbatim and never inspect.
+    // That boundary is what keeps this service out of PCI scope, so none of
+    // these messages carries a PAN, a CVV or a track.
+    // =====================================================
+
+    // Open a card sale. Idempotent on reference.
+    rpc CreateCardCharge(CreateCardChargeRequest) returns (CardChargeResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/card-acceptance/charges"
+            body: "*"
+        };
+    }
+
+    // Current status of one sale. The app polls this after a tap; the webhook
+    // usually beats it, and the reconciler covers the case where neither lands.
+    rpc GetCardCharge(GetCardChargeRequest) returns (CardChargeResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/card-acceptance/charges/{reference}"
+        };
+    }
+
+    // The signed-in merchant's own sales, newest first.
+    rpc ListMyCardCharges(ListMyCardChargesRequest) returns (ListMyCardChargesResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/card-acceptance/charges"
+        };
+    }
+
+    // Which rail is live and whether card acceptance is usable at all, so the
+    // app can say "card payments are unavailable" instead of failing at the tap.
+    rpc GetCardAcceptanceStatus(GetCardAcceptanceStatusRequest) returns (GetCardAcceptanceStatusResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/card-acceptance/status"
+        };
+    }
+}
+
+// =====================================================
+// CARD ACCEPTANCE MESSAGES
+// Money is in MINOR units (kobo) as int64 throughout.
+// =====================================================
+
+message CreateCardChargeRequest {
+    // OUR id for this sale. Unique, client-generated, and what makes a retry
+    // from a phone on a bad connection idempotent rather than a double charge.
+    string reference = 1;
+    int64 amount_minor = 2;
+    string currency = 3;
+    string description = 4;
+
+    // Which phone took the payment and who was operating it. The point of a
+    // multi-branch SoftPOS is answering "which shop, which person", and
+    // attribution recorded after the fact is attribution nobody trusts.
+    string terminal_id = 5;
+    string staff_user_id = 6;
+
+    // The encrypted blob the certified SDK produced from the card read.
+    // Opaque on purpose — forwarded to the provider, never inspected here.
+    string device_payload = 7;
+}
+
+message GetCardChargeRequest {
+    string reference = 1;
+}
+
+message ListMyCardChargesRequest {
+    string status = 1;
+    int32 limit = 2;
+    int32 offset = 3;
+}
+
+message ListMyCardChargesResponse {
+    repeated CardCharge charges = 1;
+    int32 total = 2;
+    // Sales taken but not yet paid out, so the merchant screen can lead with
+    // "₦X on its way" rather than implying the money has already landed.
+    int64 unsettled_amount_minor = 3;
+}
+
+message CardChargeResponse {
+    bool success = 1;
+    CardCharge charge = 2;
+    // Shown to a merchant standing in front of a customer, so it says what to
+    // do next rather than repeating a provider code.
+    string message = 3;
+}
+
+message CardCharge {
+    string reference = 1;
+    string provider = 2;
+    string provider_reference = 3;
+    // pending | succeeded | failed | refunded
+    string status = 4;
+    int64 amount_minor = 5;
+    int64 fee_minor = 6;
+    string currency = 7;
+    string description = 8;
+    string terminal_id = 9;
+    string staff_user_id = 10;
+    // The only card details that may travel: the ones printed on a paper
+    // receipt, none of which can reconstruct a payment.
+    string card_last4 = 11;
+    string card_brand = 12;
+    string auth_code = 13;
+    string failure_reason = 14;
+    // Empty until the merchant has actually been paid — NOT the same as
+    // succeeded, which only means the card was charged.
+    string settlement_reference = 15;
+    string authorised_at = 16;
+    string settled_at = 17;
+    string created_at = 18;
+}
+
+message GetCardAcceptanceStatusRequest {}
+
+message GetCardAcceptanceStatusResponse {
+    // False when no provider has usable credentials. The app must say so up
+    // front; discovering it at the tap means a customer is already waiting.
+    bool available = 1;
+    string active_provider = 2;
+    // Providers compiled in AND holding credentials.
+    repeated string usable_providers = 3;
+    string unavailable_reason = 4;
 }
 
 // =====================================================
@@ -815,6 +943,15 @@ message Bank {
     string country = 3;
     string nip_code = 4;
     bool is_active = 5;
+    // Absolute URL of the bank's logo, served by us. Empty when we hold no
+    // logo for this bank — the app then renders the bank's initials, which is a
+    // better answer than a broken image or a generic glyph that makes every
+    // unknown bank look alike.
+    //
+    // The URL is keyed by normalised bank NAME, not by code: codes are
+    // per-rail (Kuda is 50211 on Flutterwave and 090267 on Nomba), so a
+    // code-keyed URL would break the day the payout provider changed.
+    string logo_url = 6;
 }
 
 // =====================================================
@@ -853,6 +990,39 @@ message IdentityVerification {
     string status = 9; // pending, verified, failed
     string provider = 10;
     google.protobuf.Timestamp verified_at = 11;
+
+    // Fields 12+ added 2026-09-22 so another service can PREFILL a KYC form from
+    // an identity this user already proved, instead of asking them to retype what
+    // Mono verified. Purely additive — every existing client keeps working and
+    // ignores what it does not know.
+    //
+    // The concrete need: Fincra's foreign-currency virtual-account request wants
+    // ~24 fields including a DECOMPOSED address (state / city / street / zip as
+    // separate values). Without these, accounts-service could read a name and a
+    // date of birth and nothing else, and the user re-entered an address they had
+    // already given us.
+    //
+    // PII NOTE: nin and the address components are personal data. This RPC is
+    // reachable inside the mesh (OpportunisticAuthMethods) and by the owning user
+    // through banking-gateway. Do not widen its exposure without revisiting that.
+    string nin = 12;
+
+    // address is the composed single line (", "-joined) used for Mono mandate and
+    // DirectPay. The components below are the SAME address un-joined; they are not
+    // an alternative source, and either may be empty.
+    string address = 13;
+    string address_line1 = 14;
+    string address_city = 15;
+    string address_state = 16;
+    string address_lga = 17;
+    string address_postal_code = 18;
+    string country = 19;
+
+    // Deliberately NO email here. Prove returns one, but identity_verifications
+    // does not store it and the account email in auth-service is the authoritative
+    // value anyway — accounts-service already holds the auth DB and reads it from
+    // there. Copying it through this RPC would duplicate PII to no benefit and
+    // create a second, staler source of the same fact.
 }
 
 // =====================================================
@@ -1953,6 +2123,11 @@ message WithdrawalsResponse {
 // Calculate Withdrawal Fee
 message CalculateWithdrawalFeeRequest {
     int64 amount = 1;
+    // The wallet the withdrawal will debit. Each rail's payout cost differs,
+    // and a wallet's withdrawals are carried by the provider that owns it, so
+    // the QUOTE has to be computed against the same rail the CHARGE will use.
+    // Optional for older clients: absent falls back to the default rail.
+    string source_account_id = 2;
 }
 
 message CalculateWithdrawalFeeResponse {

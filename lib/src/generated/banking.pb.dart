@@ -3568,6 +3568,7 @@ class Bank extends $pb.GeneratedMessage {
     $core.String? country,
     $core.String? nipCode,
     $core.bool? isActive,
+    $core.String? logoUrl,
   }) {
     final result = create();
     if (code != null) result.code = code;
@@ -3575,6 +3576,7 @@ class Bank extends $pb.GeneratedMessage {
     if (country != null) result.country = country;
     if (nipCode != null) result.nipCode = nipCode;
     if (isActive != null) result.isActive = isActive;
+    if (logoUrl != null) result.logoUrl = logoUrl;
     return result;
   }
 
@@ -3596,6 +3598,7 @@ class Bank extends $pb.GeneratedMessage {
     ..aOS(3, _omitFieldNames ? '' : 'country')
     ..aOS(4, _omitFieldNames ? '' : 'nipCode')
     ..aOB(5, _omitFieldNames ? '' : 'isActive')
+    ..aOS(6, _omitFieldNames ? '' : 'logoUrl')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -3661,6 +3664,23 @@ class Bank extends $pb.GeneratedMessage {
   $core.bool hasIsActive() => $_has(4);
   @$pb.TagNumber(5)
   void clearIsActive() => $_clearField(5);
+
+  /// Absolute URL of the bank's logo, served by us. Empty when we hold no
+  /// logo for this bank — the app then renders the bank's initials, which is a
+  /// better answer than a broken image or a generic glyph that makes every
+  /// unknown bank look alike.
+  ///
+  /// The URL is keyed by normalised bank NAME, not by code: codes are
+  /// per-rail (Kuda is 50211 on Flutterwave and 090267 on Nomba), so a
+  /// code-keyed URL would break the day the payout provider changed.
+  @$pb.TagNumber(6)
+  $core.String get logoUrl => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set logoUrl($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasLogoUrl() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearLogoUrl() => $_clearField(6);
 }
 
 class VerifyBVNRequest extends $pb.GeneratedMessage {

@@ -239,11 +239,21 @@ class Bank {
   final String? nipCode;
   final bool isActive;
 
+  /// Absolute URL of the bank's logo, served by our backend.
+  ///
+  /// Null/empty means we hold no logo for this bank and the caller should show
+  /// its initials. The URL is keyed by normalised bank NAME server-side, not by
+  /// [code] — codes are per-rail (Kuda is 50211 on Flutterwave and 090267 on
+  /// Nomba), so a code-keyed logo would vanish the day the payout provider
+  /// changed.
+  final String? logoUrl;
+
   const Bank({
     required this.code,
     required this.name,
     this.nipCode,
     this.isActive = true,
+    this.logoUrl,
   });
 
   /// Accepts BOTH namings.
@@ -258,6 +268,7 @@ class Bank {
       name: (json['name'] ?? '').toString(),
       nipCode: (json['nip_code'] ?? json['nipCode']) as String?,
       isActive: (json['is_active'] ?? json['isActive']) as bool? ?? true,
+      logoUrl: (json['logo_url'] ?? json['logoUrl']) as String?,
     );
   }
 
@@ -267,6 +278,7 @@ class Bank {
       'name': name,
       'nip_code': nipCode,
       'is_active': isActive,
+      'logo_url': logoUrl,
     };
   }
 }
