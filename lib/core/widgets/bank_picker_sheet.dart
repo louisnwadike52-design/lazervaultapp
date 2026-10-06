@@ -420,15 +420,41 @@ class _BankPickerSheetState extends State<BankPickerSheet> {
             child: ListTile(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
-              leading: BankLogo(
-                bankName: bank['name'] ?? '',
-                bankCode: bank['code'],
-                country: widget.country,
-                size: 44,
-                borderRadius: 10,
+              // HARD-BOXED LEADING.
+              //
+              // BankLogo sizes itself with ScreenUtil (`size.w` / `size.h`).
+              // When this sheet is opened from a subtree where ScreenUtil was
+              // never initialised for the current context, those return a
+              // nonsense width and the leading swallows the row: the title is
+              // left with about one character of space, so a bank name renders
+              // one letter per line down the edge of the screen and spills
+              // outside the card. "First Marina Trust Finance" did exactly that
+              // on the Nomba bank list.
+              //
+              // This box is in LOGICAL PIXELS on purpose. It cannot be widened
+              // by anything inside it, so whatever the logo does, the title
+              // keeps the rest of the row.
+              leading: SizedBox(
+                width: 44,
+                height: 44,
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: BankLogo(
+                    bankName: bank['name'] ?? '',
+                    bankCode: bank['code'],
+                    country: widget.country,
+                    size: 44,
+                    borderRadius: 10,
+                  ),
+                ),
               ),
+              // A long bank name wraps to a second line and then ellipsizes,
+              // rather than being allowed to drive the row's width.
               title: Text(
                 bank['name'] ?? '',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                softWrap: true,
                 style: TextStyle(
                   color: t.onSurface,
                   fontWeight: FontWeight.w600,
