@@ -519,6 +519,15 @@ class TransactionPinService implements ITransactionPinService {
         options: callOptions,
       );
 
+      // A PIN now exists — warm the session cache, exactly as createPin does.
+      // Without this the flag can still read false immediately after a
+      // successful reset (any earlier "no PIN" answer clears it), and the next
+      // PIN-gated action pays for a round-trip to rediscover what we just did.
+      // Not a correctness bug — checkUserHasPin re-queries on a false — but the
+      // reset is precisely when the user is about to retry the payment they
+      // were bounced out of, so it is the worst moment for an extra hop.
+      if (response.success) _hasPinConfirmed = true;
+
       return PinOTPVerifyResult(
         success: response.success,
         message: response.message,
