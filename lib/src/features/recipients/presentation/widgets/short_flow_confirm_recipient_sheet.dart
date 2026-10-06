@@ -130,7 +130,15 @@ class _ShortFlowConfirmRecipientSheetState
                       ),
                       SizedBox(height: 2.h),
                       Text(
-                        '${r.accountNumber} • ${r.bankName}',
+                        // An internal payee saved from a username/chat carries
+                        // a non-number in accountNumber; maskedAccount is ''
+                        // there, so show the bank label alone rather than a
+                        // meaningless string. Every other recipient shows the
+                        // number the destination account presents TODAY — the
+                        // server re-projects it from the account id on read.
+                        r.hasRealAccountNumber
+                            ? '${r.accountNumber} • ${r.displayBankName}'
+                            : r.displayBankName,
                         style: GoogleFonts.inter(
                           color: ShortFlowConfirmRecipientSheet._textSecondary,
                           fontSize: 12.sp,

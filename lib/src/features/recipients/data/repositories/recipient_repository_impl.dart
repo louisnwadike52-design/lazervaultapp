@@ -154,6 +154,14 @@ class RecipientRepositoryImpl implements IRecipientRepository {
             recipient.internalUserId!.isNotEmpty) {
           request.internalUserId = recipient.internalUserId!;
         }
+        // The destination ACCOUNT, when we know exactly which one was chosen.
+        // Sending it pins the payee to that account rather than letting the
+        // server infer one from an account number that belongs to whichever
+        // provider was active when the number was captured.
+        if (recipient.internalAccountId != null &&
+            recipient.internalAccountId!.isNotEmpty) {
+          request.internalAccountUuid = recipient.internalAccountId!;
+        }
 
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.createRecipient(

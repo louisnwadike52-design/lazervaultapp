@@ -29,6 +29,17 @@ class UnifiedSearchResult extends Equatable {
   final String bankName;
   final String profilePicture;
   final String primaryAccountId;
+
+  /// For a SAVED internal recipient: the destination account this payee was
+  /// pinned to. Not necessarily their primary account — a saved number often
+  /// belongs to a family or business account — so it is kept separate from
+  /// [primaryAccountId], which is the right default only for a directory hit
+  /// where no account has been chosen yet.
+  final String internalAccountId;
+
+  /// The payee's real account name on the rail their account uses now.
+  final String accountHolderName;
+
   final bool isLazervault;
   final bool isSaved;
   final bool isFavorite;
@@ -53,6 +64,8 @@ class UnifiedSearchResult extends Equatable {
     this.bankName = '',
     this.profilePicture = '',
     this.primaryAccountId = '',
+    this.internalAccountId = '',
+    this.accountHolderName = '',
     this.isLazervault = false,
     this.isSaved = false,
     this.isFavorite = false,
@@ -93,6 +106,8 @@ class UnifiedSearchResult extends Equatable {
       bankName: s('bank_name'),
       profilePicture: s('profile_picture'),
       primaryAccountId: s('primary_account_id'),
+      internalAccountId: s('internal_account_id'),
+      accountHolderName: s('account_holder_name'),
       isLazervault: b('is_lazervault_user'),
       isSaved: b('is_saved'),
       isFavorite: b('is_favorite'),
@@ -153,6 +168,16 @@ class UnifiedSearchResult extends Equatable {
       profileImageUrl: profilePicture.isNotEmpty ? profilePicture : null,
       type: internal ? 'internal' : 'external',
       internalUserId: userId.isNotEmpty ? userId : null,
+      // The destination account. A saved row already names one; a directory
+      // hit has not had an account chosen, so the payee's primary account is
+      // the sensible default — the server verifies ownership either way.
+      internalAccountId: internal
+          ? (internalAccountId.isNotEmpty
+              ? internalAccountId
+              : (primaryAccountId.isNotEmpty ? primaryAccountId : null))
+          : null,
+      accountHolderName:
+          accountHolderName.isNotEmpty ? accountHolderName : null,
     );
   }
 

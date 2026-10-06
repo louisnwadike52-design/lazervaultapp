@@ -43,6 +43,8 @@ class Recipient extends $pb.GeneratedMessage {
     $core.String? iban,
     $core.String? alias,
     $core.bool? isSaved,
+    $core.String? internalAccountUuid,
+    $core.String? accountHolderName,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -64,6 +66,9 @@ class Recipient extends $pb.GeneratedMessage {
     if (iban != null) result.iban = iban;
     if (alias != null) result.alias = alias;
     if (isSaved != null) result.isSaved = isSaved;
+    if (internalAccountUuid != null)
+      result.internalAccountUuid = internalAccountUuid;
+    if (accountHolderName != null) result.accountHolderName = accountHolderName;
     return result;
   }
 
@@ -104,6 +109,8 @@ class Recipient extends $pb.GeneratedMessage {
     ..aOS(17, _omitFieldNames ? '' : 'iban')
     ..aOS(18, _omitFieldNames ? '' : 'alias')
     ..aOB(19, _omitFieldNames ? '' : 'isSaved')
+    ..aOS(20, _omitFieldNames ? '' : 'internalAccountUuid')
+    ..aOS(21, _omitFieldNames ? '' : 'accountHolderName')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -162,6 +169,15 @@ class Recipient extends $pb.GeneratedMessage {
   void clearType() => $_clearField(4);
 
   /// Fields for INTERNAL recipients
+  ///
+  /// internal_account_uuid is the payee's IDENTITY — the destination account's
+  /// UUID. account_number below is presentation only: the server re-projects it
+  /// from this id on every read against whichever provider the account is using
+  /// now, so a payee saved while Flutterwave was active still shows (and pays)
+  /// the right number after a switch to Nomba.
+  ///
+  /// internal_account_id is its dead predecessor: a uint64 can never hold an
+  /// account UUID, and nothing ever populated it.
   @$pb.TagNumber(5)
   $fixnum.Int64 get internalAccountId => $_getI64(4);
   @$pb.TagNumber(5)
@@ -301,6 +317,28 @@ class Recipient extends $pb.GeneratedMessage {
   $core.bool hasIsSaved() => $_has(18);
   @$pb.TagNumber(19)
   void clearIsSaved() => $_clearField(19);
+
+  @$pb.TagNumber(20)
+  $core.String get internalAccountUuid => $_getSZ(19);
+  @$pb.TagNumber(20)
+  set internalAccountUuid($core.String value) => $_setString(19, value);
+  @$pb.TagNumber(20)
+  $core.bool hasInternalAccountUuid() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearInternalAccountUuid() => $_clearField(20);
+
+  /// The payee's REAL account name on the rail their account is using now, e.g.
+  /// "Nnaemeka Ezeke FLW" or "LAZERVAULT/Nnaemeka Ezeke". Projected server-side,
+  /// never stored, and deliberately separate from `name`, which is the SENDER's
+  /// own label for this payee.
+  @$pb.TagNumber(21)
+  $core.String get accountHolderName => $_getSZ(20);
+  @$pb.TagNumber(21)
+  set accountHolderName($core.String value) => $_setString(20, value);
+  @$pb.TagNumber(21)
+  $core.bool hasAccountHolderName() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearAccountHolderName() => $_clearField(21);
 }
 
 class CreateRecipientRequest extends $pb.GeneratedMessage {
@@ -321,6 +359,7 @@ class CreateRecipientRequest extends $pb.GeneratedMessage {
     $core.String? alias,
     $core.bool? isSaved,
     $core.String? internalUserId,
+    $core.String? internalAccountUuid,
   }) {
     final result = create();
     if (name != null) result.name = name;
@@ -339,6 +378,8 @@ class CreateRecipientRequest extends $pb.GeneratedMessage {
     if (alias != null) result.alias = alias;
     if (isSaved != null) result.isSaved = isSaved;
     if (internalUserId != null) result.internalUserId = internalUserId;
+    if (internalAccountUuid != null)
+      result.internalAccountUuid = internalAccountUuid;
     return result;
   }
 
@@ -373,6 +414,7 @@ class CreateRecipientRequest extends $pb.GeneratedMessage {
     ..aOS(14, _omitFieldNames ? '' : 'alias')
     ..aOB(15, _omitFieldNames ? '' : 'isSaved')
     ..aOS(16, _omitFieldNames ? '' : 'internalUserId')
+    ..aOS(17, _omitFieldNames ? '' : 'internalAccountUuid')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -542,6 +584,18 @@ class CreateRecipientRequest extends $pb.GeneratedMessage {
   $core.bool hasInternalUserId() => $_has(15);
   @$pb.TagNumber(16)
   void clearInternalUserId() => $_clearField(16);
+
+  /// The destination account's UUID, when the client knows exactly which of the
+  /// payee's accounts was chosen. Optional: the server resolves it from
+  /// account_number or internal_user_id when absent.
+  @$pb.TagNumber(17)
+  $core.String get internalAccountUuid => $_getSZ(16);
+  @$pb.TagNumber(17)
+  set internalAccountUuid($core.String value) => $_setString(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasInternalAccountUuid() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearInternalAccountUuid() => $_clearField(17);
 }
 
 class CreateRecipientResponse extends $pb.GeneratedMessage {

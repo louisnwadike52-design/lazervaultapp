@@ -32,6 +32,13 @@ const Recipient$json = {
       '17': true
     },
     {'1': 'internal_user_id', '3': 6, '4': 1, '5': 9, '10': 'internalUserId'},
+    {
+      '1': 'internal_account_uuid',
+      '3': 20,
+      '4': 1,
+      '5': 9,
+      '10': 'internalAccountUuid'
+    },
     {'1': 'account_number', '3': 7, '4': 1, '5': 9, '10': 'accountNumber'},
     {'1': 'sort_code', '3': 8, '4': 1, '5': 9, '10': 'sortCode'},
     {'1': 'bank_name', '3': 9, '4': 1, '5': 9, '10': 'bankName'},
@@ -43,6 +50,13 @@ const Recipient$json = {
     {'1': 'iban', '3': 17, '4': 1, '5': 9, '10': 'iban'},
     {'1': 'alias', '3': 18, '4': 1, '5': 9, '10': 'alias'},
     {'1': 'is_saved', '3': 19, '4': 1, '5': 8, '10': 'isSaved'},
+    {
+      '1': 'account_holder_name',
+      '3': 21,
+      '4': 1,
+      '5': 9,
+      '10': 'accountHolderName'
+    },
     {
       '1': 'created_at',
       '3': 11,
@@ -70,15 +84,17 @@ final $typed_data.Uint8List recipientDescriptor = $convert.base64Decode(
     'CglSZWNpcGllbnQSDgoCaWQYASABKARSAmlkEhIKBG5hbWUYAiABKAlSBG5hbWUSHwoLaXNfZm'
     'F2b3JpdGUYAyABKAhSCmlzRmF2b3JpdGUSEgoEdHlwZRgEIAEoCVIEdHlwZRIzChNpbnRlcm5h'
     'bF9hY2NvdW50X2lkGAUgASgESABSEWludGVybmFsQWNjb3VudElkiAEBEigKEGludGVybmFsX3'
-    'VzZXJfaWQYBiABKAlSDmludGVybmFsVXNlcklkEiUKDmFjY291bnRfbnVtYmVyGAcgASgJUg1h'
-    'Y2NvdW50TnVtYmVyEhsKCXNvcnRfY29kZRgIIAEoCVIIc29ydENvZGUSGwoJYmFua19uYW1lGA'
-    'kgASgJUghiYW5rTmFtZRIhCgxjb3VudHJ5X2NvZGUYCiABKAlSC2NvdW50cnlDb2RlEhQKBWVt'
-    'YWlsGA0gASgJUgVlbWFpbBIhCgxwaG9uZV9udW1iZXIYDiABKAlSC3Bob25lTnVtYmVyEhoKCG'
-    'N1cnJlbmN5GA8gASgJUghjdXJyZW5jeRIdCgpzd2lmdF9jb2RlGBAgASgJUglzd2lmdENvZGUS'
-    'EgoEaWJhbhgRIAEoCVIEaWJhbhIUCgVhbGlhcxgSIAEoCVIFYWxpYXMSGQoIaXNfc2F2ZWQYEy'
-    'ABKAhSB2lzU2F2ZWQSOQoKY3JlYXRlZF9hdBgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1l'
-    'c3RhbXBSCWNyZWF0ZWRBdBI5Cgp1cGRhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLl'
-    'RpbWVzdGFtcFIJdXBkYXRlZEF0QhYKFF9pbnRlcm5hbF9hY2NvdW50X2lk');
+    'VzZXJfaWQYBiABKAlSDmludGVybmFsVXNlcklkEjIKFWludGVybmFsX2FjY291bnRfdXVpZBgU'
+    'IAEoCVITaW50ZXJuYWxBY2NvdW50VXVpZBIlCg5hY2NvdW50X251bWJlchgHIAEoCVINYWNjb3'
+    'VudE51bWJlchIbCglzb3J0X2NvZGUYCCABKAlSCHNvcnRDb2RlEhsKCWJhbmtfbmFtZRgJIAEo'
+    'CVIIYmFua05hbWUSIQoMY291bnRyeV9jb2RlGAogASgJUgtjb3VudHJ5Q29kZRIUCgVlbWFpbB'
+    'gNIAEoCVIFZW1haWwSIQoMcGhvbmVfbnVtYmVyGA4gASgJUgtwaG9uZU51bWJlchIaCghjdXJy'
+    'ZW5jeRgPIAEoCVIIY3VycmVuY3kSHQoKc3dpZnRfY29kZRgQIAEoCVIJc3dpZnRDb2RlEhIKBG'
+    'liYW4YESABKAlSBGliYW4SFAoFYWxpYXMYEiABKAlSBWFsaWFzEhkKCGlzX3NhdmVkGBMgASgI'
+    'Ugdpc1NhdmVkEi4KE2FjY291bnRfaG9sZGVyX25hbWUYFSABKAlSEWFjY291bnRIb2xkZXJOYW'
+    '1lEjkKCmNyZWF0ZWRfYXQYCyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgljcmVh'
+    'dGVkQXQSOQoKdXBkYXRlZF9hdBgMIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCX'
+    'VwZGF0ZWRBdEIWChRfaW50ZXJuYWxfYWNjb3VudF9pZA==');
 
 @$core.Deprecated('Use createRecipientRequestDescriptor instead')
 const CreateRecipientRequest$json = {
@@ -188,6 +204,15 @@ const CreateRecipientRequest$json = {
       '10': 'internalUserId',
       '17': true
     },
+    {
+      '1': 'internal_account_uuid',
+      '3': 17,
+      '4': 1,
+      '5': 9,
+      '9': 15,
+      '10': 'internalAccountUuid',
+      '17': true
+    },
   ],
   '8': [
     {'1': '_is_favorite'},
@@ -205,6 +230,7 @@ const CreateRecipientRequest$json = {
     {'1': '_alias'},
     {'1': '_is_saved'},
     {'1': '_internal_user_id'},
+    {'1': '_internal_account_uuid'},
   ],
 };
 
@@ -220,11 +246,12 @@ final $typed_data.Uint8List createRecipientRequestDescriptor = $convert.base64De
     '5jeRgLIAEoCUgJUghjdXJyZW5jeYgBARIiCgpzd2lmdF9jb2RlGAwgASgJSApSCXN3aWZ0Q29k'
     'ZYgBARIXCgRpYmFuGA0gASgJSAtSBGliYW6IAQESGQoFYWxpYXMYDiABKAlIDFIFYWxpYXOIAQ'
     'ESHgoIaXNfc2F2ZWQYDyABKAhIDVIHaXNTYXZlZIgBARItChBpbnRlcm5hbF91c2VyX2lkGBAg'
-    'ASgJSA5SDmludGVybmFsVXNlcklkiAEBQg4KDF9pc19mYXZvcml0ZUIHCgVfdHlwZUIWChRfaW'
-    '50ZXJuYWxfYWNjb3VudF9pZEIRCg9fYWNjb3VudF9udW1iZXJCDAoKX2JhbmtfbmFtZUIMCgpf'
-    'c29ydF9jb2RlQg8KDV9jb3VudHJ5X2NvZGVCCAoGX2VtYWlsQg8KDV9waG9uZV9udW1iZXJCCw'
-    'oJX2N1cnJlbmN5Qg0KC19zd2lmdF9jb2RlQgcKBV9pYmFuQggKBl9hbGlhc0ILCglfaXNfc2F2'
-    'ZWRCEwoRX2ludGVybmFsX3VzZXJfaWQ=');
+    'ASgJSA5SDmludGVybmFsVXNlcklkiAEBEjcKFWludGVybmFsX2FjY291bnRfdXVpZBgRIAEoCU'
+    'gPUhNpbnRlcm5hbEFjY291bnRVdWlkiAEBQg4KDF9pc19mYXZvcml0ZUIHCgVfdHlwZUIWChRf'
+    'aW50ZXJuYWxfYWNjb3VudF9pZEIRCg9fYWNjb3VudF9udW1iZXJCDAoKX2JhbmtfbmFtZUIMCg'
+    'pfc29ydF9jb2RlQg8KDV9jb3VudHJ5X2NvZGVCCAoGX2VtYWlsQg8KDV9waG9uZV9udW1iZXJC'
+    'CwoJX2N1cnJlbmN5Qg0KC19zd2lmdF9jb2RlQgcKBV9pYmFuQggKBl9hbGlhc0ILCglfaXNfc2'
+    'F2ZWRCEwoRX2ludGVybmFsX3VzZXJfaWRCGAoWX2ludGVybmFsX2FjY291bnRfdXVpZA==');
 
 @$core.Deprecated('Use createRecipientResponseDescriptor instead')
 const CreateRecipientResponse$json = {

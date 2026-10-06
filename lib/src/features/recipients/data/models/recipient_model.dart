@@ -21,6 +21,21 @@ class RecipientModel {
   final String? type;
   final String? internalUserId;
 
+  /// The destination ACCOUNT's id, for an internal (LazerVault) payee.
+  ///
+  /// This — not [accountNumber] — is what identifies an internal payee. A
+  /// receiving number is a virtual account minted by whichever provider is
+  /// active, so a saved number freezes to the rail that was live the day it was
+  /// saved; the server re-projects [accountNumber], [bankName] and
+  /// [accountHolderName] from this id on every read. Carry it through any save
+  /// so the identity survives a round trip.
+  final String? internalAccountId;
+
+  /// The payee's REAL account name on the rail their account uses now (e.g.
+  /// "LAZERVAULT/Praiz Onah"). Server-projected; distinct from [name], which is
+  /// this user's own label for the payee.
+  final String? accountHolderName;
+
   const RecipientModel({
     required this.id,
     required this.name,
@@ -39,6 +54,8 @@ class RecipientModel {
     this.alias,
     this.type,
     this.internalUserId,
+    this.internalAccountId,
+    this.accountHolderName,
   });
 
   /// Bank label to SHOW the user — resolves a bare/numeric code (e.g. "001")
@@ -196,6 +213,12 @@ class RecipientModel {
       alias: recipient.alias.isNotEmpty ? recipient.alias : null,
       type: resolvedType,
       internalUserId: internalUid,
+      internalAccountId: recipient.internalAccountUuid.isNotEmpty
+          ? recipient.internalAccountUuid
+          : null,
+      accountHolderName: recipient.accountHolderName.isNotEmpty
+          ? recipient.accountHolderName
+          : null,
     );
   }
 
@@ -218,6 +241,14 @@ class RecipientModel {
       alias: json['alias'] as String?,
       type: json['type'] as String?,
       internalUserId: json['internalUserId'] as String?,
+      // Both spellings: gRPC-gateway JSON uses camelCase, the REST shape and
+      // locally cached rows use snake_case.
+      internalAccountId: (json['internalAccountUuid'] ??
+          json['internal_account_uuid'] ??
+          json['internalAccountId']) as String?,
+      accountHolderName:
+          (json['accountHolderName'] ?? json['account_holder_name'])
+              as String?,
     );
   }
 
@@ -240,6 +271,8 @@ class RecipientModel {
       'alias': alias,
       'type': type,
       'internalUserId': internalUserId,
+      'internalAccountUuid': internalAccountId,
+      'accountHolderName': accountHolderName,
     };
   }
 
@@ -263,7 +296,12 @@ class RecipientModel {
       // Carry the internal payee id so any save routed through toProto() still
       // hits the server's internal_user_id dedup (matches the field-by-field
       // request builder in recipient_repository_impl).
-      ..internalUserId = internalUserId ?? '';
+      ..internalUserId = internalUserId ?? ''
+      // The identity. Without it a re-save would fall back to matching on the
+      // account number, which is exactly the frozen value this field exists to
+      // stop depending on.
+      ..internalAccountUuid = internalAccountId ?? ''
+      ..accountHolderName = accountHolderName ?? '';
   }
 
   RecipientModel copyWith({
@@ -284,6 +322,8 @@ class RecipientModel {
     String? alias,
     String? type,
     String? internalUserId,
+    String? internalAccountId,
+    String? accountHolderName,
   }) {
     return RecipientModel(
       id: id ?? this.id,
@@ -303,6 +343,8 @@ class RecipientModel {
       alias: alias ?? this.alias,
       type: type ?? this.type,
       internalUserId: internalUserId ?? this.internalUserId,
+      internalAccountId: internalAccountId ?? this.internalAccountId,
+      accountHolderName: accountHolderName ?? this.accountHolderName,
     );
   }
 }
