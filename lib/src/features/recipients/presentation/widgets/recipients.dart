@@ -435,8 +435,11 @@ class _RecipientsState extends State<Recipients> {
                                 recipient.type!.isNotEmpty)
                               _detailRow('Added Via',
                                   _formatRecipientType(recipient.type)),
-                            if (recipient.sortCode.isNotEmpty)
-                              _detailRow('Sort Code', recipient.sortCode),
+                            // No "Sort Code" row — see the matching comment in
+                            // select_recipients.dart. Nigeria has no sort codes;
+                            // the value is the CBN institution code, and this
+                            // sheet already names the bank, with its logo, a few
+                            // rows above.
                             if (recipient.countryCode != null &&
                                 recipient.countryCode!.isNotEmpty)
                               _detailRow('Country', recipient.countryCode!),

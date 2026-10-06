@@ -1870,34 +1870,39 @@ class _SelectRecipientsState extends State<SelectRecipients>
                         color: Colors.black87)),
               ),
             ),
-            tile(
-              icon: Icons.person_outline,
-              label: 'Lazervault users',
-              sub: 'Your saved Lazervault contacts',
-              active: _shortMethod == AddRecipientMethod.lazervaultUser &&
-                  !_savedFavoritesOnly,
-              onTap: () {
-                Navigator.pop(ctx);
-                setState(() {
-                  _shortMethod = AddRecipientMethod.lazervaultUser;
-                  _savedFavoritesOnly = false;
-                });
-              },
-            ),
-            tile(
-              icon: Icons.account_balance_outlined,
-              label: 'Bank accounts',
-              sub: 'Your saved bank recipients',
-              active: _shortMethod == AddRecipientMethod.bankDetails &&
-                  !_savedFavoritesOnly,
-              onTap: () {
-                Navigator.pop(ctx);
-                setState(() {
-                  _shortMethod = AddRecipientMethod.bankDetails;
-                  _savedFavoritesOnly = false;
-                });
-              },
-            ),
+            // ONLY THE ACTIVE TAB'S OWN ENTRY.
+            //
+            // This listed both, so the Bank tab offered "Lazervault users" and
+            // vice versa — and tapping it did not filter anything, it SWITCHED
+            // TABS. A sheet titled "Filter recipients" that silently moves you
+            // to the other recipient type is not a filter, and the tab you were
+            // on is right there behind the sheet contradicting it.
+            //
+            // The active entry stays as a state indicator; Favourites still
+            // narrows WITHIN whichever tab you are on, which is what filtering
+            // means here.
+            if (_shortMethod == AddRecipientMethod.lazervaultUser)
+              tile(
+                icon: Icons.person_outline,
+                label: 'Lazervault users',
+                sub: 'Your saved Lazervault contacts',
+                active: !_savedFavoritesOnly,
+                onTap: () {
+                  Navigator.pop(ctx);
+                  setState(() => _savedFavoritesOnly = false);
+                },
+              ),
+            if (_shortMethod == AddRecipientMethod.bankDetails)
+              tile(
+                icon: Icons.account_balance_outlined,
+                label: 'Bank accounts',
+                sub: 'Your saved bank recipients',
+                active: !_savedFavoritesOnly,
+                onTap: () {
+                  Navigator.pop(ctx);
+                  setState(() => _savedFavoritesOnly = false);
+                },
+              ),
             tile(
               icon: _savedFavoritesOnly ? Icons.star : Icons.star_outline,
               label: 'Favourites',
@@ -3103,10 +3108,16 @@ class _SelectRecipientsState extends State<SelectRecipients>
                                     color: Colors.white.withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(8.r),
                                   ),
-                                  child: Icon(
-                                    Icons.account_balance,
-                                    color: Colors.white,
-                                    size: 20.sp,
+                                  // The bank's own logo, falling back to its
+                                  // initials — the generic bank glyph that was
+                                  // here looked identical for every recipient.
+                                  child: BankLogo(
+                                    bankName: recipient.displayBankName,
+                                    bankCode: recipient.sortCode.isNotEmpty
+                                        ? recipient.sortCode
+                                        : null,
+                                    size: 40,
+                                    borderRadius: 8,
                                   ),
                                 ),
                                 SizedBox(width: 12.w),
@@ -3218,8 +3229,16 @@ class _SelectRecipientsState extends State<SelectRecipients>
                         ),
                         child: Column(
                           children: [
-                            if (recipient.sortCode.isNotEmpty)
-                              _detailRow('Sort Code', recipient.sortCode),
+                            // NO "SORT CODE" ROW.
+                            //
+                            // Nigeria has no sort codes — that is a UK concept.
+                            // The value shown there was the recipient's CBN
+                            // institution code (057 = Zenith), correct data
+                            // under a label that means something else, and
+                            // directly above a bank name that already says the
+                            // same thing in words. The bank is identified at the
+                            // top of this sheet, with its logo, so the code adds
+                            // nothing a user can act on.
                             if (recipient.countryCode != null &&
                                 recipient.countryCode!.isNotEmpty)
                               _detailRow('Country', recipient.countryCode!),
