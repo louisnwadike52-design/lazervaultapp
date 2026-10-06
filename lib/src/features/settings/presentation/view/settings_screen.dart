@@ -260,7 +260,15 @@ class _SettingsViewState extends State<_SettingsView> {
             title: 'Settings',
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
-              onPressed: () => Get.back(),
+              // Drop keyboard focus BEFORE popping. With the settings search
+              // focused the soft keyboard is up, and the first back press is
+              // spent closing it — so leaving Settings took two or three
+              // presses and read as a broken button. Same reasoning as the
+              // switch rows below, which already did this.
+              onPressed: () {
+                FocusManager.instance.primaryFocus?.unfocus();
+                Get.back();
+              },
             ),
           ),
           Expanded(
@@ -2501,7 +2509,13 @@ class _SettingsViewState extends State<_SettingsView> {
         icon: icon,
         title: title,
         subtitle: subtitle,
-        onTap: onTap,
+        // Opening a row from a search result leaves the search field focused,
+        // so the destination screen inherits an open keyboard and its own back
+        // press is spent closing it. Unfocus on the way out.
+        onTap: () {
+          FocusManager.instance.primaryFocus?.unfocus();
+          onTap();
+        },
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
