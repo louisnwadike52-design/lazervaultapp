@@ -189,6 +189,36 @@ class _LiveScanCameraViewState extends State<LiveScanCameraView>
   @override
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
     if (_isDisposing) return;
+
+    // RESUME IS HANDLED FIRST, AND WITHOUT A CONTROLLER GUARD.
+    //
+    // This method used to open with `if (controller == null) return;` for both
+    // branches, which made returning from the OS gallery picker a dead end:
+    // opening the picker sends the app `inactive`, the branch below disposes
+    // the controller and sets it to NULL, and then the `resumed` that arrives
+    // when the user cancels hit that guard and returned — so _initializeCamera
+    // was never called and the preview never came back. Being null is exactly
+    // the state in which the camera must be rebuilt, not a reason to skip it.
+    // It also explains why retrying never helped: once null, every subsequent
+    // resume took the same early return.
+    if (state == AppLifecycleState.resumed) {
+      if (!mounted) return;
+      // Let the user scan again after returning to the app.
+      _fired = false;
+      // _startPoll() clears this, but only after three early returns (tap mode,
+      // no controller, already streaming). Clearing it here means a cancelled
+      // picker can never leave detection frozen.
+      _paused = false;
+      _resetStability();
+      final c = _controller;
+      if (c == null || !c.value.isInitialized) {
+        await _initializeCamera();
+      } else if (!_streaming) {
+        _startPoll();
+      }
+      return;
+    }
+
     final controller = _controller;
     if (controller == null || !controller.value.isInitialized) return;
 
@@ -200,11 +230,6 @@ class _LiveScanCameraViewState extends State<LiveScanCameraView>
       await controller.dispose();
       _controller = null;
       if (mounted) setState(() => _isInitialized = false);
-    } else if (state == AppLifecycleState.resumed) {
-      // Let the user scan again after returning to the app.
-      _fired = false;
-      _resetStability();
-      _initializeCamera();
     }
   }
 
@@ -793,8 +818,11 @@ class _LiveScanCameraViewState extends State<LiveScanCameraView>
         imageQuality: 85,
       );
       if (image == null || _isDisposing) {
-        if (!_fired && mounted)
-          _startPoll(); // user cancelled — resume scanning
+        // User cancelled. Unfreeze explicitly: _startPoll() clears _paused only
+        // after its own early returns, so in tap-to-capture mode (where it
+        // returns immediately) the view would stay frozen.
+        _paused = false;
+        if (!_fired && mounted) _startPoll(); // resume auto-detection
         return;
       }
       if (!_claimCapture()) return; // auto tick already handed a still off
@@ -807,6 +835,7 @@ class _LiveScanCameraViewState extends State<LiveScanCameraView>
           : (widget.onImagePicked ?? widget.onCapture);
       handler(image.path);
     } catch (_) {
+      _paused = false; // same reasoning as the cancel path above
       if (!_fired && mounted) _startPoll();
       if (mounted && !_isDisposing) {
         Get.snackbar('Gallery error', 'Couldn\'t open the gallery. Try again.',
