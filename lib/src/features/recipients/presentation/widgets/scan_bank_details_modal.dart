@@ -1433,8 +1433,16 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
           () => _validationHint = "Select the recipient's bank to continue");
       // Open the picker immediately so the guidance is one tap from resolved
       // (the common OCR case: account read cleanly, bank logo/name didn't).
+      //
+      // Seeded with whatever the scan read, when it read something. The list is
+      // 633 rows; landing on it unfiltered and retyping a name already on
+      // screen is the slowest possible recovery.
       _showBankPicker(
-          serviceLocator<BankRepository>().cachedSync(widget.country));
+        serviceLocator<BankRepository>().cachedSync(widget.country),
+        seedQuery: _bankNeedsConfirmation
+            ? (_selectedBankName ?? widget.scanResult.bankName ?? '')
+            : null,
+      );
       return;
     }
     if (!_hasVerificationCubit) {
@@ -1795,20 +1803,40 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
     );
   }
 
-  void _showBankPicker(List<Map<String, String>> banks) {
-    final searchController = TextEditingController();
+  /// Opens the bank picker.
+  ///
+  /// [seedQuery] pre-fills the search box — passed when the scan READ a bank
+  /// name we could not resolve confidently. Without it the user lands on 633
+  /// unfiltered rows and has to retype a name that is already on screen, which
+  /// is the slowest possible recovery from the most common OCR miss.
+  void _showBankPicker(List<Map<String, String>> banks, {String? seedQuery}) {
+    final searchController =
+        TextEditingController(text: (seedQuery ?? '').trim());
     List<Map<String, String>> available = List.from(banks);
     List<Map<String, String>> filtered = List.from(available);
     bool loading = false;
 
     void applyFilter() {
-      final q = searchController.text.toLowerCase();
+      final q = searchController.text.toLowerCase().trim();
       filtered = q.isEmpty
           ? List.from(available)
           : available
               .where((b) => (b['name'] ?? '').toLowerCase().contains(q))
               .toList();
+      // A SEEDED query that matches nothing must not leave a dead sheet.
+      // The seed is a scanned name, so it is often spelled differently from
+      // the rail's version ("Guarant Trust" for "GTBank") — clearing it and
+      // showing everything is strictly better than an empty list with no
+      // explanation of why.
+      if (filtered.isEmpty && q.isNotEmpty && available.isNotEmpty) {
+        searchController.clear();
+        filtered = List.from(available);
+      }
     }
+
+    // Apply the seed NOW, so a pre-filled search box actually filters the
+    // first frame rather than showing all 633 rows under a filled-in query.
+    applyFilter();
 
     showModalBottomSheet(
       context: context,
