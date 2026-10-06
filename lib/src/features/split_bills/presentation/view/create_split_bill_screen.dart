@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:flutter/services.dart';
@@ -7,7 +8,6 @@ import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/split_bills/presentation/widgets/saved_bank_recipient_sheet.dart';
-import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/types/app_routes.dart';
@@ -781,6 +781,46 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
   /// default so a disabled feature can never be submitted.
   bool get _bankReceiverActive =>
       _externalReceiverEnabled && _receiverMode == _ReceiverMode.bankAccount;
+
+  /// The payout provider's minimum for a single bank transfer, in MAJOR units.
+  ///
+  /// Read from the server (`external_payout_floor_minor`, the same
+  /// system_settings row core-payments enforces and send-funds already uses),
+  /// never a constant of our own — a second copy is how the UI comes to permit
+  /// what the server refuses.
+  double get _externalShareFloor =>
+      FeatureFlags.externalPayoutFloorMinor / 100.0;
+
+  /// Shares that cannot be paid, as "name — amount" labels.
+  ///
+  /// Every share on an external bill is its own payout, so each one has to clear
+  /// the provider floor on its own; the total being large does not help. This
+  /// reads the computed amount rather than the split method, so equal,
+  /// percentage and custom are all covered by construction — the rail only ever
+  /// sees an amount.
+  ///
+  /// INTERNAL receivers are deliberately exempt: a Lazervault-to-Lazervault
+  /// share never touches a payout provider, so no minimum applies.
+  List<String> get _sharesBelowExternalFloor {
+    if (!_bankReceiverActive) return const [];
+    final floor = _externalShareFloor;
+    if (floor <= 0) return const [];
+    final f = NumberFormat('#,##0.00');
+    final out = <String>[];
+    for (final p in _selectedParticipants) {
+      final amt = _customAmounts[p.key] ?? 0.0;
+      if (amt > 0 && amt < floor) {
+        out.add('${p.displayName.isNotEmpty ? p.displayName : p.username} '
+            '($_currencySymbol${f.format(amt)})');
+      }
+    }
+    // The organizer's own share is a payout on the same rail, so it is held to
+    // the same floor — the server writes it as a co-payer row.
+    if (_includeMyself && _myShare > 0 && _myShare < floor) {
+      out.add('you ($_currencySymbol${f.format(_myShare)})');
+    }
+    return out;
+  }
 
   /// True once a bank + a verified 10-digit account are selected.
   bool get _isBankReceiverReady =>
@@ -2104,6 +2144,31 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (_bankReceiverActive &&
+                _isBankReceiverReady &&
+                _sharesBelowExternalFloor.isNotEmpty) ...[
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.error_outline,
+                      color: Color(0xFFFB923C), size: 14),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Each share has to be at least '
+                      '$_currencySymbol${NumberFormat('#,##0.00').format(_externalShareFloor)} '
+                      'to reach a bank account. Too small: '
+                      '${_sharesBelowExternalFloor.join(', ')}. '
+                      'Raise the total, split between fewer people, or receive '
+                      'into your Lazervault account instead — that has no minimum.',
+                      style: const TextStyle(
+                          color: Color(0xFFFB923C), fontSize: 12, height: 1.35),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+            ],
             if (_bankReceiverActive && !_isBankReceiverReady) ...[
               const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -2122,7 +2187,8 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: (_isCreating ||
-                        (_bankReceiverActive && !_isBankReceiverReady))
+                        (_bankReceiverActive && !_isBankReceiverReady) ||
+                        _sharesBelowExternalFloor.isNotEmpty)
                     ? null
                     : _createSplitBill,
                 style: ElevatedButton.styleFrom(
