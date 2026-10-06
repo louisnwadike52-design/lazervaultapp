@@ -576,7 +576,8 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w700)),
             SizedBox(height: 2.h),
-            Text('The more you send, the better the rate.',
+            Text('All-in rates, shown at the amount beside them. Bigger sends\n'
+                'spread the fixed cost further.',
                 style: TextStyle(color: RmbUi.label, fontSize: 11.sp)),
             SizedBox(height: 14.h),
             ...List.generate(usable.length, (i) {
@@ -1354,11 +1355,40 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
   }
 
   // ── Amount card ──────────────────────────────────────────────────────
+  /// What ¥[major] will cost, in naira, before a live quote has arrived.
+  ///
+  /// Read off the SAME tier ladder the rate card draws, so the two can never
+  /// disagree, and always from the band the amount actually falls in — never the
+  /// headline "rates from" figure, which belongs to the largest band and would
+  /// quote a small transfer a price only a big one gets.
+  ///
+  /// Band rates are computed at each band's floor, where the provider's flat fee
+  /// weighs most, so this leans slightly HIGH inside a band and the live quote
+  /// comes in at or below it. That is the only safe direction for an estimate.
+  double? _estimateNgn(double major) {
+    final tiers = (_cubit.config?.rateTiers ?? const [])
+        .where((t) => t.ngnPerCny > 0)
+        .toList();
+    if (tiers.isEmpty || major <= 0) return null;
+    final cnyMinor = (major * 100).round();
+    var pick = tiers.first;
+    for (final t in tiers) {
+      if (cnyMinor >= t.minCnyMinor.toInt() &&
+          t.minCnyMinor.toInt() >= pick.minCnyMinor.toInt()) {
+        pick = t;
+      }
+    }
+    return major * pick.ngnPerCny;
+  }
+
   Widget _amountCard() {
-    final rate = _cubit.config?.indicativeFxRate ?? 0;
     final major = double.tryParse(_c('amount').text.trim());
-    final approxNgn =
-        (rate > 0 && major != null && major > 0) ? major * rate : null;
+    // Once a quote exists it is the only number worth showing: it is the price
+    // we will hold the user to. Showing an estimate beside it is what put three
+    // different rates on this screen at once.
+    final quoted = _quote;
+    final estimate =
+        (quoted == null && major != null) ? _estimateNgn(major) : null;
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -1404,8 +1434,13 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
               ),
             ],
           ),
-          if (approxNgn != null)
-            Text('≈ ₦${approxNgn.toStringAsFixed(2)} · all-in rate below',
+          if (quoted != null)
+            Text('${RmbUi.ngn(quoted.totalMinor.toInt())} · all-in, nothing added',
+                style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.75),
+                    fontSize: 12.sp))
+          else if (estimate != null)
+            Text('≈ ${RmbUi.ngn((estimate * 100).round())} · confirming rate…',
                 style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.75),
                     fontSize: 12.sp)),
