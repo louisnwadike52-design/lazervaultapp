@@ -246,6 +246,27 @@ class _ScheduledTransfersListScreenState
               ]),
             ),
             SizedBox(height: 18.h),
+            // Reschedule sits ABOVE cancel deliberately: moving a date is the
+            // reversible action and the one people usually want, and the
+            // destructive one should not be the first thing under the thumb.
+            FilledButton.icon(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                _promptReschedule(t);
+              },
+              icon: Icon(Icons.event_repeat_rounded,
+                  size: 18.sp, color: Colors.white),
+              label: const Text('Change date & time'),
+              style: FilledButton.styleFrom(
+                backgroundColor: _accent,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                minimumSize: Size(double.infinity, 0),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
+              ),
+            ),
+            SizedBox(height: 10.h),
             OutlinedButton.icon(
               onPressed: () {
                 Navigator.of(ctx).pop();
@@ -265,6 +286,213 @@ class _ScheduledTransfersListScreenState
         ),
       ),
     );
+  }
+
+  /// The server floor. Mirrored here so the picker cannot offer a time the
+  /// server will refuse — being told "at least 5 minutes in the future" AFTER
+  /// choosing is a worse experience than not being able to choose it.
+  static const _minLeadTime = Duration(minutes: 6);
+
+  /// Asks for a new date and time, then applies it.
+  ///
+  /// Date first, then time, then confirm — the same order the send flow uses.
+  /// Dismissing at any step aborts without touching the transfer.
+  Future<void> _promptReschedule(payments_pb.TransferDetail t) async {
+    final current = DateTime.tryParse(t.scheduledAt)?.toLocal();
+    final earliest = DateTime.now().add(_minLeadTime);
+    // An existing fire time already in the past (a transfer the worker has not
+    // got to yet) must not seed the picker with an unselectable day.
+    final seed =
+        (current != null && current.isAfter(earliest)) ? current : earliest;
+
+    final date = await showDatePicker(
+      context: context,
+      initialDate: seed,
+      firstDate: DateTime(earliest.year, earliest.month, earliest.day),
+      // Matches the server's one-year ceiling.
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      helpText: 'New date',
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(
+          colorScheme: const ColorScheme.dark(
+            primary: _accent,
+            surface: Color(0xFF1A1A1A),
+          ),
+        ),
+        child: child!,
+      ),
+    );
+    if (date == null || !mounted) return;
+
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(seed),
+      helpText: 'New time',
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(
+          colorScheme: const ColorScheme.dark(
+            primary: _accent,
+            surface: Color(0xFF1A1A1A),
+          ),
+        ),
+        child: child!,
+      ),
+    );
+    if (time == null || !mounted) return;
+
+    final when =
+        DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    if (!when.isAfter(DateTime.now().add(const Duration(minutes: 5)))) {
+      // Reachable by picking today + a time already gone: the date picker can
+      // only constrain the DAY.
+      _toast('Pick a time at least 5 minutes from now.', isError: true);
+      return;
+    }
+    if (current != null && when.difference(current).abs().inMinutes == 0) {
+      _toast('That is the time it is already set for.');
+      return;
+    }
+
+    final confirmed = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 24.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Move this transfer?',
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600)),
+            SizedBox(height: 10.h),
+            Text(
+              '${_money(t)} will now be sent on '
+              '${_formatWhen(when)} instead of ${_fireLabel(t)}. '
+              'No money has moved yet.',
+              style: GoogleFonts.inter(
+                  color: _label, fontSize: 13.sp, height: 1.45),
+            ),
+            SizedBox(height: 20.h),
+            Row(children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white70,
+                    side:
+                        BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                  ),
+                  child: const Text('Keep current'),
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _accent,
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                  ),
+                  child: const Text('Move it'),
+                ),
+              ),
+            ]),
+          ],
+        ),
+      ),
+    );
+    if (confirmed == true) await _reschedule(t, when);
+  }
+
+  Future<void> _reschedule(payments_pb.TransferDetail t, DateTime when) async {
+    // Shares the cancel path's in-flight set, so a row cannot be cancelled and
+    // moved at the same time.
+    if (_cancelling.contains(t.id)) return;
+    setState(() => _cancelling.add(t.id));
+    try {
+      final options = await serviceLocator<GrpcCallOptionsHelper>().withAuth();
+      final resp = await serviceLocator<payments_grpc.PaymentsServiceClient>()
+          .rescheduleScheduledTransfer(
+        payments_pb.RescheduleScheduledTransferRequest()
+          ..paymentId = t.id
+          // UTC on the wire; the server re-renders it in the response.
+          ..scheduledAt = when.toUtc().toIso8601String(),
+        options: options,
+      );
+      if (!mounted) return;
+      if (resp.success) {
+        // Re-sort as well as re-label: this list is ordered by fire time, so a
+        // moved row belongs somewhere else in it.
+        setState(() {
+          final i = _items.indexWhere((x) => x.id == t.id);
+          if (i >= 0) {
+            _items[i] = _items[i].rebuild((b) => b
+              ..scheduledAt = resp.scheduledAt.isNotEmpty
+                  ? resp.scheduledAt
+                  : when.toUtc().toIso8601String());
+          }
+          _items.sort((a, b) {
+            final da = DateTime.tryParse(a.scheduledAt);
+            final db = DateTime.tryParse(b.scheduledAt);
+            if (da == null || db == null) return 0;
+            return da.compareTo(db);
+          });
+        });
+        _toast('Moved to ${_formatWhen(when)}.');
+      } else {
+        _toast(
+            resp.errorMessage.isNotEmpty
+                ? resp.errorMessage
+                : 'This transfer could not be moved.',
+            isError: true);
+        // A transfer that just fired must leave this list.
+        _load(reset: true);
+      }
+    } catch (_) {
+      if (!mounted) return;
+      // Never the raw error: an allow-list or SQL string here would be both
+      // confusing and a leak.
+      _toast('Server not reachable. Please try again.', isError: true);
+    } finally {
+      if (mounted) setState(() => _cancelling.remove(t.id));
+    }
+  }
+
+  String _formatWhen(DateTime d) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
+    final h = d.hour % 12 == 0 ? 12 : d.hour % 12;
+    final ap = d.hour >= 12 ? 'PM' : 'AM';
+    final mm = d.minute.toString().padLeft(2, '0');
+    return '${d.day} ${months[d.month - 1]} ${d.year} at $h:$mm $ap';
+  }
+
+  void _toast(String message, {bool isError = false}) {
+    Get.snackbar('', message,
+        titleText: const SizedBox.shrink(),
+        messageText: Text(message, style: const TextStyle(color: Colors.white)),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: (isError ? _error : const Color(0xFF10B981))
+            .withValues(alpha: 0.92),
+        margin: EdgeInsets.all(12.w));
   }
 
   Future<void> _confirmCancel(payments_pb.TransferDetail t) async {

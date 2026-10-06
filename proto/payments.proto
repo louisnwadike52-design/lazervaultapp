@@ -400,6 +400,19 @@ service PaymentsService {
     };
   }
 
+  rpc RescheduleScheduledTransfer(RescheduleScheduledTransferRequest) returns (RescheduleScheduledTransferResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/transfers/scheduled/reschedule"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Reschedule Scheduled Transfer";
+      description: "Move a pending scheduled transfer to a new date and time before it executes";
+      tags: ["Transfers"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
   rpc GetTransferFee(GetTransferFeeRequest) returns (GetTransferFeeResponse) {
     // GetTransferFee already has its messages defined in the existing proto
   }
@@ -1716,6 +1729,23 @@ message GetTransferStatusResponse {
   TransferDetail transfer = 4;
 }
 
+message RescheduleScheduledTransferRequest {
+  string payment_id = 1;
+  // RFC3339. Must be at least 5 minutes in the future — the same floor the
+  // create path applies, so a schedule cannot be edited into a window the
+  // worker may already be inside.
+  string scheduled_at = 2;
+}
+
+message RescheduleScheduledTransferResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  // The new fire time as stored, echoed so the client renders what the server
+  // actually committed rather than what it asked for.
+  string scheduled_at = 4;
+}
+
 message CancelScheduledTransferRequest {
   string payment_id = 1;
 }
@@ -2009,7 +2039,10 @@ message RecurringTransferDetail {
   string description = 11;
   RecurringFrequency frequency = 12;
   int32 schedule_day = 13;
-  string schedule_time = 14;           // HH:MM UTC
+  // HH:MM in schedule_timezone — the user's LOCAL wall-clock time, not UTC.
+  // (It was documented as UTC and was never UTC; a 16:40 schedule set by a
+  // Lagos user fires at 16:40 Lagos.)
+  string schedule_time = 14;
   RecurringTransferStatus status = 15;
   string start_date = 16;
   string end_date = 17;               // Empty if no end date
@@ -2022,6 +2055,10 @@ message RecurringTransferDetail {
   string last_failure_reason = 24;
   string created_at = 25;
   string updated_at = 26;
+  // IANA zone the schedule fires in, e.g. "Africa/Lagos". Set from the user's
+  // locale at creation. Published so the app can label the time it shows
+  // instead of implying the device's zone.
+  string schedule_timezone = 27;
 }
 
 message RecurringTransferExecutionDetail {
@@ -2087,6 +2124,22 @@ message UpdateRecurringTransferRequest {
   string schedule_time = 4;          // Empty = no change
   string end_date = 5;               // Empty = no change
   string description = 6;            // Empty = no change
+
+  // The rest of the TIMING. schedule_time alone can only move a run within its
+  // day; changing "every Friday" to "the 3rd of the month" needs both of these,
+  // and they must travel together — a frequency change without the matching day
+  // is how a weekly day-of-week (0-6) ends up read as a monthly day-of-month.
+  RecurringFrequency frequency = 7;   // UNSPECIFIED = no change
+  // OPTIONAL, not "0 means unset": day 0 is Sunday, and every client that
+  // predates this field sends the proto3 default 0 on a plain pause/resume.
+  // Reading that as a value would silently move a weekly transfer to Sunday.
+  // Explicit presence makes "not sent" and "Sunday" different things.
+  optional int32 schedule_day = 8;
+
+  // IANA zone, e.g. "Africa/Lagos". Empty = no change. The schedule fires at
+  // the user's local wall-clock time, so moving country without this would
+  // silently shift every future run.
+  string schedule_timezone = 9;
 }
 
 message UpdateRecurringTransferResponse {

@@ -33,6 +33,9 @@ abstract class IRecurringTransferRepository {
     String? scheduleTime,
     String? endDate,
     String? description,
+    RecurringFrequency? frequency,
+    int? scheduleDay,
+    String? scheduleTimezone,
   });
 
   Future<void> delete({required String id});
@@ -108,6 +111,9 @@ class RecurringTransferRepositoryImpl implements IRecurringTransferRepository {
     String? scheduleTime,
     String? endDate,
     String? description,
+    RecurringFrequency? frequency,
+    int? scheduleDay,
+    String? scheduleTimezone,
   }) {
     return _dataSource.update(
       id: id,
@@ -116,6 +122,9 @@ class RecurringTransferRepositoryImpl implements IRecurringTransferRepository {
       scheduleTime: scheduleTime,
       endDate: endDate,
       description: description,
+      frequency: frequency,
+      scheduleDay: scheduleDay,
+      scheduleTimezone: scheduleTimezone,
     );
   }
 

@@ -55,6 +55,14 @@ class RecurringTransferEntity extends Equatable {
   final RecurringFrequency frequency;
   final int scheduleDay;
   final String scheduleTime;
+
+  /// The IANA zone [scheduleTime] is expressed in, e.g. "Africa/Lagos".
+  ///
+  /// The schedule fires at that LOCAL wall-clock time, which is not the
+  /// device's zone — a user who travels still has their 16:40 payment go out at
+  /// 16:40 where they set it. Shown alongside the time so the number on screen
+  /// is never ambiguous.
+  final String scheduleTimezone;
   final RecurringTransferStatus status;
   final DateTime startDate;
   final DateTime? endDate;
@@ -83,6 +91,7 @@ class RecurringTransferEntity extends Equatable {
     required this.frequency,
     this.scheduleDay = 0,
     this.scheduleTime = '09:00',
+    this.scheduleTimezone = '',
     required this.status,
     required this.startDate,
     this.endDate,
@@ -101,8 +110,29 @@ class RecurringTransferEntity extends Equatable {
   bool get isPaused => status == RecurringTransferStatus.paused;
   bool get isInternal => transferType == 'internal';
 
+  /// A short label for the zone, e.g. "WAT" — or the city segment of the IANA
+  /// name when the abbreviation is unknown, which is still clearer than
+  /// nothing. Empty when the server sent no zone (older rows).
+  String get scheduleTimezoneLabel {
+    final tz = scheduleTimezone.trim();
+    if (tz.isEmpty) return '';
+    const abbreviations = {
+      'Africa/Lagos': 'WAT',
+      'Africa/Accra': 'GMT',
+      'Africa/Nairobi': 'EAT',
+      'Africa/Johannesburg': 'SAST',
+      'Europe/London': 'UK time',
+      'America/New_York': 'ET',
+    };
+    final known = abbreviations[tz];
+    if (known != null) return known;
+    final city = tz.split('/').last.replaceAll('_', ' ');
+    return city.isEmpty ? '' : city;
+  }
+
   String get scheduleDescription {
-    final time = scheduleTime;
+    final tzLabel = scheduleTimezoneLabel;
+    final time = tzLabel.isEmpty ? scheduleTime : '$scheduleTime $tzLabel';
     switch (frequency) {
       case RecurringFrequency.daily:
         return 'Every day at $time';
@@ -157,6 +187,7 @@ class RecurringTransferEntity extends Equatable {
         frequency,
         scheduleDay,
         scheduleTime,
+        scheduleTimezone,
         status,
         nextRunAt,
         totalExecutions,

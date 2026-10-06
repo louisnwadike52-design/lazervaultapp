@@ -7,6 +7,8 @@ import 'package:lazervault/src/features/funds/cubit/recurring_transfer_cubit.dar
 import 'package:lazervault/src/features/funds/cubit/recurring_transfer_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/recurring_transfer_entity.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/funds/presentation/view/recurring_transfers/edit_recurring_schedule_sheet.dart';
+import 'package:lazervault/src/features/funds/presentation/view/recurring_transfers/recurring_execution_receipt_screen.dart';
 
 class RecurringTransferDetailScreen extends StatefulWidget {
   const RecurringTransferDetailScreen({super.key});
@@ -412,6 +414,109 @@ class _RecurringTransferDetailScreenState
   }
 
   Widget _buildActionButtons() {
+    final editable = _transfer.isActive || _transfer.isPaused;
+    return Column(
+      children: [
+        if (editable) ...[
+          SizedBox(
+            width: double.infinity,
+            child: _buildActionButton(
+              icon: Icons.edit_calendar_outlined,
+              label: 'Edit amount & schedule',
+              color: const Color(0xFF3B82F6),
+              onTap: _isActionLoading ? null : _openEditSheet,
+            ),
+          ),
+          SizedBox(height: 12.h),
+        ],
+        _buildPauseCancelRow(),
+      ],
+    );
+  }
+
+  /// Opens the edit sheet, confirms the diff, then applies it.
+  ///
+  /// The confirm step is not ceremony: an edit moves real money to a new date,
+  /// and the sheet's own pickers make it easy to change a frequency by
+  /// accident while reaching for the time.
+  Future<void> _openEditSheet() async {
+    final edit = await showEditRecurringScheduleSheet(
+      context,
+      transfer: _transfer,
+    );
+    if (edit == null || edit.isEmpty || !mounted) return;
+
+    final changes = edit.describe(_transfer);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Apply these changes?',
+            style: TextStyle(color: Colors.white)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final c in changes)
+              Padding(
+                padding: EdgeInsets.only(bottom: 6.h),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('• ',
+                        style: TextStyle(
+                            color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
+                    Expanded(
+                      child: Text(c,
+                          style:
+                              TextStyle(color: Colors.white, fontSize: 13.sp)),
+                    ),
+                  ],
+                ),
+              ),
+            if (_transfer.isActive) ...[
+              SizedBox(height: 6.h),
+              Text(
+                'The next payment date will be recalculated.',
+                style: TextStyle(
+                    color: const Color(0xFF9CA3AF), fontSize: 11.5.sp),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child:
+                const Text('Back', style: TextStyle(color: Color(0xFF9CA3AF))),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child:
+                const Text('Save', style: TextStyle(color: Color(0xFF3B82F6))),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isActionLoading = true);
+    await context.read<RecurringTransferCubit>().updateRecurringTransfer(
+          id: _transfer.id,
+          amount: edit.amount,
+          scheduleTime: edit.scheduleTime,
+          frequency: edit.frequency,
+          scheduleDay: edit.scheduleDay,
+          endDate: edit.endDate,
+          description: edit.description,
+        );
+    // The cubit emits RecurringTransferUpdated (handled in the listener) or an
+    // error; either way the executions list is now stale on amount changes.
+    if (mounted) _loadExecutions();
+  }
+
+  Widget _buildPauseCancelRow() {
     return Row(
       children: [
         // Pause / Resume
@@ -582,77 +687,98 @@ class _RecurringTransferDetailScreenState
       );
     }
 
+    // Oldest-first position, so "Payment 3 of 7" counts the way a statement
+    // does even though the list itself is newest-first.
+    final ordered = executions.toList()
+      ..sort((a, b) => a.executedAt.compareTo(b.executedAt));
+    final numberById = <String, int>{
+      for (var i = 0; i < ordered.length; i++) ordered[i].id: i + 1,
+    };
+
     return Column(
       children: executions.map((execution) {
-        return Container(
-          margin: EdgeInsets.only(bottom: 8.h),
-          padding: EdgeInsets.all(12.w),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
-            borderRadius: BorderRadius.circular(12),
+        return InkWell(
+          onTap: () => RecurringExecutionReceiptScreen.open(
+            transfer: _transfer,
+            execution: execution,
+            executionNumber: numberById[execution.id],
           ),
-          child: Row(
-            children: [
-              // Status icon
-              Container(
-                width: 32.w,
-                height: 32.w,
-                decoration: BoxDecoration(
-                  color: execution.isSuccess
-                      ? const Color(0xFF10B981).withValues(alpha: 0.15)
-                      : const Color(0xFFEF4444).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            margin: EdgeInsets.only(bottom: 8.h),
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                // Status icon
+                Container(
+                  width: 32.w,
+                  height: 32.w,
+                  decoration: BoxDecoration(
+                    color: execution.isSuccess
+                        ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                        : const Color(0xFFEF4444).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    execution.isSuccess ? Icons.check : Icons.close,
+                    color: execution.isSuccess
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFFEF4444),
+                    size: 16.sp,
+                  ),
                 ),
-                child: Icon(
-                  execution.isSuccess ? Icons.check : Icons.close,
-                  color: execution.isSuccess
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFFEF4444),
-                  size: 16.sp,
-                ),
-              ),
-              SizedBox(width: 12.w),
-              // Details
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      DateFormat('MMM d, yyyy HH:mm')
-                          .format(execution.executedAt),
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 13.sp,
-                      ),
-                    ),
-                    if (!execution.isSuccess)
-                      Padding(
-                        padding: EdgeInsets.only(top: 2.h),
-                        child: Text(
-                          execution.failureReason.isNotEmpty
-                              ? execution.failureReason
-                              : 'Unknown error',
-                          style: TextStyle(
-                            color: const Color(0xFFEF4444),
-                            fontSize: 12.sp,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                SizedBox(width: 12.w),
+                // Details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        DateFormat('MMM d, yyyy HH:mm')
+                            .format(execution.executedAt),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13.sp,
                         ),
                       ),
-                  ],
+                      if (!execution.isSuccess)
+                        Padding(
+                          padding: EdgeInsets.only(top: 2.h),
+                          child: Text(
+                            execution.failureReason.isNotEmpty
+                                ? execution.failureReason
+                                : 'Unknown error',
+                            style: TextStyle(
+                              color: const Color(0xFFEF4444),
+                              fontSize: 12.sp,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-              // Amount
-              Text(
-                '${execution.currency} ${NumberFormat('#,##0.00').format(execution.amount)}',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w500,
+                // Amount
+                Text(
+                  '${execution.currency} ${NumberFormat('#,##0.00').format(execution.amount)}',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-            ],
+                SizedBox(width: 4.w),
+                // Affordance: without it nothing says these rows open a
+                // receipt, and the list reads as static history.
+                Icon(Icons.chevron_right,
+                    size: 18.sp, color: const Color(0xFF6B7280)),
+              ],
+            ),
           ),
         );
       }).toList(),

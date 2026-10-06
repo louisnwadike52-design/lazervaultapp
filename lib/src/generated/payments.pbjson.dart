@@ -1757,6 +1757,40 @@ final $typed_data.Uint8List getTransferStatusResponseDescriptor = $convert.base6
     'cm9yTWVzc2FnZRI0Cgh0cmFuc2ZlchgEIAEoCzIYLnBheW1lbnRzLlRyYW5zZmVyRGV0YWlsUg'
     'h0cmFuc2Zlcg==');
 
+@$core.Deprecated('Use rescheduleScheduledTransferRequestDescriptor instead')
+const RescheduleScheduledTransferRequest$json = {
+  '1': 'RescheduleScheduledTransferRequest',
+  '2': [
+    {'1': 'payment_id', '3': 1, '4': 1, '5': 9, '10': 'paymentId'},
+    {'1': 'scheduled_at', '3': 2, '4': 1, '5': 9, '10': 'scheduledAt'},
+  ],
+};
+
+/// Descriptor for `RescheduleScheduledTransferRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List rescheduleScheduledTransferRequestDescriptor =
+    $convert.base64Decode(
+        'CiJSZXNjaGVkdWxlU2NoZWR1bGVkVHJhbnNmZXJSZXF1ZXN0Eh0KCnBheW1lbnRfaWQYASABKA'
+        'lSCXBheW1lbnRJZBIhCgxzY2hlZHVsZWRfYXQYAiABKAlSC3NjaGVkdWxlZEF0');
+
+@$core.Deprecated('Use rescheduleScheduledTransferResponseDescriptor instead')
+const RescheduleScheduledTransferResponse$json = {
+  '1': 'RescheduleScheduledTransferResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    {'1': 'scheduled_at', '3': 4, '4': 1, '5': 9, '10': 'scheduledAt'},
+  ],
+};
+
+/// Descriptor for `RescheduleScheduledTransferResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List rescheduleScheduledTransferResponseDescriptor =
+    $convert.base64Decode(
+        'CiNSZXNjaGVkdWxlU2NoZWR1bGVkVHJhbnNmZXJSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUg'
+        'dzdWNjZXNzEh0KCmVycm9yX2NvZGUYAiABKAlSCWVycm9yQ29kZRIjCg1lcnJvcl9tZXNzYWdl'
+        'GAMgASgJUgxlcnJvck1lc3NhZ2USIQoMc2NoZWR1bGVkX2F0GAQgASgJUgtzY2hlZHVsZWRBdA'
+        '==');
+
 @$core.Deprecated('Use cancelScheduledTransferRequestDescriptor instead')
 const CancelScheduledTransferRequest$json = {
   '1': 'CancelScheduledTransferRequest',
@@ -2574,6 +2608,13 @@ const RecurringTransferDetail$json = {
     },
     {'1': 'created_at', '3': 25, '4': 1, '5': 9, '10': 'createdAt'},
     {'1': 'updated_at', '3': 26, '4': 1, '5': 9, '10': 'updatedAt'},
+    {
+      '1': 'schedule_timezone',
+      '3': 27,
+      '4': 1,
+      '5': 9,
+      '10': 'scheduleTimezone'
+    },
   ],
 };
 
@@ -2597,7 +2638,8 @@ final $typed_data.Uint8List recurringTransferDetailDescriptor = $convert.base64D
     '9ucxIxChRjb25zZWN1dGl2ZV9mYWlsdXJlcxgWIAEoBVITY29uc2VjdXRpdmVGYWlsdXJlcxIo'
     'ChBsYXN0X2V4ZWN1dGVkX2F0GBcgASgJUg5sYXN0RXhlY3V0ZWRBdBIuChNsYXN0X2ZhaWx1cm'
     'VfcmVhc29uGBggASgJUhFsYXN0RmFpbHVyZVJlYXNvbhIdCgpjcmVhdGVkX2F0GBkgASgJUglj'
-    'cmVhdGVkQXQSHQoKdXBkYXRlZF9hdBgaIAEoCVIJdXBkYXRlZEF0');
+    'cmVhdGVkQXQSHQoKdXBkYXRlZF9hdBgaIAEoCVIJdXBkYXRlZEF0EisKEXNjaGVkdWxlX3RpbW'
+    'V6b25lGBsgASgJUhBzY2hlZHVsZVRpbWV6b25l');
 
 @$core.Deprecated('Use recurringTransferExecutionDetailDescriptor instead')
 const RecurringTransferExecutionDetail$json = {
@@ -2801,16 +2843,45 @@ const UpdateRecurringTransferRequest$json = {
     {'1': 'schedule_time', '3': 4, '4': 1, '5': 9, '10': 'scheduleTime'},
     {'1': 'end_date', '3': 5, '4': 1, '5': 9, '10': 'endDate'},
     {'1': 'description', '3': 6, '4': 1, '5': 9, '10': 'description'},
+    {
+      '1': 'frequency',
+      '3': 7,
+      '4': 1,
+      '5': 14,
+      '6': '.payments.RecurringFrequency',
+      '10': 'frequency'
+    },
+    {
+      '1': 'schedule_day',
+      '3': 8,
+      '4': 1,
+      '5': 5,
+      '9': 0,
+      '10': 'scheduleDay',
+      '17': true
+    },
+    {
+      '1': 'schedule_timezone',
+      '3': 9,
+      '4': 1,
+      '5': 9,
+      '10': 'scheduleTimezone'
+    },
+  ],
+  '8': [
+    {'1': '_schedule_day'},
   ],
 };
 
 /// Descriptor for `UpdateRecurringTransferRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateRecurringTransferRequestDescriptor =
-    $convert.base64Decode(
-        'Ch5VcGRhdGVSZWN1cnJpbmdUcmFuc2ZlclJlcXVlc3QSDgoCaWQYASABKAlSAmlkEhYKBnN0YX'
-        'R1cxgCIAEoCVIGc3RhdHVzEhYKBmFtb3VudBgDIAEoAVIGYW1vdW50EiMKDXNjaGVkdWxlX3Rp'
-        'bWUYBCABKAlSDHNjaGVkdWxlVGltZRIZCghlbmRfZGF0ZRgFIAEoCVIHZW5kRGF0ZRIgCgtkZX'
-        'NjcmlwdGlvbhgGIAEoCVILZGVzY3JpcHRpb24=');
+final $typed_data.Uint8List updateRecurringTransferRequestDescriptor = $convert.base64Decode(
+    'Ch5VcGRhdGVSZWN1cnJpbmdUcmFuc2ZlclJlcXVlc3QSDgoCaWQYASABKAlSAmlkEhYKBnN0YX'
+    'R1cxgCIAEoCVIGc3RhdHVzEhYKBmFtb3VudBgDIAEoAVIGYW1vdW50EiMKDXNjaGVkdWxlX3Rp'
+    'bWUYBCABKAlSDHNjaGVkdWxlVGltZRIZCghlbmRfZGF0ZRgFIAEoCVIHZW5kRGF0ZRIgCgtkZX'
+    'NjcmlwdGlvbhgGIAEoCVILZGVzY3JpcHRpb24SOgoJZnJlcXVlbmN5GAcgASgOMhwucGF5bWVu'
+    'dHMuUmVjdXJyaW5nRnJlcXVlbmN5UglmcmVxdWVuY3kSJgoMc2NoZWR1bGVfZGF5GAggASgFSA'
+    'BSC3NjaGVkdWxlRGF5iAEBEisKEXNjaGVkdWxlX3RpbWV6b25lGAkgASgJUhBzY2hlZHVsZVRp'
+    'bWV6b25lQg8KDV9zY2hlZHVsZV9kYXk=');
 
 @$core.Deprecated('Use updateRecurringTransferResponseDescriptor instead')
 const UpdateRecurringTransferResponse$json = {

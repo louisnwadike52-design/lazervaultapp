@@ -38,6 +38,9 @@ abstract class IRecurringTransferDataSource {
     String? scheduleTime,
     String? endDate,
     String? description,
+    RecurringFrequency? frequency,
+    int? scheduleDay,
+    String? scheduleTimezone,
   });
 
   Future<void> delete({required String id});
@@ -145,6 +148,9 @@ class RecurringTransferDataSourceImpl implements IRecurringTransferDataSource {
     String? scheduleTime,
     String? endDate,
     String? description,
+    RecurringFrequency? frequency,
+    int? scheduleDay,
+    String? scheduleTimezone,
   }) async {
     final request = pb.UpdateRecurringTransferRequest(
       id: id,
@@ -153,6 +159,12 @@ class RecurringTransferDataSourceImpl implements IRecurringTransferDataSource {
       scheduleTime: scheduleTime ?? '',
       endDate: endDate ?? '',
       description: description ?? '',
+      // Both omitted unless the caller actually changed them. scheduleDay in
+      // particular must stay ABSENT rather than default to 0: the server reads
+      // 0 as Sunday, so sending it on a pause would move a Friday transfer.
+      frequency: frequency == null ? null : _frequencyToProto(frequency),
+      scheduleDay: scheduleDay,
+      scheduleTimezone: scheduleTimezone,
     );
 
     final response =
@@ -237,6 +249,7 @@ class RecurringTransferDataSourceImpl implements IRecurringTransferDataSource {
       frequency: _protoToFrequency(rt.frequency),
       scheduleDay: rt.scheduleDay,
       scheduleTime: rt.scheduleTime,
+      scheduleTimezone: rt.scheduleTimezone,
       status: _protoToStatus(rt.status),
       startDate: DateTime.tryParse(rt.startDate) ?? DateTime.now(),
       endDate: rt.endDate.isNotEmpty ? DateTime.tryParse(rt.endDate) : null,

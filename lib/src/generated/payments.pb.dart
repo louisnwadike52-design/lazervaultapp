@@ -7132,6 +7132,183 @@ class GetTransferStatusResponse extends $pb.GeneratedMessage {
   TransferDetail ensureTransfer() => $_ensure(3);
 }
 
+class RescheduleScheduledTransferRequest extends $pb.GeneratedMessage {
+  factory RescheduleScheduledTransferRequest({
+    $core.String? paymentId,
+    $core.String? scheduledAt,
+  }) {
+    final result = create();
+    if (paymentId != null) result.paymentId = paymentId;
+    if (scheduledAt != null) result.scheduledAt = scheduledAt;
+    return result;
+  }
+
+  RescheduleScheduledTransferRequest._();
+
+  factory RescheduleScheduledTransferRequest.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory RescheduleScheduledTransferRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RescheduleScheduledTransferRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'payments'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'paymentId')
+    ..aOS(2, _omitFieldNames ? '' : 'scheduledAt')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RescheduleScheduledTransferRequest clone() =>
+      RescheduleScheduledTransferRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RescheduleScheduledTransferRequest copyWith(
+          void Function(RescheduleScheduledTransferRequest) updates) =>
+      super.copyWith((message) =>
+              updates(message as RescheduleScheduledTransferRequest))
+          as RescheduleScheduledTransferRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RescheduleScheduledTransferRequest create() =>
+      RescheduleScheduledTransferRequest._();
+  @$core.override
+  RescheduleScheduledTransferRequest createEmptyInstance() => create();
+  static $pb.PbList<RescheduleScheduledTransferRequest> createRepeated() =>
+      $pb.PbList<RescheduleScheduledTransferRequest>();
+  @$core.pragma('dart2js:noInline')
+  static RescheduleScheduledTransferRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<RescheduleScheduledTransferRequest>(
+          create);
+  static RescheduleScheduledTransferRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get paymentId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set paymentId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasPaymentId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPaymentId() => $_clearField(1);
+
+  /// RFC3339. Must be at least 5 minutes in the future — the same floor the
+  /// create path applies, so a schedule cannot be edited into a window the
+  /// worker may already be inside.
+  @$pb.TagNumber(2)
+  $core.String get scheduledAt => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set scheduledAt($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasScheduledAt() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearScheduledAt() => $_clearField(2);
+}
+
+class RescheduleScheduledTransferResponse extends $pb.GeneratedMessage {
+  factory RescheduleScheduledTransferResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    $core.String? scheduledAt,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (errorCode != null) result.errorCode = errorCode;
+    if (errorMessage != null) result.errorMessage = errorMessage;
+    if (scheduledAt != null) result.scheduledAt = scheduledAt;
+    return result;
+  }
+
+  RescheduleScheduledTransferResponse._();
+
+  factory RescheduleScheduledTransferResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory RescheduleScheduledTransferResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RescheduleScheduledTransferResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'payments'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'errorCode')
+    ..aOS(3, _omitFieldNames ? '' : 'errorMessage')
+    ..aOS(4, _omitFieldNames ? '' : 'scheduledAt')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RescheduleScheduledTransferResponse clone() =>
+      RescheduleScheduledTransferResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RescheduleScheduledTransferResponse copyWith(
+          void Function(RescheduleScheduledTransferResponse) updates) =>
+      super.copyWith((message) =>
+              updates(message as RescheduleScheduledTransferResponse))
+          as RescheduleScheduledTransferResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RescheduleScheduledTransferResponse create() =>
+      RescheduleScheduledTransferResponse._();
+  @$core.override
+  RescheduleScheduledTransferResponse createEmptyInstance() => create();
+  static $pb.PbList<RescheduleScheduledTransferResponse> createRepeated() =>
+      $pb.PbList<RescheduleScheduledTransferResponse>();
+  @$core.pragma('dart2js:noInline')
+  static RescheduleScheduledTransferResponse getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<
+          RescheduleScheduledTransferResponse>(create);
+  static RescheduleScheduledTransferResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => $_clearField(3);
+
+  /// The new fire time as stored, echoed so the client renders what the server
+  /// actually committed rather than what it asked for.
+  @$pb.TagNumber(4)
+  $core.String get scheduledAt => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set scheduledAt($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasScheduledAt() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearScheduledAt() => $_clearField(4);
+}
+
 class CancelScheduledTransferRequest extends $pb.GeneratedMessage {
   factory CancelScheduledTransferRequest({
     $core.String? paymentId,
@@ -10559,6 +10736,7 @@ class RecurringTransferDetail extends $pb.GeneratedMessage {
     $core.String? lastFailureReason,
     $core.String? createdAt,
     $core.String? updatedAt,
+    $core.String? scheduleTimezone,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -10590,6 +10768,7 @@ class RecurringTransferDetail extends $pb.GeneratedMessage {
     if (lastFailureReason != null) result.lastFailureReason = lastFailureReason;
     if (createdAt != null) result.createdAt = createdAt;
     if (updatedAt != null) result.updatedAt = updatedAt;
+    if (scheduleTimezone != null) result.scheduleTimezone = scheduleTimezone;
     return result;
   }
 
@@ -10645,6 +10824,7 @@ class RecurringTransferDetail extends $pb.GeneratedMessage {
     ..aOS(24, _omitFieldNames ? '' : 'lastFailureReason')
     ..aOS(25, _omitFieldNames ? '' : 'createdAt')
     ..aOS(26, _omitFieldNames ? '' : 'updatedAt')
+    ..aOS(27, _omitFieldNames ? '' : 'scheduleTimezone')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -10787,6 +10967,9 @@ class RecurringTransferDetail extends $pb.GeneratedMessage {
   @$pb.TagNumber(13)
   void clearScheduleDay() => $_clearField(13);
 
+  /// HH:MM in schedule_timezone — the user's LOCAL wall-clock time, not UTC.
+  /// (It was documented as UTC and was never UTC; a 16:40 schedule set by a
+  /// Lagos user fires at 16:40 Lagos.)
   @$pb.TagNumber(14)
   $core.String get scheduleTime => $_getSZ(13);
   @$pb.TagNumber(14)
@@ -10903,6 +11086,18 @@ class RecurringTransferDetail extends $pb.GeneratedMessage {
   $core.bool hasUpdatedAt() => $_has(25);
   @$pb.TagNumber(26)
   void clearUpdatedAt() => $_clearField(26);
+
+  /// IANA zone the schedule fires in, e.g. "Africa/Lagos". Set from the user's
+  /// locale at creation. Published so the app can label the time it shows
+  /// instead of implying the device's zone.
+  @$pb.TagNumber(27)
+  $core.String get scheduleTimezone => $_getSZ(26);
+  @$pb.TagNumber(27)
+  set scheduleTimezone($core.String value) => $_setString(26, value);
+  @$pb.TagNumber(27)
+  $core.bool hasScheduleTimezone() => $_has(26);
+  @$pb.TagNumber(27)
+  void clearScheduleTimezone() => $_clearField(27);
 }
 
 class RecurringTransferExecutionDetail extends $pb.GeneratedMessage {
@@ -11682,6 +11877,9 @@ class UpdateRecurringTransferRequest extends $pb.GeneratedMessage {
     $core.String? scheduleTime,
     $core.String? endDate,
     $core.String? description,
+    RecurringFrequency? frequency,
+    $core.int? scheduleDay,
+    $core.String? scheduleTimezone,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -11690,6 +11888,9 @@ class UpdateRecurringTransferRequest extends $pb.GeneratedMessage {
     if (scheduleTime != null) result.scheduleTime = scheduleTime;
     if (endDate != null) result.endDate = endDate;
     if (description != null) result.description = description;
+    if (frequency != null) result.frequency = frequency;
+    if (scheduleDay != null) result.scheduleDay = scheduleDay;
+    if (scheduleTimezone != null) result.scheduleTimezone = scheduleTimezone;
     return result;
   }
 
@@ -11712,6 +11913,13 @@ class UpdateRecurringTransferRequest extends $pb.GeneratedMessage {
     ..aOS(4, _omitFieldNames ? '' : 'scheduleTime')
     ..aOS(5, _omitFieldNames ? '' : 'endDate')
     ..aOS(6, _omitFieldNames ? '' : 'description')
+    ..e<RecurringFrequency>(
+        7, _omitFieldNames ? '' : 'frequency', $pb.PbFieldType.OE,
+        defaultOrMaker: RecurringFrequency.RECURRING_FREQUENCY_UNSPECIFIED,
+        valueOf: RecurringFrequency.valueOf,
+        enumValues: RecurringFrequency.values)
+    ..a<$core.int>(8, _omitFieldNames ? '' : 'scheduleDay', $pb.PbFieldType.O3)
+    ..aOS(9, _omitFieldNames ? '' : 'scheduleTimezone')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -11792,6 +12000,44 @@ class UpdateRecurringTransferRequest extends $pb.GeneratedMessage {
   $core.bool hasDescription() => $_has(5);
   @$pb.TagNumber(6)
   void clearDescription() => $_clearField(6);
+
+  /// The rest of the TIMING. schedule_time alone can only move a run within its
+  /// day; changing "every Friday" to "the 3rd of the month" needs both of these,
+  /// and they must travel together — a frequency change without the matching day
+  /// is how a weekly day-of-week (0-6) ends up read as a monthly day-of-month.
+  @$pb.TagNumber(7)
+  RecurringFrequency get frequency => $_getN(6);
+  @$pb.TagNumber(7)
+  set frequency(RecurringFrequency value) => $_setField(7, value);
+  @$pb.TagNumber(7)
+  $core.bool hasFrequency() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearFrequency() => $_clearField(7);
+
+  /// OPTIONAL, not "0 means unset": day 0 is Sunday, and every client that
+  /// predates this field sends the proto3 default 0 on a plain pause/resume.
+  /// Reading that as a value would silently move a weekly transfer to Sunday.
+  /// Explicit presence makes "not sent" and "Sunday" different things.
+  @$pb.TagNumber(8)
+  $core.int get scheduleDay => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set scheduleDay($core.int value) => $_setSignedInt32(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasScheduleDay() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearScheduleDay() => $_clearField(8);
+
+  /// IANA zone, e.g. "Africa/Lagos". Empty = no change. The schedule fires at
+  /// the user's local wall-clock time, so moving country without this would
+  /// silently shift every future run.
+  @$pb.TagNumber(9)
+  $core.String get scheduleTimezone => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set scheduleTimezone($core.String value) => $_setString(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasScheduleTimezone() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearScheduleTimezone() => $_clearField(9);
 }
 
 class UpdateRecurringTransferResponse extends $pb.GeneratedMessage {

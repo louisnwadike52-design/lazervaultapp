@@ -6,10 +6,25 @@ class RecurringTransferModal extends StatefulWidget {
   final RecurringTransferConfig? initialConfig;
   final ValueChanged<RecurringTransferConfig> onConfigured;
 
+  /// Sheet heading. Defaults to the create-flow wording.
+  final String title;
+
+  /// Primary-button label. Defaults to the create-flow wording.
+  final String ctaLabel;
+
+  /// Shown under the summary, e.g. the zone the schedule fires in. The time
+  /// pickers show a bare HH:MM, and on an EXISTING schedule that number means
+  /// the zone it was created in rather than the device's — so saying which is
+  /// the difference between a clear edit and a confusing one.
+  final String? footnote;
+
   const RecurringTransferModal({
     super.key,
     this.initialConfig,
     required this.onConfigured,
+    this.title = 'Recurring Payment',
+    this.ctaLabel = 'Set Recurring',
+    this.footnote,
   });
 
   @override
@@ -28,7 +43,7 @@ class _RecurringTransferModalState extends State<RecurringTransferModal> {
     super.initState();
     final config = widget.initialConfig;
     _frequency = config?.frequency ?? RecurringFrequency.weekly;
-    _scheduleDay = config?.scheduleDay ?? 1; // Monday
+    _scheduleDay = _dayForFrequency(_frequency, config?.scheduleDay ?? 1);
     _scheduleTime = config?.scheduleTime ?? const TimeOfDay(hour: 9, minute: 0);
     _hasEndDate = config?.endDate != null;
     _endDate = config?.endDate;
@@ -67,12 +82,14 @@ class _RecurringTransferModalState extends State<RecurringTransferModal> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Recurring Payment',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
+                      Expanded(
+                        child: Text(
+                          widget.title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                       IconButton(
@@ -163,6 +180,24 @@ class _RecurringTransferModalState extends State<RecurringTransferModal> {
                           ],
                         ),
                       ),
+                      if ((widget.footnote ?? '').trim().isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(Icons.public,
+                                size: 14, color: Color(0xFF6B7280)),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                widget.footnote!.trim(),
+                                style: const TextStyle(
+                                    color: Color(0xFF9CA3AF), fontSize: 11),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                       const SizedBox(height: 24),
                     ],
                   ),
@@ -182,9 +217,9 @@ class _RecurringTransferModalState extends State<RecurringTransferModal> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
-                        'Set Recurring',
-                        style: TextStyle(
+                      child: Text(
+                        widget.ctaLabel,
+                        style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.w600),
                       ),
                     ),
@@ -208,9 +243,7 @@ class _RecurringTransferModalState extends State<RecurringTransferModal> {
             child: GestureDetector(
               onTap: () => setState(() {
                 _frequency = freq;
-                if (freq == RecurringFrequency.monthly && _scheduleDay == 0) {
-                  _scheduleDay = 1;
-                }
+                _scheduleDay = _dayForFrequency(freq, _scheduleDay);
               }),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 10),
@@ -452,6 +485,30 @@ class _RecurringTransferModalState extends State<RecurringTransferModal> {
       endDate: _endDate,
     );
     return config.summary;
+  }
+
+  /// Brings a schedule day into the domain of [freq].
+  ///
+  /// A weekly day is a day-of-WEEK (0-6) and a monthly day is a day-of-MONTH
+  /// (1-31). The two overlap numerically and mean different things, so carrying
+  /// one across a frequency change produces either a value the selector cannot
+  /// show as chosen or one the server refuses outright — monthly-on-the-28th
+  /// switched to weekly used to keep 28, and the save failed with
+  /// "schedule_day must be 0-6".
+  ///
+  /// Kept deliberately simple: a day that is already valid is preserved (the
+  /// 5th of the month and Friday are both 5, and a user switching weekly→
+  /// monthly usually does mean "the 5th"), and only an impossible one moves.
+  static int _dayForFrequency(RecurringFrequency freq, int day) {
+    switch (freq) {
+      case RecurringFrequency.daily:
+        return day; // ignored by the schedule
+      case RecurringFrequency.weekly:
+      case RecurringFrequency.biweekly:
+        return (day < 0 || day > 6) ? 1 : day; // default Monday
+      case RecurringFrequency.monthly:
+        return (day < 1 || day > 31) ? 1 : day; // there is no 0th
+    }
   }
 
   void _onSetRecurring() {

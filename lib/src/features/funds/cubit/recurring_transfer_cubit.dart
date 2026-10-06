@@ -206,6 +206,9 @@ class RecurringTransferCubit extends Cubit<RecurringTransferState> {
     String? scheduleTime,
     String? endDate,
     String? description,
+    RecurringFrequency? frequency,
+    int? scheduleDay,
+    String? scheduleTimezone,
   }) async {
     emit(const RecurringTransferLoading());
     try {
@@ -215,6 +218,9 @@ class RecurringTransferCubit extends Cubit<RecurringTransferState> {
         scheduleTime: scheduleTime,
         endDate: endDate,
         description: description,
+        frequency: frequency,
+        scheduleDay: scheduleDay,
+        scheduleTimezone: scheduleTimezone,
       );
       if (isClosed) return;
       emit(RecurringTransferUpdated(
