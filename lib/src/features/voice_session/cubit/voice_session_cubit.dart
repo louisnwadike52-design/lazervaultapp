@@ -1798,6 +1798,27 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// AGENT phase so the server can detect barge-in on clean audio. No-op unless in
   /// on_device hybrid mode. Echo cancellation + noise suppression + AGC keep the
   /// agent's own TTS out of the signal the interruption detector sees.
+  /// Capture options for the hybrid-AEC mic.
+  ///
+  /// `stopAudioCaptureOnMute: false` is the important one, and it has to be
+  /// passed on BOTH the enable and the disable call — setSourceEnabled reads it
+  /// off the options it is given to decide `stopOnMute`, and it defaults to
+  /// TRUE.
+  ///
+  /// With the default, every agent turn tore the native capture down and stood
+  /// it back up. On Android that re-acquires audio focus and re-enters
+  /// MODE_IN_COMMUNICATION, which moves playback onto the voice-call stream:
+  /// the agent's own voice dropped to the call volume mid-sentence and the
+  /// system volume HUD appeared over the UI, every single time it spoke. Keeping
+  /// the track alive and merely flipping its mute flag leaves the audio session
+  /// untouched, so the route and the volume stay put.
+  static const AudioCaptureOptions _aecMicOptions = AudioCaptureOptions(
+    echoCancellation: true,
+    noiseSuppression: true,
+    autoGainControl: true,
+    stopAudioCaptureOnMute: false,
+  );
+
   Future<void> _setAecMicPublished(bool enabled) async {
     if (!_onDeviceMode || !_hybridAecBargeIn) return;
     final lp = _room?.localParticipant;
@@ -1805,13 +1826,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     try {
       await lp.setMicrophoneEnabled(
         enabled,
-        audioCaptureOptions: enabled
-            ? const AudioCaptureOptions(
-                echoCancellation: true,
-                noiseSuppression: true,
-                autoGainControl: true,
-              )
-            : null,
+        audioCaptureOptions: _aecMicOptions,
       );
     } catch (e) {
       print('VoiceSessionCubit: _setAecMicPublished($enabled) failed: $e');
