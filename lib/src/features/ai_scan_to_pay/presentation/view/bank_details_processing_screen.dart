@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/auto_logout_guard.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
 
@@ -54,8 +55,14 @@ class _BankDetailsProcessingScreenState
     super.dispose();
   }
 
+  // Nothing to touch here — the user watches a spinner while the scan is
+  // analysed, so this screen is idle by construction and auto-logout must not
+  // count it as an abandoned session.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      AutoLogoutSuppressed(child: _buildBody(context));
+
+  Widget _buildBody(BuildContext context) {
     return PopScope(
       canPop: false, // Prevent back button during processing
       child: Scaffold(

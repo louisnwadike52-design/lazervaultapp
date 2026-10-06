@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/auto_logout_guard.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -53,8 +54,16 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen> {
     } catch (_) {/* bank auto-fill is best-effort */}
   }
 
+  // Framing a document at the camera is the most idle-looking thing a user
+  // can do: no pointer, no scroll, no keystroke, sometimes for a minute while
+  // they line up an account number. The inactivity watcher counted that as an
+  // abandoned session and logged people out mid-scan. The suppression lifts on
+  // dispose, so it covers this screen and nothing else.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      AutoLogoutSuppressed(child: _buildBody(context));
+
+  Widget _buildBody(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       body: BlocConsumer<AiScanCubit, AiScanState>(
