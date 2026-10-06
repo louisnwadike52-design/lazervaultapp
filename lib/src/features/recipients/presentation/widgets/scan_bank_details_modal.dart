@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/utilities/bank_name_resolver.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/src/features/recipients/data/repositories/bank_repository.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
@@ -123,109 +124,66 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
     }
   }
 
+  /// Ranked alternatives for the scanned bank name, best first.
+  ///
+  /// Shown as suggestion chips and used to seed the picker. Before this, a
+  /// partial read produced one guess or nothing — so when the guess was wrong
+  /// the bank the user actually wanted was not among the options and they had
+  /// to search the whole list.
+  List<BankMatch> _bankSuggestions = const [];
+
+  /// True when a bank name WAS read but not matched confidently. The sheet then
+  /// prefills the best guess and makes the user confirm it, rather than
+  /// selecting a bank for them — paying the wrong bank is unrecoverable.
+  bool _bankNeedsConfirmation = false;
+
   void _resolveBankCode(String bankName) {
     final banks = serviceLocator<BankRepository>().cachedSync(widget.country);
-    final match = _matchBank(bankName, banks);
-    if (match != null) {
-      setState(() {
-        _selectedBankCode = match['code'];
+    // Resolved against the ACTIVE RAIL's list, so the code is one that rail
+    // will accept. Bank codes are not a shared standard — Kuda is 50211 on
+    // Flutterwave and 090267 on Nomba — so a code from anywhere else is only
+    // right by coincidence.
+    final result = BankNameResolver.resolve(bankName, banks);
+    final best = result.best;
+    if (!mounted) return;
+    setState(() {
+      _bankSuggestions = result.alternatives;
+      if (best == null) {
+        // Read a name, matched nothing. Keep the scanned text visible so the
+        // user can see what we read, and let them pick.
+        _bankNeedsConfirmation = (bankName.trim().isNotEmpty);
+        return;
+      }
+      if (best.isConfident) {
+        _selectedBankCode = best.code;
         // Snap the label to the canonical list name so display + logo agree.
-        _selectedBankName = match['name'];
-      });
-    }
-  }
-
-  /// Fuzzy-match a scanned bank name against the canonical list. OCR routinely
-  /// yields abbreviations ("GTB", "UBA", "FCMB") or noisy names ("Access Bank
-  /// Plc") that a plain two-way `contains` misses — leaving the Verify CTA dead
-  /// even though a bank is clearly displayed. This normalises both sides (alias
-  /// expansion + noise-word stripping) and scores candidates so the closest
-  /// match wins.
-  Map<String, String>? _matchBank(
-      String scanned, List<Map<String, String>> banks) {
-    if (banks.isEmpty) return null;
-    final target = _canonicalBank(scanned);
-    if (target.isEmpty) return null;
-
-    Map<String, String>? best;
-    int bestScore = 0;
-    for (final bank in banks) {
-      final name = bank['name'] ?? '';
-      final cand = _canonicalBank(name);
-      if (cand.isEmpty) continue;
-
-      int score;
-      if (cand == target) {
-        score = 100;
-      } else if (cand.contains(target) || target.contains(cand)) {
-        // Closer lengths = a tighter match; penalise big length gaps so a short
-        // token doesn't latch onto a much longer unrelated name.
-        score = 70 - (cand.length - target.length).abs().clamp(0, 60);
+        _selectedBankName = best.name;
+        _bankNeedsConfirmation = false;
       } else {
-        final overlap = target
-            .split(' ')
-            .toSet()
-            .intersection(cand.split(' ').toSet())
-            .length;
-        score = overlap > 0 ? 20 + overlap * 5 : 0;
+        // Prefill the guess but do NOT accept it: the Verify CTA stays gated on
+        // _selectedBankCode, so the user confirms the bank first.
+        _selectedBankName = best.name;
+        _bankNeedsConfirmation = true;
       }
-      if (score > bestScore) {
-        bestScore = score;
-        best = bank;
-      }
-    }
-    // Require a meaningful match (shared token or better) — never guess.
-    return bestScore >= 20 ? best : null;
+    });
   }
 
-  /// Lowercase, expand common OCR abbreviations, then strip punctuation and
-  /// generic banking noise words so only the distinctive tokens remain.
-  String _canonicalBank(String raw) {
-    var s = raw.toLowerCase().replaceAll(RegExp(r'[^a-z0-9 ]'), ' ');
-    const alias = <String, String>{
-      'gtb': 'guaranty trust',
-      'gt': 'guaranty trust',
-      'gtbank': 'guaranty trust',
-      'gtco': 'guaranty trust',
-      'uba': 'united bank for africa',
-      'fcmb': 'first city monument',
-      'fbn': 'first',
-      'stanbic': 'stanbic ibtc',
-      // Fintech wallets + common OCR misreads → canonical single token so
-      // "MoneyPoint" / "Monie" resolve to Moniepoint and the wallet names match.
-      'moneypoint': 'moniepoint',
-      'monie': 'moniepoint',
-      'opay': 'opay',
-      'palmpay': 'palmpay',
-      'palm': 'palmpay',
-      'kuda': 'kuda',
-    };
-    final expanded = s
-        .split(RegExp(r'\s+'))
-        .where((t) => t.isNotEmpty)
-        .map((t) => alias[t] ?? t)
-        .join(' ');
-    const noise = {
-      'bank',
-      'plc',
-      'limited',
-      'ltd',
-      'nigeria',
-      'ng',
-      'microfinance',
-      'mfb',
-      'the',
-      'of',
-      'and',
-      'company',
-      'co',
-    };
-    return expanded
-        .split(RegExp(r'\s+'))
-        .where((t) => t.isNotEmpty && !noise.contains(t))
-        .join(' ')
-        .trim();
+  /// Applies a suggestion the user tapped. This is the confirmation step, so it
+  /// clears the needs-confirmation state.
+  void _applyBankSuggestion(BankMatch m) {
+    setState(() {
+      _selectedBankCode = m.code;
+      _selectedBankName = m.name;
+      _bankNeedsConfirmation = false;
+    });
   }
+
+  // NOTE: the previous _matchBank/_canonicalBank pair lived here. They were
+  // removed rather than fixed: the last tier accepted ANY shared word, so
+  // "Guaranty Trust Bank" could resolve to "Trust Microfinance Bank" — a
+  // different institution, chosen silently, on a payment screen. Matching now
+  // lives in BankNameResolver, which ranks candidates and reports how sure it
+  // is, and is tested against the live rail's real names and codes.
 
   @override
   void dispose() {
@@ -609,7 +567,46 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
         // When OCR couldn't resolve the bank (the common MoneyPoint / OPay /
         // PalmPay case), offer one-tap chips for the frequent fintech wallets so
         // the user isn't forced to open + search the full picker.
-        if (_selectedBankCode == null) ...[
+        // What the scan READ, when we could not match it. Showing it beats a
+        // bare "pick a bank": the user can see whether the camera misread the
+        // name or whether the bank simply is not on this rail.
+        if (_bankNeedsConfirmation &&
+            (widget.scanResult.bankName ?? '').trim().isNotEmpty) ...[
+          SizedBox(height: 10.h),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.info_outline, size: 14.sp, color: Colors.orange[700]),
+              SizedBox(width: 6.w),
+              Expanded(
+                child: Text(
+                  _selectedBankCode == null
+                      ? 'Scanned "${widget.scanResult.bankName!.trim()}" — '
+                          'confirm the bank below.'
+                      : 'Confirm this is the right bank.',
+                  style: TextStyle(color: Colors.orange[800], fontSize: 12.sp),
+                ),
+              ),
+            ],
+          ),
+        ],
+        // The ranked alternatives for the scanned name, so the bank the user
+        // wants is one tap away instead of a search through 600+ rows. These
+        // come from the ACTIVE rail's own list, so every chip carries a code
+        // that rail will accept.
+        if (_bankSuggestions.isNotEmpty && _selectedBankCode == null) ...[
+          SizedBox(height: 10.h),
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: [
+              for (final m in _bankSuggestions.take(4)) _suggestionChip(m),
+            ],
+          ),
+        ],
+        // Fall back to the wallet shortcuts only when the scan gave us nothing
+        // to suggest — these are the destinations people most often send to.
+        if (_selectedBankCode == null && _bankSuggestions.isEmpty) ...[
           SizedBox(height: 10.h),
           Wrap(
             spacing: 8.w,
@@ -1578,6 +1575,51 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
   }
 
   /// Compact one-tap bank chip for the bank-details body's "common fintechs" row.
+  /// A ranked bank suggestion for the scanned name. Tapping it IS the
+  /// confirmation, so it resolves the code and clears the warning.
+  Widget _suggestionChip(BankMatch m) {
+    final selected = _selectedBankCode == m.code;
+    return GestureDetector(
+      onTap: () => _applyBankSuggestion(m),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: selected ? _purple.withValues(alpha: 0.12) : Colors.grey[100],
+          borderRadius: BorderRadius.circular(10.r),
+          border: Border.all(
+            color: selected ? _purple : Colors.grey.shade300,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            BankLogo(
+              bankName: m.name,
+              bankCode: m.code,
+              logoUrl: m.logoUrl,
+              size: 20,
+              borderRadius: 5,
+            ),
+            SizedBox(width: 6.w),
+            ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 140.w),
+              child: Text(
+                m.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 12.sp,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _quickBankChip(String bankName) {
     return GestureDetector(
       onTap: () => _selectBankByName(bankName),
