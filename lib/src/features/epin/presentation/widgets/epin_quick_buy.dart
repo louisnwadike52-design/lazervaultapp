@@ -169,8 +169,7 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
     });
   }
 
-  bool get _phoneValid =>
-      isValidNgMsisdn(_phoneController.text);
+  bool get _phoneValid => isValidNgMsisdn(_phoneController.text);
   bool get _ready =>
       _network != null && _denomination != null && _quantity > 0 && _phoneValid;
 

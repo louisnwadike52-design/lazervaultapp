@@ -104,7 +104,8 @@ class _SessionCountdownChipState extends State<SessionCountdownChip> {
             ),
             // The chip is only an affordance when there is something to do
             // about it, so the chevron appears for the host alone.
-            if (widget.onTap != null && urgency != SessionClockUrgency.calm) ...[
+            if (widget.onTap != null &&
+                urgency != SessionClockUrgency.calm) ...[
               SizedBox(width: 3.w),
               Icon(Icons.add_circle_outline, size: 11.sp, color: fg),
             ],
@@ -138,8 +139,7 @@ class SessionExpiringBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final critical = minutesLeft <= 1;
-    final accent =
-        critical ? const Color(0xFFEF4444) : const Color(0xFFFB923C);
+    final accent = critical ? const Color(0xFFEF4444) : const Color(0xFFFB923C);
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w),
       padding: EdgeInsets.fromLTRB(14.w, 12.h, 10.w, 12.h),
@@ -204,8 +204,8 @@ class SessionExpiringBanner extends StatelessWidget {
                 onPressed: onExtend,
                 icon: Icon(Icons.more_time_rounded, size: 18.sp),
                 label: Text('Add more time',
-                    style:
-                        TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700)),
+                    style: TextStyle(
+                        fontSize: 14.sp, fontWeight: FontWeight.w700)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: accent,
                   foregroundColor: Colors.white,

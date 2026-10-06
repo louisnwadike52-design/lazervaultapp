@@ -555,8 +555,8 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
           tx.counterpartyName!,
         ),
       if (tx.counterpartyAccount != null && tx.counterpartyAccount!.isNotEmpty)
-        _DetailEntry(_counterpartyAccountLabel(tx.serviceType),
-            tx.counterpartyAccount!),
+        _DetailEntry(
+            _counterpartyAccountLabel(tx.serviceType), tx.counterpartyAccount!),
       if (bankName != null && bankName.isNotEmpty)
         _DetailEntry('Bank', bankName,
             logoBankName: bankName, logoBankCode: bankCode),
@@ -1061,16 +1061,24 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       'Service': ['service_name', 'Service', 'bill_type', 'provider_name'],
       'Provider': ['provider', 'Provider', 'final_provider'],
       'Recipient': ['phone_number', 'Recipient', 'customer_name', 'recipient'],
-      'Account/Meter': ['meter_number', 'smartcard_number', 'customer_id',
-          'billers_code', 'Account'],
+      'Account/Meter': [
+        'meter_number',
+        'smartcard_number',
+        'customer_id',
+        'billers_code',
+        'Account'
+      ],
       'Plan': ['plan_name', 'variation_name', 'Plan', 'data_plan', 'bouquet'],
       'Candidate': ['candidate_name', 'Candidate'],
       'Quantity': ['quantity', 'Quantity', 'units'],
       'Token': ['token', 'Token', 'purchased_code'],
       'PIN': ['pin', 'Pin'],
       'Serial': ['serial', 'Serial'],
-      'Provider reference': ['provider_reference', 'provider_ref',
-          'Provider Reference'],
+      'Provider reference': [
+        'provider_reference',
+        'provider_ref',
+        'Provider Reference'
+      ],
     };
     final rows = <MapEntry<String, String>>[];
     for (final e in spec.entries) {
@@ -1604,8 +1612,8 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
           transaction: tx,
           copyType: _chosenCopy,
           format: _chosenFormat,
-          extraRows: _giftCard?.rows ??
-                  _invoiceRows + _contributionRows + _billRows,
+          extraRows:
+              _giftCard?.rows ?? _invoiceRows + _contributionRows + _billRows,
           currentUserName: _currentUserName,
           // Anchors the iPad share popover; omitted it anchored top-left.
           sharePositionOrigin: _shareOrigin(),

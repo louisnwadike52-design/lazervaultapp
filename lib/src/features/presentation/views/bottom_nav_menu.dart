@@ -46,7 +46,9 @@ class _BottomNavMenuState extends State<BottomNavMenu>
   /// would retarget those links at whatever slid into its place.
   List<IconData> get _icons => [
         for (final t in kDashboardTabs)
-          LocaleGating.navAllowed(t.label) ? t.icon : Icons.lock_outline_rounded,
+          LocaleGating.navAllowed(t.label)
+              ? t.icon
+              : Icons.lock_outline_rounded,
       ];
 
   @override

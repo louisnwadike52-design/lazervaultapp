@@ -477,9 +477,7 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
     final sourceAccountId = batch.sourceAccountId.isNotEmpty
         ? batch.sourceAccountId
         // activeAccountId already holds the SPENDING account id (family-safe).
-        : (accountManager.activeAccountId ??
-            activeAccountSnapshot()?.id ??
-            '');
+        : (accountManager.activeAccountId ?? activeAccountSnapshot()?.id ?? '');
 
     await cubit.execute(
       idempotencyKey: idempotencyKey,

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:lazervault/core/utils/receipt_fonts.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -12,7 +13,7 @@ class QRPayPdfService {
   static Future<String> downloadReceipt({
     required QRTransactionEntity transaction,
   }) async {
-    final pdf = pw.Document();
+    final pdf = await ReceiptFonts.document();
     final logo = await _loadLogo();
 
     pdf.addPage(
@@ -65,7 +66,7 @@ class QRPayPdfService {
   static Future<String> downloadQRCodeSummary({
     required QRPaymentEntity qrCode,
   }) async {
-    final pdf = pw.Document();
+    final pdf = await ReceiptFonts.document();
 
     pdf.addPage(
       pw.Page(

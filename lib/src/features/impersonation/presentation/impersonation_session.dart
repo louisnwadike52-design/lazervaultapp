@@ -41,7 +41,8 @@ class ImpersonationSession extends ValueNotifier<ImpersonationState> {
     if (expiresAt != null && !expiresAt.isAfter(DateTime.now().toUtc())) {
       // Expired while the app was closed. The token is already inert, but the
       // app must not keep presenting it as a session: restore the admin.
-      debugPrint('[impersonation] stored session had expired — restoring admin');
+      debugPrint(
+          '[impersonation] stored session had expired — restoring admin');
       await _storage.endImpersonation();
       value = const ImpersonationState.none();
       return;

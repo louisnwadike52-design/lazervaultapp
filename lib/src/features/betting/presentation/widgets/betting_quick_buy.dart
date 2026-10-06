@@ -203,8 +203,7 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
     return true;
   }
 
-  bool get _phoneValid =>
-      isValidNgMsisdn(_phoneController.text);
+  bool get _phoneValid => isValidNgMsisdn(_phoneController.text);
   bool get _ready =>
       _platform != null && _verification != null && _amountValid && _phoneValid;
 

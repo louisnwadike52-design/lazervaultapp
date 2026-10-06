@@ -65,8 +65,7 @@ class _Bar extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
           child: Row(
             children: [
-              Icon(Icons.visibility_outlined,
-                  size: 16.sp, color: Colors.white),
+              Icon(Icons.visibility_outlined, size: 16.sp, color: Colors.white),
               SizedBox(width: 8.w),
               Expanded(
                 child: Column(

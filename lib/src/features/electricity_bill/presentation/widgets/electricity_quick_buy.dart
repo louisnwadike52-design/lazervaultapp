@@ -343,8 +343,7 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
     return true;
   }
 
-  bool get _phoneValid =>
-      isValidNgMsisdn(_phoneController.text);
+  bool get _phoneValid => isValidNgMsisdn(_phoneController.text);
 
   // A payable target exists when the meter was verified (auto OR manual), or the
   // user picked a disco manually and chose to proceed without name verification.

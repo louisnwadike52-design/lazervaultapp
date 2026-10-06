@@ -56,8 +56,7 @@ final class TransferFailure extends TransferState {
       this.isSpendRefusal = false});
 
   @override
-  List<Object?> get props =>
-      [message, isRetryable, isKYCError, isSpendRefusal];
+  List<Object?> get props => [message, isRetryable, isKYCError, isSpendRefusal];
 }
 
 /// Emitted when a transfer fails specifically due to an incorrect PIN.

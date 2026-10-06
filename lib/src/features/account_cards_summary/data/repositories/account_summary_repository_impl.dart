@@ -86,8 +86,8 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
       // carousel clean against an older backend, exactly like the investment
       // sunset below. Same carve-out: a closed wallet still holding money stays
       // visible, because hiding a balance is how it gets forgotten.
-      allAccounts.removeWhere((a) =>
-          a.isClosed && a.balance == 0 && a.availableBalance == 0);
+      allAccounts.removeWhere(
+          (a) => a.isClosed && a.balance == 0 && a.availableBalance == 0);
 
       // Investment sunset (2026-09-07): the server already withholds EMPTY
       // legacy investment wallets; this client-side mirror keeps the carousel
@@ -330,8 +330,7 @@ family_pb.FamilyMember? _selfMember(
 /// Null when the caller has no allocation: in shared_pool nobody does, and a
 /// "remaining" of 0 would read as "you cannot spend" when in fact they spend
 /// the pool.
-double? _selfRemaining(
-    family_pb.FamilyAccount account, String? currentUserId) {
+double? _selfRemaining(family_pb.FamilyAccount account, String? currentUserId) {
   final me = _selfMember(account, currentUserId);
   if (me == null) return null;
   final remaining = me.allocatedBalance - me.spentToday;

@@ -259,9 +259,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
               ),
               child: Icon(
                 pending ? Icons.hourglass_top_rounded : Icons.lock_outline,
-                color: pending
-                    ? const Color(0xFFF59E0B)
-                    : const Color(0xFF8E8E93),
+                color:
+                    pending ? const Color(0xFFF59E0B) : const Color(0xFF8E8E93),
                 size: 34.sp,
               ),
             ),
@@ -1735,8 +1734,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         group.contributions.first.currency.isNotEmpty) {
       userCurrency = group.contributions.first.currency.toUpperCase();
     } else {
-      final activeAccount =
-          activeAccountSnapshot();
+      final activeAccount = activeAccountSnapshot();
       if (activeAccount != null && activeAccount.currency.isNotEmpty) {
         userCurrency = activeAccount.currency.toUpperCase();
       } else {

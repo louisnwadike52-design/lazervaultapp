@@ -43,9 +43,8 @@ Future<void> exitImpersonation(BuildContext context) async {
 
   await Get.offAllNamed(AppRoutes.dashboard);
 
-  final messenger = Get.context != null
-      ? ScaffoldMessenger.maybeOf(Get.context!)
-      : null;
+  final messenger =
+      Get.context != null ? ScaffoldMessenger.maybeOf(Get.context!) : null;
   if (result.warning != null) {
     messenger?.showSnackBar(SnackBar(
       content: Text(result.warning!),
@@ -116,8 +115,7 @@ class ImpersonationEntryTile extends StatelessWidget {
           subtitle: Text(
               'Open a customer’s account read-only. Recorded against you.',
               style: TextStyle(
-                  color: onSurface.withValues(alpha: 0.55),
-                  fontSize: 11.sp)),
+                  color: onSurface.withValues(alpha: 0.55), fontSize: 11.sp)),
           trailing: Icon(Icons.chevron_right,
               size: 18.sp, color: onSurface.withValues(alpha: 0.4)),
           onTap: () => _open(context),

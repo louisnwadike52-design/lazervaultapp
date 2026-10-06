@@ -220,8 +220,7 @@ class _RmbLandingScreenState extends State<RmbLandingScreen> {
             GestureDetector(
               onTap: () => context.read<RmbCubit>().refresh(),
               child: Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(10.r),
@@ -247,8 +246,6 @@ class _RmbLandingScreenState extends State<RmbLandingScreen> {
       ),
     );
   }
-
-
 
   /// Payment rails directly on the landing — tapping one opens the two-step
   /// send sheet. Alipay and WeChat lead; UnionPay + bank sit on a compact row.

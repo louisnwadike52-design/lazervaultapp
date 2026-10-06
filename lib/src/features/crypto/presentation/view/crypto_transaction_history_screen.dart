@@ -1,4 +1,5 @@
 import 'package:lazervault/src/features/crypto/presentation/view/send_crypto_receipt_screen.dart';
+import 'package:lazervault/core/utils/receipt_fonts.dart';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -763,7 +764,7 @@ class _CryptoTransactionHistoryScreenState
 
   Future<Uint8List> _buildStatementPdf(
       List<CryptoTransactionHistory> txns) async {
-    final doc = pw.Document();
+    final doc = await ReceiptFonts.document();
     final df = DateFormat('dd MMM yyyy, HH:mm');
     final now = DateTime.now();
     final fiatSym = CurrencySymbols.currentSymbol;

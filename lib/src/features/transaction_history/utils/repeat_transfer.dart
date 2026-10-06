@@ -63,9 +63,8 @@ class RepeatTransfer {
 
     final hasInternalUid = uid.isNotEmpty;
     final hasBankEvidence = bankCode.isNotEmpty || bankName.isNotEmpty;
-    final isExternal = !hasInternalUid &&
-        hasBankEvidence &&
-        !BrandBank.isOurs(bankName);
+    final isExternal =
+        !hasInternalUid && hasBankEvidence && !BrandBank.isOurs(bankName);
 
     return RecipientModel(
       id: '',

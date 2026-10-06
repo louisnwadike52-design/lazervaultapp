@@ -79,7 +79,6 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
           List<UnifiedTransaction> ledger, List<UnifiedTransaction> external) =>
       mergeExternalTransfers(ledger, external);
 
-
   @override
   Future<TransactionListResponse> fetchAllTransactions({
     int page = 1,

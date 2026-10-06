@@ -163,8 +163,7 @@ class LockFundsCubit extends Cubit<LockFundsState> {
         amountReturned: result.amountReturned,
         penaltyAmount: result.penaltyAmount,
         interestEarned: result.interestEarned,
-        interestOnly:
-            withdrawalMode.trim().toLowerCase() == 'interest_only',
+        interestOnly: withdrawalMode.trim().toLowerCase() == 'interest_only',
       ));
 
       // Reload list

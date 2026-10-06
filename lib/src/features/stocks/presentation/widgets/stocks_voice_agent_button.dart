@@ -79,7 +79,8 @@ class _StocksVoiceAgentButtonState extends State<StocksVoiceAgentButton>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('🎤 ${AssistantIdentity.connected(service: 'Stocks')}'),
+            content:
+                Text('🎤 ${AssistantIdentity.connected(service: 'Stocks')}'),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 2),
           ),

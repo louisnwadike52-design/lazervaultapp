@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:lazervault/core/utils/receipt_fonts.dart';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
@@ -268,10 +269,18 @@ class GroupAccountReportService {
     String? groupUrl,
     String? groupName,
   }) async {
+    // Embed the shared typeface. Without it the pdf package draws with the
+    // built-in Helvetica, which cannot render ₦, an em dash or an accented
+    // member name — it either prints a hollow box or raises mid-export.
+    await ReceiptFonts.load();
     final doc = pw.Document(
       title: report.title,
       author: groupName,
       creator: 'Lazervault',
+      theme: ReceiptFonts.embedded
+          ? pw.ThemeData.withFont(
+              base: ReceiptFonts.regular!, bold: ReceiptFonts.bold!)
+          : null,
     );
 
     final accent = PdfColor.fromInt(0xFF4E03D0);

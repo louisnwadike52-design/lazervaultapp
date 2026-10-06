@@ -174,9 +174,9 @@ class BankRepository {
             .map((b) => {'name': b.name, 'code': b.code})
             .toList();
         if (list.isNotEmpty) {
-          final railChanged =
-              cachedProvider.isNotEmpty && res.provider.isNotEmpty &&
-                  cachedProvider != res.provider;
+          final railChanged = cachedProvider.isNotEmpty &&
+              res.provider.isNotEmpty &&
+              cachedProvider != res.provider;
           await prefs.setString(_cacheKey(country), jsonEncode(list));
           await prefs.setInt(
             _cacheAtKey(country),

@@ -82,15 +82,18 @@ class FcyCapabilities {
   ///
   /// Concurrent callers share one request: several account cards paint at once
   /// and would otherwise each fire their own.
-  Future<void> refresh({FCYAccountService? service, String probeCurrency = 'USD'}) {
+  Future<void> refresh(
+      {FCYAccountService? service, String probeCurrency = 'USD'}) {
     final existing = _inFlight;
     if (existing != null) return existing;
-    final f = _refresh(service, probeCurrency).whenComplete(() => _inFlight = null);
+    final f =
+        _refresh(service, probeCurrency).whenComplete(() => _inFlight = null);
     _inFlight = f;
     return f;
   }
 
-  Future<void> _refresh(FCYAccountService? service, String probeCurrency) async {
+  Future<void> _refresh(
+      FCYAccountService? service, String probeCurrency) async {
     try {
       final svc = service ?? FCYAccountService();
       // The capability set rides on the status read — no extra endpoint, and
@@ -184,4 +187,3 @@ enum FcyNumberSlot {
   /// moved in by conversion, and there is nothing for the user to do.
   convertOnly,
 }
-

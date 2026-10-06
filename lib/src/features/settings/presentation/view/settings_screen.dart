@@ -862,7 +862,8 @@ class _SettingsViewState extends State<_SettingsView> {
         builder: (context, onTap) => _navTile(
           icon: Icons.visibility_outlined,
           title: 'View as user',
-          subtitle: 'Open a customer’s account read-only. Recorded against you.',
+          subtitle:
+              'Open a customer’s account read-only. Recorded against you.',
           onTap: onTap,
           keywords: const [
             'impersonate',

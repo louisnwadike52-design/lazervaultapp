@@ -36,6 +36,25 @@ class ReceiptFonts {
   /// gift-cards receipt_text.dart for the reference implementation.
   static bool get embedded => regular != null && bold != null;
 
+  /// A PDF document with the shared typeface already embedded.
+  ///
+  /// Use this instead of `pw.Document()` anywhere a document carries text the
+  /// user did not type. Without an embedded face the pdf package falls back to
+  /// the built-in Helvetica, which cannot draw an em dash, ₦, a curly
+  /// apostrophe or an accented name — and depending on the path it either
+  /// prints a hollow box or RAISES, which reaches the customer as "Share
+  /// failed" with no way to get their document out.
+  ///
+  /// Falls back to an unthemed document when the typeface cannot be loaded, so
+  /// a missing asset degrades rather than failing the export outright.
+  static Future<pw.Document> document() async {
+    await load();
+    return pw.Document(
+      theme:
+          embedded ? pw.ThemeData.withFont(base: regular!, bold: bold!) : null,
+    );
+  }
+
   /// Loads the receipt typeface. Safe to call repeatedly; only the first call
   /// does work.
   static Future<void> load() async {

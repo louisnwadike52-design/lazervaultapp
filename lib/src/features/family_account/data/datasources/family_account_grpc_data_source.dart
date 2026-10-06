@@ -306,6 +306,7 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
   }
 
   @override
+
   /// Sweep member allocations back into the shared pool.
   ///
   /// Returns the amount moved. The server refuses when the account's mode can

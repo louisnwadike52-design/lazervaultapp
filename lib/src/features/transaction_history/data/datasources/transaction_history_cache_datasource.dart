@@ -14,7 +14,7 @@ class TransactionHistoryCacheDataSource {
 
   Database? _database;
   final String _databaseName = 'transaction_history.db';
-  final int _databaseVersion = 2;
+  final int _databaseVersion = 3;
 
   // Table name
   static const String _tableTransactions = 'cached_transactions';
@@ -57,6 +57,8 @@ class TransactionHistoryCacheDataSource {
         metadata TEXT,
         counterparty_name TEXT,
         counterparty_account TEXT,
+        balance_before REAL,
+        balance_after REAL,
         user_id TEXT NOT NULL,
         cached_at INTEGER NOT NULL,
         expires_at INTEGER NOT NULL
@@ -90,6 +92,17 @@ class TransactionHistoryCacheDataSource {
           'ALTER TABLE $_tableTransactions ADD COLUMN counterparty_name TEXT');
       await db.execute(
           'ALTER TABLE $_tableTransactions ADD COLUMN counterparty_account TEXT');
+    }
+    if (oldVersion < 3) {
+      // Wallet balance either side of the movement. Without these the cache
+      // silently downgraded every row it returned: a statement exported while
+      // offline, or straight after a cold start, would print an em dash in the
+      // balance columns for transactions that do carry them. REAL and nullable,
+      // matching the model — a crypto leg genuinely has no wallet balance.
+      await db.execute(
+          'ALTER TABLE $_tableTransactions ADD COLUMN balance_before REAL');
+      await db.execute(
+          'ALTER TABLE $_tableTransactions ADD COLUMN balance_after REAL');
     }
   }
 
@@ -240,6 +253,8 @@ class TransactionHistoryCacheDataSource {
       'metadata': tx.metadata != null ? jsonEncode(tx.metadata) : null,
       'counterparty_name': tx.counterpartyName,
       'counterparty_account': tx.counterpartyAccount,
+      'balance_before': tx.balanceBefore,
+      'balance_after': tx.balanceAfter,
       'user_id': userId,
       'cached_at': cachedAt,
       'expires_at': expiresAt,
@@ -280,6 +295,8 @@ class TransactionHistoryCacheDataSource {
       metadata: metadata,
       counterpartyName: map['counterparty_name'] as String?,
       counterpartyAccount: map['counterparty_account'] as String?,
+      balanceBefore: (map['balance_before'] as num?)?.toDouble(),
+      balanceAfter: (map['balance_after'] as num?)?.toDouble(),
     );
   }
 

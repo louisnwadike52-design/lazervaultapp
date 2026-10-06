@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:lazervault/core/utils/receipt_fonts.dart';
 import 'dart:ui' show Rect;
 
 import 'package:csv/csv.dart';
@@ -158,7 +159,7 @@ class _LinkedBankStatementExportSheetState
   }
 
   Future<File> _writePdf(List<dynamic> rows) async {
-    final pdf = pw.Document();
+    final pdf = await ReceiptFonts.document();
     const perPage = 28;
     final pages = (rows.length / perPage).ceil();
     final bank = widget.account.bankName;

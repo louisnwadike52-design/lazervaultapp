@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/receipt_fonts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/types/transaction.dart';
 import 'package:lazervault/core/utilities/generate_currency_string.dart';
@@ -64,7 +65,7 @@ class _ReceiptState extends State<SendFundReceipt> {
   Future<void> _printReceipt() async {
     await Printing.layoutPdf(
       onLayout: (PdfPageFormat format) async {
-        final pdf = pw.Document();
+        final pdf = await ReceiptFonts.document();
 
         pdf.addPage(
           pw.Page(

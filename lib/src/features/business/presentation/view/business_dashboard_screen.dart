@@ -183,20 +183,21 @@ class BusinessDashboardScreen extends StatelessWidget {
                       title: 'Business account details',
                       subtitle:
                           'Share these to receive money into this business',
-                      accountName:
-                          (account.virtualAccountHolderName?.trim().isNotEmpty ??
-                                  false)
-                              ? account.virtualAccountHolderName!.trim()
-                              : (account.accountName?.trim().isNotEmpty ?? false)
-                                  ? account.accountName!.trim()
-                                  : account.displayName,
+                      accountName: (account.virtualAccountHolderName
+                                  ?.trim()
+                                  .isNotEmpty ??
+                              false)
+                          ? account.virtualAccountHolderName!.trim()
+                          : (account.accountName?.trim().isNotEmpty ?? false)
+                              ? account.accountName!.trim()
+                              : account.displayName,
                       accountNameLabel: 'Business name',
                       bankName: account.bankName ?? '',
                       accountNumber: account.accountNumber ?? '',
                     ),
                     child: Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 10.w, vertical: 5.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20.r),
@@ -224,8 +225,7 @@ class BusinessDashboardScreen extends StatelessWidget {
                 )
               else
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                   decoration: BoxDecoration(
                       color: Colors.white24,
                       borderRadius: BorderRadius.circular(20.r)),
@@ -251,7 +251,8 @@ class BusinessDashboardScreen extends StatelessWidget {
           // The PENDING case is deliberately kept. Without a virtual account
           // the business cannot be paid at all, and the CTA above cannot say
           // so, so this is the only place that explains why.
-          if (account?.accountNumber == null || account!.accountNumber!.isEmpty) ...[
+          if (account?.accountNumber == null ||
+              account!.accountNumber!.isEmpty) ...[
             SizedBox(height: 8.h),
             Text('Virtual account pending — complete business KYC to activate',
                 style: GoogleFonts.inter(

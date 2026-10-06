@@ -73,8 +73,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
   Widget build(BuildContext context) {
     return BlocListener<LockFundsCubit, LockFundsState>(
       listener: (context, state) {
-        if (state is LockFundDetailsLoaded &&
-            state.lockFund.id == _lock.id) {
+        if (state is LockFundDetailsLoaded && state.lockFund.id == _lock.id) {
           // Adopt the server's copy — the whole point of the refetch.
           setState(() {
             _lock = state.lockFund;
@@ -1217,8 +1216,8 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
           // The withdraw screen also self-derives early-vs-matured from the
           // lock, so this is an explicit hint (breakable term, pre-maturity),
           // not the sole source of truth.
-          child: LockWithdrawalScreen(
-              lockFund: _lock, isEarlyWithdrawal: early),
+          child:
+              LockWithdrawalScreen(lockFund: _lock, isEarlyWithdrawal: early),
         ),
       ),
     );

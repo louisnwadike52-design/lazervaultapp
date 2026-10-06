@@ -50,7 +50,8 @@ class StatementRecentEntry {
       accountId: accountId,
       startDate: DateTime.fromMillisecondsSinceEpoch(startMs),
       endDate: DateTime.fromMillisecondsSinceEpoch(endMs),
-      format: json['format'] == 'csv' ? StatementFormat.csv : StatementFormat.pdf,
+      format:
+          json['format'] == 'csv' ? StatementFormat.csv : StatementFormat.pdf,
       generatedAt: generatedMs is int
           ? DateTime.fromMillisecondsSinceEpoch(generatedMs)
           : DateTime.fromMillisecondsSinceEpoch(startMs),
@@ -60,7 +61,8 @@ class StatementRecentEntry {
   /// Same account, window and format — used to de-duplicate.
   bool sameRequestAs(StatementRecentEntry other) =>
       accountId == other.accountId &&
-      startDate.millisecondsSinceEpoch == other.startDate.millisecondsSinceEpoch &&
+      startDate.millisecondsSinceEpoch ==
+          other.startDate.millisecondsSinceEpoch &&
       endDate.millisecondsSinceEpoch == other.endDate.millisecondsSinceEpoch &&
       format == other.format;
 }
@@ -105,8 +107,7 @@ class StatementRecentStore {
     final current = List<StatementRecentEntry>.from(await load())
       ..removeWhere((e) => e.sameRequestAs(entry));
     current.insert(0, entry);
-    final trimmed =
-        current.length > _max ? current.sublist(0, _max) : current;
+    final trimmed = current.length > _max ? current.sublist(0, _max) : current;
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(

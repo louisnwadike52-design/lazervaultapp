@@ -292,7 +292,8 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF2A1520),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFFDC2626).withValues(alpha: 0.4)),
+        border:
+            Border.all(color: const Color(0xFFDC2626).withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

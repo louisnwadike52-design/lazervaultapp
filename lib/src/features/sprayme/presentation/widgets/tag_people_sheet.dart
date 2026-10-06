@@ -326,10 +326,8 @@ class _TagPeopleSheetState extends State<TagPeopleSheet> {
                     padding: EdgeInsets.zero,
                     constraints:
                         BoxConstraints(minWidth: 28.w, minHeight: 28.w),
-                    icon: Icon(Icons.close,
-                        size: 14.sp, color: Colors.white70),
-                    onPressed: () =>
-                        setState(() => _selected.remove(i.userId)),
+                    icon: Icon(Icons.close, size: 14.sp, color: Colors.white70),
+                    onPressed: () => setState(() => _selected.remove(i.userId)),
                   ),
                 ],
               ),

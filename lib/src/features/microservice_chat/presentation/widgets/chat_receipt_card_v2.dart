@@ -213,9 +213,13 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
       });
 
       final storage = serviceLocator<SecureStorageService>();
-      final userId = await storage.getCurrentUserId() ?? await storage.getUserId();
+      final userId =
+          await storage.getCurrentUserId() ?? await storage.getUserId();
       final token = await storage.getAccessToken();
-      if (userId != null && token != null && userId.isNotEmpty && token.isNotEmpty) {
+      if (userId != null &&
+          token != null &&
+          userId.isNotEmpty &&
+          token.isNotEmpty) {
         // Idempotent and shared: the service early-returns when already
         // connected, so N cards cost one socket.
         await ws.connect(userId: userId, accessToken: token);
@@ -287,8 +291,8 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
     _statusPolls++;
     try {
       if (isRmb) {
-        final resp = await serviceLocator<RmbGrpcClient>()
-            .getTransfer(_rmbTransferId());
+        final resp =
+            await serviceLocator<RmbGrpcClient>().getTransfer(_rmbTransferId());
         if (!mounted) return;
         final next = _rmbStatusLabel(resp.transfer.status);
         if (next.isEmpty) return;

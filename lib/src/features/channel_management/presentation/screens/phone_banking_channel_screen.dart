@@ -297,55 +297,55 @@ class _PhoneBankingChannelScreenState extends State<PhoneBankingChannelScreen> {
               ),
             )
           : hasPin
-          // Nothing to do. A control here would invite someone to change a PIN
-          // they came to this screen to read about, not to alter — and the place
-          // to change a transaction PIN is where it was set.
-          ? Padding(
-              padding: const EdgeInsets.all(14),
-              child: Row(
-                children: [
-                  const Icon(Icons.verified_user_rounded,
-                      color: ChannelScreenTheme.success, size: 18),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Your transaction PIN is set',
-                      style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w600),
+              // Nothing to do. A control here would invite someone to change a PIN
+              // they came to this screen to read about, not to alter — and the place
+              // to change a transaction PIN is where it was set.
+              ? Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.verified_user_rounded,
+                          color: ChannelScreenTheme.success, size: 18),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Your transaction PIN is set',
+                          style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              // The one case that needs an action, and it leads to the REAL PIN
+              // setup rather than a phone-specific one.
+              : InkWell(
+                  onTap: () => Get.toNamed(AppRoutes.transactionPinSetup),
+                  borderRadius: BorderRadius.circular(14),
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Row(
+                      children: [
+                        Icon(Icons.add_moderator_outlined,
+                            color: _accent, size: 18),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Set up your transaction PIN',
+                            style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right_rounded,
+                            color: ChannelScreenTheme.textMuted, size: 18),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            )
-          // The one case that needs an action, and it leads to the REAL PIN
-          // setup rather than a phone-specific one.
-          : InkWell(
-              onTap: () => Get.toNamed(AppRoutes.transactionPinSetup),
-              borderRadius: BorderRadius.circular(14),
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  children: [
-                    Icon(Icons.add_moderator_outlined,
-                        color: _accent, size: 18),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Set up your transaction PIN',
-                        style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                    const Icon(Icons.chevron_right_rounded,
-                        color: ChannelScreenTheme.textMuted, size: 18),
-                  ],
                 ),
-              ),
-            ),
     );
   }
 

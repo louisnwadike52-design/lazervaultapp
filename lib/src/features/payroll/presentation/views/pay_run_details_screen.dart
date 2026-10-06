@@ -724,7 +724,8 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text('Close', style: GoogleFonts.inter(color: Colors.white70)),
+            child:
+                Text('Close', style: GoogleFonts.inter(color: Colors.white70)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -734,7 +735,8 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: InvoiceThemeColors.successGreen,
             ),
-            child: Text('Add money', style: GoogleFonts.inter(color: Colors.white)),
+            child: Text('Add money',
+                style: GoogleFonts.inter(color: Colors.white)),
           ),
         ],
       ),

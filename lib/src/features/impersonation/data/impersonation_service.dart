@@ -227,8 +227,8 @@ class ImpersonationService {
     if (rows is! List) return const [];
     return rows
         .whereType<Map>()
-        .map((m) => ImpersonationCandidate.fromJson(
-            Map<String, dynamic>.from(m)))
+        .map((m) =>
+            ImpersonationCandidate.fromJson(Map<String, dynamic>.from(m)))
         .where((c) => c.id.isNotEmpty)
         .toList(growable: false);
   }

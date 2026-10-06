@@ -259,8 +259,7 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
         );
   }
 
-  bool get _phoneValid =>
-      isValidNgMsisdn(_phoneController.text);
+  bool get _phoneValid => isValidNgMsisdn(_phoneController.text);
   bool get _ready =>
       _provider != null &&
       _validation != null &&

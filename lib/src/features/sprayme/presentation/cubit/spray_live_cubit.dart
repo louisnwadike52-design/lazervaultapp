@@ -298,9 +298,7 @@ class SprayLiveCubit extends Cubit<SprayLiveState> {
     }
 
     emit(state.copyWith(
-        coHostBusy: false,
-        coHostInvitePending: false,
-        clearCoHostError: true));
+        coHostBusy: false, coHostInvitePending: false, clearCoHostError: true));
     return null;
   }
 
@@ -317,9 +315,7 @@ class SprayLiveCubit extends Cubit<SprayLiveState> {
   /// screen. The server call is best-effort behind it.
   Future<void> declineCoHostInvite() async {
     emit(state.copyWith(
-        coHostInvitePending: false,
-        coHostBusy: false,
-        clearCoHostError: true));
+        coHostInvitePending: false, coHostBusy: false, clearCoHostError: true));
     if (_sessionId.isEmpty) return;
     try {
       await _repository.leaveSeat(_sessionId);
@@ -522,8 +518,7 @@ class SprayLiveCubit extends Cubit<SprayLiveState> {
       ..on<ParticipantConnectedEvent>((_) => _refreshTracks())
       ..on<ParticipantDisconnectedEvent>((_) => _refreshTracks());
 
-    await room.connect(url, token,
-        connectOptions: SprayMediaOptions.connect());
+    await room.connect(url, token, connectOptions: SprayMediaOptions.connect());
 
     if (publish) {
       // MIC FIRST, AND ALWAYS.
@@ -568,8 +563,7 @@ class SprayLiveCubit extends Cubit<SprayLiveState> {
     if (isClosed || _leftDeliberately || _sessionId.isEmpty) return;
     if (_session?.isLiveVideo != true) return;
     _reconnectTimer?.cancel();
-    final seconds = [1, 2, 4, 8, 16][
-        _reconnectAttempt.clamp(0, 4)];
+    final seconds = [1, 2, 4, 8, 16][_reconnectAttempt.clamp(0, 4)];
     _reconnectAttempt++;
     _reconnectTimer = Timer(Duration(seconds: seconds), () {
       if (isClosed || _leftDeliberately) return;

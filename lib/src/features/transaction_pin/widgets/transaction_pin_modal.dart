@@ -186,11 +186,14 @@ class TransactionPinModalState extends State<TransactionPinModal>
   /// A short subtitle naming the KIND of refusal, so the header and the body
   /// agree instead of the header calling the body a malfunction.
   @visibleForTesting
-  static String refusalSubtitleFor(String? message) => _refusalSubtitle(message);
+  static String refusalSubtitleFor(String? message) =>
+      _refusalSubtitle(message);
 
   static String _refusalSubtitle(String? message) {
     final m = (message ?? '').toLowerCase();
-    if (m.contains('minimum') || m.contains('too small') || m.contains('below')) {
+    if (m.contains('minimum') ||
+        m.contains('too small') ||
+        m.contains('below')) {
       return 'Below the minimum amount';
     }
     if (m.contains('insufficient') ||
@@ -201,7 +204,9 @@ class TransactionPinModalState extends State<TransactionPinModal>
     if (m.contains('maximum') || m.contains('exceeds') || m.contains('limit')) {
       return 'Over your limit';
     }
-    if (m.contains('frozen') || m.contains('suspended') || m.contains('blocked')) {
+    if (m.contains('frozen') ||
+        m.contains('suspended') ||
+        m.contains('blocked')) {
       return 'This account is restricted';
     }
     return 'This transfer was not allowed';
@@ -1219,5 +1224,4 @@ Future<String?> showTransactionPinModal(
   );
 
   return submittedPin;
-
 }

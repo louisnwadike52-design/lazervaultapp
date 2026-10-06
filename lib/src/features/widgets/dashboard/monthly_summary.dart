@@ -84,8 +84,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
   /// symbol must match: prefer the active account's currency, fall back to the
   /// active locale's currency (never a hardcoded £).
   String get _currencySymbol {
-    final acctCurrency =
-        activeAccountSnapshot()?.currency;
+    final acctCurrency = activeAccountSnapshot()?.currency;
     if (acctCurrency != null && acctCurrency.trim().isNotEmpty) {
       return CurrencySymbols.getSymbol(acctCurrency);
     }

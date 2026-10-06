@@ -541,8 +541,7 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
         // promised ₦13 more than the trade could deliver. Flooring to the
         // order precision makes Max exactly the largest executable sale; any
         // remainder is sub-order-precision dust that cannot be sold at all.
-        final floored =
-            floorToOrderPrecision(h.quantity, widget.crypto.symbol);
+        final floored = floorToOrderPrecision(h.quantity, widget.crypto.symbol);
         _amountController.text = _trimNum(floored);
       } else {
         // FLOOR the fiat to 2 dp. Rounding UP makes implied crypto (fiat/price)

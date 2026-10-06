@@ -720,8 +720,7 @@ class BatchTransferFormState extends State<BatchTransferForm>
 
     // Self-transfer check
     final accountManager = GetIt.I<AccountManager>();
-    final myAccountNumber =
-        activeAccountSnapshot()?.accountNumber ?? '';
+    final myAccountNumber = activeAccountSnapshot()?.accountNumber ?? '';
     if (myAccountNumber.isNotEmpty) {
       final selfTransfers = _selectedRecipients
           .where((r) => r.recipient.accountNumber == myAccountNumber)
@@ -822,9 +821,8 @@ class BatchTransferFormState extends State<BatchTransferForm>
       }
       fromAccountId = src.spendingAccountId;
     } else {
-      fromAccountId = accountManager.activeAccountId ??
-          activeAccountSnapshot()?.id ??
-          '0';
+      fromAccountId =
+          accountManager.activeAccountId ?? activeAccountSnapshot()?.id ?? '0';
     }
 
     final arguments = <String, dynamic>{

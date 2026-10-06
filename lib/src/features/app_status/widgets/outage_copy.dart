@@ -78,7 +78,8 @@ class OutageCopy {
           // Named concretely, because "check your connection" over four bars of
           // signal reads as the app being wrong. These are the things that
           // actually produce this state on a phone that looks connected.
-          message: 'Your device cannot reach the internet right now. Check your '
+          message:
+              'Your device cannot reach the internet right now. Check your '
               'mobile data or Wi-Fi — including whether your data bundle has run '
               'out — then try again.',
           dismissible: true,

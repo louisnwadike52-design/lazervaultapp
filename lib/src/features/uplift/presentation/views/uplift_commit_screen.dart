@@ -136,9 +136,7 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
             _readOnlyTile(
               icon: Icons.account_balance_wallet,
               label: 'Funding account',
-              value: account == null
-                  ? 'Active account'
-                  : account.display,
+              value: account == null ? 'Active account' : account.display,
               sub: account == null
                   ? null
                   : 'Balance ${account.currency} ${account.balanceMajor.toStringAsFixed(2)}',
@@ -240,5 +238,4 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
       ]),
     );
   }
-
 }

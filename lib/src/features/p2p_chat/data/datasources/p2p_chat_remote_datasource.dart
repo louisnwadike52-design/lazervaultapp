@@ -29,10 +29,12 @@ class P2PChatRemoteDatasource {
       debugPrint('[p2p] $label OK in ${sw.elapsedMilliseconds}ms  $url');
       return out;
     } on TimeoutException {
-      debugPrint('[p2p] $label TIMED OUT after ${sw.elapsedMilliseconds}ms  $url');
+      debugPrint(
+          '[p2p] $label TIMED OUT after ${sw.elapsedMilliseconds}ms  $url');
       rethrow;
     } catch (e) {
-      debugPrint('[p2p] $label FAILED in ${sw.elapsedMilliseconds}ms  $url  $e');
+      debugPrint(
+          '[p2p] $label FAILED in ${sw.elapsedMilliseconds}ms  $url  $e');
       rethrow;
     }
   }

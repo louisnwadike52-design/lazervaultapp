@@ -35,8 +35,7 @@ class CableTVPaymentModel extends CableTVPaymentEntity {
       reference: payment.reference,
       amount: payment.amount,
       status: payment.status,
-      refundSource:
-          payment.hasRefundSource() ? payment.refundSource : '',
+      refundSource: payment.hasRefundSource() ? payment.refundSource : '',
       customerNumber: payment.customerNumber,
       metadata: payment.metadata,
       createdAt: payment.createdAt,
@@ -56,8 +55,7 @@ class CableTVPaymentModel extends CableTVPaymentEntity {
       reference: payment.reference,
       amount: payment.amount,
       status: payment.status,
-      refundSource:
-          payment.hasRefundSource() ? payment.refundSource : '',
+      refundSource: payment.hasRefundSource() ? payment.refundSource : '',
       customerNumber: payment.customerNumber,
       metadata: payment.metadata,
       createdAt: payment.createdAt,

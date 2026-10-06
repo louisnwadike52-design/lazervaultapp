@@ -103,7 +103,8 @@ class WaterBillPdfService {
                     child: _buildSummaryTable(
                       paymentDate: paymentDate,
                       completedDate: completedDate,
-                      status: billReceiptStatusLabel(payment.status.name, isRefunded: payment.isRefunded),
+                      status: billReceiptStatusLabel(payment.status.name,
+                          isRefunded: payment.isRefunded),
                       receiptNumber: receiptNumber,
                     ),
                   ),
@@ -289,7 +290,8 @@ class WaterBillPdfService {
                 ),
               _buildDetailRow(
                 'Status',
-                billReceiptStatusLabel(payment.status.name, isRefunded: payment.isRefunded),
+                billReceiptStatusLabel(payment.status.name,
+                    isRefunded: payment.isRefunded),
               ),
             ],
           ),

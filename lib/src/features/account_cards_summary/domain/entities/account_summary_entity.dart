@@ -82,7 +82,8 @@ class AccountSummaryEntity extends Equatable {
   final String accountNumberLast4; // e.g., "7890"
   final String? accountNumber; // Full NUBAN account number for deposits
   final String? bankName; // Bank name (e.g., "Wema Bank", "VFD MFB")
-  final String? accountName; // The USER'S label for the wallet (e.g. "Smith Family")
+  final String?
+      accountName; // The USER'S label for the wallet (e.g. "Smith Family")
   /// Holder name as the CURRENTLY ACTIVE rail issued it — "LAZERVAULT/Praiz
   /// Onah" on Nomba, "Praiz Onah FLW" on Flutterwave. Separate from
   /// [accountName], which is the user's own label and must survive a provider

@@ -130,7 +130,8 @@ class _SaleDetailSheet extends StatelessWidget {
                       color: chipColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
-                    child: Text(_isVoided ? 'Voided' : (paid ? 'Paid' : 'Receivable'),
+                    child: Text(
+                        _isVoided ? 'Voided' : (paid ? 'Paid' : 'Receivable'),
                         style: GoogleFonts.inter(
                             color: chipColor,
                             fontSize: 11.sp,

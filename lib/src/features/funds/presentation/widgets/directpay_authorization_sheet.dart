@@ -514,8 +514,7 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
           // coming back to press anything. Calling that "cancelled" writes off
           // a setup that may already be complete, so hand back "unverified"
           // and let the caller ask Mono what actually happened.
-          debugPrint(
-              '[DirectPay] Mandate closed with no verdict — unverified');
+          debugPrint('[DirectPay] Mandate closed with no verdict — unverified');
           _popSelf(DirectPayAuthResult.unverified(
             paymentId: widget.paymentId,
             reference: widget.reference,
@@ -552,8 +551,7 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
     _redirectHandled = true;
     HapticFeedback.mediumImpact();
     if (widget.flow == DirectPayFlow.mandate) {
-      debugPrint(
-          '[DirectPay] Mandate redirect with no status — unverified, '
+      debugPrint('[DirectPay] Mandate redirect with no status — unverified, '
           'caller must confirm with Mono: $url');
       _popSelf(DirectPayAuthResult.unverified(
         paymentId: widget.paymentId,

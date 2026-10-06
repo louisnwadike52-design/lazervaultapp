@@ -165,6 +165,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   // One-shot guard so the biometric low-confidence warning modal shows once
   // per session rather than re-popping if the event repeats.
   bool _lowConfidenceWarned = false;
+
   /// Once per refusal. The quota state can be re-delivered (a caption-wrapped
   /// rebuild, a listener firing again on the same state) and a modal stacking
   /// on itself is unrecoverable for the user. Cleared when a new call starts.

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:lazervault/core/utils/receipt_fonts.dart';
 import 'package:flutter/widgets.dart' show Rect;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -16,7 +17,7 @@ class CrowdfundPdfService {
     CrowdfundDonation donation,
     Crowdfund crowdfund,
   ) async {
-    final pdf = pw.Document();
+    final pdf = await ReceiptFonts.document();
 
     pdf.addPage(
       pw.Page(

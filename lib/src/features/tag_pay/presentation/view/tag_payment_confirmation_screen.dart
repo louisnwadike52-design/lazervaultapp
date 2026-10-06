@@ -253,8 +253,7 @@ class _TagPaymentConfirmationScreenState
                 showFamilySpendRefusalDialog(
                   context,
                   message: state.message,
-                  mode: familyFundModeFrom(
-                      refusalAccount.fundDistributionMode),
+                  mode: familyFundModeFrom(refusalAccount.fundDistributionMode),
                   familyName: refusalAccount.accountName,
                 );
                 return;

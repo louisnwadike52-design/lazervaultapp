@@ -89,8 +89,7 @@ class WaterPaymentModel extends WaterPaymentEntity {
       receiptNumber:
           receiptNumber.isNotEmpty ? receiptNumber : payment.reference,
       status: _parseStatus(payment.status),
-      refundSource:
-          payment.hasRefundSource() ? payment.refundSource : '',
+      refundSource: payment.hasRefundSource() ? payment.refundSource : '',
       createdAt: DateTime.tryParse(payment.createdAt) ?? DateTime.now(),
       transactionReference: payment.reference,
     );
@@ -107,8 +106,7 @@ class WaterPaymentModel extends WaterPaymentEntity {
       currency: 'NGN',
       receiptNumber: payment.reference,
       status: _parseStatus(payment.status),
-      refundSource:
-          payment.hasRefundSource() ? payment.refundSource : '',
+      refundSource: payment.hasRefundSource() ? payment.refundSource : '',
       createdAt: DateTime.tryParse(payment.createdAt) ?? DateTime.now(),
       transactionReference: payment.reference,
     );

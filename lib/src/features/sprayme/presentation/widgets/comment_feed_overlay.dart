@@ -185,38 +185,38 @@ class _CommentItemState extends State<_CommentItem>
                       expanded: _expanded,
                       collapsedLines: _collapsedLines,
                       child: RichText(
-                    maxLines: _expanded ? null : _collapsedLines,
-                    overflow: _expanded
-                        ? TextOverflow.clip
-                        : TextOverflow.ellipsis,
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: widget.comment.userName.isNotEmpty
-                              ? widget.comment.userName
-                              : 'User',
-                          style: TextStyle(
-                            color: const Color(0xFF60A5FA),
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        maxLines: _expanded ? null : _collapsedLines,
+                        overflow: _expanded
+                            ? TextOverflow.clip
+                            : TextOverflow.ellipsis,
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: widget.comment.userName.isNotEmpty
+                                  ? widget.comment.userName
+                                  : 'User',
+                              style: TextStyle(
+                                color: const Color(0xFF60A5FA),
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const TextSpan(text: ' '),
+                            ...buildMentionSpans(
+                              widget.comment.text,
+                              base: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.9),
+                                fontSize: 12.sp,
+                              ),
+                              mention: TextStyle(
+                                color: const Color(0xFF60A5FA),
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
-                        const TextSpan(text: ' '),
-                        ...buildMentionSpans(
-                          widget.comment.text,
-                          base: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontSize: 12.sp,
-                          ),
-                          mention: TextStyle(
-                            color: const Color(0xFF60A5FA),
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
                     ),
                   ),
                 ),
@@ -476,8 +476,7 @@ class _CommentInputBarState extends State<CommentInputBar> {
   /// — a permanent explanation would be noise, and an unexplained dead
   /// keyboard is the thing being fixed.
   Widget _buildLimitNotice() {
-    final color =
-        _atLimit ? const Color(0xFFEF4444) : const Color(0xFFFB923C);
+    final color = _atLimit ? const Color(0xFFEF4444) : const Color(0xFFFB923C);
     return Padding(
       padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 2.h),
       child: Row(

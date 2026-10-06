@@ -584,7 +584,8 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w700)),
             SizedBox(height: 2.h),
-            Text('All-in rates, shown at the amount beside them. Bigger sends\n'
+            Text(
+                'All-in rates, shown at the amount beside them. Bigger sends\n'
                 'spread the fixed cost further.',
                 style: TextStyle(color: RmbUi.label, fontSize: 11.sp)),
             SizedBox(height: 14.h),
@@ -771,7 +772,9 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
             Expanded(
               child: Text(msg,
                   style: TextStyle(
-                      color: RmbUi.textSecondary, fontSize: 12.5.sp, height: 1.4)),
+                      color: RmbUi.textSecondary,
+                      fontSize: 12.5.sp,
+                      height: 1.4)),
             ),
           ],
         ),
@@ -1472,7 +1475,8 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
             ],
           ),
           if (quoted != null)
-            Text('${RmbUi.ngn(quoted.totalMinor.toInt())} · all-in, nothing added',
+            Text(
+                '${RmbUi.ngn(quoted.totalMinor.toInt())} · all-in, nothing added',
                 style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.75),
                     fontSize: 12.sp))
@@ -1841,7 +1845,8 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
     final q = _quote;
     if (q == null) return null;
     final acct = activeAccountSnapshot();
-    if (acct == null) return null; // nothing selected yet; other guards cover it
+    if (acct == null)
+      return null; // nothing selected yet; other guards cover it
     final totalMajor = q.totalMinor.toInt() / 100.0;
     if (acct.covers(totalMajor)) return null;
     if (!acct.isSpendable) {

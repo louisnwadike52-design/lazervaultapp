@@ -193,8 +193,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     // bar, and backed by rails that cannot complete. Nothing else would have
     // moved them off it. Also rebuilds so the dimming and locks re-resolve.
     try {
-      _currencySub =
-          serviceLocator<LocaleManager>().currencyStream.listen((_) {
+      _currencySub = serviceLocator<LocaleManager>().currencyStream.listen((_) {
         if (!mounted) return;
         if (!LocaleGating.navAllowed(dashboardTabLabel(_currentIndex))) {
           _handleOnTabChange(0);
@@ -690,7 +689,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                         ),
                         body: Column(
                           children: [
-
                             Expanded(
                               child: Stack(
                                 children: [

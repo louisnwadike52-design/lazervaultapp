@@ -168,8 +168,7 @@ class SprayLiveState {
       isPaused: isPaused ?? this.isPaused,
       coHostInvitePending: coHostInvitePending ?? this.coHostInvitePending,
       coHostBusy: coHostBusy ?? this.coHostBusy,
-      coHostError:
-          clearCoHostError ? null : (coHostError ?? this.coHostError),
+      coHostError: clearCoHostError ? null : (coHostError ?? this.coHostError),
       videoEndedByHost: videoEndedByHost ?? this.videoEndedByHost,
       sessionEnded: sessionEnded ?? this.sessionEnded,
       error: clearError ? null : (error ?? this.error),

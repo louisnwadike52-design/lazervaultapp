@@ -115,8 +115,9 @@ class ChatStructuredPayloads extends StatelessWidget {
   Widget _pinPromptCard(Map<String, dynamic> payload) {
     final callbackIntent = payload['callback_intent']?.toString() ?? '';
     final rawArgs = payload['callback_args'];
-    final callbackArgs =
-        rawArgs is Map ? Map<String, dynamic>.from(rawArgs) : <String, dynamic>{};
+    final callbackArgs = rawArgs is Map
+        ? Map<String, dynamic>.from(rawArgs)
+        : <String, dynamic>{};
     final txId = ChatPinAutoOpener.transactionIdOf(payload);
     return ChatPinPromptCard(
       // Stable key per transaction_id. Without it autoOpenFor() has no card to

@@ -146,7 +146,8 @@ Future<void> showBillFailure(
         actionLabel: onViewHistory == null ? null : 'View history',
         onAction: onViewHistory,
         dismissLabel: 'Close',
-        hint: 'Check your history before trying again, so you are not charged twice.',
+        hint:
+            'Check your history before trying again, so you are not charged twice.',
       );
       return;
 

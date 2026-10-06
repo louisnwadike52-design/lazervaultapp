@@ -1061,13 +1061,13 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                       _immersive
                           ? _buildImmersiveBackBar()
                           : _buildTopBar(state),
-                // The host has left and the gateway is counting the room down.
-                // Shown to EVERYONE, host included: the host may have backed
-                // out by accident, and this is how they learn returning saves
-                // it. Disappears if they do — the gateway cancels the
-                // countdown and the state clears.
-                if (state.endingInSeconds != null && !state.sessionEnded)
-                  _buildEndingCountdownBanner(state.endingInSeconds!),
+                      // The host has left and the gateway is counting the room down.
+                      // Shown to EVERYONE, host included: the host may have backed
+                      // out by accident, and this is how they learn returning saves
+                      // it. Disappears if they do — the gateway cancels the
+                      // countdown and the state clears.
+                      if (state.endingInSeconds != null && !state.sessionEnded)
+                        _buildEndingCountdownBanner(state.endingInSeconds!),
 
                       const Spacer(),
 
@@ -1597,52 +1597,54 @@ class _SprayRoomViewState extends State<_SprayRoomView>
             mainAxisSize: MainAxisSize.min,
             children: [
               GestureDetector(
-              onTap: () => _showViewersSheet(state),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 6.w,
-                      height: 6.w,
-                      decoration: BoxDecoration(
-                        color: state.isConnected
-                            ? const Color(0xFF10B981)
-                            : const Color(0xFFEF4444),
-                        shape: BoxShape.circle,
-                      ),
+                  onTap: () => _showViewersSheet(state),
+                  child: Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
-                    SizedBox(width: 4.w),
-                    // Realtime "watching now" (WS-connected) when available, else
-                    // the persisted participant count.
-                    Icon(Icons.visibility_outlined,
-                        color: Colors.white70, size: 14.sp),
-                    SizedBox(width: 2.w),
-                    Text(
-                      _formatCount(state.viewerCount > 0
-                          ? state.viewerCount
-                          : state.participantCount),
-                      style: TextStyle(color: Colors.white70, fontSize: 12.sp),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 6.w,
+                          height: 6.w,
+                          decoration: BoxDecoration(
+                            color: state.isConnected
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFFEF4444),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        SizedBox(width: 4.w),
+                        // Realtime "watching now" (WS-connected) when available, else
+                        // the persisted participant count.
+                        Icon(Icons.visibility_outlined,
+                            color: Colors.white70, size: 14.sp),
+                        SizedBox(width: 2.w),
+                        Text(
+                          _formatCount(state.viewerCount > 0
+                              ? state.viewerCount
+                              : state.participantCount),
+                          style:
+                              TextStyle(color: Colors.white70, fontSize: 12.sp),
+                        ),
+                        SizedBox(width: 6.w),
+                        Icon(Icons.favorite,
+                            color: const Color(0xFFFF1744), size: 12.sp),
+                        SizedBox(width: 2.w),
+                        Text(
+                          _formatCount(state.totalLikeTaps),
+                          style: TextStyle(
+                              color: const Color(0xFFFF1744),
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
-                    SizedBox(width: 6.w),
-                    Icon(Icons.favorite,
-                        color: const Color(0xFFFF1744), size: 12.sp),
-                    SizedBox(width: 2.w),
-                    Text(
-                      _formatCount(state.totalLikeTaps),
-                      style: TextStyle(
-                          color: const Color(0xFFFF1744),
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              )),
+                  )),
               _liveBadgeUnderHeader(),
               // The session clock, always visible once a session has one. A
               // deadline nobody can see until it is nearly up is an ambush.
@@ -1655,7 +1657,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                     expiresAt: state.session!.expiresAt!,
                     policy: state.clockPolicy,
                     // Only the host pays, so only the host gets a tap target.
-                    onTap: _isHost(state) ? () => _openExtendSheet(state) : null,
+                    onTap:
+                        _isHost(state) ? () => _openExtendSheet(state) : null,
                   ),
                 ),
             ],
@@ -1681,17 +1684,14 @@ class _SprayRoomViewState extends State<_SprayRoomView>
         // An audio-only broadcast is live, and saying "LIVE" over a still
         // avatar reads as a video that failed to arrive. Naming it is the
         // difference between a working mode and a broken one.
-        final label = paused
-            ? 'PAUSED'
-            : (live.isAudioOnly ? 'LIVE · AUDIO' : 'LIVE');
+        final label =
+            paused ? 'PAUSED' : (live.isAudioOnly ? 'LIVE · AUDIO' : 'LIVE');
         return Padding(
           padding: EdgeInsets.only(top: 6.h),
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
             decoration: BoxDecoration(
-              color: paused
-                  ? const Color(0xFFFB923C)
-                  : const Color(0xFFEF4444),
+              color: paused ? const Color(0xFFFB923C) : const Color(0xFFEF4444),
               borderRadius: BorderRadius.circular(6.r),
             ),
             child: Row(
@@ -1767,7 +1767,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
           buttonSize: 40,
           totalLikes: state.totalLikeTaps,
           onLikeTap: () {
-            if (FeatureFlags.spraymeLikeSoundEnabled) _soundService.playLikeSound();
+            if (FeatureFlags.spraymeLikeSoundEnabled)
+              _soundService.playLikeSound();
             context.read<SprayRoomCubit>().sendLike();
           },
         ),
@@ -1831,9 +1832,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
         // exist at all for a guest on stage.
         BlocBuilder<SprayLiveCubit, SprayLiveState>(
           buildWhen: (p, c) =>
-              p.isMicOn != c.isMicOn ||
-              p.phase != c.phase ||
-              p.role != c.role,
+              p.isMicOn != c.isMicOn || p.phase != c.phase || p.role != c.role,
           builder: (context, live) {
             if (live.phase != SprayLivePhase.broadcasting) {
               return const SizedBox.shrink();
@@ -1847,9 +1846,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                   // Red while muted: a muted mic is a state the broadcaster
                   // must be able to notice at a glance, because the failure
                   // is talking to nobody for ten minutes.
-                  color: live.isMicOn
-                      ? Colors.white
-                      : const Color(0xFFEF4444),
+                  color: live.isMicOn ? Colors.white : const Color(0xFFEF4444),
                   onTap: () => context.read<SprayLiveCubit>().toggleMic(),
                 ),
                 SizedBox(height: 10.h),
@@ -1871,9 +1868,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                 // ends a session they only meant to step away from.
                 label: liveActive ? 'Stop video' : 'Go live',
                 color: const Color(0xFFEF4444),
-                onTap: () => liveActive
-                    ? _confirmStopVideo()
-                    : _showGoLiveSheet(),
+                onTap: () =>
+                    liveActive ? _confirmStopVideo() : _showGoLiveSheet(),
                 disabled: state.sessionEnded,
               );
             },
@@ -2227,105 +2223,103 @@ class _SprayRoomViewState extends State<_SprayRoomView>
               // same controls over them; only recording and pause stay the
               // host's, because both act on the whole broadcast.
               BlocProvider<SprayLiveCubit>.value(
-                  value: liveCubit,
-                  child: BlocBuilder<SprayLiveCubit, SprayLiveState>(
-                    builder: (context, live) {
-                      if (live.phase != SprayLivePhase.broadcasting) {
-                        return const SizedBox.shrink();
-                      }
-                      final cubit = context.read<SprayLiveCubit>();
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 10.h),
-                          const Divider(color: Color(0xFF2D2D2D)),
-                          SizedBox(height: 8.h),
-                          Text('Broadcast controls',
-                              style: TextStyle(
-                                  color: const Color(0xFF9CA3AF),
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w600)),
-                          SizedBox(height: 12.h),
-                          Wrap(
-                            spacing: 10.w,
-                            runSpacing: 12.h,
-                            children: [
+                value: liveCubit,
+                child: BlocBuilder<SprayLiveCubit, SprayLiveState>(
+                  builder: (context, live) {
+                    if (live.phase != SprayLivePhase.broadcasting) {
+                      return const SizedBox.shrink();
+                    }
+                    final cubit = context.read<SprayLiveCubit>();
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 10.h),
+                        const Divider(color: Color(0xFF2D2D2D)),
+                        SizedBox(height: 8.h),
+                        Text('Broadcast controls',
+                            style: TextStyle(
+                                color: const Color(0xFF9CA3AF),
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w600)),
+                        SizedBox(height: 12.h),
+                        Wrap(
+                          spacing: 10.w,
+                          runSpacing: 12.h,
+                          children: [
+                            _moreTile(
+                                Icons.flip_camera_ios,
+                                'Flip',
+                                const Color(0xFF60A5FA),
+                                () => cubit.flipCamera()),
+                            _moreTile(
+                                live.isMicOn ? Icons.mic : Icons.mic_off,
+                                live.isMicOn ? 'Mute' : 'Unmute',
+                                live.isMicOn
+                                    ? const Color(0xFF60A5FA)
+                                    : const Color(0xFFEF4444),
+                                () => cubit.toggleMic()),
+                            _moreTile(
+                                live.isCameraOn
+                                    ? Icons.videocam
+                                    : Icons.videocam_off,
+                                live.isCameraOn ? 'Cam off' : 'Cam on',
+                                const Color(0xFF60A5FA),
+                                () => cubit.toggleCamera()),
+                            // Pause suspends the WHOLE broadcast for every
+                            // viewer, so it stays the host's alone.
+                            if (host)
                               _moreTile(
-                                  Icons.flip_camera_ios,
-                                  'Flip',
-                                  const Color(0xFF60A5FA),
-                                  () => cubit.flipCamera()),
+                                  live.isPaused
+                                      ? Icons.play_arrow
+                                      : Icons.pause,
+                                  live.isPaused ? 'Resume' : 'Pause',
+                                  live.isPaused
+                                      ? const Color(0xFF10B981)
+                                      : const Color(0xFFFB923C), () async {
+                                final err = live.isPaused
+                                    ? await cubit.resume()
+                                    : await cubit.pause();
+                                if (err != null && mounted) {
+                                  _snack(err, const Color(0xFFEF4444));
+                                }
+                              }),
+                            // Recording is HIDDEN, not disabled, unless an
+                            // admin turns it on. There is no storage for
+                            // replays yet, and a visible-but-dead control
+                            // promises a recording that will not exist.
+                            if (host && FeatureFlags.spraymeRecordingAllowed)
                               _moreTile(
-                                  live.isMicOn ? Icons.mic : Icons.mic_off,
-                                  live.isMicOn ? 'Mute' : 'Unmute',
-                                  live.isMicOn
-                                      ? const Color(0xFF60A5FA)
-                                      : const Color(0xFFEF4444),
-                                  () => cubit.toggleMic()),
-                              _moreTile(
-                                  live.isCameraOn
-                                      ? Icons.videocam
-                                      : Icons.videocam_off,
-                                  live.isCameraOn ? 'Cam off' : 'Cam on',
-                                  const Color(0xFF60A5FA),
-                                  () => cubit.toggleCamera()),
-                              // Pause suspends the WHOLE broadcast for every
-                              // viewer, so it stays the host's alone.
-                              if (host)
-                                _moreTile(
-                                    live.isPaused
-                                        ? Icons.play_arrow
-                                        : Icons.pause,
-                                    live.isPaused ? 'Resume' : 'Pause',
-                                    live.isPaused
-                                        ? const Color(0xFF10B981)
-                                        : const Color(0xFFFB923C), () async {
-                                  final err = live.isPaused
-                                      ? await cubit.resume()
-                                      : await cubit.pause();
-                                  if (err != null && mounted) {
-                                    _snack(err, const Color(0xFFEF4444));
-                                  }
-                                }),
-                              // Recording is HIDDEN, not disabled, unless an
-                              // admin turns it on. There is no storage for
-                              // replays yet, and a visible-but-dead control
-                              // promises a recording that will not exist.
-                              if (host && FeatureFlags.spraymeRecordingAllowed)
-                                _moreTile(
-                                    live.isRecording
-                                        ? Icons.fiber_manual_record
-                                        : Icons.radio_button_unchecked,
-                                    live.isRecording ? 'Recording' : 'Record',
-                                    live.isRecording
-                                        ? const Color(0xFFEF4444)
-                                        : const Color(0xFF9CA3AF), () async {
-                                  final err = await cubit.toggleRecording();
-                                  if (err != null && mounted) {
-                                    _snack(err, const Color(0xFFEF4444));
-                                  }
-                                }),
-                              // A guest's own way off the stage, next to the
-                              // controls they are already using.
-                              if (!host)
-                                _moreTile(
-                                    Icons.logout,
-                                    'Leave stage',
-                                    const Color(0xFFEF4444), () async {
-                                  final err = await context
-                                      .read<SprayRoomCubit>()
-                                      .leaveSeat();
-                                  if (err != null && mounted) {
-                                    _snack(err, const Color(0xFFEF4444));
-                                  }
-                                }),
-                            ],
-                          ),
-                        ],
-                      );
-                    },
-                  ),
+                                  live.isRecording
+                                      ? Icons.fiber_manual_record
+                                      : Icons.radio_button_unchecked,
+                                  live.isRecording ? 'Recording' : 'Record',
+                                  live.isRecording
+                                      ? const Color(0xFFEF4444)
+                                      : const Color(0xFF9CA3AF), () async {
+                                final err = await cubit.toggleRecording();
+                                if (err != null && mounted) {
+                                  _snack(err, const Color(0xFFEF4444));
+                                }
+                              }),
+                            // A guest's own way off the stage, next to the
+                            // controls they are already using.
+                            if (!host)
+                              _moreTile(Icons.logout, 'Leave stage',
+                                  const Color(0xFFEF4444), () async {
+                                final err = await context
+                                    .read<SprayRoomCubit>()
+                                    .leaveSeat();
+                                if (err != null && mounted) {
+                                  _snack(err, const Color(0xFFEF4444));
+                                }
+                              }),
+                          ],
+                        ),
+                      ],
+                    );
+                  },
                 ),
+              ),
             ],
           ),
         ),
@@ -2513,13 +2507,11 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                   Expanded(
                     child: Text(
                       'The host invited you to co-host. Go live with your camera?',
-                      style:
-                          TextStyle(color: Colors.white, fontSize: 12.sp),
+                      style: TextStyle(color: Colors.white, fontSize: 12.sp),
                     ),
                   ),
                   TextButton(
-                    onPressed:
-                        busy ? null : () => cubit.declineCoHostInvite(),
+                    onPressed: busy ? null : () => cubit.declineCoHostInvite(),
                     child: Text('Later',
                         style: TextStyle(
                             color: busy
@@ -2534,18 +2526,16 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                         height: 16.w,
                         child: const CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                              Color(0xFF3B82F6)),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
                         ),
                       ),
                     )
                   else
                     TextButton(
                       onPressed: () => cubit.acceptCoHostInvite(),
-                      child: Text(
-                          live.coHostError != null ? 'Retry' : 'Join',
-                          style:
-                              const TextStyle(color: Color(0xFF3B82F6))),
+                      child: Text(live.coHostError != null ? 'Retry' : 'Join',
+                          style: const TextStyle(color: Color(0xFF3B82F6))),
                     ),
                 ],
               ),
@@ -2564,8 +2554,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                       child: Text(
                         live.coHostError!,
                         style: TextStyle(
-                            color: const Color(0xFFFCA5A5),
-                            fontSize: 11.sp),
+                            color: const Color(0xFFFCA5A5), fontSize: 11.sp),
                       ),
                     ),
                     GestureDetector(
@@ -2878,9 +2867,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                                   onPressed: freeBoxes == 0
                                       ? null
                                       : () async {
-                                          final err =
-                                              await roomCubit.approveSeat(
-                                                  p.userId,
+                                          final err = await roomCubit
+                                              .approveSeat(p.userId,
                                                   userName: p.userName);
                                           if (err != null) {
                                             _snack(
@@ -2928,8 +2916,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                               // this a guest who closed the app held a slot
                               // until the stream ended.
                               onPressed: () async {
-                                final err = await roomCubit
-                                    .cancelStageInvite(p.userId);
+                                final err =
+                                    await roomCubit.cancelStageInvite(p.userId);
                                 if (err != null) {
                                   _snack(err, const Color(0xFFEF4444));
                                 }
@@ -3282,8 +3270,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                   Flexible(
                     child: ListView.separated(
                       shrinkWrap: true,
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 16.w, vertical: 8.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                       itemCount: candidates.length,
                       separatorBuilder: (_, __) => SizedBox(height: 2.h),
                       itemBuilder: (_, i) {

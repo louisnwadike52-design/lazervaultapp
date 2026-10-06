@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:lazervault/core/utils/receipt_fonts.dart';
 import 'package:csv/csv.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -22,7 +23,7 @@ class GroupAccountPdfService {
     required List<GroupMember> members,
     required String groupName,
   }) async {
-    final pdf = pw.Document();
+    final pdf = await ReceiptFonts.document();
     final dateFormat = DateFormat('MMMM d, yyyy');
     final currencyFormat =
         NumberFormat.currency(symbol: '\u20A6', decimalDigits: 0);
@@ -70,7 +71,7 @@ class GroupAccountPdfService {
     required List<GroupMember> members,
     required List<Contribution> contributions,
   }) async {
-    final pdf = pw.Document();
+    final pdf = await ReceiptFonts.document();
     final dateFormat = DateFormat('MMMM d, yyyy');
     final currencyFormat =
         NumberFormat.currency(symbol: '\u20A6', decimalDigits: 0);
@@ -210,7 +211,7 @@ class GroupAccountPdfService {
     required DateTime startDate,
     required DateTime endDate,
   }) async {
-    final pdf = pw.Document();
+    final pdf = await ReceiptFonts.document();
     final dateFormat = DateFormat('MMMM d, yyyy');
     final currencyFormat =
         NumberFormat.currency(symbol: '\u20A6', decimalDigits: 0);

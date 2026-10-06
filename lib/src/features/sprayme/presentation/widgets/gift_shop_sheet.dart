@@ -10,6 +10,7 @@ class GiftShopSheet extends StatefulWidget {
   final List<SprayGift> gifts;
   final double walletBalance; // in major units (spendable "gifts to spray")
   final String currency;
+
   /// Send the chosen gift. Returns TRUE when it was accepted, FALSE when the
   /// room refused it (sending to yourself, say).
   ///

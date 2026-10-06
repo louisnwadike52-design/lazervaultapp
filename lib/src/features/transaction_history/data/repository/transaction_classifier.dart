@@ -667,7 +667,13 @@ TransactionServiceType? _utilityTypeFromReference(String reference) {
   // Strip ledger wrappers, repeatedly: a refunded hold can carry both.
   for (var stripped = true; stripped;) {
     stripped = false;
-    for (final w in const ['HOLD-', 'REFUND-', 'REV-', 'REVERSAL-', 'CAPTURE-']) {
+    for (final w in const [
+      'HOLD-',
+      'REFUND-',
+      'REV-',
+      'REVERSAL-',
+      'CAPTURE-'
+    ]) {
       if (ref.startsWith(w)) {
         ref = ref.substring(w.length);
         stripped = true;

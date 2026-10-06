@@ -61,7 +61,7 @@ class TagPayPdfService {
     required bool isOutgoing,
   }) async {
     await _loadFonts();
-    final pdf = pw.Document();
+    final pdf = await ReceiptFonts.document();
     final logo = await _loadLogo();
     final generatedDate = _displayDateFormat.format(DateTime.now());
     final createdDate = _dateFormat.format(tag.createdAt);
@@ -166,7 +166,7 @@ class TagPayPdfService {
     String? senderAccountNumber,
   }) async {
     await _loadFonts();
-    final pdf = pw.Document();
+    final pdf = await ReceiptFonts.document();
     final logo = await _loadLogo();
     final generatedDate = _displayDateFormat.format(DateTime.now());
     final transactionDate = _dateFormat.format(transaction.createdAt);
@@ -442,7 +442,7 @@ class TagPayPdfService {
     }
 
     await _loadFonts();
-    final pdf = pw.Document();
+    final pdf = await ReceiptFonts.document();
     final logo = await _loadLogo();
     final generatedDate = _displayDateFormat.format(DateTime.now());
     final paidDate = tag.paidAt != null
@@ -611,7 +611,7 @@ class TagPayPdfService {
     ReceiptCopyType copyType = ReceiptCopyType.sender,
   }) async {
     await _loadFonts();
-    final pdf = pw.Document();
+    final pdf = await ReceiptFonts.document();
     final logo = await _loadLogo();
     final generatedDate = _displayDateFormat.format(DateTime.now());
 
@@ -924,7 +924,8 @@ class TagPayPdfService {
                     ?.replaceAll(RegExp(r'[^0-9.]'), '') ??
                 '0') ??
         0.0;
-    final principalAmount = _principalOf(transaction.amount, feeAmount, incoming);
+    final principalAmount =
+        _principalOf(transaction.amount, feeAmount, incoming);
 
     return generateTransferReceiptFile(
       copyType: copyType,
@@ -1113,13 +1114,12 @@ class TagPayPdfService {
       // "₦123.00 to GRACE C. ONWUANAKU" for a ₦100 transfer, and that line is
       // often all the recipient reads before deciding the amount is right.
       // See _principalOf: an outgoing row is principal + fee in one debit.
-      final shareFee = double.tryParse(
-              (_firstNonEmpty([
-                        transaction.metadata?['Fee']?.toString(),
-                        transaction.metadata?['fee']?.toString(),
-                      ]) ??
-                      '0')
-                  .replaceAll(RegExp(r'[^0-9.]'), '')) ??
+      final shareFee = double.tryParse((_firstNonEmpty([
+                    transaction.metadata?['Fee']?.toString(),
+                    transaction.metadata?['fee']?.toString(),
+                  ]) ??
+                  '0')
+              .replaceAll(RegExp(r'[^0-9.]'), '')) ??
           0.0;
       final amount = _amountFormat.format(_principalOf(
         transaction.amount,
@@ -1190,7 +1190,7 @@ class TagPayPdfService {
     String? currentUserName,
   }) async {
     await _loadFonts();
-    final pdf = pw.Document();
+    final pdf = await ReceiptFonts.document();
     final logo = await _loadLogo();
     final generatedDate = _displayDateFormat.format(DateTime.now());
 

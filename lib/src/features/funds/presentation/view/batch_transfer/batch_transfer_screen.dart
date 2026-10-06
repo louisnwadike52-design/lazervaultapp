@@ -165,9 +165,8 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
 
     final accountManager = GetIt.I<AccountManager>();
     // activeAccountId already holds the SPENDING account id (family-safe).
-    final fromAccountId = accountManager.activeAccountId ??
-        activeAccountSnapshot()?.id ??
-        '0';
+    final fromAccountId =
+        accountManager.activeAccountId ?? activeAccountSnapshot()?.id ?? '0';
 
     Get.offNamed(
       AppRoutes.batchTransferReview,

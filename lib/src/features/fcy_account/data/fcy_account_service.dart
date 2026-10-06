@@ -193,11 +193,10 @@ class FCYAccountService {
     return publicUrl;
   }
 
-  static List<String> _currencyList(Object? raw) =>
-      ((raw as List?) ?? const [])
-          .map((e) => e.toString().trim().toUpperCase())
-          .where((e) => e.isNotEmpty)
-          .toList(growable: false);
+  static List<String> _currencyList(Object? raw) => ((raw as List?) ?? const [])
+      .map((e) => e.toString().trim().toUpperCase())
+      .where((e) => e.isNotEmpty)
+      .toList(growable: false);
 
   static String _imageContentType(String name) {
     final n = name.toLowerCase();

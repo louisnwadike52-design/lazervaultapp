@@ -81,7 +81,8 @@ class _InvoiceVoiceAgentButtonState extends State<InvoiceVoiceAgentButton>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('💰 ${AssistantIdentity.connected(service: 'Invoices')}'),
+            content:
+                Text('💰 ${AssistantIdentity.connected(service: 'Invoices')}'),
             backgroundColor: Colors.purple,
             duration: Duration(seconds: 2),
           ),

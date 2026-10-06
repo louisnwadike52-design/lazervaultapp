@@ -30,6 +30,7 @@ class _CableTVPaymentProcessingScreenState
   bool _paymentTriggered = false;
   bool _hasNavigated = false;
   bool _hasFailed = false;
+
   /// Set when the provider has already accepted the subscription, so the retry
   /// control is withheld rather than merely discouraged.
   bool _retryForbidden = false;
@@ -196,8 +197,7 @@ class _CableTVPaymentProcessingScreenState
                   setState(() {
                     _hasFailed = true;
                     _failMessage = state.message;
-                    _retryForbidden =
-                        billFailureForbidsRetry(state.statusCode);
+                    _retryForbidden = billFailureForbidsRetry(state.statusCode);
                   });
                   // A modal over the inline card, carrying the two things the
                   // card cannot: whether the customer was charged, and the one

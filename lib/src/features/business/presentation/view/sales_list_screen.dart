@@ -370,7 +370,9 @@ class _SalesListScreenState extends State<SalesListScreen>
         backgroundColor: InvoiceThemeColors.secondaryBackground,
         title: Text('Void this sale?',
             style: GoogleFonts.inter(
-                color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w700)),
+                color: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w700)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -381,7 +383,9 @@ class _SalesListScreenState extends State<SalesListScreen>
                       'and ${s.quantity} back into stock.'
                   : '₦${(s.amount / 100).toStringAsFixed(2)} comes off your revenue.',
               style: GoogleFonts.inter(
-                  color: InvoiceThemeColors.textGray400, fontSize: 13.sp, height: 1.5),
+                  color: InvoiceThemeColors.textGray400,
+                  fontSize: 13.sp,
+                  height: 1.5),
             ),
             SizedBox(height: 14.h),
             TextField(
@@ -431,7 +435,9 @@ class _SalesListScreenState extends State<SalesListScreen>
     if (reason.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Add a reason so the reversal can be explained later.')),
+        const SnackBar(
+            content:
+                Text('Add a reason so the reversal can be explained later.')),
       );
       return;
     }
@@ -462,7 +468,9 @@ class _SalesListScreenState extends State<SalesListScreen>
       // is a useful sentence, and flattening it to "failed" is what sends
       // someone to support over something the screen could have explained.
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e is SalesException ? e.message : 'Could not void the sale.')),
+        SnackBar(
+            content: Text(
+                e is SalesException ? e.message : 'Could not void the sale.')),
       );
     }
   }

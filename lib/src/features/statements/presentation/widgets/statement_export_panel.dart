@@ -114,10 +114,13 @@ class _StatementExportPanelState extends State<StatementExportPanel> {
   // Two hosts, one layout. Only these getters differ.
   bool get _dark => widget.dark;
   Color get _brand => const Color(0xFF4E03D0);
-  Color get _surface => _dark ? const Color(0xFF1F1F1F) : const Color(0xFFF9FAFB);
-  Color get _border => _dark ? const Color(0xFF2F2F2F) : const Color(0xFFE5E7EB);
+  Color get _surface =>
+      _dark ? const Color(0xFF1F1F1F) : const Color(0xFFF9FAFB);
+  Color get _border =>
+      _dark ? const Color(0xFF2F2F2F) : const Color(0xFFE5E7EB);
   Color get _primaryText => _dark ? Colors.white : const Color(0xFF1F2937);
-  Color get _labelText => _dark ? const Color(0xFFD1D5DB) : const Color(0xFF374151);
+  Color get _labelText =>
+      _dark ? const Color(0xFFD1D5DB) : const Color(0xFF374151);
   Color get _mutedText => const Color(0xFF9CA3AF);
   Color get _sheetBackground => _dark ? const Color(0xFF151515) : Colors.white;
 

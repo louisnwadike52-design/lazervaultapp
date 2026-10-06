@@ -54,6 +54,7 @@ class WaterPaymentEntity extends Equatable {
   bool get isProcessing => status == WaterPaymentStatus.processing;
   bool get isCompleted => status == WaterPaymentStatus.completed;
   bool get isFailed => status == WaterPaymentStatus.failed;
+
   /// Refunded EITHER by an explicit status or by the backend's refund_source
   /// on a failed row — the enum only sees the literal string 'refunded', and
   /// our bill rails record a refund as `failed` plus a source.

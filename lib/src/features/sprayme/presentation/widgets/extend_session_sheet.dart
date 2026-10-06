@@ -130,7 +130,7 @@ class _ExtendSessionSheetState extends State<ExtendSessionSheet>
     if (!_canAfford) {
       setState(() => _error =
           'You need ${acct.currency} ${(opt.priceMajor - acct.balanceMajor).toStringAsFixed(0)} '
-          'more in ${acct.display}.');
+              'more in ${acct.display}.');
       return;
     }
 
@@ -182,7 +182,8 @@ class _ExtendSessionSheetState extends State<ExtendSessionSheet>
   Widget build(BuildContext context) {
     final remaining = widget.remaining;
     return Container(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A1A),
         borderRadius: BorderRadius.vertical(top: Radius.circular(22.r)),
@@ -228,12 +229,10 @@ class _ExtendSessionSheetState extends State<ExtendSessionSheet>
                     TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
               ),
               SizedBox(height: 16.h),
-
               if (widget.policy.options.isEmpty)
                 _noOptions()
               else
                 ...widget.policy.options.map(_optionTile),
-
               SizedBox(height: 14.h),
               _accountRow(),
               if (_error != null) ...[
@@ -257,8 +256,7 @@ class _ExtendSessionSheetState extends State<ExtendSessionSheet>
                 width: double.infinity,
                 height: 52.h,
                 child: ElevatedButton(
-                  onPressed:
-                      (_busy || _selected == null) ? null : _buy,
+                  onPressed: (_busy || _selected == null) ? null : _buy,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _accent,
                     disabledBackgroundColor: _accent.withValues(alpha: 0.35),
@@ -285,8 +283,8 @@ class _ExtendSessionSheetState extends State<ExtendSessionSheet>
                   'Charged to your personal account. '
                   'A session can run for up to ${widget.policy.maxTotalHours} hours in total.',
                   textAlign: TextAlign.center,
-                  style:
-                      TextStyle(color: const Color(0xFF6B7280), fontSize: 11.sp),
+                  style: TextStyle(
+                      color: const Color(0xFF6B7280), fontSize: 11.sp),
                 ),
               ),
             ],
@@ -343,8 +341,7 @@ class _ExtendSessionSheetState extends State<ExtendSessionSheet>
                             fontSize: 15.sp,
                             fontWeight: FontWeight.w600)),
                     SizedBox(height: 2.h),
-                    Text(
-                        '$currency ${perMinute.toStringAsFixed(2)} a minute',
+                    Text('$currency ${perMinute.toStringAsFixed(2)} a minute',
                         style: TextStyle(
                             color: const Color(0xFF6B7280), fontSize: 11.sp)),
                   ],
@@ -418,8 +415,7 @@ class _ExtendSessionSheetState extends State<ExtendSessionSheet>
               children: [
                 Text('${a.currency} ${a.balanceMajor.toStringAsFixed(0)}',
                     style: TextStyle(
-                        color:
-                            short ? const Color(0xFFEF4444) : Colors.white,
+                        color: short ? const Color(0xFFEF4444) : Colors.white,
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w700)),
                 if (short)

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:lazervault/core/utils/receipt_fonts.dart';
 import 'package:lazervault/core/utils/bill_receipt_status.dart';
 import 'package:lazervault/core/utils/receipt_download.dart';
 import 'package:flutter/services.dart';
@@ -69,7 +70,7 @@ class DataBundlesPdfService {
     required String planName,
   }) async {
     await _loadFonts();
-    final pdf = pw.Document();
+    final pdf = await ReceiptFonts.document();
     final logo = await _loadLogo();
     final generatedDate = _displayDateFormat.format(DateTime.now());
     // Follow the purchase's own currency. This was hardcoded to NGN, so an
@@ -116,7 +117,8 @@ class DataBundlesPdfService {
                     flex: 1,
                     child: _buildSummaryTable(
                       paymentDate: paymentDate,
-                      status: billReceiptStatusLabel(purchase.status, refundSource: purchase.refundSource),
+                      status: billReceiptStatusLabel(purchase.status,
+                          refundSource: purchase.refundSource),
                       receiptNumber: receiptNumber,
                     ),
                   ),
@@ -293,7 +295,8 @@ class DataBundlesPdfService {
               ),
               _buildDetailRow(
                 'Status',
-                billReceiptStatusLabel(purchase.status, refundSource: purchase.refundSource),
+                billReceiptStatusLabel(purchase.status,
+                    refundSource: purchase.refundSource),
               ),
             ],
           ),

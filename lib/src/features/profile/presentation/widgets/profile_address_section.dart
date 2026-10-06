@@ -107,8 +107,8 @@ class _ProfileAddressSectionState extends State<ProfileAddressSection> {
       maxLength: maxLength,
       textCapitalization: capitalization,
       onChanged: (_) => _emit(),
-      decoration: _decoration(label, hint: hint, icon: icon)
-          .copyWith(counterText: ''),
+      decoration:
+          _decoration(label, hint: hint, icon: icon).copyWith(counterText: ''),
     );
   }
 
@@ -146,8 +146,7 @@ class _ProfileAddressSectionState extends State<ProfileAddressSection> {
         _field(_line1, 'Address line 1',
             hint: 'Street and number', icon: Icons.location_on_outlined),
         SizedBox(height: 12.h),
-        _field(_line2, 'Address line 2',
-            hint: 'Apartment, suite (optional)'),
+        _field(_line2, 'Address line 2', hint: 'Apartment, suite (optional)'),
         SizedBox(height: 12.h),
         Row(
           children: [

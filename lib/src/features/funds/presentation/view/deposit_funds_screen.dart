@@ -2736,7 +2736,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
             // take a few minutes to reach NIBSS, so say "not yet", keep
             // polling, and above all do not tell them to pay again.
             Get.snackbar(
-              confirmed == null ? 'Could not check right now' : 'Not confirmed yet',
+              confirmed == null
+                  ? 'Could not check right now'
+                  : 'Not confirmed yet',
               confirmed == null
                   ? 'We could not reach your bank to check. Nothing was lost — '
                       'we keep checking in the background.'

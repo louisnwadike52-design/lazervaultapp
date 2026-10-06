@@ -424,8 +424,7 @@ class _BuyGiftCreditSheetState extends State<BuyGiftCreditSheet>
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                    '${widget.currency} ${_money(widget.accountBalanceMajor)}',
+                Text('${widget.currency} ${_money(widget.accountBalanceMajor)}',
                     style: TextStyle(
                         color: widget.accountBalanceMajor <= 0
                             ? const Color(0xFFEF4444)

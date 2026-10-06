@@ -133,7 +133,8 @@ class _VoiceQuotaSheetState extends State<_VoiceQuotaSheet> {
           SizedBox(height: 16.h),
           Row(
             children: [
-              Icon(Icons.graphic_eq, color: const Color(0xFF8B5CF6), size: 20.sp),
+              Icon(Icons.graphic_eq,
+                  color: const Color(0xFF8B5CF6), size: 20.sp),
               SizedBox(width: 8.w),
               Expanded(
                 child: Text(
@@ -159,8 +160,7 @@ class _VoiceQuotaSheetState extends State<_VoiceQuotaSheet> {
             child: Row(
               children: [
                 Expanded(
-                  child: _Stat(
-                      label: 'Used', value: '${info.usedMinutes} min'),
+                  child: _Stat(label: 'Used', value: '${info.usedMinutes} min'),
                 ),
                 Container(width: 1, height: 26.h, color: Colors.white12),
                 Expanded(
@@ -231,7 +231,8 @@ class _VoiceQuotaSheetState extends State<_VoiceQuotaSheet> {
           if (_error != null) ...[
             SizedBox(height: 10.h),
             Text(_error!,
-                style: TextStyle(color: const Color(0xFFFCA5A5), fontSize: 11.sp)),
+                style:
+                    TextStyle(color: const Color(0xFFFCA5A5), fontSize: 11.sp)),
           ],
           SizedBox(height: 18.h),
           if (info.needsPaygOptIn)
@@ -239,7 +240,8 @@ class _VoiceQuotaSheetState extends State<_VoiceQuotaSheet> {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: _busy ? null : () => Navigator.of(context).pop(false),
+                    onPressed:
+                        _busy ? null : () => Navigator.of(context).pop(false),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white70,
                       side: const BorderSide(color: Colors.white24),

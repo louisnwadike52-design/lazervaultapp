@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:lazervault/core/utils/receipt_fonts.dart';
 import 'dart:ui' show Rect;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -11,7 +12,7 @@ class ExchangePdfService {
   static Future<pw.Document> _generateReceiptPdf({
     required CurrencyTransaction transaction,
   }) async {
-    final pdf = pw.Document();
+    final pdf = await ReceiptFonts.document();
     final dateFormat = DateFormat('MMMM d, yyyy HH:mm:ss');
     final isConversion = transaction.type == TransactionType.exchange;
 

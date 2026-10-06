@@ -34,6 +34,7 @@ class SprayRoomState {
   /// countdown — people can keep spraying, and the host coming back cancels it.
   /// Collapsing the two would freeze a room that has not ended.
   final int? endingInSeconds;
+
   /// The platform's session-clock configuration.
   ///
   /// Defaults to DISABLED so a room renders no countdown until the policy has

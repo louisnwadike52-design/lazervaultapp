@@ -370,7 +370,9 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
       if (cubit.fromCurrency.toUpperCase() != home) {
         cubit.setCurrencyPair(
           home,
-          cubit.toCurrency.toUpperCase() == home ? cubit.fromCurrency : cubit.toCurrency,
+          cubit.toCurrency.toUpperCase() == home
+              ? cubit.fromCurrency
+              : cubit.toCurrency,
         );
         await _persistSourceCurrency(home);
         await _fetchRate();
@@ -1057,120 +1059,120 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                       const InternationalPayoutUnavailable(),
                       const SizedBox(height: 80),
                     ] else ...[
-                    const SizedBox(height: 20),
+                      const SizedBox(height: 20),
 
-                    // Currency pair selector
-                    CurrencyPairSelector(
-                      fromCurrency: cubit.fromCurrency,
-                      toCurrency: cubit.toCurrency,
-                      onFromTap: () => _showCurrencyPicker(true),
-                      onToTap: () => _showCurrencyPicker(false),
-                      onSwap: _onSwapCurrencies,
-                    ),
-                    const SizedBox(height: 20),
-
-                    // You send — amount input
-                    _buildAmountCard(
-                      label: 'You send',
-                      currencyCode: cubit.fromCurrency,
-                      controller: _amountController,
-                      focusNode: _amountFocusNode,
-                      isEditable: true,
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Quick amount buttons
-                    QuickAmountButtons(
-                      currencyCode: cubit.fromCurrency,
-                      onAmountSelected: _onQuickAmount,
-                      selectedAmount: amount,
-                    ),
-                    const SizedBox(height: 16),
-
-                    // They receive — read-only
-                    if (rate != null)
-                      _buildAmountCard(
-                        label: _mode == ExchangeMode.convert
-                            ? 'You receive'
-                            : 'They receive',
-                        currencyCode: cubit.toCurrency,
-                        displayAmount: convertedAmount,
-                        isEditable: false,
+                      // Currency pair selector
+                      CurrencyPairSelector(
+                        fromCurrency: cubit.fromCurrency,
+                        toCurrency: cubit.toCurrency,
+                        onFromTap: () => _showCurrencyPicker(true),
+                        onToTap: () => _showCurrencyPicker(false),
+                        onSwap: _onSwapCurrencies,
                       ),
-                    const SizedBox(height: 16),
+                      const SizedBox(height: 20),
 
-                    // Indicative rate chip — no countdown, no expiry. The final
-                    // rate is captured server-side at transaction time.
-                    if (rate != null) _buildIndicativeRateChip(rate),
-                    if (rate == null && amount > 0)
-                      Center(
-                        child: TextButton.icon(
-                          onPressed: _fetchRate,
-                          icon: const Icon(Icons.refresh,
-                              color: ExchangeTheme.primary, size: 16),
-                          label: const Text(
-                            'Get exchange rate',
-                            style: TextStyle(
-                                color: ExchangeTheme.primary, fontSize: 13),
+                      // You send — amount input
+                      _buildAmountCard(
+                        label: 'You send',
+                        currencyCode: cubit.fromCurrency,
+                        controller: _amountController,
+                        focusNode: _amountFocusNode,
+                        isEditable: true,
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Quick amount buttons
+                      QuickAmountButtons(
+                        currencyCode: cubit.fromCurrency,
+                        onAmountSelected: _onQuickAmount,
+                        selectedAmount: amount,
+                      ),
+                      const SizedBox(height: 16),
+
+                      // They receive — read-only
+                      if (rate != null)
+                        _buildAmountCard(
+                          label: _mode == ExchangeMode.convert
+                              ? 'You receive'
+                              : 'They receive',
+                          currencyCode: cubit.toCurrency,
+                          displayAmount: convertedAmount,
+                          isEditable: false,
+                        ),
+                      const SizedBox(height: 16),
+
+                      // Indicative rate chip — no countdown, no expiry. The final
+                      // rate is captured server-side at transaction time.
+                      if (rate != null) _buildIndicativeRateChip(rate),
+                      if (rate == null && amount > 0)
+                        Center(
+                          child: TextButton.icon(
+                            onPressed: _fetchRate,
+                            icon: const Icon(Icons.refresh,
+                                color: ExchangeTheme.primary, size: 16),
+                            label: const Text(
+                              'Get exchange rate',
+                              style: TextStyle(
+                                  color: ExchangeTheme.primary, fontSize: 13),
+                            ),
                           ),
                         ),
-                      ),
-                    const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
-                    // Fee breakdown
-                    if (rate != null && amount > 0)
-                      FeeBreakdownWidget(
-                        rate: rate,
-                        amount: amount,
-                        convertedAmount: convertedAmount,
-                      ),
-                    const SizedBox(height: 24),
+                      // Fee breakdown
+                      if (rate != null && amount > 0)
+                        FeeBreakdownWidget(
+                          rate: rate,
+                          amount: amount,
+                          convertedAmount: convertedAmount,
+                        ),
+                      const SizedBox(height: 24),
 
-                    // Fee-paid history preview — last 3 completed exchanges
-                    // of the active tab. Conversion tab shows only same-
-                    // user wallet conversions; Send Abroad tab shows only
-                    // cross-border Flutterwave transfers. Legacy
-                    // TransactionType.exchange rows (pre-dating the split)
-                    // surface on both tabs so nothing disappears.
-                    () {
-                      final isConversion = _mode == ExchangeMode.convert;
-                      final visibleRecent = state.recentTransactions
-                          .where((tx) =>
-                              tx.type.matchesMode(isConversion: isConversion))
-                          .take(3)
-                          .toList();
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildSectionHeader(
-                            'Recent ${isConversion ? 'Conversions' : 'International Transfers'}',
-                            visibleRecent.isNotEmpty
-                                ? () => Get.toNamed(AppRoutes.exchangeHistory)
-                                : null,
-                          ),
-                          const SizedBox(height: 12),
-                          if (visibleRecent.isEmpty)
-                            _buildEmptyTransactions()
-                          else
-                            ...visibleRecent.map((tx) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 8),
-                                  child: ExchangeTransactionTile(
-                                    transaction: tx,
-                                    // Open the actions bottom sheet (View /
-                                    // Repeat / Share / Report) just like the
-                                    // history screen. Going straight to the
-                                    // detail page skipped those actions for
-                                    // no good reason.
-                                    onTap: () =>
-                                        ExchangeHistoryActionsSheet.show(
-                                            context, tx),
-                                  ),
-                                )),
-                        ],
-                      );
-                    }(),
-                    // Bottom padding for scroll
-                    const SizedBox(height: 80),
+                      // Fee-paid history preview — last 3 completed exchanges
+                      // of the active tab. Conversion tab shows only same-
+                      // user wallet conversions; Send Abroad tab shows only
+                      // cross-border Flutterwave transfers. Legacy
+                      // TransactionType.exchange rows (pre-dating the split)
+                      // surface on both tabs so nothing disappears.
+                      () {
+                        final isConversion = _mode == ExchangeMode.convert;
+                        final visibleRecent = state.recentTransactions
+                            .where((tx) =>
+                                tx.type.matchesMode(isConversion: isConversion))
+                            .take(3)
+                            .toList();
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildSectionHeader(
+                              'Recent ${isConversion ? 'Conversions' : 'International Transfers'}',
+                              visibleRecent.isNotEmpty
+                                  ? () => Get.toNamed(AppRoutes.exchangeHistory)
+                                  : null,
+                            ),
+                            const SizedBox(height: 12),
+                            if (visibleRecent.isEmpty)
+                              _buildEmptyTransactions()
+                            else
+                              ...visibleRecent.map((tx) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: ExchangeTransactionTile(
+                                      transaction: tx,
+                                      // Open the actions bottom sheet (View /
+                                      // Repeat / Share / Report) just like the
+                                      // history screen. Going straight to the
+                                      // detail page skipped those actions for
+                                      // no good reason.
+                                      onTap: () =>
+                                          ExchangeHistoryActionsSheet.show(
+                                              context, tx),
+                                    ),
+                                  )),
+                          ],
+                        );
+                      }(),
+                      // Bottom padding for scroll
+                      const SizedBox(height: 80),
                     ],
                   ],
                 ),
@@ -1207,30 +1209,31 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                         ),
                       )
                     : ElevatedButton(
-                  onPressed: (canProceed && !_isPrimaryActionInProgress)
-                      ? _onPrimaryAction
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ExchangeTheme.primary,
-                    disabledBackgroundColor: ExchangeTheme.surfaceElevated,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: _isPrimaryActionInProgress
-                      ? const SizedBox(
-                          height: 22,
-                          width: 22,
-                          child: LazerVaultLoader.small())
-                      : Text(
-                          bottomAction.label,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        onPressed: (canProceed && !_isPrimaryActionInProgress)
+                            ? _onPrimaryAction
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ExchangeTheme.primary,
+                          disabledBackgroundColor:
+                              ExchangeTheme.surfaceElevated,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
-                ),
+                        child: _isPrimaryActionInProgress
+                            ? const SizedBox(
+                                height: 22,
+                                width: 22,
+                                child: LazerVaultLoader.small())
+                            : Text(
+                                bottomAction.label,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                      ),
               ),
             ),
           ),

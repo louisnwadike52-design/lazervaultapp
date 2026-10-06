@@ -84,8 +84,7 @@ extension _StatementExportPanelWidgets on _StatementExportPanelState {
             height: 56.h,
             child: Center(
               child: Text('No accounts available',
-                  style:
-                      GoogleFonts.inter(fontSize: 14.sp, color: _mutedText)),
+                  style: GoogleFonts.inter(fontSize: 14.sp, color: _mutedText)),
             ),
           );
         }
@@ -115,8 +114,7 @@ extension _StatementExportPanelWidgets on _StatementExportPanelState {
               value: value,
               dropdownColor: _dark ? const Color(0xFF1F1F1F) : Colors.white,
               hint: Text('Choose an account',
-                  style:
-                      GoogleFonts.inter(fontSize: 14.sp, color: _mutedText)),
+                  style: GoogleFonts.inter(fontSize: 14.sp, color: _mutedText)),
               padding: EdgeInsets.symmetric(vertical: 4.h),
               icon: Icon(Icons.keyboard_arrow_down, color: _brand),
               items: [
@@ -144,7 +142,8 @@ extension _StatementExportPanelWidgets on _StatementExportPanelState {
       height: 56.h,
       child: Row(
         children: [
-          Icon(Icons.account_balance_wallet_outlined, size: 18.sp, color: _brand),
+          Icon(Icons.account_balance_wallet_outlined,
+              size: 18.sp, color: _brand),
           SizedBox(width: 12.w),
           Expanded(
             child: Text(
@@ -196,7 +195,8 @@ extension _StatementExportPanelWidgets on _StatementExportPanelState {
     // Clamp: showDatePicker asserts when initialDate falls outside the bounds,
     // which happens whenever the user narrows one end past the other.
     final seed = initial ?? last;
-    final safe = seed.isBefore(first) ? first : (seed.isAfter(last) ? last : seed);
+    final safe =
+        seed.isBefore(first) ? first : (seed.isAfter(last) ? last : seed);
     return showDatePicker(
       context: context,
       initialDate: safe,
@@ -205,7 +205,8 @@ extension _StatementExportPanelWidgets on _StatementExportPanelState {
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
           colorScheme: _dark
-              ? ColorScheme.dark(primary: _brand, surface: const Color(0xFF1F1F1F))
+              ? ColorScheme.dark(
+                  primary: _brand, surface: const Color(0xFF1F1F1F))
               : ColorScheme.light(primary: _brand),
         ),
         child: child!,

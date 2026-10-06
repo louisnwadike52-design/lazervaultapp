@@ -65,7 +65,8 @@ class DirectPayAuthResult {
 
   /// The flow ended with no verdict of its own — the caller MUST confirm with
   /// the provider before telling the user anything.
-  factory DirectPayAuthResult.unverified({String? paymentId, String? reference}) {
+  factory DirectPayAuthResult.unverified(
+      {String? paymentId, String? reference}) {
     return DirectPayAuthResult(
       success: false,
       unverified: true,

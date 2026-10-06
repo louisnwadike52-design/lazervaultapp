@@ -1,4 +1,3 @@
-
 part of 'p2p_transfer_bubble.dart';
 
 /// Stateful button that async-resolves the recipient before navigating.

@@ -115,8 +115,8 @@ class FamilyReceiptPdfService {
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Text('FAMILY ACCOUNT',
-                          style: _style(
-                              fontSize: 10, color: PdfColors.grey600)),
+                          style:
+                              _style(fontSize: 10, color: PdfColors.grey600)),
                       pw.SizedBox(height: 4),
                       pw.Text(
                         familyName.trim().isEmpty
@@ -126,8 +126,8 @@ class FamilyReceiptPdfService {
                       ),
                       pw.SizedBox(height: 12),
                       pw.Text('MEMBER',
-                          style: _style(
-                              fontSize: 10, color: PdfColors.grey600)),
+                          style:
+                              _style(fontSize: 10, color: PdfColors.grey600)),
                       pw.SizedBox(height: 4),
                       pw.Text(_orMissing(memberName),
                           style: _style(fontSize: 12)),
@@ -206,8 +206,7 @@ class FamilyReceiptPdfService {
       child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
-          pw.Text(label,
-              style: _style(fontSize: 11, color: PdfColors.grey700)),
+          pw.Text(label, style: _style(fontSize: 11, color: PdfColors.grey700)),
           pw.Text(value, style: _style(fontSize: 11)),
         ],
       ),
@@ -230,9 +229,7 @@ class FamilyReceiptPdfService {
           pw.SizedBox(height: 8),
           pw.Text(amountStr,
               style: _style(fontSize: 30, isBold: true).copyWith(
-                  color: isCredit
-                      ? PdfColors.green800
-                      : PdfColors.grey900)),
+                  color: isCredit ? PdfColors.green800 : PdfColors.grey900)),
         ],
       ),
     );
@@ -323,7 +320,8 @@ class FamilyReceiptPdfService {
             pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
-                pw.Text('(C) ${DateTime.now().year} Lazervault Technologies Ltd',
+                pw.Text(
+                    '(C) ${DateTime.now().year} Lazervault Technologies Ltd',
                     style: _style(fontSize: 9, color: PdfColors.grey600)),
                 pw.SizedBox(height: 2),
                 pw.Text('Page 1 of 1',

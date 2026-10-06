@@ -108,7 +108,8 @@ class InternetBillPdfService {
                     flex: 1,
                     child: _buildSummaryTable(
                       paymentDate: paymentDate,
-                      status: billReceiptStatusLabel(payment.status, refundSource: payment.refundSource),
+                      status: billReceiptStatusLabel(payment.status,
+                          refundSource: payment.refundSource),
                       receiptNumber: receiptNumber,
                     ),
                   ),
@@ -274,7 +275,8 @@ class InternetBillPdfService {
               ),
               _buildDetailRow(
                 'Status',
-                billReceiptStatusLabel(payment.status, refundSource: payment.refundSource),
+                billReceiptStatusLabel(payment.status,
+                    refundSource: payment.refundSource),
               ),
             ],
           ),

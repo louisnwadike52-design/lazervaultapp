@@ -31,7 +31,8 @@ class PostalAddress extends Equatable {
   /// is still better than a blank space.
   bool get isSet => line1.trim().isNotEmpty;
 
-  bool get isBlank => line1.trim().isEmpty &&
+  bool get isBlank =>
+      line1.trim().isEmpty &&
       line2.trim().isEmpty &&
       city.trim().isEmpty &&
       state.trim().isEmpty &&

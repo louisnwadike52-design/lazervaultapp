@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:lazervault/core/utils/receipt_fonts.dart';
 
 import 'package:flutter/material.dart' show Rect;
 import 'package:flutter/services.dart' show rootBundle;
@@ -138,7 +139,7 @@ class IntlDataPdfService {
   static Future<File> generateReceipt(IntlDataReceiptData data) async {
     await _loadFonts();
     final logo = await _loadLogo();
-    final pdf = pw.Document();
+    final pdf = await ReceiptFonts.document();
 
     pdf.addPage(
       pw.Page(

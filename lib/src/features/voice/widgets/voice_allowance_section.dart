@@ -143,13 +143,15 @@ class _VoiceAllowanceSectionState extends State<VoiceAllowanceSection> {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
           decoration: BoxDecoration(
-            color: widget.dark ? const Color(0xFF2A2A2A) : const Color(0xFFF4F4F5),
+            color:
+                widget.dark ? const Color(0xFF2A2A2A) : const Color(0xFFF4F4F5),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
             children: [
               Expanded(child: _stat('Used this month', '$used min', fg, muted)),
-              Container(width: 1, height: 26.h, color: muted.withValues(alpha: 0.3)),
+              Container(
+                  width: 1, height: 26.h, color: muted.withValues(alpha: 0.3)),
               Expanded(
                 child: _stat(
                   free > 0 ? 'Remaining' : 'Included',
@@ -181,7 +183,8 @@ class _VoiceAllowanceSectionState extends State<VoiceAllowanceSection> {
                               'charged on what you actually use.'
                           : 'Off — conversations stop once your included '
                               'minutes are used.',
-                      style: TextStyle(color: muted, fontSize: 11.sp, height: 1.4),
+                      style:
+                          TextStyle(color: muted, fontSize: 11.sp, height: 1.4),
                     ),
                   ],
                 ),
@@ -191,7 +194,8 @@ class _VoiceAllowanceSectionState extends State<VoiceAllowanceSection> {
                 SizedBox(
                   height: 16.h,
                   width: 16.h,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: muted),
+                  child:
+                      CircularProgressIndicator(strokeWidth: 2, color: muted),
                 )
               else
                 Switch(
@@ -205,7 +209,8 @@ class _VoiceAllowanceSectionState extends State<VoiceAllowanceSection> {
         if (_error != null) ...[
           SizedBox(height: 8.h),
           Text(_error!,
-              style: TextStyle(color: const Color(0xFFFCA5A5), fontSize: 11.sp)),
+              style:
+                  TextStyle(color: const Color(0xFFFCA5A5), fontSize: 11.sp)),
         ],
       ],
     );

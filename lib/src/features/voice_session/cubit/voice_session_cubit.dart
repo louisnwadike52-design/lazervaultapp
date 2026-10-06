@@ -992,8 +992,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     final svc = (serviceName ?? '').trim();
     if (svc.isEmpty) return;
     try {
-      final saved =
-          await SharedPrefsPerServiceVoiceSettingsStorage().read(svc);
+      final saved = await SharedPrefsPerServiceVoiceSettingsStorage().read(svc);
       if (saved == null || !saved.isConfigured) return;
 
       final lang = saved.languageCode;
@@ -3469,8 +3468,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         headers: {'Authorization': 'Bearer $token'},
       ).timeout(const Duration(seconds: 10));
       if (response.statusCode != 200) {
-        print(
-            'VoiceSessionCubit: billing status HTTP ${response.statusCode}');
+        print('VoiceSessionCubit: billing status HTTP ${response.statusCode}');
         return null;
       }
       return jsonDecode(response.body) as Map<String, dynamic>;

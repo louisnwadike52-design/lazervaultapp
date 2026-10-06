@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/utils/receipt_fonts.dart';
 import 'dart:io';
 
 import 'package:csv/csv.dart';
@@ -978,7 +979,7 @@ class _AiChatContentState extends State<AiChatContent>
   /// A simple, readable PDF: a title page header then one block per message.
   Future<List<int>> _buildTranscriptPdf(
       List<ChatMessageEntity> messages) async {
-    final doc = pw.Document();
+    final doc = await ReceiptFonts.document();
     final fmt = DateFormat('yyyy-MM-dd HH:mm');
     doc.addPage(
       pw.MultiPage(

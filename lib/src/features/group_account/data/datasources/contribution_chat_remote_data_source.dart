@@ -248,7 +248,6 @@ class ContributionChatRemoteDataSource {
     return endpointRegistry.httpFinancialRoot;
   }
 
-
   Map<String, String> _headers(String token) => {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',

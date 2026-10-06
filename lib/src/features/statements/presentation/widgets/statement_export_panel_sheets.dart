@@ -133,14 +133,12 @@ extension _StatementExportPanelSheets on _StatementExportPanelState {
                   Row(
                     children: [
                       dateField('Start', start, () async {
-                        final d =
-                            await _pickDay(start, earliest, end ?? now);
+                        final d = await _pickDay(start, earliest, end ?? now);
                         if (d != null) setSheet(() => start = d);
                       }),
                       SizedBox(width: 12.w),
                       dateField('End', end, () async {
-                        final d =
-                            await _pickDay(end, start ?? earliest, now);
+                        final d = await _pickDay(end, start ?? earliest, now);
                         if (d != null) setSheet(() => end = d);
                       }),
                     ],
@@ -221,10 +219,8 @@ extension _StatementExportPanelSheets on _StatementExportPanelState {
                     color: _brand.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
-                  child: Icon(
-                      _StatementExportPanelState._iconFor(entry.format),
-                      color: _brand,
-                      size: 20.sp),
+                  child: Icon(_StatementExportPanelState._iconFor(entry.format),
+                      color: _brand, size: 20.sp),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
@@ -298,8 +294,8 @@ extension _StatementExportPanelSheets on _StatementExportPanelState {
               SizedBox(height: 8.h),
               ListTile(
                 leading: Icon(Icons.open_in_new, color: _brand),
-                title: Text('Open',
-                    style: GoogleFonts.inter(color: _primaryText)),
+                title:
+                    Text('Open', style: GoogleFonts.inter(color: _primaryText)),
                 onTap: () {
                   Navigator.pop(sheetCtx);
                   _openFile(path);

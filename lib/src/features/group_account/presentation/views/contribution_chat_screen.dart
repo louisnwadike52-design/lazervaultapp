@@ -988,7 +988,8 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
     final resolved = _resolveMediaUrl(url);
     // Hero tag must be stable and unique per message so two images in the same
     // conversation cannot animate into each other.
-    final heroTag = 'contribution-media-${m.id.isNotEmpty ? m.id : m.clientMessageId}';
+    final heroTag =
+        'contribution-media-${m.id.isNotEmpty ? m.id : m.clientMessageId}';
 
     return GestureDetector(
       // Tap to view full screen. The bubble previously had only a long-press
