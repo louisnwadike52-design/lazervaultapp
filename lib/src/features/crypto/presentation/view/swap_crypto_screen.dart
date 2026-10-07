@@ -1830,7 +1830,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
       description: 'Convert ${fromAmount.toStringAsFixed(6)} '
           '${fromSymbol.toUpperCase()} → ${toSymbol.toUpperCase()}',
       clientIntentId: intentId,
-      requestPin: (onValidated) async {
+      requestPin: (onValidated, quoted) async {
         return await validateTransactionPin(
           context: context,
           transactionId: intentId,

@@ -85,8 +85,21 @@ Future<SwapFlowResult> runSwapFlow({
   // validated and onValidated ran; false on cancel/failure. The quote is shown
   // first, then the PIN; the token is minted right before ConfirmSwap so it
   // can't expire during the quote countdown.
-  Future<bool> Function(Future<void> Function(String token) onValidated)?
-      requestPin,
+  //
+  // `quoted` is the SERVER's locked quote, already reduced to pay / receive /
+  // fee by CryptoTradeAmounts. The PIN sheet must authorise THAT, not the
+  // caller's estimate.
+  //
+  // It is passed in because the quote lives on an ISOLATED cubit (see the
+  // GetIt.I<CryptoCubit>() below, deliberately not the sheet's). Callers that
+  // tried to read it themselves read their OWN cubit, which never sees
+  // SwapQuotePending, silently fell back to the local estimate, and asked the
+  // user to approve a number that differed from the debit — ₦2,722.79 on a PIN
+  // sheet for a trade the confirm sheet had just quoted at ₦2,776.16.
+  Future<bool> Function(
+    Future<void> Function(String token) onValidated,
+    CryptoTradeAmounts quoted,
+  )? requestPin,
   // Called AFTER the trade confirms and the running cubit is captured, but
   // BEFORE navigating to the processing/receipt screen. Callers launched from a
   // modal (e.g. the sell bottom sheet) use this to dismiss their sheet so the
@@ -315,10 +328,24 @@ Future<SwapFlowResult> runSwapFlow({
       // confirmSwapQuote executes WHILE the PIN spinner shows and the terminal
       // swap state is emitted before the sheet closes — captured by swapOutcome.
       onConfirm: () async {
+        // Re-read the quote AT CONFIRM TIME, not when the sheet opened: the
+        // 15s timer auto-refreshes, so the figure the user is about to
+        // approve is the latest one, not the first.
+        final st = cubit.state;
+        final quoted = st is SwapQuotePending
+            ? CryptoTradeAmounts.fromQuote(
+                fromCurrency: st.fromCurrency,
+                toCurrency: st.toCurrency,
+                fromAmount: st.fromAmount,
+                toAmount: st.toAmount,
+                spreadMinorUnits: st.spreadMinorUnits,
+              )
+            : const CryptoTradeAmounts(
+                pay: 0, receive: 0, feeInFiat: 0, feeCurrency: '');
         await requestPin?.call((token) async {
           confirmAttempted = true;
           await cubit.confirmSwapQuote(transactionPin: token);
-        });
+        }, quoted);
       },
     );
     if (!context.mounted) return const SwapFlowResult.initiated();

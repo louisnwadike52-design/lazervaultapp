@@ -23,6 +23,7 @@ import '../widgets/price_quote_card.dart';
 import '../widgets/crypto_flow_guidance.dart';
 import 'swap_flow_dispatcher.dart';
 import '../../domain/trade_precision.dart';
+import 'package:lazervault/src/features/crypto/domain/trade_amounts.dart';
 
 /// Streamlined SELL bottom sheet.
 ///
@@ -171,14 +172,47 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
   /// Estimated Lazervault sell fee for the current amount, honoring the admin's
   /// percentage/fixed config (crypto.fee.sell.*). Falls back to the flat display
   /// rate before the config RPC lands.
-  double _resolveFee() {
+  /// The platform fee for an arbitrary fiat gross.
+  ///
+  /// Taken as a function rather than read inline so CryptoTradeAmounts.estimate
+  /// can price a hypothetical amount with the SAME rules the real fee uses —
+  /// a cap or a floor applies at the amount being priced, not at whatever is
+  /// currently typed.
+  double _feeForFiat(double fiatGross) {
     try {
       return GetIt.I<CryptoConfigCubit>()
           .config
-          .feeForOp('sell', _fiatAmount, CurrencySymbols.currentCurrency);
+          .feeForOp('sell', fiatGross, CurrencySymbols.currentCurrency);
     } catch (_) {
-      return _fiatAmount * _feeDisplayRate();
+      return fiatGross * _feeDisplayRate();
     }
+  }
+
+  /// THE trade, priced once: gross, our fee, the net proceeds, and the all-in
+  /// unit rate the headline must show.
+  ///
+  /// Each figure used to be derived separately and they disagreed on screen:
+  /// "1 USDC ≈ ₦1,346" at the top, "≈ ₦1345.56" under the amount field, and
+  /// "You receive ₦1,342.20" below that — three numbers for one sale of 1
+  /// USDC, because only the last one subtracted our fee.
+  CryptoTradeAmounts get _amounts => CryptoTradeAmounts.estimate(
+        isBuy: false,
+        fiatCurrency: CurrencySymbols.currentCurrency,
+        executableRate: _price(),
+        assetQuantity: _cryptoAmount,
+        feeForFiatAmount: _feeForFiat,
+      );
+
+  /// What actually lands in the wallet: gross less our fee.
+  double get _netProceeds => _amounts.receive;
+
+  /// What one unit yields INCLUSIVE of our fee — the only rate the user can
+  /// reconcile against the proceeds directly beneath it.
+  double _displayRate() {
+    final qty = _cryptoAmount;
+    if (qty <= 0) return _price();
+    final allIn = _amounts.allInRateFor(qty);
+    return allIn > 0 ? allIn : _price();
   }
 
   /// Resolve the user's holding for this crypto from the latest cubit state,
@@ -397,6 +431,10 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
                         setState(() => _swapMargin = m);
                       }
                     },
+                    // The headline must be the rate the PROCEEDS below imply,
+                    // fee included — otherwise the two numbers on one screen
+                    // cannot be reconciled.
+                    allInRate: _cryptoAmount > 0 ? _displayRate() : null,
                   ),
                   SizedBox(height: 20.h),
                   _buildAmountField(h),
@@ -569,9 +607,12 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
     final altLabel = _isAmountInCrypto
         ? CurrencySymbols.currentCurrency.toUpperCase()
         : widget.crypto.symbol.toUpperCase();
-    // The ≈ conversion line shows the opposite unit.
+    // The ≈ conversion line shows the opposite unit — NET of our fee, which
+    // is what "You receive" below says and what actually lands. It used to
+    // show the gross (₦1,345.56 against proceeds of ₦1,342.20), making three
+    // different figures for one sale visible at once.
     final approx = _isAmountInCrypto
-        ? '≈ ${CurrencySymbols.currentSymbol}${_fiatAmount.toStringAsFixed(2)}'
+        ? '≈ ${CurrencySymbols.currentSymbol}${_netProceeds.toStringAsFixed(2)}'
         : '≈ ${_trimNum(_cryptoAmount)} ${widget.crypto.symbol.toUpperCase()}';
     final hasError = _amountError() != null;
 
@@ -840,8 +881,7 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
   }
 
   Widget _buildOrderSummary() {
-    final fee = _resolveFee();
-    final net = _fiatAmount - fee;
+    final net = _netProceeds;
     final sym = CurrencySymbols.currentSymbol;
     Widget row(String l, String r, {bool bold = false}) => Padding(
           padding: EdgeInsets.symmetric(vertical: 4.h),
@@ -919,8 +959,7 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
     final h = _holding;
     if (h == null || !_hasValidAmount || _isTransacting) return;
 
-    final fee = _resolveFee();
-    final netProceeds = _fiatAmount - fee;
+    final netProceeds = _netProceeds;
     final quantity = _cryptoAmount;
     final intentId = 'CRYPTO-SELL-${DateTime.now().millisecondsSinceEpoch}';
     // Capture the running cubit before the sheet closes — after
@@ -952,18 +991,27 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
           Navigator.of(context).pop();
         }
       },
-      requestPin: (onValidated) async {
+      requestPin: (onValidated, quoted) async {
+        // Authorise the SERVER's locked quote, which runSwapFlow hands in.
+        //
+        // Reading it from a cubit here does not work: the quote lives on an
+        // isolated CryptoCubit inside runSwapFlow, so a local read silently
+        // fell back to the on-screen estimate and asked the user to approve a
+        // number that differed from the debit. `quoted` has no such gap —
+        // it is re-read at confirm time, after the 15s timer's last refresh.
+        //
+        // The local estimate stays as the fallback for the (shouldn't happen)
+        // case where the quote state was lost between confirm and PIN.
         return await validateTransactionPin(
           context: context,
           transactionId: intentId,
           transactionType: 'sell',
-          amount: netProceeds,
+          amount: quoted.receive > 0 ? quoted.receive : netProceeds,
           currency: CurrencySymbols.currentCurrency,
           title: 'Confirm Sell Order',
           message:
               'Confirm sale of ${_trimNum(quantity)} ${h.cryptoSymbol.toUpperCase()}',
-          fee: fee,
-          totalAmount: netProceeds,
+          totalAmount: quoted.receive > 0 ? quoted.receive : netProceeds,
           showProcessingPhase: true,
           successMessage: 'Order Placed',
           onPinValidated: (verificationToken) => onValidated(verificationToken),

@@ -24,7 +24,8 @@ class CryptoTradeAmounts {
     required this.receive,
     required this.feeInFiat,
     required this.feeCurrency,
-  });
+    bool payLegIsFiat = true,
+  }) : _payLegIsFiat = payLegIsFiat;
 
   /// What leaves the user, inclusive of our fee when the pay leg is fiat.
   final double pay;
@@ -83,6 +84,7 @@ class CryptoTradeAmounts {
         receive: net > 0 ? net : 0,
         feeInFiat: fee,
         feeCurrency: toCurrency,
+        payLegIsFiat: false,
       );
     }
     if (isFiat(fromCurrency)) {
@@ -92,6 +94,7 @@ class CryptoTradeAmounts {
         receive: to,
         feeInFiat: fee,
         feeCurrency: fromCurrency,
+        payLegIsFiat: true,
       );
     }
     // Crypto → crypto has no fiat leg, so there is no fiat-denominated fee to
@@ -101,6 +104,90 @@ class CryptoTradeAmounts {
       receive: to,
       feeInFiat: 0,
       feeCurrency: '',
+    );
+  }
+
+  /// The ALL-IN unit rate: what one unit of the asset costs or yields once our
+  /// fee is included.
+  ///
+  /// This is the figure a headline rate must show. The buy sheet used to print
+  /// the pre-fee rate at the top and a fee-inclusive total at the bottom —
+  /// "1 USDT ≈ ₦1,376" above "You pay ₦4,138.71" for 3 USDT, which works out
+  /// at ₦1,379.57 each. Two rates on one screen, neither wrong on its own, and
+  /// no way for the user to reconcile them.
+  ///
+  /// Derived from the TOTAL rather than by scaling the rate, so it stays exact
+  /// under every fee shape the admin console can configure — percentage,
+  /// percentage-with-cap, floor, or a flat fee. Scaling would only be right
+  /// for an uncapped percentage.
+  double allInRateFor(double quantity) {
+    if (quantity <= 0) return 0;
+    // For a buy the fiat leg is what the user PAYS; for a sell it is what they
+    // RECEIVE. Either way the all-in rate is the fiat side over the asset
+    // side, which is exactly what the receipt will later print.
+    final fiatSide = _payLegIsFiat ? pay : receive;
+    if (fiatSide <= 0) return 0;
+    return fiatSide / quantity;
+  }
+
+  /// Set by the factories: which leg carried the fiat.
+  final bool _payLegIsFiat;
+
+  /// A PRE-QUOTE estimate, built from the executable rate and the admin fee
+  /// rules — the same shape [CryptoTradeAmounts.fromQuote] returns once the
+  /// server has locked a price.
+  ///
+  /// Exists so the amount sheet, the headline rate and the affordability check
+  /// stop each deriving their own. They disagreed in both directions: the rate
+  /// chip applied the swap margin while the totals did not, and the totals
+  /// added our fee while the rate chip did not.
+  ///
+  /// [executableRate] is fiat per 1 unit of the asset, AS A TRADE IN THIS
+  /// DIRECTION WILL FILL — not the market mid. GetCryptoFiatRate returns the
+  /// mid and the measured spread such that `mid * (1 ± spread)` reproduces
+  /// each side's fill rate exactly; apply that before calling this.
+  ///
+  /// [feeForFiatAmount] resolves the platform fee for a fiat subtotal, honouring
+  /// the admin's percentage / cap / floor / fixed configuration. Passed in
+  /// rather than read here so this stays a pure function.
+  factory CryptoTradeAmounts.estimate({
+    required bool isBuy,
+    required String fiatCurrency,
+    required double executableRate,
+    required double assetQuantity,
+    required double Function(double fiatSubtotal) feeForFiatAmount,
+  }) {
+    if (executableRate <= 0 || assetQuantity <= 0) {
+      return CryptoTradeAmounts(
+        pay: 0,
+        receive: 0,
+        feeInFiat: 0,
+        feeCurrency: fiatCurrency,
+        payLegIsFiat: isBuy,
+      );
+    }
+    final subtotal = assetQuantity * executableRate;
+    final fee = feeForFiatAmount(subtotal);
+    if (isBuy) {
+      // Charged ON TOP, matching swap_saga_confirm's hold of
+      // from_amount_minor + FeeMinorForOp(...).
+      return CryptoTradeAmounts(
+        pay: subtotal + fee,
+        receive: assetQuantity,
+        feeInFiat: fee,
+        feeCurrency: fiatCurrency,
+        payLegIsFiat: true,
+      );
+    }
+    // Sell: deducted from the proceeds, matching the settlement processor's
+    // netUserMinor = grossMinor - spreadMinor.
+    final net = subtotal - fee;
+    return CryptoTradeAmounts(
+      pay: assetQuantity,
+      receive: net > 0 ? net : 0,
+      feeInFiat: fee,
+      feeCurrency: fiatCurrency,
+      payLegIsFiat: false,
     );
   }
 }

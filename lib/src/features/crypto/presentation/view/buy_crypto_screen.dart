@@ -1921,18 +1921,27 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
       description:
           'Buy ${quantity.toStringAsFixed(6)} ${_selectedCrypto!.symbol.toUpperCase()}',
       clientIntentId: intentId,
-      requestPin: (onValidated) async {
+      requestPin: (onValidated, quoted) async {
+        // Authorise the SERVER's locked quote, which runSwapFlow hands in.
+        //
+        // Reading it from a cubit here does not work: the quote lives on an
+        // isolated CryptoCubit inside runSwapFlow, so a local read silently
+        // fell back to the on-screen estimate and asked the user to approve a
+        // number that differed from the debit. `quoted` has no such gap —
+        // it is re-read at confirm time, after the 15s timer's last refresh.
+        //
+        // The local estimate stays as the fallback for the (shouldn't happen)
+        // case where the quote state was lost between confirm and PIN.
         return await validateTransactionPin(
           context: context,
           transactionId: intentId,
           transactionType: 'buy',
-          amount: fiat,
+          amount: quoted.pay > 0 ? quoted.pay : total,
           currency: CurrencySymbols.currentCurrency,
           title: 'Confirm Buy Order',
           message:
               'Confirm purchase of ${quantity.toStringAsFixed(6)} ${_selectedCrypto!.symbol.toUpperCase()}',
-          fee: fee,
-          totalAmount: total,
+          totalAmount: quoted.pay > 0 ? quoted.pay : total,
           showProcessingPhase: true,
           successMessage: 'Order Placed',
           onPinValidated: (verificationToken) => onValidated(verificationToken),

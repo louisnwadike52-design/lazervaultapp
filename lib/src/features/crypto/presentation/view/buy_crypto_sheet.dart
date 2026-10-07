@@ -14,7 +14,6 @@ import '../../../account_cards_summary/domain/entities/account_summary_entity.da
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../../cubit/crypto_config_cubit.dart';
-import '../../cubit/crypto_state.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../domain/entities/crypto_entity.dart';
 import '../../domain/trade_amounts.dart';
@@ -109,22 +108,7 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
     } catch (_) {}
   }
 
-  /// The all-in fiat total from the SERVER's locked quote, or null when no
-  /// quote is in state. Uses the same CryptoTradeAmounts derivation the
-  /// confirm card renders, so the PIN prompt and the confirm card can never
-  /// disagree about what the user is approving.
-  double? _quotedPayTotal(CryptoCubit cubit) {
-    final st = cubit.state;
-    if (st is! SwapQuotePending) return null;
-    final amounts = CryptoTradeAmounts.fromQuote(
-      fromCurrency: st.fromCurrency,
-      toCurrency: st.toCurrency,
-      fromAmount: st.fromAmount,
-      toAmount: st.toAmount,
-      spreadMinorUnits: st.spreadMinorUnits,
-    );
-    return amounts.pay > 0 ? amounts.pay : null;
-  }
+
 
   /// Quidax minimum order value for this token, in fiat major units (per-token
   /// from GET /markets minimum_order_size, currency floor fallback). 0=unknown.
@@ -207,7 +191,7 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
     }
     // The backend charges the platform fee ON TOP of the subtotal (holds
     // subtotal + fee), so the wallet must cover the TOTAL, not just the subtotal.
-    if (_fiatAmount + _resolveFee() > available) {
+    if (_payTotal > available) {
       // The affordable maximum must solve maxFiat + fee(maxFiat) = available —
       // subtracting the fee of the CURRENTLY TYPED (over-budget) amount
       // massively understated it (a ₦2.6M attempt's ₦13k fee shrank a ₦19.8k
@@ -510,14 +494,58 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
   /// Estimated Lazervault buy fee for the current amount, honoring the admin's
   /// percentage/fixed config (crypto.fee.buy.*). Falls back to the flat display
   /// rate before the config RPC lands.
-  double _resolveFee() {
+  double _resolveFee() => _feeForFiat(_fiatAmount);
+
+  /// The platform fee for an arbitrary fiat subtotal.
+  ///
+  /// Taken as a function rather than read inline so CryptoTradeAmounts.estimate
+  /// can price a hypothetical amount (the Max button solves for it) with the
+  /// SAME rules the real fee uses — a cap or a floor applies at the amount
+  /// being priced, not at whatever is currently typed.
+  double _feeForFiat(double fiatSubtotal) {
     try {
       return GetIt.I<CryptoConfigCubit>()
           .config
-          .feeForOp('buy', _fiatAmount, CurrencySymbols.currentCurrency);
+          .feeForOp('buy', fiatSubtotal, CurrencySymbols.currentCurrency);
     } catch (_) {
-      return _fiatAmount * _feeDisplayRate();
+      return fiatSubtotal * _feeDisplayRate();
     }
+  }
+
+  /// THE trade, priced once: subtotal, our fee, the total, and the all-in
+  /// unit rate the headline must show.
+  ///
+  /// Everything on this sheet reads from here. Each figure used to be derived
+  /// separately and they disagreed on screen: the headline applied the swap
+  /// margin but not our fee, "You pay" applied both, and the Max button
+  /// applied a fee computed from the wrong amount. "1 USDT ≈ ₦1,376" sat
+  /// directly above "You pay ₦4,138.71" for 3 USDT — ₦1,379.57 each.
+  CryptoTradeAmounts get _amounts => CryptoTradeAmounts.estimate(
+        isBuy: true,
+        fiatCurrency: CurrencySymbols.currentCurrency,
+        executableRate: _rate(),
+        assetQuantity: _cryptoAmount,
+        feeForFiatAmount: _feeForFiat,
+      );
+
+  /// What one unit costs INCLUSIVE of our fee — the only rate the user can
+  /// reconcile against the total directly beneath it.
+  ///
+  /// Falls back to the bare executable rate before an amount is typed, since
+  /// a fee with a floor or a cap has no meaningful per-unit value at zero.
+  /// What the wallet is debited: the subtotal plus our fee.
+  ///
+  /// There were five separate `_payTotal` expressions on
+  /// this sheet — the affordability guard, the Max solver, the under-field
+  /// estimate, the order summary and the PIN prompt — each able to drift from
+  /// the others. They now all read this.
+  double get _payTotal => _amounts.pay;
+
+  double _displayRate() {
+    final qty = _cryptoAmount;
+    if (qty <= 0) return _rate();
+    final allIn = _amounts.allInRateFor(qty);
+    return allIn > 0 ? allIn : _rate();
   }
 
   /// Fiat per 1 unit of the asset, from the LIVE rate only.
@@ -610,7 +638,7 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
           final sym = CurrencySymbols.currentSymbol;
           // Wallet must cover the TOTAL (subtotal + our fee) — the backend holds
           // subtotal + fee, so a subtotal-only check would let the hold fail.
-          final totalCost = _fiatAmount + _resolveFee();
+          final totalCost = _payTotal;
           final canCover =
               personal != null && available >= totalCost && _fiatAmount > 0;
           final min = _minFiat();
@@ -670,6 +698,10 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
                         setState(() => _liveRate = r);
                       }
                     },
+                    // The headline must be the rate the TOTAL below implies,
+                    // fee included — otherwise the two numbers on one screen
+                    // cannot be reconciled.
+                    allInRate: _cryptoAmount > 0 ? _displayRate() : null,
                   ),
                   SizedBox(height: 20.h),
                   _buildAmountField(available),
@@ -787,7 +819,7 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
     // otherwise this line disagrees with the "You pay" total right below it
     // and with the PIN sheet.
     final approx = _isAmountInCrypto
-        ? '≈ ${CurrencySymbols.currentSymbol}${(_fiatAmount + _resolveFee()).toStringAsFixed(2)}'
+        ? '≈ ${CurrencySymbols.currentSymbol}${(_payTotal).toStringAsFixed(2)}'
         : '≈ ${_trimNum(_cryptoAmount)} ${widget.crypto.symbol.toUpperCase()}';
     final hasError = _amountError(available) != null;
 
@@ -1096,8 +1128,7 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
   }
 
   Widget _buildOrderSummary() {
-    final fee = _resolveFee();
-    final total = _fiatAmount + fee;
+    final total = _payTotal;
     final sym = CurrencySymbols.currentSymbol;
     Widget row(String l, String r, {bool bold = false}) => Padding(
           padding: EdgeInsets.symmetric(vertical: 4.h),
@@ -1175,7 +1206,7 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
           Text(
             canCover
                 ? 'Enough'
-                : 'Short by $sym${_formatMoney((_fiatAmount + _resolveFee()) - available)}',
+                : 'Short by $sym${_formatMoney((_payTotal) - available)}',
             style: GoogleFonts.inter(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
@@ -1224,7 +1255,7 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
     // What actually leaves the wallet: subtotal + platform margin. Every
     // user-facing figure in this flow quotes THIS number so the sheet, the PIN
     // prompt, the confirm card and the receipt all agree.
-    final payTotal = _fiatAmount + _resolveFee();
+    final payTotal = _payTotal;
     final quantity = _cryptoAmount;
     final intentId = 'CRYPTO-BUY-${DateTime.now().millisecondsSinceEpoch}';
     final cubit = context.read<CryptoCubit>();
@@ -1258,26 +1289,29 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
           Navigator.of(context).pop();
         }
       },
-      requestPin: (onValidated) async {
+      requestPin: (onValidated, quoted) async {
+        // Authorise the SERVER's locked quote, which runSwapFlow hands in.
+        //
+        // Reading it from a cubit here does not work: the quote lives on an
+        // isolated CryptoCubit inside runSwapFlow, so a local read silently
+        // fell back to the on-screen estimate and asked the user to approve a
+        // number that differed from the debit. `quoted` has no such gap —
+        // it is re-read at confirm time, after the 15s timer's last refresh.
+        //
+        // The local estimate stays as the fallback for the (shouldn't happen)
+        // case where the quote state was lost between confirm and PIN.
         // The PIN sheet's processing phase runs the trade confirmation, then the
         // flow goes straight to the receipt — no intermediate buy-sheet spinner.
         return await validateTransactionPin(
           context: context,
           transactionId: intentId,
           transactionType: 'buy',
-          // Authorise the ALL-IN amount the SERVER quoted, not our local
-          // estimate. The quote is shown and locked before the PIN runs, so
-          // by this point the authoritative figure exists in cubit state —
-          // using the client estimate here would ask the user to approve a
-          // number that drifts from the debit whenever the rate moved between
-          // typing and confirming. Falls back to the local estimate only if
-          // the quote state is somehow absent.
-          amount: _quotedPayTotal(cubit) ?? payTotal,
+          amount: quoted.pay > 0 ? quoted.pay : payTotal,
           currency: CurrencySymbols.currentCurrency,
           title: 'Confirm Buy Order',
           message:
               'Confirm purchase of ${quantity.toStringAsFixed(6)} ${widget.crypto.symbol.toUpperCase()}',
-          totalAmount: _quotedPayTotal(cubit) ?? payTotal,
+          totalAmount: quoted.pay > 0 ? quoted.pay : payTotal,
           showProcessingPhase: true,
           successMessage: 'Order Placed',
           onPinValidated: (verificationToken) => onValidated(verificationToken),

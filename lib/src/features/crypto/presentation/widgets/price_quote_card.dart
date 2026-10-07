@@ -52,6 +52,23 @@ class PriceQuoteCard extends StatefulWidget {
   /// Null keeps the raw ticker, which is correct where nothing is being traded.
   final String? side;
 
+  /// The ALL-IN unit rate to display instead of the card's own calculation —
+  /// the fill rate with the LazerVault fee already folded in.
+  ///
+  /// WHY THIS EXISTS. Applying the swap margin fixed half the problem: the
+  /// headline then matched the fill rate, but the sheet's own totals also add
+  /// our platform fee, so the two still disagreed. "1 USDT ≈ ₦1,376" sat above
+  /// "You pay ₦4,138.71" for 3 USDT, which is ₦1,379.57 each; on the sell side
+  /// "1 USDC ≈ ₦1,346" sat above "You receive ₦1,342.20".
+  ///
+  /// The fee can be a percentage, a percentage with a cap or a floor, or a
+  /// flat amount, so an all-in RATE is only meaningful for a specific size.
+  /// The sheet knows the size, so the sheet computes it (via
+  /// CryptoTradeAmounts.estimate, the same derivation its totals use) and
+  /// hands it here. Null — no amount typed yet, or a context where nothing is
+  /// being traded — keeps the card's own side-adjusted figure.
+  final double? allInRate;
+
   const PriceQuoteCard({
     super.key,
     required this.cryptoId,
@@ -60,6 +77,7 @@ class PriceQuoteCard extends StatefulWidget {
     this.onRateUpdated,
     this.onSwapMarginUpdated,
     this.side,
+    this.allInRate,
   });
 
   @override
@@ -258,7 +276,9 @@ class _PriceQuoteCardState extends State<PriceQuoteCard> {
     // The rate a trade in THIS direction actually fills at. Without the
     // margin the headline contradicts the sheet's own arithmetic directly
     // beneath it.
-    final effective = _effectiveRate(_price!);
+    final override = widget.allInRate;
+    final effective =
+        (override != null && override > 0) ? override : _effectiveRate(_price!);
     final priceStr = _formatPrice(effective);
     final changeStr = _change24h == null
         ? ''

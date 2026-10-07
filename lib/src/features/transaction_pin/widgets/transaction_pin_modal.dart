@@ -500,12 +500,21 @@ class TransactionPinModalState extends State<TransactionPinModal>
                 // base distinct from the fee. A fee-only charge (e.g. a balance
                 // refresh) has no base — the total IS the fee, so don't render a
                 // phantom "0.00 + …" (or a doubled "100 + 100") breakdown.
-                final hasBase = base > 0;
-                final feeOnly = fee > 0 && !hasBase;
+                // A "base + fee" split only makes sense when the fee is ADDED
+                // to the base — i.e. base + fee really is the total. When the
+                // caller already folded the fee into the amount (every crypto
+                // flow now does, so the rate, the quote and the PIN all quote
+                // one number) base == total, and the breakdown line claimed a
+                // charge on top that does not exist. On a SELL it was worse
+                // than redundant: the fee is DEDUCTED from the proceeds, so
+                // "2683.22 + 6.72 fee" described a trade paying ₦2,689.94.
+                final feeIsOnTop = fee > 0 && (base + fee - total).abs() < 0.01;
+                final hasBase = base > 0 && feeIsOnTop;
+                final feeOnly = fee > 0 && base <= 0;
                 return Column(
                   children: [
                     Text(
-                      feeOnly ? 'Fee' : (fee > 0 ? 'Total Amount' : 'Amount'),
+                      feeOnly ? 'Fee' : (hasBase ? 'Total Amount' : 'Amount'),
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
                         color: Colors.grey.shade500,
@@ -520,7 +529,7 @@ class TransactionPinModalState extends State<TransactionPinModal>
                         color: const Color(0xFF4E03D0),
                       ),
                     ),
-                    if (hasBase && fee > 0) ...[
+                    if (hasBase) ...[
                       SizedBox(height: 4.h),
                       Text(
                         '${base.toStringAsFixed(2)} + ${fee.toStringAsFixed(2)} fee',
