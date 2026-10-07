@@ -442,7 +442,17 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
+        // Elevation + background contrast instead of a hairline border,
+        // matching invoices and joint funds. A 1px #2D2D2D line on a
+        // #1F1F1F card is almost invisible and does nothing to separate
+        // the card from the page; a shadow does.
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: [

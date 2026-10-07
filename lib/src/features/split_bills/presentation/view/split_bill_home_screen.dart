@@ -277,7 +277,16 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        // Same neutral hairline as the rest, written differently: a 5%-white
+        // line is a decoration, not a status, a selection or an accent — so
+        // it becomes elevation like the others rather than staying behind.
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: TabBar(
         controller: _tabController,

@@ -654,7 +654,17 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
           decoration: BoxDecoration(
             color: const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF2D2D2D)),
+            // Elevation + background contrast instead of a hairline border,
+            // matching invoices and joint funds. A 1px #2D2D2D line on a
+            // #1F1F1F card is almost invisible and does nothing to separate
+            // the card from the page; a shadow does.
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -1016,7 +1026,17 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
         decoration: BoxDecoration(
           color: const Color(0xFF141414),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF2D2D2D)),
+          // Elevation + background contrast instead of a hairline border,
+          // matching invoices and joint funds. A 1px #2D2D2D line on a
+          // #1F1F1F card is almost invisible and does nothing to separate
+          // the card from the page; a shadow does.
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.35),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: const Row(
           children: [
@@ -1402,7 +1422,17 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
           decoration: BoxDecoration(
             color: const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFF2D2D2D)),
+            // Elevation + background contrast instead of a hairline border,
+            // matching invoices and joint funds. A 1px #2D2D2D line on a
+            // #1F1F1F card is almost invisible and does nothing to separate
+            // the card from the page; a shadow does.
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -1457,7 +1487,17 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
               decoration: BoxDecoration(
                 color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF2D2D2D)),
+                // Elevation + background contrast instead of a hairline border,
+                // matching invoices and joint funds. A 1px #2D2D2D line on a
+                // #1F1F1F card is almost invisible and does nothing to separate
+                // the card from the page; a shadow does.
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Row(
                 children: const [
@@ -1759,7 +1799,17 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
+        // Elevation + background contrast instead of a hairline border,
+        // matching invoices and joint funds. A 1px #2D2D2D line on a
+        // #1F1F1F card is almost invisible and does nothing to separate
+        // the card from the page; a shadow does.
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -1890,7 +1940,17 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
+        // Elevation + background contrast instead of a hairline border,
+        // matching invoices and joint funds. A 1px #2D2D2D line on a
+        // #1F1F1F card is almost invisible and does nothing to separate
+        // the card from the page; a shadow does.
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
