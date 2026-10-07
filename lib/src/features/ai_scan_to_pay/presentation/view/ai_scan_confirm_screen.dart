@@ -16,6 +16,7 @@ import 'package:lazervault/src/features/transaction_pin/services/transaction_pin
 import '../../domain/entities/scan_entities.dart';
 import '../cubit/ai_scan_cubit.dart';
 import '../cubit/ai_scan_state.dart';
+import 'package:lazervault/core/utilities/phone_account_banks.dart';
 
 /// Unified confirm screen for every AI Scan-to-Pay target. Shows the
 /// beneficiary header, an amount field (read-only for fixed-amount targets),
@@ -68,6 +69,11 @@ class _AiScanConfirmScreenState extends State<AiScanConfirmScreen>
         TextEditingController(text: _intent.bankDetails?.accountNumber ?? '');
     _bankNameController =
         TextEditingController(text: _intent.bankDetails?.bankName ?? '');
+    // The pills depend on what the account-number field currently holds, so
+    // they have to re-evaluate as it is corrected — otherwise a user who
+    // fixes a misread digit keeps whatever choice the first reading produced.
+    _accountNumberController.addListener(() => setState(() {}));
+    _bankNameController.addListener(() => setState(() {}));
 
     // Load accounts if not already loaded.
     final accountState = context.read<AccountCardsSummaryCubit>().state;
@@ -360,6 +366,79 @@ class _AiScanConfirmScreenState extends State<AiScanConfirmScreen>
           _darkTextField(
             controller: _bankNameController,
             label: 'Bank Name',
+          ),
+          _phoneAccountBankPills(),
+        ],
+      ),
+    );
+  }
+
+  /// One-tap OPay / PalmPay, shown only when the account number IS a phone
+  /// number.
+  ///
+  /// Both banks use the customer's mobile number as the account number, so a
+  /// phone number cannot tell them apart and plenty of people have both.
+  /// Leaving that to a free-text field (or a long dropdown) is a typo away
+  /// from paying the wrong bank, which is unrecoverable — so the two real
+  /// answers are offered directly, and we still never choose between them.
+  Widget _phoneAccountBankPills() {
+    final candidates = PhoneAccountBanks.candidatesFor(
+      _accountNumberController.text,
+      // Deliberately NOT passing the scanned bank name: on this screen the
+      // user is reviewing precisely because we were unsure, so narrowing the
+      // choice to what we already doubted would defeat the review.
+    );
+    if (candidates.isEmpty) return const SizedBox.shrink();
+    final current = PhoneAccountBanks.canonicalBank(_bankNameController.text);
+    return Padding(
+      padding: EdgeInsets.only(top: 10.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'This looks like a phone number — which bank is it?',
+            style: TextStyle(color: Colors.white70, fontSize: 11.5.sp),
+          ),
+          SizedBox(height: 8.h),
+          Wrap(
+            spacing: 8.w,
+            children: [
+              for (final name in candidates)
+                GestureDetector(
+                  key: Key('phone_bank_pill_${name.toLowerCase()}'),
+                  onTap: () => setState(() {
+                    _bankNameController.text = name;
+                    // Normalise the number at the same time: the rail wants
+                    // the 11-digit form, and the image may have shown ten.
+                    final n = PhoneAccountBanks.normaliseMobile(
+                        _accountNumberController.text);
+                    if (n != null) _accountNumberController.text = n;
+                  }),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 14.w, vertical: 8.h),
+                    decoration: BoxDecoration(
+                      color: current == name
+                          ? const Color(0xFF4E03D0)
+                          : const Color(0xFF1F1F1F),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(
+                        color: current == name
+                            ? const Color(0xFF4E03D0)
+                            : const Color(0xFF2D2D2D),
+                      ),
+                    ),
+                    child: Text(
+                      name,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12.5.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ],
       ),
