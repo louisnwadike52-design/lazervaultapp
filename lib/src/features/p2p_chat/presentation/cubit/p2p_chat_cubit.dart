@@ -971,9 +971,43 @@ class P2PChatCubit extends Cubit<P2PChatState> {
     return merged;
   }
 
-  /// Strip legacy "-recv" suffix from a transfer ref to get the base reference.
-  static String _baseTransferRef(String ref) =>
-      ref.endsWith('-recv') ? ref.substring(0, ref.length - 5) : ref;
+  /// Reduce a transfer reference to the identity of the PAYMENT it names, so
+  /// the same transfer is recognised whichever source produced it.
+  ///
+  /// THE SAME TRANSFER ARRIVES SPELLED THREE WAYS. A money bubble can come
+  /// from the chat message the server stored, from transaction history, or
+  /// from a locally-recorded pending send — and each writes the reference
+  /// differently:
+  ///
+  ///   chat message     BTF-0-1790833303-120718e4
+  ///   ledger (debit)   IDEM-XFER-BTF-0-1790833303-120718e4-FROM
+  ///   ledger (credit)  IDEM-XFER-BTF-0-1790833303-120718e4-TO
+  ///   legacy received  <ref>-recv
+  ///
+  /// This only stripped "-recv", so a chat message and its own ledger row
+  /// never matched and the dedup below let both through — EVERY transfer
+  /// rendered twice once transaction history caught up. Measured 2026-10-01
+  /// in the Praiz↔Emmanuella conversation: one ₦100 payment
+  /// (BTF-0-1790833303-120718e4), one chat row, one ledger pair, two bubbles.
+  ///
+  /// The accounts ledger wraps the payment reference as
+  /// `IDEM-XFER-<ref>-FROM|TO` (its idempotency key doubles as the stored
+  /// reference), so unwrapping that is what makes the two sides comparable.
+  static String _baseTransferRef(String ref) {
+    var r = ref.trim();
+    // Ledger wrapper, outermost first.
+    if (r.startsWith('IDEM-XFER-')) r = r.substring(10);
+    for (final suffix in const ['-FROM', '-TO', '-recv']) {
+      if (r.endsWith(suffix)) {
+        r = r.substring(0, r.length - suffix.length);
+        break;
+      }
+    }
+    // A single send is stored as TRF-<payment ref> in chat and as the bare
+    // payment ref elsewhere; fold them together.
+    if (r.startsWith('TRF-')) r = r.substring(4);
+    return r;
+  }
 
   /// Deduplicate legacy transfer_sent/transfer_received pairs.
   /// For pairs sharing the same base transferRef (one with "-recv" suffix),
