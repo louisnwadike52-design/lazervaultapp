@@ -7,6 +7,9 @@ import 'package:lazervault/core/services/secure_storage_service.dart';
 
 import '../data/support_api.dart';
 import '../data/support_models.dart';
+import 'package:lazervault/src/features/p2p_chat/data/services/p2p_chat_media_upload_service.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 /// Live "Chat with support" screen. Opens (or resumes) the user's support
 /// thread and polls for staff replies. Replies from support arrive here AND by
@@ -39,6 +42,14 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
   List<SupportMessage> _messages = [];
   bool _loading = true;
   bool _sending = false;
+  bool _uploading = false;
+
+  /// The uploaded attachment waiting to go out with the next message, and the
+  /// local file backing its preview. Both cleared on send.
+  String _pendingMediaUrl = '';
+  String _pendingMediaPath = '';
+
+  final _uploader = P2PChatMediaUploadService();
   String? _error;
   Timer? _poll;
 
@@ -109,19 +120,74 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
     });
   }
 
+  /// Pick an image and attach it to the composer.
+  ///
+  /// The file is uploaded IMMEDIATELY rather than on send, so the user sees
+  /// whether it worked while they are still writing — discovering a failed
+  /// upload at send time means retyping the message too.
+  Future<void> _attachImage() async {
+    if (_sending || _uploading) return;
+    try {
+      final picked = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        // Capped here as well as in the compressor: a 50MP phone photo is a
+        // slow upload on the mobile data a stuck user is probably on.
+        maxWidth: 2000,
+        imageQuality: 90,
+      );
+      if (picked == null) return;
+      setState(() => _uploading = true);
+      final res = await _uploader.uploadFromFile(File(picked.path));
+      if (!mounted) return;
+      setState(() {
+        _pendingMediaUrl = res.publicUrl;
+        _pendingMediaPath = picked.path;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      // Never surface the raw failure. An upload can fail on a storage
+      // allow-list, a signed-URL expiry or a dropped connection, and none of
+      // those mean anything to someone trying to send a screenshot.
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Couldn't attach that image. Please try again."),
+      ));
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
+  }
+
+  void _clearAttachment() {
+    setState(() {
+      _pendingMediaUrl = '';
+      _pendingMediaPath = '';
+    });
+  }
+
   Future<void> _send() async {
     final text = _input.text.trim();
+    final media = _pendingMediaUrl;
     final t = _ticket;
-    if (text.isEmpty || t == null || _sending) return;
+    // An image on its own is a complete message — "here is the screen" needs
+    // no caption, and demanding one makes people type "see image".
+    if ((text.isEmpty && media.isEmpty) || t == null || _sending) return;
     setState(() => _sending = true);
     _input.clear();
+    final hadPath = _pendingMediaPath;
+    _pendingMediaUrl = '';
+    _pendingMediaPath = '';
     try {
-      await _api.postMessage(t.id, text);
+      await _api.postMessage(t.id, text, mediaUrl: media);
       if (t.isClosed) _reopened = true; // reply reopens a resolved ticket
       await _refresh();
     } catch (e) {
       if (mounted) {
-        setState(() => _input.text = text);
+        // Put the message BACK, attachment included — the upload already
+        // succeeded, so the user should not have to pick the image again.
+        setState(() {
+          _input.text = text;
+          _pendingMediaUrl = media;
+          _pendingMediaPath = hadPath;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
         );
@@ -250,9 +316,60 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                         fontSize: 10.sp,
                         fontWeight: FontWeight.w600)),
               ),
-            Text(m.body,
-                style: TextStyle(
-                    color: Colors.white, fontSize: 14.sp, height: 1.35)),
+            // The attachment, above any caption. Tapping opens it full-screen —
+            // a screenshot of an error message is unreadable at bubble width,
+            // which is the whole reason it was sent.
+            if (m.hasImage)
+              Padding(
+                padding: EdgeInsets.only(bottom: m.body.isEmpty ? 0 : 8.h),
+                child: GestureDetector(
+                  onTap: () => _openImage(m.mediaUrl),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10.r),
+                    child: Image.network(
+                      m.mediaUrl,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, progress) {
+                        if (progress == null) return child;
+                        return Container(
+                          height: 140.h,
+                          width: 0.55.sw,
+                          color: Colors.black26,
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white70),
+                          ),
+                        );
+                      },
+                      // A dead URL must not leave a silent blank bubble: say
+                      // an image was sent and could not be loaded, so the
+                      // conversation still makes sense.
+                      errorBuilder: (_, __, ___) => Container(
+                        height: 90.h,
+                        width: 0.55.sw,
+                        color: Colors.black26,
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.broken_image_outlined,
+                                  color: Colors.white54, size: 20.sp),
+                              SizedBox(height: 4.h),
+                              Text('Image unavailable',
+                                  style: TextStyle(
+                                      color: Colors.white54, fontSize: 10.sp)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            if (m.body.isNotEmpty)
+              Text(m.body,
+                  style: TextStyle(
+                      color: Colors.white, fontSize: 14.sp, height: 1.35)),
             if (m.viaEmail)
               Padding(
                 padding: EdgeInsets.only(top: 3.h),
@@ -261,6 +378,41 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                         color: mine ? Colors.white70 : _textSecondary,
                         fontSize: 9.sp)),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Full-screen viewer for an attachment, pinch-to-zoom.
+  void _openImage(String url) {
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (ctx) => GestureDetector(
+        onTap: () => Navigator.of(ctx).pop(),
+        child: Stack(
+          children: [
+            Center(
+              child: InteractiveViewer(
+                minScale: 1,
+                maxScale: 4,
+                child: Image.network(
+                  url,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => Icon(Icons.broken_image_outlined,
+                      color: Colors.white54, size: 48.sp),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 48.h,
+              right: 20.w,
+              child: IconButton(
+                icon: Icon(Icons.close, color: Colors.white, size: 26.sp),
+                onPressed: () => Navigator.of(ctx).pop(),
+              ),
+            ),
           ],
         ),
       ),
@@ -319,8 +471,83 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                 ),
               ),
             ),
+          // The attachment waiting to go out. Shown as a thumbnail with a
+          // clear X: an attachment you cannot see or remove is one you send by
+          // accident.
+          if (_pendingMediaPath.isNotEmpty)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: EdgeInsets.only(left: 4.w, bottom: 8.h),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10.r),
+                      child: Image.file(
+                        File(_pendingMediaPath),
+                        width: 64.w,
+                        height: 64.w,
+                        fit: BoxFit.cover,
+                        // The preview is a convenience; a missing local file
+                        // must not break the composer the attachment is
+                        // already uploaded to.
+                        errorBuilder: (_, __, ___) => Container(
+                          width: 64.w,
+                          height: 64.w,
+                          color: _card,
+                          child: Icon(Icons.image_outlined,
+                              color: _textSecondary, size: 20.sp),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: -6,
+                      right: -6,
+                      child: GestureDetector(
+                        onTap: _clearAttachment,
+                        behavior: HitTestBehavior.opaque,
+                        child: Container(
+                          padding: EdgeInsets.all(3.w),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF1F1F1F),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(Icons.close,
+                              size: 13.sp, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           Row(
             children: [
+              // Attach. Disabled while an upload is in flight so a double-tap
+              // cannot replace the image someone just picked.
+              GestureDetector(
+                onTap: _uploading ? null : _attachImage,
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: EdgeInsets.only(right: 4.w),
+                  child: SizedBox(
+                    width: 40.w,
+                    height: 46.w,
+                    child: Center(
+                      child: _uploading
+                          ? SizedBox(
+                              width: 18.w,
+                              height: 18.w,
+                              child: const CircularProgressIndicator(
+                                  strokeWidth: 2, color: _primary),
+                            )
+                          : Icon(Icons.add_photo_alternate_outlined,
+                              color: _textSecondary, size: 22.sp),
+                    ),
+                  ),
+                ),
+              ),
               Expanded(
                 child: TextField(
                   controller: _input,

@@ -49,6 +49,15 @@ class SupportMessage {
   final bool viaEmail;
   final DateTime? createdAt;
 
+  /// Public URL of an image attached to this message, or '' for a plain one.
+  /// Set in BOTH directions — a user showing the screen they are stuck on,
+  /// and support answering with a screenshot of where to tap.
+  final String mediaUrl;
+
+  /// 'text' | 'image'. Sent by the server so a client never has to sniff the
+  /// URL to decide how to render.
+  final String messageType;
+
   const SupportMessage({
     required this.id,
     required this.ticketId,
@@ -57,10 +66,17 @@ class SupportMessage {
     required this.body,
     required this.viaEmail,
     this.createdAt,
+    this.mediaUrl = '',
+    this.messageType = 'text',
   });
 
   bool get isStaff => senderType == 'staff';
   bool get isSystem => senderType == 'system';
+
+  /// Render as an image when there is actually a URL to render. Trusting
+  /// message_type alone would leave an empty bubble if the type said 'image'
+  /// and the URL was lost.
+  bool get hasImage => mediaUrl.trim().isNotEmpty;
 
   factory SupportMessage.fromJson(Map<String, dynamic> j) => SupportMessage(
         id: (j['id'] ?? '').toString(),
@@ -70,5 +86,7 @@ class SupportMessage {
         body: (j['body'] ?? '').toString(),
         viaEmail: j['via_email'] == true,
         createdAt: DateTime.tryParse('${j['created_at'] ?? ''}'),
+        mediaUrl: (j['media_url'] ?? '').toString(),
+        messageType: (j['message_type'] ?? 'text').toString(),
       );
 }

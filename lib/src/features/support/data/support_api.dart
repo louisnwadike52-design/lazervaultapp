@@ -139,11 +139,24 @@ class SupportApi {
     return list.map((e) => SupportMessage.fromJson(e)).toList();
   }
 
-  Future<SupportMessage> postMessage(String ticketId, String body) async {
+  /// Post a message, optionally with an image.
+  ///
+  /// [mediaUrl] must be a URL the chat-media upload pipeline issued — the
+  /// server rejects anything else, because a support message's attachment is
+  /// rendered in the admin dashboard and an arbitrary URL there is a tracking
+  /// pixel that fires when an agent opens the ticket.
+  Future<SupportMessage> postMessage(
+    String ticketId,
+    String body, {
+    String mediaUrl = '',
+  }) async {
     final res = await _send(() async => http.post(
           _uri('/api/v1/support/tickets/$ticketId/messages'),
           headers: await _headers(),
-          body: jsonEncode({'body': body}),
+          body: jsonEncode({
+            'body': body,
+            if (mediaUrl.trim().isNotEmpty) 'media_url': mediaUrl.trim(),
+          }),
         ));
     _ensureOk(res);
     return SupportMessage.fromJson(jsonDecode(res.body)['message']);
