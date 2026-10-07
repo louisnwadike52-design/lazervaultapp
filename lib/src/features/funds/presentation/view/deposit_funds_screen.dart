@@ -2588,28 +2588,52 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   /// PAUSING its mandate. Reversible — "Switch to Direct Debit" reinstates it
   /// with no re-authorization. (Permanent revocation is "Manage Direct Debit →
   /// Cancel".) The badge flips to "One-time" once the cache refreshes.
-  void _switchToOneTime(LinkedBankAccount account, MandateEntity mandate) {
+  Future<void> _switchToOneTime(
+      LinkedBankAccount account, MandateEntity mandate) async {
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) return;
     final userId = authState.profile.user.id;
-    serviceLocator<MandateCubit>().pauseMandate(
+
+    // AWAITED, and announced only on a confirmed switch.
+    //
+    // This used to fire the call and show "Switching to one-time — we're
+    // confirming with your bank" in the same breath. When the Mono PATCH timed
+    // out (observed in production: the mandate stayed ready_to_debit while the
+    // user was told it was switching) the message was simply false, and the
+    // only way to discover that was to reopen the sheet.
+    final ok = await serviceLocator<MandateCubit>().pauseMandate(
       mandateId: mandate.id,
       userId: userId,
     );
-    Get.snackbar(
-      'Switching to one-time',
-      'We’re confirming with your bank. Deposits from ${account.bankName} will '
-          'use one-time approval — you can switch back anytime.',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFF1F1F1F),
-      colorText: Colors.white,
-      duration: const Duration(seconds: 3),
-    );
-    // Refresh once the pause response lands; the cubit's pauseMandate already
-    // polls until Mono confirms so the "Switching…" chip settles to "One-time".
-    Future.delayed(const Duration(milliseconds: 700), () {
-      if (mounted) _loadUserMandates();
-    });
+    if (!mounted) return;
+
+    if (ok) {
+      Get.snackbar(
+        'Switched to one-time',
+        'Deposits from ${account.bankName} will use one-time approval — you '
+            'can switch back anytime.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF1F1F1F),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    } else {
+      // Say plainly that NOTHING changed — the most useful fact here is that
+      // Direct Debit is still on, so the user does not go looking for a
+      // one-time prompt that will never appear.
+      Get.snackbar(
+        'Could not switch',
+        'Your bank did not confirm the change, so Direct Debit is still on for '
+            '${account.bankName}. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF7F1D1D),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+      );
+    }
+    // Re-read either way: on success to settle the badge, on failure to make
+    // sure the card reflects the state that actually holds.
+    if (mounted) _loadUserMandates();
   }
 
   /// Switch a one-time account to persistent Direct Debit. If a PAUSED mandate

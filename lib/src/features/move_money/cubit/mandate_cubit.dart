@@ -216,11 +216,21 @@ class MandateCubit extends Cubit<MandateState> {
   }
 
   /// Pause a mandate.
-  Future<void> pauseMandate({
+  /// Returns TRUE only when the bank confirmed the pause.
+  ///
+  /// The deposit screen used to fire this and announce "Switching to
+  /// one-time" in the same breath, without awaiting — so a Mono timeout left
+  /// the user told it was happening while the mandate stayed ready_to_debit.
+  /// A caller must be able to tell success from failure, hence a bool rather
+  /// than void.
+  Future<bool> pauseMandate({
     required String mandateId,
     required String userId,
   }) async {
-    if (_operationInProgress) return;
+    // Another mutation is mid-flight. Report FALSE rather than silently
+    // returning: the caller would otherwise announce a switch that was never
+    // even attempted.
+    if (_operationInProgress) return false;
     _operationInProgress = true;
     emit(MandateLoading());
     try {
@@ -233,19 +243,23 @@ class MandateCubit extends Cubit<MandateState> {
       // Converge the "Switching…" badge to the confirmed state once Mono acks the
       // pause — every pause surface (deposit card, Manage sheet) gets this.
       pollSwitchUntilSettled(mandateId: mandateId, userId: userId);
+      return true;
     } catch (e, st) {
       emit(_mandateError(e, st, 'pause Direct Debit'));
+      return false;
     } finally {
       _operationInProgress = false;
     }
   }
 
   /// Reinstate a paused mandate.
-  Future<void> reinstateMandate({
+  /// Returns TRUE only when the bank confirmed the reinstate. See
+  /// [pauseMandate] for why this is not void.
+  Future<bool> reinstateMandate({
     required String mandateId,
     required String userId,
   }) async {
-    if (_operationInProgress) return;
+    if (_operationInProgress) return false;
     _operationInProgress = true;
     emit(MandateLoading());
     try {
@@ -258,20 +272,24 @@ class MandateCubit extends Cubit<MandateState> {
       // Converge the "Switching…" badge to the confirmed state once Mono acks the
       // reinstate — every reinstate surface (deposit card, Manage sheet) gets this.
       pollSwitchUntilSettled(mandateId: mandateId, userId: userId);
+      return true;
     } catch (e, st) {
       emit(_mandateError(e, st, 'resume Direct Debit'));
+      return false;
     } finally {
       _operationInProgress = false;
     }
   }
 
   /// Cancel a mandate.
-  Future<void> cancelMandate({
+  /// Returns TRUE only when the bank confirmed the cancellation. See
+  /// [pauseMandate] for why this is not void.
+  Future<bool> cancelMandate({
     required String mandateId,
     required String userId,
     required String linkedAccountId,
   }) async {
-    if (_operationInProgress) return;
+    if (_operationInProgress) return false;
     _operationInProgress = true;
     emit(MandateLoading());
     try {
@@ -281,8 +299,10 @@ class MandateCubit extends Cubit<MandateState> {
       );
       _mandatesByAccountId.remove(linkedAccountId);
       emit(MandateCancelled(mandateId: mandateId));
+      return true;
     } catch (e, st) {
       emit(_mandateError(e, st, 'cancel Direct Debit'));
+      return false;
     } finally {
       _operationInProgress = false;
     }
