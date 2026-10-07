@@ -183,15 +183,34 @@ class _BillAutoRechargeCreateSheetState
   }
 
   Future<void> _submit() async {
-    final amt = double.tryParse(_amountController.text.trim());
+    // A LOCKED amount is the plan's own price, read straight from the plan
+    // rather than re-parsed from the text field.
+    //
+    // The field is initialised with toStringAsFixed(0), which ROUNDS. For a
+    // plan priced at a fraction of a naira that would schedule a renewal for a
+    // different figure than the plan costs — and because the field cannot be
+    // edited, there would be nothing on screen to reveal it.
+    final amt = widget.amountLocked
+        ? widget.initialAmount
+        : double.tryParse(_amountController.text.trim());
     // Reject NaN/inf, non-numeric input, zero, and negative values.
     if (amt == null || amt.isNaN || amt.isInfinite || amt <= 0) {
-      _snack('Enter a valid whole-Naira amount', _errorRed);
+      _snack(
+        widget.amountLocked
+            // Locked with no price means the caller opened the sheet without
+            // one. Nothing the user types can fix that, so do not ask them to.
+            ? "We couldn't read this plan's price. Please reselect the plan."
+            : 'Enter a valid whole-Naira amount',
+        _errorRed,
+      );
       return;
     }
     // Bill payments are integer-units (no fractional kobo on the wire) —
     // refuse fractional input rather than silently truncating.
-    if (amt != amt.roundToDouble()) {
+    // Applies to TYPED input only. A plan's price is whatever the provider
+    // charges, and refusing it here would block a renewal for a plan the user
+    // can buy perfectly well one screen away.
+    if (!widget.amountLocked && amt != amt.roundToDouble()) {
       _snack('Use whole numbers only (no decimals)', _errorRed);
       return;
     }
@@ -204,17 +223,29 @@ class _BillAutoRechargeCreateSheetState
         (widget.maxAmount != null && widget.minAmount > widget.maxAmount!)
             ? widget.maxAmount!
             : widget.minAmount;
+    // A LOCKED amount cannot be corrected on this screen, so a bounds message
+    // telling the user to enter something else is a dead end — the field they
+    // would have to change is read-only by design. Say what is actually wrong
+    // and where the fix is: the plan, chosen before this sheet opened.
     if (amt < effectiveMin) {
       _snack(
-        'Enter a valid amount (min ${widget.currencySymbol}${effectiveMin.toStringAsFixed(0)})',
+        widget.amountLocked
+            ? 'This plan costs less than the minimum this service accepts '
+                '(${widget.currencySymbol}${effectiveMin.toStringAsFixed(0)}). '
+                'Choose a different plan to auto-renew.'
+            : 'Enter a valid amount (min ${widget.currencySymbol}${effectiveMin.toStringAsFixed(0)})',
         _errorRed,
       );
       return;
     }
     if (widget.maxAmount != null && amt > widget.maxAmount!) {
       _snack(
-        'Maximum allowed for this network is '
-        '${widget.currencySymbol}${widget.maxAmount!.toStringAsFixed(0)}',
+        widget.amountLocked
+            ? 'This plan costs more than the maximum this service accepts '
+                '(${widget.currencySymbol}${widget.maxAmount!.toStringAsFixed(0)}). '
+                'Choose a different plan to auto-renew.'
+            : 'Maximum allowed for this network is '
+                '${widget.currencySymbol}${widget.maxAmount!.toStringAsFixed(0)}',
         _errorRed,
       );
       return;
