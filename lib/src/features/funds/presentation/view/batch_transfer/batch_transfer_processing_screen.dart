@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/app_routes.dart';
@@ -12,9 +11,9 @@ import 'package:lazervault/src/features/funds/cubit/batch_transfer_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/batch_transfer_receipt_builder.dart';
 import 'package:lazervault/src/core/services/analytics_service.dart';
-import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 part 'batch_transfer_processing_screen_widgets.dart';
 
 class BatchTransferProcessingScreen extends StatefulWidget {
@@ -284,16 +283,13 @@ class _BatchTransferProcessingScreenState
   }
 
   void _updateAccountBalance(BatchTransferEntity response) {
-    // Update account balance in AccountCardsSummaryCubit if available
-    try {
-      final accountCubit = GetIt.I<AccountCardsSummaryCubit>();
-      final userId = accountCubit.currentUserId;
-      if (userId != null) {
-        accountCubit.fetchAccountSummaries(userId: userId);
-      }
-    } catch (_) {
-      // AccountCardsSummaryCubit may not be registered as singleton
-    }
+    // Re-pull balances after the batch settles.
+    //
+    // This used to read `currentUserId` off a cubit from the locator. That
+    // registration is a factory, so the instance was always brand new, the id
+    // was always null, and the refresh never ran — the dashboard kept showing
+    // the pre-transfer balance until something else happened to reload it.
+    refreshAccountSummaries();
   }
 
   void _navigateToReceipt(BatchTransferEntity response) {

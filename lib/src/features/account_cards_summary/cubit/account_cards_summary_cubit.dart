@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/account_summaries_store.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import '../domain/entities/account_summary_entity.dart';
 import '../domain/usecases/get_account_summaries_usecase.dart';
@@ -53,10 +55,61 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     if (_wsService != null) {
       _wsSubscription = _wsService!.balanceUpdates.listen(_handleBalanceUpdate);
     }
+    // Adopt summaries any OTHER instance loads. This cubit is a factory
+    // registration, so the dashboard's instance and the one a background
+    // refresh (inactivity_watcher) or a money sheet fetches through are
+    // different objects. Without this, a successful background refetch
+    // updated nothing the user could see.
+    AccountSummariesStore.revision.addListener(_adoptPublishedSummaries);
+    // Seed from whatever is already known, so an instance created by a route's
+    // `BlocProvider(create: ...)` renders the user's accounts immediately
+    // rather than a spinner (or nothing) until its own fetch returns. ~20
+    // routes construct their own instance this way.
+    final seeded = AccountSummariesStore.rows();
+    if (seeded.isNotEmpty) {
+      _currentUserId = AccountSummariesStore.userId;
+      _currentSummaries = List<AccountSummaryEntity>.from(seeded);
+      emit(AccountCardsSummaryLoaded(_currentSummaries));
+    }
+  }
+
+  /// Take on rows another instance published for the SAME user.
+  ///
+  /// Terminates rather than ping-ponging: adopting emits, the emit publishes,
+  /// and the next notification finds the rows identical and returns.
+  void _adoptPublishedSummaries() {
+    if (isClosed) return;
+    final uid = _currentUserId;
+    if (uid == null || uid.isEmpty) return;
+    final rows = AccountSummariesStore.rows(forUserId: uid);
+    if (rows.isEmpty) return;
+    if (listEquals(rows, _currentSummaries)) return;
+    _currentSummaries = List<AccountSummaryEntity>.from(rows);
+    emit(AccountCardsSummaryLoaded(_currentSummaries));
   }
 
   /// Get the current user ID for whom data is loaded
   String? get currentUserId => _currentUserId;
+
+  /// Mirror every loaded state into the process-wide store.
+  ///
+  /// This cubit is registered with `registerFactory`, so the instance the
+  /// dashboard renders from is NOT the instance a helper gets out of the
+  /// service locator — see account_summaries_store.dart. Publishing here,
+  /// rather than at each of the six emit sites, means a future emit cannot
+  /// forget to do it.
+  @override
+  void emit(AccountCardsSummaryState state) {
+    super.emit(state);
+    final rows = switch (state) {
+      AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+      AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+      _ => const <AccountSummaryEntity>[],
+    };
+    if (rows.isNotEmpty) {
+      AccountSummariesStore.publish(rows, userId: _currentUserId);
+    }
+  }
 
   /// Reset the cubit state (call on logout)
   void reset() {
@@ -69,6 +122,10 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     _currentUserId = null;
     _preAnimationBalances.clear();
     _latestWebSocketBalances.clear();
+    // Drop the shared rows too: reset() runs on logout and on a user switch,
+    // and leaving them behind is how the previous person's wallets show up in
+    // the next person's sheets on a shared phone.
+    AccountSummariesStore.clear();
     emit(AccountCardsSummaryInitial());
     print('AccountCardsSummaryCubit: State reset');
   }
@@ -476,6 +533,10 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
   Future<void> close() {
     _refetchDebounce?.cancel();
     _wsSubscription?.cancel();
+    // A factory registration means instances are created and closed all day;
+    // leaving the listener attached would keep every one of them alive and
+    // emitting after its route was gone.
+    AccountSummariesStore.revision.removeListener(_adoptPublishedSummaries);
     return super.close();
   }
 }

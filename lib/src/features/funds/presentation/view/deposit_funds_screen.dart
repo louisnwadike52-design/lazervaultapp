@@ -12,6 +12,8 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lazervault/core/services/auto_logout_guard.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/account_summaries_store.dart';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/open_banking/presentation/mixins/linked_balance_refresh_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
@@ -25,8 +27,6 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_state.dart';
-import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
-import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
@@ -5384,28 +5384,27 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   /// Resolve the live account summary for the deposit card from the global
   /// AccountCardsSummaryCubit state (kept fresh by the balance WebSocket), or
   /// null if not loaded / no match.
-  AccountSummaryEntity? _liveSelectedSummary(AccountCardsSummaryState state) {
+  AccountSummaryEntity? _liveSelectedSummary() {
     final id = widget.selectedCard['id']?.toString() ?? '';
     if (id.isEmpty) return null;
-    final List<AccountSummaryEntity> list = switch (state) {
-      AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
-      AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
-      _ => const <AccountSummaryEntity>[],
-    };
-    for (final s in list) {
-      if (s.id == id) return s;
-    }
-    return null;
+    return accountSummaryById(id);
   }
 
   Widget _buildSelectedCardSummary() {
-    // Live-bind to the balance cubit so the deposit card's balance + trend %
-    // animate/refresh in real time when a deposit credits (same WS feed the
-    // dashboard uses), instead of showing the static snapshot it opened with.
-    return BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
-      bloc: serviceLocator<AccountCardsSummaryCubit>(),
-      builder: (context, summaryState) {
-        final live = _liveSelectedSummary(summaryState);
+    // Live-bind so the deposit card's balance + trend % refresh in real time
+    // when a deposit credits, instead of showing the static snapshot it opened
+    // with.
+    //
+    // This used to be a BlocBuilder bound to `serviceLocator<...>()`, which is
+    // a FACTORY registration — it built a brand-new cubit on every rebuild,
+    // each one stuck in its initial state and never fetching, so `live` was
+    // permanently null and the card showed the opening snapshot forever (while
+    // leaking a cubit per frame). The shared store is what the dashboard's
+    // instance publishes into, so this now sees the same balances it does.
+    return ValueListenableBuilder<int>(
+      valueListenable: AccountSummariesStore.revision,
+      builder: (context, _, __) {
+        final live = _liveSelectedSummary();
         final double cardBalance = live?.balance ?? _cardBalance();
         final bool cardIsUp =
             live?.isUp ?? (widget.selectedCard['isUp'] == true);

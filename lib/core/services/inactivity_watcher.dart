@@ -9,9 +9,8 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/services/app_activity_bus.dart';
 import 'package:lazervault/core/services/auto_logout_guard.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
-import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:lazervault/core/types/app_routes.dart';
-import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
@@ -260,10 +259,10 @@ class _InactivityWatcherState extends State<InactivityWatcher>
           ? s.profile.userId
           : (s is AuthenticationAuthenticated ? s.profile.userId : null);
       if (userId == null || userId.isEmpty) return;
-      if (serviceLocator.isRegistered<AccountCardsSummaryCubit>()) {
-        serviceLocator<AccountCardsSummaryCubit>()
-            .fetchAccountSummaries(userId: userId);
-      }
+      // Goes through the shared store so the dashboard's own cubit instance
+      // adopts the result. Fetching into a locator-made cubit (a factory
+      // registration) loaded rows nothing on screen was ever bound to.
+      refreshAccountSummaries();
     } catch (_) {
       // Refresh is best-effort.
     }

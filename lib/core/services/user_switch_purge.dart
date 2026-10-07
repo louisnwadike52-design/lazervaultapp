@@ -4,6 +4,7 @@ import 'package:lazervault/core/cache/swr_cache_manager.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/account_summaries_store.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
@@ -173,6 +174,11 @@ void _purgeSessionScopedSingletons() {
       clear();
     } catch (_) {/* best-effort — never block the rest of the purge */}
   }
+
+  // The process-wide account rows. Not a cubit — it outlives every cubit on
+  // purpose — but it is the single most dangerous thing to carry across a
+  // switch: it is what the money sheets resolve a FUNDING SOURCE from.
+  safely(AccountSummariesStore.clear);
 
   safely(() {
     if (serviceLocator.isRegistered<MandateCubit>()) {

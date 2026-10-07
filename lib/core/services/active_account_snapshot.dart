@@ -3,8 +3,8 @@ library;
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/account_summaries_store.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
-import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 
 /// The account money is being spent FROM right now, with its real balance.
@@ -135,14 +135,7 @@ ActiveAccountSnapshot? activeAccountSnapshot() {
 Future<ActiveAccountSnapshot?> ensureActiveAccountSnapshot() async {
   final existing = activeAccountSnapshot();
   if (existing != null) return existing;
-  try {
-    final userId = serviceLocator<AuthenticationCubit>().userId ?? '';
-    if (userId.isEmpty) return null;
-    await serviceLocator<AccountCardsSummaryCubit>()
-        .fetchAccountSummaries(userId: userId, silent: true);
-  } catch (_) {
-    return null;
-  }
+  if (!await _loadSummaries()) return null;
   return activeAccountSnapshot();
 }
 
@@ -186,15 +179,59 @@ ActiveAccountSnapshot? personalAccountSnapshot() {
 Future<ActiveAccountSnapshot?> ensurePersonalAccountSnapshot() async {
   final existing = personalAccountSnapshot();
   if (existing != null) return existing;
+  if (!await _loadSummaries()) return null;
+  return personalAccountSnapshot();
+}
+
+/// Fetch the summaries into the shared store. True when rows are now readable.
+///
+/// The fetch and the read MUST go through the same cubit instance, which is
+/// why this holds one in a local rather than reaching through the locator
+/// twice. `AccountCardsSummaryCubit` is a FACTORY registration: the old code
+/// fetched into one brand-new cubit, then re-read a second brand-new cubit
+/// that had never fetched anything, so a perfectly successful network call
+/// still resolved to null. The cubit mirrors what it loads into
+/// AccountSummariesStore, which is what the readers below actually see.
+Future<bool> _loadSummaries({bool force = false, bool silent = true}) async {
   try {
     final userId = serviceLocator<AuthenticationCubit>().userId ?? '';
-    if (userId.isEmpty) return null;
-    await serviceLocator<AccountCardsSummaryCubit>()
-        .fetchAccountSummaries(userId: userId, silent: true);
+    if (userId.isEmpty) return false;
+    if (!force && AccountSummariesStore.rows(forUserId: userId).isNotEmpty) {
+      return true;
+    }
+    final cubit = serviceLocator<AccountCardsSummaryCubit>();
+    await cubit.fetchAccountSummaries(userId: userId, silent: silent);
+    // This instance exists only to carry the fetch. Closing it releases its
+    // websocket subscription and debounce timer; the rows it loaded survive
+    // in the store.
+    await cubit.close();
+    return AccountSummariesStore.rows(forUserId: userId).isNotEmpty;
   } catch (_) {
-    return null;
+    return false;
   }
-  return personalAccountSnapshot();
+}
+
+/// Re-pull the account summaries from the server, in the background.
+///
+/// Use after anything that moves money, and on resume. The rows land in
+/// [AccountSummariesStore] and every live cubit — the dashboard's included —
+/// adopts them, so the balance a user is looking at updates without that
+/// screen having to own the fetch.
+///
+/// Callers used to do this by pulling a cubit out of the locator and reading
+/// `currentUserId` off it. That cubit was always freshly constructed, so the
+/// id was always null and the refresh never ran at all.
+Future<void> refreshAccountSummaries({bool silent = true}) async {
+  await _loadSummaries(force: true, silent: silent);
+}
+
+/// The summary row for [accountId], from the shared store. Null when unknown.
+AccountSummaryEntity? accountSummaryById(String accountId) {
+  if (accountId.isEmpty) return null;
+  for (final a in _summaries()) {
+    if (a.id == accountId || a.spendingAccountId == accountId) return a;
+  }
+  return null;
 }
 
 /// Build a snapshot from a summary row. Exposed so a caller that already has
@@ -219,11 +256,23 @@ ActiveAccountSnapshot snapshotOf(AccountSummaryEntity a) {
   );
 }
 
+/// The account rows to resolve against.
+///
+/// Reads the SHARED store, not a cubit pulled from the locator. The locator
+/// registration is `registerFactory`, so that cubit is always a fresh one in
+/// its initial state and this function used to return an empty list on every
+/// call, from every screen — which is the whole reason the money sheets said
+/// "No account selected" while the dashboard behind them showed the account
+/// perfectly well.
+///
+/// Scoped to the signed-in user: on a shared phone the previous session's
+/// wallets must not be offered as a funding source.
 List<AccountSummaryEntity> _summaries() {
-  final state = serviceLocator<AccountCardsSummaryCubit>().state;
-  return switch (state) {
-    AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
-    AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
-    _ => const <AccountSummaryEntity>[],
-  };
+  String? userId;
+  try {
+    userId = serviceLocator<AuthenticationCubit>().userId;
+  } catch (_) {
+    userId = null;
+  }
+  return AccountSummariesStore.rows(forUserId: userId);
 }

@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/active_account_snapshot.dart';
+import 'package:lazervault/core/services/account_summaries_store.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_wallet.dart';
 import 'package:lazervault/src/features/sprayme/domain/repositories/i_sprayme_repository.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
@@ -101,7 +102,20 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
     // So: load them if they are missing, and listen so the row fills in when
     // they land.
     if (_account == null) _loadAccounts();
+    // And re-resolve whenever ANY part of the app publishes fresh summaries —
+    // a dashboard refresh, a balance websocket event, a background resume
+    // refetch. Without this the row keeps whatever it resolved at open time,
+    // including the nothing it resolves when the sheet is the first screen to
+    // need an account.
+    AccountSummariesStore.revision.addListener(_onSummariesChanged);
     _amountController.addListener(() => setState(() {}));
+  }
+
+  void _onSummariesChanged() {
+    if (!mounted) return;
+    final resolved = personalAccountSnapshot();
+    if (resolved == null) return;
+    setState(() => _adoptSnapshot(resolved));
   }
 
   /// Copy a resolved snapshot into the fields the sheet renders from.
@@ -131,6 +145,7 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
 
   @override
   void dispose() {
+    AccountSummariesStore.revision.removeListener(_onSummariesChanged);
     _amountController.dispose();
     super.dispose();
   }

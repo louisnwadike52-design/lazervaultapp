@@ -18,13 +18,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:intl/intl.dart';
 
-import 'package:lazervault/core/services/account_manager.dart';
-import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
-import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
-import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/core/services/auto_logout_guard.dart';
 import 'package:lazervault/core/services/chat_language_preference.dart';
-import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/utils/pin_mask_utils.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
@@ -1267,28 +1263,18 @@ class _AiChatContentState extends State<AiChatContent>
   /// when no account is selected yet (e.g. right after login).
   String _balancePreviewText() {
     try {
-      // Read the SAME live source the dashboard + money flows use — the account
-      // cards summary cubit (AccountManager.activeAccountDetails is never
-      // populated, so it always fell back to the generic line). Pick the active
-      // account (else the first) and show its spendable balance in its currency.
-      final summaries =
-          switch (serviceLocator<AccountCardsSummaryCubit>().state) {
-        AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
-        AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
-        _ => const <AccountSummaryEntity>[],
-      };
-      if (summaries.isEmpty) {
+      // Read the SAME live source the dashboard + money flows use.
+      //
+      // This used to read the state of a cubit pulled from the locator, which
+      // is a FACTORY registration — always a brand-new instance in its initial
+      // state, so `summaries` was always empty and this always returned the
+      // generic line. activeAccountSnapshot() reads the shared store the
+      // dashboard's instance publishes into.
+      final active = activeAccountSnapshot();
+      if (active == null) {
         return 'Preview: This is how your messages will look';
       }
-      final activeId = serviceLocator<AccountManager>().activeAccountId;
-      final active = summaries.firstWhere(
-        (a) => a.id == activeId,
-        orElse: () => summaries.first,
-      );
-      final bal = active.availableBalance > 0
-          ? active.availableBalance
-          : active.balance;
-      final amount = NumberFormat('#,##0.00').format(bal);
+      final amount = NumberFormat('#,##0.00').format(active.balanceMajor);
       return 'Preview: Your balance is ${active.currency} $amount';
     } catch (_) {
       return 'Preview: This is how your messages will look';
