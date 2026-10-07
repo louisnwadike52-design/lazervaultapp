@@ -174,10 +174,26 @@ class _CryptoProcessingScreenState extends State<CryptoProcessingScreen>
           .config
           .feeForOp(op, widget.fiatAmount, CurrencySymbols.currentCurrency);
     } catch (_) {
-      fee = widget.fiatAmount * 0.015;
+      // Was a hardcoded 1.5% — SIX TIMES the configured 25 bps, and
+      // unreachable by any admin tunable. The config's own default fallback
+      // is the honest stand-in when the cubit cannot be read at all.
+      fee = widget.fiatAmount *
+          (CryptoRuntimeConfig.defaults().feeDisplayFallbackBps / 10000.0);
     }
-    final networkFee = fee * 0.3;
-    final tradingFee = fee * 0.7;
+
+    // NO 30/70 SPLIT.
+    //
+    // This divided our own margin into a fabricated "Network fee" (30%) and
+    // "Trading fee" (70%), and the receipt renders `networkFee` as a line
+    // item — so 30% of a LazerVault charge was presented to the customer as
+    // a third-party on-chain cost. A fiat-to-crypto buy or sell has no
+    // on-chain network fee at all; the chain is only involved on a SEND,
+    // where the real figure comes from the provider.
+    //
+    // The buy screen removed this split already and said why. The processing
+    // screen kept it, and the processing screen is what builds the receipt.
+    const networkFee = 0.0;
+    final tradingFee = fee;
     final total = widget.fiatAmount + fee;
 
     final transactionDetails = CryptoTransactionDetails(

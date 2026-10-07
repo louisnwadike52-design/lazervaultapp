@@ -166,7 +166,12 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
         bps = GetIt.I<CryptoConfigCubit>().config.feeDisplayFallbackBps;
       } catch (_) {}
     }
-    return (bps ?? 150) / 10000.0;
+    // 150 bps was SIX TIMES the configured 25, and reachable whenever the
+    // config cubit is unavailable. CryptoRuntimeConfig.defaults() is the one
+    // place that mirrors the server's value, so there is a single number to
+    // change if the server's moves.
+    return (bps ?? CryptoRuntimeConfig.defaults().feeDisplayFallbackBps) /
+        10000.0;
   }
 
   /// Estimated Lazervault sell fee for the current amount, honoring the admin's
