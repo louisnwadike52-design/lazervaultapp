@@ -10,6 +10,16 @@ import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversa
 import 'package:lazervault/src/features/p2p_chat/services/p2p_chat_websocket_service.dart';
 
 class P2PConversationsCubit extends Cubit<P2PConversationsState> {
+  /// Drop the signed-out user's conversation list.
+  ///
+  /// A lazy singleton, so without this the next person to sign in on the
+  /// device sees the previous user's chat threads — names, last messages and
+  /// unread counts — until a refetch replaces them. Of everything a singleton
+  /// can leak, a conversation list is among the most plainly private.
+  void clearOnLogout() {
+    if (!isClosed) emit(P2PConversationsInitial());
+  }
+
   final P2PChatRepository _repository;
   // Shared singleton WS + secure storage let the badge update in REALTIME while
   // no chat page is open (previously it only refreshed on manual reload).

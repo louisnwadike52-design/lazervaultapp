@@ -6,6 +6,14 @@ import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
+import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
+import 'package:lazervault/src/features/move_money/cubit/mandate_cubit.dart';
+import 'package:lazervault/src/features/notifications/presentation/cubit/notification_badge_cubit.dart';
+import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_cubit.dart';
+import 'package:lazervault/src/features/pending_actions/presentation/cubit/pending_actions_cubit.dart';
+import 'package:lazervault/src/features/split_bills/presentation/cubit/split_bill_count_cubit.dart';
+import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
+import 'package:lazervault/src/features/voice_session/cubit/voice_chat_history_cubit.dart';
 
 /// Per-user state that must not outlive the user it belongs to.
 ///
@@ -140,6 +148,78 @@ Future<void> purgeUserScopedCaches() async {
       serviceLocator<GroupAccountCubit>().clearOnLogout();
     }
   } catch (_) {/* best-effort */}
+  _purgeSessionScopedSingletons();
+}
+
+/// Clears every LAZY SINGLETON that holds state belonging to one person.
+///
+/// A lazy singleton outlives the session that populated it, so anything
+/// per-user it holds is shown to the NEXT person to sign in on the device
+/// until a refetch happens to land. Reported in production: Chris's family
+/// account appeared on Ella's dashboard after she logged in on the same phone.
+///
+/// This is the single place that list lives, and
+/// test/core/user_switch_purge_coverage_test.dart fails the build if a new
+/// lazy-singleton cubit is registered without being added here — the previous
+/// arrangement purged four of them and silently missed six, because nothing
+/// connected "register a singleton" to "clear it on a switch".
+///
+/// Every call is individually guarded: one unregistered or throwing singleton
+/// must not stop the rest from being cleared, because a half-purged device is
+/// exactly the state this exists to prevent.
+void _purgeSessionScopedSingletons() {
+  void safely(void Function() clear) {
+    try {
+      clear();
+    } catch (_) {/* best-effort — never block the rest of the purge */}
+  }
+
+  safely(() {
+    if (serviceLocator.isRegistered<MandateCubit>()) {
+      // Direct Debit mandates: the previous user's bank, limits and expiry,
+      // keyed by account ids the new user does not own.
+      serviceLocator<MandateCubit>().clearOnLogout();
+    }
+  });
+  safely(() {
+    if (serviceLocator.isRegistered<StatisticsCubit>()) {
+      // Spending analytics — balances, categories, trends.
+      serviceLocator<StatisticsCubit>().clearOnLogout();
+    }
+  });
+  safely(() {
+    if (serviceLocator.isRegistered<SplitBillCountCubit>()) {
+      // "You owe N bills" badge.
+      serviceLocator<SplitBillCountCubit>().clearOnLogout();
+    }
+  });
+  safely(() {
+    if (serviceLocator.isRegistered<NotificationBadgeCubit>()) {
+      serviceLocator<NotificationBadgeCubit>().clear();
+    }
+  });
+  safely(() {
+    if (serviceLocator.isRegistered<BudgetCubit>()) {
+      serviceLocator<BudgetCubit>().clearCategoryCache();
+    }
+  });
+  safely(() {
+    if (serviceLocator.isRegistered<VoiceChatHistoryCubit>()) {
+      // Conversation history is the most plainly private of all of these.
+      serviceLocator<VoiceChatHistoryCubit>().clearAll();
+    }
+  });
+  safely(() {
+    if (serviceLocator.isRegistered<PendingActionsCubit>()) {
+      serviceLocator<PendingActionsCubit>().clear();
+    }
+  });
+  safely(() {
+    if (serviceLocator.isRegistered<P2PConversationsCubit>()) {
+      // Chat threads: names, last messages, unread counts.
+      serviceLocator<P2PConversationsCubit>().clearOnLogout();
+    }
+  });
 }
 
 Future<void> purgeStaleUserCache(FlutterSecureStorage storage) async {
@@ -190,4 +270,5 @@ Future<void> purgeStaleUserCache(FlutterSecureStorage storage) async {
       serviceLocator<GroupAccountCubit>().clearOnLogout();
     }
   } catch (_) {/* best-effort */}
+  _purgeSessionScopedSingletons();
 }

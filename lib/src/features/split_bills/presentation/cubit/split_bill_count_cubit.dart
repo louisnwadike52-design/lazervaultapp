@@ -14,6 +14,14 @@ import 'package:lazervault/src/features/split_bills/domain/repositories/split_bi
 /// count. `refresh()` is safe to call repeatedly and never throws — on any
 /// failure it emits 0 so the badge simply disappears.
 class SplitBillCountCubit extends Cubit<int> {
+  /// Reset the badge for a user switch.
+  ///
+  /// A lazy singleton, so without this the next user signs in to the previous
+  /// user's "you owe N bills" count on their tile.
+  void clearOnLogout() {
+    if (!isClosed) emit(0);
+  }
+
   final SplitBillRepository _repository;
 
   SplitBillCountCubit({required SplitBillRepository repository})

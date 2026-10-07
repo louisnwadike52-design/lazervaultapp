@@ -27,6 +27,15 @@ import '../utils/wallet_analytics_fold.dart';
 /// sync-all so the numbers reflect the banks' latest statements; sync
 /// failures are non-fatal (the last synced rows still serve).
 class StatisticsCubit extends Cubit<StatisticsState> {
+  /// Drop the previous user's figures on a user switch.
+  ///
+  /// A lazy singleton holding spending analytics — balances, categories,
+  /// trends. Shown to the next person to sign in on the device until a
+  /// refetch lands, which is both wrong and private data.
+  void clearOnLogout() {
+    if (!isClosed) emit(StatisticsInitial());
+  }
+
   /// Hard ceiling on the wallet-analytics + monthly-trends gRPC awaits. Without
   /// it, an unreachable/slow accounts-service left `loadStatistics` hung forever
   /// — the cubit never emitted Loaded OR Error, so the spending/statistics

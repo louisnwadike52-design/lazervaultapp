@@ -18,6 +18,18 @@ class MandateCubit extends Cubit<MandateState> {
   /// Internal cache: linkedAccountId → MandateEntity
   final Map<String, MandateEntity> _mandatesByAccountId = {};
 
+  /// Drop everything belonging to the signed-out user.
+  ///
+  /// This cubit is a LAZY SINGLETON, so its state outlives a session. Without
+  /// this, the next person to sign in on the same device inherits the previous
+  /// user's Direct Debit mandates — their bank, their limits, their expiry —
+  /// keyed by account ids that are not theirs.
+  void clearOnLogout() {
+    _mandatesByAccountId.clear();
+    _operationInProgress = false;
+    if (!isClosed) emit(MandateInitial());
+  }
+
   /// Prevents concurrent operations (double-tap, overlapping pause/reinstate).
   bool _operationInProgress = false;
 
