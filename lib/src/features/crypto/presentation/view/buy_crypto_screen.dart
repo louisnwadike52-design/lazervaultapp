@@ -24,6 +24,7 @@ import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../../account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/crypto/data/crypto_wallet_label.dart';
+import '../../domain/trade_amounts.dart';
 
 class BuyCryptoScreen extends StatefulWidget {
   final Crypto? selectedCrypto;
@@ -231,10 +232,57 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
   /// or days old when the user finally opens Buy).
   double? _liveRate;
 
-  /// Effective rate used to drive computed amounts. Picks the live
-  /// rate when available; otherwise null (so callers can render a
-  /// loading-state skeleton instead of fake numbers).
-  double? get _effectiveRate => _liveRate;
+  /// Quidax's swap margin, from PriceQuoteCard. The rate it reports is the
+  /// MID of the executable buy and sell rates; a buy fills above it.
+  double _swapMargin = 0;
+
+  /// Effective rate used to drive computed amounts: the rate a BUY actually
+  /// fills at. Null while no live rate has arrived, so callers render a
+  /// loading skeleton rather than fake numbers.
+  ///
+  /// This used to return the mid unadjusted, so the screen priced a buy at a
+  /// rate no buy can get — understating the cost by the whole margin (1.4% on
+  /// USDC, measured). The sheet applied the margin; this screen, reachable
+  /// from the same Buy action via AppRoutes.buyCrypto, did not.
+  double? get _effectiveRate {
+    final r = _liveRate;
+    if (r == null || r <= 0) return null;
+    return r * (1 + _swapMargin);
+  }
+
+  /// The platform fee for an arbitrary fiat subtotal, so the shared
+  /// derivation can price a hypothetical amount with the same rules.
+  double _feeForFiat(double fiatSubtotal) {
+    try {
+      return GetIt.I<CryptoConfigCubit>()
+          .config
+          .feeForOp('buy', fiatSubtotal, CurrencySymbols.currentCurrency);
+    } catch (_) {
+      return fiatSubtotal * _feeDisplayRate();
+    }
+  }
+
+  /// THE trade, priced once — the same definition the buy SHEET uses, so the
+  /// two routes to buying cannot quote different numbers for one trade.
+  CryptoTradeAmounts get _amounts => CryptoTradeAmounts.estimate(
+        isBuy: true,
+        fiatCurrency: CurrencySymbols.currentCurrency,
+        executableRate: _effectiveRate ?? 0,
+        assetQuantity: _cryptoAmount,
+        feeForFiatAmount: _feeForFiat,
+      );
+
+  /// What the wallet is debited: subtotal plus our fee.
+  double get _payTotal => _amounts.pay;
+
+  /// What one unit costs INCLUSIVE of our fee — the only rate reconcilable
+  /// against the total beneath it.
+  double? _displayRate() {
+    final qty = _cryptoAmount;
+    if (qty <= 0) return _effectiveRate;
+    final allIn = _amounts.allInRateFor(qty);
+    return allIn > 0 ? allIn : _effectiveRate;
+  }
 
   /// True iff we have enough data to compute a meaningful summary.
   /// The user has picked an asset, typed an amount, and we have a
@@ -325,6 +373,17 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                                 if (rate == _liveRate) return;
                                 setState(() => _liveRate = rate);
                               },
+                              // Without this the screen never learns the
+                              // margin and prices a buy at the mid — a rate
+                              // no buy can get.
+                              onSwapMarginUpdated: (m) {
+                                if (!mounted || m == _swapMargin) return;
+                                setState(() => _swapMargin = m);
+                              },
+                              // The headline must be the rate the total below
+                              // implies, fee included.
+                              allInRate:
+                                  _cryptoAmount > 0 ? _displayRate() : null,
                             ),
                           ],
                           SizedBox(height: 24.h),
@@ -1022,8 +1081,10 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
       // so 30% of our own margin was being presented as a third-party cost.
       // Both rows are gone: the margin is inside the single "You pay" total.
       // See cryptoPlatformFeePolicy.
-      final fee = _resolveFee();
-      final total = _fiatAmount + fee;
+      // ONE derivation, shared with the buy sheet. Deriving it here as
+      // `_fiatAmount + _resolveFee()` was a second definition that could — and
+      // did — disagree with the sheet for the same trade.
+      final total = _payTotal;
       body = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

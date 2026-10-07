@@ -195,12 +195,39 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
   /// Prevent listener re-entrancy when one field programmatically sets the other.
   bool _isUpdatingAmounts = false;
 
+  /// The fraction of the FROM asset our margin withholds on a convert.
+  ///
+  /// A crypto-to-crypto convert now carries a platform margin, taken by
+  /// swapping less than the user parts with (the remainder backs the revenue
+  /// credit — see convert_margin.go). Estimating the receive amount from the
+  /// gross would therefore promise more than the binding quote returns, and a
+  /// quote that comes in BELOW the estimate reads as a bait and switch.
+  ///
+  /// Proportional, so applying it to a quantity is the same arithmetic the
+  /// server applies to from_amount_minor. This is an ESTIMATE either way —
+  /// both sides of this screen are derived from two independent market
+  /// prices, not a real cross rate — and the binding quote governs.
+  double get _convertMarginFraction {
+    try {
+      final cfg = GetIt.I<CryptoConfigCubit>().config;
+      // Ask for the fee on a unit amount to recover the proportion.
+      final per1 = cfg.feeForOp('swap', 1.0, CurrencySymbols.currentCurrency);
+      if (per1 <= 0 || per1 >= 1) return 0;
+      return per1;
+    } catch (_) {
+      return 0;
+    }
+  }
+
   void _onFromAmountChanged() {
     if (_isUpdatingAmounts) return;
     if (_isFromAmountActive && _fromHolding != null && _toCrypto != null) {
       final fromAmount = _fromAmount; // crypto qty (converts if typed in fiat)
       if (_toCrypto!.currentPrice <= 0) return; // Guard division by zero
-      final gbpValue = fromAmount * _fromHolding!.currentPrice;
+      // Net of our margin: only (1 - margin) of what the user parts with is
+      // actually swapped, so that is what converts into the TO asset.
+      final swapped = fromAmount * (1 - _convertMarginFraction);
+      final gbpValue = swapped * _fromHolding!.currentPrice;
       final toAmount = gbpValue / _toCrypto!.currentPrice;
       _isUpdatingAmounts = true;
       _toAmountController.text =
@@ -215,8 +242,13 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
     if (!_isFromAmountActive && _fromHolding != null && _toCrypto != null) {
       final toAmount = double.tryParse(_toAmountController.text) ?? 0.0;
       if (_fromHolding!.currentPrice <= 0) return; // Guard division by zero
+      // Inverse: to RECEIVE this much, the user must part with enough that
+      // the post-margin remainder converts to it.
       final gbpValue = toAmount * _toCrypto!.currentPrice;
-      final fromCryptoQty = gbpValue / _fromHolding!.currentPrice;
+      final swappedQty = gbpValue / _fromHolding!.currentPrice;
+      final margin = _convertMarginFraction;
+      final fromCryptoQty =
+          margin < 1 ? swappedQty / (1 - margin) : swappedQty;
       _isUpdatingAmounts = true;
       // Mirror the FROM field in whichever unit it's currently showing.
       _fromAmountController.text = fromCryptoQty > 0
