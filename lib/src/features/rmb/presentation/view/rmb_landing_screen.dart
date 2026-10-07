@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/rmb/cubit/rmb_cubit.dart';
 import 'package:lazervault/src/features/rmb/presentation/rmb_ui.dart';
 import 'package:lazervault/src/features/rmb/presentation/widgets/rmb_send_sheet.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 /// Whether an RMB transfer can be priced — and therefore started — right now.
@@ -37,6 +38,41 @@ class RmbLandingScreen extends StatefulWidget {
 }
 
 class _RmbLandingScreenState extends State<RmbLandingScreen> {
+  /// Whether a manual rate retry is in flight, so the button can show it.
+  bool _retryingRates = false;
+
+  /// Retry the rate fetch and SAY what happened.
+  ///
+  /// The rate provider being down is an upstream condition we cannot fix from
+  /// here (Klasha's sandbox quotation currently answers "This service is
+  /// currently unavailable"), so the one thing this button owes the user is an
+  /// honest answer about whether anything changed.
+  Future<void> _retryRates() async {
+    setState(() => _retryingRates = true);
+    try {
+      await context.read<RmbCubit>().refresh();
+    } catch (_) {
+      // The cubit surfaces its own error state; this guard only stops an
+      // exception leaving the button stuck on "Checking…".
+    }
+    if (!mounted) return;
+    setState(() => _retryingRates = false);
+
+    // If rates are STILL unavailable, say so. Silence after a tap is what made
+    // the button look broken — the card is pixel-identical before and after a
+    // failed retry.
+    final st = context.read<RmbCubit>().state;
+    final stillPaused = st is! RmbLoaded || rmbTransfersPaused(st.config);
+    if (stillPaused) {
+      showAppSnackbar(
+        'Rates still unavailable',
+        'Our rate provider is not responding yet, so transfers stay paused. '
+            'Nothing is wrong with your account.',
+        type: AppSnackbarType.info,
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -217,27 +253,48 @@ class _RmbLandingScreenState extends State<RmbLandingScreen> {
               ],
             ),
             SizedBox(height: 12.h),
-            GestureDetector(
-              onTap: () => context.read<RmbCubit>().refresh(),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(10.r),
-                  border:
-                      Border.all(color: Colors.white.withValues(alpha: 0.28)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.refresh, color: Colors.white, size: 14.sp),
-                    SizedBox(width: 6.w),
-                    Text('Try again',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w600)),
-                  ],
+            // A REAL BUTTON, not a bare GestureDetector.
+            //
+            // Reported as "doesn't press": it did call refresh, but there was
+            // no ripple, no spinner, and when the retry failed the same way
+            // the card did not change by a single pixel — so every tap looked
+            // like nothing had happened. The tap target was also only 8dp of
+            // vertical padding.
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: _retryingRates ? null : _retryRates,
+                borderRadius: BorderRadius.circular(10.r),
+                child: Container(
+                  constraints: BoxConstraints(minHeight: 40.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(10.r),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.28)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (_retryingRates)
+                        SizedBox(
+                          width: 14.sp,
+                          height: 14.sp,
+                          child: const CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white),
+                        )
+                      else
+                        Icon(Icons.refresh, color: Colors.white, size: 14.sp),
+                      SizedBox(width: 6.w),
+                      Text(_retryingRates ? 'Checking…' : 'Try again',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w600)),
+                    ],
+                  ),
                 ),
               ),
             ),
