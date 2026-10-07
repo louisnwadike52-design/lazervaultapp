@@ -18,6 +18,7 @@ import '../../../account_cards_summary/services/balance_websocket_service.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../widgets/bill_receipt_qr_block.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/bill_status_auto_refresh.dart';
 
 class PaymentReceiptScreen extends StatefulWidget {
   const PaymentReceiptScreen({super.key});
@@ -27,7 +28,18 @@ class PaymentReceiptScreen extends StatefulWidget {
 }
 
 class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
-    with SingleTickerProviderStateMixin {
+    with
+        SingleTickerProviderStateMixin,
+        WidgetsBindingObserver,
+        BillStatusAutoRefresh<PaymentReceiptScreen> {
+  /// Reuses the pull-to-refresh already on this screen, so one definition of
+  /// "re-read the status" serves both the manual and the automatic path.
+  @override
+  Future<void> refreshBillStatus() => _onRefresh();
+
+  @override
+  bool get isBillStatusTerminal => !(payment.isPending || payment.isProcessing);
+
   late BillPaymentEntity payment;
   late AnimationController _checkController;
   late Animation<double> _checkScale;
@@ -61,6 +73,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
   @override
   void initState() {
     super.initState();
+    // Started below once `payment` is assigned — it reads payment.isPending.
     final args = Get.arguments as Map<String, dynamic>?;
     if (args == null || args['payment'] == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -78,6 +91,9 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
     }
     payment = args['payment'] as BillPaymentEntity;
     _fromHistory = (args['fromHistory'] as bool?) ?? false;
+    // Only runs when the receipt opened on a non-terminal status, and stops
+    // itself the moment the provider's webhook settles it.
+    startBillStatusAutoRefresh();
 
     _checkController = AnimationController(
       duration: const Duration(milliseconds: 600),
@@ -304,6 +320,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
 
   @override
   void dispose() {
+    disposeBillStatusAutoRefresh();
     _checkController.dispose();
     _balanceSub?.cancel();
     _balanceSub = null;

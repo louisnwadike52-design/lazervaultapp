@@ -19,6 +19,7 @@ import '../widgets/rollover_preference_sheet.dart';
 import '../widgets/save_data_beneficiary_sheet.dart';
 import '../../services/data_bundles_pdf_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/bill_status_auto_refresh.dart';
 
 /// Data bundle purchase receipt. Mirrors the transfer send-funds receipt
 /// layout: compact success icon, amount headline, status + timestamp row,
@@ -36,7 +37,22 @@ class DataPaymentReceiptScreen extends StatefulWidget {
       _DataPaymentReceiptScreenState();
 }
 
-class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen> {
+class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen>
+    with
+        WidgetsBindingObserver,
+        BillStatusAutoRefresh<DataPaymentReceiptScreen> {
+  /// Reuses the pull-to-refresh this screen already had, so there is ONE
+  /// definition of "re-read the status" rather than two that can drift.
+  @override
+  Future<void> refreshBillStatus() => _refreshPurchase();
+
+  @override
+  bool get isBillStatusTerminal {
+    final p = _purchase ?? _argsPurchase();
+    if (p == null) return true; // nothing to poll for
+    return !(p.isPending || p.isProcessing);
+  }
+
   bool _isDownloading = false;
   bool _isSharing = false;
   late final AutoRenewCubit _autoRenewCubit;
@@ -54,6 +70,9 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen> {
   void initState() {
     super.initState();
     _autoRenewCubit = GetIt.I<AutoRenewCubit>();
+    // Lands on "Processing" and settles when the provider's webhook arrives.
+    // Without this the receipt sat there until the user thought to pull down.
+    startBillStatusAutoRefresh();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _runPostPurchaseHooks();
@@ -204,6 +223,7 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen> {
 
   @override
   void dispose() {
+    disposeBillStatusAutoRefresh();
     if (!_autoRenewCubit.isClosed) _autoRenewCubit.close();
     super.dispose();
   }

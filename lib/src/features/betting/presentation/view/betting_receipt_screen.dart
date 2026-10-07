@@ -8,6 +8,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../../data/datasources/betting_remote_datasource.dart';
 import '../../domain/entities/betting_entities.dart';
 import 'betting_theme.dart';
+import 'package:lazervault/core/widgets/bill_status_auto_refresh.dart';
 
 /// Betting funding receipt — confirms the top-up (or its pending status) and
 /// routes back to the hub. Funding is usually synchronous, but a `pending`
@@ -20,7 +21,20 @@ class BettingReceiptScreen extends StatefulWidget {
   State<BettingReceiptScreen> createState() => _BettingReceiptScreenState();
 }
 
-class _BettingReceiptScreenState extends State<BettingReceiptScreen> {
+class _BettingReceiptScreenState extends State<BettingReceiptScreen>
+    with WidgetsBindingObserver, BillStatusAutoRefresh<BettingReceiptScreen> {
+  @override
+  Future<void> refreshBillStatus() => _refreshStatus();
+
+  @override
+  bool get isBillStatusTerminal => !(_result?.payment.isPending ?? false);
+
+  @override
+  void dispose() {
+    disposeBillStatusAutoRefresh();
+    super.dispose();
+  }
+
   static const _bg = BettingTheme.bg;
   static const _card = BettingTheme.card;
   static const _primary = BettingTheme.primary;
@@ -41,6 +55,9 @@ class _BettingReceiptScreenState extends State<BettingReceiptScreen> {
     _result = args?['result'] as BettingFundingResult?;
     _platformName = (args?['platformName'] as String?) ?? '';
     _accountName = (args?['accountName'] as String?) ?? '';
+    // Lands on "Processing" and settles when the provider's webhook arrives.
+    // Without this the receipt sat there until the user thought to pull down.
+    startBillStatusAutoRefresh();
   }
 
   /// Back / close returns to the Bills Hub landing the service was launched

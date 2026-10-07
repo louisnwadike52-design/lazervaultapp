@@ -13,6 +13,7 @@ import '../cubit/airtime_cubit.dart';
 import '../cubit/airtime_state.dart';
 import 'airtime_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/bill_status_auto_refresh.dart';
 
 /// Local airtime receipt. Mirrors the electricity bill receipt layout 1:1
 /// (status hero → consolidated details card → BillReceiptQrBlock → action
@@ -32,7 +33,24 @@ class AirtimePaymentConfirmationScreen extends StatefulWidget {
 
 class _AirtimePaymentConfirmationScreenState
     extends State<AirtimePaymentConfirmationScreen>
-    with SingleTickerProviderStateMixin {
+    with
+        SingleTickerProviderStateMixin,
+        WidgetsBindingObserver,
+        BillStatusAutoRefresh<AirtimePaymentConfirmationScreen> {
+  /// The receipt lands on "Processing" and the provider's webhook settles it
+  /// moments later. Without this the screen sat there until the user thought
+  /// to pull down — which reads as a stuck payment for a top-up that already
+  /// succeeded, and is the state people screenshot and send to support.
+  ///
+  /// Reuses the pull-to-refresh this screen already had, so there is one
+  /// definition of "re-read the status" rather than two that can drift.
+  @override
+  Future<void> refreshBillStatus() => _refreshReceipt();
+
+  /// pending/processing are the only non-terminal states; refunded is as final
+  /// as completed from the receipt's point of view.
+  @override
+  bool get isBillStatusTerminal => !(transaction?.isPending ?? false);
   AirtimeTransaction? transaction;
   bool isSuccess = false;
   String? errorMessage;
@@ -67,6 +85,9 @@ class _AirtimePaymentConfirmationScreenState
       CurvedAnimation(parent: _checkController, curve: Curves.elasticOut),
     );
     _checkController.forward();
+    // Only starts when the receipt opened on a non-terminal status, and stops
+    // itself the moment it settles.
+    startBillStatusAutoRefresh();
     // Fire the keep-alive RPCs after the first frame so the screen is
     // already painted (so the success snackbars don't overlap the build).
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -252,6 +273,7 @@ class _AirtimePaymentConfirmationScreenState
 
   @override
   void dispose() {
+    disposeBillStatusAutoRefresh();
     _checkController.dispose();
     super.dispose();
   }

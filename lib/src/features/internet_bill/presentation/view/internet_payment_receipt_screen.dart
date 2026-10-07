@@ -19,6 +19,7 @@ import '../../domain/entities/internet_provider_entity.dart';
 import '../../services/internet_bill_pdf_service.dart';
 import '../widgets/internet_rollover_preference_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/bill_status_auto_refresh.dart';
 
 class InternetPaymentReceiptScreen extends StatefulWidget {
   const InternetPaymentReceiptScreen({super.key});
@@ -29,7 +30,29 @@ class InternetPaymentReceiptScreen extends StatefulWidget {
 }
 
 class _InternetPaymentReceiptScreenState
-    extends State<InternetPaymentReceiptScreen> {
+    extends State<InternetPaymentReceiptScreen>
+    with
+        WidgetsBindingObserver,
+        BillStatusAutoRefresh<InternetPaymentReceiptScreen> {
+  /// Replaces a bespoke Timer.periodic(4s, maxPolls) that polled at a fixed
+  /// rate, kept polling while the app was BACKGROUNDED, and could stack a
+  /// second request behind a slow one. The shared mixin backs off, pauses on
+  /// background and resumes with an immediate check — which is exactly when
+  /// the answer has most likely changed.
+  @override
+  Future<void> refreshBillStatus() async {
+    final current = _latestPayment ?? _argsPayment();
+    if (current == null) return;
+    await _refreshPayment(current);
+  }
+
+  @override
+  bool get isBillStatusTerminal {
+    final p = _latestPayment ?? _argsPayment();
+    if (p == null) return true;
+    return !p.isPending;
+  }
+
   bool _isDownloading = false;
   bool _isSharing = false;
   bool _postPurchaseRan = false;
@@ -43,22 +66,19 @@ class _InternetPaymentReceiptScreenState
 
   // Bounded auto-poll while the payment is pending (webhook may land after the
   // pay response). Mirrors the epin receipt's poll.
-  Timer? _pollTimer;
-  int _pollCount = 0;
-  static const _maxPolls = 15;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _runPostPurchaseActions();
-      _maybeStartPolling();
+      startBillStatusAutoRefresh();
     });
   }
 
   @override
   void dispose() {
-    _pollTimer?.cancel();
+    disposeBillStatusAutoRefresh();
     super.dispose();
   }
 
@@ -68,25 +88,7 @@ class _InternetPaymentReceiptScreenState
     return args['payment'] as InternetPaymentEntity?;
   }
 
-  void _maybeStartPolling() {
-    if (_pollTimer != null) return;
-    final payment = _latestPayment ?? _argsPayment();
-    if (payment == null || !payment.isPending) return;
-    _pollTimer = Timer.periodic(const Duration(seconds: 4), (t) {
-      if (!mounted) {
-        t.cancel();
-        return;
-      }
-      _pollCount++;
-      final current = _latestPayment ?? _argsPayment();
-      if (current == null || !current.isPending || _pollCount >= _maxPolls) {
-        t.cancel();
-        _pollTimer = null;
-        return;
-      }
-      _refreshPayment(current);
-    });
-  }
+
 
   /// Re-fetches internet payment history and swaps in the row matching the
   /// current reference/id. Preserves newBalance/renewalDate from the original
@@ -134,8 +136,9 @@ class _InternetPaymentReceiptScreenState
       );
       setState(() => _latestPayment = updated);
       if (wasPending && !updated.isPending) {
-        _pollTimer?.cancel();
-        _pollTimer = null;
+        // The auto-refresher stops itself on a terminal status (it re-reads
+        // isBillStatusTerminal after every poll), so there is no timer to
+        // cancel here any more.
         // Honour save-beneficiary / rollover toggles skipped while pending.
         if (updated.isCompleted && !_postPurchaseRan) {
           _runPostPurchaseActions();

@@ -18,6 +18,7 @@ import '../../domain/entities/tv_package_entity.dart';
 import '../../services/cable_tv_pdf_service.dart';
 import '../widgets/cable_tv_rollover_preference_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/bill_status_auto_refresh.dart';
 
 class CableTVPaymentReceiptScreen extends StatefulWidget {
   const CableTVPaymentReceiptScreen({super.key});
@@ -28,7 +29,39 @@ class CableTVPaymentReceiptScreen extends StatefulWidget {
 }
 
 class _CableTVPaymentReceiptScreenState
-    extends State<CableTVPaymentReceiptScreen> {
+    extends State<CableTVPaymentReceiptScreen>
+    with
+        WidgetsBindingObserver,
+        BillStatusAutoRefresh<CableTVPaymentReceiptScreen> {
+  @override
+  void dispose() {
+    disposeBillStatusAutoRefresh();
+    super.dispose();
+  }
+
+  /// The payment this receipt is for: the freshest reconciled row when one
+  /// has landed, else the one the route was opened with.
+  CableTVPaymentEntity? _argsPayment() {
+    final args = Get.arguments;
+    if (args is! Map<String, dynamic>) return null;
+    final p = args['payment'];
+    return p is CableTVPaymentEntity ? p : null;
+  }
+
+  @override
+  Future<void> refreshBillStatus() async {
+    final current = _latestPayment ?? _argsPayment();
+    if (current == null) return;
+    await _refreshPayment(current);
+  }
+
+  @override
+  bool get isBillStatusTerminal {
+    final p = _latestPayment ?? _argsPayment();
+    if (p == null) return true;
+    return !p.isPending;
+  }
+
   bool _isDownloading = false;
   bool _isSharing = false;
   bool _postPurchaseRan = false;
@@ -43,8 +76,10 @@ class _CableTVPaymentReceiptScreenState
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _runPostPurchaseActions());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _runPostPurchaseActions();
+      startBillStatusAutoRefresh();
+    });
   }
 
   /// Re-fetches the payment history and finds the row matching the current
