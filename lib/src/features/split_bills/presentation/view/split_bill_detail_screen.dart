@@ -134,6 +134,16 @@ class _SplitBillDetailViewState extends State<_SplitBillDetailView> {
               type: AppSnackbarType.success,
             );
             _leaveAfterTerminalAction(context);
+          } else if (state is SplitBillHidden) {
+            showAppSnackbar(
+              'Removed',
+              state.message,
+              type: AppSnackbarType.success,
+            );
+            // The bill is gone from this user's list, so staying on its detail
+            // page would show something they can no longer reach from
+            // anywhere — leave, exactly as cancel and decline do.
+            _leaveAfterTerminalAction(context);
           } else if (state is SplitBillShareDeclined) {
             showAppSnackbar(
               'Declined',
@@ -221,6 +231,14 @@ class _SplitBillDetailViewState extends State<_SplitBillDetailView> {
                     // keep their own receipt path (see Pay My Share) untouched.
                     if (isCreator) ...[
                       _buildCreatorSummaryActions(context, bill),
+                      // Only AFTER the bill is finished. Offering it while a
+                      // bill is still collecting would hide it from the one
+                      // person responsible for it while co-payers keep paying
+                      // in — the server refuses that too, so this is the
+                      // honest surface of the same rule rather than a second
+                      // one that could drift.
+                      if (_isTerminalStatus(bill.status))
+                        _buildRemoveFromListAction(context, bill.id),
                       const SizedBox(height: 24),
                     ],
                   ],
@@ -316,6 +334,66 @@ class _SplitBillDetailViewState extends State<_SplitBillDetailView> {
   /// True for a status after which no money can move on this bill.
   bool _isTerminalStatus(SplitBillStatus status) =>
       status == SplitBillStatus.cancelled || status == SplitBillStatus.expired;
+
+  /// Remove a finished bill from the creator's own list.
+  ///
+  /// Only AFTER cancellation, and only for the organiser. The wording says
+  /// what actually happens, because "Delete" would be a lie: the record
+  /// survives so the refunds stay evidenced, co-payers keep their copy, and
+  /// admin auditing still sees it.
+  Widget _buildRemoveFromListAction(BuildContext context, String splitBillId) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          key: const Key('split_bill_remove_from_list'),
+          onPressed: () => _confirmRemoveFromList(context, splitBillId),
+          icon: const Icon(Icons.visibility_off_outlined, size: 18),
+          label: const Text('Remove from my list'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: const Color(0xFF9CA3AF),
+            side: const BorderSide(color: Color(0xFF2D2D2D)),
+            padding: const EdgeInsets.symmetric(vertical: 13),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmRemoveFromList(
+      BuildContext context, String splitBillId) async {
+    final cubit = context.read<SplitBillCubit>();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        title: const Text('Remove from your list?',
+            style: TextStyle(color: Colors.white)),
+        content: const Text(
+          // Say exactly what survives. Someone removing a bill that moved
+          // money deserves to know the record of it does not go away — and
+          // that the people who paid keep theirs.
+          'This hides the bill from your list. It stays in your records and '
+          'in the records of anyone who paid, so the refunds remain '
+          'evidenced. This cannot be undone from the app.',
+          style: TextStyle(color: Color(0xFF9CA3AF), height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Keep it'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Remove',
+                style: TextStyle(color: Color(0xFFEF4444))),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) cubit.hideBill(splitBillId);
+  }
 
   Widget _buildTerminalBanner(SplitBillStatus status) {
     final cancelled = status == SplitBillStatus.cancelled;

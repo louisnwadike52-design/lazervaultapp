@@ -555,6 +555,35 @@ final $typed_data.Uint8List cancelSplitBillResponseDescriptor =
         'ChdDYW5jZWxTcGxpdEJpbGxSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB2'
         '1lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
 
+@$core.Deprecated('Use hideCancelledSplitBillRequestDescriptor instead')
+const HideCancelledSplitBillRequest$json = {
+  '1': 'HideCancelledSplitBillRequest',
+  '2': [
+    {'1': 'split_bill_id', '3': 1, '4': 1, '5': 9, '10': 'splitBillId'},
+  ],
+};
+
+/// Descriptor for `HideCancelledSplitBillRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List hideCancelledSplitBillRequestDescriptor =
+    $convert.base64Decode(
+        'Ch1IaWRlQ2FuY2VsbGVkU3BsaXRCaWxsUmVxdWVzdBIiCg1zcGxpdF9iaWxsX2lkGAEgASgJUg'
+        'tzcGxpdEJpbGxJZA==');
+
+@$core.Deprecated('Use hideCancelledSplitBillResponseDescriptor instead')
+const HideCancelledSplitBillResponse$json = {
+  '1': 'HideCancelledSplitBillResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `HideCancelledSplitBillResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List hideCancelledSplitBillResponseDescriptor =
+    $convert.base64Decode(
+        'Ch5IaWRlQ2FuY2VsbGVkU3BsaXRCaWxsUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2'
+        'VzcxIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+
 @$core.Deprecated('Use declineSplitBillShareRequestDescriptor instead')
 const DeclineSplitBillShareRequest$json = {
   '1': 'DeclineSplitBillShareRequest',

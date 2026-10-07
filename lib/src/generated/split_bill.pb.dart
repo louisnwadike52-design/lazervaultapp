@@ -1888,6 +1888,138 @@ class CancelSplitBillResponse extends $pb.GeneratedMessage {
   void clearMessage() => $_clearField(2);
 }
 
+class HideCancelledSplitBillRequest extends $pb.GeneratedMessage {
+  factory HideCancelledSplitBillRequest({
+    $core.String? splitBillId,
+  }) {
+    final result = create();
+    if (splitBillId != null) result.splitBillId = splitBillId;
+    return result;
+  }
+
+  HideCancelledSplitBillRequest._();
+
+  factory HideCancelledSplitBillRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory HideCancelledSplitBillRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'HideCancelledSplitBillRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'split_bill'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'splitBillId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  HideCancelledSplitBillRequest clone() =>
+      HideCancelledSplitBillRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  HideCancelledSplitBillRequest copyWith(
+          void Function(HideCancelledSplitBillRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as HideCancelledSplitBillRequest))
+          as HideCancelledSplitBillRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static HideCancelledSplitBillRequest create() =>
+      HideCancelledSplitBillRequest._();
+  @$core.override
+  HideCancelledSplitBillRequest createEmptyInstance() => create();
+  static $pb.PbList<HideCancelledSplitBillRequest> createRepeated() =>
+      $pb.PbList<HideCancelledSplitBillRequest>();
+  @$core.pragma('dart2js:noInline')
+  static HideCancelledSplitBillRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<HideCancelledSplitBillRequest>(create);
+  static HideCancelledSplitBillRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get splitBillId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set splitBillId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSplitBillId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSplitBillId() => $_clearField(1);
+}
+
+class HideCancelledSplitBillResponse extends $pb.GeneratedMessage {
+  factory HideCancelledSplitBillResponse({
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  HideCancelledSplitBillResponse._();
+
+  factory HideCancelledSplitBillResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory HideCancelledSplitBillResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'HideCancelledSplitBillResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'split_bill'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  HideCancelledSplitBillResponse clone() =>
+      HideCancelledSplitBillResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  HideCancelledSplitBillResponse copyWith(
+          void Function(HideCancelledSplitBillResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as HideCancelledSplitBillResponse))
+          as HideCancelledSplitBillResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static HideCancelledSplitBillResponse create() =>
+      HideCancelledSplitBillResponse._();
+  @$core.override
+  HideCancelledSplitBillResponse createEmptyInstance() => create();
+  static $pb.PbList<HideCancelledSplitBillResponse> createRepeated() =>
+      $pb.PbList<HideCancelledSplitBillResponse>();
+  @$core.pragma('dart2js:noInline')
+  static HideCancelledSplitBillResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<HideCancelledSplitBillResponse>(create);
+  static HideCancelledSplitBillResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
+}
+
 class DeclineSplitBillShareRequest extends $pb.GeneratedMessage {
   factory DeclineSplitBillShareRequest({
     $core.String? splitBillId,

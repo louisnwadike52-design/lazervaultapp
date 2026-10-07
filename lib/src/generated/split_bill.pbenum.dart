@@ -51,7 +51,9 @@ class SplitBillParticipantStatus extends $pb.ProtobufEnum {
       SPLIT_BILL_PARTICIPANT_STATUS_DECLINED = SplitBillParticipantStatus._(
           2, _omitEnumNames ? '' : 'SPLIT_BILL_PARTICIPANT_STATUS_DECLINED');
 
-  /// IN_PROGRESS: external-bank payout initiated, provider not yet confirmed.
+  /// IN_PROGRESS: an external-bank payout has been initiated to the receiver but the
+  /// provider has not yet confirmed completion. Reconciler flips it to PAID on success
+  /// or back to PENDING on a confirmed failure. Never a terminal state.
   static const SplitBillParticipantStatus
       SPLIT_BILL_PARTICIPANT_STATUS_IN_PROGRESS = SplitBillParticipantStatus._(
           3, _omitEnumNames ? '' : 'SPLIT_BILL_PARTICIPANT_STATUS_IN_PROGRESS');

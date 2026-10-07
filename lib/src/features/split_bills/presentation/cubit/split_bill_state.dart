@@ -94,6 +94,20 @@ class SplitBillSharePaid extends SplitBillState {
   List<Object?> get props => [transactionReference, message, updatedBill];
 }
 
+/// The creator removed a cancelled bill from their own list.
+///
+/// Distinct from [SplitBillCancelled] so the UI can navigate differently: a
+/// cancel keeps you on the bill (it still exists, and its refunds matter); a
+/// removal means the thing you were looking at is gone from your list, so the
+/// only sensible destination is back.
+class SplitBillHidden extends SplitBillState {
+  final String message;
+  const SplitBillHidden(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
 class SplitBillCancelled extends SplitBillState {
   final String message;
   const SplitBillCancelled(this.message);

@@ -213,6 +213,36 @@ class SplitBillCubit extends Cubit<SplitBillState> {
     }
   }
 
+  /// Remove a CANCELLED bill from the creator's own list.
+  ///
+  /// The server refuses this for a bill that is still collecting, and the
+  /// refusal arrives as a state error the user can read — this does not
+  /// pre-judge it, because only the server knows the bill's current status
+  /// and a stale client copy is exactly how a still-active bill would get
+  /// hidden.
+  Future<void> hideBill(String splitBillId) async {
+    try {
+      if (isClosed) return;
+      emit(SplitBillLoading());
+      await repository.hideCancelledSplitBill(splitBillId: splitBillId);
+      if (isClosed) return;
+      emit(const SplitBillHidden('Removed from your list'));
+    } on SplitBillNotFoundException catch (_) {
+      if (isClosed) return;
+      // Already gone is the outcome the user wanted.
+      emit(const SplitBillHidden('Removed from your list'));
+    } on SplitBillPermissionDeniedException catch (e) {
+      if (isClosed) return;
+      emit(SplitBillError(e.message));
+    } on SplitBillStateException catch (e) {
+      if (isClosed) return;
+      emit(SplitBillError(e.message));
+    } catch (e) {
+      if (isClosed) return;
+      emit(SplitBillError(e.toString()));
+    }
+  }
+
   Future<void> declineShare(String splitBillId, {String? reason}) async {
     try {
       if (isClosed) return;

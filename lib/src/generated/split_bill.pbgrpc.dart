@@ -83,6 +83,21 @@ class SplitBillServiceClient extends $grpc.Client {
     return $createUnaryCall(_$cancelSplitBill, request, options: options);
   }
 
+  /// Remove a CANCELLED bill from the creator's own list.
+  ///
+  /// A soft hide, not a delete: a bill that collected money and refunded it is
+  /// the only record those refunds happened. The row stays, co-payers keep
+  /// seeing it (their payment is their record too), and the admin dashboard
+  /// shows it badged cancelled AND deleted.
+  $grpc.ResponseFuture<$0.HideCancelledSplitBillResponse>
+      hideCancelledSplitBill(
+    $0.HideCancelledSplitBillRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$hideCancelledSplitBill, request,
+        options: options);
+  }
+
   /// Decline my share of a split bill
   $grpc.ResponseFuture<$0.DeclineSplitBillShareResponse> declineSplitBillShare(
     $0.DeclineSplitBillShareRequest request, {
@@ -131,6 +146,11 @@ class SplitBillServiceClient extends $grpc.Client {
           '/split_bill.SplitBillService/CancelSplitBill',
           ($0.CancelSplitBillRequest value) => value.writeToBuffer(),
           $0.CancelSplitBillResponse.fromBuffer);
+  static final _$hideCancelledSplitBill = $grpc.ClientMethod<
+          $0.HideCancelledSplitBillRequest, $0.HideCancelledSplitBillResponse>(
+      '/split_bill.SplitBillService/HideCancelledSplitBill',
+      ($0.HideCancelledSplitBillRequest value) => value.writeToBuffer(),
+      $0.HideCancelledSplitBillResponse.fromBuffer);
   static final _$declineSplitBillShare = $grpc.ClientMethod<
           $0.DeclineSplitBillShareRequest, $0.DeclineSplitBillShareResponse>(
       '/split_bill.SplitBillService/DeclineSplitBillShare',
@@ -202,6 +222,15 @@ abstract class SplitBillServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.CancelSplitBillRequest.fromBuffer(value),
         ($0.CancelSplitBillResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.HideCancelledSplitBillRequest,
+            $0.HideCancelledSplitBillResponse>(
+        'HideCancelledSplitBill',
+        hideCancelledSplitBill_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.HideCancelledSplitBillRequest.fromBuffer(value),
+        ($0.HideCancelledSplitBillResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.DeclineSplitBillShareRequest,
             $0.DeclineSplitBillShareResponse>(
         'DeclineSplitBillShare',
@@ -275,6 +304,15 @@ abstract class SplitBillServiceBase extends $grpc.Service {
 
   $async.Future<$0.CancelSplitBillResponse> cancelSplitBill(
       $grpc.ServiceCall call, $0.CancelSplitBillRequest request);
+
+  $async.Future<$0.HideCancelledSplitBillResponse> hideCancelledSplitBill_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.HideCancelledSplitBillRequest> $request) async {
+    return hideCancelledSplitBill($call, await $request);
+  }
+
+  $async.Future<$0.HideCancelledSplitBillResponse> hideCancelledSplitBill(
+      $grpc.ServiceCall call, $0.HideCancelledSplitBillRequest request);
 
   $async.Future<$0.DeclineSplitBillShareResponse> declineSplitBillShare_Pre(
       $grpc.ServiceCall $call,

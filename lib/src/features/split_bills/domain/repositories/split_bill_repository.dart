@@ -35,6 +35,14 @@ abstract class SplitBillRepository {
 
   Future<void> cancelSplitBill({required String splitBillId});
 
+  /// Remove a CANCELLED (or expired) bill from the creator's own list.
+  ///
+  /// A soft hide on the server: the row survives, co-payers keep seeing it
+  /// (their payment and its refund are their record too), and the admin
+  /// dashboard shows it badged cancelled AND deleted. Refused for a bill that
+  /// is still collecting.
+  Future<void> hideCancelledSplitBill({required String splitBillId});
+
   Future<void> declineSplitBillShare({
     required String splitBillId,
     String? reason,

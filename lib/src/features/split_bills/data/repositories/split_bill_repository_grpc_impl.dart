@@ -264,6 +264,40 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
   }
 
   @override
+  Future<void> hideCancelledSplitBill({required String splitBillId}) async {
+    return retryWithBackoff(
+      // Same bounded wait as cancel: a person is watching a spinner.
+      //
+      // Retrying is safe here in a way it is not for most writes — the server
+      // treats hiding an already-hidden bill as success without touching the
+      // timestamp, so a retry cannot rewrite when it happened.
+      maxRetries: 1,
+      operation: () async {
+        final request = pb.HideCancelledSplitBillRequest()
+          ..splitBillId = splitBillId;
+
+        final options = (await grpcClient.callOptions)
+            .mergedWith(CallOptions(timeout: _interactiveDeadline));
+        try {
+          final response =
+              await grpcClient.splitBillClient.hideCancelledSplitBill(
+            request,
+            options: options,
+          );
+
+          if (!response.success) {
+            throw Exception(response.message.isNotEmpty
+                ? response.message
+                : 'Failed to remove');
+          }
+        } on GrpcError catch (e) {
+          _handleGrpcError(e);
+        }
+      },
+    );
+  }
+
+  @override
   Future<void> declineSplitBillShare({
     required String splitBillId,
     String? reason,
