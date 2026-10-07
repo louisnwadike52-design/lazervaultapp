@@ -146,7 +146,17 @@ class _QuoteTimerCardState extends State<QuoteTimerCard> {
                     '${_fmt(amounts.pay)} ${state.fromCurrency.toUpperCase()}'),
                 _buildSummaryRow('You receive',
                     '${_fmt(amounts.receive)} ${state.toCurrency.toUpperCase()}'),
-                _buildSummaryRow('Rate', state.quotedPrice),
+                // THE ALL-IN RATE, in fiat per 1 unit of the asset, so that
+                // rate x quantity reproduces the figures directly above it.
+                //
+                // This printed state.quotedPrice — the provider's raw quote,
+                // in whatever unit Quidax happened to express it. On a buy
+                // that was "0.0007222198148228" (USDC per naira), a number a
+                // customer cannot use for anything; on a sell it was 1344.98
+                // against proceeds of 2683.24 for 2 USDC, i.e. 1341.62 each.
+                // Neither reconciled with the trade on the same sheet, and
+                // neither matched the rate the receipt would later print.
+                _buildSummaryRow('Rate', _allInRateLabel(state, amounts)),
                 // No standalone fee row. "You pay" is already the all-in figure
                 // the wallet is debited (the server quotes it as provider cost
                 // + platform margin), so listing the margin again beneath it
@@ -255,6 +265,33 @@ class _QuoteTimerCardState extends State<QuoteTimerCard> {
     return s.contains('.')
         ? s.replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '')
         : s;
+  }
+
+
+  /// The all-in rate for the quoted trade: the fiat leg over the asset leg.
+  ///
+  /// Derived from the amounts rather than taken from the quote, so our margin
+  /// is inside it — the same rule the amount sheet, the receipt and the
+  /// backend's stamped `unit_rate` all follow. A crypto-to-crypto trade has no
+  /// fiat leg, so it quotes the asset-to-asset ratio instead.
+  String _allInRateLabel(SwapQuotePending state, CryptoTradeAmounts amounts) {
+    final from = state.fromCurrency.toUpperCase();
+    final to = state.toCurrency.toUpperCase();
+    final payIsFiat = CryptoTradeAmounts.isFiat(state.fromCurrency);
+    final receiveIsFiat = CryptoTradeAmounts.isFiat(state.toCurrency);
+
+    if (payIsFiat && amounts.receive > 0) {
+      // Buy: naira per 1 unit of the asset, inclusive of our margin.
+      return '1 $to = ${_fmt(amounts.pay / amounts.receive)} $from';
+    }
+    if (receiveIsFiat && amounts.pay > 0) {
+      // Sell: naira per 1 unit sold, net of our margin.
+      return '1 $from = ${_fmt(amounts.receive / amounts.pay)} $to';
+    }
+    if (amounts.pay > 0) {
+      return '1 $from = ${_fmt(amounts.receive / amounts.pay)} $to';
+    }
+    return state.quotedPrice;
   }
 
   Widget _buildSummaryRow(String label, String value) {
