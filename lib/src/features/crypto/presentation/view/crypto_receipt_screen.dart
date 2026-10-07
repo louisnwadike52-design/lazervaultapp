@@ -306,63 +306,69 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
       heroCurrency = toAsset;
     }
 
-    final assetAmountLabel = switch (d.type) {
-      CryptoTransactionType.buy => 'You receive',
-      CryptoTransactionType.sell => 'You sell',
-      CryptoTransactionType.swap => 'You receive',
-      CryptoTransactionType.send => 'You send',
-      CryptoTransactionType.deposit => 'You receive',
-    };
 
+    // THE CANONICAL PAYLOAD, not a bespoke label map.
+    //
+    // This screen used to build its own human-labelled map ("Asset", "You
+    // receive", "Rate", "Total"…) which the receipt widget printed verbatim.
+    // The ledger row carried a DIFFERENT bespoke map, so the same purchase
+    // rendered two different documents depending on which screen you opened
+    // it from, with a different total on each.
+    //
+    // Both now emit the same machine-readable keys and
+    // CryptoReceiptFields projects them into the one field set — screen, PDF
+    // and share image alike. Anything that is genuinely extra (a real
+    // on-chain network fee, the swap's own asset-to-asset rate) rides
+    // alongside as its own labelled row.
+    final opKey = switch (d.type) {
+      CryptoTransactionType.buy => 'buy',
+      CryptoTransactionType.sell => 'sell',
+      CryptoTransactionType.swap => isCryptoToCrypto ? 'convert' : 'buy',
+      CryptoTransactionType.send => 'send',
+      CryptoTransactionType.deposit => 'buy',
+    };
+    final qty = d.cryptoAmount.trim();
     final metadata = <String, dynamic>{
-      'Asset': d.cryptoName,
-      if (d.type == CryptoTransactionType.swap &&
-          (d.fromCrypto ?? '').isNotEmpty)
-        'From asset': d.fromCrypto!,
-      if (d.type == CryptoTransactionType.swap && (d.toCrypto ?? '').isNotEmpty)
-        'To asset': d.toCrypto!,
-      if (d.cryptoAmount.isNotEmpty)
-        assetAmountLabel: '${d.cryptoAmount} ${d.cryptoSymbol}',
-      // Rate between the two ASSETS for a crypto→crypto swap — "1 USDC =
-      // ₦1.03" was the fiat field reinterpreted, and meant nothing.
-      if (isCryptoToCrypto && d.fiatAmount > 0 && heroAmount > 0)
-        'Rate':
-            '1 $fromAsset = ${(heroAmount / d.fiatAmount).toStringAsFixed(6)} $toAsset',
-      if (!isCryptoToCrypto && d.pricePerUnit > 0)
-        'Rate': '1 ${d.cryptoSymbol} = $sym${_money(d.pricePerUnit)}',
-      // No 'Subtotal' / 'Trading fee' split: the platform margin is carried in
-      // the RATE the user was quoted and accepted, not charged on top. Showing
-      // it as a separate line implied a second deduction and made the total
-      // look inconsistent with the rate right above it. See
-      // cryptoPlatformFeePolicy.
-      //
-      // Network fee stays: it is a real third-party on-chain cost the user
-      // genuinely pays on a send, not our margin.
-      if (d.networkFee > 0) 'Network fee': '$sym${_money(d.networkFee)}',
-      // The CANONICAL swap keys, not a bespoke label.
-      //
-      // UnifiedTransactionReceipt already renders a crypto→crypto trade as
-      // first-class "From"/"To" rows when it sees op == 'convert', and hides
-      // these five raw keys from the generic metadata dump — that is how the
-      // same trade opened from the DASHBOARD feed has always rendered, because
-      // crypto-service stamps them on the accounts ledger row.
-      //
-      // The crypto page built its own metadata map and stamped none of them,
-      // so the same trade rendered "Swap → USDC" with the source asset absent
-      // from the page AND from the shared PDF. Emitting the same keys here
-      // makes both entry points one mechanism instead of two that drift.
+      'op': opKey,
+      'asset': d.cryptoSymbol.toUpperCase(),
       if (isCryptoToCrypto) ...{
-        'op': 'convert',
         'from_currency': fromAsset,
         'to_currency': toAsset,
         if (d.fiatAmount > 0) 'from_amount': d.fiatAmount.toStringAsFixed(6),
         if (heroAmount > 0) 'to_amount': heroAmount.toStringAsFixed(6),
+      } else if (d.type == CryptoTransactionType.sell) ...{
+        'from_currency': d.cryptoSymbol.toUpperCase(),
+        'to_currency': fiatCurrency.toUpperCase(),
+        if (qty.isNotEmpty) 'from_amount': qty,
+        'fiat_currency': fiatCurrency.toUpperCase(),
+        if (heroAmount > 0) 'fiat_total': heroAmount.toStringAsFixed(2),
+      } else ...{
+        'from_currency': fiatCurrency.toUpperCase(),
+        'to_currency': d.cryptoSymbol.toUpperCase(),
+        if (qty.isNotEmpty) 'to_amount': qty,
+        'fiat_currency': fiatCurrency.toUpperCase(),
+        if (heroAmount > 0) 'fiat_total': heroAmount.toStringAsFixed(2),
       },
-      if (heroAmount > 0)
-        'Total': isCryptoToCrypto
-            ? '${heroAmount.toStringAsFixed(6)} $toAsset'
-            : '$sym${_money(heroAmount)}',
-      'Payment method': d.paymentMethod,
+      // RATE × QUANTITY MUST REPRODUCE THE TOTAL, so it is derived from the
+      // total rather than taken from the quote — the same rule the backend
+      // applies when it stamps unit_rate on the ledger row. A rate lifted
+      // from the provider quote does not multiply out once our margin is
+      // added, and a document whose own two numbers disagree reads as an
+      // error in the money.
+      if (!isCryptoToCrypto && heroAmount > 0)
+        if (double.tryParse(qty) case final q?)
+          if (q > 0) 'unit_rate': (heroAmount / q).toStringAsFixed(2),
+      if (d.paymentMethod.trim().isNotEmpty)
+        'payment_method': d.paymentMethod.trim(),
+      'order_reference': r.transactionId,
+      // Asset-to-asset rate for a crypto→crypto trade. "1 USDC = ₦1.03" was
+      // the fiat field reinterpreted, and meant nothing.
+      if (isCryptoToCrypto && d.fiatAmount > 0 && heroAmount > 0)
+        'Rate':
+            '1 $fromAsset = ${(heroAmount / d.fiatAmount).toStringAsFixed(6)} $toAsset',
+      // A real third-party on-chain cost the user genuinely pays on a send —
+      // not our margin, which is already carried in the rate they accepted.
+      if (d.networkFee > 0) 'Network fee': '$sym${_money(d.networkFee)}',
       'Settlement': 'Instant',
       'Custody': 'Managed by licensed partner',
     };

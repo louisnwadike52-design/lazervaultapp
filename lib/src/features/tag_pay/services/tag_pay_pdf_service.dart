@@ -14,6 +14,7 @@ import 'package:lazervault/core/utils/receipt_raster.dart';
 import '../domain/entities/tag_pay_entity.dart';
 import '../domain/entities/user_tag_entity.dart';
 import 'package:lazervault/src/features/widgets/receipt_metadata_humanizer.dart';
+import 'package:lazervault/src/features/crypto/utils/crypto_receipt_fields.dart';
 
 part 'tag_pay_pdf_helpers.dart';
 part 'tag_pay_pdf_builders.dart';
@@ -1227,17 +1228,45 @@ class TagPayPdfService {
     // Minor-unit plumbing (kobo / crypto minor scales) is humanized to naira
     // or dropped — a customer receipt never shows raw ledger units.
     final detailRows = <pw.Widget>[];
-    metadata.forEach((k, v) {
-      final val = _pdfSafe(v?.toString());
-      if (val == null || val.isEmpty) return;
-      final human = humanizeReceiptMetadataEntry(k, val);
-      if (human == null) return;
+    void addRow(String label, String value) {
       detailRows.add(pw.Padding(
         padding: const pw.EdgeInsets.symmetric(vertical: 3),
-        child: _buildDetailRow(_pdfSafe(human.label) ?? human.label,
-            _pdfSafe(human.value) ?? human.value),
+        child: _buildDetailRow(_pdfSafe(label) ?? label, _pdfSafe(value) ?? value),
       ));
-    });
+    }
+
+    // THE SAME FIELD SET THE SCREEN SHOWS.
+    //
+    // This used to dump every metadata entry in insertion order, so a trade
+    // opened from transaction history exported the ledger's own keys (Asset /
+    // Paid with / Asset amount / Order reference) while the same trade opened
+    // from the crypto page exported Description / Reference / Type / Category
+    // / Currency / You receive / Rate / Total / Payment method / Settlement /
+    // Custody. One purchase, two documents. CryptoReceiptFields is now the
+    // single definition and both render from it.
+    final cryptoRows = CryptoReceiptFields.rows(
+      metadata.map((k, v) => MapEntry(k, v)),
+      fiatSymbol: _currencySymbolFor(transaction.currency),
+      reference: reference,
+    );
+    if (cryptoRows.isNotEmpty) {
+      for (final r in cryptoRows) {
+        addRow(r.key, r.value);
+      }
+    } else {
+      // A row captured before the canonical payload existed. Keep the generic
+      // dump rather than exporting a blank document.
+      //
+      // Minor-unit plumbing (kobo / crypto minor scales) is humanized to naira
+      // or dropped — a customer receipt never shows raw ledger units.
+      metadata.forEach((k, v) {
+        final val = _pdfSafe(v?.toString());
+        if (val == null || val.isEmpty) return;
+        final human = humanizeReceiptMetadataEntry(k, val);
+        if (human == null) return;
+        addRow(human.label, human.value);
+      });
+    }
 
     pdf.addPage(
       pw.Page(

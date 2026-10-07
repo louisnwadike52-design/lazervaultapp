@@ -11,6 +11,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+
+import 'package:lazervault/src/features/crypto/utils/crypto_receipt_fields.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_asset_avatar.dart';
@@ -541,6 +543,31 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     final swapToAmt = md['to_amount']?.toString() ?? '';
     final sendCcy = (md['currency']?.toString() ?? '').toUpperCase();
 
+    // A CRYPTO TRADE RENDERS ONE FIELD SET, WHEREVER IT IS OPENED FROM.
+    //
+    // The crypto page and this widget used to produce different documents for
+    // the same purchase — the page showed Description/Reference/Type/Category/
+    // Currency/You receive/Rate/Total/Payment method/Settlement/Custody, and
+    // this showed the ledger's own narration plus Balance before/after,
+    // Transaction ID, Asset, Paid with, Asset amount, Order reference, each
+    // deriving its total from a different column. The PDF and the share image
+    // inherited whichever one the user happened to arrive through.
+    //
+    // crypto-service now stamps the trade as DATA on the ledger row, and
+    // CryptoReceiptFields projects it. Rows that predate the payload are not
+    // matched and keep today's generic rendering — projecting an empty field
+    // set over them would make old receipts worse, not better.
+    final cryptoRows = CryptoReceiptFields.rows(
+      tx.metadata,
+      fiatSymbol: _currencySymbol,
+      reference: tx.transactionReference,
+    );
+    if (cryptoRows.isNotEmpty) {
+      return _detailsCardFrom([
+        for (final r in cryptoRows) _DetailEntry(r.key, r.value),
+      ]);
+    }
+
     final rows = <_DetailEntry>[
       if (isSwap && swapFromAmt.isNotEmpty && swapFromCcy.isNotEmpty)
         _DetailEntry('From', '$swapFromAmt $swapFromCcy'),
@@ -771,6 +798,15 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       }
     }
 
+    return _detailsCardFrom(rows);
+  }
+
+  /// Renders the Details card for an already-decided row list.
+  ///
+  /// Extracted so the crypto projection and the generic path share one card
+  /// — header, spacing, divider, QR and reference caption — rather than the
+  /// crypto branch growing a second, slightly different card.
+  Widget _detailsCardFrom(List<_DetailEntry> rows) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
