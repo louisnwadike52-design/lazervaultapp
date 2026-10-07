@@ -50,10 +50,29 @@ class SplitBillDetailScreen extends StatelessWidget {
   }
 }
 
-class _SplitBillDetailView extends StatelessWidget {
+class _SplitBillDetailView extends StatefulWidget {
   final String splitBillId;
 
   const _SplitBillDetailView({required this.splitBillId});
+
+  @override
+  State<_SplitBillDetailView> createState() => _SplitBillDetailViewState();
+}
+
+class _SplitBillDetailViewState extends State<_SplitBillDetailView> {
+  /// The last successfully loaded bill.
+  ///
+  /// Held so an ACTION (cancel, decline, remind) never blanks the page: those
+  /// emit a loading state, and rendering a full-page spinner for them is what
+  /// left the user staring at a loader after a cancel that had already
+  /// succeeded on the backend.
+  SplitBillEntity? _lastBill;
+
+  /// Whether a cancel is in flight, so the progress shows ON THE BUTTON
+  /// instead of replacing the screen.
+  bool _cancelInFlight = false;
+
+  String get splitBillId => widget.splitBillId;
 
   String? _getCurrentUserId(BuildContext context) =>
       context.read<AuthenticationCubit>().userId;
@@ -99,6 +118,15 @@ class _SplitBillDetailView extends StatelessWidget {
             state is SplitBillDetailLoaded ||
             state is SplitBillError,
         listener: (context, state) {
+          // Any terminal outcome clears the button's spinner, including an
+          // error — otherwise a failed cancel leaves the CTA spinning forever.
+          if (state is! SplitBillLoading &&
+              state is! SplitBillDetailLoading &&
+              state is! SplitBillPaymentProcessing) {
+            if (_cancelInFlight) {
+              setState(() => _cancelInFlight = false);
+            }
+          }
           if (state is SplitBillCancelled) {
             showAppSnackbar(
               'Cancelled',
@@ -130,24 +158,28 @@ class _SplitBillDetailView extends StatelessWidget {
           }
         },
         builder: (context, state) {
-          if (state is SplitBillLoading ||
-              state is SplitBillDetailLoading ||
-              state is SplitBillPaymentProcessing) {
-            return const Center(
-              child: LazerVaultLoader.small(),
-            );
+          if (state is SplitBillDetailLoaded) {
+            _lastBill = state.bill;
+            return _buildDetailContent(context, state.bill);
           }
 
-          if (state is SplitBillDetailLoaded) {
-            return _buildDetailContent(context, state.bill);
+          // AN ACTION MUST NOT BLANK THE PAGE.
+          //
+          // Cancelling emits SplitBillLoading, which replaced the whole screen
+          // with a spinner. The cancel then succeeded on the backend, but the
+          // reply was a state this builder does not render, so the user was
+          // left on a loader with their bill gone from view — reported exactly
+          // that way. Once the detail has loaded we keep showing it and put
+          // the progress on the button instead.
+          if (_lastBill != null) {
+            return _buildDetailContent(context, _lastBill!);
           }
 
           if (state is SplitBillError) {
             return _buildErrorContent(context, state.message);
           }
 
-          // Only SplitBillInitial can reach here (buildWhen filters the rest),
-          // and it is genuinely "the first load has not answered yet".
+          // Nothing has loaded yet — this is the genuine first-load spinner.
           return const Center(
             child: LazerVaultLoader.small(),
           );
@@ -267,6 +299,69 @@ class _SplitBillDetailView extends StatelessWidget {
           _buildInfoRow('Date', _formatDate(bill.createdAt)),
           const SizedBox(height: 10),
           _buildInfoRow('Status', _statusLabel(bill.status)),
+          // A CANCELLED bill gets a banner, not just a word in a row.
+          //
+          // "Cancelled" sat as grey text in a list of six other grey rows, so
+          // the single fact that changes what every button on this page means
+          // was the least visible thing on it.
+          if (_isTerminalStatus(bill.status)) ...[
+            const SizedBox(height: 14),
+            _buildTerminalBanner(bill.status),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// True for a status after which no money can move on this bill.
+  bool _isTerminalStatus(SplitBillStatus status) =>
+      status == SplitBillStatus.cancelled || status == SplitBillStatus.expired;
+
+  Widget _buildTerminalBanner(SplitBillStatus status) {
+    final cancelled = status == SplitBillStatus.cancelled;
+    final color = cancelled ? const Color(0xFFEF4444) : const Color(0xFF9CA3AF);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.45)),
+      ),
+      child: Row(
+        children: [
+          Icon(cancelled ? Icons.cancel_rounded : Icons.timer_off_rounded,
+              color: color, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  cancelled ? 'Cancelled' : 'Expired',
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  // Say what it MEANS, not just what it is. Anyone who already
+                  // paid needs to know their money is coming back.
+                  cancelled
+                      ? 'No one can pay this bill any more. Any share already '
+                          'paid is refunded to the payer.'
+                      : 'This bill passed its due date and can no longer be paid.',
+                  style: const TextStyle(
+                    color: Color(0xFF9CA3AF),
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -1312,6 +1407,7 @@ class _SplitBillDetailView extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(dialogContext);
+              setState(() => _cancelInFlight = true);
               context.read<SplitBillCubit>().cancelBill(splitBillId);
             },
             child: const Text(
