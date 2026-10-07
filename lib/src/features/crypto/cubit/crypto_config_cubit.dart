@@ -20,21 +20,41 @@ class CryptoOpFee extends Equatable {
     required this.mode,
     required this.bps,
     required this.fixedNgnMinor,
+    this.capNgnMinor = 0,
+    this.floorNgnMinor = 0,
   });
 
-  /// Parse the "{mode}|{bps}|{fixed_ngn_minor}" wire encoding. Tolerant of
-  /// missing parts so a server/client version skew never throws.
+  /// Fee ceiling in kobo, 0 = uncapped. The server applies one
+  /// (capFeeMinor); without it here the estimate overstates every trade
+  /// large enough for the cap to bind — at 25bps and a ₦2,500 ceiling that
+  /// is everything above ₦1,000,000.
+  final int capNgnMinor;
+
+  /// Fee floor in kobo, 0 = none. Without it the estimate UNDERSTATES a small
+  /// trade, showing the user less than they will actually pay — the worse of
+  /// the two directions to be wrong in.
+  final int floorNgnMinor;
+
+  /// Parse "{mode}|{bps}|{fixed_ngn_minor}|{cap_ngn_minor}|{floor_ngn_minor}".
+  ///
+  /// Tolerant of missing trailing parts, so an older server that still sends
+  /// the 3-field form degrades to no cap and no floor rather than throwing —
+  /// which is exactly the behaviour this replaced, not a regression.
   factory CryptoOpFee.parse(String raw) {
     final parts = raw.split('|');
+    int at(int i) => parts.length > i ? (int.tryParse(parts[i]) ?? 0) : 0;
     return CryptoOpFee(
       mode: parts.isNotEmpty && parts[0] == 'fixed' ? 'fixed' : 'percentage',
-      bps: parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0,
-      fixedNgnMinor: parts.length > 2 ? (int.tryParse(parts[2]) ?? 0) : 0,
+      bps: at(1),
+      fixedNgnMinor: at(2),
+      capNgnMinor: at(3),
+      floorNgnMinor: at(4),
     );
   }
 
   @override
-  List<Object?> get props => [mode, bps, fixedNgnMinor];
+  List<Object?> get props =>
+      [mode, bps, fixedNgnMinor, capNgnMinor, floorNgnMinor];
 }
 
 class CryptoRuntimeConfig extends Equatable {
@@ -92,12 +112,29 @@ class CryptoRuntimeConfig extends Equatable {
   double feeForOp(String op, double fiatAmount, String currency) {
     final f = opFees[op.toLowerCase()];
     if (f == null) return fiatAmount * (feeDisplayFallbackBps / 10000.0);
-    if (f.mode == 'fixed' &&
-        currency.toLowerCase() == 'ngn' &&
-        f.fixedNgnMinor > 0) {
+    final isNgn = currency.toLowerCase() == 'ngn';
+    if (f.mode == 'fixed' && isNgn && f.fixedNgnMinor > 0) {
       return f.fixedNgnMinor / 100.0; // kobo → ₦
     }
-    return fiatAmount * (f.bps / 10000.0);
+    var fee = fiatAmount * (f.bps / 10000.0);
+
+    // FLOOR then CAP — the same order as the server's capFeeMinor, and the
+    // order matters: an operator who sets a floor above the cap has
+    // misconfigured it, and the safe reading of that is the one charging the
+    // user LESS. Applying them in the other order would charge more.
+    //
+    // Both are NGN-denominated, so they only apply to an NGN leg. Applying a
+    // kobo ceiling to a USD amount would clamp a USD 5,000 fee to USD 25.
+    if (isNgn) {
+      final floor = f.floorNgnMinor / 100.0;
+      if (floor > 0 && fee < floor) fee = floor;
+      final cap = f.capNgnMinor / 100.0;
+      if (cap > 0 && fee > cap) fee = cap;
+    }
+
+    // Never more than the trade itself, matching the server's last clamp.
+    if (fee > fiatAmount && fiatAmount > 0) fee = fiatAmount;
+    return fee < 0 ? 0 : fee;
   }
 
   /// Fallback used before the first RPC succeeds. Mirrors
