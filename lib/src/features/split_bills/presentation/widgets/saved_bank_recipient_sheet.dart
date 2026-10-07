@@ -84,12 +84,44 @@ class _SavedBankRecipientSheetState extends State<SavedBankRecipientSheet> {
     super.dispose();
   }
 
-  /// A recipient usable as a split-bill receiver: an external bank account with
-  /// a 10-digit NUBAN. Anything else would fail verification downstream, so it
-  /// is filtered here rather than offered and then rejected.
+  /// A recipient usable as a split-bill EXTERNAL BANK receiver.
+  ///
+  /// "10 digits" was not enough, and it is the whole bug. A LazerVault user's
+  /// receiving number is a 10-digit virtual account too (Emmanuella's is
+  /// 8243151112), so every internal contact passed this test and was offered
+  /// as a bank account — the reported screenshot shows exactly that, with the
+  /// bank field reading "Lazervault".
+  ///
+  /// An internal payee belongs to the "A Lazervault user" receiver mode, where
+  /// the money moves wallet-to-wallet with no bank rail and no transfer fee.
+  /// Offering one here produces a payout to our own VA through NIBSS: it may
+  /// even succeed, and it would charge the organiser a bank fee for a transfer
+  /// that never needed one.
+  ///
+  /// Internal is PROVEN three ways rather than inferred, because each one
+  /// alone has a hole: `type` is defaulted to 'internal' on several
+  /// construction paths that simply lacked a bank, a saved row's bank label
+  /// may be absent, and only rows saved since the account-id work carry
+  /// [RecipientModel.internalAccountId].
   bool _isBankRecipient(RecipientModel r) {
     final acct = r.accountNumber.trim();
-    return acct.length == 10 && int.tryParse(acct) != null;
+    if (acct.length != 10 || int.tryParse(acct) == null) return false;
+
+    // 1. The server said so.
+    if ((r.type ?? '').toLowerCase() == 'internal') return false;
+    // 2. It is pinned to a LazerVault account.
+    if ((r.internalAccountId ?? '').trim().isNotEmpty) return false;
+    if ((r.internalUserId ?? '').trim().isNotEmpty) return false;
+    // 3. The bank IS LazerVault.
+    if (r.displayBankName.trim().toLowerCase().contains('lazervault')) {
+      return false;
+    }
+    if (r.bankName.trim().toLowerCase().contains('lazervault')) return false;
+
+    // A bank is required: an external payout cannot be routed without one,
+    // and a blank bank here is what produced "Next" demanding a bank the user
+    // had already chosen.
+    return r.displayBankName.trim().isNotEmpty;
   }
 
   bool _matches(RecipientModel r) {

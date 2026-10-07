@@ -1172,9 +1172,27 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
 
   void _applySavedExternalRecipient(RecipientModel r) {
     final acct = r.accountNumber.trim();
-    // Only an external bank account (10-digit NUBAN) can be the receiver here;
-    // a saved LazerVault user belongs to the "Lazervault user" receiver mode.
-    if (r.isInternalUserRecipient || acct.length != 10) {
+    // Only an EXTERNAL bank account can be the receiver here. A LazerVault
+    // user's receiving number is a 10-digit virtual account as well, so the
+    // length test alone let internal contacts through — they belong to the
+    // "A Lazervault user" mode, where money moves wallet-to-wallet with no
+    // bank rail and no transfer fee. Routing one through NIBSS may even
+    // succeed and would charge the organiser a fee for nothing.
+    final looksInternal = r.isInternalUserRecipient ||
+        (r.type ?? '').toLowerCase() == 'internal' ||
+        (r.internalAccountId ?? '').trim().isNotEmpty ||
+        (r.internalUserId ?? '').trim().isNotEmpty ||
+        r.displayBankName.trim().toLowerCase().contains('lazervault');
+    if (looksInternal) {
+      showAppSnackbar(
+        'That is a Lazervault user',
+        'Pick "A Lazervault user" above to pay them directly — no bank '
+            'transfer fee. This option is for external bank accounts.',
+        type: AppSnackbarType.error,
+      );
+      return;
+    }
+    if (acct.length != 10) {
       showAppSnackbar(
         'Not a bank account',
         'Choose a saved bank recipient with a 10-digit account number.',
