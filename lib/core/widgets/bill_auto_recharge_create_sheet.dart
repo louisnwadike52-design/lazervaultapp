@@ -36,6 +36,9 @@ class BillAutoRechargeCreateSheet extends StatefulWidget {
     this.successMessage = 'Auto-recharge scheduled',
     this.amountPresets = const [500, 1000, 2000, 5000],
     this.initialAmount,
+    this.amountLocked = false,
+    this.amountLabel = 'Amount',
+    this.amountLockedNote,
     this.initialFrequency,
     this.initialDayOfWeek,
     this.initialDayOfMonth,
@@ -60,6 +63,22 @@ class BillAutoRechargeCreateSheet extends StatefulWidget {
   final String successMessage;
   final List<double> amountPresets;
 
+  /// Lock the amount to [initialAmount] and hide the presets.
+  ///
+  /// A PLAN-PRICED service (data, cable, internet) has no free amount: ₦375 is
+  /// the price of one specific bundle, and typing ₦500 names nothing the
+  /// provider sells. Leaving the field editable invited exactly that — the
+  /// renewal would then either fail or silently buy something else. For those
+  /// services the plan IS the choice, and it is made before this sheet opens.
+  final bool amountLocked;
+
+  /// The heading above the amount, so a locked one can say what it is
+  /// ("Plan price") rather than inviting an edit it will not accept.
+  final String amountLabel;
+
+  /// One line under a locked amount explaining where it comes from.
+  final String? amountLockedNote;
+
   /// Non-null values prefill the fields — used when editing an existing
   /// schedule (title/ctaLabel should be updated too so copy reads right).
   final double? initialAmount;
@@ -81,6 +100,9 @@ class BillAutoRechargeCreateSheet extends StatefulWidget {
     String successMessage = 'Auto-recharge scheduled',
     List<double> amountPresets = const [500, 1000, 2000, 5000],
     double? initialAmount,
+    bool amountLocked = false,
+    String amountLabel = 'Amount',
+    String? amountLockedNote,
     String? initialFrequency,
     int? initialDayOfWeek,
     int? initialDayOfMonth,
@@ -103,8 +125,11 @@ class BillAutoRechargeCreateSheet extends StatefulWidget {
         maxAmount: maxAmount,
         currencySymbol: currencySymbol,
         successMessage: successMessage,
-        amountPresets: amountPresets,
+        amountPresets: amountLocked ? const [] : amountPresets,
         initialAmount: initialAmount,
+        amountLocked: amountLocked,
+        amountLabel: amountLabel,
+        amountLockedNote: amountLockedNote,
         initialFrequency: initialFrequency,
         initialDayOfWeek: initialDayOfWeek,
         initialDayOfMonth: initialDayOfMonth,
@@ -273,15 +298,43 @@ class _BillAutoRechargeCreateSheetState
             style: TextStyle(fontSize: 13.sp, color: _textMuted),
           ),
           SizedBox(height: 20.h),
-          _label('Amount'),
+          _label(widget.amountLabel),
           SizedBox(height: 8.h),
-          TextField(
-            controller: _amountController,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            style: TextStyle(color: Colors.white, fontSize: 16.sp),
-            decoration: _fieldDecoration(hint: '1000'),
-          ),
+          // A plan-priced service shows the price, it does not ask for one.
+          // Rendering it as a disabled text field would still look like an
+          // input that refuses to work; a plain read-only row reads as a fact.
+          if (widget.amountLocked)
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+              decoration: BoxDecoration(
+                color: _fieldBg,
+                borderRadius: BorderRadius.circular(10.r),
+                border: Border.all(color: _border),
+              ),
+              child: Text(
+                '${widget.currencySymbol}${(widget.initialAmount ?? 0).toStringAsFixed(0)}',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600),
+              ),
+            )
+          else
+            TextField(
+              controller: _amountController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              style: TextStyle(color: Colors.white, fontSize: 16.sp),
+              decoration: _fieldDecoration(hint: '1000'),
+            ),
+          if (widget.amountLocked &&
+              (widget.amountLockedNote ?? '').isNotEmpty) ...[
+            SizedBox(height: 6.h),
+            Text(widget.amountLockedNote!,
+                style: TextStyle(
+                    color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
+          ],
           if (widget.amountPresets.isNotEmpty) ...[
             SizedBox(height: 10.h),
             Wrap(

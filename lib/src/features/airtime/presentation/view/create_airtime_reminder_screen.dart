@@ -163,7 +163,19 @@ class _CreateAirtimeReminderScreenState
     }
 
     final amountText = _amountController.text.trim();
-    final amount = amountText.isEmpty ? null : double.tryParse(amountText);
+    final amount = double.tryParse(amountText);
+    // Defence in depth behind the field validator: the save path must not be
+    // reachable without a buyable amount, whatever route got here (a deep
+    // link, a pre-filled arg, an agent).
+    if (amount == null || amount < 50 || amount > 10000) {
+      Get.snackbar('Amount required',
+          'Enter an amount between \u20A650 and \u20A610,000',
+          backgroundColor: const Color(0xFFEF4444),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          margin: EdgeInsets.all(16.w));
+      return;
+    }
 
     if (_isEditing && _reminderId != null) {
       context.read<AirtimeReminderCubit>().updateReminder(
@@ -300,7 +312,7 @@ class _CreateAirtimeReminderScreenState
                     ],
                   ),
                   SizedBox(height: 24.h),
-                  _sectionTitle('Amount (Optional)'),
+                  _sectionTitle('Amount'),
                   SizedBox(height: 12.h),
                   _textField(
                     controller: _amountController,
@@ -308,7 +320,13 @@ class _CreateAirtimeReminderScreenState
                     keyboardType: TextInputType.number,
                     prefixText: '₦ ',
                     validator: (value) {
-                      if (value == null || value.trim().isEmpty) return null;
+                      // REQUIRED. A reminder with no amount is a calendar
+                      // entry: when the user acts on it there is nothing to
+                      // buy, so the flow has to stop and ask again at the
+                      // worst moment — the one they set the reminder to avoid.
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Amount is required';
+                      }
                       final amount = double.tryParse(value.trim());
                       if (amount == null || amount <= 0) {
                         return 'Please enter a valid amount';

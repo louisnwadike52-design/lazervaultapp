@@ -12,6 +12,8 @@ import '../cubit/data_beneficiary_state.dart';
 import '../cubit/data_reminder_cubit.dart';
 import '../cubit/data_reminder_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/widgets/data_plan_picker_sheet.dart';
+import 'package:lazervault/src/features/data_bundles/domain/entities/data_plan_entity.dart';
 part 'create_data_reminder_screen_widgets.dart';
 
 /// Create or edit a data reminder. Mirrors `CreateAirtimeReminderScreen`.
@@ -33,6 +35,16 @@ class _CreateDataReminderScreenState extends State<CreateDataReminderScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _amountController = TextEditingController();
+
+  /// The plan this reminder is for. REQUIRED.
+  ///
+  /// A data purchase is a PLAN, not a sum of money: ₦375 is the price of a
+  /// specific bundle, and a typed ₦500 names nothing the provider sells. The
+  /// screen used to ask for an amount, so the reminder stored a number the
+  /// purchase could not be made from and something downstream had to guess a
+  /// plan — or fail. Selecting the plan makes variation_id (what the purchase
+  /// actually needs) a real choice, and the amount is read off it.
+  DataPlanEntity? _plan;
 
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
   TimeOfDay _selectedTime = const TimeOfDay(hour: 9, minute: 0);
@@ -65,6 +77,19 @@ class _CreateDataReminderScreenState extends State<CreateDataReminderScreen> {
         _descriptionController.text = existing.description ?? '';
         if (existing.amount != null && existing.amount! > 0) {
           _amountController.text = existing.amount!.toStringAsFixed(0);
+          // Show the saved plan straight away. Its PRICE is re-read from the
+          // live catalogue the moment the user opens the picker — a data plan's
+          // price moves, and a remembered one is how a renewal gets refused for
+          // being a few naira short.
+          if ((existing.variationId ?? '').isNotEmpty) {
+            _plan = DataPlanEntity(
+              variationId: existing.variationId!,
+              name: existing.title,
+              price: existing.amount!,
+              network: _networkForPicker(),
+              availability: 'available',
+            );
+          }
         }
         _isRecurring = existing.isRecurring;
         if (existing.recurrenceType != null) {
@@ -162,28 +187,18 @@ class _CreateDataReminderScreenState extends State<CreateDataReminderScreen> {
           backgroundColor: const Color(0xFFEF4444), colorText: Colors.white);
       return;
     }
-    final amountText = _amountController.text.trim();
-    // Amount is required now — a data reminder without an amount is
-    // just a calendar event, and the downstream auto-fire path needs
-    // a concrete number to bill against when the user acts on it.
-    if (amountText.isEmpty) {
-      Get.snackbar('Amount required', 'Please enter the amount to remind for',
+    // The PLAN is the input; the amount is its price. A reminder without one
+    // is just a calendar event, and the auto-fire path has nothing to buy.
+    final plan = _plan;
+    if (plan == null) {
+      Get.snackbar('Plan required', 'Please choose the data plan to remind for',
           backgroundColor: const Color(0xFFEF4444),
           colorText: Colors.white,
           snackPosition: SnackPosition.TOP,
           margin: EdgeInsets.all(16.w));
       return;
     }
-    final amount = double.tryParse(amountText);
-    if (amount == null || amount <= 0) {
-      Get.snackbar(
-          'Invalid amount', 'Please enter a valid amount greater than 0',
-          backgroundColor: const Color(0xFFEF4444),
-          colorText: Colors.white,
-          snackPosition: SnackPosition.TOP,
-          margin: EdgeInsets.all(16.w));
-      return;
-    }
+    final amount = plan.price;
 
     if (_isEditing && _reminderId != null) {
       context.read<DataReminderCubit>().updateReminder(
@@ -192,6 +207,7 @@ class _CreateDataReminderScreenState extends State<CreateDataReminderScreen> {
             description: _descriptionController.text.trim(),
             reminderDate: dt,
             amount: amount,
+            variationId: plan.variationId,
             isRecurring: _isRecurring,
             recurrenceType: _isRecurring ? _recurrence.name : null,
           );
@@ -201,11 +217,79 @@ class _CreateDataReminderScreenState extends State<CreateDataReminderScreen> {
             description: _descriptionController.text.trim(),
             reminderDate: dt,
             amount: amount,
+            variationId: plan.variationId,
             beneficiaryId: _selectedBeneficiary?.id,
             isRecurring: _isRecurring,
             recurrenceType: _isRecurring ? _recurrence.name : null,
           );
     }
+  }
+
+  /// The network to load plans for.
+  ///
+  /// From the linked contact when there is one; otherwise MTN, which the
+  /// picker lets the user change by picking a different contact. Guessing is
+  /// better than an empty sheet: most reminders are created straight after a
+  /// purchase on a known line.
+  String _networkForPicker() =>
+      (_selectedBeneficiary?.networkCode ?? '').trim().isNotEmpty
+          ? _selectedBeneficiary!.networkCode.trim()
+          : 'mtn';
+
+  Future<void> _pickPlan() async {
+    final picked = await showDataPlanPickerSheet(
+      context,
+      network: _networkForPicker(),
+      selectedVariationId: _plan?.variationId,
+    );
+    if (picked == null || !mounted) return;
+    setState(() {
+      _plan = picked;
+      // Keep the amount field in step for any code still reading it, and so
+      // an edit round-trips the price the user actually chose.
+      _amountController.text = picked.price.toStringAsFixed(0);
+    });
+  }
+
+  Widget _planSelector() {
+    final p = _plan;
+    return GestureDetector(
+      onTap: _pickPlan,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E1E1E),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: p == null
+                  ? Text('Choose a data plan',
+                      style: TextStyle(
+                          color: const Color(0xFF9CA3AF), fontSize: 14.sp))
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(p.name,
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600)),
+                        SizedBox(height: 2.h),
+                        Text('\u20A6${p.price.toStringAsFixed(0)}',
+                            style: TextStyle(
+                                color: const Color(0xFF9CA3AF),
+                                fontSize: 12.sp)),
+                      ],
+                    ),
+            ),
+            Icon(Icons.keyboard_arrow_down,
+                color: const Color(0xFF9CA3AF), size: 20.sp),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -303,23 +387,9 @@ class _CreateDataReminderScreenState extends State<CreateDataReminderScreen> {
                     ],
                   ),
                   SizedBox(height: 24.h),
-                  _section('Amount'),
+                  _section('Plan'),
                   SizedBox(height: 12.h),
-                  _textField(
-                    controller: _amountController,
-                    hint: '0',
-                    keyboardType: TextInputType.number,
-                    prefix: '\u20A6 ',
-                    validator: (v) {
-                      final raw = v?.trim() ?? '';
-                      if (raw.isEmpty) return 'Amount is required';
-                      final a = double.tryParse(raw);
-                      if (a == null || a <= 0) {
-                        return 'Please enter a valid amount';
-                      }
-                      return null;
-                    },
-                  ),
+                  _planSelector(),
                   SizedBox(height: 24.h),
                   _section('Link to Saved Contact (Optional)'),
                   SizedBox(height: 12.h),

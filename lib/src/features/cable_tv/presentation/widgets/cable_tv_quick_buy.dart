@@ -426,6 +426,14 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
       ctaLabel: 'Save schedule',
       successMessage: 'Schedule saved',
       initialAmount: pkg.amount,
+      // A PLAN-PRICED service has no free amount: the price belongs to the
+      // bundle the user already chose, and a typed figure names nothing the
+      // provider sells. Showing an editable box with preset chips invited a
+      // renewal that would fail or silently buy something else.
+      amountLocked: true,
+      amountLabel: 'Package price',
+      amountLockedNote:
+          'Set by the package you selected — auto-renew always buys that bouquet.',
       onSubmit: ({
         required double amount,
         required String frequency,

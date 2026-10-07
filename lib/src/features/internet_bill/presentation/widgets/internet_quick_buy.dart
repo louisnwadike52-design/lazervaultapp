@@ -449,6 +449,14 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
       // amount the user actually entered so an auto-renew is never created
       // for ₦0.
       initialAmount: _effectiveAmount,
+      // A PLAN-PRICED service has no free amount: the price belongs to the
+      // bundle the user already chose, and a typed figure names nothing the
+      // provider sells. Showing an editable box with preset chips invited a
+      // renewal that would fail or silently buy something else.
+      amountLocked: true,
+      amountLabel: 'Plan price',
+      amountLockedNote:
+          'Set by the plan you selected — auto-renew always buys that plan.',
       onSubmit: ({
         required double amount,
         required String frequency,
