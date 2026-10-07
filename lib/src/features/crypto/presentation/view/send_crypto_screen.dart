@@ -96,6 +96,45 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
   double get _typedAmount =>
       double.tryParse(_amountController.text.trim()) ?? 0.0;
   double get _priceOf => _selected?.currentPrice ?? 0.0;
+
+  /// Our own send fee, formatted, or null when no fee is configured.
+  ///
+  /// Read from the ADMIN TUNABLES the server publishes (opFee['send']), so
+  /// this is whatever an operator set and never a number written here. Two
+  /// shapes, matching the server exactly:
+  ///
+  ///   percentage — charged in the SENT CRYPTO's units
+  ///                (SendCryptoFeeMinor), so it shows in the asset.
+  ///   fixed      — a flat ₦ fee debited from the fiat wallet
+  ///                (SendFixedFiatMinor), so it shows in naira.
+  ///
+  /// Null for an internal Lazervault transfer and whenever the configured fee
+  /// is zero — a permanent "₦0.00" row teaches people to stop reading it.
+  String? _platformSendFeeLabel() {
+    if (_isInternal && !_advancedOnNetwork) return null;
+    final CryptoOpFee? f;
+    try {
+      f = GetIt.I<CryptoConfigCubit>().config.opFees['send'];
+    } catch (_) {
+      return null;
+    }
+    if (f == null) return null;
+
+    if (f.mode == 'fixed') {
+      if (f.fixedNgnMinor <= 0) return null;
+      return '${CurrencySymbols.currentSymbol}'
+          '${(f.fixedNgnMinor / 100.0).toStringAsFixed(2)}';
+    }
+    if (f.bps <= 0) return null;
+    final qty = _cryptoAmount;
+    if (qty <= 0) return null;
+    // Proportional, in the asset — the same arithmetic the server applies to
+    // the amount's minor units. The cap and floor are ₦-denominated and so
+    // do not apply to a crypto-denominated fee.
+    final fee = qty * (f.bps / 10000.0);
+    if (fee <= 0) return null;
+    return '${_trimNum(fee)} ${_selected?.cryptoSymbol.toUpperCase() ?? ''}';
+  }
   // Fiat value of a holding's full balance (locale currency). Prefers the
   // server-computed totalValue; falls back to quantity × current price.
   double _fiatBalanceOf(CryptoHolding h) =>
@@ -907,6 +946,23 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                               : 'Network fee applies';
                         }(),
                 ),
+                // OUR send fee, when an operator has configured one.
+                //
+                // The server charges it (SendCryptoFeeMinor for a percentage,
+                // in the SENT crypto's units; SendFixedFiatMinor for a flat ₦
+                // fee, debited from the fiat wallet) and this screen showed
+                // only the NETWORK fee. With no crypto.fee.send.* rows the
+                // charge is zero, so nothing was visibly wrong — but the
+                // moment an operator sets one from the admin dashboard the
+                // app would charge it without ever naming it. A fee the user
+                // is not shown before authorising is the thing this row
+                // exists to prevent.
+                //
+                // Rendered only when non-zero, so the review stays clean in
+                // the (current) no-fee configuration rather than carrying a
+                // permanent "₦0.00" line.
+                if (_platformSendFeeLabel() != null)
+                  _reviewRow('Lazervault fee', _platformSendFeeLabel()!),
                 if (!_isInternal || _advancedOnNetwork) ...[
                   const SizedBox(height: 8),
                   const Text(
