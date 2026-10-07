@@ -24,6 +24,7 @@ import '../widgets/electricity_rollover_preference_sheet.dart'
 import '../cubit/electricity_bill_cubit.dart';
 import '../cubit/electricity_bill_state.dart';
 import '../../domain/entities/bill_payment_entity.dart' show MeterType;
+import '../view/meter_entry_mode.dart';
 import '../../domain/entities/beneficiary_entity.dart';
 import '../../domain/entities/provider_entity.dart';
 import '../../domain/repositories/electricity_bill_repository.dart'
@@ -124,6 +125,23 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
   /// opposed to a provider answering that the meter is not theirs. Only the
   /// former lets the customer continue on their own confirmation.
   bool _verifyUnavailable = false;
+
+  /// How the customer chose to identify their meter.
+  ///
+  /// This used to be implicit: AUTO was the only path, and the disco picker
+  /// appeared as a FALLBACK after the auto lookup failed. That is the wrong
+  /// way round for someone who already knows their disco — they had to watch
+  /// a lookup fail before being offered the thing they wanted first.
+  ///
+  /// Now it is a choice made up front:
+  ///   auto   — type the meter number; we find the disco and the name.
+  ///   manual — pick the disco and meter type, then type the number; we
+  ///            verify against THAT disco afterwards, and let the payment
+  ///            proceed unconfirmed when the disco cannot answer.
+  MeterEntryMode _entryMode = MeterEntryMode.auto;
+
+  /// True when a disco has been chosen — by the user in manual mode, or by the
+  /// fallback after an auto lookup failed.
   bool get _manualMode => _manualDisco != null;
 
   @override
@@ -290,17 +308,95 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
     } catch (_) {/* best-effort */}
   }
 
+  /// Switch between the two ways of identifying a meter.
+  ///
+  /// Everything resolved under the previous mode is dropped. Carrying a
+  /// disco or a verified name across the switch is how someone ends up paying
+  /// a meter they are no longer looking at — the one mistake in this flow that
+  /// cannot be undone.
+  void _setEntryMode(MeterEntryMode mode) {
+    if (_entryMode == mode) return;
+    _debounce?.cancel();
+    setState(() {
+      _entryMode = mode;
+      _meter = null;
+      _manualDisco = null;
+      _manualUnverified = false;
+      _verifyUnavailable = false;
+      _validateError = null;
+      _validating = false;
+      _manualType = MeterType.prepaid;
+    });
+    // Re-run the lookup for a number already typed, under the new rules.
+    final meter = _meterController.text.trim();
+    if (mode == MeterEntryMode.auto && meter.length >= 10) {
+      _debounce = Timer(const Duration(milliseconds: 150), () {
+        if (!mounted) return;
+        context
+            .read<ElectricityBillCubit>()
+            .smartValidateMeter(meterNumber: meter);
+      });
+    }
+  }
+
+  Widget _buildEntryModeTabs() {
+    Widget tab(MeterEntryMode mode, String label, String subtitle) {
+      final selected = _entryMode == mode;
+      return Expanded(
+        child: GestureDetector(
+          key: Key('elec_mode_${mode.name}'),
+          onTap: () => _setEntryMode(mode),
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 10.w),
+            decoration: BoxDecoration(
+              color: selected ? _accent : const Color(0xFF1A1A1A),
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 12.5.sp,
+                        fontWeight: FontWeight.w600)),
+                SizedBox(height: 1.h),
+                Text(subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                        color: selected ? Colors.white70 : _muted,
+                        fontSize: 10.sp)),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Row(children: [
+      tab(MeterEntryMode.auto, 'Auto', 'We find your disco'),
+      SizedBox(width: 8.w),
+      tab(MeterEntryMode.manual, 'Manual', 'Choose it yourself'),
+    ]);
+  }
+
   void _onMeterChanged() {
     _debounce?.cancel();
     final meter = _meterController.text.trim();
+    final manual = _entryMode == MeterEntryMode.manual;
     if (_meter != null ||
         _validateError != null ||
-        _manualDisco != null ||
+        (!manual && _manualDisco != null) ||
         _manualUnverified) {
       setState(() {
         _meter = null;
         _validateError = null;
-        _manualDisco = null;
+        // In MANUAL mode the disco is the customer's own choice and survives
+        // edits to the number. Clearing it would make them re-pick on every
+        // keystroke of a corrected meter.
+        if (!manual) _manualDisco = null;
         _manualUnverified = false;
         _verifyUnavailable = false;
       });
@@ -308,6 +404,15 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
     _recomputeExistingBeneficiary();
     if (meter.length < 10) return;
     _debounce = Timer(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
+      // MANUAL: the customer already told us the disco, so asking every
+      // provider in the country would be slower, noisier, and could resolve a
+      // DIFFERENT disco than the one they picked — which is the one mistake
+      // here that cannot be undone.
+      if (_entryMode == MeterEntryMode.manual) {
+        if (_manualDisco != null) _validateManual();
+        return;
+      }
       context
           .read<ElectricityBillCubit>()
           .smartValidateMeter(meterNumber: meter);
@@ -716,6 +821,25 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        _buildEntryModeTabs(),
+        SizedBox(height: 16.h),
+        // MANUAL asks for the disco and meter type BEFORE the number, so the
+        // verification that follows is scoped to the disco the customer
+        // actually named. Auto keeps the number first — it is the only thing
+        // that mode needs.
+        if (_entryMode == MeterEntryMode.manual) ...[
+          _label('Disco'),
+          SizedBox(height: 8.h),
+          // The SAME picker and type toggle the fallback path uses — a second
+          // copy here would be one more place for the two to disagree about
+          // which discos exist or which meter types a disco supports.
+          _discoPicker(),
+          if (_manualDisco != null) ...[
+            SizedBox(height: 12.h),
+            _typeToggle(_manualDisco!),
+          ],
+          SizedBox(height: 20.h),
+        ],
         _label('Meter number'),
         SizedBox(height: 8.h),
         _meterField(),
@@ -846,6 +970,15 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
     if (_meterConfirmed) {
       return _verifiedCard(m!);
     }
+    // In the MANUAL tab the disco picker and type toggle are already rendered
+    // above the meter field, so the fallback must contribute only its
+    // messages — rendering it whole would put a second picker on the screen.
+    if (_entryMode == MeterEntryMode.manual) {
+      if (_validateError != null || _manualUnverified) {
+        return _manualNotices();
+      }
+      return const SizedBox.shrink();
+    }
     if (_validateError != null || _manualMode) return _manualFallback();
     return const SizedBox.shrink();
   }
@@ -882,6 +1015,122 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
   }
 
   // Shown when the meter couldn't auto-resolve its disco: pick it manually.
+  /// The disco row. ONE definition, used by the manual tab and by the
+  /// fallback that appears when an auto lookup cannot resolve a meter — two
+  /// copies would be one more place for them to disagree about which discos
+  /// exist.
+  Widget _discoPicker() {
+    return GestureDetector(
+      onTap: _openDiscoPicker,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+        decoration: BoxDecoration(
+          color: _card,
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: _border),
+        ),
+        child: Row(children: [
+          if (_manualDisco != null)
+            BillerLogo(
+                code: _manualDisco!.providerCode,
+                name: _manualDisco!.providerName,
+                logoUrl: _manualDisco!.logoUrl,
+                brandColorHex: '#FBBF24',
+                size: 28,
+                borderRadius: 8)
+          else
+            Icon(Icons.bolt, color: _muted, size: 20.sp),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Text(_manualDisco?.providerName ?? 'Select your disco',
+                style: GoogleFonts.inter(
+                    color: _manualDisco != null ? Colors.white : _muted,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w500)),
+          ),
+          Icon(Icons.expand_more, color: _muted, size: 20.sp),
+        ]),
+      ),
+    );
+  }
+
+  /// The fallback's MESSAGES only — the "could not confirm" warning and the
+  /// lookup error. Used by the manual tab, which renders its own picker above
+  /// the meter field and must not render a second one here.
+  /// "We could not confirm this meter" — the one notice that asks the customer
+  /// to take on a risk we normally carry, so it names what we could not do,
+  /// what can go wrong, and that continuing is their call.
+  Widget _unverifiedNotice(ElectricityProviderEntity? disco) {
+    return Padding(
+      padding: EdgeInsets.only(top: 10.h),
+      child: Container(
+        padding: EdgeInsets.all(12.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFB923C).withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(10.r),
+          border: Border.all(
+              color: const Color(0xFFFB923C).withValues(alpha: 0.35)),
+        ),
+        child: Row(children: [
+          Icon(Icons.warning_amber_rounded,
+              color: const Color(0xFFFB923C), size: 16.sp),
+          SizedBox(width: 8.w),
+          Expanded(
+            // The customer is being asked to take on a risk we normally carry
+            // for them, so the copy has to be straight about three things:
+            // what we could not do, what could go wrong, and that the choice
+            // is theirs. Naming the consequence (a token issued to the wrong
+            // meter cannot be reversed) is what makes "continue" an informed
+            // decision rather than a shrug.
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Meter not confirmed',
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 12.5.sp,
+                      fontWeight: FontWeight.w600),
+                ),
+                SizedBox(height: 3.h),
+                Text(
+                  "${disco?.providerName ?? 'This provider'} could not be reached to confirm "
+                  'the account name for this meter. Please check that the meter number and '
+                  'provider are correct before you continue, as tokens sent to the wrong '
+                  'meter cannot be reversed.',
+                  style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 11.5.sp,
+                      height: 1.35),
+                ),
+              ],
+            ),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  Widget _manualNotices() {
+    if (_manualUnverified) return _unverifiedNotice(_manualDisco);
+    final err = _validateError;
+    if (err == null) return const SizedBox.shrink();
+    return Padding(
+      padding: EdgeInsets.only(top: 2.h),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Icon(Icons.info_outline, color: const Color(0xFFFB923C), size: 15.sp),
+        SizedBox(width: 6.w),
+        Expanded(
+          child: Text(err,
+              style: GoogleFonts.inter(
+                  color: Colors.white.withValues(alpha: 0.85),
+                  fontSize: 11.5.sp,
+                  height: 1.35)),
+        ),
+      ]),
+    );
+  }
+
   Widget _manualFallback() {
     final disco = _manualDisco;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -907,90 +1156,12 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
         ]),
         SizedBox(height: 10.h),
       ],
-      GestureDetector(
-        onTap: _openDiscoPicker,
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
-          decoration: BoxDecoration(
-            color: _card,
-            borderRadius: BorderRadius.circular(14.r),
-            border: Border.all(color: _border),
-          ),
-          child: Row(children: [
-            if (disco != null)
-              BillerLogo(
-                  code: disco.providerCode,
-                  name: disco.providerName,
-                  logoUrl: disco.logoUrl,
-                  brandColorHex: '#FBBF24',
-                  size: 28,
-                  borderRadius: 8)
-            else
-              Icon(Icons.bolt, color: _muted, size: 20.sp),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Text(disco?.providerName ?? 'Select your disco',
-                  style: GoogleFonts.inter(
-                      color: disco != null ? Colors.white : _muted,
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w500)),
-            ),
-            Icon(Icons.expand_more, color: _muted, size: 20.sp),
-          ]),
-        ),
-      ),
+      _discoPicker(),
       if (disco != null) ...[
         SizedBox(height: 12.h),
         _typeToggle(disco),
       ],
-      if (_manualUnverified) ...[
-        SizedBox(height: 10.h),
-        Container(
-          padding: EdgeInsets.all(12.w),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFB923C).withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(10.r),
-            border: Border.all(
-                color: const Color(0xFFFB923C).withValues(alpha: 0.35)),
-          ),
-          child: Row(children: [
-            Icon(Icons.warning_amber_rounded,
-                color: const Color(0xFFFB923C), size: 16.sp),
-            SizedBox(width: 8.w),
-            Expanded(
-              // The customer is being asked to take on a risk we normally carry
-              // for them, so the copy has to be straight about three things:
-              // what we could not do, what could go wrong, and that the choice
-              // is theirs. Naming the consequence (a token issued to the wrong
-              // meter cannot be reversed) is what makes "continue" an informed
-              // decision rather than a shrug.
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Meter not confirmed',
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 12.5.sp,
-                        fontWeight: FontWeight.w600),
-                  ),
-                  SizedBox(height: 3.h),
-                  Text(
-                    "${disco?.providerName ?? 'This provider'} could not be reached to confirm "
-                    'the account name for this meter. Please check that the meter number and '
-                    'provider are correct before you continue, as tokens sent to the wrong '
-                    'meter cannot be reversed.',
-                    style: GoogleFonts.inter(
-                        color: Colors.white.withValues(alpha: 0.85),
-                        fontSize: 11.5.sp,
-                        height: 1.35),
-                  ),
-                ],
-              ),
-            ),
-          ]),
-        ),
-      ],
+      if (_manualUnverified) _unverifiedNotice(disco),
     ]);
   }
 
