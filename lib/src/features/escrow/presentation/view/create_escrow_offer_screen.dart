@@ -143,6 +143,8 @@ class _CreateEscrowOfferScreenState extends State<CreateEscrowOfferScreen> {
     final result = await UnifiedUserSearchSheet.show(
       context,
       title: _isSell ? 'Offer to (optional)' : 'Find the seller',
+      // An escrow counterparty must be on the platform to accept and deliver.
+      mode: RecipientPickerMode.lazervaultUsers,
       subtitle: _isSell
           ? 'Pick a buyer, or skip and share the offer by link instead.'
           : 'The seller must be on Lazervault. They\'ll review and accept before you pay.',

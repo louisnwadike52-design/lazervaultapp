@@ -1907,6 +1907,9 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       context,
       title: 'Send crypto to',
       subtitle: 'Search any Lazervault user',
+      // Crypto send routes an internal Quidax sub→sub transfer keyed on the
+      // recipient's userId; a bank account has none and cannot receive it.
+      mode: RecipientPickerMode.lazervaultUsers,
       // Crypto variant: only Lazervault users (they receive an internal Quidax
       // sub→sub transfer) — external/bank recipients are filtered out inside
       // the sheet, so there's nothing here that can't receive crypto.

@@ -25,18 +25,46 @@ part 'unified_user_search_sheet_widgets.dart';
 ///
 /// Returns the picked [UnifiedSearchResult] (or null if dismissed). Callers
 /// adapt with `.toUserSearchResultEntity()` / `.toRecipientModel()`.
+/// Who a flow is allowed to pick.
+///
+/// Every surface that opens this sheet means one of exactly three things, and
+/// getting it wrong is not cosmetic: a "tag people" flow that offers a saved
+/// BANK recipient lets the user tag an account number, which no service can
+/// act on — you cannot tag a bank. The reverse is just as wrong: a bank-payout
+/// picker that offers a Lazervault user routes wallet money out through NIBSS
+/// and charges a transfer fee for a payment that needed neither.
+enum RecipientPickerMode {
+  /// Anyone the user could send money to — Lazervault users AND saved
+  /// external bank accounts. Correct for send-funds and batch transfer, where
+  /// both are real destinations.
+  anyone,
+
+  /// Lazervault users only. Correct for every flow that acts on a PERSON:
+  /// tagging, inviting, adding a member or employee, crypto send, escrow
+  /// counterparties, chat.
+  lazervaultUsers,
+
+  /// Saved external bank accounts only. Correct for a payout destination that
+  /// must leave the platform.
+  bankAccounts,
+}
+
 class UnifiedUserSearchSheet extends StatefulWidget {
   final String title;
   final String? subtitle;
   final String? initialQuery;
   final ValueChanged<UnifiedSearchResult> onSelected;
 
-  /// When true, only recipients that are Lazervault users (non-empty userId)
-  /// are shown/selectable — external bank recipients are hidden. Used by flows
-  /// that can ONLY pay a Lazervault account (e.g. crypto send, which routes an
-  /// internal Quidax sub→sub transfer keyed on the recipient's userId). This is
-  /// the crypto "variant" of the shared sheet.
+  /// Who this flow may pick. See [RecipientPickerMode].
+  final RecipientPickerMode mode;
+
+  /// Legacy alias for `mode: RecipientPickerMode.lazervaultUsers`. Retained so
+  /// existing call sites keep compiling; prefer [mode].
   final bool internalOnly;
+
+  /// The effective mode, honouring the legacy flag.
+  RecipientPickerMode get effectiveMode =>
+      internalOnly ? RecipientPickerMode.lazervaultUsers : mode;
 
   const UnifiedUserSearchSheet({
     super.key,
@@ -44,6 +72,7 @@ class UnifiedUserSearchSheet extends StatefulWidget {
     this.title = 'Find recipient',
     this.subtitle,
     this.initialQuery,
+    this.mode = RecipientPickerMode.anyone,
     this.internalOnly = false,
   });
 
@@ -58,6 +87,7 @@ class UnifiedUserSearchSheet extends StatefulWidget {
     String title = 'Find recipient',
     String? subtitle,
     String? initialQuery,
+    RecipientPickerMode mode = RecipientPickerMode.anyone,
     bool internalOnly = false,
   }) {
     return showModalBottomSheet<UnifiedSearchResult>(
@@ -70,6 +100,7 @@ class UnifiedUserSearchSheet extends StatefulWidget {
         title: title,
         subtitle: subtitle,
         initialQuery: initialQuery,
+        mode: mode,
         internalOnly: internalOnly,
         onSelected: (r) => Navigator.pop(sheetCtx, r),
       ),
@@ -118,7 +149,11 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
     _cubit = serviceLocator<UnifiedUserSearchCubit>();
     // Scope the shared cubit to this sheet's mode so the backend returns only
     // LazerVault users (no saved external bank recipients) in person-search.
-    _cubit.internalOnly = widget.internalOnly;
+    // Ask the SERVER to narrow too, so the directory half is filtered before
+    // it is paged — client-side filtering alone would show a short page, or an
+    // empty one, while more eligible matches sat on page two.
+    _cubit.internalOnly =
+        widget.effectiveMode == RecipientPickerMode.lazervaultUsers;
     _scroll.addListener(_onScroll);
     if ((widget.initialQuery ?? '').trim().isNotEmpty) {
       _controller.text = widget.initialQuery!.trim();
@@ -427,19 +462,23 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
     // beneficiaries — since those can't receive crypto.
     final localAll = state.results.take(state.localCount).toList();
     final globalAll = state.results.skip(state.localCount).toList();
-    final local =
-        widget.internalOnly ? localAll.where(_canReceive).toList() : localAll;
-    final global =
-        widget.internalOnly ? globalAll.where(_canReceive).toList() : globalAll;
+    final mode = widget.effectiveMode;
+    final local = localAll.where(_allowedByMode).toList();
+    final global = globalAll.where(_allowedByMode).toList();
 
-    // Everything was filtered out (internalOnly and no Lazervault matches):
-    // show the empty state rather than two bare section headers.
-    if (widget.internalOnly &&
+    // Everything was filtered out: show an empty state that names WHAT was
+    // searched for, rather than two bare section headers or a generic "no
+    // results" that leaves the user retyping a name that was never eligible.
+    if (mode != RecipientPickerMode.anyone &&
         local.isEmpty &&
         global.isEmpty &&
         state.status == UnifiedSearchStatus.success) {
       return _hint(
-          Icons.search_off, 'No Lazervault user found for “${state.query}”');
+        Icons.search_off,
+        mode == RecipientPickerMode.lazervaultUsers
+            ? 'No Lazervault user found for “${state.query}”'
+            : 'No saved bank account found for “${state.query}”',
+      );
     }
 
     final children = <Widget>[];
@@ -476,6 +515,23 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
   /// bank beneficiaries come back with an empty userId and are excluded in
   /// internalOnly mode.
   bool _canReceive(UnifiedSearchResult r) => r.userId.trim().isNotEmpty;
+
+  /// Whether a result may be offered in this flow.
+  ///
+  /// A Lazervault user is identified by having a user id — a saved EXTERNAL
+  /// bank recipient has none, which is what separates the two cleanly.
+  /// For bank mode the account number is also required, because a row with no
+  /// number cannot be paid out to and would fail at verification.
+  bool _allowedByMode(UnifiedSearchResult r) {
+    switch (widget.effectiveMode) {
+      case RecipientPickerMode.anyone:
+        return true;
+      case RecipientPickerMode.lazervaultUsers:
+        return _canReceive(r);
+      case RecipientPickerMode.bankAccounts:
+        return !_canReceive(r) && r.accountNumber.trim().isNotEmpty;
+    }
+  }
 
   Widget _sectionHeader(String label) {
     return Padding(

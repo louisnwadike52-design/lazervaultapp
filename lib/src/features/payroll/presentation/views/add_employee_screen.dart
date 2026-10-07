@@ -545,6 +545,9 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
       context,
       title: 'Select employee',
       subtitle: 'Search any Lazervault user to pay',
+      // An employee is a person with a wallet — a saved bank recipient has
+      // no user to attach a salary to.
+      mode: RecipientPickerMode.lazervaultUsers,
     );
     if (result == null) return;
     // Only real platform users can be credited internally.

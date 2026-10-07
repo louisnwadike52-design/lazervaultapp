@@ -90,7 +90,10 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
   /// then toggles the picked user into the selection. Reopen to add more.
   Future<void> _openUnifiedSearch() async {
     final result =
-        await UnifiedUserSearchSheet.show(context, title: 'Add people');
+        await UnifiedUserSearchSheet.show(context,
+            title: 'Add people',
+            // You cannot tag a bank account — TagPay acts on a PERSON.
+            mode: RecipientPickerMode.lazervaultUsers);
     if (result == null || !mounted) return;
     _toggleUser(result.toUserSearchResultEntity());
   }
