@@ -111,6 +111,29 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
         if (w != null) w,
     ];
 
+    // SIDE BY SIDE when both providers are shown.
+    //
+    // They used to stack full-width, which — with the Voice button on its own
+    // row above — pushed "or continue with" and Google clean off the bottom of
+    // the screen behind the background wave. Equal widths keep Sign in with
+    // Apple at least as prominent as Google, which is what Apple's guidance
+    // actually requires; the thing that failed review before was compact
+    // ICON-ONLY squares, not an equal-width labelled pair.
+    //
+    // A single provider stays full-width: half a row with nothing beside it
+    // would just look broken.
+    if (ordered.length == 2) {
+      return <Widget>[
+        Row(
+          children: [
+            Expanded(child: ordered[0]),
+            SizedBox(width: 10.w),
+            Expanded(child: ordered[1]),
+          ],
+        ),
+      ];
+    }
+
     return <Widget>[
       for (var i = 0; i < ordered.length; i++) ...[
         if (i > 0) SizedBox(height: 12.h),
@@ -260,18 +283,28 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
   /// ID are intentionally NOT here — they live on the passcode LOCK screen, the
   /// only place a cached session exists for a local OS gate to unlock.
   Widget _buildAlternateAuthRow() {
+    // Voice sits INLINE now. As its own centred column with a heading it cost
+    // roughly 110dp of vertical space on a screen that was already overflowing,
+    // which is what pushed the social buttons off the bottom. The row keeps it
+    // beside the passcode link so both alternatives read as one choice.
     return Padding(
-      padding: EdgeInsets.only(top: 20.h),
-      child: Column(
+      padding: EdgeInsets.only(top: 18.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('Or sign in with',
-              style: TextStyle(fontSize: 13.sp, color: Colors.black45)),
-          SizedBox(height: 14.h),
           _altAuthButton(
             icon: Icons.mic_none_rounded,
             label: 'Voice',
             onTap: _onVoiceLogin,
           ),
+          if (_hasPasscodeSetup) ...[
+            SizedBox(width: 28.w),
+            _altAuthButton(
+              icon: Icons.password_rounded,
+              label: 'Passcode',
+              onTap: _switchToPasscodeLogin,
+            ),
+          ],
         ],
       ),
     );
@@ -494,17 +527,26 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
                 return SafeArea(
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
-                    padding: EdgeInsets.symmetric(
-                      vertical: 16.0.h,
-                      horizontal: 16.0.w,
+                    // Bottom padding clears the background wave AND the home
+                    // indicator. With only 16dp the last element sat under the
+                    // curve, which is why "or continue with" and the provider
+                    // buttons appeared cut off.
+                    padding: EdgeInsets.only(
+                      top: 16.0.h,
+                      left: 16.0.w,
+                      right: 16.0.w,
+                      bottom: 48.0.h + MediaQuery.of(context).padding.bottom,
                     ),
                     child: Form(
                       key: _formKey,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          // Was 10% of screen height — pure dead space on a
+                          // screen whose content already overflows.
                           SizedBox(
-                              height: _responsiveController.screenHeight * 0.1),
+                              height:
+                                  _responsiveController.screenHeight * 0.04),
                           Center(
                             child: UniversalImageLoader(
                               imagePath: AppData.appLogo,
@@ -577,21 +619,11 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
                                 ),
                           if (!isLoading) _buildAlternateAuthRow(),
                           SizedBox(height: 12.0.h),
-                          if (_hasPasscodeSetup && !isLoading)
-                            Center(
-                              child: TextButton(
-                                onPressed: _switchToPasscodeLogin,
-                                child: Text(
-                                  'Use Passcode Instead',
-                                  style: TextStyle(
-                                    fontSize: 16.sp,
-                                    color: Colors.black87,
-                                    fontWeight: FontWeight.w600,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
-                              ),
-                            ),
+                          // "Use Passcode Instead" moved into
+                          // _buildAlternateAuthRow beside Voice — two ways to
+                          // sign in without a password belong together, and
+                          // separating them cost another full row.
+
                           // Google/Apple sign-in — full-width buttons in each
                           // brand's official treatment (the compact grey
                           // squares failed both style guides). Hidden while a
