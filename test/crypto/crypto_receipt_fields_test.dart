@@ -148,5 +148,49 @@ void main() {
       ));
       expect(m['Payment method'], 'Business account');
     });
+    group('a send states what it was worth', () {
+      // A send is asset->asset: no fiat moves, so it reaches neither Total
+      // branch and the receipt used to show "1 USDC" with no money value at
+      // all. The backend captures an indicative valuation AT SEND TIME —
+      // pricing it later from the then-current rate would silently restate a
+      // historical document.
+      const send = {
+        'op': 'send',
+        'from_currency': 'usdc',
+        'from_amount': '1',
+        'fiat_currency': 'NGN',
+        'fiat_estimate': '1355.01',
+      };
+
+      test('renders the captured estimate, marked as one', () {
+        final m = _asMap(CryptoReceiptFields.rows(send, fiatSymbol: '₦'));
+        expect(m['Value at send'], '≈ ₦1,355.01');
+        expect(m.containsKey('Total'), isFalse,
+            reason: 'no fiat moved, so nothing may be labelled Total');
+      });
+
+      test('an unpriced send shows no row rather than a confident zero', () {
+        for (final bad in <Map<String, dynamic>>[
+          {'op': 'send', 'from_currency': 'usdc', 'from_amount': '1'},
+          {...send, 'fiat_estimate': '0'},
+          {...send, 'fiat_estimate': ''},
+          {...send, 'fiat_estimate': 'not a number'},
+        ]) {
+          final m = _asMap(CryptoReceiptFields.rows(bad, fiatSymbol: '₦'));
+          expect(m.containsKey('Value at send'), isFalse,
+              reason: 'unpriced: $bad');
+        }
+      });
+
+      test('the raw key never double-prints in a generic dump', () {
+        expect(CryptoReceiptFields.consumedKeys, contains('fiat_estimate'));
+      });
+
+      test('buy and sell keep their real Total and gain no estimate row', () {
+        final m = _asMap(CryptoReceiptFields.rows(_buy, fiatSymbol: '₦'));
+        expect(m.containsKey('Value at send'), isFalse);
+        expect(m.containsKey('Total'), isTrue);
+      });
+    });
   });
 }

@@ -80,6 +80,10 @@ class CryptoReceiptFields {
     final fiatTotal = _num(metadata, 'fiat_total');
     final unitRate = _num(metadata, 'unit_rate');
     final orderRef = _str(metadata, 'order_reference');
+    // Indicative value captured AT SEND TIME. A send is asset->asset and
+    // moves no fiat, so this is deliberately not `fiat_total` and is never
+    // labelled Total — it is what the transfer was worth when it left.
+    final fiatEstimate = _num(metadata, 'fiat_estimate');
 
     final isConvert = op == 'convert';
     final isSell = op == 'sell';
@@ -150,6 +154,15 @@ class CryptoReceiptFields {
     } else if (isConvert && toAmt.isNotEmpty && toCcy.isNotEmpty) {
       add('Total', '$toAmt $toCcy');
     }
+    // A SEND has no fiat leg, so it reaches neither branch above and the
+    // receipt used to state no money value at all — "1 USDC" and nothing to
+    // say what that was worth. The captured estimate fills that, marked with
+    // ≈ and named "Value at send" so it can never be read as a total that
+    // moved. Rendered only when the backend actually priced it; an unpriced
+    // send shows no row rather than a confident zero.
+    if (isSend && fiatEstimate > 0) {
+      add('Value at send', '≈ $fiatSymbol${_money.format(fiatEstimate)}');
+    }
     add(
       'Payment method',
       (paymentMethod ?? '').trim().isNotEmpty
@@ -175,6 +188,7 @@ class CryptoReceiptFields {
     'to_amount',
     'fiat_currency',
     'fiat_total',
+    'fiat_estimate',
     'unit_rate',
     'platform_fee',
     'order_reference',
