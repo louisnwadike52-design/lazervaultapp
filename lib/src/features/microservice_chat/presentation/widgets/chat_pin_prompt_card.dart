@@ -204,6 +204,11 @@ class ChatPinPromptCardState extends State<ChatPinPromptCard>
         // Money leaving the wallet for the user's own bank — not a send to
         // somebody else, so deliberately not the send arrow.
         return Icons.account_balance_rounded;
+      case 'deposit':
+        // Money coming IN from the user's own bank. Same two accounts as a
+        // withdrawal, opposite direction, so the arrow has to differ or the
+        // one screen that says what is about to happen says the wrong thing.
+        return Icons.south_west_rounded;
       case 'exchange_convert':
         return Icons.swap_horiz_rounded;
       case 'exchange_international':
@@ -239,6 +244,8 @@ class ChatPinPromptCardState extends State<ChatPinPromptCard>
         return 'Submit insurance claim';
       case 'withdraw':
         return 'Confirm withdrawal';
+      case 'deposit':
+        return 'Confirm deposit';
       case 'exchange_convert':
         return 'Confirm currency conversion';
       case 'exchange_international':
