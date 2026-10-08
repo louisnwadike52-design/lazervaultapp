@@ -133,4 +133,25 @@ void main() {
       expect(r.holder, isNull);
     });
   });
+
+  group('a middle field that was never loaded is still unknown', () {
+    test('holder known before bank — the hole the first fix left open', () {
+      // Omitting TRAILING unknowns cannot express "bank unknown, holder
+      // known": the bank sits in the middle slot and had to be written empty.
+      // Reading that as "recorded as absent" would re-create the phantom
+      // change through a narrower door.
+      final stored =
+          AccountNumberChangeWatcher.snapshotFor('1234567890', '', 'PRAIZ ONAH');
+      final prev = AccountNumberChangeWatcher.parseSnapshot(stored);
+
+      expect(prev.holder, 'PRAIZ ONAH');
+      expect(prev.bank, isNull,
+          reason: 'the bank was never loaded, so it cannot have changed');
+
+      const currentBank = 'Nombank MFB';
+      final bankMoved =
+          prev.bank != null && currentBank.isNotEmpty && prev.bank != currentBank;
+      expect(bankMoved, isFalse);
+    });
+  });
 }

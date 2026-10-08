@@ -169,10 +169,28 @@ class AccountNumberChangeWatcher {
   static ({String number, String? bank, String? holder}) parseSnapshot(
       String raw) {
     final parts = raw.split('\t');
+    // An EMPTY field reads as unknown, exactly like a missing one.
+    //
+    // Omitting trailing unknowns covers the common case, but a positional
+    // format cannot say "bank unknown, holder known" — a first pass that had
+    // the holder before the bank still had to write an empty bank in the
+    // middle slot. Treating that as "recorded as absent" would compare '' to
+    // the real bank on the next load and announce the phantom change all over
+    // again, just through a narrower door.
+    //
+    // Nothing is lost: the only thing '' could ever have expressed is "this
+    // account genuinely had no bank name", and reporting that it later GAINED
+    // one is not a change worth interrupting anybody for.
+    String? at(int i) {
+      if (parts.length <= i) return null;
+      final v = parts[i];
+      return v.isEmpty ? null : v;
+    }
+
     return (
       number: parts.isNotEmpty ? parts[0] : '',
-      bank: parts.length > 1 ? parts[1] : null,
-      holder: parts.length > 2 ? parts[2] : null,
+      bank: at(1),
+      holder: at(2),
     );
   }
 
