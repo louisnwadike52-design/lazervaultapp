@@ -18,6 +18,7 @@ import 'package:lazervault/src/features/transaction_history/data/datasources/tra
 import 'package:lazervault/src/features/transaction_history/data/repository/transaction_classifier.dart'
     as classifier;
 import 'package:lazervault/src/features/transaction_history/domain/repository/transaction_history_repository.dart';
+import '../../../../../core/utils/brand_bank.dart';
 
 /// gRPC-based Transaction History Repository
 /// Uses gRPC for communication with the accounts microservice
@@ -933,6 +934,33 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
         if (resolvedName != null) {
           metadata['bank_name'] = resolvedName;
         }
+      }
+    }
+
+    // AN INTERNAL TRANSFER IS STILL A TRANSFER TO SOMEBODY — name us as the
+    // institution so the history row carries OUR mark.
+    //
+    // TransactionCard renders a BankLogo whenever metadata has a bank_name,
+    // and BankLogo already answers "Lazervault" with our own logo. External
+    // transfers resolved above and got their bank's mark; internal ones have
+    // no bank_code by construction, so they fell through to a generic arrow
+    // glyph — the same neutral icon used for auto-save and every other
+    // movement. Two transfers to two different people looked identical.
+    //
+    // POSITIVE EVIDENCE ONLY. Set from counterparty_user_id, which the ledger
+    // writes for exactly the on-platform case (verified on prod: internal rows
+    // carry {"counterparty_user_id": …} and no bank fields). An external
+    // transfer whose bank_code we simply failed to resolve must NOT be
+    // relabelled as us — that would put the Lazervault logo on money that
+    // left the platform.
+    if ((metadata['bank_name'] as String?)?.isEmpty ?? true) {
+      final counterpartyId = (metadata['counterparty_user_id'] ?? '').toString();
+      final hasBankCode =
+          ((metadata['bank_code'] ?? metadata['destination_bank_code']) ?? '')
+              .toString()
+              .isNotEmpty;
+      if (counterpartyId.isNotEmpty && !hasBankCode) {
+        metadata['bank_name'] = BrandBank.displayName;
       }
     }
 
