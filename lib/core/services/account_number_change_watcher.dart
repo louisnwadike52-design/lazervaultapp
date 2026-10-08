@@ -72,7 +72,7 @@ class AccountNumberChangeWatcher {
 
         if (previousRaw == null) {
           await prefs.setString(
-              key, _snapshot(currentNumber, currentBank, currentHolder));
+              key, snapshotFor(currentNumber, currentBank, currentHolder));
           continue;
         }
 
@@ -81,7 +81,7 @@ class AccountNumberChangeWatcher {
         // baseline yields an unknown bank and holder, which are then treated as
         // "not changed" rather than announcing a change that may not have
         // happened. Those fields become comparable from the next load onward.
-        final prev = _parseSnapshot(previousRaw);
+        final prev = parseSnapshot(previousRaw);
 
         final numberMoved = prev.number != currentNumber;
         final bankMoved = prev.bank != null &&
@@ -93,8 +93,20 @@ class AccountNumberChangeWatcher {
 
         // Persist the new baseline whatever we decide to show, so a change is
         // announced once rather than on every load.
+        //
+        // CARRY FORWARD anything this pass did not have. An empty bank or
+        // holder means "not loaded yet on this pass", NOT "changed to blank" —
+        // the summary can arrive with the number populated and the bank still
+        // filling in. Writing the empty value over a known one made the NEXT
+        // load compare "" against the real bank and report a change that never
+        // happened, which is why the modal kept reappearing with identical
+        // details.
+        final nextBank =
+            currentBank.isNotEmpty ? currentBank : (prev.bank ?? '');
+        final nextHolder =
+            currentHolder.isNotEmpty ? currentHolder : (prev.holder ?? '');
         await prefs.setString(
-            key, _snapshot(currentNumber, currentBank, currentHolder));
+            key, snapshotFor(currentNumber, nextBank, nextHolder));
 
         if (!numberMoved && !bankMoved && !holderMoved) continue;
 
@@ -133,15 +145,28 @@ class AccountNumberChangeWatcher {
   /// the value readable in storage. Deliberately NOT JSON: this key already
   /// exists on every install holding a bare account number, and a parser that
   /// throws on the old format would suppress announcements for existing users.
-  static String _snapshot(String number, String bank, String holder) =>
-      [number, bank, holder].join('\t');
+  @visibleForTesting
+  static String snapshotFor(String number, String bank, String holder) {
+    // Trailing unknown fields are OMITTED, not written as empty.
+    //
+    // _parseSnapshot draws a deliberate distinction: a missing field is null
+    // ("this device never recorded it", never reported as a change) while a
+    // present-but-empty one is '' ("recorded as absent", which IS comparable).
+    // Always joining three parts destroyed that distinction — a first load
+    // whose bank had not arrived yet stored '' and the next load then saw ''
+    // -> 'Nombank MFB' as a genuine change.
+    if (holder.isNotEmpty) return [number, bank, holder].join('\t');
+    if (bank.isNotEmpty) return [number, bank].join('\t');
+    return number;
+  }
 
-  /// Reads a baseline written by [_snapshot], tolerating the legacy bare number.
+  /// Reads a baseline written by [snapshotFor], tolerating the legacy bare number.
   ///
   /// A missing field comes back as null rather than '' — the difference matters.
   /// Null means "this device never recorded it", which must NOT be reported as a
   /// change; '' means it was recorded as absent.
-  static ({String number, String? bank, String? holder}) _parseSnapshot(
+  @visibleForTesting
+  static ({String number, String? bank, String? holder}) parseSnapshot(
       String raw) {
     final parts = raw.split('\t');
     return (
