@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utils/dismiss_keyboard.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/core/services/help_config_service.dart';
@@ -361,6 +362,11 @@ class ThemedDrawer extends StatelessWidget {
               onPressed: () {
                 Navigator.pop(dialogContext);
                 authCubit.logout();
+                // Same reason as the inactivity auto-logout: offAllNamed
+                // disposes the route that owns any focused field, so the
+                // keyboard has to be dismissed before the teardown rather than
+                // left to a widget that is about to stop existing.
+                dismissKeyboard();
                 // Logout keeps the cached identity → returning user; mode-aware
                 // login entry (email login vs passcode lock), not a hardcoded
                 // passcode lock (wrong for email accounts).

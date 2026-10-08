@@ -11,6 +11,7 @@ import 'package:lazervault/core/services/auto_logout_guard.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utils/dismiss_keyboard.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
@@ -207,6 +208,11 @@ class _InactivityWatcherState extends State<InactivityWatcher>
     _timer?.cancel();
     try {
       await _auth.logout();
+      // Put the keyboard away BEFORE the stack is torn down. offAllNamed
+      // disposes every route, so a focused field is destroyed mid-dismissal and
+      // the keyboard can be left standing over the login screen with nothing
+      // behind it to close it. See dismissKeyboard().
+      dismissKeyboard();
       // Logout KEEPS the cached identity (stored_email/stored_phone), so this is a
       // RETURNING user — route to the mode-aware login entry (email → email login;
       // phone → passcode lock), not a hardcoded passcode lock (wrong for email).
