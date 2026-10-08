@@ -246,8 +246,19 @@ class _CountrySelectionBottomsheetState
               ),
               SizedBox(height: 12.h),
               // Countries list
+              //
+              // Sized against the SCREEN, not a fixed 400.h. With 169
+              // countries the list is the whole point of this sheet, and a
+              // fixed box left it showing three results above a large band of
+              // empty sheet — on a tall device the dead space grew while the
+              // list stayed the same size. 55% of the viewport keeps the
+              // header, search field and drag handle in view while giving the
+              // results everything else.
+              //
+              // Still a SizedBox rather than Expanded: the sheet's column is
+              // scrollable, so an unbounded child would fight it.
               SizedBox(
-                height: 400.h,
+                height: MediaQuery.of(context).size.height * 0.55,
                 child: filtered.isEmpty
                     ? Center(
                         child: Column(
