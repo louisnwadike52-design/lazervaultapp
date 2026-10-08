@@ -268,12 +268,25 @@ abstract class AppRoutes {
   static const String phonePasscodeLogin = '/auth/phone-passcode-login';
   static const String forgotPasscodePhone = '/auth/forgot-passcode-phone';
 
-  /// Signup entry driven by the SINGLE canonical login flow ([FeatureFlags
-  /// .loginFlow], default phone_passcode): email_password → the email/password
-  /// signUp screen; otherwise → phoneEntry. Reading the same resolved value as
-  /// the login screen keeps the "sign up" button consistent with the flow shown.
+  /// Signup entry, driven by the PLATFORM auth mode — deliberately NOT by the
+  /// per-user cached login flow the two getters below use.
+  ///
+  /// WHY SIGNUP IS DIFFERENT FROM LOGIN
+  ///
+  /// [FeatureFlags.isEmailPasswordLogin] reads `effective_login_method`, which
+  /// is resolved and cached from the SIGNED-IN ACCOUNT's own shape. That is
+  /// exactly right for logging back in — an existing email account must keep
+  /// its email screen. It is exactly wrong for a signup, because the person
+  /// signing up does not have that account and often is not that person: a
+  /// device that once held an email account sent every brand-new user to the
+  /// email signup, no matter what the platform default said.
+  ///
+  /// [FeatureFlags.isPhonePasscodeMode] reads the platform's own
+  /// `authentication_mode` (admin-tunable via the `auth_mode` setting,
+  /// defaulting to phone_passcode), which is the right question for somebody
+  /// who has no account yet.
   static String get signupEntry =>
-      FeatureFlags.isEmailPasswordLogin ? signUp : phoneEntry;
+      FeatureFlags.isPhonePasscodeMode ? phoneEntry : signUp;
 
   /// Login entry for a RETURNING/logged-out user with a cached identity, driven by
   /// the canonical [FeatureFlags.loginFlow]. email_password → emailSignIn;

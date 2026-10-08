@@ -1248,53 +1248,57 @@ class _SelectRecipientsState extends State<SelectRecipients>
       defaultNarration: shortDefaultNarration,
     );
     try {
+      // FEE + REVIEW RUN FOR BOTH BRANCHES.
+      //
+      // These used to sit inside `if (sendFundsPinIsRequired)`, so with the
+      // PIN requirement turned off the money moved straight from the amount
+      // sheet with no review at all — the branch where a review matters MOST,
+      // because the PIN is the only other checkpoint and it is gone.
+      final shortFeeQuote =
+          await context.read<TransferCubit>().ensureFeeForAmount(
+                amountMinorUnits: minor,
+                currency: active.currency,
+                transferType: isInternal ? 'internal' : 'domestic',
+                destinationBankCode: isInternal ? null : r.sortCode,
+              );
+      // The quote is a network round trip; the user may have left during it.
+      if (!mounted) return;
+      // REVIEW BEFORE PIN — parity with the long flow, which has always shown
+      // a confirmation listing source, recipient, amount, fee and total. The
+      // short flow went from the amount sheet straight to the PIN, where the
+      // only figure shown is a total the user has had no chance to question.
+      //
+      // The fee is passed as the QUOTE, not as a number: ensureFeeForAmount
+      // returns null when the quote FAILED, and the old `?? 0` turned that
+      // into a silent "free" while the real fee was still charged.
+      AnalyticsService.instance.trackSendFundsScreen('confirm', 'short');
+      final confirmed = await showTransferConfirmationSheet(
+        context,
+        TransferConfirmationDetails(
+          fromLabel:
+              (active.accountName != null && active.accountName!.isNotEmpty)
+                  ? active.accountName!
+                  : active.accountType,
+          toName: r.name,
+          toDetail: r.maskedAccount,
+          categoryLabel: category?.displayName,
+          note: note,
+          scheduledAt: scheduledAt,
+          recurringLabel: recurring?.frequency.label,
+          currency: active.currency,
+          amountMinor: minor,
+          feeMinor: shortFeeQuote?.fee,
+          availableBalanceMajor: active.availableBalance,
+        ),
+      );
+      if (!confirmed || !mounted) return;
+      // Major-unit fee for the PIN sheet's own summary line. Null quote
+      // means the fee could not be fetched; the confirmation above has
+      // already told the user that, so 0 here only suppresses the row.
+      final shortFeeMajor = (shortFeeQuote?.fee ?? 0) / 100.0;
       if (FeatureFlags.sendFundsPinIsRequired) {
         AnalyticsService.instance.trackSendFundsScreen('pin', 'short');
         var usedToken = '';
-        // Revalidate the fee against the CONFIRMED amount so the PIN sheet always
-        // shows the aggregated custom+provider fee for THIS amount. Fees are
-        // amount-dependent, so the amount-sheet's cached quote is only reused
-        // when it was quoted for the same amount+type; otherwise this re-quotes.
-        // (Previously we read lastFeeLoaded raw, which could be stale for a
-        // different amount, still in-flight, or absent → the fee row vanished.)
-        final shortFeeQuote =
-            await context.read<TransferCubit>().ensureFeeForAmount(
-                  amountMinorUnits: minor,
-                  currency: active.currency,
-                  transferType: isInternal ? 'internal' : 'domestic',
-                  destinationBankCode: isInternal ? null : r.sortCode,
-                );
-        if (!mounted) return;
-        final shortFeeMajor = (shortFeeQuote?.fee ?? 0) / 100.0;
-        // REVIEW BEFORE PIN — parity with the long flow, which has always shown
-        // a confirmation listing source, recipient, amount, fee and total. The
-        // short flow went from the amount sheet straight to the PIN, where the
-        // only figure shown is a total the user has had no chance to question.
-        //
-        // The fee is passed as the QUOTE, not as a number: ensureFeeForAmount
-        // returns null when the quote FAILED, and the old `?? 0` turned that
-        // into a silent "free" while the real fee was still charged.
-        AnalyticsService.instance.trackSendFundsScreen('confirm', 'short');
-        final confirmed = await showTransferConfirmationSheet(
-          context,
-          TransferConfirmationDetails(
-            fromLabel:
-                (active.accountName != null && active.accountName!.isNotEmpty)
-                    ? active.accountName!
-                    : active.accountType,
-            toName: r.name,
-            toDetail: r.maskedAccount,
-            categoryLabel: category?.displayName,
-            note: note,
-            scheduledAt: scheduledAt,
-            recurringLabel: recurring?.frequency.label,
-            currency: active.currency,
-            amountMinor: minor,
-            feeMinor: shortFeeQuote?.fee,
-            availableBalanceMajor: active.availableBalance,
-          ),
-        );
-        if (!confirmed || !mounted) return;
         final ok = await validateTransactionPin(
           context: context,
           transactionId: transactionId,

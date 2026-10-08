@@ -1354,7 +1354,19 @@ class FeatureFlags {
   /// intent and doesn't flip to email when `/auth/config` is slow/unreachable.
   /// Synchronous — call after [init].
   static String get authenticationMode {
-    return _prefs?.getString(authMode) ?? authModePhonePasscode;
+    // NORMALISED, exactly like the server's normalizeAuthMode: only an explicit
+    // "email_password" selects email mode; anything else — unset, empty, a
+    // typo, a value from a newer build — resolves to the product default.
+    //
+    // Before this a bare `?? phone_passcode` covered only the NULL case, so a
+    // corrupt or unrecognised stored value fell through as "not phone mode" and
+    // silently put brand-new users into the email signup. The server refuses to
+    // let an unknown value enable email mode; the client must agree, or the two
+    // disagree precisely when something has already gone wrong.
+    final raw = _prefs?.getString(authMode)?.toLowerCase().trim();
+    return raw == authModeEmailPassword
+        ? authModeEmailPassword
+        : authModePhonePasscode;
   }
 
   /// True when the platform is in phone+passcode mode (brand-new/logged-out
