@@ -226,43 +226,68 @@ class _CreateEscrowOfferScreenState extends State<CreateEscrowOfferScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: EscrowTheme.bg,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Text(_isSell ? 'Sell with escrow' : 'Request to buy',
-            style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w700)),
-      ),
-      body: BlocListener<EscrowCubit, EscrowState>(
-        listener: (context, state) {
-          if (state is EscrowError) {
-            showAppSnackbar('Escrow Pay', state.message,
-                type: AppSnackbarType.error);
-          }
-        },
-        child: SafeArea(
-          child: Column(
-            children: [
-              _progress(),
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  onPageChanged: (i) => setState(() => _currentPage = i),
-                  children: [
-                    _page1Details(),
-                    _page2Terms(),
-                    _page3Review(),
-                  ],
+    // Leaving is only ever "close the whole thing" on the FIRST step. Anywhere
+    // else, every way out of this screen has to mean "go back one step", or a
+    // mistyped price on step 2 costs the user everything they typed on step 1.
+    //
+    // PopScope covers the ways out that are not a button: the Android hardware
+    // back and the iOS edge-swipe. The AppBar's leading icon is replaced below
+    // for the same reason — AppBar's default supplies its own back button that
+    // pops the ROUTE, so the top-left arrow closed the sheet from step 3 while
+    // the "Back" button two inches below it stepped back one page.
+    final onFirstStep = _currentPage == 0;
+    return PopScope(
+      // Publishing is in flight: nothing should unmount the screen under it.
+      canPop: onFirstStep && !_submitting,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop || _submitting) return;
+        _back();
+      },
+      child: Scaffold(
+        backgroundColor: EscrowTheme.bg,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          iconTheme: const IconThemeData(color: Colors.white),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            // Matches the bottom button exactly, including being inert while a
+            // publish is running.
+            onPressed: _submitting ? null : _back,
+            tooltip: onFirstStep ? 'Close' : 'Previous step',
+          ),
+          title: Text(_isSell ? 'Sell with escrow' : 'Request to buy',
+              style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700)),
+        ),
+        body: BlocListener<EscrowCubit, EscrowState>(
+          listener: (context, state) {
+            if (state is EscrowError) {
+              showAppSnackbar('Escrow Pay', state.message,
+                  type: AppSnackbarType.error);
+            }
+          },
+          child: SafeArea(
+            child: Column(
+              children: [
+                _progress(),
+                Expanded(
+                  child: PageView(
+                    controller: _pageController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    onPageChanged: (i) => setState(() => _currentPage = i),
+                    children: [
+                      _page1Details(),
+                      _page2Terms(),
+                      _page3Review(),
+                    ],
+                  ),
                 ),
-              ),
-              _navButtons(),
-            ],
+                _navButtons(),
+              ],
+            ),
           ),
         ),
       ),
