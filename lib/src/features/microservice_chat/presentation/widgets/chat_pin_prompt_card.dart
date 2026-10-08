@@ -200,6 +200,10 @@ class ChatPinPromptCardState extends State<ChatPinPromptCard>
       case 'insurance_buy':
       case 'insurance_claim':
         return Icons.shield_outlined;
+      case 'withdraw':
+        // Money leaving the wallet for the user's own bank — not a send to
+        // somebody else, so deliberately not the send arrow.
+        return Icons.account_balance_rounded;
       case 'exchange_convert':
         return Icons.swap_horiz_rounded;
       case 'exchange_international':
@@ -233,6 +237,8 @@ class ChatPinPromptCardState extends State<ChatPinPromptCard>
         return 'Confirm insurance purchase';
       case 'insurance_claim':
         return 'Submit insurance claim';
+      case 'withdraw':
+        return 'Confirm withdrawal';
       case 'exchange_convert':
         return 'Confirm currency conversion';
       case 'exchange_international':
