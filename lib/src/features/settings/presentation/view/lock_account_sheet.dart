@@ -122,8 +122,9 @@ class _LockAccountSheetState extends State<LockAccountSheet> {
         Navigator.of(context).pop();
         // Third route to the login screen, alongside the idle auto-logout and
         // the drawer's Logout. This sheet is opened from Settings, whose search
-        // field may hold focus, and offAllNamed disposes the route that owns it.
-        dismissKeyboard();
+        // field may hold focus, and offAllNamed disposes the route that owns it
+        // — and any sheet stacked above it outlives the session otherwise.
+        dismissTransientOverlays();
         // Land on the LOGIN screen for the mode (not the signup entry), where the
         // countdown modal shows.
         Get.offAllNamed(AppRoutes.freshLoginEntry);

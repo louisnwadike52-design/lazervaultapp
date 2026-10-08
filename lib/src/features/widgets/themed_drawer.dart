@@ -363,10 +363,11 @@ class ThemedDrawer extends StatelessWidget {
                 Navigator.pop(dialogContext);
                 authCubit.logout();
                 // Same reason as the inactivity auto-logout: offAllNamed
-                // disposes the route that owns any focused field, so the
-                // keyboard has to be dismissed before the teardown rather than
-                // left to a widget that is about to stop existing.
-                dismissKeyboard();
+                // disposes the route that owns any focused field, and leaves a
+                // sheet or dialog floating above the stack. Both have to go
+                // before the teardown rather than be left to a widget that is
+                // about to stop existing.
+                dismissTransientOverlays();
                 // Logout keeps the cached identity → returning user; mode-aware
                 // login entry (email login vs passcode lock), not a hardcoded
                 // passcode lock (wrong for email accounts).

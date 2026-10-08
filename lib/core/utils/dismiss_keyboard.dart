@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 
 /// Put the soft keyboard away.
 ///
@@ -37,4 +38,37 @@ void dismissKeyboard() {
   SystemChannels.textInput.invokeMethod<void>('TextInput.hide').catchError(
     (_) {},
   );
+}
+
+/// Put away every transient surface floating ABOVE the page stack, then the
+/// keyboard. Call this immediately before tearing the stack down on logout.
+///
+/// WHY A SHARE SHEET NEEDS THIS AND A PAGE DOES NOT
+///
+/// `Get.offAllNamed` replaces the page stack, so ordinary pages go on their
+/// own. A bottom sheet or dialog is not an ordinary page: it is a
+/// [PopupRoute] sitting above the stack, and a share sheet left open when the
+/// session expires ends up hovering over the login screen — a surface from
+/// the previous user's session, on top of an unauthenticated screen, still
+/// showing whatever it was sharing (account numbers, a receipt, a payment
+/// link). That is the same failure as the keyboard surviving the teardown,
+/// and it is worse, because the keyboard leaks nothing.
+///
+/// Pops ONLY PopupRoutes, so the predicate stops the moment it reaches a real
+/// page — a logout can never pop the app down to a blank navigator. GetX
+/// snackbars are OverlayRoutes rather than PopupRoutes, so they are closed
+/// separately.
+///
+/// Every step is independently guarded: dismissing UI must never be the
+/// reason a security action fails to complete.
+void dismissTransientOverlays() {
+  try {
+    Get.closeAllSnackbars();
+  } catch (_) {}
+  try {
+    // popUntil stops at the first non-popup route, so with no sheet open this
+    // is a no-op rather than a pop of the page underneath.
+    Get.key.currentState?.popUntil((route) => route is! PopupRoute);
+  } catch (_) {}
+  dismissKeyboard();
 }

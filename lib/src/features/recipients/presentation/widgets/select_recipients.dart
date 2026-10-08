@@ -264,7 +264,6 @@ class _SelectRecipientsState extends State<SelectRecipients>
   /// account entity doesn't carry one.
   ({String countryCode, String currency}) _activeFilter() {
     final lm = serviceLocator<LocaleManager>();
-    final am = serviceLocator<AccountManager>();
     final acctCurrency = activeAccountSnapshot()?.currency;
     return (
       countryCode: lm.currentCountry,

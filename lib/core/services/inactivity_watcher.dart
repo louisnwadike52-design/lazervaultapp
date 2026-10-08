@@ -208,11 +208,15 @@ class _InactivityWatcherState extends State<InactivityWatcher>
     _timer?.cancel();
     try {
       await _auth.logout();
-      // Put the keyboard away BEFORE the stack is torn down. offAllNamed
-      // disposes every route, so a focused field is destroyed mid-dismissal and
-      // the keyboard can be left standing over the login screen with nothing
-      // behind it to close it. See dismissKeyboard().
-      dismissKeyboard();
+      // Put every floating surface away BEFORE the stack is torn down.
+      // offAllNamed replaces the PAGE stack, so a focused field is destroyed
+      // mid-dismissal (leaving the keyboard over the login screen with nothing
+      // behind it to close it) and a bottom sheet or dialog — a PopupRoute
+      // sitting ABOVE the stack — can outlive the session entirely. An open
+      // share sheet is the case that matters: it would hover over the login
+      // screen still showing the previous user's account number, receipt or
+      // payment link. See dismissTransientOverlays().
+      dismissTransientOverlays();
       // Logout KEEPS the cached identity (stored_email/stored_phone), so this is a
       // RETURNING user — route to the mode-aware login entry (email → email login;
       // phone → passcode lock), not a hardcoded passcode lock (wrong for email).
