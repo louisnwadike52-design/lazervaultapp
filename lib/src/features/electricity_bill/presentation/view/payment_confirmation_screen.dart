@@ -27,6 +27,7 @@ import '../widgets/electricity_rollover_preference_sheet.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'meter_entry_mode.dart';
+import '../../../../../core/widgets/amount_preset_row.dart';
 part 'payment_confirmation_screen_widgets.dart';
 
 class PaymentConfirmationScreen extends StatefulWidget {
@@ -1543,62 +1544,22 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
           ),
         ),
         SizedBox(height: 12.h),
-        Wrap(
-          spacing: 10.w,
-          runSpacing: 10.h,
-          children: _quickAmounts.map((amount) {
-            final isSelected = _selectedQuickAmount == amount;
-            // Check if amount is within provider limits
-            final isInRange = !provider.hasAmountLimits ||
-                (amount >= (provider.minAmount ?? 0) &&
-                    amount <= (provider.maxAmount ?? double.infinity));
-
-            return GestureDetector(
-              onTap: isInRange ? () => _onQuickAmountSelected(amount) : null,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 12.h),
-                decoration: BoxDecoration(
-                  color: !isInRange
-                      ? const Color(0xFF1F1F1F).withValues(alpha: 0.5)
-                      : isSelected
-                          ? const Color(0xFF4E03D0).withValues(alpha: 0.15)
-                          : const Color(0xFF1F1F1F),
-                  border: Border.all(
-                    color: !isInRange
-                        ? const Color(0xFF2D2D2D).withValues(alpha: 0.5)
-                        : isSelected
-                            ? const Color(0xFF4E03D0)
-                            : const Color(0xFF2D2D2D),
-                    width: isSelected ? 1.5 : 1,
-                  ),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Text(
-                  '\u20A6${_formatQuickAmount(amount)}',
-                  style: GoogleFonts.inter(
-                    color: !isInRange
-                        ? const Color(0xFF6B7280)
-                        : isSelected
-                            ? const Color(0xFF4E03D0)
-                            : Colors.white,
-                    fontSize: 14.sp,
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
+        AmountPresetRow(
+          amounts: _quickAmounts,
+          selected: _selectedQuickAmount,
+          onSelected: _onQuickAmountSelected,
+          // An out-of-range preset stays visible but reads as unavailable.
+          // Dropping it would change the row's shape per disco, which makes
+          // the control look broken rather than constrained.
+          isEnabled: (amount) =>
+              !provider.hasAmountLimits ||
+              (amount >= (provider.minAmount ?? 0) &&
+                  amount <= (provider.maxAmount ?? double.infinity)),
         ),
       ],
     );
   }
 
-  String _formatQuickAmount(int amount) {
-    if (amount >= 1000) {
-      return '${(amount / 1000).toStringAsFixed(amount % 1000 == 0 ? 0 : 1)}k';
-    }
-    return amount.toString();
-  }
 
   Widget _buildAmountInput(ElectricityProviderEntity provider) {
     return Column(

@@ -33,6 +33,7 @@ import '../../utils/meter_validation.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/utils/ng_msisdn.dart';
+import '../../../../../core/widgets/amount_preset_row.dart';
 
 /// Single-page electricity purchase — the streamlined "one page, very fast"
 /// flow (mirror of AirtimeQuickBuy). Enter the meter number → the disco +
@@ -1248,31 +1249,11 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
     }
   }
 
-  Widget _amountChips() {
-    return Wrap(
-      spacing: 10.w,
-      runSpacing: 10.h,
-      children: _quickAmounts.map((v) {
-        final selected = _amount == v.toDouble();
-        return GestureDetector(
-          onTap: () => _selectAmount(v),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-            decoration: BoxDecoration(
-              color: selected ? _accent : _card,
-              borderRadius: BorderRadius.circular(10.r),
-              border: Border.all(color: selected ? _accent : _border),
-            ),
-            child: Text('₦$v',
-                style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600)),
-          ),
-        );
-      }).toList(),
-    );
-  }
+  Widget _amountChips() => AmountPresetRow(
+        amounts: _quickAmounts,
+        selected: _amount,
+        onSelected: _selectAmount,
+      );
 
   Widget _amountField() => _boxedField(
         controller: _amountController,
