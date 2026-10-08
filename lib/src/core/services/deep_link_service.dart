@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:app_links/app_links.dart';
+import 'package:lazervault/core/utilities/invite_link.dart';
+import 'package:lazervault/core/utilities/pending_referral.dart';
 
 /// Deep Link Event Types
 enum DeepLinkType {
@@ -15,6 +17,14 @@ enum DeepLinkType {
   /// A link that identifies a COMPLETED payment, not something to open and pay
   /// — currently the donation receipt's `crowdfund/donation/<txn>`.
   paymentReceipt,
+
+  /// An INVITE: `https://lazervault.app/download?ref=CODE`.
+  ///
+  /// Reaches an app that is already installed, which means the person tapping
+  /// it is usually NOT the new user — so this never navigates anywhere. It
+  /// only records the code, so that if this device does reach a signup the
+  /// field is already filled. See PendingReferral.
+  referralInvite,
   unknown,
 }
 
@@ -375,6 +385,29 @@ class DeepLinkService {
     }
 
     DeepLinkType type;
+    // INVITE. Checked before the generic contains() chain below, because
+    // "/download" would otherwise fall through to `unknown` and the code would
+    // be dropped on the floor.
+    //
+    // Keyed on the CODE being present rather than on the path alone: a bare
+    // /download link (someone sharing the page, not an invite) carries nothing
+    // worth recording, and treating it as a referral would store an empty
+    // attribution.
+    final inviteCode = InviteLink.codeFrom(uri);
+    if (inviteCode != null && path.contains('download')) {
+      // Recorded, never navigated. Whoever tapped this already HAS the app, so
+      // they are usually the referrer or an existing user — sending them to a
+      // signup screen would be wrong. The code simply waits for a signup that
+      // may never come on this device, which costs nothing.
+      PendingReferral.instance.remember(inviteCode);
+      return DeepLinkData(
+        type: DeepLinkType.referralInvite,
+        rawUri: uri.toString(),
+        queryParams: queryParams,
+        path: path,
+      );
+    }
+
     if (path.contains('quick-action')) {
       type = DeepLinkType.quickAction;
     } else if (path.contains('deposit') || path.contains('deposit/callback')) {

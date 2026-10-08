@@ -14,6 +14,8 @@ import 'package:lazervault/src/features/contacts/data/models/lazervault_user_mat
 import 'package:lazervault/src/features/contacts/domain/usecases/find_lazervault_users_usecase.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/unified_user_search_cubit.dart';
 import 'package:lazervault/src/features/recipients/domain/entities/unified_search_result.dart';
+import 'package:lazervault/core/utilities/invite_link.dart';
+import 'package:lazervault/src/features/referral/domain/usecases/get_my_referral_code_usecase.dart';
 part 'unified_user_search_sheet_widgets.dart';
 
 /// THE shared user-search bottom sheet for the whole app.
@@ -1112,14 +1114,37 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
     );
   }
 
-  void _inviteContact(DeviceContact contact) {
+  /// Invite a phone contact, WITH the sender's referral code.
+  ///
+  /// This share carried no code at all — the identical invite from
+  /// add_recipient did, so whether a referral was credited depended on which
+  /// screen the user happened to invite from. Nothing on either screen said
+  /// so, and the referrer simply never got paid for invites sent from here.
+  ///
+  /// The code lookup is best-effort: an invite still goes out without one
+  /// rather than failing, because a share the user asked for must not be
+  /// blocked by a rewards lookup.
+  Future<void> _inviteContact(DeviceContact contact) async {
     final to = contact.name.isNotEmpty ? contact.name : 'there';
-    SharePlus.instance.share(ShareParams(
+    String? code;
+    try {
+      final result = await serviceLocator<GetMyReferralCodeUseCase>().call();
+      code = result.fold((_) => null, (c) => c.code);
+    } catch (_) {
+      code = null;
+    }
+    final link = InviteLink.forCode(code);
+    final text = (code != null && code.isNotEmpty)
+        ? 'Hi $to, join me on Lazervault — fast, secure transfers. Use my '
+            'invite code $code when you sign up so we both get rewarded. '
+            'Download the app: $link'
+        : 'Hi $to, join me on Lazervault — fast, secure transfers. '
+            'Download the app: $link';
+    await SharePlus.instance.share(ShareParams(
       // iOS: a non-zero popover anchor is required — CGRectZero throws
       // PlatformException and the share silently fails on iPhone/iPad.
       sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
-      text: 'Hi $to, join me on Lazervault — fast, secure transfers. '
-          'Download the app: https://lazervault.app',
+      text: text,
     ));
   }
 }

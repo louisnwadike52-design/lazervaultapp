@@ -160,6 +160,15 @@
                      group. -->
                 <data android:scheme="https" android:host="lazervault.app"
                       android:pathPrefix="/groups/" />
+                <!-- Invite / download links. An invite shares
+                     https://lazervault.app/download?ref=CODE; claiming the
+                     path means an installed app receives the code from the OS
+                     and signup prefills, instead of the browser showing a
+                     download page to somebody who already has the app.
+                     Mirrored in public/.well-known/apple-app-site-association
+                     on the website for iOS. -->
+                <data android:scheme="https" android:host="lazervault.app"
+                      android:pathPrefix="/download" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

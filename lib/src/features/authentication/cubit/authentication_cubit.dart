@@ -56,6 +56,7 @@ import '../domain/entities/user.dart';
 import '../domain/entities/signup_draft.dart';
 import '../domain/entities/two_factor_entity.dart';
 import 'authentication_state.dart';
+import 'package:lazervault/core/utilities/pending_referral.dart';
 
 class AuthenticationCubit extends Cubit<AuthenticationState> {
   final LoginUseCase _loginUseCase;
@@ -1201,6 +1202,17 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     // Try to load existing draft
     final draft = await _signupStateService?.loadDraft();
 
+    // An invite tapped on this device leaves its code behind (the link is a
+    // verified app link, so the OS hands it to us long before a signup form
+    // exists). Prefill it here so the referrer actually gets credited —
+    // asking someone to retype a code out of a chat thread is where most
+    // referrals were being lost.
+    //
+    // A code the user has ALREADY typed into the draft wins: they may have
+    // been given a different one by hand, and overwriting what somebody
+    // deliberately entered would be the worse mistake.
+    final pendingRef = await PendingReferral.instance.peek();
+
     if (draft != null && draft.hasData && !draft.isExpired) {
       // Restore from draft, deriving country fields from locale
       final countryCode = draft.countryCode ?? 'NG';
@@ -1212,7 +1224,9 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         firstName: draft.firstName ?? '',
         lastName: draft.lastName ?? '',
         username: draft.username ?? '',
-        referralCode: draft.referralCode ?? '',
+        referralCode: (draft.referralCode?.trim().isNotEmpty ?? false)
+            ? draft.referralCode!
+            : (pendingRef ?? ''),
         selectedDate: draft.dateOfBirth,
         phoneNumber: draft.phone ?? '',
         // Always START on the first page even when a draft is restored, so a
@@ -1227,7 +1241,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         currencyCode: currencyCode,
       ));
     } else {
-      emit(const SignUpInProgress());
+      emit(SignUpInProgress(referralCode: pendingRef ?? ''));
     }
   }
 

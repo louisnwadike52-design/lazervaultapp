@@ -44,6 +44,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:lazervault/src/features/referral/domain/usecases/get_my_referral_code_usecase.dart';
+import 'package:lazervault/core/utilities/invite_link.dart';
 part 'add_recipient_widgets.dart';
 
 /// Brand purple used across the add-recipient surface (matches SelectRecipients).
@@ -2570,11 +2571,18 @@ class _AddRecipientState extends State<AddRecipient>
     final firstName = contact.name.trim().isNotEmpty
         ? contact.name.trim().split(' ').first
         : 'there';
+    // The link CARRIES the code. It used to point at the marketing homepage,
+    // which knew nothing about the referral — so the recipient had to find the
+    // store themselves and retype a code out of a chat thread, and the
+    // referrer's commission was usually lost. /download is a verified app
+    // link, so an installed app gets the code handed to it and signup
+    // prefills; a browser gets the code shown with a copy button.
+    final link = InviteLink.forCode(code);
     final message = (code != null && code.isNotEmpty)
         ? 'Hi $firstName, join me on Lazervault! Use my invite code $code when '
-            'you sign up so we both get rewarded. Download: https://lazervault.app'
+            'you sign up so we both get rewarded. Download: $link'
         : 'Hi $firstName, join me on Lazervault — the smarter way to send and '
-            'manage money. Download: https://lazervault.app';
+            'manage money. Download: $link';
 
     // Attach our logo to the share (copied from the bundled asset to a temp
     // file, since share_plus shares files by path). Falls back to text-only.

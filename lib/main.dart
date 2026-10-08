@@ -801,6 +801,19 @@ class _MyAppState extends State<MyApp> {
     if (uri != null && PendingDeepLink.instance.handleUri(uri)) return;
 
     switch (data.type) {
+      case DeepLinkType.referralInvite:
+        // DELIBERATELY NAVIGATES NOWHERE.
+        //
+        // An invite link reaching THIS app means the app is already
+        // installed, so whoever tapped it is almost always the referrer or an
+        // existing user — not the new signup. Opening a signup screen for
+        // them would be wrong, and opening the download page for someone who
+        // has the app is absurd.
+        //
+        // The code was already recorded by the parser (PendingReferral), so
+        // if this device ever does reach a signup the field is prefilled.
+        // Doing nothing here is the whole correct behaviour.
+        break;
       case DeepLinkType.familyInvite:
         // A SHARED group invite link (/family/invite/<token>) resolves the
         // token server-side and shows what you're joining before you commit.

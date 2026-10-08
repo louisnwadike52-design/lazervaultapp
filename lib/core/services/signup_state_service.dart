@@ -1,5 +1,6 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/signup_draft.dart';
+import 'package:lazervault/core/utilities/pending_referral.dart';
 
 /// Service for managing signup state persistence
 /// Handles local storage of signup drafts (pre-account creation)
@@ -238,6 +239,15 @@ class SignupStateService {
   Future<void> markAccountCreated() async {
     await _markEmailStep(SignupDraft.stepAccountCreate);
     await _storage.delete(key: _signupDraftKey);
+    // The account exists, so an invite code captured from a deep link has done
+    // its job and must not be applied to a second signup on this device.
+    //
+    // Cleared HERE rather than at any of the three call sites, because this is
+    // the single point every successful creation passes through — and it is
+    // deliberately not cleared when the signup FORM opens: a user who backs
+    // out and returns would otherwise lose the attribution, which is an
+    // ordinary thing to do and costs the referrer their commission.
+    await PendingReferral.instance.clear();
   }
 
   /// Mark email verification step (resume → email verification screen).
