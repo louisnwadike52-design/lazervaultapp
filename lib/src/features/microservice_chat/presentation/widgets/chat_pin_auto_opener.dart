@@ -79,12 +79,30 @@ class ChatPinAutoOpener {
   /// appeared in the transcript.
   int _handledSeq = 0;
 
+  /// EVERY transaction this opener has auto-opened, not just the newest.
+  ///
+  /// The tiebreak for when the seq does not advance — see the swap below. Each
+  /// chat service mints its own seq, so equal seqs from two services are
+  /// possible and `>` alone would drop one of them.
+  ///
+  /// A SET rather than the last id: holding only the newest meant replaying an
+  /// EARLIER transaction (seq still <= the high-water mark, id different from
+  /// the newest) read as a new ask and reopened a pad the user had already
+  /// dealt with. Session-scoped and cleared on reset, so it stays small.
+  final Set<String> _handledTxIds = <String>{};
+
   /// Highest seq the user dismissed. A later prompt re-arms; this one does not.
   int _cancelledSeq = 0;
+
+  /// Every transaction the user dismissed, same purpose.
+  final Set<String> _cancelledTxIds = <String>{};
 
   /// Seq of the newest prompt seen, so [noteCancelled] can stamp it without the
   /// card needing to know about sequences.
   int _lastSeenSeq = 0;
+
+  /// Mint time of that newest prompt, for the same reason.
+  DateTime? _lastSeenIssuedAt;
 
   /// Why the last [sync] declined to open, for diagnosis.
   ///
@@ -201,6 +219,9 @@ class ChatPinAutoOpener {
     // And on the authoritative cell, so a prompt with a HIGHER seq still
     // re-arms while this one stays dismissed.
     if (_lastSeenSeq > _cancelledSeq) _cancelledSeq = _lastSeenSeq;
+    // And the id, because seqs from independent services can tie: a DIFFERENT
+    // transaction must still re-arm even when the seq does not advance.
+    _cancelledTxIds.add(transactionId);
   }
 
   /// Forget everything. Call when the conversation changes.
@@ -221,6 +242,9 @@ class ChatPinAutoOpener {
     _handledSeq = 0;
     _cancelledSeq = 0;
     _lastSeenSeq = 0;
+    _handledTxIds.clear();
+    _cancelledTxIds.clear();
+    _lastSeenIssuedAt = null;
     lastDeclineReason = null;
   }
 
@@ -336,6 +360,9 @@ class ChatPinAutoOpener {
     final seq = seqOf(payload);
     final issuedAt = issuedAtOf(payload)!;
     if (seq > _lastSeenSeq) _lastSeenSeq = seq;
+    if (_lastSeenIssuedAt == null || issuedAt.isAfter(_lastSeenIssuedAt!)) {
+      _lastSeenIssuedAt = issuedAt;
+    }
 
     // Minted before we attached: this is a replayed prompt from history, and
     // opening a pad for a transfer the user may have completed days ago is the
@@ -348,17 +375,34 @@ class ChatPinAutoOpener {
 
     // THE SWAP. Strictly greater, and written before the open so a rebuild in
     // the same frame cannot fire twice.
-    if (seq <= _handledSeq) {
-      _decline('seq $seq already handled (at $_handledSeq) — a rebuild, '
-          'not a new ask');
+    //
+    // THE TRANSACTION ID IS THE TIEBREAK when the seq does not advance.
+    //
+    // Each chat service (transfers, commerce, accounts…) mints its own seq, so
+    // two services CAN produce the same value and a strict `>` would silently
+    // drop the second — the pad would never open for it, and declining is
+    // silent. That is the "opened once, then never again" report.
+    //
+    // The discriminator is the transaction id, NOT issued_at. A rebuild replays
+    // the identical stored payload, so its id is identical and it is correctly
+    // refused; a prompt from a different service is a different transaction and
+    // opens. issued_at was tried and rejected: any surface that rebuilds a
+    // payload with a fresh timestamp would reopen the modal on every rebuild,
+    // which is a worse failure than the one being fixed.
+    if (seq <= _handledSeq && _handledTxIds.contains(txId)) {
+      _decline('seq $seq already handled (at $_handledSeq) for the same '
+          'transaction $txId — a rebuild, not a new ask');
       return;
     }
-    if (seq <= _cancelledSeq) {
+    // A dismissal is remembered the same way: another transaction re-arms,
+    // this one stays dismissed.
+    if (seq <= _cancelledSeq && _cancelledTxIds.contains(txId)) {
       _decline('seq $seq was dismissed by the user — their "Enter PIN" tap '
           'still works');
       return;
     }
-    _handledSeq = seq;
+    _handledSeq = seq > _handledSeq ? seq : _handledSeq;
+    _handledTxIds.add(txId);
     _openedAt[txId] = (_openedAt[txId] ?? 0) + 1;
     _openCounts[txId] = (_openCounts[txId] ?? 0) + 1;
 

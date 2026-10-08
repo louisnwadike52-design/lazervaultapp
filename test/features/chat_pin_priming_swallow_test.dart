@@ -254,4 +254,62 @@ void main() {
     expect(ChatPinAutoOpener.seqOf({'prompt_seq': 'abc'}), 0);
     expect(ChatPinAutoOpener.seqOf(const {}), 0);
   });
+
+  testWidgets(
+      'REGRESSION: two services minting the SAME seq both open the pad',
+      (tester) async {
+    // Each chat service (transfers, commerce, accounts…) mints prompt_seq from
+    // its own counter, so one conversation routed across two of them can see
+    // the same seq twice — and a restart reset a counter to 0 while the client
+    // still held a high-water mark. The compare-and-swap was `>` alone, so the
+    // second prompt was silently dropped and the pad never opened again for
+    // the rest of the session. The transaction id breaks the tie.
+    late BuildContext ctx;
+    await tester.pumpWidget(MaterialApp(
+      home: Builder(builder: (c) {
+        ctx = c;
+        return const SizedBox();
+      }),
+    ));
+
+    final opener = ChatPinAutoOpener();
+
+    opener.sync(
+      context: ctx,
+      prompts: [_authoritativePrompt(txId: 'tx-from-transfers', seq: 7)],
+      isLiveTurn: true,
+    );
+    await tester.pump();
+    expect(opener.debugOpenCounts['tx-from-transfers'], 1);
+
+    // A different service, same seq — and even a LOWER one, which is what a
+    // restarted process produces.
+    opener.sync(
+      context: ctx,
+      prompts: [_authoritativePrompt(txId: 'tx-from-commerce', seq: 7)],
+      isLiveTurn: true,
+    );
+    await tester.pump();
+    expect(opener.debugOpenCounts['tx-from-commerce'], 1,
+        reason: 'a different transaction must open even on a tied seq');
+
+    opener.sync(
+      context: ctx,
+      prompts: [_authoritativePrompt(txId: 'tx-after-restart', seq: 1)],
+      isLiveTurn: true,
+    );
+    await tester.pump();
+    expect(opener.debugOpenCounts['tx-after-restart'], 1,
+        reason: 'a restarted service rewinds its counter; the pad must still open');
+
+    // And a rebuild of one of them still must NOT reopen it.
+    opener.sync(
+      context: ctx,
+      prompts: [_authoritativePrompt(txId: 'tx-from-commerce', seq: 7)],
+      isLiveTurn: true,
+    );
+    await tester.pump();
+    expect(opener.debugOpenCounts['tx-from-commerce'], 1,
+        reason: 'the same transaction replayed is a rebuild, not a new ask');
+  });
 }
