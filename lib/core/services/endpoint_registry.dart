@@ -83,6 +83,37 @@ class EndpointRegistry {
     // Must be persisted here or the gate falls back to its default on every
     // cold start, before the first snapshot lands.
     'voice_enabled_languages_csv',
+    // Exchange > Send Abroad. THE ADMIN SETTING IS THE SOURCE OF TRUTH.
+    //
+    // Every other link in this chain was already built — admin-gateway
+    // allowlists the key, its settings bulk read serves it, and
+    // FeatureFlags.applyRemoteSnapshot knows how to hydrate it — but the key
+    // was missing HERE, and nonUrlSnapshot() only emits keys in this set. So
+    // the value never reached the app and `intlPayoutAvailable` fell back to
+    // its hardcoded `false` on every launch: an operator could turn Send
+    // Abroad on, see it stored, and watch the app go on saying "Not available
+    // at the moment" forever.
+    //
+    // This is the same omission the admin-gateway WHERE clause has caused
+    // before, one link further down the chain. When adding an admin-tunable
+    // flag, wire ALL of: the write allowlist, the bulk-read filter, THIS set,
+    // and the FeatureFlags hydration list.
+    'intl_payout_enabled',
+    // Which explanation the tab shows while payout is off ('generic' |
+    // 'account' | 'country'). Same chain, same reason.
+    'intl_payout_unavailable_scope',
+    // ── found by the same audit ──────────────────────────────────────────
+    // Each of these is hydrated by FeatureFlags.applyRemoteSnapshot but was
+    // never forwarded here, so the admin value could not reach the app and
+    // the hardcoded default won every time. Cross-checking the hydration list
+    // against this set is what surfaced them; do that whenever a flag is
+    // added.
+    'mobile_service_entrance_animation_enabled',
+    'card_acceptance_visible',
+    'auto_biometric_login_enabled',
+    'crowdfund_donation_alerts_visible',
+    'locale_non_ngn_money_actions',
+    'locale_non_ngn_account_tabs',
     'session_inactivity_logout_seconds',
     // The payout provider's floor for an NGN bank transfer, in kobo. Cached so
     // the amount screen can refuse a too-small transfer on the FIRST frame
