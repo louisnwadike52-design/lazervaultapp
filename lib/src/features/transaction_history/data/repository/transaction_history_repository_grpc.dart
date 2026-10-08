@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:lazervault/core/services/active_account_snapshot.dart';
 
 import 'package:lazervault/src/features/transaction_history/data/repository/external_transfer_merge.dart';
@@ -615,6 +616,25 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
   }
 
   /// Convert proto Transaction to UnifiedTransaction
+
+  /// A reference the user can actually quote to support, or null.
+  ///
+  /// Internal bookkeeping references are DERIVED, not issued: accounts-service
+  /// builds "IDEM-DR-{key}" (and a caller that already namespaces its key
+  /// yields "IDEM-DR-IDEM-DR-{txid}"), and every fund hold is `HOLD-<flow>-`.
+  /// None of them match a provider trail, so showing nothing beats showing a
+  /// string that reads as corruption.
+  ///
+  /// Display-only. The STORED reference is untouched — changing how it is
+  /// derived would break idempotency on retries.
+  @visibleForTesting
+  static String? quotableReference(String? ref) {
+    final r = (ref ?? '').trim();
+    if (r.isEmpty) return null;
+    if (r.startsWith('IDEM-') || r.startsWith('HOLD-')) return null;
+    return r;
+  }
+
   UnifiedTransaction _convertFromProto(Transaction protoTx) {
     // Parse createdAt from ISO8601 string
     // Server sends UTC; normalize to LOCAL so history lists, detail, receipts
@@ -1028,12 +1048,20 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     // Deliberately display-only: the STORED reference is untouched, because
     // changing how it is derived would break idempotency on retries.
     final ledgerRef = protoTx.reference;
-    final isInternalRef = ledgerRef.startsWith('IDEM-') ||
-        ledgerRef.startsWith('HOLD-CAP-') ||
-        ledgerRef.startsWith('HOLD-REL-');
-    final displayReference = (metaReference != null && metaReference.isNotEmpty)
-        ? metaReference
-        : (ledgerRef.isNotEmpty && !isInternalRef ? ledgerRef : null);
+    // The SAME test has to apply to the metadata reference, not just the
+    // ledger one. metadata.reference was preferred unconditionally, so a
+    // withdrawal whose row held
+    //   reference        = "WD-8fd5920e-556000"      (correct, quotable)
+    //   metadata.reference = "HOLD-WD-WD-8fd5920e-556000"  (the hold id)
+    // showed the hold id on the receipt while the perfectly good ledger
+    // reference sat unused one field away. Trusting metadata blindly is what
+    // let an internal reference win over a real one.
+    //
+    // `HOLD-` rather than the three specific prefixes: holds are namespaced
+    // per flow (HOLD-CAP-, HOLD-REL-, HOLD-WD-, HOLD-BUY-…) and a new one
+    // should not have to be remembered here to stay out of the UI.
+    final displayReference =
+        quotableReference(metaReference) ?? quotableReference(ledgerRef);
 
     return UnifiedTransaction(
       id: protoTx.id,
