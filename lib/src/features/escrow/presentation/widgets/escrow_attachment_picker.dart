@@ -240,11 +240,15 @@ class _EscrowAttachmentPickerState extends State<EscrowAttachmentPicker> {
       return 'This deal has all the photos and video it can carry. '
           'Remove one to swap it for another.';
     }
+    // "more" only once something is already attached — on an empty picker
+    // "Add up to 6 more photos" reads as though six were already there.
+    final anyAlready = _photoCount > 0;
+    final more = anyAlready ? ' more' : '';
     final photoPart = left == 0
         ? 'No photo slots left'
         : left == 1
-            ? 'Add 1 more photo'
-            : 'Add up to $left more photos';
+            ? 'Add 1$more photo'
+            : 'Add up to $left$more photos';
     if (!videoLeft) return '$photoPart. A video is already attached.';
     return '$photoPart and one short video (up to '
         '$kEscrowVideoMaxSeconds seconds).';

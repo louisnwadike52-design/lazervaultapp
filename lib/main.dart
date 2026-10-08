@@ -23,6 +23,7 @@ import 'package:lazervault/core/notifications/notification_navigator.dart';
 import 'package:lazervault/core/notifications/notification_target.dart';
 import 'package:lazervault/core/services/pending_chat_navigation.dart';
 import 'package:lazervault/core/services/chat_sound_settings.dart';
+import 'package:lazervault/core/services/app_route_observer.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/data/datasources/cms_data.dart';
 import 'package:lazervault/src/features/app_status/widgets/app_startup_gate.dart';
@@ -965,6 +966,10 @@ class _MyAppState extends State<MyApp> {
           splitScreenMode: true,
           builder: (context, child) => InactivityWatcher(
             child: GetMaterialApp(
+              // Lets a screen know it became visible again after a pushed route
+              // popped — the only lifecycle signal Flutter gives for that. See
+              // appRouteObserver.
+              navigatorObservers: [appRouteObserver],
               enableLog: true,
               logWriterCallback: localLogWriter,
               translations: CMSData(),

@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/utils/dismiss_keyboard.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
 
@@ -119,6 +120,10 @@ class _LockAccountSheetState extends State<LockAccountSheet> {
               .write(key: 'has_seen_onboarding', value: 'true');
         } catch (_) {}
         Navigator.of(context).pop();
+        // Third route to the login screen, alongside the idle auto-logout and
+        // the drawer's Logout. This sheet is opened from Settings, whose search
+        // field may hold focus, and offAllNamed disposes the route that owns it.
+        dismissKeyboard();
         // Land on the LOGIN screen for the mode (not the signup entry), where the
         // countdown modal shows.
         Get.offAllNamed(AppRoutes.freshLoginEntry);

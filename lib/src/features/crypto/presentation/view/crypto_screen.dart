@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/app_route_observer.dart';
 import 'package:flutter_bloc/flutter_bloc.dart' hide Transition;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -45,18 +46,51 @@ class CryptoScreen extends StatefulWidget {
   State<CryptoScreen> createState() => _CryptoScreenState();
 }
 
-class _CryptoScreenState extends State<CryptoScreen> {
+class _CryptoScreenState extends State<CryptoScreen>
+    with WidgetsBindingObserver, RouteAware {
   final TextEditingController _searchController = TextEditingController();
   bool _showGainers = true;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    context.read<CryptoCubit>().loadCryptos();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is ModalRoute<void>) appRouteObserver.subscribe(this, route);
+  }
+
+  /// A pushed route popped and this screen is on top again.
+  ///
+  /// initState does NOT re-run here — the State was never disposed — so without
+  /// this a user could buy or sell, come back, and read a balance from before
+  /// their own trade. loadCryptos paints its cached snapshot instantly and
+  /// revalidates underneath, so this costs no shimmer.
+  @override
+  void didPopNext() => _refreshBalances();
+
+  /// Returning from the background. The in-app route stack did not change, so
+  /// didPopNext never fires for this case.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _refreshBalances();
+  }
+
+  void _refreshBalances() {
+    if (!mounted) return;
+    // ignore: discarded_futures
     context.read<CryptoCubit>().loadCryptos();
   }
 
   @override
   void dispose() {
+    appRouteObserver.unsubscribe(this);
+    WidgetsBinding.instance.removeObserver(this);
     _searchController.dispose();
     super.dispose();
   }
