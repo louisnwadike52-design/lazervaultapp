@@ -17,6 +17,7 @@ import 'package:lazervault/src/features/transaction_pin/services/transaction_pin
 import 'package:lazervault/src/features/escrow/presentation/cubit/escrow_action_exception.dart';
 import '../../data/services/escrow_media_upload_service.dart';
 import '../cubit/escrow_cubit.dart';
+import '../widgets/escrow_action_guide.dart';
 import '../widgets/escrow_attachment_picker.dart';
 import '../widgets/escrow_media_viewer.dart';
 import '../widgets/escrow_shimmer.dart';
@@ -65,6 +66,15 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
   bool _releaseOwnedByPinSheet = false;
 
   Future<void> _release(EscrowDealEntity deal) async {
+    // Guidance BEFORE the PIN. Releasing from FUNDED means paying out for
+    // something the seller has not even claimed to have delivered, and the PIN
+    // sheet is not the place to learn that — by then the user is being asked
+    // for a credential, not for a decision. The guide names where the deal
+    // actually is and offers the alternatives (message, dispute).
+    if (!await showEscrowActionGuide(context, EscrowAction.release, deal)) {
+      return;
+    }
+    if (!mounted) return;
     final cubit = context.read<EscrowCubit>();
     HapticFeedback.mediumImpact();
     final txnId = 'ESCROW-REL-${const Uuid().v4().substring(0, 8)}';
@@ -141,6 +151,13 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
   }
 
   Future<void> _markDelivered(EscrowDealEntity deal) async {
+    // Marking delivered is one-way: it closes off Cancel & refund for BOTH
+    // parties and hands the next move to the buyer. Say so before, not after.
+    if (!await showEscrowActionGuide(
+        context, EscrowAction.markDelivered, deal)) {
+      return;
+    }
+    if (!mounted) return;
     final cubit = context.read<EscrowCubit>();
     // One sheet captures an optional note AND optional proof-of-delivery media
     // (photos and one short video, the seller's side of the evidence flow).
@@ -265,6 +282,10 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
   }
 
   Future<void> _cancel(EscrowDealEntity deal) async {
+    if (!await showEscrowActionGuide(context, EscrowAction.cancel, deal)) {
+      return;
+    }
+    if (!mounted) return;
     final cubit = context.read<EscrowCubit>();
     final reason = await _promptSheet(
       title: 'Cancel & refund',
@@ -281,6 +302,12 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
   }
 
   Future<void> _dispute(EscrowDealEntity deal) async {
+    // A dispute freezes the money for both sides until a human decides. The
+    // guide points at messaging first, because most disputes are a delay.
+    if (!await showEscrowActionGuide(context, EscrowAction.dispute, deal)) {
+      return;
+    }
+    if (!mounted) return;
     final cubit = context.read<EscrowCubit>();
     final result = await _disputeSheet(
       existingPhotoCount: _dealPhotoCount(deal),
@@ -1232,10 +1259,26 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
     );
   }
 
+  /// A human title for a timeline event.
+  ///
+  /// This must cover EVERY event escrow-service emits. It did not: seven of the
+  /// backend's fourteen types fell through to `return t`, so the deal timeline
+  /// showed users raw keys like "offer_converted" and "admin_action" — on the
+  /// screen where someone is deciding whether to release money. Two cases here
+  /// (refund_accepted, refund_declined) match nothing the backend sends; they
+  /// are kept because they cost nothing and a future rename would otherwise
+  /// regress silently.
+  ///
+  /// Backend vocabulary (internal/service/*.go, EventType):
+  ///   funded · offer_converted · delivered · released · cancelled · disputed ·
+  ///   resolved · refund_requested · refunded · expired · attachment_added ·
+  ///   admin_action · admin_note · fraud_flagged
   String _eventLabel(String t) {
     switch (t) {
       case 'funded':
         return 'Funded & created';
+      case 'offer_converted':
+        return 'Offer accepted & funded';
       case 'delivered':
         return 'Marked delivered';
       case 'released':
@@ -1244,6 +1287,8 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
         return 'Cancelled & refunded';
       case 'disputed':
         return 'Dispute opened';
+      case 'resolved':
+        return 'Dispute resolved';
       case 'refund_requested':
         return 'Refund requested';
       case 'refund_accepted':
@@ -1251,8 +1296,23 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
         return 'Refund sent to buyer';
       case 'refund_declined':
         return 'Refund declined, sent to review';
+      case 'expired':
+        return 'Expired';
+      case 'attachment_added':
+        return 'Photo or video added';
+      case 'admin_action':
+        return 'Reviewed by our team';
+      case 'admin_note':
+        return 'Note from our team';
+      case 'fraud_flagged':
+        return 'Held for a safety check';
       default:
-        return t;
+        // Last resort for an event added to the backend after this build
+        // shipped. "offer_converted" is unreadable; "Offer converted" at least
+        // reads as English rather than a database value.
+        if (t.isEmpty) return 'Update';
+        final words = t.replaceAll('_', ' ');
+        return words[0].toUpperCase() + words.substring(1);
     }
   }
 
