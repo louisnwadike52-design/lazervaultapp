@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:lazervault/core/services/login_flow_resolver.dart';
 import 'package:flutter/material.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/account_locked_modal.dart';
 import 'package:flutter/services.dart';
@@ -91,14 +92,19 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
   /// the previous inline form hard-coded Google-then-Apple and hung the gap
   /// off Google, so a build showing only Apple still reserved Google's spacing.
   List<Widget> _socialButtons(BuildContext context) {
+    // Just the provider name. The divider directly above already says "or
+    // continue with", so "Continue with Google" repeated it — and at half
+    // width the repetition is what clipped the labels mid-word.
     final google = _showGoogle
         ? GoogleSignInButton(
+            label: 'Google',
             onPressed: () =>
                 context.read<AuthenticationCubit>().signInWithGoogle(),
           )
         : null;
     final apple = _showApple
         ? AppleSignInButtonFull(
+            label: 'Apple',
             onPressed: () =>
                 context.read<AuthenticationCubit>().signInWithApple(),
           )
@@ -197,8 +203,21 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
     }
   }
 
-  void _switchToPasscodeLogin() {
-    Get.offAllNamed(AppRoutes.passcodeLogin);
+  Future<void> _switchToPasscodeLogin() async {
+    // passcodeLogin is the LOCK screen, and LoginFlowResolver is explicit that
+    // it is a dead end without a cached passcode user — fresh installs, wiped
+    // accounts and email/password-only accounts all bounce straight back to
+    // the full login screen. Which is THIS screen, so tapping Passcode simply
+    // reloaded the email form and looked like a dead button.
+    //
+    // Resolve it properly: the lock only when a returning passcode user is
+    // actually cached, otherwise the full phone+passcode login where they can
+    // enter both.
+    final returning = await LoginFlowResolver.hasCachedReturningUser();
+    if (!mounted) return;
+    Get.offAllNamed(
+      returning ? AppRoutes.passcodeLogin : AppRoutes.phonePasscodeLogin,
+    );
   }
 
   /// Voice sign-in keyed off the EMAIL: check the account (entered email, else
@@ -663,7 +682,11 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
                             SizedBox(height: 24.h),
                           ] else
                             SizedBox(height: 32.h),
-                          _buildSignUpLink(context),
+                          // Sign-up link moved OUT of this column and pinned
+                          // to the bottom of the Stack — see below. Its height
+                          // is reserved here so the last control can still be
+                          // scrolled clear of it.
+                          SizedBox(height: 56.h),
                           SizedBox(height: 16.h),
                         ],
                       ),
@@ -671,6 +694,26 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
                   ),
                 );
               },
+            ),
+          ),
+          // PINNED TO THE BOTTOM, not floated at the end of the content.
+          //
+          // The link is white, because the background wave is purple down
+          // here. As the last item in the scrolling column its position
+          // depended on content height, so it landed ON the wave's edge —
+          // the right half legible over purple, the left half white-on-white
+          // and effectively invisible. Pinning it keeps it wholly inside the
+          // purple band whatever the column above does.
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: EdgeInsets.only(bottom: 8.h),
+                child: _buildSignUpLink(context),
+              ),
             ),
           ),
         ],
@@ -999,7 +1042,13 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
               fontWeight: FontWeight.bold,
             ),
           ),
-          onPressed: () => Get.toNamed(AppRoutes.signupEntry),
+          // AppRoutes.signupEntry follows the PLATFORM default, which is
+          // right for onboarding where no flow is in play — but wrong here.
+          // Somebody reading an email+password form and tapping Sign Up means
+          // the email signup; sending them to the phone flow discards the
+          // screen they chose. The platform default still governs every
+          // context-free entry point.
+          onPressed: () => Get.toNamed(AppRoutes.signUp),
         )
       ],
     );

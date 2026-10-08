@@ -863,7 +863,8 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
   }
 
   /// Refresh the active platform auth mode from the backend so the "Sign Up"
-  /// CTA (via [AppRoutes.signupEntry]) routes to the correct signup screen even
+  /// CTA routes to the PHONE signup — this is a passcode screen, so that is the
+  /// flow the user is in, whatever the platform default says — even
   /// if the cached value is stale (e.g. first launch after an admin flip).
   Future<void> _refreshAuthMode() async {
     try {
@@ -1339,7 +1340,7 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
                                     onPressed: isAuthenticating
                                         ? null
                                         : () => Get.offAllNamed(
-                                            AppRoutes.signupEntry),
+                                            AppRoutes.phoneEntry),
                                     // Shrink the tap padding so "Sign Up" sits inline
                                     // with the question text instead of floating high.
                                     style: TextButton.styleFrom(

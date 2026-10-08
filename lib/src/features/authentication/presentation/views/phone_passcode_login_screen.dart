@@ -326,7 +326,12 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
                 type: AppSnackbarType.error,
                 duration: const Duration(seconds: 5),
                 mainButton: TextButton(
-                  onPressed: () => Get.toNamed(AppRoutes.signupEntry),
+                  // Signup from a PASSCODE screen is the phone signup, whatever
+                  // the platform default says: the user is looking at a
+                  // phone+passcode form and sending them to the email signup
+                  // discards the flow they chose. signupEntry (platform default)
+                  // stays right for onboarding, where no flow is in play.
+                  onPressed: () => Get.toNamed(AppRoutes.phoneEntry),
                   child: const Text('Sign up',
                       style: TextStyle(
                           color: Colors.white, fontWeight: FontWeight.bold)),
@@ -417,7 +422,7 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
           onPressed:
-              _submitting ? null : () => Get.toNamed(AppRoutes.signupEntry),
+              _submitting ? null : () => Get.toNamed(AppRoutes.phoneEntry),
           child: Text(
             'Sign up',
             style: TextStyle(
