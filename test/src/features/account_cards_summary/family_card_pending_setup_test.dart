@@ -129,4 +129,40 @@ void main() {
               'business card while staying tellable apart from it');
     });
   });
+
+  group('the family card label row has a bounded width', () {
+    late String source;
+
+    setUpAll(() {
+      source = File(
+        'lib/src/features/account_cards_summary/presentation/widgets/'
+        'account_carousel.dart',
+      ).readAsStringSync();
+    });
+
+    // Measured on a device 2026-10-08: the dashboard went red roughly every
+    // frame for any user whose carousel held a family account, and the Loki
+    // crash feed filled with 'RenderBox was not laid out' from every ancestor
+    // above the card. The cause was one missing wrapper.
+    //
+    // The header is `Row(spaceBetween: [ <label row>, <members badge> ])`. A
+    // RenderFlex lays out its NON-flex children with an unbounded main axis,
+    // so the label row was handed infinite width — and it contains a Flexible,
+    // which is the one thing RenderFlex refuses under an unbounded main axis.
+    // Expanded gives it the remaining finite width, which is what the
+    // Flexible+ellipsis inside it needed in the first place.
+    test('the label row is wrapped in Expanded, not a bare Row child', () {
+      final i = source.indexOf('Icons.family_restroom');
+      expect(i, greaterThan(-1),
+          reason: 'the family card icon moved — update this test');
+      final before = source.substring(i - 400 < 0 ? 0 : i - 400, i);
+      expect(
+        before.contains('Expanded('),
+        isTrue,
+        reason: 'the label Row carries a Flexible; as a plain child of the '
+            'spaceBetween Row it gets unbounded width and throws on EVERY '
+            'layout, taking the whole dashboard red',
+      );
+    });
+  });
 }

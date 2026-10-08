@@ -1495,35 +1495,44 @@ class _AccountCarouselState extends State<AccountCarousel> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.family_restroom,
-                                  color: Colors.white,
-                                  size: 18.sp,
-                                ),
-                                SizedBox(width: 6.w),
-                                Flexible(
-                                  child: Text(
-                                    // The STORED account name leads (every
-                                    // family account is named — user request
-                                    // 2026-09-07); the generic category label
-                                    // is only the legacy-unnamed fallback.
-                                    (account.accountLabel?.trim().isNotEmpty ??
-                                            false)
-                                        ? account.accountLabel!.trim()
-                                        : 'Family & Friends',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color:
-                                          Colors.white.withValues(alpha: 0.9),
-                                      fontSize: 16.sp,
-                                      fontWeight: FontWeight.w600,
+                            // This label Row carries a Flexible, so it MUST be given a bounded
+                            // width. As a plain child of a spaceBetween Row it was handed
+                            // unbounded constraints instead, and a flex child under an
+                            // unbounded main axis is the one combination RenderFlex refuses.
+                            // It threw on every layout of this card, so a user whose carousel
+                            // held a family account got a red dashboard and a cascade of
+                            // 'RenderBox was not laid out' from every ancestor above it.
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.family_restroom,
+                                    color: Colors.white,
+                                    size: 18.sp,
+                                  ),
+                                  SizedBox(width: 6.w),
+                                  Flexible(
+                                    child: Text(
+                                      // The STORED account name leads (every
+                                      // family account is named — user request
+                                      // 2026-09-07); the generic category label
+                                      // is only the legacy-unnamed fallback.
+                                      (account.accountLabel?.trim().isNotEmpty ??
+                                              false)
+                                          ? account.accountLabel!.trim()
+                                          : 'Family & Friends',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color:
+                                            Colors.white.withValues(alpha: 0.9),
+                                        fontSize: 16.sp,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                             if (!isPendingSetup)
                               Container(
