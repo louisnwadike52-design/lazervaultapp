@@ -174,7 +174,14 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
     } else if (s is SmartCardValidationFailed) {
       setState(() {
         _validation = null;
-        _validateError = s.message;
+        // Sanitised, like every other branch here. A clean sentence from the
+        // server passes through verbatim — the backend now answers a card it
+        // definitively could not resolve with NOT_FOUND and "check it and try
+        // again", which is the advice the user can act on. Only genuinely
+        // technical text collapses to the generic line, instead of every
+        // failure reading "Something went wrong. Please try again." whether
+        // the number was mistyped or the provider was unreachable.
+        _validateError = sanitizeUserFacingError(s.message);
         _validating = false;
       });
     } else if (s is TVPackagesLoaded) {
