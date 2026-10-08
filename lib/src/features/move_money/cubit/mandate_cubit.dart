@@ -497,35 +497,97 @@ class MandateCubit extends Cubit<MandateState> {
   /// polls forever; best-effort + silent on transient errors.
   Timer? _switchPollTimer;
 
+  /// The mandate currently being polled, so a resume can tell whether the poll
+  /// it would start is already running.
+  String? _switchPollMandateId;
+
+  /// Backoff schedule for the switch poll.
+  ///
+  /// WHY NOT A FIXED 12s TICK
+  ///
+  /// It used to be `Timer.periodic(12s)` bounded at 8 ticks — a 96-second
+  /// window. The SERVER holds the "Switching…" marker until Mono confirms or a
+  /// THIRTY MINUTE grace elapses (mandateSwitchConfirmGrace in
+  /// banking-service). So whenever Mono lagged past a minute and a half the
+  /// client simply stopped looking, and the badge sat on "Switching…" until the
+  /// user happened to cold-start the app — measured in prod on a mandate whose
+  /// status had ALREADY reached its switch target.
+  ///
+  /// This covers the server's own window instead of a shorter invented one:
+  /// fast early ticks because the common case settles in seconds, then
+  /// widening gaps so ~31 minutes costs 17 requests rather than 155.
+  static const List<Duration> _switchPollSchedule = [
+    Duration(seconds: 3),
+    Duration(seconds: 5),
+    Duration(seconds: 8),
+    Duration(seconds: 12),
+    Duration(seconds: 20),
+    Duration(seconds: 30),
+    Duration(seconds: 45),
+    Duration(seconds: 60),
+    Duration(minutes: 2),
+    Duration(minutes: 3),
+    Duration(minutes: 4),
+    Duration(minutes: 5),
+    Duration(minutes: 5),
+    Duration(minutes: 5),
+  ];
+
   void pollSwitchUntilSettled({
     required String mandateId,
     required String userId,
-    int maxTicks = 8,
   }) {
     _switchPollTimer?.cancel();
-    var ticks = 0;
-    _switchPollTimer =
-        Timer.periodic(const Duration(seconds: 12), (timer) async {
-      ticks++;
-      if (isClosed || ticks > maxTicks) {
-        timer.cancel();
+    _switchPollMandateId = mandateId;
+    var step = 0;
+
+    void scheduleNext() {
+      if (isClosed || step >= _switchPollSchedule.length) {
+        _switchPollMandateId = null;
         return;
       }
-      try {
-        final fresh =
-            await _dataSource.getMandate(mandateId: mandateId, userId: userId);
-        _mandatesByAccountId[fresh.linkedAccountId] = fresh;
-        if (!isClosed) {
-          emit(UserMandatesLoaded(
-              mandates: _mandatesByAccountId.values.toList()));
+      final delay = _switchPollSchedule[step++];
+      _switchPollTimer = Timer(delay, () async {
+        if (isClosed) return;
+        try {
+          final fresh = await _dataSource.getMandate(
+              mandateId: mandateId, userId: userId);
+          _mandatesByAccountId[fresh.linkedAccountId] = fresh;
+          if (!isClosed) {
+            emit(UserMandatesLoaded(
+                mandates: _mandatesByAccountId.values.toList()));
+          }
+          if (!fresh.switchProcessing) {
+            _switchPollMandateId = null;
+            return; // settled — stop
+          }
+        } catch (_) {
+          // best-effort — a transient failure must not end the watch
         }
-        if (!fresh.switchProcessing) {
-          timer.cancel();
-        }
-      } catch (_) {
-        // best-effort — keep trying until maxTicks
-      }
-    });
+        scheduleNext();
+      });
+    }
+
+    scheduleNext();
+  }
+
+  /// Restart the switch poll for any cached mandate still mid-switch.
+  ///
+  /// Called when the deposit screen is shown or resumed. Without it a user who
+  /// backgrounded the app, or opened the screen long after the switch, had no
+  /// way to see the badge settle short of a cold start: the poll only ever
+  /// began inside pause/reinstate, so it did not exist for them.
+  ///
+  /// No-op when nothing is switching, or when the poll for that mandate is
+  /// already running, so repeated screen visits cannot stack timers.
+  void resumeSwitchPollingIfNeeded({required String userId}) {
+    if (isClosed) return;
+    for (final m in _mandatesByAccountId.values) {
+      if (!m.switchProcessing) continue;
+      if (_switchPollMandateId == m.id) return; // already watching this one
+      pollSwitchUntilSettled(mandateId: m.id, userId: userId);
+      return; // one at a time — a user has one switch in flight in practice
+    }
   }
 
   /// Prefer active/readyToDebit mandates over others.

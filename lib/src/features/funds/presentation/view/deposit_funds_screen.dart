@@ -463,9 +463,19 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     if (!mounted) return;
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) return;
-    serviceLocator<MandateCubit>().fetchUserMandates(
-      userId: authState.profile.user.id,
-    );
+    final userId = authState.profile.user.id;
+    final cubit = serviceLocator<MandateCubit>();
+    // ignore: discarded_futures
+    cubit.fetchUserMandates(userId: userId).then((_) {
+      // Re-arm the "Switching…" watch for anything still mid-switch.
+      //
+      // The poll only ever started inside pause/reinstate, so a user who
+      // backgrounded the app — or simply opened this screen later — had no
+      // watcher at all and the badge sat on "Switching…" until a cold start.
+      // The server holds that marker for up to 30 minutes (Mono's confirmation
+      // or the grace window), far longer than one visit to this screen.
+      cubit.resumeSwitchPollingIfNeeded(userId: userId);
+    });
   }
 
   /// Called when amount text changes
