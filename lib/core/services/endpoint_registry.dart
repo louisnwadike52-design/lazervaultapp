@@ -79,6 +79,10 @@ class EndpointRegistry {
       _persistedNonUrlKeyPrefixes.any(key.startsWith);
 
   static const Set<String> _persistedNonUrlKeys = {
+    // Which languages the voice pickers may offer. Unset = English only.
+    // Must be persisted here or the gate falls back to its default on every
+    // cold start, before the first snapshot lands.
+    'voice_enabled_languages_csv',
     'session_inactivity_logout_seconds',
     // The payout provider's floor for an NGN bank transfer, in kobo. Cached so
     // the amount screen can refuse a too-small transfer on the FIRST frame

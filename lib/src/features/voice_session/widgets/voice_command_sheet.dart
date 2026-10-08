@@ -43,6 +43,7 @@ import 'package:lazervault/src/features/ai_chats/presentation/widgets/ai_chat_co
     show BubbleTailPainter;
 import 'voice_session_tip_bar.dart';
 import 'package:lazervault/core/branding/assistant_identity.dart';
+import '../models/voice_end_reason.dart';
 part 'voice_command_sheet_widgets.dart';
 
 class VoiceCommandSheet extends StatefulWidget {
@@ -2622,6 +2623,13 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   /// the user is LISTENING it pulses a softer blue. Idle/thinking = calm.
   ///
   /// [compact] = small header variant; otherwise the large central variant.
+  /// Only a genuine refusal gets the red shield. An ordinary ending — the user
+  /// closing the sheet, or a quiet line timing out — used to get it purely
+  /// because `endReason` was non-null, which made every normal hang-up look
+  /// like something had gone wrong.
+  bool _endIsFailure(String? raw) =>
+      VoiceEndReason.parse(raw)?.isFailure ?? false;
+
   Widget _buildNovaAvatar(VoiceSessionState state, {required bool compact}) {
     final cubit = context.read<VoiceSessionCubit>();
     final isSpeaking = cubit.isAgentSpeaking;
@@ -2654,12 +2662,26 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     // lavender against the app's purple. Both ends now step down together —
     // active to violet-500, idle deeper to match — which keeps the same
     // separation while sitting in the dashboard's purple family.
+    // THE AVATAR IS THE AI. It must only look active when the AI is active.
+    //
+    // While the USER was speaking this avatar pulsed the same green as the
+    // user's own indicators and threw outgoing waves, so both ends of the
+    // conversation lit up at once and nothing on screen said who had the
+    // floor. Green belongs to the user — the "You • speaking…" bubble and the
+    // mic button — and must not be borrowed here.
+    //
+    // The AI now has three distinct looks: violet pulse while it SPEAKS, a
+    // calm steady violet-tinted ring while it LISTENS (attentive, but
+    // unmistakably not talking), and the deep idle tone otherwise.
     final Color glowColor = isSpeaking
         ? const Color(0xFF8B5CF6)
         : isListening
-            ? const Color(0xFF34D399)
+            ? const Color(0xFF4C3A96)
             : const Color(0xFF2A1F5E);
-    final bool animate = isSpeaking || isListening;
+    // Animation is the loudest cue, so it is reserved for the AI's own turn.
+    // A listening avatar holds still; the motion on screen is then entirely
+    // the user's.
+    final bool animate = isSpeaking;
 
     final Widget avatar = AnimatedBuilder(
       // BOTH controllers: the scale/glow follow _avatarController, the speaking
@@ -2688,12 +2710,15 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               // chase each other and read as sound leaving the avatar, rather
               // than one ring breathing — which is what the glow ring below
               // already does, and means something calmer.
-              // Rendered while EITHER party has the floor. This was
-              // `if (isSpeaking)`, so a user talking got no outgoing waves at
-              // all and had no way to tell the mic was live — the one thing
-              // they most need to see. Green while they speak, violet while
-              // the AI answers, same motion, so "who has the floor" reads
-              // without looking at the captions.
+              // Rendered ONLY while the AI has the floor.
+              //
+              // These were briefly shown for the user's turn too, on the
+              // reasoning that a talking user needs to see the mic is live.
+              // That need is real but this is the wrong place to meet it: sound
+              // leaving the AI's avatar while the USER is the one talking says
+              // the AI is answering, and both halves of the screen pulsed at
+              // once. The user's own liveness is carried by the mic button and
+              // the "You • speaking…" bubble, which are green and unambiguous.
               if (animate)
                 ...List.generate(4, (i) {
                   final phase = (_waveController.value + i / 4) % 1.0;
@@ -3420,18 +3445,21 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
 
             const Spacer(flex: 2),
 
-            // Icon — red shield for failure, green check for normal end
+            // Translated ONCE here. `state.endReason` is a machine token
+            // (agent_idle, sheet_dismissed, …) and must never reach the
+            // screen — see VoiceEndReason.
+            // Icon — red shield for a genuine refusal, green check otherwise.
             Container(
               width: 80.w,
               height: 80.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: (state.endReason != null
+                color: (_endIsFailure(state.endReason)
                         ? const Color(0xFFEF4444)
                         : const Color(0xFF10B981))
                     .withValues(alpha: 0.1),
                 border: Border.all(
-                  color: (state.endReason != null
+                  color: (_endIsFailure(state.endReason)
                           ? const Color(0xFFEF4444)
                           : const Color(0xFF10B981))
                       .withValues(alpha: 0.25),
@@ -3439,10 +3467,10 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                 ),
               ),
               child: Icon(
-                state.endReason != null
+                _endIsFailure(state.endReason)
                     ? Icons.shield_outlined
                     : Icons.check_rounded,
-                color: state.endReason != null
+                color: _endIsFailure(state.endReason)
                     ? const Color(0xFFEF4444)
                     : const Color(0xFF10B981),
                 size: 40.sp,
@@ -3452,7 +3480,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
             SizedBox(height: 24.h),
 
             Text(
-              'Call Ended',
+              VoiceEndReason.parse(state.endReason)?.title ?? 'Call ended',
               style: GoogleFonts.inter(
                 fontSize: 24.sp,
                 fontWeight: FontWeight.w700,
@@ -3461,15 +3489,18 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               ),
             ),
             SizedBox(height: 6.h),
-            if (state.endReason != null) ...[
+            if (VoiceEndReason.parse(state.endReason)?.detail != null) ...[
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 32.w),
                 child: Text(
-                  state.endReason!,
+                  VoiceEndReason.parse(state.endReason)!.detail!,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    color: const Color(0xFFEF4444).withValues(alpha: 0.85),
+                    height: 1.45,
+                    color: _endIsFailure(state.endReason)
+                        ? const Color(0xFFEF4444).withValues(alpha: 0.85)
+                        : Colors.white.withValues(alpha: 0.6),
                   ),
                 ),
               ),

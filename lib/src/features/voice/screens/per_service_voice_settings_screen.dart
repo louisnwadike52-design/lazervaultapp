@@ -26,6 +26,7 @@ import '../models/per_service_voice_settings.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/settings/presentation/theme/settings_theme.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import '../../../../core/config/voice_language_availability.dart';
 
 class PerServiceVoiceSettingsScreen extends StatelessWidget {
   final String serviceName;
@@ -313,6 +314,17 @@ const List<Map<String, String>> _kLanguages = [
   {'code': 'es', 'label': 'Spanish'},
 ];
 
+/// The languages to render, given what the operator allows and what is already
+/// saved on this profile.
+List<Map<String, String>> _visibleLanguages(String? selected) {
+  final current = (selected ?? '').trim().toLowerCase();
+  return _kLanguages
+      .where((l) =>
+          VoiceLanguageAvailability.isAllowed(l['code']) ||
+          l['code'] == current)
+      .toList();
+}
+
 class _LanguageDropdown extends StatelessWidget {
   final String? selected;
   final ValueChanged<String?> onChanged;
@@ -335,7 +347,16 @@ class _LanguageDropdown extends StatelessWidget {
           style: GoogleFonts.inter(
               color: SettingsTheme.textPrimary, fontSize: 13.sp),
           iconEnabledColor: SettingsTheme.textSecondary,
-          items: _kLanguages
+          // Only languages the stack can actually SPEAK are offered. Listing
+          // one the TTS routing cannot serve makes the control lie: the user
+          // picks Yoruba, nothing changes, and they conclude it is broken.
+          // The allowlist is operator-driven and defaults to English, so the
+          // rest return the day they are genuinely ready, with no app release.
+          //
+          // A value already saved but no longer allowed is kept in the list so
+          // the dropdown can render it — dropping it would throw on a
+          // `value` with no matching item and take the screen down.
+          items: _visibleLanguages(selected)
               .map((l) => DropdownMenuItem<String>(
                     value: l['code'],
                     child: Text(l['label']!),

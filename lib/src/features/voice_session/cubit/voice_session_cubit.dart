@@ -1298,6 +1298,19 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           noiseSuppression: true,
           autoGainControl: true,
         ),
+        // PLAY THROUGH THE LOUDSPEAKER, NOT THE EARPIECE.
+        //
+        // Only capture options were set here, so playback took WebRTC's
+        // default: on iOS a voice-call audio session routes to the EARPIECE,
+        // which is why the agent was "so quiet you can hardly hear it" unless
+        // the phone was held to the ear. Nothing was wrong with the TTS level
+        // — the audio was coming out of the wrong speaker.
+        //
+        // This is a hands-free assistant shown on a full-screen sheet, so the
+        // loudspeaker is the right default. Echo cancellation above is what
+        // makes it safe: without AEC, loudspeaker output feeds straight back
+        // into the mic and the agent interrupts itself.
+        defaultAudioOutputOptions: AudioOutputOptions(speakerOn: true),
       ),
     );
 
@@ -1363,6 +1376,24 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         await _disposeRoomResources();
         if (!isClosed) emit(VoiceSessionDisconnected());
         return;
+      }
+
+      // Force the LOUDSPEAKER once the session exists.
+      //
+      // RoomOptions.defaultAudioOutputOptions sets the intent, but on iOS the
+      // AVAudioSession category is (re)configured as the connection comes up,
+      // and a voice-call session routes to the earpiece. Asserting it here —
+      // after connect, with the room live — is what actually moves the audio,
+      // and it is the difference between an agent you can barely hear and one
+      // you can.
+      //
+      // Best-effort: an unsupported platform (desktop/web) logs a warning
+      // inside the SDK and changes nothing, so a failure here must never take
+      // down a working session.
+      try {
+        await Hardware.instance.setSpeakerphoneOn(true);
+      } catch (e) {
+        print('VoiceSessionCubit: could not force speakerphone: $e');
       }
 
       await _applyCaptureOwnership();

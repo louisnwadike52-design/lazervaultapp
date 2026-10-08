@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'voice_language_availability.dart';
 
 /// Lightweight client-side feature-flag cache.
 ///
@@ -376,6 +377,9 @@ class FeatureFlags {
   static Future<void> applyRemoteSnapshot(Map<String, String> remote) async {
     final prefs = _prefs ?? await SharedPreferences.getInstance();
     _prefs = prefs;
+    // Share the same store with the voice-language gate so its allowlist is
+    // live the moment a snapshot lands, rather than only after a restart.
+    VoiceLanguageAvailability.bind(prefs);
     for (final key in <String>[
       dashboardCardsSectionVisible,
       voiceChatAssistantSectionVisible,
