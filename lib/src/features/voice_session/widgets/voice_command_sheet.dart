@@ -4396,6 +4396,16 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
 
     _isReceiptSheetShowing = true;
     if (ref.isNotEmpty) _lastReceiptRef = ref;
+    // Shut the mic while the receipt is up. The agent finishes speaking its
+    // confirmation moments after this opens, and that `agent_caption_end`
+    // re-arms listening — behind a sheet the user is reading, seconds after
+    // money moved. See VoiceSessionCubit._modalOwnsScreen.
+    //
+    // Resolved ONCE, here, and reused in whenComplete: the callback can run
+    // after this widget is gone, and a context.read then would throw and leave
+    // the mic gated shut for the rest of the call.
+    final receiptCubit = context.read<VoiceSessionCubit>();
+    receiptCubit.onBlockingSheetShown();
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -4444,7 +4454,13 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           ),
         ),
       ),
-    ).whenComplete(() => _isReceiptSheetShowing = false);
+    ).whenComplete(() {
+      _isReceiptSheetShowing = false;
+      // Hand the mic back. Unconditional — not guarded on `mounted` — because
+      // the gate lives in the cubit, which outlives this sheet: skipping it on
+      // an unmounted widget would strand the session deaf.
+      receiptCubit.onBlockingSheetDismissed();
+    });
   }
 
   /// (Re)arms the stalled-PIN-flow safety net.

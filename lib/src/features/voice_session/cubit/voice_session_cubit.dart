@@ -191,6 +191,81 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _setVisualFeedbackActive(false);
   }
 
+  /// True while a modal sheet the user has to READ owns the screen — today
+  /// that is the transfer receipt shown after a completed money move.
+  ///
+  /// WHY THE MIC MUST BE SHUT WHILE ONE IS UP
+  ///
+  /// [_isVisualFeedbackActive] does not cover this: it suppresses state
+  /// EMISSION, and `transaction_result` deliberately clears it before the
+  /// receipt is shown so the receipt can render at all. Nothing then stopped
+  /// the re-arm, so the sequence after every voice transfer was:
+  ///
+  ///   transaction_result -> receipt sheet opens
+  ///   agent speaks "sent ₦x to y" -> agent_caption_end -> _reArmListeningSoon
+  ///   -> mic LIVE behind the receipt the user is reading
+  ///
+  /// Two things went wrong with that. The mild one is cosmetic and is what got
+  /// reported: ambient noise reaches `_setUserSpeaking`, so the avatar lights
+  /// up as though the user were talking, and closing the receipt reveals a UI
+  /// already sitting in "listening" — which reads as "closing the receipt
+  /// started listening". The serious one is that a hot mic sits behind a
+  /// receipt in the seconds right after money moved, so a stray sentence in
+  /// the room is transcribed and dispatched to a financial agent as a fresh
+  /// command.
+  ///
+  /// Gating [_listeningPermitted] is the whole fix: every auto-listen path
+  /// (greeting, agent-end re-arm, barge-in, recognizer-restart) already funnels
+  /// through it, so there is exactly one place to be right.
+  bool _modalOwnsScreen = false;
+
+  /// Last-resort release for [_modalOwnsScreen].
+  ///
+  /// The flag is cleared by the sheet's own dismissal callback, which is
+  /// reliable — but a mic wedged shut is a dead conversation with no error to
+  /// explain it, so a dropped callback must not be able to end the session's
+  /// usefulness. Deliberately long: it is a backstop, not a policy, and must
+  /// never fire while somebody is genuinely still reading a receipt.
+  Timer? _modalOwnsScreenTimer;
+  static const Duration _modalOwnsScreenTimeout = Duration(minutes: 3);
+
+  /// The UI is presenting a modal sheet the user must read or dismiss.
+  ///
+  /// Closes the mic if it is already open — the sheet can appear mid-turn, and
+  /// gating future re-arms would otherwise leave the current capture running.
+  void onBlockingSheetShown() {
+    if (isClosed) return;
+    _modalOwnsScreen = true;
+    _modalOwnsScreenTimer?.cancel();
+    _modalOwnsScreenTimer = Timer(_modalOwnsScreenTimeout, () {
+      if (_modalOwnsScreen) {
+        AppLogger.warning(
+          'VoiceSessionCubit: modal-sheet safety timeout fired — releasing the '
+          'mic gate (a sheet dismissal callback was likely dropped)',
+        );
+        onBlockingSheetDismissed();
+      }
+    });
+    unawaited(stopLocalListening());
+  }
+
+  /// The modal sheet is gone. Hands the mic back to the conversation.
+  ///
+  /// Re-arms rather than merely un-gating, because the agent's turn ended while
+  /// the sheet was up: the `agent_caption_end` that would normally re-arm has
+  /// already been and gone, so without an explicit re-arm here the user would
+  /// close the receipt onto a permanently deaf session. [_reArmListeningSoon]
+  /// re-checks [_listeningPermitted], so a muted, push-to-talk, torn-down or
+  /// agent-speaking session is still left alone.
+  void onBlockingSheetDismissed() {
+    _modalOwnsScreenTimer?.cancel();
+    _modalOwnsScreenTimer = null;
+    if (!_modalOwnsScreen) return;
+    _modalOwnsScreen = false;
+    if (isClosed || _teardownRequested) return;
+    _reArmListeningSoon();
+  }
+
   /// Whether the local microphone is muted.
   bool _isMuted = false;
 
@@ -1566,6 +1641,10 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       return false;
     }
     if (_bioInProgress) return false; // verification capture owns the mic
+    // A receipt (or any sheet the user must read) owns the screen: the person
+    // is reading, not talking, and anything the mic picks up here would be
+    // dispatched to the agent as a command. See [_modalOwnsScreen].
+    if (_modalOwnsScreen) return false;
     // Push-to-talk: the mic opens ONLY inside a gesture-held capture window. This
     // single gate turns every auto-listen path (greeting, re-arm, agent-end,
     // barge-in) into a no-op unless the user is actively pressing/holding to talk.
@@ -3771,6 +3850,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     VoiceSessionActivity.setActive(false);
     _visualFeedbackTimer?.cancel();
     _visualFeedbackTimer = null;
+    _modalOwnsScreenTimer?.cancel();
+    _modalOwnsScreenTimer = null;
     _disconnectWebSocket();
     // Guard against a double-dispose (a screen may already be tearing down and
     // racing this close()); listeners on the other side guard removeListener.
