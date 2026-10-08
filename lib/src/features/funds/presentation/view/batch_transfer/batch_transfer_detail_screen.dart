@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -491,11 +492,24 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
                     shape: BoxShape.circle,
                   ),
                   child: Center(
+                    // A bank recipient gets its BANK's logo, the way the
+                    // send-funds flow and transfer history already show one.
+                    // A generic account_balance glyph made every external
+                    // recipient look identical, so the row that says "Zenith
+                    // bank PLC" and the one that says "Lemmy MFB" were
+                    // distinguishable only by reading the small grey line.
+                    // BankLogo falls back to the bundled asset and then to its
+                    // own placeholder, so a bank we have no artwork for is no
+                    // worse off than before.
                     child: isFailed
                         ? Icon(Icons.close_rounded, color: btRed, size: 18.sp)
                         : isExternal
-                            ? Icon(Icons.account_balance,
-                                color: btOrange, size: 18.sp)
+                            ? BankLogo(
+                                bankName: item.destinationBankName ?? '',
+                                bankCode: item.destinationBankCode,
+                                size: 40.w,
+                                borderRadius: 40.w / 2,
+                              )
                             : Text(
                                 name.isNotEmpty ? name[0].toUpperCase() : '?',
                                 style: GoogleFonts.inter(

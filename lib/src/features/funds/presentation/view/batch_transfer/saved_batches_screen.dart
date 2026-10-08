@@ -216,7 +216,13 @@ class _SavedBatchesScreenState extends State<SavedBatchesScreen> {
               ),
               SizedBox(height: 22.h),
               GestureDetector(
-                onTap: () => Get.toNamed(AppRoutes.batchTransfer),
+                // REPLACE, don't push. Saved Batches is reached FROM the
+                // batch landing page, so pushing it back on top makes Back
+                // return here — to the empty state the user just left — and
+                // they have to press Back twice to reach the dashboard.
+                // Replacing hands the slot over, so Back goes where it did
+                // before this screen was opened.
+                onTap: () => Get.offNamed(AppRoutes.batchTransfer),
                 child: Container(
                   padding:
                       EdgeInsets.symmetric(horizontal: 22.w, vertical: 12.h),
