@@ -125,6 +125,16 @@ class VoiceActivationManager {
       context: context,
       barrierDismissible: true,
       barrierColor: Colors.transparent, // the modal draws its own scrim
+      // ...and that scrim has to be allowed to REACH the edges. showDialog
+      // defaults useSafeArea to true, which insets its child past the status
+      // bar and the home indicator — so the MaintenanceModal's own full-bleed
+      // Material stopped short of the top and left a bright undimmed strip
+      // across the dashboard header, with the dialog reading as a panel
+      // floating on a half-lit screen rather than a modal.
+      //
+      // The card itself is unaffected: MaintenanceModal wraps its CONTENT in
+      // its own SafeArea, so the text and buttons still clear the notch.
+      useSafeArea: false,
       builder: (dialogContext) => MaintenanceModal(
         icon: Icons.mic_off_rounded,
         title: 'Voice is temporarily unavailable',
