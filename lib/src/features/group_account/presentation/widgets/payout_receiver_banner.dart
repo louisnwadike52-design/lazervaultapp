@@ -698,7 +698,22 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
 
   Widget _settledBanner(pb.GetPayoutReceiverResponse state) {
     final recipient = _resolveRecipientName(state.receiver.recipientUserId);
-    final amount = _formatAmount(widget.contribution.currentAmount);
+    // The amount that was PAID OUT, not what is in the pot now.
+    //
+    // This read contribution.currentAmount, which is the pot's live balance —
+    // and a settled payout has emptied the pot, so the banner announced
+    // "Paid 0 NGN to <name>" for a payout that had just moved the full
+    // target. The settled amount is a fact about the payout and is recorded
+    // on the payout itself (amount_minor), where emptying the pot cannot
+    // reach it.
+    //
+    // Falls back to the pot only if amount_minor is absent, which is the
+    // shape of a payout row written before that field was populated.
+    final payout = state.scheduledPayout;
+    final paidMinor = payout.amountMinor.toInt();
+    final amount = paidMinor > 0
+        ? _formatAmount(paidMinor / 100.0)
+        : _formatAmount(widget.contribution.currentAmount);
     final settledAt = state.scheduledPayout.hasSettledAt()
         ? state.scheduledPayout.settledAt.toDateTime()
         : null;
@@ -710,7 +725,10 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Paid $amount ${widget.contribution.currency} to $recipient',
+              Text(
+                  'Paid $amount '
+                  '${payout.currency.isNotEmpty ? payout.currency : widget.contribution.currency}'
+                  ' to $recipient',
                   style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 13.sp,
