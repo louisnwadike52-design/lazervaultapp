@@ -1,4 +1,7 @@
 import 'package:lazervault/core/utils/brand_bank.dart';
+import 'package:lazervault/core/shared_widgets/server_refusal_sheet.dart';
+import 'package:intl/intl.dart';
+import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:lazervault/core/services/active_account_snapshot.dart';
 import 'dart:async';
 import 'package:lazervault/core/services/endpoint_registry.dart';
@@ -57,7 +60,6 @@ import 'package:lazervault/src/features/recipients/presentation/widgets/recipien
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
-import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/transfer_confirmation_sheet.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/qr_scan_confirmation_sheet.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/username_recipient_confirmation_sheet.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/transfer_history_bottom_sheet.dart';
@@ -1263,35 +1265,63 @@ class _SelectRecipientsState extends State<SelectRecipients>
               );
       // The quote is a network round trip; the user may have left during it.
       if (!mounted) return;
-      // REVIEW BEFORE PIN — parity with the long flow, which has always shown
-      // a confirmation listing source, recipient, amount, fee and total. The
-      // short flow went from the amount sheet straight to the PIN, where the
-      // only figure shown is a total the user has had no chance to question.
+      // A FEE WE COULD NOT PRICE IS NOT A FEE OF ZERO.
       //
-      // The fee is passed as the QUOTE, not as a number: ensureFeeForAmount
-      // returns null when the quote FAILED, and the old `?? 0` turned that
-      // into a silent "free" while the real fee was still charged.
-      AnalyticsService.instance.trackSendFundsScreen('confirm', 'short');
-      final confirmed = await showTransferConfirmationSheet(
-        context,
-        TransferConfirmationDetails(
-          fromLabel:
-              (active.accountName != null && active.accountName!.isNotEmpty)
-                  ? active.accountName!
-                  : active.accountType,
-          toName: r.name,
-          toDetail: r.maskedAccount,
-          categoryLabel: category?.displayName,
-          note: note,
-          scheduledAt: scheduledAt,
-          recurringLabel: recurring?.frequency.label,
-          currency: active.currency,
-          amountMinor: minor,
-          feeMinor: shortFeeQuote?.fee,
-          availableBalanceMajor: active.availableBalance,
-        ),
-      );
-      if (!confirmed || !mounted) return;
+      // ensureFeeForAmount returns null when the quote FAILED, and the PIN
+      // sheet below is passed `fee: shortFeeMajor > 0 ? ... : null` — so a
+      // failed quote renders NO fee row at all. The user then approves "₦100"
+      // and is debited ₦123. Only the exceptional path says anything; a
+      // successful quote still goes straight to the PIN sheet, which already
+      // shows the amount, the fee and the total.
+      if (!isInternal && shortFeeQuote == null) {
+        final proceed = await showServerRefusal(
+          context,
+          title: "We couldn't check the fee",
+          message:
+              'Your bank transfer fee could not be confirmed just now. The fee '
+              'will still be charged on top of the amount you send, and it will '
+              'show on your receipt.',
+          hint: 'Nothing has been sent yet.',
+          actionLabel: 'Send anyway',
+        );
+        if (!proceed || !mounted) return;
+      }
+
+      // THE PAYOUT FLOOR, BEFORE THE PIN.
+      //
+      // A bank transfer under the provider's minimum is refused by
+      // core-payments with an exact, NON-RETRYABLE reason — but the short flow
+      // had no guard, so it only surfaced AFTER the PIN as "Something went
+      // wrong … Please try again". A ₦30 external transfer failed exactly that
+      // way: the user spent a PIN attempt, saw a generic failure, and the one
+      // fact that would have helped (Nomba will not pay out under ₦100) was
+      // never shown. Retrying a non-retryable refusal fails identically every
+      // time.
+      //
+      // The floor comes from the SERVER (external_payout_floor_minor, the same
+      // system_settings row core-payments enforces), not a constant here — a
+      // second copy is how the UI comes to permit what the server refuses.
+      //
+      // Internal Lazervault-to-Lazervault transfers never touch a payout
+      // provider and are deliberately exempt, exactly as in the long flow.
+      if (!isInternal) {
+        final floorMajor = FeatureFlags.externalPayoutFloorMinor / 100.0;
+        if (amountMajor < floorMajor) {
+          final f = NumberFormat('#,##0.00');
+          final sym = CurrencyUtils.getSymbol(active.currency);
+          await showServerRefusal(
+            context,
+            title: 'Amount too small',
+            message:
+                'Bank transfers have to be at least $sym${f.format(floorMajor)}. '
+                'You entered $sym${f.format(amountMajor)} — the banks we pay '
+                'through refuse anything smaller, so this would be declined.',
+            hint: 'Nothing has been sent.',
+            actionLabel: 'Change amount',
+          );
+          return;
+        }
+      }
       // Major-unit fee for the PIN sheet's own summary line. Null quote
       // means the fee could not be fetched; the confirmation above has
       // already told the user that, so 0 here only suppresses the row.
