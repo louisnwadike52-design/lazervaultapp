@@ -392,6 +392,16 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
         );
   }
 
+
+  /// True when the server refused because the contribution is not collecting.
+  ///
+  /// Matches on the backend's typed refusal
+  /// (ErrContributionNotCollecting -> "this contribution is not accepting
+  /// payments: `<reason>`"), which arrives as FailedPrecondition and therefore
+  /// never looks like a transport failure.
+  static bool _isNotCollecting(String error) =>
+      error.toLowerCase().contains('not accepting payments');
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -440,6 +450,12 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
               errorTitle = 'Invalid PIN';
             } else if (state.isDuplicate) {
               errorTitle = 'Duplicate Payment';
+            } else if (_isNotCollecting(state.error)) {
+              // Nothing failed. The contribution finished, was paused or was
+              // cancelled, and that is an answer rather than an error —
+              // "Payment Failed" on top of "it has reached its target" reads
+              // as a malfunction and invites a retry that cannot succeed.
+              errorTitle = 'No longer accepting payments';
             }
 
             Get.snackbar(
