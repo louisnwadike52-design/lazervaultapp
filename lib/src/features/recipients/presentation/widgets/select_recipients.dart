@@ -57,6 +57,7 @@ import 'package:lazervault/src/features/recipients/presentation/widgets/recipien
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/transfer_confirmation_sheet.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/qr_scan_confirmation_sheet.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/username_recipient_confirmation_sheet.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/transfer_history_bottom_sheet.dart';
@@ -1265,6 +1266,35 @@ class _SelectRecipientsState extends State<SelectRecipients>
                 );
         if (!mounted) return;
         final shortFeeMajor = (shortFeeQuote?.fee ?? 0) / 100.0;
+        // REVIEW BEFORE PIN — parity with the long flow, which has always shown
+        // a confirmation listing source, recipient, amount, fee and total. The
+        // short flow went from the amount sheet straight to the PIN, where the
+        // only figure shown is a total the user has had no chance to question.
+        //
+        // The fee is passed as the QUOTE, not as a number: ensureFeeForAmount
+        // returns null when the quote FAILED, and the old `?? 0` turned that
+        // into a silent "free" while the real fee was still charged.
+        AnalyticsService.instance.trackSendFundsScreen('confirm', 'short');
+        final confirmed = await showTransferConfirmationSheet(
+          context,
+          TransferConfirmationDetails(
+            fromLabel:
+                (active.accountName != null && active.accountName!.isNotEmpty)
+                    ? active.accountName!
+                    : active.accountType,
+            toName: r.name,
+            toDetail: r.maskedAccount,
+            categoryLabel: category?.displayName,
+            note: note,
+            scheduledAt: scheduledAt,
+            recurringLabel: recurring?.frequency.label,
+            currency: active.currency,
+            amountMinor: minor,
+            feeMinor: shortFeeQuote?.fee,
+            availableBalanceMajor: active.availableBalance,
+          ),
+        );
+        if (!confirmed || !mounted) return;
         final ok = await validateTransactionPin(
           context: context,
           transactionId: transactionId,
