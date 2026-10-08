@@ -824,8 +824,18 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       amount: amount,
       currency: _selected!.cryptoSymbol.toUpperCase(),
       title: 'Confirm Send',
-      message:
-          'Send ${amount.toStringAsFixed(6)} ${_selected!.cryptoSymbol.toUpperCase()}',
+      // The PIN sheet is the LAST thing shown before money moves, and it was
+      // the only screen in the flow with no naira anywhere — its big figure
+      // renders as "USDC1.00" from `amount`+`currency`. Carrying the fiat
+      // value in the message means the number the user is authorising is
+      // legible in the currency they think in, at the exact moment they
+      // commit.
+      message: _fiatAmount > 0
+          ? 'Send ${amount.toStringAsFixed(6)} '
+              '${_selected!.cryptoSymbol.toUpperCase()}'
+              '  ·  ≈ ${CurrencySymbols.currentSymbol}'
+              '${_fiatAmount.toStringAsFixed(2)}'
+          : 'Send ${amount.toStringAsFixed(6)} ${_selected!.cryptoSymbol.toUpperCase()}',
       showProcessingPhase: false,
       onPinValidated: (verificationToken) async {
         if (!mounted) return;
@@ -922,7 +932,25 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                 ),
                 const SizedBox(height: 24),
                 _reviewRow('Asset', symbol),
-                _reviewRow('Amount', '${amount.toStringAsFixed(6)} $symbol'),
+                // Amount in BOTH units.
+                //
+                // "1.000000 USDC" alone asks the user to authorise a transfer
+                // whose value they cannot see — six decimal places of a token
+                // is not a sum anyone holds in their head. Their balance, the
+                // amount field above and every other screen in the app are in
+                // naira, so the review that precedes the PIN must be too.
+                //
+                // The crypto figure stays FIRST and exact: it is what actually
+                // moves on-chain, and the fiat line is an approximation of it
+                // at the current rate, not a second instruction.
+                _reviewRow(
+                  'Amount',
+                  _fiatAmount > 0
+                      ? '${amount.toStringAsFixed(6)} $symbol'
+                          '  ·  ≈ ${CurrencySymbols.currentSymbol}'
+                          '${_fiatAmount.toStringAsFixed(2)}'
+                      : '${amount.toStringAsFixed(6)} $symbol',
+                ),
                 _reviewRow(_isInternal ? 'To (Lazervault)' : 'To', recipient),
                 // Show the network for external sends AND advanced on-network
                 // user-to-user sends (the default internal transfer has none).
@@ -1595,9 +1623,27 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     return fee > min ? fee : min;
   }
 
+  /// The network fee this send will actually incur, in crypto units.
+  ///
+  /// Zero for the default Lazervault-to-Lazervault transfer (nothing touches a
+  /// chain). An external send — or an internal one pinned to a specific
+  /// network — pays the chain's withdraw fee ON TOP of the amount.
+  double _effectiveSendFee() =>
+      (_isInternal && !_advancedOnNetwork) ? 0.0 : _selectedNetworkFee();
+
+  /// What the balance must cover: the amount PLUS the network fee.
+  ///
+  /// The overdraft check used to compare the amount alone against the balance,
+  /// so sending your entire holding passed here and was then refused by the
+  /// provider. Measured 2026-10-08: a 1 USDC send on a 1 USDC balance, with a
+  /// 1 USDC ERC20 fee, reached Quidax and came back
+  /// "quidax api error 400 (110112): Insufficient account balance" — after the
+  /// PIN. The fee was even displayed on the confirm sheet; nothing added it up.
+  double _totalDebitCrypto() => _cryptoAmount + _effectiveSendFee();
+
   Widget _buildAmountCard() {
     final h = _selected;
-    final over = h != null && _cryptoAmount > h.quantity;
+    final over = h != null && _totalDebitCrypto() > h.quantity;
     final canToggle = _priceOf > 0;
     final sym = h?.cryptoSymbol.toUpperCase() ?? '';
     final fiatCode = CurrencySymbols.currentCurrency.toUpperCase();
@@ -1789,9 +1835,22 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
               Icon(Icons.error_outline,
                   size: 13.sp, color: const Color(0xFFEF4444)),
               SizedBox(width: 4.w),
-              Text('Exceeds your ${h.cryptoSymbol.toUpperCase()} balance',
+              // Name the FEE when it is what tips the send over. "Exceeds your
+              // balance" on an amount that plainly does not exceed it reads as
+              // a bug in our arithmetic, and the user has no way to discover
+              // that the chain fee is charged on top.
+              Expanded(
+                child: Text(
+                  _effectiveSendFee() > 0 && _cryptoAmount <= h.quantity
+                      ? 'Amount plus the '
+                          '${_trimNum(_effectiveSendFee())} '
+                          '${h.cryptoSymbol.toUpperCase()} network fee '
+                          'exceeds your balance'
+                      : 'Exceeds your ${h.cryptoSymbol.toUpperCase()} balance',
                   style: GoogleFonts.inter(
-                      fontSize: 12.sp, color: const Color(0xFFEF4444))),
+                      fontSize: 12.sp, color: const Color(0xFFEF4444)),
+                ),
+              ),
             ]),
           ),
       ],
@@ -2234,6 +2293,12 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
 
   bool get _canSubmit {
     if (_cryptoAmount <= 0) return false;
+    // Amount PLUS the network fee must fit the balance. Without this the CTA
+    // stayed lit on a send the provider was always going to refuse, and the
+    // user discovered it only after entering their PIN. The amount card shows
+    // the same overdraft state, so the two cannot disagree.
+    final h = _selected;
+    if (h != null && _totalDebitCrypto() > h.quantity) return false;
     if (_isInternal) {
       // A recipient must be chosen — the CTA used to light up on a fully
       // empty internal form and every miss was a post-tap toast.
