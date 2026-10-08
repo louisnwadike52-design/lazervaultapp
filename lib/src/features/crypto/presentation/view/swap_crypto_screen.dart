@@ -773,7 +773,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                           : 'Max: ${balance.toStringAsFixed(6)}',
                       style: GoogleFonts.inter(
                         fontSize: 10.sp,
-                        color: const Color.fromARGB(255, 78, 3, 208),
+                        color: const Color(0xFF9F7AEA),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -836,7 +836,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                     SizedBox(width: 8.w),
                     Icon(
                       Icons.keyboard_arrow_down,
-                      color: const Color.fromARGB(255, 78, 3, 208),
+                      color: const Color(0xFF9F7AEA),
                       size: 16.sp,
                     ),
                   ],
@@ -954,7 +954,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
             children: [
               Icon(
                 Icons.trending_up,
-                color: const Color.fromARGB(255, 78, 3, 208),
+                color: const Color(0xFF9F7AEA),
                 size: 20.sp,
               ),
               SizedBox(width: 8.w),
@@ -981,7 +981,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                   ),
                   child: Icon(
                     Icons.refresh,
-                    color: const Color.fromARGB(255, 78, 3, 208),
+                    color: const Color(0xFF9F7AEA),
                     size: 16.sp,
                   ),
                 ),
@@ -1004,7 +1004,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                 children: [
                   Icon(
                     Icons.arrow_forward,
-                    color: const Color.fromARGB(255, 78, 3, 208),
+                    color: const Color(0xFF9F7AEA),
                     size: 16.sp,
                   ),
                   SizedBox(width: 8.w),
@@ -1012,7 +1012,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                     '${_exchangeRate.toStringAsFixed(6)} ${_toCrypto!.symbol.toUpperCase()}',
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
-                      color: const Color.fromARGB(255, 78, 3, 208),
+                      color: const Color(0xFF9F7AEA),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
