@@ -67,8 +67,26 @@ class EscrowAttachmentPicker extends StatefulWidget {
   /// Surfaces a friendly error (e.g. "please compress it") to the parent.
   final ValueChanged<String>? onError;
 
-  /// Most photos allowed. Videos are always capped at one.
+  /// Most photos allowed IN TOTAL on the deal or offer, not just in this
+  /// picker. Defaults to the server's own cap — see [kEscrowMaxPhotos].
   final int maxPhotos;
+
+  /// Photos ALREADY attached to this deal/offer by an earlier step.
+  ///
+  /// The server's six-photo cap is counted across the whole deal, so a picker
+  /// opened on a deal that already carries four may only add two. Without
+  /// this, the picker happily accepted six more, uploaded every one of them to
+  /// storage, and then the server rejected the overflow — the user got
+  /// "2 photos could not be attached" after waiting for all six to upload,
+  /// with nothing having told them beforehand.
+  ///
+  /// Zero is correct for the offer builder: nothing is persisted there until
+  /// the offer is published.
+  final int existingPhotoCount;
+
+  /// A video already attached FOR THIS STEP. Videos are capped per purpose,
+  /// and each picker serves one purpose, so this is 0 or 1.
+  final int existingVideoCount;
 
   /// Optional service override (tests). Defaults to the storage-proxy pipeline.
   final EscrowMediaUploadService? service;
@@ -77,7 +95,9 @@ class EscrowAttachmentPicker extends StatefulWidget {
     super.key,
     required this.onChanged,
     this.onError,
-    this.maxPhotos = 4,
+    this.maxPhotos = kEscrowMaxPhotos,
+    this.existingPhotoCount = 0,
+    this.existingVideoCount = 0,
   }) : service = null;
 
   @override
@@ -91,8 +111,20 @@ class _EscrowAttachmentPickerState extends State<EscrowAttachmentPicker> {
   final List<EscrowMediaUploadResult> _items = [];
   bool _busy = false;
 
-  int get _photoCount => _items.where((m) => !m.isVideo).length;
-  bool get _hasVideo => _items.any((m) => m.isVideo);
+  /// Photos on the deal in total: the ones already there plus the ones picked
+  /// here. The server counts it this way, so the picker must too.
+  int get _photoCount =>
+      widget.existingPhotoCount + _items.where((m) => !m.isVideo).length;
+  bool get _hasVideo =>
+      widget.existingVideoCount >= kEscrowMaxVideosPerStep ||
+      _items.any((m) => m.isVideo);
+
+  /// How many more photos this picker may accept. Never negative: a deal that
+  /// somehow already exceeds the cap must offer zero, not a negative budget.
+  int get _photosRemaining {
+    final left = widget.maxPhotos - _photoCount;
+    return left > 0 ? left : 0;
+  }
 
   void _emit() => widget.onChanged(List.unmodifiable(_items));
 
@@ -132,38 +164,60 @@ class _EscrowAttachmentPickerState extends State<EscrowAttachmentPicker> {
 
   Future<void> _addPhoto() async {
     if (_busy) return;
-    if (_photoCount >= widget.maxPhotos) {
-      widget.onError?.call('You can add up to ${widget.maxPhotos} photos.');
+    if (_photosRemaining == 0) {
+      widget.onError?.call(widget.existingPhotoCount > 0
+          // Say WHY there is no room, or a user looking at an empty picker is
+          // being told they already have six photos they cannot see.
+          ? 'This deal already has ${widget.maxPhotos} photos, which is the '
+              'most it can carry. Remove one to add another.'
+          : 'You can add up to ${widget.maxPhotos} photos.');
       return;
     }
     final source = await _chooseSource();
     if (source == null) return;
-    await _run(() => _service.pickAndUploadImage(source: source));
+    await _run(() => _service.pickAndUploadImage(source: source),
+        isVideo: false);
   }
 
   Future<void> _addVideo() async {
     if (_busy) return;
     if (_hasVideo) {
-      widget.onError?.call('You can add one short video.');
+      widget.onError?.call(widget.existingVideoCount > 0
+          ? 'This step already has a video. Remove it to add a different one.'
+          : 'You can add one short video.');
       return;
     }
     final source = await _chooseSource();
     if (source == null) return;
-    await _run(() => _service.pickAndUploadVideo(source: source));
+    await _run(() => _service.pickAndUploadVideo(source: source),
+        isVideo: true);
   }
 
-  Future<void> _run(Future<EscrowMediaUploadResult?> Function() task) async {
+  Future<void> _run(Future<EscrowMediaUploadResult?> Function() task,
+      {required bool isVideo}) async {
     setState(() => _busy = true);
     try {
       final result = await task();
-      if (result != null) {
-        _items.add(result);
-        _emit();
+      if (result == null) return;
+      // Re-check the cap before appending, not only before picking. The check
+      // in _addPhoto ran BEFORE the source sheet and the upload — two long
+      // awaits — and this is the only line that actually grows the list, so
+      // it is the only place the cap can be enforced with certainty.
+      final full = result.isVideo ? _hasVideo : _photosRemaining == 0;
+      if (full) {
+        widget.onError?.call(result.isVideo
+            ? 'You can add one short video.'
+            : 'You can add up to ${widget.maxPhotos} photos.');
+        return;
       }
+      _items.add(result);
+      _emit();
     } on EscrowMediaUploadException catch (e) {
       widget.onError?.call(e.message);
     } catch (_) {
-      widget.onError?.call('We could not add that. Please try again.');
+      widget.onError?.call(isVideo
+          ? 'We could not add that video. Please try again.'
+          : 'We could not add that photo. Please try again.');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -172,6 +226,28 @@ class _EscrowAttachmentPickerState extends State<EscrowAttachmentPicker> {
   void _remove(EscrowMediaUploadResult m) {
     setState(() => _items.remove(m));
     _emit();
+  }
+
+  /// What the user is actually allowed to do RIGHT NOW.
+  ///
+  /// The old line always read "Add up to 4 photos and one short video", which
+  /// was wrong twice over on a deal that already carried media: wrong number,
+  /// and it kept inviting a photo after the sixth had been used up.
+  String _helperText() {
+    final left = _photosRemaining;
+    final videoLeft = !_hasVideo;
+    if (left == 0 && !videoLeft) {
+      return 'This deal has all the photos and video it can carry. '
+          'Remove one to swap it for another.';
+    }
+    final photoPart = left == 0
+        ? 'No photo slots left'
+        : left == 1
+            ? 'Add 1 more photo'
+            : 'Add up to $left more photos';
+    if (!videoLeft) return '$photoPart. A video is already attached.';
+    return '$photoPart and one short video (up to '
+        '$kEscrowVideoMaxSeconds seconds).';
   }
 
   @override
@@ -199,7 +275,7 @@ class _EscrowAttachmentPickerState extends State<EscrowAttachmentPicker> {
         ),
         SizedBox(height: 8.h),
         Text(
-          'Add up to ${widget.maxPhotos} photos and one short video (up to 60 seconds).',
+          _helperText(),
           style: GoogleFonts.inter(
               color: EscrowTheme.textSecondary, fontSize: 11.sp),
         ),

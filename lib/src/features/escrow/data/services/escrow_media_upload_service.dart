@@ -17,6 +17,24 @@ const int kEscrowImageMaxBytes = 8 * 1024 * 1024; // 8 MB
 const int kEscrowVideoMaxBytes = 10 * 1024 * 1024; // 10 MB
 const int kEscrowVideoMaxSeconds = 60;
 
+/// How many photos a single deal or offer may carry IN TOTAL.
+///
+/// Mirrors `maxImagesPerDeal` in escrow-service (internal/service/refund_flow.go).
+/// The server counts every image on the deal regardless of which step attached
+/// it — item photos, delivery proof and dispute evidence all draw on the same
+/// six — so a picker that counts only its own session is counting the wrong
+/// thing. See [EscrowAttachmentPicker.existingPhotoCount].
+///
+/// This was 4 on the client against the server's 6, which quietly cost users
+/// two photos they were entitled to.
+const int kEscrowMaxPhotos = 6;
+
+/// Videos are capped at one per STEP (purpose), not per deal: the server
+/// counts videos within a purpose, so delivery proof and dispute evidence may
+/// each carry one. Each picker instance serves exactly one step, so "one per
+/// picker" is the faithful client-side reading of that rule.
+const int kEscrowMaxVideosPerStep = 1;
+
 /// The outcome of a successful media upload: the public URL persisted on the
 /// deal plus the metadata the backend's `addAttachment` needs.
 class EscrowMediaUploadResult {

@@ -144,7 +144,10 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
     final cubit = context.read<EscrowCubit>();
     // One sheet captures an optional note AND optional proof-of-delivery media
     // (photos and one short video, the seller's side of the evidence flow).
-    final result = await _deliverySheet();
+    final result = await _deliverySheet(
+      existingPhotoCount: _dealPhotoCount(deal),
+      existingVideoCount: _stepVideoCount(deal, 'delivery_proof'),
+    );
     if (result == null) return; // dismissed
     // Attach the proof first so the post-mark reload shows it right away.
     if (result.media.isNotEmpty) {
@@ -166,7 +169,9 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
 
   /// Bottom sheet for the seller to mark delivery: optional note + optional
   /// proof-of-delivery media. Returns null if dismissed.
-  Future<_DeliveryResult?> _deliverySheet() async {
+  Future<_DeliveryResult?> _deliverySheet(
+      {required int existingPhotoCount,
+      required int existingVideoCount}) async {
     final noteCtrl = TextEditingController();
     List<EscrowMediaUploadResult> media = const [];
     return showModalBottomSheet<_DeliveryResult>(
@@ -203,6 +208,11 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
                       color: EscrowTheme.textSecondary, fontSize: 12.5.sp)),
               SizedBox(height: 16.h),
               EscrowAttachmentPicker(
+                // The deal may already carry item photos from the listing, and
+                // the six-photo cap is counted across the whole deal — so the
+                // budget here is what is LEFT, not a fresh six.
+                existingPhotoCount: existingPhotoCount,
+                existingVideoCount: existingVideoCount,
                 onChanged: (m) => media = m,
                 onError: (msg) => showAppSnackbar('Escrow Pay', msg,
                     type: AppSnackbarType.error),
@@ -272,7 +282,10 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
 
   Future<void> _dispute(EscrowDealEntity deal) async {
     final cubit = context.read<EscrowCubit>();
-    final result = await _disputeSheet();
+    final result = await _disputeSheet(
+      existingPhotoCount: _dealPhotoCount(deal),
+      existingVideoCount: _stepVideoCount(deal, 'dispute_evidence'),
+    );
     if (result == null) return;
     // Attach evidence media first so the reload after opening shows it.
     if (result.media.isNotEmpty) {
@@ -294,7 +307,10 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
   /// evidence media, then requestRefund.
   Future<void> _requestRefund(EscrowDealEntity deal) async {
     final cubit = context.read<EscrowCubit>();
-    final result = await _refundRequestSheet();
+    final result = await _refundRequestSheet(
+      existingPhotoCount: _dealPhotoCount(deal),
+      existingVideoCount: _stepVideoCount(deal, 'refund_evidence'),
+    );
     if (result == null) return;
     if (result.media.isNotEmpty) {
       _warnAttach(await attachEscrowMedia(
@@ -389,11 +405,14 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
   /// Dispute sheet: a required problem description, an optional evidence
   /// link/description, and optional evidence media (photos and a short video).
   Future<
-      ({
-        String reason,
-        String evidence,
-        List<EscrowMediaUploadResult> media
-      })?> _disputeSheet() async {
+          ({
+            String reason,
+            String evidence,
+            List<EscrowMediaUploadResult> media
+          })?>
+      _disputeSheet(
+          {required int existingPhotoCount,
+          required int existingVideoCount}) async {
     final reasonCtrl = TextEditingController();
     final evidenceCtrl = TextEditingController();
     List<EscrowMediaUploadResult> media = const [];
@@ -430,6 +449,8 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
                 SizedBox(height: 14.h),
                 _sheetLabel('Add photos or a short video (optional)'),
                 EscrowAttachmentPicker(
+                  existingPhotoCount: existingPhotoCount,
+                  existingVideoCount: existingVideoCount,
                   onChanged: (m) => media = m,
                   onError: (msg) => showAppSnackbar('Escrow Pay', msg,
                       type: AppSnackbarType.error),
@@ -457,7 +478,9 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
   /// Refund-request sheet (buyer, after delivery): a required reason plus
   /// optional evidence media.
   Future<({String reason, List<EscrowMediaUploadResult> media})?>
-      _refundRequestSheet() async {
+      _refundRequestSheet(
+          {required int existingPhotoCount,
+          required int existingVideoCount}) async {
     final reasonCtrl = TextEditingController();
     List<EscrowMediaUploadResult> media = const [];
     return showModalBottomSheet<
@@ -484,6 +507,8 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
                 SizedBox(height: 14.h),
                 _sheetLabel('Add photos or a short video (optional)'),
                 EscrowAttachmentPicker(
+                  existingPhotoCount: existingPhotoCount,
+                  existingVideoCount: existingVideoCount,
                   onChanged: (m) => media = m,
                   onError: (msg) => showAppSnackbar('Escrow Pay', msg,
                       type: AppSnackbarType.error),
@@ -938,6 +963,18 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
     }
     return '$who has $span to respond.';
   }
+
+  /// Photos already on this deal, counted the way the SERVER counts them:
+  /// every image regardless of which step attached it, because the six-photo
+  /// cap is per deal, not per step.
+  int _dealPhotoCount(EscrowDealEntity deal) =>
+      deal.attachments.where((a) => a.mediaKind == 'image').length;
+
+  /// Videos already attached FOR ONE STEP. The video cap is per purpose, so a
+  /// delivery video does not consume the dispute step's allowance.
+  int _stepVideoCount(EscrowDealEntity deal, String purpose) => deal.attachments
+      .where((a) => a.mediaKind == 'video' && a.purpose == purpose)
+      .length;
 
   /// Builds the evidence gallery sections (with leading spacers) grouped by
   /// purpose. Falls back to the legacy single-image fields for older deals that
