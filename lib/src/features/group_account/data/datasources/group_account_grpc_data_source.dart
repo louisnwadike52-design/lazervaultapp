@@ -1233,6 +1233,9 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       description: contribution.description,
       targetAmount: _int64ToAmount(contribution.targetAmount),
       currentAmount: _int64ToAmount(contribution.currentAmount),
+      // What the cycle RAISED. Absent on older servers, where it arrives as
+      // 0 and the entity falls back to currentAmount — the prior behaviour.
+      raisedThisCycle: _int64ToAmount(contribution.raisedThisCycleMinor),
       currency: contribution.currency,
       deadline: _timestampToDateTime(contribution.deadline),
       createdAt: _timestampToDateTime(contribution.createdAt),

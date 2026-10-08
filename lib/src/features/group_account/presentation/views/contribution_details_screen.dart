@@ -974,7 +974,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               _buildContribStat(
                 title: 'Raised',
                 value:
-                    '${contribution.currency} ${_fmtAmount(contribution.currentAmount)}',
+                    '${contribution.currency} ${_fmtAmount(contribution.amountRaised)}',
                 icon: Icons.account_balance_wallet,
               ),
               Container(
@@ -1065,7 +1065,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${contribution.currency} ${_fmtAmount(contribution.currentAmount)}',
+                '${contribution.currency} ${_fmtAmount(contribution.amountRaised)}',
                 style: GoogleFonts.inter(
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w600,
@@ -1359,7 +1359,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     // Remaining is clamped at zero. Server caps overpay (validator on
     // the pay screen + DB check), but a brief over-shoot during a
     // race could otherwise surface as a negative "Remaining" — bad UX.
-    final remaining = (contribution.targetAmount - contribution.currentAmount)
+    final remaining = (contribution.targetAmount - contribution.amountRaised)
         .clamp(0.0, double.infinity);
 
     return SingleChildScrollView(
@@ -2406,7 +2406,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
 
   String _buildShareText(Contribution contribution) {
     final raised =
-        '${contribution.currency} ${_fmtAmount(contribution.currentAmount)}';
+        '${contribution.currency} ${_fmtAmount(contribution.amountRaised)}';
     final target =
         '${contribution.currency} ${_fmtAmount(contribution.targetAmount)}';
     final deadline = DateFormat('MMM dd, yyyy').format(contribution.deadline);

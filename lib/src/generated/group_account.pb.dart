@@ -633,6 +633,7 @@ class ContributionMessage extends $pb.GeneratedMessage {
     $core.Iterable<PayoutTransactionMessage>? payoutHistory,
     $core.Iterable<ContributionMemberMessage>? members,
     $core.bool? autoPayoutEnabled,
+    $fixnum.Int64? raisedThisCycleMinor,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -669,6 +670,8 @@ class ContributionMessage extends $pb.GeneratedMessage {
     if (payoutHistory != null) result.payoutHistory.addAll(payoutHistory);
     if (members != null) result.members.addAll(members);
     if (autoPayoutEnabled != null) result.autoPayoutEnabled = autoPayoutEnabled;
+    if (raisedThisCycleMinor != null)
+      result.raisedThisCycleMinor = raisedThisCycleMinor;
     return result;
   }
 
@@ -755,6 +758,9 @@ class ContributionMessage extends $pb.GeneratedMessage {
         31, _omitFieldNames ? '' : 'members', $pb.PbFieldType.PM,
         subBuilder: ContributionMemberMessage.create)
     ..aOB(32, _omitFieldNames ? '' : 'autoPayoutEnabled')
+    ..a<$fixnum.Int64>(
+        33, _omitFieldNames ? '' : 'raisedThisCycleMinor', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1056,6 +1062,26 @@ class ContributionMessage extends $pb.GeneratedMessage {
   $core.bool hasAutoPayoutEnabled() => $_has(31);
   @$pb.TagNumber(32)
   void clearAutoPayoutEnabled() => $_clearField(32);
+
+  /// What this contribution has actually RAISED in its current cycle: the sum
+  /// of completed payments, not the pot's live balance.
+  ///
+  /// current_amount is the balance, and a payout empties it — so after a
+  /// payout the header read "NGN 0 Raised / 0% progress" on a contribution
+  /// that had just paid out its full target. The money raised is a fact about
+  /// the cycle and does not stop being true when the pot is swept.
+  ///
+  /// Scoped to the CURRENT cycle so a ROSCA reports the round in progress
+  /// rather than a lifetime figure that would climb past the target every
+  /// cycle and make progress meaningless.
+  @$pb.TagNumber(33)
+  $fixnum.Int64 get raisedThisCycleMinor => $_getI64(32);
+  @$pb.TagNumber(33)
+  set raisedThisCycleMinor($fixnum.Int64 value) => $_setInt64(32, value);
+  @$pb.TagNumber(33)
+  $core.bool hasRaisedThisCycleMinor() => $_has(32);
+  @$pb.TagNumber(33)
+  void clearRaisedThisCycleMinor() => $_clearField(33);
 }
 
 /// Member assigned to a contribution

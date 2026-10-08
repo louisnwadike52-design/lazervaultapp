@@ -8,6 +8,15 @@ class Contribution extends Equatable {
   final String description;
   final double targetAmount;
   final double currentAmount;
+
+  /// What this cycle has RAISED, as opposed to what is in the pot now.
+  ///
+  /// currentAmount is the live balance and a payout empties it, so a
+  /// contribution that had just paid out its full target reported
+  /// "Raised 0 / 0%". Raised is a fact about the cycle and survives the
+  /// sweep. 0 means the server did not supply it, in which case
+  /// [amountRaised] falls back to the balance — the previous behaviour.
+  final double raisedThisCycle;
   final String currency;
   final DateTime deadline;
   final DateTime createdAt;
@@ -57,6 +66,7 @@ class Contribution extends Equatable {
     required this.description,
     required this.targetAmount,
     required this.currentAmount,
+    this.raisedThisCycle = 0,
     required this.currency,
     required this.deadline,
     required this.createdAt,
@@ -93,6 +103,7 @@ class Contribution extends Equatable {
         description,
         targetAmount,
         currentAmount,
+        raisedThisCycle,
         currency,
         deadline,
         createdAt,
@@ -130,8 +141,17 @@ class Contribution extends Equatable {
   bool get canPayout =>
       currentAmount >= (minimumBalance ?? 0) && currentPayoutRecipient != null;
 
-  double get progressPercentage =>
-      targetAmount > 0 ? (currentAmount / targetAmount * 100).clamp(0, 100) : 0;
+  /// The figure to SHOW as raised. Prefers what the cycle actually took;
+  /// falls back to the live balance when the server did not supply it.
+  double get amountRaised =>
+      raisedThisCycle > 0 ? raisedThisCycle : currentAmount;
+
+  /// Progress follows [amountRaised] for the same reason: after a payout the
+  /// pot is empty, and a completed contribution showing 0% is wrong about
+  /// its own history.
+  double get progressPercentage => targetAmount > 0
+      ? (amountRaised / targetAmount * 100).clamp(0, 100)
+      : 0;
 
   PayoutSchedule? get currentPayoutInfo => payoutSchedule.isNotEmpty
       ? payoutSchedule.firstWhere((p) => p.userId == currentPayoutRecipient,
@@ -145,6 +165,7 @@ class Contribution extends Equatable {
     String? description,
     double? targetAmount,
     double? currentAmount,
+    double? raisedThisCycle,
     String? currency,
     DateTime? deadline,
     DateTime? createdAt,
@@ -179,6 +200,7 @@ class Contribution extends Equatable {
       description: description ?? this.description,
       targetAmount: targetAmount ?? this.targetAmount,
       currentAmount: currentAmount ?? this.currentAmount,
+      raisedThisCycle: raisedThisCycle ?? this.raisedThisCycle,
       currency: currency ?? this.currency,
       deadline: deadline ?? this.deadline,
       createdAt: createdAt ?? this.createdAt,

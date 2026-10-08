@@ -604,6 +604,13 @@ const ContributionMessage$json = {
       '5': 8,
       '10': 'autoPayoutEnabled'
     },
+    {
+      '1': 'raised_this_cycle_minor',
+      '3': 33,
+      '4': 1,
+      '5': 4,
+      '10': 'raisedThisCycleMinor'
+    },
   ],
 };
 
@@ -637,7 +644,8 @@ final $typed_data.Uint8List contributionMessageDescriptor = $convert.base64Decod
     'F5b3V0X2hpc3RvcnkYHiADKAsyKC5ncm91cF9hY2NvdW50cy5QYXlvdXRUcmFuc2FjdGlvbk1l'
     'c3NhZ2VSDXBheW91dEhpc3RvcnkSQwoHbWVtYmVycxgfIAMoCzIpLmdyb3VwX2FjY291bnRzLk'
     'NvbnRyaWJ1dGlvbk1lbWJlck1lc3NhZ2VSB21lbWJlcnMSLgoTYXV0b19wYXlvdXRfZW5hYmxl'
-    'ZBggIAEoCFIRYXV0b1BheW91dEVuYWJsZWQ=');
+    'ZBggIAEoCFIRYXV0b1BheW91dEVuYWJsZWQSNQoXcmFpc2VkX3RoaXNfY3ljbGVfbWlub3IYIS'
+    'ABKARSFHJhaXNlZFRoaXNDeWNsZU1pbm9y');
 
 @$core.Deprecated('Use contributionMemberMessageDescriptor instead')
 const ContributionMemberMessage$json = {
