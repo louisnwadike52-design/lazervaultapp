@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:lazervault/src/features/uplift/data/services/uplift_guide_preference.dart';
 import 'package:lazervault/src/features/impersonation/presentation/impersonation_entry_tile.dart';
 import 'package:lazervault/src/features/voice_session/data/voice_guide_preference.dart';
@@ -100,6 +101,32 @@ class _SettingsViewState extends State<_SettingsView> {
   /// matching sections and auto-expands them so the matched item is revealed.
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+
+  /// Coalesces typing so the tree is rebuilt once per pause, not per keystroke.
+  ///
+  /// This screen is ~2,600 lines and, WHILE SEARCHING, every section renders
+  /// expanded (see `expanded: searching ? true : _expandedIndex == i`). So each
+  /// character used to rebuild the largest tree the screen can produce. On a
+  /// mid-range device that is long enough to miss frames, and a tap landing in
+  /// one of those frames is simply lost — which is why the back button "needed
+  /// several presses" right after searching. The field itself stays instant
+  /// (the controller owns the text); only the filtering waits.
+  Timer? _searchDebounce;
+
+  void _onSearchChanged(String v) {
+    _searchDebounce?.cancel();
+    final next = v.trim();
+    // An empty box must clear immediately — waiting to restore the full list
+    // after the user has deleted everything feels broken.
+    if (next.isEmpty) {
+      if (_searchQuery.isNotEmpty) setState(() => _searchQuery = '');
+      return;
+    }
+    _searchDebounce = Timer(const Duration(milliseconds: 220), () {
+      if (!mounted || _searchQuery == v) return;
+      setState(() => _searchQuery = v);
+    });
+  }
 
   /// Mirrors UpliftGuidePreference.isDismissed so the switch renders
   /// synchronously. Loaded on init and written through on change, so it
@@ -213,6 +240,9 @@ class _SettingsViewState extends State<_SettingsView> {
 
   @override
   void dispose() {
+    // A pending debounce would call setState on a dead State.
+    _searchDebounce?.cancel();
+    _searchDebounce = null;
     _searchController.dispose();
     super.dispose();
   }
@@ -260,14 +290,26 @@ class _SettingsViewState extends State<_SettingsView> {
             title: 'Settings',
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
+              // A deliberately generous target. The default IconButton is 48dp,
+              // which is the Material MINIMUM rather than a comfortable size,
+              // and this is the only way off a long scrolling screen.
+              iconSize: 24.sp,
+              padding: EdgeInsets.all(14.w),
+              constraints: BoxConstraints(minWidth: 56.w, minHeight: 56.w),
+              splashRadius: 28.r,
+              tooltip: 'Back',
               // Drop keyboard focus BEFORE popping. With the settings search
               // focused the soft keyboard is up, and the first back press is
               // spent closing it — so leaving Settings took two or three
               // presses and read as a broken button. Same reasoning as the
               // switch rows below, which already did this.
+              //
+              // maybePop over Get.back(): Navigator is the authority on this
+              // route stack, and it is a no-op rather than an error if
+              // something else already popped us.
               onPressed: () {
                 FocusManager.instance.primaryFocus?.unfocus();
-                Get.back();
+                Navigator.of(context).maybePop();
               },
             ),
           ),
@@ -412,7 +454,7 @@ class _SettingsViewState extends State<_SettingsView> {
           Expanded(
             child: TextField(
               controller: _searchController,
-              onChanged: (v) => setState(() => _searchQuery = v),
+              onChanged: _onSearchChanged,
               textInputAction: TextInputAction.search,
               cursorColor: _kBrand,
               style: GoogleFonts.inter(
