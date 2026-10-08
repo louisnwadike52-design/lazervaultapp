@@ -4,12 +4,59 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../../../core/services/injection_container.dart';
 import '../../domain/entities/education_history_entity.dart';
+import '../../domain/repositories/education_repository.dart';
 import '../../domain/entities/education_pin_entity.dart';
 import '../../domain/entities/education_provider_entity.dart';
 
-class EducationPinDetailsScreen extends StatelessWidget {
+class EducationPinDetailsScreen extends StatefulWidget {
   const EducationPinDetailsScreen({super.key});
+
+  @override
+  State<EducationPinDetailsScreen> createState() =>
+      _EducationPinDetailsScreenState();
+}
+
+class _EducationPinDetailsScreenState extends State<EducationPinDetailsScreen> {
+  /// Resolved once in initState so a rebuild cannot re-issue the fetch.
+  Future<EducationHistoryEntity?>? _byId;
+  EducationHistoryEntity? _direct;
+  String? _providerName;
+  bool _missing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // TWO CALLERS, TWO CONTRACTS. education_history_screen resolves the full
+    // record first and passes `purchase`; education_home_screen passes only
+    // `purchaseId`. The screen understood only the first, so every tap from
+    // the home list — and the transaction-history entry point — rendered
+    // "Receipt not available" for a purchase that exists and is readable.
+    // Accepting the id here fixes the whole class, including the deep link
+    // the original arg-parsing comment was already worried about.
+    final args = Get.arguments;
+    final argsMap =
+        args is Map<String, dynamic> ? args : const <String, dynamic>{};
+    _providerName = argsMap['providerName'] as String?;
+
+    final rawPurchase = argsMap['purchase'];
+    if (rawPurchase is EducationHistoryEntity) {
+      _direct = rawPurchase;
+      return;
+    }
+    final id = (argsMap['purchaseId'] ?? '').toString().trim();
+    if (id.isEmpty) {
+      _missing = true;
+      return;
+    }
+    // Straight to the repository rather than the cubit: this route has no
+    // BlocProvider, and serviceLocator hands out a NEW cubit per call that
+    // nothing would close.
+    _byId = serviceLocator<EducationRepository>()
+        .getPurchaseById(id)
+        .then((res) => res.fold((_) => null, (entity) => entity));
+  }
 
   void _copyPin(BuildContext context, String pin) {
     Clipboard.setData(ClipboardData(text: pin));
@@ -58,20 +105,52 @@ class EducationPinDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Defensive arg parsing — same class of bug as the rebuy crash. Hard
-    // casts here used to throw if `Get.arguments` was null (deep link
-    // landed without args) or if `purchase` came in as a different
-    // shape. Render an empty-state instead of bringing the screen down.
-    final args = Get.arguments;
-    final argsMap =
-        args is Map<String, dynamic> ? args : const <String, dynamic>{};
-    final rawPurchase = argsMap['purchase'];
-    if (rawPurchase is! EducationHistoryEntity) {
-      return _buildMissingArgsScaffold();
-    }
-    final purchase = rawPurchase;
-    final providerName = argsMap['providerName'] as String?;
+    if (_missing) return _buildMissingArgsScaffold();
+    if (_direct != null) return _buildLoaded(context, _direct!, _providerName);
+    return FutureBuilder<EducationHistoryEntity?>(
+      future: _byId,
+      builder: (context, snap) {
+        if (snap.connectionState != ConnectionState.done) {
+          return _buildLoadingScaffold();
+        }
+        final loaded = snap.data;
+        if (loaded == null) return _buildMissingArgsScaffold();
+        return _buildLoaded(context, loaded, _providerName);
+      },
+    );
+  }
 
+  Widget _buildLoadingScaffold() {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0A0A),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => Get.back(),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+        ),
+        title: Text(
+          'PIN Details',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 20.sp,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: const Center(
+        child: CircularProgressIndicator(color: Color(0xFF4E03D0)),
+      ),
+    );
+  }
+
+  Widget _buildLoaded(
+    BuildContext context,
+    EducationHistoryEntity purchase,
+    String? providerName,
+  ) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(

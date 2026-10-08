@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/widgets/p2p_chat_icon.dart';
+import '../../../../../core/utils/brand_bank.dart';
+import '../../../../../core/widgets/bank_logo.dart';
 
 /// How the saved-recipients preview is laid out.
 ///
@@ -143,24 +145,6 @@ class _RecipientCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onMore;
 
-  /// Up to two letters, from the first and last word of the name.
-  ///
-  /// Falls back to the first character of the account number so a recipient
-  /// saved with no name is still distinguishable rather than a blank disc.
-  String get _initials {
-    final parts = recipient.name
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((w) => w.isNotEmpty)
-        .toList();
-    if (parts.isEmpty) {
-      final acct = recipient.accountNumber.trim();
-      return acct.isEmpty ? '?' : acct.characters.first.toUpperCase();
-    }
-    if (parts.length == 1) return parts.first.characters.first.toUpperCase();
-    return (parts.first.characters.first + parts.last.characters.first)
-        .toUpperCase();
-  }
 
   bool get _isInternal => recipient.type == 'internal';
 
@@ -237,22 +221,21 @@ class _RecipientCard extends StatelessWidget {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: 34.w,
-                        height: 34.w,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Color(0xFF4E03D0),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          _initials,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+                      // The bank's own mark, not a coloured disc of initials.
+                      // A saved list is scanned, not read — the logo is what
+                      // the eye lands on, and it is the fastest way to tell
+                      // two recipients at different banks apart. BankLogo
+                      // already renders OUR mark when the bank is us and falls
+                      // back to initials on a coloured tile when a bank has no
+                      // logo, so this keeps the old look exactly where no
+                      // better one exists.
+                      BankLogo(
+                        bankName: _isInternal && recipient.bankName.trim().isEmpty
+                            ? BrandBank.displayName
+                            : recipient.bankName,
+                        bankCode: recipient.sortCode,
+                        size: 34.w,
+                        borderRadius: 17.w,
                       ),
                       const Spacer(),
                       // Chat and the three-dot sheet share the top-right, beside
