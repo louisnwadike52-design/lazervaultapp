@@ -38,6 +38,7 @@ import 'package:lazervault/src/features/transaction_pin/services/transaction_pin
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/utils/logger.dart';
 import '../services/voice_note_capture.dart';
+import '../../../../core/config/voice_language_availability.dart';
 
 class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   // --- Configuration ---
@@ -699,6 +700,31 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             'VoiceSessionCubit: No languages available from API, using hardcoded defaults');
         _availableLanguages =
             VoiceLanguageDefaults.forCountry(effectiveCountry);
+      }
+
+      // OPERATOR ALLOWLIST — applied at the ONE place every consumer reads.
+      //
+      // The gateway advertises every language in SUPPORTED_LANGUAGES, but TTS
+      // routing, the voice catalogue and the agent prompts are production-ready
+      // for English alone today. Offering the rest makes the picker lie: the
+      // user selects Yoruba, nothing changes, and they conclude it is broken.
+      //
+      // Filtering HERE rather than in each picker is deliberate — the general
+      // Voice & Language sheet and anything else reading `availableLanguages`
+      // follow automatically, so no surface can be forgotten.
+      final allowed = _availableLanguages
+          .where((l) => VoiceLanguageAvailability.isAllowed(l.code))
+          .toList();
+      if (allowed.isNotEmpty) {
+        _availableLanguages = allowed;
+      } else {
+        // The allowlist matched nothing the gateway offers — a misconfiguration.
+        // Leaving the user with NO language would make the assistant
+        // unusable, so keep the unfiltered list and say so, rather than
+        // enforcing a rule into a dead end.
+        print('VoiceSessionCubit: language allowlist '
+            '${VoiceLanguageAvailability.allowedCodes} matched none of the '
+            '${_availableLanguages.length} offered — leaving the list unfiltered');
       }
 
       // If no persisted language, or it's not available for this country, auto-select default
