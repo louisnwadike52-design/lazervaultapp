@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 
 import 'package:lazervault/src/core/services/analytics_service.dart';
 
@@ -36,19 +37,55 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
     _initializeErrorReporting();
   }
 
+  /// The handler that was installed before this boundary mounted.
+  ///
+  /// main.dart installs one that prints the exception and ships it, with its
+  /// stack, to Loki — on a real device that is the ONLY readable crash
+  /// channel; logcat carries just an analytics counter. This widget used to
+  /// REPLACE it outright, so mounting an ErrorBoundary anywhere would have
+  /// silently destroyed crash reporting app-wide, leaving red screens with no
+  /// message, no stack and no widget name. (That exact blindness cost an hour
+  /// on 2026-10-08 before the Loki feed was found.) Chain to it instead, and
+  /// hand it back on dispose.
+  FlutterExceptionHandler? _priorOnError;
+
   void _initializeErrorReporting() {
-    // Set up global error handler
+    _priorOnError = FlutterError.onError;
     FlutterError.onError = (FlutterErrorDetails details) {
-      FlutterError.presentError(details);
+      // presentError is the framework default — only fall back to it if there
+      // was genuinely no prior handler, otherwise the error is presented twice.
+      (_priorOnError ?? FlutterError.presentError)(details);
       _handleError(details.exception, details.stack);
     };
   }
 
+  @override
+  void dispose() {
+    // Only give the handler back if it is still ours; something mounted later
+    // may legitimately own it now, and clobbering that would repeat the bug.
+    FlutterError.onError = _priorOnError;
+    super.dispose();
+  }
+
   void _handleError(Object error, StackTrace? stackTrace) {
-    setState(() {
-      _error = error;
-      _stackTrace = stackTrace;
-    });
+    // A build/layout/paint error arrives DURING a frame, and setState() in
+    // that phase throws — turning one broken widget into a second crash
+    // inside the crash handler. Defer to after the frame when mid-flight.
+    void show() {
+      if (!mounted) return;
+      setState(() {
+        _error = error;
+        _stackTrace = stackTrace;
+      });
+    }
+
+    final phase = SchedulerBinding.instance.schedulerPhase;
+    if (phase == SchedulerPhase.idle ||
+        phase == SchedulerPhase.postFrameCallbacks) {
+      show();
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) => show());
+    }
 
     // Log to analytics
     widget.analyticsService?.trackError(
