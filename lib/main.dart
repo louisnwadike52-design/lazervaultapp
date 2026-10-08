@@ -114,6 +114,31 @@ void main() {
     final priorFlutterOnError = FlutterError.onError;
     FlutterError.onError = (FlutterErrorDetails details) {
       priorFlutterOnError?.call(details);
+      // ALWAYS put the exception and stack on the console too.
+      //
+      // Relying on priorFlutterOnError to do it is relying on something that
+      // may not be there: whichever widget initialises last wins the handler,
+      // and ErrorBoundary replaces it outright. The result was a red screen
+      // that produced `runtime_error {kind: flutter_error}` and NOTHING else —
+      // no message, no stack, no widget — repeated every frame. A crash you
+      // cannot read is a crash you cannot fix, and chasing one cost an hour.
+      //
+      // Safe in production: debugPrint is replaced with a no-op under
+      // kReleaseMode a few lines above, so this costs a release build nothing.
+      debugPrint('FLUTTER ERROR: ${details.exceptionAsString()}');
+      if (details.library != null) {
+        debugPrint('  library: ${details.library}');
+      }
+      final ctx = details.context?.toDescription();
+      if (ctx != null && ctx.isNotEmpty) debugPrint('  while: $ctx');
+      if (details.stack != null) {
+        // First frames only — enough to name the widget, short enough that a
+        // per-frame repeat does not bury the log it is meant to explain.
+        final frames = details.stack.toString().split('\n');
+        for (final f in frames.take(12)) {
+          if (f.trim().isNotEmpty) debugPrint('    $f');
+        }
+      }
       AnalyticsService.instance.trackRuntimeError(kind: 'flutter_error');
       // Ship the actual error text + stack to Loki so a crash on a store device
       // is readable, not just an aggregate counter. Fail-silent.
