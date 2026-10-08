@@ -2547,22 +2547,57 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
 
   /// Reinstate a paused mandate, then reopen the deposit sheet so the user can
   /// deposit once it's active again.
-  void _reinstateMandateThenRedeposit(
-      LinkedBankAccount account, MandateEntity mandate) {
+  /// Reinstate a paused mandate, then reopen the deposit sheet.
+  ///
+  /// THE LOOP THIS REPLACES
+  ///
+  /// This used to fire reinstateMandate WITHOUT awaiting it, ignore the bool it
+  /// returns, and reopen the deposit sheet on a blind 700ms timer. The deposit
+  /// sheet re-reads the mandate, which was of course still paused 700ms later,
+  /// so it showed "Direct Debit paused" again — the user tapped Reinstate,
+  /// watched the sheet close and the identical sheet reopen, and did it forever.
+  ///
+  /// Worse, the cubit returns false WITHOUT doing anything when another mandate
+  /// operation is already in flight (`if (_operationInProgress) return false`),
+  /// so a double tap produced the same endless loop with no request made at all.
+  ///
+  /// Awaiting it removes both: the data source returns the UPDATED mandate, so
+  /// when the call completes the reinstate has actually been applied, and the
+  /// bool says whether to carry on or explain what went wrong.
+  Future<void> _reinstateMandateThenRedeposit(
+      LinkedBankAccount account, MandateEntity mandate) async {
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) return;
-    serviceLocator<MandateCubit>().reinstateMandate(
-      mandateId: mandate.id,
-      userId: authState.profile.user.id,
-    );
     Get.snackbar('Direct Debit', 'Reinstating your Direct Debit...',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.9),
         colorText: Colors.white,
         duration: const Duration(seconds: 2));
-    Future.delayed(const Duration(milliseconds: 700), () {
-      if (mounted) _openRedepositSheet(context, account);
-    });
+    final ok = await serviceLocator<MandateCubit>().reinstateMandate(
+      mandateId: mandate.id,
+      userId: authState.profile.user.id,
+    );
+    if (!mounted) return;
+    if (!ok) {
+      // Say so rather than silently reopening the same paused sheet. The cubit
+      // has already emitted its own error state for the surfaces that render
+      // it; this is the one the user is actually looking at.
+      Get.snackbar(
+        'Couldn\'t reinstate',
+        'We couldn\'t resume Direct Debit with ${account.bankName} just now. '
+            'You can still deposit with a one-time approval.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.92),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+      );
+      // Fall through to the deposit sheet anyway: one-time deposit still works,
+      // and dead-ending the user on a failed reinstate helps nobody.
+    }
+    // Refresh the cache BEFORE reopening so the sheet reads the new state
+    // instead of the paused one it was built from.
+    _loadUserMandates();
+    if (mounted) _openRedepositSheet(context, account);
   }
 
   /// Re-authorize an expired/cancelled mandate by creating a fresh one (in-app),
