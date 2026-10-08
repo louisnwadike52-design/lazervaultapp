@@ -2615,6 +2615,48 @@ class _SelectRecipientsState extends State<SelectRecipients>
 
   /// Build individual recipient item for the list. [onTapOverride] lets the
   /// short-flow "View all" sheet pop itself before continuing.
+  /// Avatar for a saved recipient: the bank's own logo for an external
+  /// account, branded initials for a Lazervault user.
+  Widget _recipientAvatar(RecipientModel recipient) {
+    if (recipient.isInternalUserRecipient) {
+      return Container(
+        width: 42.w,
+        height: 42.w,
+        decoration: BoxDecoration(
+          color: const Color(0xFF4834D4).withValues(alpha: 0.12),
+          shape: BoxShape.circle,
+          border: Border.all(
+              color: const Color(0xFF4834D4).withValues(alpha: 0.35)),
+        ),
+        child: Center(
+          child: Text(
+            _getInitials(recipient.name),
+            style: TextStyle(
+              fontSize: 15.sp,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF4834D4),
+            ),
+          ),
+        ),
+      );
+    }
+    // BankLogo falls back to the bank's initials on its own when the index has
+    // no logo yet, and rebuilds once the bank list loads — so this is never
+    // worse than what it replaces.
+    return ClipOval(
+      child: SizedBox(
+        width: 42.w,
+        height: 42.w,
+        child: BankLogo(
+          bankName: recipient.displayBankName,
+          bankCode: recipient.sortCode.isNotEmpty ? recipient.sortCode : null,
+          size: 42,
+          borderRadius: 21,
+        ),
+      ),
+    );
+  }
+
   Widget _buildRecipientItem(RecipientModel recipient,
       {VoidCallback? onTapOverride}) {
     return Container(
@@ -2644,25 +2686,19 @@ class _SelectRecipientsState extends State<SelectRecipients>
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 9.h),
             child: Row(
               children: [
-                // Profile Image
-                Container(
-                  width: 42.w,
-                  height: 42.w,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      _getInitials(recipient.name),
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                  ),
-                ),
+                // Who this is, at a glance.
+                //
+                // Every row used to be the same grey initials circle, so a list
+                // of saved recipients was a column of identical blobs — you had
+                // to read the bank NAME under each one to tell OPay from Union
+                // Bank. The horizontal rail above already showed real logos, so
+                // the same list rendered two different ways on one screen.
+                //
+                // A Lazervault user has no bank to show a logo for, so they get
+                // branded initials instead — which also makes internal and
+                // external recipients distinguishable without reading the
+                // subtitle.
+                _recipientAvatar(recipient),
                 SizedBox(width: 14.w),
 
                 // Name, Alias, and Account Number - Expanded to take available space
