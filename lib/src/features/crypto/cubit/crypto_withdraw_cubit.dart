@@ -219,6 +219,20 @@ class CryptoWithdrawCubit extends Cubit<CryptoWithdrawState> {
       final m = RegExp(r'(?:message:|desc = )\s*(.+)$').firstMatch(s);
       if (m != null) return m.group(1)!.trim();
     }
+    // A PROVIDER-side failure. The send was refused before anything left the
+    // customer's balance, so the one fact worth stating is that their money is
+    // untouched — and we must NOT repeat the provider's words.
+    //
+    // "quidax api error 400 (110112): Insufficient account balance" was shown
+    // verbatim on 2026-10-08. It is not just jargon: that balance is OUR float
+    // at the exchange, not the customer's. They had the funds, and the message
+    // told them they did not. The raw text still reaches the logs and the
+    // admin dashboard, which is where a float shortfall belongs.
+    if (looksTechnical(s) || s.toLowerCase().contains('api error')) {
+      return 'Something went wrong and your money was not moved. '
+          'Please try again shortly.';
+    }
+
     // Fallback: NEVER dump the raw gRPC/exception string. Route through the
     // shared sanitizer — clean validation messages (e.g. "minimum send is 0.9
     // USDT") pass through; technical text (distlock, INTERNAL, transport dumps)

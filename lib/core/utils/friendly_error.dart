@@ -230,6 +230,33 @@ bool isNetworkStatusCode(dynamic statusCode) {
 /// True when a candidate message is unsafe to show to a user because it looks
 /// like raw transport/exception text rather than a human sentence. Use this to
 /// gate any "pass the server's own message through" branch.
+/// True when a message names one of our payment/exchange providers alongside a
+/// status or vendor code — the signature of a raw upstream failure that has
+/// been string-joined into our own error and must never reach a customer.
+///
+/// Named providers only. A generic three-digit number is far too common in
+/// legitimate copy ("minimum send is 100 USDT") to treat as technical on its
+/// own.
+bool _namesAProviderWithACode(String lower) {
+  const providers = <String>[
+    'quidax', 'flutterwave', 'nomba', 'fincra', 'klasha', 'vtpass',
+    'epins', 'prestmit', 'reloadly', 'mono', 'vtuafrica', 'paystack',
+  ];
+  var named = false;
+  for (final p in providers) {
+    if (lower.contains(p)) {
+      named = true;
+      break;
+    }
+  }
+  if (!named) return false;
+  // A status code, a parenthesised vendor code, or an explicit code= field.
+  return RegExp(r'\b\d{3}\b').hasMatch(lower) ||
+      RegExp(r'\(\s*\d+\s*\)').hasMatch(lower) ||
+      lower.contains('code=') ||
+      lower.contains('code:');
+}
+
 bool looksTechnical(String? msg) {
   if (msg == null || msg.isEmpty) return true;
   final trimmed = msg.trim();
@@ -247,6 +274,25 @@ bool looksTechnical(String? msg) {
       trimmed.startsWith('[') ||
       m.contains('{"') ||
       m.contains('":"')) {
+    return true;
+  }
+  // A PROVIDER's own API error, leaked verbatim. Measured 2026-10-08 on the
+  // crypto send flow, shown to a customer in a red snackbar:
+  //
+  //   "create withdrawal: quidax api error 400 (110112):
+  //    Insufficient account balance"
+  //
+  // Every filter above let it through — no "exception", no "error:" (it reads
+  // "api error 400"), no JSON. And the sentence is not merely technical, it is
+  // actively MISLEADING: that balance is OUR float at the provider, not the
+  // customer's. They had the funds; the message told them they did not.
+  //
+  // So the rule is the shape, not the vendor: anything that reads as a
+  // provider API failure is ours to fix and never the user's to action.
+  if (m.contains('api error') ||
+      m.contains('provider error') ||
+      m.contains('upstream error') ||
+      _namesAProviderWithACode(m)) {
     return true;
   }
   // Dart runtime type failures. "type 'Null' is not a subtype of type 'String'"

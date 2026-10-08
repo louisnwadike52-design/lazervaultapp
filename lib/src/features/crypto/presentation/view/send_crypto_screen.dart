@@ -175,6 +175,17 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
   // internal transfer. The address is resolved server-side at send time.
   bool _advancedOnNetwork = false;
 
+  /// Single entry point for the "send on a specific network" switch.
+  ///
+  /// OFF is the default and the right one for a Lazervault-to-Lazervault send:
+  /// both sides are on our system, so we resolve the rail ourselves and the
+  /// transfer is instant and free. Turning it on is an explicit request to pin
+  /// a chain, and only then does the wrong-network warning make sense.
+  void _setAdvancedOnNetwork(bool v) {
+    setState(() => _advancedOnNetwork = v);
+    if (v) _resolveAdvancedRecipientAddress();
+  }
+
   // Network catalogue (dropdown sourced from GetSupportedAssetNetworks). Loaded
   // once per asset; filtered to withdraw-enabled networks. Falls back to the
   // free-text field when the asset has no configured networks.
@@ -1918,7 +1929,12 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
 
   Widget _buildAdvancedNetworkToggle() {
     return GestureDetector(
-      onTap: () => setState(() => _advancedOnNetwork = !_advancedOnNetwork),
+      // The row and the switch must do the SAME thing. Tapping the row used to
+      // flip the flag without resolving the recipient's address on the chosen
+      // chain, so an advanced send enabled by tapping the card (the larger,
+      // easier target) started with no address while one enabled from the
+      // switch started with one.
+      onTap: () => _setAdvancedOnNetwork(!_advancedOnNetwork),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
         decoration: BoxDecoration(
@@ -1948,10 +1964,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
           Switch.adaptive(
             value: _advancedOnNetwork,
             activeTrackColor: const Color(0xFF4E03D0),
-            onChanged: (v) {
-              setState(() => _advancedOnNetwork = v);
-              if (v) _resolveAdvancedRecipientAddress();
-            },
+            onChanged: _setAdvancedOnNetwork,
           ),
         ]),
       ),

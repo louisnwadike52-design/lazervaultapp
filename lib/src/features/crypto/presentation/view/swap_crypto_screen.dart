@@ -453,14 +453,25 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       child: Row(
         children: [
-          Container(
-            padding: EdgeInsets.all(8.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: GestureDetector(
-              onTap: () => Get.back(),
+          // THE DETECTOR WRAPS THE BOX, NOT THE GLYPH.
+          //
+          // It used to sit INSIDE the padded container around just the Icon,
+          // so only the 20sp arrow itself was tappable and the padding that
+          // makes it look like a button was dead space. That is why back
+          // "needed several taps" — every miss landed on the padding and did
+          // nothing. opaque hit-testing makes the whole tile respond, and the
+          // 44x44 minimum is the smallest target a finger reliably hits.
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => Get.back(),
+            child: Container(
+              constraints: BoxConstraints(minWidth: 44.w, minHeight: 44.w),
+              padding: EdgeInsets.all(8.w),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
               child: Icon(
                 Icons.arrow_back,
                 color: Colors.white,
@@ -1470,10 +1481,19 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                           ),
                         ),
                       ),
+                      // Same fix as the header back control: a bare 24sp glyph
+                      // is below the reliable-tap threshold, so give it an
+                      // opaque 44x44 target.
                       GestureDetector(
+                        behavior: HitTestBehavior.opaque,
                         onTap: () => Get.back(),
-                        child:
-                            Icon(Icons.close, color: Colors.white, size: 24.sp),
+                        child: Container(
+                          constraints:
+                              BoxConstraints(minWidth: 44.w, minHeight: 44.w),
+                          alignment: Alignment.center,
+                          child: Icon(Icons.close,
+                              color: Colors.white, size: 24.sp),
+                        ),
                       ),
                     ],
                   ),
@@ -1734,11 +1754,27 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
       onTap: () {
         setState(() {
           _toCrypto = crypto;
-          _fromAmountController.clear();
+          // KEEP what the user already typed. Changing the asset you are
+          // RECEIVING does not change how much you are spending, so clearing
+          // the FROM field made the user retype the same number every time
+          // they compared two destination assets — the single most common
+          // thing to do on this screen.
+          //
+          // Only the computed TO figure is stale, and it is recomputed below
+          // against the newly chosen asset rather than left blank.
           _toAmountController.clear();
         });
         _searchController.clear();
         Get.back();
+        // After the sheet closes, re-derive the receive amount from the
+        // retained input. Driven through the same handler the text listener
+        // uses, so the margin and the fiat/crypto unit handling cannot drift
+        // from a second copy of the maths.
+        if (_isFromAmountActive) {
+          _onFromAmountChanged();
+        } else {
+          _onToAmountChanged();
+        }
       },
       child: Container(
         margin: EdgeInsets.only(bottom: 12.h),
