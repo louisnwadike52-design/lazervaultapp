@@ -19,6 +19,22 @@ import 'package:lazervault/src/features/presentation/app_router.dart';
 /// This sweeps the resolver over every notification type the platform emits,
 /// collects the routes it hands back, and checks each against the router.
 void main() {
+  test('a deal-conversation push opens the DEAL, not the offers landing', () {
+    // The escrow_offer branch runs BEFORE the general escrow branch and
+    // matches on `contains('escrow_offer')`. A type that slipped into it
+    // would send someone chasing a dispute reply to a list of offers.
+    final t = NotificationRouteResolver.resolve(
+      'escrow_deal_message',
+      {'deal_id': 'deal-1', 'reference': 'ESCROW-1'},
+    );
+    expect(t, isNotNull,
+        reason: 'a push that resolves to nothing opens nothing, which reads '
+            'to the user as a broken app');
+    expect(t!.route, contains('/escrow/detail/'),
+        reason: 'it must land on the deal the message is about');
+    expect(t.route, isNot(contains('offer')));
+  });
+
   /// Route names registered by the app, including the parameterised ones.
   late Set<String> registered;
   late List<String> parameterised;
@@ -65,6 +81,12 @@ void main() {
     ('escrow', {'deal_id': 'deal-1'}),
     // A reference that would corrupt the path if not encoded.
     ('escrow', {'deal_id': 'a/b?c#d'}),
+    // The deal CONVERSATION. A new notification type whose prefix stops
+    // matching is a push that opens nothing, which is indistinguishable
+    // from a broken app — and the escrow_offer branch runs first, so this
+    // also pins that `escrow_deal_message` does not get captured by it.
+    ('escrow_deal_message', {'deal_id': 'deal-1', 'reference': 'ESCROW-1'}),
+    ('escrow_deal_message', {}),
     ('electricity_payment_completed', {}),
     ('cable', {}),
     ('internet', {}),
