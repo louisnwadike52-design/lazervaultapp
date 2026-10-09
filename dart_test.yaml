@@ -1,0 +1,6 @@
+# `e2e` needs the dev stack (localhost:7878 and friends). Declared so
+# `--exclude-tags=e2e` is a supported flag rather than a warning, and so the
+# tag cannot be silently misspelled into a no-op.
+tags:
+  e2e:
+    skip: false

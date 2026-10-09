@@ -1,3 +1,9 @@
+@Tags(['e2e'])
+// Needs the DEV STACK on localhost:7878. Untagged, these ran in every
+// `flutter test test/` sweep and failed in setUpAll with a connection
+// refusal — five red tests that say nothing about the code, which is how a
+// real failure gets lost in the noise. `--exclude-tags=e2e` skips them now.
+
 /// E2E (debug-mode) tests for AutoSave-from-external-bank:
 /// REAL Flutter gRPC clients against the REAL local backends and the REAL
 /// Mono sandbox — no mocks on the wire.

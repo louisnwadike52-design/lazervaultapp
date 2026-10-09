@@ -179,12 +179,27 @@ void main() {
     });
 
     test('the rate chip shows the rate the trade fills at', () {
-      final code = codeOf(card);
+      // Whitespace-normalised. The assertion below used to match the exact
+      // source line `final effective = _effectiveRate(_price!)`, and it broke
+      // the moment an all-in-rate override was added and dart format wrapped
+      // the expression across two lines — a formatting change failing a test
+      // about behaviour that had not changed. Collapsing runs of whitespace
+      // keeps the assertion about the code and not about the line width.
+      final code = codeOf(card).replaceAll(RegExp(r'\s+'), ' ');
+
       // The CALL SITE, not just the definition. Asserting the function exists
       // passes even when the render goes back to the raw ticker — which is
       // exactly what a mutation of this file proved.
-      expect(code, contains('final effective = _effectiveRate(_price!)'),
+      expect(code, contains('_effectiveRate(_price!)'),
           reason: 'the rendered rate must be the direction-adjusted one');
+      expect(code, contains(RegExp(r'final effective =[^;]*_effectiveRate\(_price!\)')),
+          reason: 'the direction-adjusted rate must be what `effective` holds '
+              '— computing it and then rendering something else is the bug');
+      // THE REGRESSION ITSELF, stated directly: rendering the raw ticker.
+      // This one survives any reformatting, which the string match did not.
+      expect(code, isNot(contains('_formatPrice(_price!)')),
+          reason: 'the card showed the raw ticker while the sheet computed '
+              'with the margin-adjusted rate — two rates on one screen');
       expect(code, contains('_formatPrice(effective)'),
           reason: 'the card showed the raw ticker while the sheet computed '
               'with the margin-adjusted rate — two rates on one screen');
