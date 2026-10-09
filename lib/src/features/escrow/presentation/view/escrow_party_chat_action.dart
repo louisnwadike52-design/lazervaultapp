@@ -3,9 +3,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 import 'package:lazervault/src/features/escrow/domain/entities/escrow_deal_entity.dart';
+import 'package:lazervault/src/features/escrow/presentation/view/escrow_deal_chat_screen.dart';
 
 /// The other side of an escrow deal, from one viewer's point of view.
 class EscrowCounterparty {
@@ -61,10 +61,14 @@ EscrowCounterparty? escrowCounterpartyFor(
 /// WhatsApp, off-platform, where none of it can be referenced if the deal is
 /// disputed.
 ///
-/// Routes into the existing direct-messaging thread rather than creating an
-/// escrow-specific one. The pair already have a conversation if they have
-/// dealt before, and splitting the same two people across two inboxes means
-/// messages get missed.
+/// Opens the DEAL'S OWN thread, not the pair's general direct-message one.
+///
+/// This used to route into direct messaging, on the reasoning that the same
+/// two people should keep one inbox. Dispute resolution overturns it: a
+/// general thread spans every deal the pair ever did plus everything
+/// unrelated, so an admin asked "what was agreed here" has nothing to open —
+/// and handing them that thread to adjudicate one transaction exposes far
+/// more of the parties' correspondence than the job needs.
 class EscrowPartyChatAction extends StatelessWidget {
   const EscrowPartyChatAction({
     super.key,
@@ -113,17 +117,13 @@ void openEscrowPartyChat(
     return;
   }
 
-  Get.toNamed(
-    AppRoutes.p2pChat,
-    arguments: {
-      'otherUserId': other.userId,
-      'otherUserName': other.name,
-      // Not a saved recipient: these two are counterparties to one deal, which
-      // is not the same as someone the user chose to keep. Marking it true
-      // would quietly add a stranger to their saved list.
-      'isSavedRecipient': false,
-    },
-  );
+  Get.to(() => EscrowDealChatScreen(
+        dealId: deal.id,
+        // Falls back to the reference so the header never reads as an empty
+        // deal; an untitled deal is ordinary for an open-link escrow.
+        dealTitle: deal.title.trim().isNotEmpty ? deal.title.trim() : deal.reference,
+        viewerUserId: viewerUserId,
+      ));
 }
 
 /// A full-width row for the deal body, for people who never look at an AppBar.

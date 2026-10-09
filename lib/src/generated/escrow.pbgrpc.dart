@@ -95,6 +95,31 @@ class EscrowServiceClient extends $grpc.Client {
     return $createUnaryCall(_$openDispute, request, options: options);
   }
 
+  /// THE DEAL'S OWN CONVERSATION.
+  ///
+  /// Not the parties' general direct-message thread. Scoped to a deal so a
+  /// dispute has "the chat for this deal" to open, and so adjudicating one
+  /// transaction does not expose the pair's unrelated correspondence. An
+  /// admin can read it and post into it as the platform; see
+  /// models.EscrowMessage.
+  ///
+  /// Participant-gated: a non-party gets NOT_FOUND, not PERMISSION_DENIED —
+  /// confirming a deal exists to someone not on it leaks that two people are
+  /// transacting.
+  $grpc.ResponseFuture<$0.ListDealMessagesResponse> listDealMessages(
+    $0.ListDealMessagesRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$listDealMessages, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.DealMessageResponse> sendDealMessage(
+    $0.SendDealMessageRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$sendDealMessage, request, options: options);
+  }
+
   /// Fee preview for a prospective deal (reads admin-configurable fee config).
   $grpc.ResponseFuture<$0.QuoteFeeResponse> quoteFee(
     $0.QuoteFeeRequest request, {
@@ -237,6 +262,16 @@ class EscrowServiceClient extends $grpc.Client {
           '/escrow.EscrowService/OpenDispute',
           ($0.OpenDisputeRequest value) => value.writeToBuffer(),
           $0.DealResponse.fromBuffer);
+  static final _$listDealMessages = $grpc.ClientMethod<
+          $0.ListDealMessagesRequest, $0.ListDealMessagesResponse>(
+      '/escrow.EscrowService/ListDealMessages',
+      ($0.ListDealMessagesRequest value) => value.writeToBuffer(),
+      $0.ListDealMessagesResponse.fromBuffer);
+  static final _$sendDealMessage =
+      $grpc.ClientMethod<$0.SendDealMessageRequest, $0.DealMessageResponse>(
+          '/escrow.EscrowService/SendDealMessage',
+          ($0.SendDealMessageRequest value) => value.writeToBuffer(),
+          $0.DealMessageResponse.fromBuffer);
   static final _$quoteFee =
       $grpc.ClientMethod<$0.QuoteFeeRequest, $0.QuoteFeeResponse>(
           '/escrow.EscrowService/QuoteFee',
@@ -357,6 +392,24 @@ abstract class EscrowServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.OpenDisputeRequest.fromBuffer(value),
         ($0.DealResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ListDealMessagesRequest,
+            $0.ListDealMessagesResponse>(
+        'ListDealMessages',
+        listDealMessages_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.ListDealMessagesRequest.fromBuffer(value),
+        ($0.ListDealMessagesResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.SendDealMessageRequest, $0.DealMessageResponse>(
+            'SendDealMessage',
+            sendDealMessage_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.SendDealMessageRequest.fromBuffer(value),
+            ($0.DealMessageResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.QuoteFeeRequest, $0.QuoteFeeResponse>(
         'QuoteFee',
         quoteFee_Pre,
@@ -511,6 +564,24 @@ abstract class EscrowServiceBase extends $grpc.Service {
 
   $async.Future<$0.DealResponse> openDispute(
       $grpc.ServiceCall call, $0.OpenDisputeRequest request);
+
+  $async.Future<$0.ListDealMessagesResponse> listDealMessages_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.ListDealMessagesRequest> $request) async {
+    return listDealMessages($call, await $request);
+  }
+
+  $async.Future<$0.ListDealMessagesResponse> listDealMessages(
+      $grpc.ServiceCall call, $0.ListDealMessagesRequest request);
+
+  $async.Future<$0.DealMessageResponse> sendDealMessage_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.SendDealMessageRequest> $request) async {
+    return sendDealMessage($call, await $request);
+  }
+
+  $async.Future<$0.DealMessageResponse> sendDealMessage(
+      $grpc.ServiceCall call, $0.SendDealMessageRequest request);
 
   $async.Future<$0.QuoteFeeResponse> quoteFee_Pre($grpc.ServiceCall $call,
       $async.Future<$0.QuoteFeeRequest> $request) async {

@@ -3504,6 +3504,377 @@ class AddOfferAttachmentRequest extends $pb.GeneratedMessage {
   void clearDurationSeconds() => $_clearField(6);
 }
 
+/// One message on a deal's own thread.
+class DealMessage extends $pb.GeneratedMessage {
+  factory DealMessage({
+    $core.String? id,
+    $core.String? dealId,
+    $core.String? senderId,
+    $core.String? senderRole,
+    $core.String? senderName,
+    $core.String? body,
+    $core.String? createdAt,
+  }) {
+    final result = create();
+    if (id != null) result.id = id;
+    if (dealId != null) result.dealId = dealId;
+    if (senderId != null) result.senderId = senderId;
+    if (senderRole != null) result.senderRole = senderRole;
+    if (senderName != null) result.senderName = senderName;
+    if (body != null) result.body = body;
+    if (createdAt != null) result.createdAt = createdAt;
+    return result;
+  }
+
+  DealMessage._();
+
+  factory DealMessage.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory DealMessage.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'DealMessage',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'escrow'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'dealId')
+    ..aOS(3, _omitFieldNames ? '' : 'senderId')
+    ..aOS(4, _omitFieldNames ? '' : 'senderRole')
+    ..aOS(5, _omitFieldNames ? '' : 'senderName')
+    ..aOS(6, _omitFieldNames ? '' : 'body')
+    ..aOS(7, _omitFieldNames ? '' : 'createdAt')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DealMessage clone() => DealMessage()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DealMessage copyWith(void Function(DealMessage) updates) =>
+      super.copyWith((message) => updates(message as DealMessage))
+          as DealMessage;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static DealMessage create() => DealMessage._();
+  @$core.override
+  DealMessage createEmptyInstance() => create();
+  static $pb.PbList<DealMessage> createRepeated() => $pb.PbList<DealMessage>();
+  @$core.pragma('dart2js:noInline')
+  static DealMessage getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<DealMessage>(create);
+  static DealMessage? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get dealId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set dealId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasDealId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDealId() => $_clearField(2);
+
+  /// Empty for a platform message — an admin is not a party to the deal.
+  @$pb.TagNumber(3)
+  $core.String get senderId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set senderId($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasSenderId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSenderId() => $_clearField(3);
+
+  /// "buyer" | "seller" | "admin". Admin is a first-class role so both
+  /// parties can see that support joined the conversation.
+  @$pb.TagNumber(4)
+  $core.String get senderRole => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set senderRole($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasSenderRole() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearSenderRole() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get senderName => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set senderName($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasSenderName() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearSenderName() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get body => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set body($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasBody() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearBody() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get createdAt => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set createdAt($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasCreatedAt() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearCreatedAt() => $_clearField(7);
+}
+
+class ListDealMessagesRequest extends $pb.GeneratedMessage {
+  factory ListDealMessagesRequest({
+    $core.String? dealId,
+  }) {
+    final result = create();
+    if (dealId != null) result.dealId = dealId;
+    return result;
+  }
+
+  ListDealMessagesRequest._();
+
+  factory ListDealMessagesRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ListDealMessagesRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ListDealMessagesRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'escrow'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'dealId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListDealMessagesRequest clone() =>
+      ListDealMessagesRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListDealMessagesRequest copyWith(
+          void Function(ListDealMessagesRequest) updates) =>
+      super.copyWith((message) => updates(message as ListDealMessagesRequest))
+          as ListDealMessagesRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListDealMessagesRequest create() => ListDealMessagesRequest._();
+  @$core.override
+  ListDealMessagesRequest createEmptyInstance() => create();
+  static $pb.PbList<ListDealMessagesRequest> createRepeated() =>
+      $pb.PbList<ListDealMessagesRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ListDealMessagesRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ListDealMessagesRequest>(create);
+  static ListDealMessagesRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get dealId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set dealId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasDealId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearDealId() => $_clearField(1);
+}
+
+class ListDealMessagesResponse extends $pb.GeneratedMessage {
+  factory ListDealMessagesResponse({
+    $core.Iterable<DealMessage>? messages,
+  }) {
+    final result = create();
+    if (messages != null) result.messages.addAll(messages);
+    return result;
+  }
+
+  ListDealMessagesResponse._();
+
+  factory ListDealMessagesResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ListDealMessagesResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ListDealMessagesResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'escrow'),
+      createEmptyInstance: create)
+    ..pc<DealMessage>(1, _omitFieldNames ? '' : 'messages', $pb.PbFieldType.PM,
+        subBuilder: DealMessage.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListDealMessagesResponse clone() =>
+      ListDealMessagesResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListDealMessagesResponse copyWith(
+          void Function(ListDealMessagesResponse) updates) =>
+      super.copyWith((message) => updates(message as ListDealMessagesResponse))
+          as ListDealMessagesResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListDealMessagesResponse create() => ListDealMessagesResponse._();
+  @$core.override
+  ListDealMessagesResponse createEmptyInstance() => create();
+  static $pb.PbList<ListDealMessagesResponse> createRepeated() =>
+      $pb.PbList<ListDealMessagesResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ListDealMessagesResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ListDealMessagesResponse>(create);
+  static ListDealMessagesResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<DealMessage> get messages => $_getList(0);
+}
+
+class SendDealMessageRequest extends $pb.GeneratedMessage {
+  factory SendDealMessageRequest({
+    $core.String? dealId,
+    $core.String? body,
+  }) {
+    final result = create();
+    if (dealId != null) result.dealId = dealId;
+    if (body != null) result.body = body;
+    return result;
+  }
+
+  SendDealMessageRequest._();
+
+  factory SendDealMessageRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SendDealMessageRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SendDealMessageRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'escrow'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'dealId')
+    ..aOS(2, _omitFieldNames ? '' : 'body')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SendDealMessageRequest clone() =>
+      SendDealMessageRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SendDealMessageRequest copyWith(
+          void Function(SendDealMessageRequest) updates) =>
+      super.copyWith((message) => updates(message as SendDealMessageRequest))
+          as SendDealMessageRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SendDealMessageRequest create() => SendDealMessageRequest._();
+  @$core.override
+  SendDealMessageRequest createEmptyInstance() => create();
+  static $pb.PbList<SendDealMessageRequest> createRepeated() =>
+      $pb.PbList<SendDealMessageRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SendDealMessageRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SendDealMessageRequest>(create);
+  static SendDealMessageRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get dealId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set dealId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasDealId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearDealId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get body => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set body($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasBody() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearBody() => $_clearField(2);
+}
+
+class DealMessageResponse extends $pb.GeneratedMessage {
+  factory DealMessageResponse({
+    DealMessage? message,
+  }) {
+    final result = create();
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  DealMessageResponse._();
+
+  factory DealMessageResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory DealMessageResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'DealMessageResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'escrow'),
+      createEmptyInstance: create)
+    ..aOM<DealMessage>(1, _omitFieldNames ? '' : 'message',
+        subBuilder: DealMessage.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DealMessageResponse clone() => DealMessageResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DealMessageResponse copyWith(void Function(DealMessageResponse) updates) =>
+      super.copyWith((message) => updates(message as DealMessageResponse))
+          as DealMessageResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static DealMessageResponse create() => DealMessageResponse._();
+  @$core.override
+  DealMessageResponse createEmptyInstance() => create();
+  static $pb.PbList<DealMessageResponse> createRepeated() =>
+      $pb.PbList<DealMessageResponse>();
+  @$core.pragma('dart2js:noInline')
+  static DealMessageResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<DealMessageResponse>(create);
+  static DealMessageResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  DealMessage get message => $_getN(0);
+  @$pb.TagNumber(1)
+  set message(DealMessage value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasMessage() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMessage() => $_clearField(1);
+  @$pb.TagNumber(1)
+  DealMessage ensureMessage() => $_ensure(0);
+}
+
 const $core.bool _omitFieldNames =
     $core.bool.fromEnvironment('protobuf.omit_field_names');
 const $core.bool _omitMessageNames =

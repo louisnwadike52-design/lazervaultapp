@@ -873,3 +873,93 @@ final $typed_data.Uint8List addOfferAttachmentRequestDescriptor = $convert.base6
     '0KCm1lZGlhX2tpbmQYAiABKAlSCW1lZGlhS2luZBIQCgN1cmwYAyABKAlSA3VybBIhCgxjb250'
     'ZW50X3R5cGUYBCABKAlSC2NvbnRlbnRUeXBlEh0KCnNpemVfYnl0ZXMYBSABKANSCXNpemVCeX'
     'RlcxIpChBkdXJhdGlvbl9zZWNvbmRzGAYgASgFUg9kdXJhdGlvblNlY29uZHM=');
+
+@$core.Deprecated('Use dealMessageDescriptor instead')
+const DealMessage$json = {
+  '1': 'DealMessage',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'deal_id', '3': 2, '4': 1, '5': 9, '10': 'dealId'},
+    {'1': 'sender_id', '3': 3, '4': 1, '5': 9, '10': 'senderId'},
+    {'1': 'sender_role', '3': 4, '4': 1, '5': 9, '10': 'senderRole'},
+    {'1': 'sender_name', '3': 5, '4': 1, '5': 9, '10': 'senderName'},
+    {'1': 'body', '3': 6, '4': 1, '5': 9, '10': 'body'},
+    {'1': 'created_at', '3': 7, '4': 1, '5': 9, '10': 'createdAt'},
+  ],
+};
+
+/// Descriptor for `DealMessage`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List dealMessageDescriptor = $convert.base64Decode(
+    'CgtEZWFsTWVzc2FnZRIOCgJpZBgBIAEoCVICaWQSFwoHZGVhbF9pZBgCIAEoCVIGZGVhbElkEh'
+    'sKCXNlbmRlcl9pZBgDIAEoCVIIc2VuZGVySWQSHwoLc2VuZGVyX3JvbGUYBCABKAlSCnNlbmRl'
+    'clJvbGUSHwoLc2VuZGVyX25hbWUYBSABKAlSCnNlbmRlck5hbWUSEgoEYm9keRgGIAEoCVIEYm'
+    '9keRIdCgpjcmVhdGVkX2F0GAcgASgJUgljcmVhdGVkQXQ=');
+
+@$core.Deprecated('Use listDealMessagesRequestDescriptor instead')
+const ListDealMessagesRequest$json = {
+  '1': 'ListDealMessagesRequest',
+  '2': [
+    {'1': 'deal_id', '3': 1, '4': 1, '5': 9, '10': 'dealId'},
+  ],
+};
+
+/// Descriptor for `ListDealMessagesRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listDealMessagesRequestDescriptor =
+    $convert.base64Decode(
+        'ChdMaXN0RGVhbE1lc3NhZ2VzUmVxdWVzdBIXCgdkZWFsX2lkGAEgASgJUgZkZWFsSWQ=');
+
+@$core.Deprecated('Use listDealMessagesResponseDescriptor instead')
+const ListDealMessagesResponse$json = {
+  '1': 'ListDealMessagesResponse',
+  '2': [
+    {
+      '1': 'messages',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.escrow.DealMessage',
+      '10': 'messages'
+    },
+  ],
+};
+
+/// Descriptor for `ListDealMessagesResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listDealMessagesResponseDescriptor =
+    $convert.base64Decode(
+        'ChhMaXN0RGVhbE1lc3NhZ2VzUmVzcG9uc2USLwoIbWVzc2FnZXMYASADKAsyEy5lc2Nyb3cuRG'
+        'VhbE1lc3NhZ2VSCG1lc3NhZ2Vz');
+
+@$core.Deprecated('Use sendDealMessageRequestDescriptor instead')
+const SendDealMessageRequest$json = {
+  '1': 'SendDealMessageRequest',
+  '2': [
+    {'1': 'deal_id', '3': 1, '4': 1, '5': 9, '10': 'dealId'},
+    {'1': 'body', '3': 2, '4': 1, '5': 9, '10': 'body'},
+  ],
+};
+
+/// Descriptor for `SendDealMessageRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List sendDealMessageRequestDescriptor =
+    $convert.base64Decode(
+        'ChZTZW5kRGVhbE1lc3NhZ2VSZXF1ZXN0EhcKB2RlYWxfaWQYASABKAlSBmRlYWxJZBISCgRib2'
+        'R5GAIgASgJUgRib2R5');
+
+@$core.Deprecated('Use dealMessageResponseDescriptor instead')
+const DealMessageResponse$json = {
+  '1': 'DealMessageResponse',
+  '2': [
+    {
+      '1': 'message',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.escrow.DealMessage',
+      '10': 'message'
+    },
+  ],
+};
+
+/// Descriptor for `DealMessageResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List dealMessageResponseDescriptor = $convert.base64Decode(
+    'ChNEZWFsTWVzc2FnZVJlc3BvbnNlEi0KB21lc3NhZ2UYASABKAsyEy5lc2Nyb3cuRGVhbE1lc3'
+    'NhZ2VSB21lc3NhZ2U=');

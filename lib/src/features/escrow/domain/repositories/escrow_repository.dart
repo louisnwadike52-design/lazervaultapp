@@ -1,9 +1,22 @@
 import '../entities/escrow_deal_entity.dart';
 import '../entities/escrow_offer_entity.dart';
+import '../entities/escrow_message_entity.dart';
 
 /// Abstract repository for the Escrow feature. The data layer implements this
 /// over gRPC to commerce-gateway (EscrowService).
 abstract class EscrowRepository {
+  /// The deal's OWN conversation, oldest first.
+  ///
+  /// Separate from the parties' general direct-message thread so a dispute
+  /// has "the chat for this deal" and an admin adjudicating it reads that
+  /// and nothing else.
+  Future<List<EscrowMessageEntity>> listDealMessages(String dealId);
+
+  Future<EscrowMessageEntity> sendDealMessage({
+    required String dealId,
+    required String body,
+  });
+
   /// Fee preview for a prospective deal (reads admin-configurable fee config).
   /// [offerId], when given, prices the quote with THAT OFFER'S agreed fee
   /// split instead of the global default — so a listing whose seller absorbed

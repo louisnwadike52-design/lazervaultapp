@@ -5,6 +5,7 @@ import 'package:lazervault/src/generated/escrow.pb.dart' as pb;
 import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart'
     as ts;
 import '../../domain/entities/escrow_deal_entity.dart';
+import '../../domain/entities/escrow_message_entity.dart';
 import '../../domain/entities/escrow_offer_entity.dart';
 import '../../domain/repositories/escrow_repository.dart';
 
@@ -149,6 +150,46 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
   }
 
   @override
+  /// The deal's own conversation, oldest first.
+  ///
+  /// A non-party gets NOT_FOUND from the server rather than a permission
+  /// error — confirming a deal exists to someone not on it leaks that two
+  /// people are transacting.
+  Future<List<EscrowMessageEntity>> listDealMessages(String dealId) async {
+    final options = await grpcClient.callOptions;
+    final resp = await grpcClient.escrowClient.listDealMessages(
+      pb.ListDealMessagesRequest()..dealId = dealId,
+      options: options,
+    );
+    return resp.messages.map(_messageFromProto).toList();
+  }
+
+  Future<EscrowMessageEntity> sendDealMessage({
+    required String dealId,
+    required String body,
+  }) async {
+    final options = await grpcClient.callOptions;
+    final resp = await grpcClient.escrowClient.sendDealMessage(
+      pb.SendDealMessageRequest()
+        ..dealId = dealId
+        ..body = body,
+      options: options,
+    );
+    return _messageFromProto(resp.message);
+  }
+
+  EscrowMessageEntity _messageFromProto(pb.DealMessage m) => EscrowMessageEntity(
+        id: m.id,
+        dealId: m.dealId,
+        senderId: m.senderId,
+        senderRole: m.senderRole,
+        senderName: m.senderName,
+        body: m.body,
+        // Server sends RFC3339 UTC. A malformed value must not take the
+        // thread down — the message still reads without its timestamp.
+        createdAt: DateTime.tryParse(m.createdAt)?.toLocal(),
+      );
+
   Future<EscrowDealEntity> openDispute({
     required String dealId,
     required String reason,
