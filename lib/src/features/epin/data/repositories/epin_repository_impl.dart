@@ -8,7 +8,7 @@ class EPinRepositoryImpl implements EPinRepository {
   EPinRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<List<EPinNetwork>> getNetworks() => remoteDataSource.getNetworks();
+  Future<EPinCatalogue> getNetworks() => remoteDataSource.getNetworks();
 
   @override
   Future<EPinPurchaseResult> initiatePurchase({

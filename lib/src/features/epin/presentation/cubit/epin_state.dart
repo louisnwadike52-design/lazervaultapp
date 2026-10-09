@@ -21,10 +21,21 @@ class EPinNetworksLoading extends EPinState {
 
 class EPinNetworksLoaded extends EPinState {
   final List<EPinNetwork> networks;
-  const EPinNetworksLoaded({required this.networks});
+
+  /// The ACTIVE rail's smallest printable order.
+  ///
+  /// ePINs prints in batches of ten or more; VTU.africa prints singles. The
+  /// picker starts here so a customer cannot choose a quantity the purchase
+  /// would refuse — which, on ePINs, comes back as its generic "Transaction
+  /// failed" and reads as the rail being down.
+  ///
+  /// Defaults to 1 for a server that does not state one.
+  final int minQuantity;
+
+  const EPinNetworksLoaded({required this.networks, this.minQuantity = 1});
 
   @override
-  List<Object?> get props => [networks];
+  List<Object?> get props => [networks, minQuantity];
 }
 
 class EPinNetworksError extends EPinState {

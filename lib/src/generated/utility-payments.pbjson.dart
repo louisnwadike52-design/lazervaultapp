@@ -7472,6 +7472,7 @@ const GetEPinNetworksResponse$json = {
       '6': '.utilitypayments.EPinNetwork',
       '10': 'networks'
     },
+    {'1': 'min_quantity', '3': 2, '4': 1, '5': 13, '10': 'minQuantity'},
   ],
 };
 
@@ -7479,7 +7480,8 @@ const GetEPinNetworksResponse$json = {
 final $typed_data.Uint8List getEPinNetworksResponseDescriptor =
     $convert.base64Decode(
         'ChdHZXRFUGluTmV0d29ya3NSZXNwb25zZRI4CghuZXR3b3JrcxgBIAMoCzIcLnV0aWxpdHlwYX'
-        'ltZW50cy5FUGluTmV0d29ya1IIbmV0d29ya3M=');
+        'ltZW50cy5FUGluTmV0d29ya1IIbmV0d29ya3MSIQoMbWluX3F1YW50aXR5GAIgASgNUgttaW5R'
+        'dWFudGl0eQ==');
 
 @$core.Deprecated('Use initiateEPinPurchaseRequestDescriptor instead')
 const InitiateEPinPurchaseRequest$json = {

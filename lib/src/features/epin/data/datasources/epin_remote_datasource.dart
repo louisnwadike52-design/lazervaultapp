@@ -5,8 +5,17 @@ import '../../domain/entities/epin_entities.dart';
 import '../../domain/repositories/epin_repository.dart';
 import '../models/epin_models.dart';
 
+/// A catalogue read: the networks plus the active rail's order minimum.
+typedef EPinCatalogue = ({List<EPinNetwork> networks, int minQuantity});
+
 abstract class EPinRemoteDataSource {
-  Future<List<EPinNetwork>> getNetworks();
+  /// The catalogue AND the active rail's smallest printable order.
+  ///
+  /// The two travel together deliberately. The minimum is the PROVIDER's term
+  /// — ePINs prints in batches of ten or more, VTU.africa prints singles — so
+  /// a picker built against a number from anywhere else can offer a quantity
+  /// the purchase will refuse.
+  Future<EPinCatalogue> getNetworks();
   Future<EPinPurchaseResult> initiatePurchase({
     required String network,
     required double denomination,
@@ -29,12 +38,19 @@ class EPinRemoteDataSourceImpl implements EPinRemoteDataSource {
   EPinRemoteDataSourceImpl({required this.grpcClient});
 
   @override
-  Future<List<EPinNetwork>> getNetworks() async {
+  Future<EPinCatalogue> getNetworks() async {
     try {
       final options = await grpcClient.callOptions;
       final response = await grpcClient.utilityPaymentsClient
           .getEPinNetworks(pb.GetEPinNetworksRequest(), options: options);
-      return response.networks.map(EPinMappers.network).toList();
+      return (
+        networks: response.networks.map(EPinMappers.network).toList(),
+        // 0 means the server did not state one (an older build). Treat that
+        // as 1 rather than blocking — a floor the app invents would refuse
+        // orders a working rail would take.
+        minQuantity:
+            response.minQuantity > 0 ? response.minQuantity : 1,
+      );
     } on GrpcError catch (e) {
       throw Exception('Failed to fetch recharge card networks: ${e.message}');
     }

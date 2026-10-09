@@ -30836,9 +30836,11 @@ class GetEPinNetworksRequest extends $pb.GeneratedMessage {
 class GetEPinNetworksResponse extends $pb.GeneratedMessage {
   factory GetEPinNetworksResponse({
     $core.Iterable<EPinNetwork>? networks,
+    $core.int? minQuantity,
   }) {
     final result = create();
     if (networks != null) result.networks.addAll(networks);
+    if (minQuantity != null) result.minQuantity = minQuantity;
     return result;
   }
 
@@ -30858,6 +30860,8 @@ class GetEPinNetworksResponse extends $pb.GeneratedMessage {
       createEmptyInstance: create)
     ..pc<EPinNetwork>(1, _omitFieldNames ? '' : 'networks', $pb.PbFieldType.PM,
         subBuilder: EPinNetwork.create)
+    ..a<$core.int>(
+        2, _omitFieldNames ? '' : 'minQuantity', $pb.PbFieldType.OU3)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -30885,6 +30889,15 @@ class GetEPinNetworksResponse extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(1)
   $pb.PbList<EPinNetwork> get networks => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get minQuantity => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set minQuantity($core.int value) => $_setUnsignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMinQuantity() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMinQuantity() => $_clearField(2);
 }
 
 class InitiateEPinPurchaseRequest extends $pb.GeneratedMessage {

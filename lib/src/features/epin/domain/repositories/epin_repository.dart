@@ -1,4 +1,6 @@
 import '../entities/epin_entities.dart';
+import 'package:lazervault/src/features/epin/data/datasources/epin_remote_datasource.dart'
+    show EPinCatalogue;
 
 /// Result of an ePIN purchase — the order plus the post-purchase balance and
 /// the backend message (used to surface pending/processing states).
@@ -15,7 +17,7 @@ class EPinPurchaseResult {
 }
 
 abstract class EPinRepository {
-  Future<List<EPinNetwork>> getNetworks();
+  Future<EPinCatalogue> getNetworks();
 
   Future<EPinPurchaseResult> initiatePurchase({
     required String network,

@@ -19,10 +19,11 @@ class EPinCubit extends Cubit<EPinState> {
     if (isClosed) return;
     emit(const EPinNetworksLoading());
     try {
-      final networks = await repository.getNetworks();
+      final catalogue = await repository.getNetworks();
       if (isClosed) return;
       emit(EPinNetworksLoaded(
-        networks: networks.where((n) => n.isActive).toList(),
+        networks: catalogue.networks.where((n) => n.isActive).toList(),
+        minQuantity: catalogue.minQuantity,
       ));
     } catch (e) {
       if (isClosed) return;

@@ -49,6 +49,19 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
   EPinNetwork? _network;
   EPinDenomination? _denomination;
   int _quantity = 1;
+
+  /// The ACTIVE rail's smallest printable order, from the catalogue read.
+  ///
+  /// ePINs prints in BATCHES OF TEN OR MORE. Below that its API answers 105
+  /// "Transaction failed" — its generic failure, indistinguishable from a
+  /// real printing fault — so a single-card order looked like the rail being
+  /// down. The stepper now starts and floors here instead of at 1, which is
+  /// the difference between a customer being told the rule and a customer
+  /// being refused by it.
+  ///
+  /// 1 until the catalogue lands, and for any rail that prints singles
+  /// (VTU.africa does).
+  int _minQuantity = 1;
   bool _submitting = false;
 
   /// True once the user has tapped a network themselves.
@@ -66,7 +79,10 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
     super.initState();
     _sub = context.read<EPinCubit>().stream.listen((s) {
       if (s is EPinNetworksLoaded && mounted) {
-        setState(() => _networks = s.networks);
+        setState(() {
+          _networks = s.networks;
+          _adoptMinQuantity(s.minQuantity);
+        });
         // The catalogue can land AFTER the async phone prefill, in which case
         // the first detection ran against an empty list and gave up. Retry now
         // that there is something to match against.
@@ -80,6 +96,9 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
     final current = context.read<EPinCubit>().state;
     if (current is EPinNetworksLoaded) {
       _networks = current.networks;
+      // Before the first frame, so the stepper never renders a quantity the
+      // rail would refuse.
+      _adoptMinQuantity(current.minQuantity);
     }
     // Re-detect as the number changes, so correcting a digit or pasting a
     // different line moves the selection with it instead of leaving the
@@ -132,7 +151,7 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
       // The previous denomination belonged to the previous network — clearing
       // it stops a stale amount riding into the order.
       _denomination = null;
-      _quantity = 1;
+      _quantity = _minQuantity;
     });
   }
 
@@ -165,13 +184,16 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
       _networkChosenByUser = true;
       _network = n;
       _denomination = null;
-      _quantity = 1;
+      _quantity = _minQuantity;
     });
   }
 
   bool get _phoneValid => isValidNgMsisdn(_phoneController.text);
   bool get _ready =>
-      _network != null && _denomination != null && _quantity > 0 && _phoneValid;
+      _network != null &&
+          _denomination != null &&
+          _quantity >= _minQuantity &&
+          _phoneValid;
 
   // ── Purchase (runs INSIDE the TX-PIN sheet's processing beat) ──────────────
   Future<void> _pay() async {
@@ -351,6 +373,15 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
     );
   }
 
+  /// Keep the stepper in step with the rail. Called from the BlocBuilder so a
+  /// refresh that switches provider cannot leave a now-illegal quantity on
+  /// screen.
+  void _adoptMinQuantity(int min) {
+    if (min <= 0 || min == _minQuantity) return;
+    _minQuantity = min;
+    if (_quantity < min) _quantity = min;
+  }
+
   Widget _quantityStepper() {
     Widget btn(IconData icon, VoidCallback? onTap) => GestureDetector(
           onTap: onTap,
@@ -366,18 +397,36 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
                 color: onTap == null ? _muted : Colors.white, size: 20.sp),
           ),
         );
-    return Row(children: [
-      btn(Icons.remove,
-          _quantity > 1 ? () => setState(() => _quantity--) : null),
-      SizedBox(width: 16.w),
-      Text('$_quantity',
-          style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w700)),
-      SizedBox(width: 16.w),
-      btn(Icons.add, _quantity < 50 ? () => setState(() => _quantity++) : null),
-    ]);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(children: [
+          btn(
+              Icons.remove,
+              _quantity > _minQuantity
+                  ? () => setState(() => _quantity--)
+                  : null),
+          SizedBox(width: 16.w),
+          Text('$_quantity',
+              style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700)),
+          SizedBox(width: 16.w),
+          btn(Icons.add,
+              _quantity < 50 ? () => setState(() => _quantity++) : null),
+        ]),
+        // Say the rule where the choice is made. Discovering a batch minimum
+        // by being refused after paying is the failure this replaces.
+        if (_minQuantity > 1) ...[
+          SizedBox(height: 8.h),
+          Text(
+            'Cards are printed in batches of $_minQuantity or more.',
+            style: GoogleFonts.inter(color: _muted, fontSize: 11.sp),
+          ),
+        ],
+      ],
+    );
   }
 
   // Non-editable country dial code shown beside the phone field (NG = +234).
