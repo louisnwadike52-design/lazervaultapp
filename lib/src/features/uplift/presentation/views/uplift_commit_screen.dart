@@ -33,21 +33,71 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
   bool _submitting = false;
 
   @override
+  void initState() {
+    super.initState();
+    // The button's state has to follow the amount as it is typed; without
+    // this the screen only re-renders when something else happens to rebuild
+    // it, and an over-balance amount still looks submittable.
+    _amount.addListener(_onAmountChanged);
+  }
+
+  @override
   void dispose() {
+    _amount.removeListener(_onAmountChanged);
     _amount.dispose();
     super.dispose();
   }
 
-  Future<void> _confirm() async {
+  void _onAmountChanged() => setState(() {});
+
+  /// Why the amount cannot be committed, or null when it can.
+  ///
+  /// The screen showed the balance and then let the amount sail past it into
+  /// the PIN sheet: type 5,000 against a 2,491.91 wallet, authenticate, and
+  /// the server refuses. The user has spent a PIN entry — and on a shared
+  /// device, exposed it — to be told a thing the screen already knew.
+  ///
+  /// Computed in one place and used twice: to disable the button and to
+  /// refuse in [_confirm], so the two can never disagree.
+  String? _blocker(ActiveAccountSnapshot? account) {
     final major = double.tryParse(_amount.text.trim());
     if (major == null || major <= 0) {
-      Get.snackbar(
-          'Enter an amount', 'Type the amount to commit to the fund pool',
+      return 'Type the amount to commit to the fund pool';
+    }
+    if (account == null) {
+      return 'Select an account on the dashboard first';
+    }
+    // The pool is held in the FUND's currency, so an account in another one
+    // cannot fund it — a conversion would have to happen somewhere, and
+    // nothing in this flow does one.
+    if (account.currency.toUpperCase() !=
+        widget.fund.currency.toUpperCase()) {
+      return 'This fund is in ${widget.fund.currency.toUpperCase()} — '
+          'switch to a ${widget.fund.currency.toUpperCase()} account to commit';
+    }
+    if (!account.isSpendable || account.isProvisioning) {
+      return 'That account cannot send funds yet';
+    }
+    if (!account.covers(major)) {
+      return 'Insufficient balance. Available: '
+          '${account.currency} ${account.balanceMajor.toStringAsFixed(2)}';
+    }
+    return null;
+  }
+
+  Future<void> _confirm() async {
+    final snapshot = activeAccountSnapshot();
+    final blocker = _blocker(snapshot);
+    if (blocker != null) {
+      // Checked again here, not only on the button: the balance is a snapshot
+      // and another screen can have spent it since this one rendered.
+      Get.snackbar('Cannot commit', blocker,
           backgroundColor: kUpError,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM);
       return;
     }
+    final major = double.parse(_amount.text.trim());
     final account = serviceLocator<AccountManager>();
     final sourceId = account.activeAccountId;
     if (sourceId == null || sourceId.isEmpty) {
@@ -103,6 +153,7 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
     // whose whole job is to show the funding source read-only, that is the one
     // thing it has to get right.
     final account = activeAccountSnapshot();
+    final blocker = _blocker(account);
     final locale = serviceLocator<LocaleManager>();
     return Scaffold(
       backgroundColor: kUpBg,
@@ -171,13 +222,28 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
                     borderSide: BorderSide.none),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 10),
+            // Say what is wrong where the amount is, not after the PIN.
+            if (blocker != null && _amount.text.trim().isNotEmpty)
+              Row(
+                children: [
+                  const Icon(Icons.error_outline, size: 15, color: kUpError),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(blocker,
+                        style: const TextStyle(color: kUpError, fontSize: 12)),
+                  ),
+                ],
+              ),
+            const SizedBox(height: 14),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                   backgroundColor: kUpPrimary,
                   foregroundColor: Colors.white,
+                  disabledBackgroundColor: kUpDivider,
+                  disabledForegroundColor: kUpTextSecondary,
                   minimumSize: const Size.fromHeight(52)),
-              onPressed: _submitting ? null : _confirm,
+              onPressed: (_submitting || blocker != null) ? null : _confirm,
               child: _submitting
                   ? const SizedBox(
                       height: 20,
