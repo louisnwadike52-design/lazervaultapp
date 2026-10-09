@@ -135,6 +135,27 @@ class FeatureFlags {
   static const String externalPayoutFloorMinorKey =
       'external_payout_floor_minor';
 
+  // ── Upload ceilings, admin-tunable ───────────────────────────────────────
+  //
+  // Both halves of "max uploads" were constants compiled into the app: the
+  // gallery and attachment rows had NO count limit at all, and the file-size
+  // ceilings were `static const _maxFileSize = 10 * 1024 * 1024` inside each
+  // uploader. Raising or lowering either meant a release, and a store review,
+  // for a number an operator should be able to turn.
+  //
+  // Counts are enforced server-side too (financial-products reads the same
+  // keys from its own system_settings) — these copies exist so the picker can
+  // stop at the limit instead of letting someone upload an eleventh file and
+  // then taking it back.
+  static const String upliftFundGalleryMaxImagesKey =
+      'uplift_fund_gallery_max_images';
+  static const String upliftApplicationMaxImagesKey =
+      'uplift_application_max_images';
+  static const String upliftApplicationMaxDocumentsKey =
+      'uplift_application_max_documents';
+  static const String mediaMaxImageMbKey = 'media_max_image_mb';
+  static const String mediaMaxVideoMbKey = 'media_max_video_mb';
+
   // spraymeLikeSoundKey: false (DEFAULT) = tapping to like in a Lazerspray room
   //   is silent. Admin-tunable so the sound can be restored without a release.
   static const String spraymeLikeSoundKey = 'sprayme_like_sound_enabled';
@@ -468,6 +489,14 @@ class FeatureFlags {
       // read so a malformed admin value degrades to the default instead of
       // throwing during boot.
       externalPayoutFloorMinorKey,
+      // Upload ceilings. Numbers, stored verbatim and parsed on read, so a
+      // malformed admin value degrades to the built-in default rather than
+      // throwing during boot.
+      upliftFundGalleryMaxImagesKey,
+      upliftApplicationMaxImagesKey,
+      upliftApplicationMaxDocumentsKey,
+      mediaMaxImageMbKey,
+      mediaMaxVideoMbKey,
       // Locale gating lists are CSVs, stored verbatim and parsed on read.
       localeNonNgnServices,
       localeNonNgnNavDisabled,
@@ -848,6 +877,43 @@ class FeatureFlags {
     if (parsed == null || parsed <= 0) return 10000; // NGN 100.00
     return parsed;
   }
+
+  /// A positive integer admin setting, or [fallback].
+  ///
+  /// Zero and negative values fall back deliberately: "0" in the admin field
+  /// would otherwise mean "no uploads allowed at all", which is never what an
+  /// operator clearing a box intends, and [cap] keeps a typo from raising a
+  /// limit past what the gateway will actually accept.
+  static int _positiveSetting(String key, int fallback, {int? cap}) {
+    final parsed = int.tryParse((_prefs?.getString(key) ?? '').trim());
+    if (parsed == null || parsed <= 0) return fallback;
+    if (cap != null && parsed > cap) return cap;
+    return parsed;
+  }
+
+  /// How many images a LazerFund fund gallery may carry (the first is the
+  /// cover). Default 8.
+  static int get upliftFundGalleryMaxImages =>
+      _positiveSetting(upliftFundGalleryMaxImagesKey, 8, cap: 30);
+
+  /// How many photos a LazerFund application may attach. Default 8.
+  static int get upliftApplicationMaxImages =>
+      _positiveSetting(upliftApplicationMaxImagesKey, 8, cap: 30);
+
+  /// How many documents (pitch deck, accounts) an application may attach.
+  /// Default 5.
+  static int get upliftApplicationMaxDocuments =>
+      _positiveSetting(upliftApplicationMaxDocumentsKey, 5, cap: 20);
+
+  /// Largest image or PDF any uploader will send, in MB. Default 10.
+  ///
+  /// Capped at 100 because prod traffic crosses the Cloudflare tunnel, which
+  /// refuses a body over 100MB on our plan — a higher admin value would only
+  /// produce uploads that die at the edge.
+  static int get mediaMaxImageMb => _positiveSetting(mediaMaxImageMbKey, 10, cap: 100);
+
+  /// Largest video, in MB. Default 64, same ceiling and same reason.
+  static int get mediaMaxVideoMb => _positiveSetting(mediaMaxVideoMbKey, 64, cap: 100);
 
   static bool get bulkSmsVisible {
     return _prefs?.getBool(bulkSmsVisibleKey) ?? false;

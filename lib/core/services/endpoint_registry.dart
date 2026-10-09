@@ -121,6 +121,18 @@ class EndpointRegistry {
     // core-payments enforces, read from one system_settings row, instead of a
     // constant of its own that can drift out of agreement with the server.
     'external_payout_floor_minor',
+    // ── Upload ceilings (admin-tunable) ──────────────────────────────────
+    // How many attachments a LazerFund fund gallery / application may carry,
+    // and the largest file any of our media uploaders will accept. Cached
+    // here so the picker knows its limit on the FIRST frame: a cap applied
+    // only after the snapshot lands lets a user queue an eleventh image and
+    // then has to take it back, and a size cap that arrives late means the
+    // phone spends two minutes uploading a file the gateway will refuse.
+    'uplift_fund_gallery_max_images',
+    'uplift_application_max_images',
+    'uplift_application_max_documents',
+    'media_max_image_mb',
+    'media_max_video_mb',
     'splitbill_external_receiver_enabled',
     // Whether Split Bills appears as a quick action INSIDE the send-funds flow.
     // Cached like the other admin knobs so the send-funds screen can decide on

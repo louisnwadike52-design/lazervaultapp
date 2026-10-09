@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lazervault/core/services/secure_storage_defaults.dart';
 import 'package:http/http.dart' as http;
 import 'package:lazervault/core/services/endpoint_registry.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 
 /// Uploads Uplift media (fund cover/gallery, application pitch images,
 /// milestone evidence) to the products-gateway, which streams them to
@@ -13,7 +14,10 @@ import 'package:lazervault/core/services/endpoint_registry.dart';
 /// CrowdfundImageUploadService but targets the /uplifts upload route.
 class UpliftMediaUploadService {
   static const _accessTokenKey = 'access_token';
-  static const _maxFileSize = 10 * 1024 * 1024; // 10MB
+  /// Admin-tunable (see CrowdfundImageUploadService for the why). Capped at
+  /// 100MB by FeatureFlags, which is the Cloudflare tunnel's body limit.
+  static int get _maxFileMb => FeatureFlags.mediaMaxImageMb;
+  static int get _maxFileSize => _maxFileMb * 1024 * 1024;
   static const _uploadTimeout = Duration(seconds: 45);
   static const _allowedExtensions = {'.jpg', '.jpeg', '.png', '.webp', '.gif'};
 
@@ -37,7 +41,8 @@ class UpliftMediaUploadService {
   /// limit set at the edge value fails with Cloudflare's error page rather than
   /// ours. Checked client-side too so the user is told BEFORE spending the
   /// upload on mobile data.
-  static const _maxVideoSize = 64 * 1024 * 1024; // 64MB
+  static int get _maxVideoMb => FeatureFlags.mediaMaxVideoMb;
+  static int get _maxVideoSize => _maxVideoMb * 1024 * 1024;
 
   /// Longer than the image timeout for the obvious reason: a 100MB upload on a
   /// Nigerian mobile connection does not finish in 45 seconds, and timing out
@@ -103,7 +108,7 @@ class UpliftMediaUploadService {
     if (fileSize > _maxFileSize) {
       final sizeMB = (fileSize / (1024 * 1024)).toStringAsFixed(1);
       throw UpliftUploadException(
-          'Image is too large ($sizeMB MB). Maximum is 10 MB.');
+          'Image is too large ($sizeMB MB). Maximum is $_maxFileMb MB.');
     }
     final fileName = imageFile.path.split('/').last.toLowerCase();
     final ext = fileName.contains('.') ? '.${fileName.split('.').last}' : '';
@@ -155,8 +160,8 @@ class UpliftMediaUploadService {
         throw const UpliftUploadException(
             'Session expired. Please log in again.');
       case 413:
-        throw const UpliftUploadException(
-            'Image is too large. Maximum size is 10 MB.');
+        throw UpliftUploadException(
+            'Image is too large. Maximum size is $_maxFileMb MB.');
       case 503:
         throw const UpliftUploadException(
             'Image upload is temporarily unavailable. Please try again later.');
@@ -181,7 +186,7 @@ class UpliftMediaUploadService {
     if (fileSize > _maxVideoSize) {
       final sizeMB = (fileSize / (1024 * 1024)).toStringAsFixed(0);
       throw UpliftUploadException(
-          'Video is too large ($sizeMB MB). Maximum is 64 MB — try a shorter clip.');
+          'Video is too large ($sizeMB MB). Maximum is $_maxVideoMb MB — try a shorter clip.');
     }
     if (fileSize < 8) {
       throw const UpliftUploadException('That video file is empty.');
@@ -236,8 +241,8 @@ class UpliftMediaUploadService {
         throw const UpliftUploadException(
             'Session expired. Please log in again.');
       case 413:
-        throw const UpliftUploadException(
-            'Video is too large. Maximum is 64 MB — try a shorter clip.');
+        throw UpliftUploadException(
+            'Video is too large. Maximum is $_maxVideoMb MB — try a shorter clip.');
       case 503:
         throw const UpliftUploadException(
             'Video upload is temporarily unavailable. Please try again later.');

@@ -4,6 +4,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/uplift/data/uplift_repository.dart';
 import 'package:lazervault/src/features/uplift/presentation/widgets/uplift_widgets.dart';
 import 'package:lazervault/src/generated/uplift.pbgrpc.dart' as up;
+import 'package:lazervault/core/config/feature_flags.dart';
 
 /// Funder flow: open a new Uplift fund, or edit an existing one when [existing]
 /// is provided. Create mode can publish immediately or save as a draft.
@@ -322,6 +323,7 @@ class _CreateUpliftScreenState extends State<CreateUpliftScreen> {
             'Add a cover and gallery so businesses understand your fund.'),
         UpliftImagePickerRow(
           label: 'Cover & gallery (first image is the cover)',
+          maxItems: FeatureFlags.upliftFundGalleryMaxImages,
           urls: _gallery,
           onAdd: (u) => setState(() => _gallery.add(u)),
           onRemove: (u) => setState(() => _gallery.remove(u)),

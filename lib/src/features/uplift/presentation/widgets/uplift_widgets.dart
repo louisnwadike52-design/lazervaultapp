@@ -531,6 +531,7 @@ class UpliftImagePickerRow extends StatefulWidget {
     required this.onAdd,
     required this.onRemove,
     this.label = 'Photos',
+    this.maxItems = 8,
     this.allowDocuments = false,
     this.onUploadingChanged,
     super.key,
@@ -547,6 +548,14 @@ class UpliftImagePickerRow extends StatefulWidget {
   final ValueChanged<String> onAdd;
   final ValueChanged<String> onRemove;
   final String label;
+
+  /// How many attachments this row accepts. Admin-tunable — the call sites
+  /// read it from FeatureFlags rather than hardcoding a number here.
+  ///
+  /// The row had NO limit: a fund gallery or an application could carry as
+  /// many files as the user had patience for, each one a real object in
+  /// storage, and the funder's detail page then tried to render all of them.
+  final int maxItems;
 
   /// Offer PDFs alongside photos.
   ///
@@ -619,7 +628,22 @@ class _UpliftImagePickerRowState extends State<UpliftImagePickerRow> {
     }
   }
 
+  bool get _atLimit => widget.urls.length >= widget.maxItems;
+
   void _chooseSource() {
+    if (_atLimit) {
+      // Reached only if the tile is tapped between a successful upload and
+      // the parent's setState; the tile itself is hidden at the limit.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'You can attach up to ${widget.maxItems} ${widget.maxItems == 1 ? "file" : "files"} here. '
+              'Remove one to add another.'),
+          backgroundColor: kUpCard,
+        ),
+      );
+      return;
+    }
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: kUpCard,
@@ -717,26 +741,38 @@ class _UpliftImagePickerRowState extends State<UpliftImagePickerRow> {
                   ),
                 ],
               ),
-            GestureDetector(
-              onTap: _uploading ? null : _chooseSource,
-              child: Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                    color: kUpCard,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: kUpDivider)),
-                child: _uploading
-                    ? const Center(
-                        child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: kUpPrimary)))
-                    : const Icon(Icons.add_a_photo, color: kUpTextSecondary),
+            if (!_atLimit)
+              GestureDetector(
+                onTap: _uploading ? null : _chooseSource,
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                      color: kUpCard,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: kUpDivider)),
+                  child: _uploading
+                      ? const Center(
+                          child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: kUpPrimary)))
+                      : const Icon(Icons.add_a_photo, color: kUpTextSecondary),
+                ),
               ),
-            ),
           ],
+        ),
+        // The limit is stated before it is hit, not discovered by hitting it.
+        const SizedBox(height: 6),
+        Text(
+          _atLimit
+              ? 'Maximum of ${widget.maxItems} reached — remove one to add another.'
+              : '${widget.urls.length} of ${widget.maxItems}',
+          style: TextStyle(
+            color: _atLimit ? kUpWarning : kUpTextSecondary,
+            fontSize: 11,
+          ),
         ),
       ],
     );

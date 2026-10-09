@@ -6,12 +6,20 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lazervault/core/services/secure_storage_defaults.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:http/http.dart' as http;
+import 'package:lazervault/core/config/feature_flags.dart';
 
 /// Uploads crowdfund campaign images to the products-gateway.
 /// Returns the public URL of the uploaded image.
 class CrowdfundImageUploadService {
   static const _accessTokenKey = 'access_token';
-  static const _maxFileSize = 10 * 1024 * 1024; // 10MB
+  /// Admin-tunable, not a constant. This was `10 * 1024 * 1024`, so changing
+  /// what the app accepts needed a release and a store review for a number an
+  /// operator should be able to turn. FeatureFlags caps it at 100MB because
+  /// prod traffic crosses the Cloudflare tunnel, which refuses a larger body
+  /// on our plan — a higher value would only produce uploads that die at the
+  /// edge with Cloudflare's error page instead of ours.
+  static int get _maxFileMb => FeatureFlags.mediaMaxImageMb;
+  static int get _maxFileSize => _maxFileMb * 1024 * 1024;
   static const _uploadTimeout = Duration(seconds: 45);
 
   static const _allowedExtensions = {'.jpg', '.jpeg', '.png', '.webp', '.gif'};
@@ -96,7 +104,7 @@ class CrowdfundImageUploadService {
     if (fileSize > _maxFileSize) {
       final sizeMB = (fileSize / (1024 * 1024)).toStringAsFixed(1);
       throw ImageUploadException(
-          'Image is too large ($sizeMB MB). Maximum is 10 MB.');
+          'Image is too large ($sizeMB MB). Maximum is $_maxFileMb MB.');
     }
 
     // 3. Validate file extension
@@ -156,8 +164,8 @@ class CrowdfundImageUploadService {
             'Session expired. Please log in again.');
 
       case 413:
-        throw const ImageUploadException(
-            'Image is too large. Maximum size is 10 MB.');
+        throw ImageUploadException(
+            'Image is too large. Maximum size is $_maxFileMb MB.');
 
       case 400:
         final msg = _parseError(responseBody);

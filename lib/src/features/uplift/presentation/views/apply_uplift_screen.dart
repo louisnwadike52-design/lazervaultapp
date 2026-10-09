@@ -4,6 +4,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/uplift/data/uplift_repository.dart';
 import 'package:lazervault/src/features/uplift/presentation/widgets/uplift_widgets.dart';
 import 'package:lazervault/src/generated/uplift.pbgrpc.dart' as up;
+import 'package:lazervault/core/config/feature_flags.dart';
 
 /// Applicant flow: apply to a fund with a business pitch + requested amount
 /// (<= the funder's per-business cap) + optional images/documents.
@@ -160,6 +161,7 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
             const SizedBox(height: 8),
             UpliftImagePickerRow(
               label: 'Photos of your business',
+              maxItems: FeatureFlags.upliftApplicationMaxImages,
               onUploadingChanged: _trackUpload,
               urls: _images,
               onAdd: (u) => setState(() => _images.add(u)),
@@ -171,6 +173,7 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
             // screen renders them in a different section.
             UpliftImagePickerRow(
               label: 'Pitch deck & documents',
+              maxItems: FeatureFlags.upliftApplicationMaxDocuments,
               onUploadingChanged: _trackUpload,
               urls: _docUrls,
               allowDocuments: true,
