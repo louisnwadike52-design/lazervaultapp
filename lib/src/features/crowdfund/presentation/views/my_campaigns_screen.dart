@@ -10,6 +10,7 @@ import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
+import '../utils/crowdfund_status_display.dart';
 
 class MyCampaignsScreen extends StatefulWidget {
   const MyCampaignsScreen({super.key});
@@ -21,7 +22,18 @@ class MyCampaignsScreen extends StatefulWidget {
 class _MyCampaignsScreenState extends State<MyCampaignsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final _tabs = const ['All', 'Active', 'Paused', 'Completed', 'Cancelled'];
+  // `expired` had no tab, so a campaign the deadline worker closed was
+  // findable only by scrolling All — and it is the one state a creator
+  // most needs to find, because an expired campaign still holds money
+  // that has to be withdrawn or refunded.
+  final _tabs = const [
+    'All',
+    'Active',
+    'Paused',
+    'Completed',
+    'Expired',
+    'Cancelled',
+  ];
 
   /// One ScrollController per tab so each tab's offset is preserved
   /// when the user swipes back and forth, and the bottom-detection
@@ -71,7 +83,15 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
       case 3:
         return all.where((c) => c.status == CrowdfundStatus.completed).toList();
       case 4:
-        return all.where((c) => c.status == CrowdfundStatus.cancelled).toList();
+        return all.where((c) => c.status == CrowdfundStatus.expired).toList();
+      case 5:
+        // `cancelling` belongs here too: it IS cancelled as far as the
+        // creator is concerned, only the refunds are still draining.
+        return all
+            .where((c) =>
+                c.status == CrowdfundStatus.cancelled ||
+                c.status == CrowdfundStatus.cancelling)
+            .toList();
       default:
         return all;
     }
@@ -208,7 +228,7 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
 
   Widget _buildCampaignTile(Crowdfund campaign) {
     final progress = campaign.progressPercentage;
-    final statusColor = _statusColor(campaign.status);
+    final statusColor = crowdfundStatusVisual(campaign).color;
 
     return GestureDetector(
       onTap: () => Get.toNamed(AppRoutes.crowdfundDetails,
@@ -243,7 +263,10 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
                         Border.all(color: statusColor.withValues(alpha: 0.3)),
                   ),
                   child: Text(
-                    campaign.status.name.toUpperCase(),
+                    // The shared label, not the raw enum name:
+                    // `cancelling` rendered as "CANCELLING" where every
+                    // other surface now says "Refunding".
+                    crowdfundStatusVisual(campaign).label.toUpperCase(),
                     style: GoogleFonts.inter(
                         fontSize: 10.sp,
                         fontWeight: FontWeight.w600,
@@ -299,24 +322,5 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
         ),
       ),
     );
-  }
-
-  Color _statusColor(CrowdfundStatus status) {
-    switch (status) {
-      case CrowdfundStatus.active:
-        return const Color(0xFF10B981);
-      case CrowdfundStatus.paused:
-        return const Color(0xFFF59E0B);
-      case CrowdfundStatus.completed:
-        return const Color(0xFF4E03D0);
-      case CrowdfundStatus.cancelled:
-        return const Color(0xFF6B7280);
-      case CrowdfundStatus.cancelling:
-        // Same hue as paused (a transient-in-progress state) but
-        // distinguished by the badge label upstream.
-        return const Color(0xFFF59E0B);
-      case CrowdfundStatus.expired:
-        return const Color(0xFFEF4444);
-    }
   }
 }

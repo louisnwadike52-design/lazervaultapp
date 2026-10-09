@@ -9,6 +9,7 @@ import '../../../../../core/utils/emulator_url.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import 'progress_indicator_widget.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
+import '../utils/crowdfund_status_display.dart';
 
 final _amountFormat = NumberFormat('#,##0.00');
 
@@ -223,7 +224,7 @@ class CampaignQuickViewBottomSheet extends StatelessWidget {
                   width: double.infinity,
                   height: 52.h,
                   child: ElevatedButton(
-                    onPressed: (crowdfund.isActive && !crowdfund.isExpired)
+                    onPressed: crowdfundAcceptsContributions(crowdfund)
                         ? () {
                             Navigator.pop(context);
                             Get.toNamed(
@@ -241,11 +242,11 @@ class CampaignQuickViewBottomSheet extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      (crowdfund.isActive && !crowdfund.isExpired)
+                      crowdfundAcceptsContributions(crowdfund)
                           ? 'Donate Now'
                           : 'Campaign Ended',
                       style: GoogleFonts.inter(
-                        color: (crowdfund.isActive && !crowdfund.isExpired)
+                        color: crowdfundAcceptsContributions(crowdfund)
                             ? Colors.white
                             : const Color(0xFF9CA3AF),
                         fontSize: 16.sp,

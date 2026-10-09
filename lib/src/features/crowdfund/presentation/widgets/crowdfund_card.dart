@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../domain/entities/crowdfund_entities.dart';
+import '../utils/crowdfund_status_display.dart';
 import 'progress_indicator_widget.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 
@@ -193,29 +194,31 @@ class CrowdfundCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (crowdfund.hasDeadline)
+                // The clock line. `daysRemaining < 7` drove the amber
+                // urgency colour, and it is 0 for every finished campaign,
+                // so completed and cancelled cards wore a "hurry" colour
+                // forever; and `isExpired ? 'Expired'` reported a campaign
+                // cancelled a month early as having reached its deadline.
+                if (crowdfund.hasDeadline && _clockLabel.isNotEmpty)
                   Row(
                     children: [
                       Icon(
                         Icons.access_time,
-                        color: crowdfund.daysRemaining < 7
+                        color: _clockUrgent
                             ? const Color(0xFFF59E0B)
                             : Colors.grey[500],
                         size: 14.sp,
                       ),
                       SizedBox(width: 3.w),
                       Text(
-                        crowdfund.isExpired
-                            ? 'Expired'
-                            : '${crowdfund.daysRemaining} ${crowdfund.daysRemaining == 1 ? 'day' : 'days'} left',
+                        _clockLabel,
                         style: TextStyle(
-                          color: crowdfund.daysRemaining < 7
+                          color: _clockUrgent
                               ? const Color(0xFFF59E0B)
                               : Colors.grey[400],
                           fontSize: 11.sp,
-                          fontWeight: crowdfund.daysRemaining < 7
-                              ? FontWeight.w600
-                              : FontWeight.w400,
+                          fontWeight:
+                              _clockUrgent ? FontWeight.w600 : FontWeight.w400,
                         ),
                       ),
                     ],
@@ -228,50 +231,18 @@ class CrowdfundCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusBadge() {
-    Color backgroundColor;
-    Color textColor;
-    String statusText;
-    IconData icon;
+  String get _clockLabel => crowdfundDeadlineLabel(crowdfund);
+  bool get _clockUrgent => crowdfundDeadlineIsUrgent(crowdfund);
 
-    switch (crowdfund.status) {
-      case CrowdfundStatus.active:
-        backgroundColor = const Color(0xFF10B981).withValues(alpha: 0.2);
-        textColor = const Color(0xFF10B981);
-        statusText = 'Active';
-        icon = Icons.check_circle;
-        break;
-      case CrowdfundStatus.completed:
-        backgroundColor = const Color(0xFF4E03D0).withValues(alpha: 0.2);
-        textColor = const Color(0xFF4E03D0);
-        statusText = 'Completed';
-        icon = Icons.celebration;
-        break;
-      case CrowdfundStatus.paused:
-        backgroundColor = const Color(0xFFF59E0B).withValues(alpha: 0.2);
-        textColor = const Color(0xFFF59E0B);
-        statusText = 'Paused';
-        icon = Icons.pause_circle;
-        break;
-      case CrowdfundStatus.cancelled:
-        backgroundColor = const Color(0xFFEF4444).withValues(alpha: 0.2);
-        textColor = const Color(0xFFEF4444);
-        statusText = 'Cancelled';
-        icon = Icons.cancel;
-        break;
-      case CrowdfundStatus.cancelling:
-        backgroundColor = const Color(0xFFF59E0B).withValues(alpha: 0.2);
-        textColor = const Color(0xFFF59E0B);
-        statusText = 'Cancelling';
-        icon = Icons.sync;
-        break;
-      case CrowdfundStatus.expired:
-        backgroundColor = const Color(0xFFEF4444).withValues(alpha: 0.2);
-        textColor = const Color(0xFFEF4444);
-        statusText = 'Expired';
-        icon = Icons.timer_off;
-        break;
-    }
+  Widget _buildStatusBadge() {
+    // Shared with the detail screen and the home-screen row. The six-arm
+    // switch this replaced was correct but duplicated, and only this copy
+    // was ever updated when `expired` and `cancelling` were added.
+    final v = crowdfundStatusVisual(crowdfund);
+    final backgroundColor = v.color.withValues(alpha: 0.2);
+    final textColor = v.color;
+    final statusText = v.label;
+    final icon = v.icon;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),

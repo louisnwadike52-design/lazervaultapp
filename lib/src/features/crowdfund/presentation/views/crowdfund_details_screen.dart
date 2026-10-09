@@ -14,6 +14,7 @@ import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../data/services/crowdfund_share_service.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
+import '../utils/crowdfund_status_display.dart';
 import '../cubit/crowdfund_state.dart';
 import '../widgets/donor_card.dart';
 import '../widgets/withdraw_funds_sheet.dart';
@@ -247,7 +248,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
             backgroundColor: const Color(0xFF0A0A0A),
             body: _buildBody(state),
             floatingActionButton:
-                crowdfund != null && crowdfund.isActive && !crowdfund.isExpired
+                crowdfund != null && crowdfundAcceptsContributions(crowdfund)
                     ? FloatingActionButton.extended(
                         onPressed: () => _openDonationForm(crowdfund!),
                         backgroundColor: const Color(0xFF4E03D0),
@@ -611,6 +612,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
                       ),
                   ],
                 ),
+                _buildStateBanner(crowdfund),
                 SizedBox(height: 12.h),
                 // Hero summary — same visual language as the
                 // contribution_details_screen `_buildContributionSummary`
@@ -689,7 +691,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
                                       fontWeight: FontWeight.w700)),
                               SizedBox(height: 2.h),
                               Text(
-                                crowdfund.isActive && !crowdfund.isExpired
+                                crowdfundAcceptsContributions(crowdfund)
                                     ? 'Be the first to back this campaign.'
                                     : 'No one donated before this campaign closed.',
                                 style: GoogleFonts.inter(
@@ -943,39 +945,100 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
     );
   }
 
-  ({Color color, String label, IconData icon}) _statusVisuals(Crowdfund c) {
-    if (c.isExpired && c.isActive) {
-      return (
-        color: const Color(0xFFEF4444),
-        label: 'Expired',
-        icon: Icons.access_time_filled,
-      );
+  /// Delegates to [crowdfundStatusVisual] so this screen, the list card
+  /// and the home-screen row can never disagree about what a campaign's
+  /// status is called. The local copy this replaced tested
+  /// `isExpired && isActive` first, which no server-side `expired` row can
+  /// satisfy, so those fell through to "Active"; `cancelling` fell through
+  /// too.
+  CrowdfundStatusVisual _statusVisuals(Crowdfund c) =>
+      crowdfundStatusVisual(c, activeColor: PayFlowTheme.accentOnDark);
+
+  /// The sentence a backer needs when a campaign is no longer collecting,
+  /// plus — for a cancellation — WHY and WHERE THE MONEY WENT.
+  ///
+  /// `cancelReason`, `refundsPending/Completed/Failed` and `totalRefunded`
+  /// have been on the entity (and in the proto) since cancellation shipped,
+  /// with a comment claiming they were "surfaced on the details screen so
+  /// contributors know why a campaign they backed was cancelled". Nothing
+  /// read them. A backer opening a cancelled campaign saw a red pill and no
+  /// explanation, and had no way to tell whether their money was coming
+  /// back — the one question a cancellation raises.
+  Widget _buildStateBanner(Crowdfund c) {
+    final v = _statusVisuals(c);
+    if (v.blurb.isEmpty) return const SizedBox.shrink();
+
+    final lines = <String>[v.blurb];
+
+    final reason = c.cancelReason?.trim() ?? '';
+    if (reason.isNotEmpty) {
+      final who = switch (c.cancelInitiatedBy) {
+        'admin' => 'Cancelled by LazerVault',
+        'system' => 'Cancelled automatically',
+        _ => 'Reason from the organiser',
+      };
+      lines.add('$who: $reason');
     }
-    if (c.isCompleted) {
-      return (
-        color: const Color(0xFF10B981),
-        label: 'Completed',
-        icon: Icons.verified,
-      );
+
+    // Refund progress, for the two states where money is moving back. The
+    // counters are denormalised by the refund worker, so they are safe to
+    // print without aggregating anything client-side.
+    final refundTotal = c.refundsPending + c.refundsCompleted + c.refundsFailed;
+    if (refundTotal > 0) {
+      if (c.refundsPending > 0) {
+        lines.add('Refunds: ${c.refundsCompleted} of $refundTotal sent — '
+            '${c.refundsPending} still processing.');
+      } else {
+        lines.add('Refunds: all $refundTotal sent — '
+            '${c.currency} ${c.totalRefunded.toStringAsFixed(0)} returned.');
+      }
+      if (c.refundsFailed > 0) {
+        // Never silent. A failed refund is money we still hold, and the
+        // backer must be told to come to support rather than wait forever.
+        lines.add('${c.refundsFailed} refund(s) could not be completed. '
+            'Contact support and we will resolve it.');
+      }
     }
-    if (c.isCancelled) {
-      return (
-        color: const Color(0xFFEF4444),
-        label: 'Cancelled',
-        icon: Icons.block,
-      );
-    }
-    if (c.isPaused) {
-      return (
-        color: const Color(0xFFF59E0B),
-        label: 'Paused',
-        icon: Icons.pause_circle,
-      );
-    }
-    return (
-      color: PayFlowTheme.accentOnDark,
-      label: 'Active',
-      icon: Icons.bolt,
+
+    return Padding(
+      padding: EdgeInsets.only(top: 8.h),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 9.h),
+        decoration: BoxDecoration(
+          color: v.color.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(color: v.color.withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(v.icon, size: 13.sp, color: v.color),
+            SizedBox(width: 7.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (var i = 0; i < lines.length; i++) ...[
+                    if (i > 0) SizedBox(height: 3.h),
+                    Text(
+                      lines[i],
+                      style: GoogleFonts.inter(
+                        color: i == 0
+                            ? Colors.white.withValues(alpha: 0.92)
+                            : Colors.white.withValues(alpha: 0.70),
+                        fontSize: i == 0 ? 11.5.sp : 10.5.sp,
+                        fontWeight: i == 0 ? FontWeight.w600 : FontWeight.w400,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1117,9 +1180,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
                         color: Colors.white.withValues(alpha: 0.8)),
                     SizedBox(width: 4.w),
                     Text(
-                      c.daysRemaining > 0
-                          ? '${c.daysRemaining} days left'
-                          : 'Deadline reached',
+                      crowdfundDeadlineLabel(c),
                       style: GoogleFonts.inter(
                         fontSize: 10.sp,
                         color: Colors.white.withValues(alpha: 0.85),

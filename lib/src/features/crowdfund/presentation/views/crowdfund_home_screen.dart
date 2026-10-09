@@ -9,6 +9,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
+import '../utils/crowdfund_status_display.dart';
 import '../cubit/crowdfund_state.dart';
 import '../cubit/leaderboard_cubit.dart';
 import '../cubit/leaderboard_state.dart';
@@ -1132,11 +1133,10 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
 
   Widget _buildMyCampaignItem(Crowdfund campaign) {
     final progress = campaign.progressPercentage;
-    final statusColor = campaign.isActive
-        ? const Color(0xFF10B981)
-        : campaign.status == CrowdfundStatus.completed
-            ? const Color(0xFF4E03D0)
-            : const Color(0xFF9CA3AF);
+    // Was: active green, completed purple, EVERYTHING ELSE the same grey —
+    // so paused, cancelling, cancelled and expired were indistinguishable
+    // in the owner's own list.
+    final statusColor = crowdfundStatusVisual(campaign).color;
     return GestureDetector(
       onTap: () => Get.toNamed(AppRoutes.crowdfundDetails,
           arguments: {'crowdfundId': campaign.id, 'crowdfund': campaign}),
