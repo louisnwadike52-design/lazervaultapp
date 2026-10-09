@@ -13,6 +13,9 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/funds/domain/entities/saved_batch_entity.dart';
 import 'package:lazervault/src/features/funds/domain/repositories/i_saved_batch_repository.dart';
+import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/src/features/funds/domain/batch_item_unified.dart';
+import 'package:lazervault/src/features/tag_pay/services/tag_pay_pdf_service.dart';
 
 class BatchTransferReceiptScreen extends StatefulWidget {
   const BatchTransferReceiptScreen({super.key});
@@ -221,15 +224,37 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
     Get.offAllNamed(AppRoutes.batchTransfer);
   }
 
+  /// One recipient of this batch as the shared receipt model.
+  ///
+  /// `receiptData` is the loose map this screen was navigated with, so the
+  /// batch-level context (id, currency, funding account, timestamp) comes
+  /// from there and the per-recipient fields from the row.
+  UnifiedTransaction _unifiedFor(Map<String, dynamic> transfer) {
+    final rawTs = receiptData['timestamp'];
+    final at = rawTs is DateTime
+        ? rawTs
+        : DateTime.tryParse(rawTs?.toString() ?? '');
+    return batchItemUnifiedFromMap(
+      transfer,
+      batchId: receiptData['batchId']?.toString() ?? '',
+      currency: receiptData['currency']?.toString() ?? 'NGN',
+      sourceAccountName: receiptData['sourceAccountName']?.toString() ?? '',
+      sourceAccountNumber: receiptData['sourceAccountNumber']?.toString() ?? '',
+      at: at,
+    );
+  }
+
   Future<void> _downloadIndividualReceipt(
       int index, Map<String, dynamic> transfer) async {
     if (_individualDownloading[index] == true) return;
     setState(() => _individualDownloading[index] = true);
 
     try {
-      await BatchTransferPdfService.downloadIndividualReceipt(
-        receiptData: receiptData,
-        transfer: transfer,
+      // Same document the item receipt screen and transaction history
+      // produce. This used to call BatchTransferPdfService, so one payment
+      // had two PDFs depending on which button the user reached first.
+      await TagPayPdfService.downloadUnifiedTransferReceipt(
+        transaction: _unifiedFor(transfer),
       );
 
       if (mounted) {
@@ -264,9 +289,8 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
     setState(() => _individualSharing[index] = true);
 
     try {
-      await BatchTransferPdfService.shareIndividualReceipt(
-        receiptData: receiptData,
-        transfer: transfer,
+      await TagPayPdfService.shareUnifiedTransferReceipt(
+        transaction: _unifiedFor(transfer),
       );
     } catch (e) {
       if (mounted) {

@@ -9,10 +9,12 @@ import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:lazervault/src/features/funds/cubit/batch_transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/batch_transfer_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
-import 'package:lazervault/src/features/funds/services/batch_transfer_pdf_service.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/src/features/funds/domain/batch_item_unified.dart';
+import 'package:lazervault/src/features/tag_pay/services/tag_pay_pdf_service.dart';
 
 class BatchTransferDetailScreen extends StatefulWidget {
   const BatchTransferDetailScreen({super.key});
@@ -1004,35 +1006,36 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
     );
   }
 
-  Map<String, dynamic> _buildReceiptDataFromDetail(
-      BatchTransferDetailEntity detail) {
-    final summary = detail.summary;
-    return {
-      'batchId': summary.batchId,
-      'totalAmount': summary.totalAmount,
-      'totalFee': summary.totalFees,
-      'currency': summary.currency,
-      'timestamp': summary.createdAt,
-      'status': summary.status,
-      'recipientCount': summary.totalRecipients,
-      'successfulTransfers': summary.successful,
-      'failedTransfers': summary.failed,
-      'senderAccountName': detail.sourceAccountName,
-      'senderAccountInfo': detail.sourceAccountNumber.isNotEmpty
-          ? '\u2022\u2022\u2022\u2022 ${detail.sourceAccountNumber.length > 4 ? detail.sourceAccountNumber.substring(detail.sourceAccountNumber.length - 4) : detail.sourceAccountNumber}'
-          : null,
-      'transfers': detail.items
-          .map((r) => {
-                'recipientName': _resolveRecipientName(r),
-                'recipientAccount': r.recipientAccount ?? '',
-                'amount': r.amount.toDouble() / 100,
-                'fee': r.fee.toDouble() / 100,
-                'status': r.status,
-                'failureReason': r.failureReason,
-                'reference': r.reference,
-              })
-          .toList(),
-    };
+
+  /// One recipient of this batch as the shared receipt model.
+  UnifiedTransaction _unifiedFor(
+      BatchTransferResult item, BatchTransferDetailEntity detail) {
+    return batchItemUnified(
+      // BatchTransferResult carries no item id; the reference is the stable
+      // per-recipient identifier, with the account as the tiebreak so two
+      // recipients in one batch cannot share a cache key.
+      itemId: (item.reference ?? '').isNotEmpty
+          ? item.reference!
+          : '${detail.summary.batchId}:${item.recipientAccount ?? ''}',
+      status: item.status,
+      // Minor units on the wire.
+      amount: item.amount.toDouble() / 100,
+      fee: item.fee.toDouble() / 100,
+      currency: detail.summary.currency,
+      reference: item.reference ?? '',
+      recipientName: _resolveRecipientName(item),
+      recipientAccount: item.recipientAccount ?? '',
+      // The hand-built map dropped these, so the per-recipient PDF named no
+      // destination institution at all.
+      bankName: item.destinationBankName ?? '',
+      bankCode: item.destinationBankCode ?? '',
+      transferType: item.transferType ?? '',
+      failureReason: item.failureReason ?? '',
+      batchId: detail.summary.batchId,
+      sourceAccountName: detail.sourceAccountName,
+      sourceAccountNumber: detail.sourceAccountNumber,
+      at: detail.summary.createdAt,
+    );
   }
 
   Future<void> _downloadIndividualReceipt(
@@ -1041,20 +1044,14 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
     setState(() => _isDownloading = true);
 
     try {
-      final receiptData = _buildReceiptDataFromDetail(detail);
-      final transfer = {
-        'recipientName': _resolveRecipientName(item),
-        'recipientAccount': item.recipientAccount ?? '',
-        'amount': item.amount.toDouble() / 100,
-        'fee': item.fee.toDouble() / 100,
-        'status': item.status,
-        'failureReason': item.failureReason,
-        'reference': item.reference,
-      };
 
-      await BatchTransferPdfService.downloadIndividualReceipt(
-        receiptData: receiptData,
-        transfer: transfer,
+      // Same document the item receipt screen and transaction history
+      // produce. This used to call BatchTransferPdfService from a loose map,
+      // so one payment had two different PDFs depending on which button the
+      // user reached first — and the map it built dropped the destination
+      // bank, which the shared projection carries.
+      await TagPayPdfService.downloadUnifiedTransferReceipt(
+        transaction: _unifiedFor(item, detail),
       );
 
       if (mounted) {
@@ -1088,20 +1085,9 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
     setState(() => _isSharing = true);
 
     try {
-      final receiptData = _buildReceiptDataFromDetail(detail);
-      final transfer = {
-        'recipientName': _resolveRecipientName(item),
-        'recipientAccount': item.recipientAccount ?? '',
-        'amount': item.amount.toDouble() / 100,
-        'fee': item.fee.toDouble() / 100,
-        'status': item.status,
-        'failureReason': item.failureReason,
-        'reference': item.reference,
-      };
 
-      await BatchTransferPdfService.shareIndividualReceipt(
-        receiptData: receiptData,
-        transfer: transfer,
+      await TagPayPdfService.shareUnifiedTransferReceipt(
+        transaction: _unifiedFor(item, detail),
       );
     } catch (e) {
       if (mounted) {
