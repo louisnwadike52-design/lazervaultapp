@@ -348,16 +348,34 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
                                 color: kUpTextSecondary,
                                 fontWeight: FontWeight.w600)),
                       )
-                    : TextButton(
-                        onPressed: () async {
-                          await Get.to(() => ApplyUpliftScreen(fund: f));
-                          await _refreshAfterFundChange();
-                        },
-                        child: const Text('Apply',
-                            style: TextStyle(
-                                color: kUpPrimarySoft,
-                                fontWeight: FontWeight.w600)),
-                      ),
+                    // ListUpliftFunds sent no my_application_* at all until
+                    // now, so this card offered "Apply" to a business that
+                    // had already applied — they filled the entire form and
+                    // were refused at the end of it. With the field
+                    // populated the card states where they stand instead.
+                    : upHasLiveApplication(f)
+                        ? Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 10),
+                            child: Text(
+                                upAppStatusLabel(f.myApplicationStatus),
+                                style: const TextStyle(
+                                    color: kUpTextSecondary,
+                                    fontWeight: FontWeight.w600)),
+                          )
+                        : TextButton(
+                            onPressed: () async {
+                              await Get.to(() => ApplyUpliftScreen(fund: f));
+                              await _refreshAfterFundChange();
+                            },
+                            child: Text(
+                                f.myApplicationId.isNotEmpty
+                                    ? 'Apply again'
+                                    : 'Apply',
+                                style: const TextStyle(
+                                    color: kUpPrimarySoft,
+                                    fontWeight: FontWeight.w600)),
+                          ),
               ),
           if (state.discoverHasMore)
             Padding(

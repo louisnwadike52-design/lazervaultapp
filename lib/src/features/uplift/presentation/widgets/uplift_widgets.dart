@@ -349,6 +349,26 @@ String upAppStatusLabel(up.UpliftApplicationStatus s) {
       .replaceAll('_', ' ');
 }
 
+/// Whether a past application leaves the business free to apply to this fund
+/// again. Mirrors `models.UpliftAppReapplyAllowedFrom`, which is the list
+/// `ApplyToUpliftFund`'s duplicate guard actually uses.
+///
+/// `hasApplied` was `myApplicationId.isNotEmpty`, so ANY past application —
+/// including one the business withdrew by mistake a minute earlier — replaced
+/// the Apply button with a read-only status row permanently, while the server
+/// would have accepted a new one. `completed` is not here: a business the fund
+/// has already paid does not get a second grant from the same pool.
+bool upCanReapply(up.UpliftApplicationStatus s) =>
+    s == up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_WITHDRAWN ||
+    s == up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_REJECTED ||
+    s == up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_DECLINED ||
+    s == up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_OFFER_EXPIRED;
+
+/// A live application is one still in play. This, not "a row exists", is what
+/// makes the Apply button wrong.
+bool upHasLiveApplication(up.UpliftFundMessage f) =>
+    f.myApplicationId.isNotEmpty && !upCanReapply(f.myApplicationStatus);
+
 Color upStatusColor(String label) {
   final l = label.toLowerCase();
   if (l.contains('complete') ||

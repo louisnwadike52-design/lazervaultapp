@@ -886,7 +886,12 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
         up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_SELECTED;
     final negotiating = f.myApplicationStatus ==
         up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_NEGOTIATING;
-    final hasApplied = f.myApplicationId.isNotEmpty;
+    // A withdrawn / rejected / declined / expired-offer application leaves the
+    // business free to apply again — the server's duplicate guard says so. This
+    // read `myApplicationId.isNotEmpty`, which locked them out of the fund
+    // forever over an application they had cancelled themselves.
+    final hasApplied = upHasLiveApplication(f);
+    final hadApplication = f.myApplicationId.isNotEmpty;
     return [
       if (hasOffer) ...[
         Container(
@@ -1019,7 +1024,7 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
         ),
         const SizedBox(height: 12),
       ] else if (!hasApplied &&
-          f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_OPEN)
+          f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_OPEN) ...[
         ElevatedButton.icon(
           style: ElevatedButton.styleFrom(
               backgroundColor: kUpPrimary,
@@ -1030,9 +1035,23 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
             _load();
           },
           icon: const Icon(Icons.send),
-          label: const Text('Apply for funding'),
-        )
-      else if (hasApplied) ...[
+          label: Text(hadApplication ? 'Apply again' : 'Apply for funding'),
+        ),
+        // Re-applying must not erase what happened last time: the earlier
+        // application, the funder's reason for rejecting it and any messages
+        // stay one tap away.
+        if (hadApplication)
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: _openMyAppDetail,
+              icon: const Icon(Icons.history, size: 16),
+              label: Text(
+                  'Previous application: ${upAppStatusLabel(f.myApplicationStatus)}'),
+              style: TextButton.styleFrom(foregroundColor: kUpTextSecondary),
+            ),
+          ),
+      ] else if (hadApplication) ...[
         InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: _openMyAppDetail,
