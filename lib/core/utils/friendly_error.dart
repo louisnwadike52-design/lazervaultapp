@@ -621,3 +621,38 @@ bool isAuthError(Object? error) {
   }
   return false;
 }
+
+/// The message a USER sees when starting a voice session fails.
+///
+/// Exists because the app used to render the transport layer verbatim:
+/// `Failed to get voice session credentials: 500 {"error":"Failed to create
+/// voice session. Please try again."}` — a status code and a raw JSON body in
+/// a red banner. It names our internals to someone who cannot act on them,
+/// and it reads like the user broke something.
+///
+/// Pure and status/body driven so it can be tested without a cubit: the
+/// property that matters is that NOTHING technical survives into the result.
+/// The real status and body go to the ops log sink instead.
+String voiceSessionStartMessage(int statusCode, String body) {
+  final b = body.toLowerCase();
+  // A shut-down executor in the gateway. Genuinely transient — a recycle
+  // clears it — so "try again shortly" is true here, where it would be a lie
+  // for a hard 500.
+  if (b.contains('voice_service_restarting')) {
+    return 'Voice is restarting. Please try again in a moment.';
+  }
+  // An admin turned voice off. Retrying will never help, so don't imply it
+  // might; point at the thing that does work.
+  if (b.contains('voice_recognition_disabled') ||
+      b.contains('voice_service_disabled')) {
+    return 'Voice is currently turned off. You can use chat instead.';
+  }
+  if (statusCode == 401 || statusCode == 403) {
+    return 'Your session expired. Please sign in again to use voice.';
+  }
+  if (statusCode == 429) {
+    return 'Too many voice requests just now. Please wait a moment and try again.';
+  }
+  if (statusCode >= 500) return serverErrorMessage;
+  return 'We could not start voice just now. Please try again.';
+}

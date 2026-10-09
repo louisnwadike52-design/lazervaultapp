@@ -23,6 +23,9 @@ import 'package:lazervault/src/features/voice_session/widgets/voice_customizatio
 
 import 'package:lazervault/src/features/voice_session/voice_session_activity.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:lazervault/core/services/remote_log_sink.dart';
+import 'package:lazervault/src/features/voice_session/voice_echo_guard.dart';
 import 'package:lazervault/src/features/voice_session/models/voice_language.dart';
 import 'package:lazervault/src/features/voice_session/models/voice_conversation.dart';
 import 'package:lazervault/src/features/voice_session/models/voice_transfer_context.dart';
@@ -41,6 +44,49 @@ import '../services/voice_note_capture.dart';
 import '../../../../core/config/voice_language_availability.dart';
 
 class VoiceSessionCubit extends Cubit<VoiceSessionState> {
+
+  // ── Voice session failures: one message for the user, the truth for ops ──
+  //
+  // These exist because the failure in the field showed the user
+  // `500 {"error":"Failed to create voice session. Please try again."}` in a
+  // red banner. Two things were wrong with that: it is our internals on their
+  // screen, and the detail that would have identified the fault (which status,
+  // which body, which error code) was going nowhere an operator could read it.
+  // So the split is deliberate — the user gets a sentence they can act on, and
+  // the raw text goes to the ops log sink, which already scrubs tokens and
+  // bearer headers before shipping.
+
+  /// What OPS sees — the real status, body and error, to Loki.
+  void _reportSessionFailure(
+    String reason, {
+    int? statusCode,
+    String? body,
+    Object? error,
+  }) {
+    // Keep the console line for local debugging; it never reaches a user.
+    print('VoiceSessionCubit: $reason '
+        '(status=${statusCode ?? "-"}) ${error ?? body ?? ""}');
+    try {
+      RemoteLogSink.instance.log(
+        level: 'error',
+        flow: 'voice_session',
+        message: 'voice session start failed: $reason',
+        screen: 'voice_session',
+        fields: {
+          'reason': reason,
+          if (statusCode != null) 'status_code': statusCode,
+          // Bounded: a runaway body must not blow the log queue.
+          if (body != null && body.isNotEmpty)
+            'response_body':
+                body.length > 600 ? '${body.substring(0, 600)}…' : body,
+          if (error != null) 'error': error.toString(),
+        },
+      );
+    } catch (_) {
+      // Telemetry must never be the reason a voice session fails louder than
+      // it already has.
+    }
+  }
   // --- Configuration ---
   // LiveKit Cloud's URL stays dotenv-only — LiveKit lives outside the
   // Cloudflare tunnel (it has its own SFU edge). The voice-ws, voice-
@@ -342,6 +388,12 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// actively producing speech. While true, the recognizer may stay open in a
   /// BARGE-IN window (echo-filtered) so the user can interrupt and be reasoned on.
   bool _agentSpeaking = false;
+
+  /// Keeps the agent's own voice out of the user's turn — including AFTER the
+  /// agent stops, while the loudspeaker is still emitting the tail. See
+  /// [VoiceEchoGuard]; the failure it was written for put Nova's sentence in
+  /// the user's bubble mid-transfer.
+  final VoiceEchoGuard _echoGuard = VoiceEchoGuard();
 
   /// Guards a single barge-in per agent turn (so we interrupt once, not per word).
   bool _bargedInThisTurn = false;
@@ -1328,31 +1380,44 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             ));
           } else {
             if (isClosed) return;
-            print('VoiceSessionCubit: Empty credentials received');
-            emit(const VoiceSessionCredentialsError(
-                'Received empty credentials from backend.'));
+            _reportSessionFailure('session_start_empty_credentials',
+                statusCode: response.statusCode, body: response.body);
+            emit(const VoiceSessionCredentialsError(serverErrorMessage));
           }
         } else {
           if (isClosed) return;
-          print('VoiceSessionCubit: Invalid response data: ${response.body}');
-          emit(VoiceSessionCredentialsError(
-              'Invalid credential data received from backend: ${response.body}'));
+          _reportSessionFailure('session_start_bad_shape',
+              statusCode: response.statusCode, body: response.body);
+          emit(const VoiceSessionCredentialsError(serverErrorMessage));
         }
       } else {
         if (isClosed) return;
-        print(
-            'VoiceSessionCubit: HTTP error ${response.statusCode}: ${response.body}');
+        // The user used to see the literal status line and the raw JSON body:
+        //   "Failed to get voice session credentials: 500 {"error":"Failed to
+        //    create voice session. Please try again."}"
+        // That tells them nothing they can act on, shows our internals in a
+        // red banner, and reads as though they broke something. The real text
+        // belongs in ops, where someone can actually use it.
+        _reportSessionFailure(
+          'session_start_http_${response.statusCode}',
+          statusCode: response.statusCode,
+          body: response.body,
+        );
         emit(VoiceSessionCredentialsError(
-            'Failed to get voice session credentials: ${response.statusCode} ${response.body}'));
+            voiceSessionStartMessage(response.statusCode, response.body)));
       }
     } catch (e) {
       if (isClosed) {
         _isStartingSession = false;
         return;
       }
-      print('VoiceSessionCubit: Exception: $e');
+      _reportSessionFailure('session_start_exception', error: e);
+      // friendlyError() already distinguishes "your connection" from "our
+      // servers" — the distinction that matters here, because telling someone
+      // to check their wifi when our gateway is down sends them to restart a
+      // router that was never the problem.
       emit(VoiceSessionCredentialsError(
-          'Error processing voice session credentials: $e'));
+          friendlyError(e, context: 'voice session')));
     } finally {
       // Release the re-entrancy guard. Credentials are loaded (or failed) by
       // now; the LiveKit connect itself runs in connectToLiveKitRoom().
@@ -1398,6 +1463,31 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
+          // KEEP THE MIC TRACK ALIVE WHILE MUTED.
+          //
+          // Two reported symptoms, one cause: the system volume audibly
+          // ramping up and down while Nova talks, and Nova sounding quieter
+          // than she should.
+          //
+          // Default is true — muting STOPS capture, which unpublishes the
+          // track. LiveKit reconfigures the iOS AVAudioSession CATEGORY on
+          // every audio-track state change: `playback` when only the agent is
+          // audible, `playAndRecord` once a mic track exists. This session
+          // toggles the mic constantly (_setAecMicPublished around every agent
+          // turn, _applyCaptureOwnership on each mode switch), so the category
+          // was being rewritten several times per conversational turn. Each
+          // rewrite is an audio ROUTE CHANGE — that is the ramp the user
+          // hears — and the two categories differ in output gain, so the agent
+          // really did get quieter whenever the mic went live.
+          //
+          // false keeps the track published-but-muted, so the track state
+          // never drops and the category is set once for the whole call. It
+          // also keeps Apple's voice-processing I/O unit (hardware echo
+          // cancellation) engaged continuously instead of being torn down in
+          // `playback` — which is exactly when the agent is the thing playing,
+          // and exactly when its voice was leaking into the recognizer.
+          // VoiceEchoGuard is the belt; this is the braces.
+          stopAudioCaptureOnMute: false,
         ),
         // PLAY THROUGH THE LOUDSPEAKER, NOT THE EARPIECE.
         //
@@ -1991,11 +2081,24 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     if (isClosed || !_onDeviceMode) return;
     final words = _sanitizeCaptionText(result.recognizedWords);
 
+    // ── ECHO GATE ──
+    // Runs BEFORE the barge-in window, and critically also when
+    // _agentSpeaking is already false: the agent's audio keeps playing out of
+    // the speaker after the flag clears, and everything arriving in that gap
+    // used to be handed through as the user. That is how Nova's own "would you
+    // like to try entering your pin again" ended up in the user's bubble
+    // during a transfer.
+    if (words.isNotEmpty &&
+        _echoGuard.isEcho(words, DateTime.now(),
+            agentIsSpeaking: _agentSpeaking)) {
+      return;
+    }
+
     // ── BARGE-IN WINDOW: recognizer is open while the agent is speaking ──
     if (_agentSpeaking && !_bargedInThisTurn) {
       if (!_bargeInEnabled) return;
-      // Ignore the agent's own TTS bleeding into the mic (speaker echo): the
-      // recognized text would BE the agent's words, so it matches the caption.
+      // Echo already filtered above; _looksLikeEcho stays as a second,
+      // caption-exact check for the during-speech case.
       if (words.isEmpty || _looksLikeEcho(words)) return;
       // Require a couple of clearly-new words before cutting the agent off, so a
       // stray blip or partial echo can't false-trigger an interruption.
@@ -2118,6 +2221,9 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     print('VoiceSessionCubit: barge-in detected — interrupting agent');
     _bargedInThisTurn = true;
     _agentSpeaking = false;
+    // A barge-in stops the agent, but audio already in the output buffer still
+    // plays out — so the tail window starts here too.
+    _echoGuard.noteAgentStoppedSpeaking(DateTime.now());
     _awaitingAgentReply = false;
     _isAgentSpeaking = false;
     _currentAgentCaption = null; // the new reply will replace the bubble
@@ -2942,6 +3048,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             _pendingAgentReplace = eventData['replace'] == true;
             final sanitized = text != null ? _sanitizeCaptionText(text) : '';
             _currentAgentCaption = sanitized.isNotEmpty ? sanitized : null;
+            _echoGuard.noteAgentUtterance(sanitized);
             _isAgentSpeaking = true;
             _emitCaptionUpdate();
           }
@@ -2955,6 +3062,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
               final sanitized = _sanitizeCaptionText(text);
               if (sanitized.isNotEmpty) {
                 _currentAgentCaption = sanitized;
+                _echoGuard.noteAgentUtterance(sanitized);
                 _isAgentSpeaking = true;
                 _emitCaptionUpdate();
               }
@@ -2992,6 +3100,11 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             // interruption, so the user's continuing speech is transcribed.
             if (_onDeviceMode && !isClosed && !_teardownRequested) {
               _agentSpeaking = false;
+              // The recognizer re-arms immediately below, but the loudspeaker
+              // is still emptying its buffer — this is the exact window the
+              // agent's own sentence came back through and was rendered as the
+              // user's turn. Start the tail window before re-arming.
+              _echoGuard.noteAgentStoppedSpeaking(DateTime.now());
               _awaitingAgentReply = false;
               if (_hybridAecBargeIn) {
                 _setAecMicPublished(false).whenComplete(_reArmListeningSoon);
@@ -3746,6 +3859,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // turn-taking flags so a restart re-arms correctly.
     _awaitingAgentReply = false;
     _agentSpeaking = false;
+    // New session must never begin inside a stale tail window.
+    _echoGuard.reset();
     _bargedInThisTurn = false;
     _isLocalListening = false;
     // Or the mic indicator stays green after the session ends: LiveKit sends no
