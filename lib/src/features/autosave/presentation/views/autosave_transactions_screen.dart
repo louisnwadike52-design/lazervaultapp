@@ -30,7 +30,24 @@ part 'autosave_transactions_screen_widgets.dart';
 /// server-side filtering can be layered on later without changing
 /// the cubit's emit shape.
 class AutoSaveTransactionsScreen extends StatefulWidget {
-  const AutoSaveTransactionsScreen({super.key});
+  const AutoSaveTransactionsScreen({
+    super.key,
+    this.ruleId,
+    this.ruleName,
+  });
+
+  /// Show only this rule's transactions. Null = every rule, which is the
+  /// dashboard's entry point and the original behaviour.
+  ///
+  /// Scoped here rather than in a separate screen because the row, the
+  /// details sheet and the receipt/PDF pipeline are identical either way —
+  /// a second screen would be the same code with one WHERE clause and would
+  /// drift from this one the first time either is touched.
+  final String? ruleId;
+
+  /// Shown in the title when scoped, so the header says which rule's history
+  /// this is rather than the generic "Auto-save activity".
+  final String? ruleName;
 
   @override
   State<AutoSaveTransactionsScreen> createState() =>
@@ -109,7 +126,13 @@ class _AutoSaveTransactionsScreenState
     // paste doesn't trigger a 100k-character substring scan per row.
     final raw = _query.trim();
     final q = (raw.length > 120 ? raw.substring(0, 120) : raw).toLowerCase();
+    final onlyRule = widget.ruleId;
     return input.where((t) {
+      // Rule scope first: it is the cheapest test and, when set, it is the
+      // one the user explicitly asked for by opening this from a rule.
+      if (onlyRule != null && onlyRule.isNotEmpty && t.ruleId != onlyRule) {
+        return false;
+      }
       if (_successFilter != null && t.success != _successFilter) {
         return false;
       }
@@ -142,7 +165,12 @@ class _AutoSaveTransactionsScreenState
           onPressed: () => Get.back(),
         ),
         title: Text(
-          'Transactions History',
+          // Name the rule when scoped, so the header says whose history this
+          // is rather than implying it is every rule's.
+          (widget.ruleName ?? '').trim().isNotEmpty
+              ? widget.ruleName!.trim()
+              : 'Transactions History',
+          overflow: TextOverflow.ellipsis,
           style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 18.sp,

@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:lazervault/src/features/autosave/services/autosave_pdf_service.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/autosave/presentation/views/autosave_transactions_screen.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart'
     as currency_formatter;
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
@@ -755,10 +756,21 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
   }
 
   void _viewTransactions() {
-    // Single canonical history surface — All Rules. Completed /
-    // cancelled rules are filterable from the same screen, so a
-    // dedicated transactions page would duplicate functionality.
-    Get.toNamed(AppRoutes.autoSaveRulesList);
+    // THIS rule's transactions, each openable as a receipt.
+    //
+    // This used to open the RULES LIST — a list of rules, not of
+    // transactions — so from a rule's own details there was no way to see
+    // what it had actually saved, let alone get a receipt for one. The
+    // transactions screen and its receipt/PDF pipeline already existed;
+    // nothing reached them from here.
+    //
+    // Scoped to this rule rather than opening the global list with the
+    // user left to find their own rows. The same screen unscoped is still
+    // the dashboard's entry point.
+    Get.to(() => AutoSaveTransactionsScreen(
+          ruleId: rule.id,
+          ruleName: rule.name,
+        ));
   }
 
   void _navigateBack() {
@@ -1624,8 +1636,8 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
             isLoading: _isTriggeringRule,
           )
         : _buildActionButton(
-            label: 'All Rules',
-            icon: Icons.list_alt_outlined,
+            label: 'History',
+            icon: Icons.receipt_long_outlined,
             color: const Color(0xFF3B82F6),
             onPressed: _viewTransactions,
           );
@@ -1658,8 +1670,8 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
                 children: [
                   Expanded(
                     child: _buildActionButton(
-                      label: 'All Rules',
-                      icon: Icons.list_alt_outlined,
+                      label: 'History',
+                      icon: Icons.receipt_long_outlined,
                       color: const Color(0xFF3B82F6),
                       onPressed: _viewTransactions,
                     ),
