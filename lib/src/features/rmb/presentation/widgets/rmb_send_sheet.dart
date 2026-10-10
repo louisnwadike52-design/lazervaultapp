@@ -20,6 +20,7 @@ import 'package:lazervault/src/features/rmb/cubit/rmb_cubit.dart';
 import 'package:lazervault/src/features/rmb/data/rmb_qr_extractor.dart';
 import 'package:lazervault/src/features/rmb/presentation/rmb_ui.dart';
 import 'package:lazervault/src/features/rmb/rmb_error.dart';
+import '../../sender_detail_validation.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 part 'rmb_send_sheet_widgets.dart';
@@ -806,6 +807,31 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
                 ],
               ),
             ),
+          // Sender details are editable BEFORE paying, not only when they are
+          // missing. The compliance gate opens the form once, when the profile
+          // is incomplete, and never again — so a wrong city or a typo'd ID
+          // number could not be corrected from the app at all, and a payout
+          // rejected for bad sender details had no route to a fix.
+          Padding(
+            padding: EdgeInsets.only(bottom: 12.h),
+            child: GestureDetector(
+              onTap: _submitting ? null : _editSenderDetails,
+              behavior: HitTestBehavior.opaque,
+              child: Row(
+                children: [
+                  Icon(Icons.badge_outlined,
+                      size: 15.sp, color: RmbUi.textSecondary),
+                  SizedBox(width: 6.w),
+                  Text('Edit sender details',
+                      style: TextStyle(
+                          color: RmbUi.textSecondary,
+                          fontSize: 13.sp,
+                          decoration: TextDecoration.underline,
+                          decorationColor: RmbUi.textSecondary)),
+                ],
+              ),
+            ),
+          ),
           _primaryButton(
             _submitting
                 ? 'Processing…'
@@ -1578,7 +1604,12 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
     }
 
     final profile = await _cubit.complianceProfile();
-    if (!profile.complete) {
+    // `complete` is the server's own gate and it does NOT inspect the address,
+    // which is how a profile holding city="City", state="State" and a blank
+    // street address sailed through and cost two payouts $67.70 each. Check the
+    // address here too, by the same rules the backend now enforces, so the user
+    // gets the form rather than a refusal after tapping Pay.
+    if (!profile.complete || _senderAddressNeedsAttention(profile)) {
       final captured = await _openComplianceSheet(profile);
       if (captured != true) return;
     }
@@ -1933,6 +1964,34 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
   // country dropdown for nationality, and required-field validation gating
   // "Save and continue" (mirrors the server complianceComplete gate so a valid
   // submit never bounces).
+  /// Whether the stored sender address is blank or placeholder, by the same
+  /// rules as the backend's required-field check. Postcode is excluded: the
+  /// server's default required set excludes it too.
+  bool _senderAddressNeedsAttention(ComplianceProfile p) {
+    if (!p.hasSenderAddress()) return true;
+    final a = p.senderAddress;
+    return isPlaceholderValue(a.city, 'City') ||
+        isPlaceholderValue(a.state, 'State') ||
+        isPlaceholderValue(a.streetAddress, 'Street address');
+  }
+
+  /// Reopen the sender-details form on demand, with whatever is already
+  /// stored prefilled. Separate from the gate in [_confirm] so it works when
+  /// the profile is already complete — which is exactly when a correction is
+  /// needed.
+  Future<void> _editSenderDetails() async {
+    ComplianceProfile existing;
+    try {
+      existing = await _cubit.complianceProfile();
+    } catch (e) {
+      _snack(rmbFriendlyError(e));
+      return;
+    }
+    if (!mounted) return;
+    final saved = await _openComplianceSheet(existing);
+    if (saved == true && mounted) _snack('Sender details updated');
+  }
+
   Future<bool?> _openComplianceSheet(ComplianceProfile existing) {
     const idTypeOptions = ['PASSPORT', 'ID_CARD', 'DRIVER_LICENSE'];
     const idTypeLabels = {
@@ -1990,20 +2049,25 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
       backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModal) {
+          bool placeholder(String v, String label) =>
+              isPlaceholderValue(v, label);
           bool filled(TextEditingController c) => c.text.trim().isNotEmpty;
+          bool real(TextEditingController c, String label) =>
+              !placeholder(c.text, label);
           final complete = filled(firstName) &&
               filled(lastName) &&
               filled(idNumber) &&
-              filled(city) &&
-              filled(stateC) &&
+              real(city, 'City') &&
+              real(stateC, 'State') &&
+              real(street, 'Street address') &&
               dob != null;
 
           Widget req(String key, TextEditingController c, String hint,
               {bool required = true,
               TextInputType? keyboard,
               List<TextInputFormatter>? formatters}) {
-            final err = (required && touched.contains(key) && !filled(c))
-                ? 'Required'
+            final err = (required && touched.contains(key))
+                ? senderFieldError(c.text, hint)
                 : null;
             return Padding(
               padding: EdgeInsets.only(bottom: 10.h),
@@ -2148,15 +2212,24 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
                         Expanded(child: req('state', stateC, 'State')),
                       ],
                     ),
-                    req('street', street, 'Street address (optional)',
-                        required: false),
+                    // Street address is REQUIRED by the China corridor. It was
+                    // marked optional here, so it reached Klasha empty and two
+                    // payouts were failed with "Tazapay payout details are
+                    // missing." after the provider had already taken $62.09 and
+                    // a $5.61 fee on each. Postcode stays optional: the backend
+                    // required-field set excludes it, and most NG senders do
+                    // not know theirs.
+                    req('street', street, 'Street address'),
                     req('postcode', postcode, 'Postcode (optional)',
                         required: false,
                         keyboard: TextInputType.number,
                         formatters: [FilteringTextInputFormatter.digitsOnly]),
                     SizedBox(height: 4.h),
                     _primaryButton(
-                        'Save and continue',
+                        // The same sheet is both the first-time gate and the
+                        // edit form; "continue" would be wrong when the user
+                        // opened it to correct a detail.
+                        existing.complete ? 'Save changes' : 'Save and continue',
                         complete
                             ? () async {
                                 final p = ComplianceProfile(
