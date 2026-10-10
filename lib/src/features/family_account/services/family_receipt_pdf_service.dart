@@ -6,6 +6,7 @@ import 'package:printing/printing.dart';
 
 import 'package:lazervault/core/utils/receipt_fonts.dart';
 import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
+import 'package:lazervault/core/config/receipt_footer.dart';
 
 /// Family & Friends transaction receipt, drawn to the same standard as every
 /// other receipt in the app.
@@ -313,7 +314,7 @@ class FamilyReceiptPdfService {
                 pw.Text('Need help?',
                     style: _style(fontSize: 10, isBold: true)),
                 pw.SizedBox(height: 4),
-                pw.Text('Get help directly in-app',
+                pw.Text(ReceiptFooter.support,
                     style: _style(fontSize: 9, color: PdfColors.grey600)),
               ],
             ),
@@ -321,7 +322,7 @@ class FamilyReceiptPdfService {
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
                 pw.Text(
-                    '(C) ${DateTime.now().year} Lazervault Technologies Ltd',
+                    ReceiptFooter.copyright(),
                     style: _style(fontSize: 9, color: PdfColors.grey600)),
                 pw.SizedBox(height: 2),
                 pw.Text('Page 1 of 1',
@@ -338,11 +339,7 @@ class FamilyReceiptPdfService {
             borderRadius: pw.BorderRadius.circular(4),
           ),
           child: pw.Text(
-            'Lazervault Technologies Ltd is a financial technology company. '
-            'This document confirms a Family & Friends account transaction '
-            'processed through the Lazervault platform. For any queries '
-            'regarding this transaction, please contact support through the '
-            'Lazervault app.',
+            ReceiptFooter.disclaimer('a Family & Friends account transaction'),
             style: _style(fontSize: 8, color: PdfColors.grey600),
             textAlign: pw.TextAlign.justify,
           ),

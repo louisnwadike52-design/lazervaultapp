@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
+import 'package:lazervault/core/config/receipt_footer.dart';
 
 /// Payload for one INTERNATIONAL data receipt.
 ///
@@ -215,10 +216,7 @@ class IntlDataPdfService {
                   '1 ${_ascii(data.senderCurrency).toUpperCase()} = ${_moneyFormat.format(data.fxRateUsed)} ${_ascii(data.deliveredCurrency).toUpperCase()}'),
             pw.Spacer(),
             pw.Text(
-              'Lazervault Technologies Ltd is a financial technology company. '
-              'This document confirms an international data purchase processed '
-              'through the Lazervault platform. For any queries, please contact '
-              'support through the Lazervault app.',
+              ReceiptFooter.disclaimer('an international data purchase'),
               style: _style(
                   fontSize: 8, color: const PdfColor.fromInt(0xFF94A3B8)),
               textAlign: pw.TextAlign.justify,

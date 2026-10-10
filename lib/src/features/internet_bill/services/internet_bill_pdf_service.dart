@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:lazervault/core/utils/receipt_fonts.dart';
 import '../domain/entities/internet_payment_entity.dart';
 import 'dart:ui' show Rect;
+import 'package:lazervault/core/config/receipt_footer.dart';
 
 class InternetBillPdfService {
   static final _displayDateFormat = DateFormat('MMM dd, yyyy');
@@ -377,7 +378,7 @@ class InternetBillPdfService {
                 ),
                 pw.SizedBox(height: 4),
                 pw.Text(
-                  'Get help directly in-app',
+                  ReceiptFooter.support,
                   style: _getTextStyle(fontSize: 9, color: PdfColors.grey600),
                 ),
               ],
@@ -386,7 +387,7 @@ class InternetBillPdfService {
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
                 pw.Text(
-                  '(C) ${DateTime.now().year} Lazervault Technologies Ltd',
+                  ReceiptFooter.copyright(),
                   style: _getTextStyle(fontSize: 9, color: PdfColors.grey600),
                 ),
                 pw.SizedBox(height: 2),
@@ -406,9 +407,7 @@ class InternetBillPdfService {
             borderRadius: pw.BorderRadius.circular(4),
           ),
           child: pw.Text(
-            'Lazervault Technologies Ltd is a financial technology company. '
-            'This document is a confirmation of an internet bill payment processed through the Lazervault platform. '
-            'For any queries regarding this transaction, please contact support through the Lazervault app.',
+            ReceiptFooter.disclaimer('an internet bill payment'),
             style: _getTextStyle(fontSize: 8, color: PdfColors.grey600),
             textAlign: pw.TextAlign.justify,
           ),

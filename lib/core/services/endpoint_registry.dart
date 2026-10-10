@@ -79,6 +79,14 @@ class EndpointRegistry {
       _persistedNonUrlKeyPrefixes.any(key.startsWith);
 
   static const Set<String> _persistedNonUrlKeys = {
+    // Receipt footer text (company name, legal disclaimer, support line).
+    // nonUrlSnapshot() only emits keys listed here, so omitting them would
+    // drop the admin's value between this cache and FeatureFlags and the
+    // hardcoded default would win on every launch — the exact failure
+    // intl_payout_enabled had.
+    'receipt_footer_company',
+    'receipt_footer_disclaimer',
+    'receipt_footer_support',
     // Which languages the voice pickers may offer. Unset = English only.
     // Must be persisted here or the gate falls back to its default on every
     // cold start, before the first snapshot lands.

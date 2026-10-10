@@ -12,6 +12,7 @@ import 'package:lazervault/core/utils/receipt_fonts.dart';
 import 'package:lazervault/core/utils/receipt_download.dart';
 
 import '../../domain/entities/escrow_deal_entity.dart';
+import 'package:lazervault/core/config/receipt_footer.dart';
 
 /// PDF generation for the Escrow feature — receipts (funded / released /
 /// refunded) and the formal escrow agreement document. Mirrors the structure
@@ -480,7 +481,7 @@ class EscrowPdfService {
               children: [
                 pw.Text('Need help?', style: _ts(fontSize: 10, isBold: true)),
                 pw.SizedBox(height: 4),
-                pw.Text('Get help directly in-app',
+                pw.Text(ReceiptFooter.support,
                     style: _ts(fontSize: 9, color: PdfColors.grey600)),
               ],
             ),
@@ -488,7 +489,7 @@ class EscrowPdfService {
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
                 pw.Text(
-                    '(C) ${DateTime.now().year} Lazervault Technologies Ltd',
+                    ReceiptFooter.copyright(),
                     style: _ts(fontSize: 9, color: PdfColors.grey600)),
                 pw.SizedBox(height: 2),
                 pw.Text('Page 1 of 1',
@@ -505,7 +506,12 @@ class EscrowPdfService {
             borderRadius: pw.BorderRadius.circular(4),
           ),
           child: pw.Text(
-            'Lazervault Technologies Ltd is a financial technology company. '
+            // NOT the shared template: these are escrow's own terms —
+            // custody, release on buyer confirmation, who arbitrates a
+            // dispute — and they are the substance of the agreement, not
+            // boilerplate. Only the company name is shared, so a legal
+            // rename still reaches this receipt.
+            '${ReceiptFooter.company} is a financial technology company. '
             'Funds in escrow are held by Lazervault and released to the seller '
             'upon buyer confirmation; disputes are arbitrated by Lazervault. '
             'For any queries regarding this transaction, please contact support '

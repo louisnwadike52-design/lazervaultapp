@@ -11,6 +11,7 @@ import 'package:lazervault/core/utils/receipt_download.dart';
 import '../domain/entities/id_pay_entity.dart';
 import '../domain/entities/id_pay_transaction_entity.dart';
 import 'dart:ui' show Rect;
+import 'package:lazervault/core/config/receipt_footer.dart';
 
 class IDPayPdfService {
   static final _dateFormat = DateFormat('yyyy-MM-dd');
@@ -479,7 +480,7 @@ class IDPayPdfService {
                 pw.Text('Need help?',
                     style: _getTextStyle(fontSize: 10, isBold: true)),
                 pw.SizedBox(height: 4),
-                pw.Text('Get help directly in-app',
+                pw.Text(ReceiptFooter.support,
                     style:
                         _getTextStyle(fontSize: 9, color: PdfColors.grey600)),
               ],
@@ -488,7 +489,7 @@ class IDPayPdfService {
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
                 pw.Text(
-                    '(C) ${DateTime.now().year} Lazervault Technologies Ltd',
+                    ReceiptFooter.copyright(),
                     style:
                         _getTextStyle(fontSize: 9, color: PdfColors.grey600)),
                 pw.SizedBox(height: 2),
@@ -507,9 +508,7 @@ class IDPayPdfService {
             borderRadius: pw.BorderRadius.circular(4),
           ),
           child: pw.Text(
-            'Lazervault Technologies Ltd is a financial technology company. '
-            'This document is a confirmation of a $transactionType processed through the Lazervault platform. '
-            'For any queries regarding this transaction, please contact support through the Lazervault app.',
+            ReceiptFooter.disclaimer('a $transactionType'),
             style: _getTextStyle(fontSize: 8, color: PdfColors.grey600),
             textAlign: pw.TextAlign.justify,
           ),

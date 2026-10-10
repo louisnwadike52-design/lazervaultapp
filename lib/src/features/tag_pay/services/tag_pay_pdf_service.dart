@@ -16,6 +16,8 @@ import '../domain/entities/user_tag_entity.dart';
 import 'package:lazervault/src/features/widgets/receipt_metadata_humanizer.dart';
 import 'package:lazervault/src/features/crypto/utils/crypto_receipt_fields.dart';
 
+import 'package:lazervault/core/config/receipt_footer.dart';
+
 part 'tag_pay_pdf_helpers.dart';
 part 'tag_pay_pdf_builders.dart';
 

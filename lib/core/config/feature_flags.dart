@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'voice_language_availability.dart';
+import 'package:lazervault/core/config/receipt_footer.dart';
 
 /// Lightweight client-side feature-flag cache.
 ///
@@ -155,6 +156,24 @@ class FeatureFlags {
       'uplift_application_max_documents';
   static const String mediaMaxImageMbKey = 'media_max_image_mb';
   static const String mediaMaxVideoMbKey = 'media_max_video_mb';
+
+  // ── Receipt footer, admin-tunable ────────────────────────────────────────
+  //
+  // Every shareable receipt — PDF, and the PNG/JPG produced by capturing a
+  // receipt screen — carried its own copy of the company name and the legal
+  // disclaimer. Sixteen PDF services and fifteen screens, all hardcoded, so
+  // correcting a legal detail meant a code change and a store release in
+  // every one of them. That is exactly what happened here: the registered
+  // name is "Lazervault LTD" and the receipts said "Lazervault Technologies
+  // Ltd", a company that does not exist.
+  //
+  // Stored verbatim and resolved on read, so a blank or malformed admin value
+  // degrades to the built-in default rather than printing an empty footer on
+  // a document the user keeps as proof of payment.
+  static const String receiptFooterCompanyKey = 'receipt_footer_company';
+  static const String receiptFooterDisclaimerKey =
+      'receipt_footer_disclaimer';
+  static const String receiptFooterSupportKey = 'receipt_footer_support';
 
   // spraymeLikeSoundKey: false (DEFAULT) = tapping to like in a Lazerspray room
   //   is silent. Admin-tunable so the sound can be restored without a release.
@@ -497,6 +516,11 @@ class FeatureFlags {
       upliftApplicationMaxDocumentsKey,
       mediaMaxImageMbKey,
       mediaMaxVideoMbKey,
+      // Receipt footer text. Verbatim: it is prose an operator writes, and
+      // the resolver below supplies the default when it is blank.
+      receiptFooterCompanyKey,
+      receiptFooterDisclaimerKey,
+      receiptFooterSupportKey,
       // Locale gating lists are CSVs, stored verbatim and parsed on read.
       localeNonNgnServices,
       localeNonNgnNavDisabled,
@@ -914,6 +938,33 @@ class FeatureFlags {
 
   /// Largest video, in MB. Default 64, same ceiling and same reason.
   static int get mediaMaxVideoMb => _positiveSetting(mediaMaxVideoMbKey, 64, cap: 100);
+
+  /// Registered company name printed on receipts. NOT "Technologies" —
+  /// that word is not in the company registration.
+  static String get receiptFooterCompany =>
+      _nonEmptySetting(receiptFooterCompanyKey, 'Lazervault LTD');
+
+  /// Legal disclaimer template. `{company}` and `{subject}` are substituted
+  /// by ReceiptFooter.disclaimer(); an admin editing this must keep them, and
+  /// the resolver tolerates their absence rather than printing the literal.
+  static String get receiptFooterDisclaimer => _nonEmptySetting(
+        receiptFooterDisclaimerKey,
+        '{company} is a financial technology company. This document is a '
+        'confirmation of {subject} processed through the Lazervault platform. '
+        'For any queries regarding this transaction, please contact support '
+        'through the Lazervault app.',
+      );
+
+  /// Short support line in the footer's left column.
+  static String get receiptFooterSupport =>
+      _nonEmptySetting(receiptFooterSupportKey, ReceiptFooter.support);
+
+  /// A blank admin value must not blank the footer of a document someone
+  /// keeps as proof of payment, so empty/whitespace falls back to [fallback].
+  static String _nonEmptySetting(String key, String fallback) {
+    final v = _prefs?.getString(key)?.trim();
+    return (v == null || v.isEmpty) ? fallback : v;
+  }
 
   static bool get bulkSmsVisible {
     return _prefs?.getBool(bulkSmsVisibleKey) ?? false;
