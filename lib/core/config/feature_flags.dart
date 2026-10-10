@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'voice_language_availability.dart';
-import 'package:lazervault/core/config/receipt_footer.dart';
 
 /// Lightweight client-side feature-flag cache.
 ///
@@ -956,8 +955,14 @@ class FeatureFlags {
       );
 
   /// Short support line in the footer's left column.
+  ///
+  /// The default is a LITERAL and must stay one. It briefly read
+  /// `ReceiptFooter.support`, which reads back through this getter — mutual
+  /// recursion that blew the stack on every receipt export ("Failed to share
+  /// transfer receipt: Stack Overflow"). It compiled, analysed clean, and
+  /// only failed when a PDF was actually generated.
   static String get receiptFooterSupport =>
-      _nonEmptySetting(receiptFooterSupportKey, ReceiptFooter.support);
+      _nonEmptySetting(receiptFooterSupportKey, 'Get help directly in-app');
 
   /// A blank admin value must not blank the footer of a document someone
   /// keeps as proof of payment, so empty/whitespace falls back to [fallback].

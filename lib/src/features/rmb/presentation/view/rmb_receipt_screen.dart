@@ -2,13 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/src/generated/rmb.pb.dart';
-import 'package:lazervault/src/features/rmb/cubit/rmb_cubit.dart';
 import 'package:lazervault/src/features/rmb/data/rmb_grpc_client.dart';
 import 'package:lazervault/src/features/rmb/presentation/rmb_ui.dart';
-import 'package:lazervault/src/features/rmb/presentation/widgets/rmb_send_sheet.dart';
 import 'package:lazervault/src/features/widgets/unified_transaction_receipt.dart';
 
 /// RMB receipt — reuses the shared UnifiedTransactionReceipt (the same base as
@@ -118,22 +115,18 @@ class _RmbReceiptScreenState extends State<RmbReceiptScreen> {
       // for their own records — and saving that document is not a nicety.
       // Both now use the same branded PDF, off the same backend rows.
       showDownload: true,
-      repeatColor: RmbUi.accent,
-      onRepeat: _transfer!.rail == RmbRail.RAIL_UNSPECIFIED
-          ? null
-          : () => _repeat(_transfer!),
-    );
-  }
-
-  /// Re-open the send sheet prefilled from this transfer (amount editable,
-  /// recipient + purpose copied). Uses a fresh cubit so it works whether the
-  /// receipt was reached fresh or from history.
-  void _repeat(Transfer t) {
-    showRmbSendSheet(
-      context,
-      rail: t.rail,
-      cubit: serviceLocator<RmbCubit>(),
-      repeatFrom: t,
+      // Repeat REMOVED. On a cross-border payout it sat beside Share on a
+      // receipt whose status is often still "Processing", and one tap
+      // re-opened a prefilled send sheet — the shape that produces an
+      // accidental second payout to China while the first is still in
+      // flight. Sending again is a deliberate act and belongs on the send
+      // screen, not on the evidence for a payment already made.
+      //
+      // Pull-to-refresh takes its place: the poll below gives up after ~13
+      // minutes (50 attempts) and a Klasha payout can stay `processing` far
+      // longer — this one still is. Without a manual refresh the only way to
+      // see the final state was to leave and reopen from history.
+      onRefresh: () => _load(),
     );
   }
 

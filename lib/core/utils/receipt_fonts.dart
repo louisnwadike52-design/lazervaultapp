@@ -123,6 +123,11 @@ String receiptCurrencySymbol(String code) {
       return '₹';
     case 'JPY':
       return '¥';
+    // CNY was absent, so an RMB receipt fell to the ISO default and printed
+    // "CNY 400.00" while the screen showed "¥400.00" — the same transfer
+    // evidenced two different ways. Inter carries U+00A5.
+    case 'CNY':
+      return '¥';
     case 'USD':
       return r'$';
     case 'KES':
