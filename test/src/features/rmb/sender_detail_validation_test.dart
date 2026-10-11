@@ -71,4 +71,43 @@ void main() {
       expect(isPlaceholderValue('street.address', 'Street address'), isTrue);
     });
   });
+
+  group('sender government ID', () {
+    // The exact value that reached Klasha as a passport number.
+    const junk = '888989898989';
+
+    test('the junk ID is rejected whatever document type is claimed', () {
+      for (final t in ['PASSPORT', 'ID_CARD', 'DRIVER_LICENSE', 'OTHER']) {
+        expect(senderIdError(junk, t, 'NG'), isNotNull, reason: t);
+      }
+    });
+
+    test('low-variety values are caught, short ones are not judged', () {
+      for (final v in ['00000000000', '11111111111', 'aaaaaaaa']) {
+        expect(looksLikeKeyboardMash(normalizeSenderId(v)), isTrue, reason: v);
+      }
+      for (final v in ['AA11', '1234']) {
+        expect(looksLikeKeyboardMash(normalizeSenderId(v)), isFalse, reason: v);
+      }
+    });
+
+    test('real documents pass — a false rejection blocks a real payment', () {
+      expect(senderIdError('12345678901', 'ID_CARD', 'NG'), isNull);
+      expect(senderIdError('A01234567', 'PASSPORT', 'NG'), isNull);
+      expect(senderIdError('a 0123 4567', 'PASSPORT', 'NG'), isNull);
+      expect(senderIdError('123456789', 'PASSPORT', 'US'), isNull);
+      expect(senderIdError('ABC123456AA11', 'DRIVER_LICENSE', 'NG'), isNull);
+    });
+
+    test('wrong shapes explain the format', () {
+      expect(senderIdError('1234567', 'ID_CARD', 'NG'), contains('11 digits'));
+      expect(senderIdError('012345678', 'PASSPORT', 'NG'),
+          contains('one letter'));
+    });
+
+    test('foreign nationals are not held to Nigerian formats', () {
+      expect(senderIdError('X1234567', 'PASSPORT', 'GB'), isNull);
+      expect(senderIdError('A1234567Z', 'ID_CARD', 'GB'), isNull);
+    });
+  });
 }

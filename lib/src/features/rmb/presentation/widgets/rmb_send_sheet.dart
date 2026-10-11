@@ -2055,6 +2055,13 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
       backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModal) {
+          // Fields the server says are fixed by the user's VERIFIED identity
+          // (BVN/NIN). Rendered read-only with a Verified tag. This is a
+          // courtesy, not the control: the server overwrites these on save
+          // whatever we send, so a stale build cannot write a wrong identity.
+          // Empty for an unverified user, who edits everything as before.
+          final locked = existing.lockedFields.toSet();
+
           bool placeholder(String v, String label) =>
               isPlaceholderValue(v, label);
           bool filled(TextEditingController c) => c.text.trim().isNotEmpty;
@@ -2066,14 +2073,19 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
               real(city, 'City') &&
               real(stateC, 'State') &&
               real(street, 'Street address') &&
+              (locked.contains('sender_id_number') ||
+                  senderIdError(idNumber.text, idType, nationality) == null) &&
               dob != null;
 
           Widget req(String key, TextEditingController c, String hint,
               {bool required = true,
               TextInputType? keyboard,
-              List<TextInputFormatter>? formatters}) {
+              List<TextInputFormatter>? formatters,
+              String? Function(String)? errorFor}) {
             final err = (required && touched.contains(key))
-                ? senderFieldError(c.text, hint)
+                ? (errorFor != null
+                    ? errorFor(c.text)
+                    : senderFieldError(c.text, hint))
                 : null;
             return Padding(
               padding: EdgeInsets.only(bottom: 10.h),
@@ -2095,13 +2107,6 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
               ),
             );
           }
-
-          // Fields the server says are fixed by the user's VERIFIED identity
-          // (BVN/NIN). Rendered read-only with a Verified tag. This is a
-          // courtesy, not the control: the server overwrites these on save
-          // whatever we send, so a stale build cannot write a wrong identity.
-          // Empty for an unverified user, who edits everything as before.
-          final locked = existing.lockedFields.toSet();
 
           Widget lockedField(String label, String value) => Padding(
                 padding: EdgeInsets.only(bottom: 10.h),
@@ -2225,7 +2230,12 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
                     if (locked.contains('sender_id_number'))
                       lockedField('ID number', idNumber.text)
                     else
-                      req('idNumber', idNumber, 'ID number'),
+                      // Its own validator: the generic one only asks whether
+                      // something was typed, and "something" is how
+                      // "888989898989" became a passport number.
+                      req('idNumber', idNumber, 'ID number',
+                          errorFor: (v) =>
+                              senderIdError(v, idType, nationality)),
                     // Date of birth — tap to open the picker, unless it is
                     // fixed by verified KYC, in which case it is not the
                     // user's to change.
