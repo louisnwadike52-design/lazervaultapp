@@ -559,7 +559,9 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
   // Rate tiers — shown inline on step 1 (no CTA). Bands, spreads and rates all
   // come from the backend config (system_settings), nothing hardcoded here.
   Widget _rateTiersCard() {
-    final tiers = _cubit.config?.rateTiers ?? const [];
+    // Typed fallback: the generated getter is now PbList<RateTier>, and an
+    // untyped `const []` makes the ?? expression infer List<dynamic>.
+    final List<RateTier> tiers = _cubit.config?.rateTiers ?? const <RateTier>[];
     // Need at least the rates computed (ngnPerCny > 0) to draw the chart.
     final usable = tiers.where((t) => t.ngnPerCny > 0).toList();
     if (usable.length < 2) return const SizedBox.shrink();
@@ -1432,9 +1434,13 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
   /// weighs most, so this leans slightly HIGH inside a band and the live quote
   /// comes in at or below it. That is the only safe direction for an estimate.
   double? _estimateNgn(double major) {
-    final tiers = (_cubit.config?.rateTiers ?? const [])
-        .where((t) => t.ngnPerCny > 0)
-        .toList();
+    // Typed fallback, as above: without it the element type is dynamic and
+    // t.ngnPerCny / t.minCnyMinor resolve at RUNTIME, turning a rename into a
+    // crash in a pricing path instead of a compile error.
+    final List<RateTier> tiers =
+        (_cubit.config?.rateTiers ?? const <RateTier>[])
+            .where((t) => t.ngnPerCny > 0)
+            .toList();
     if (tiers.isEmpty || major <= 0) return null;
     final cnyMinor = (major * 100).round();
     var pick = tiers.first;
@@ -2090,6 +2096,50 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
             );
           }
 
+          // Fields the server says are fixed by the user's VERIFIED identity
+          // (BVN/NIN). Rendered read-only with a Verified tag. This is a
+          // courtesy, not the control: the server overwrites these on save
+          // whatever we send, so a stale build cannot write a wrong identity.
+          // Empty for an unverified user, who edits everything as before.
+          final locked = existing.lockedFields.toSet();
+
+          Widget lockedField(String label, String value) => Padding(
+                padding: EdgeInsets.only(bottom: 10.h),
+                child: Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                  decoration: BoxDecoration(
+                    color: RmbUi.card.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: RmbUi.border),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(label,
+                                style: TextStyle(
+                                    color: RmbUi.label, fontSize: 11.sp)),
+                            SizedBox(height: 2.h),
+                            Text(value.isEmpty ? '—' : value,
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 14.sp)),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.verified_rounded,
+                          size: 15.sp, color: RmbUi.accent),
+                      SizedBox(width: 4.w),
+                      Text('Verified',
+                          style: TextStyle(
+                              color: RmbUi.accent, fontSize: 11.sp)),
+                    ],
+                  ),
+                ),
+              );
+
           Future<void> pickDob() async {
             final now = DateTime.now();
             final eighteen = DateTime(now.year - 18, now.month, now.day);
@@ -2156,16 +2206,32 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
                     Row(
                       children: [
                         Expanded(
-                            child: req('firstName', firstName, 'First name')),
+                            child: locked.contains('sender_first_name')
+                                ? lockedField('First name', firstName.text)
+                                : req('firstName', firstName, 'First name')),
                         SizedBox(width: 10.w),
-                        Expanded(child: req('lastName', lastName, 'Last name')),
+                        Expanded(
+                            child: locked.contains('sender_last_name')
+                                ? lockedField('Last name', lastName.text)
+                                : req('lastName', lastName, 'Last name')),
                       ],
                     ),
-                    _dropdown('ID type', idType, idTypeOptions,
-                        (v) => setModal(() => idType = v),
-                        labels: idTypeLabels),
-                    req('idNumber', idNumber, 'ID number'),
-                    // Date of birth — read-only, tap to open the picker.
+                    if (locked.contains('sender_id_type'))
+                      lockedField('ID type', idTypeLabels[idType] ?? idType)
+                    else
+                      _dropdown('ID type', idType, idTypeOptions,
+                          (v) => setModal(() => idType = v),
+                          labels: idTypeLabels),
+                    if (locked.contains('sender_id_number'))
+                      lockedField('ID number', idNumber.text)
+                    else
+                      req('idNumber', idNumber, 'ID number'),
+                    // Date of birth — tap to open the picker, unless it is
+                    // fixed by verified KYC, in which case it is not the
+                    // user's to change.
+                    if (locked.contains('sender_birth_date'))
+                      lockedField('Date of birth', dob == null ? '' : iso(dob!))
+                    else
                     Padding(
                       padding: EdgeInsets.only(bottom: 10.h),
                       child: GestureDetector(
