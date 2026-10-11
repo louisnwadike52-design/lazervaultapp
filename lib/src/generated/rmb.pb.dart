@@ -1972,12 +1972,148 @@ class GetComplianceProfileRequest extends $pb.GeneratedMessage {
   static GetComplianceProfileRequest? _defaultInstance;
 }
 
+/// IdDocumentRule describes one government-ID document to the form: what to
+/// call it, how long it may be, and what may be typed. max_length is a HARD cap
+/// the field applies WHILE TYPING, so input simply stops at the document's
+/// length instead of running past it and being told off afterwards.
+class IdDocumentRule extends $pb.GeneratedMessage {
+  factory IdDocumentRule({
+    $core.String? idType,
+    $core.String? label,
+    $core.int? minLength,
+    $core.int? maxLength,
+    $core.String? inputMode,
+    $core.String? hint,
+    $core.String? help,
+  }) {
+    final result = create();
+    if (idType != null) result.idType = idType;
+    if (label != null) result.label = label;
+    if (minLength != null) result.minLength = minLength;
+    if (maxLength != null) result.maxLength = maxLength;
+    if (inputMode != null) result.inputMode = inputMode;
+    if (hint != null) result.hint = hint;
+    if (help != null) result.help = help;
+    return result;
+  }
+
+  IdDocumentRule._();
+
+  factory IdDocumentRule.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory IdDocumentRule.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'IdDocumentRule',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'rmb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'idType')
+    ..aOS(2, _omitFieldNames ? '' : 'label')
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'minLength', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'maxLength', $pb.PbFieldType.O3)
+    ..aOS(5, _omitFieldNames ? '' : 'inputMode')
+    ..aOS(6, _omitFieldNames ? '' : 'hint')
+    ..aOS(7, _omitFieldNames ? '' : 'help')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  IdDocumentRule clone() => IdDocumentRule()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  IdDocumentRule copyWith(void Function(IdDocumentRule) updates) =>
+      super.copyWith((message) => updates(message as IdDocumentRule))
+          as IdDocumentRule;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static IdDocumentRule create() => IdDocumentRule._();
+  @$core.override
+  IdDocumentRule createEmptyInstance() => create();
+  static $pb.PbList<IdDocumentRule> createRepeated() =>
+      $pb.PbList<IdDocumentRule>();
+  @$core.pragma('dart2js:noInline')
+  static IdDocumentRule getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<IdDocumentRule>(create);
+  static IdDocumentRule? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get idType => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set idType($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasIdType() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearIdType() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get label => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set label($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasLabel() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLabel() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get minLength => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set minLength($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasMinLength() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMinLength() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get maxLength => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set maxLength($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasMaxLength() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMaxLength() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get inputMode => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set inputMode($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasInputMode() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearInputMode() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get hint => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set hint($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasHint() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearHint() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get help => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set help($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasHelp() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearHelp() => $_clearField(7);
+}
+
 class GetComplianceProfileResponse extends $pb.GeneratedMessage {
   factory GetComplianceProfileResponse({
     ComplianceProfile? profile,
+    $core.Iterable<$core.String>? senderStates,
+    $core.Iterable<IdDocumentRule>? idRules,
   }) {
     final result = create();
     if (profile != null) result.profile = profile;
+    if (senderStates != null) result.senderStates.addAll(senderStates);
+    if (idRules != null) result.idRules.addAll(idRules);
     return result;
   }
 
@@ -1996,6 +2132,10 @@ class GetComplianceProfileResponse extends $pb.GeneratedMessage {
       createEmptyInstance: create)
     ..aOM<ComplianceProfile>(1, _omitFieldNames ? '' : 'profile',
         subBuilder: ComplianceProfile.create)
+    ..pPS(2, _omitFieldNames ? '' : 'senderStates')
+    ..pc<IdDocumentRule>(
+        3, _omitFieldNames ? '' : 'idRules', $pb.PbFieldType.PM,
+        subBuilder: IdDocumentRule.create)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2033,6 +2173,16 @@ class GetComplianceProfileResponse extends $pb.GeneratedMessage {
   void clearProfile() => $_clearField(1);
   @$pb.TagNumber(1)
   ComplianceProfile ensureProfile() => $_ensure(0);
+
+  /// Reference data for the sender form, served so the app never hardcodes it.
+  /// Both halves must agree and the server is the one that refuses, so a list
+  /// living in Dart drifts the moment either side is edited — invisibly, until
+  /// a provider rejects a payout.
+  @$pb.TagNumber(2)
+  $pb.PbList<$core.String> get senderStates => $_getList(1);
+
+  @$pb.TagNumber(3)
+  $pb.PbList<IdDocumentRule> get idRules => $_getList(2);
 }
 
 class UpsertComplianceProfileRequest extends $pb.GeneratedMessage {

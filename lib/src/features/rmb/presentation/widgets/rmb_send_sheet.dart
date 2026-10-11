@@ -221,11 +221,34 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
     _onAmountChanged(); // debounced quote for the prefilled amount
   }
 
+  /// Controllers belonging to the sender-KYC sheet.
+  ///
+  /// They are owned HERE, not by the sheet, because disposing them when the
+  /// sheet's future completes destroys them while the sheet is still
+  /// rendering its closing animation. The TextFields then rebuild against a
+  /// dead controller and Flutter throws
+  /// `ChangeNotifier.addListener … was used after being disposed`, which
+  /// surfaces as a full-screen red error for the length of the transition and
+  /// aborts whatever was awaiting the sheet — in this case the pay flow, so
+  /// the transfer was silently never submitted.
+  ///
+  /// Disposed on the next open and when this screen goes, so disposal can
+  /// never race the animation.
+  final List<TextEditingController> _complianceCtrls = [];
+
+  void _disposeComplianceCtrls() {
+    for (final c in _complianceCtrls) {
+      c.dispose();
+    }
+    _complianceCtrls.clear();
+  }
+
   @override
   void dispose() {
     for (final c in _ctrls.values) {
       c.dispose();
     }
+    _disposeComplianceCtrls();
     _quoteDebounce?.cancel();
     _pageController.dispose();
     super.dispose();
@@ -1609,14 +1632,15 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
       }
     }
 
-    final profile = await _cubit.complianceProfile();
+    final form = await _cubit.complianceForm();
+    final profile = form.profile;
     // `complete` is the server's own gate and it does NOT inspect the address,
     // which is how a profile holding city="City", state="State" and a blank
     // street address sailed through and cost two payouts $67.70 each. Check the
     // address here too, by the same rules the backend now enforces, so the user
     // gets the form rather than a refusal after tapping Pay.
     if (!profile.complete || _senderAddressNeedsAttention(profile)) {
-      final captured = await _openComplianceSheet(profile);
+      final captured = await _openComplianceSheet(form);
       if (captured != true) return;
     }
 
@@ -1986,25 +2010,35 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
   /// the profile is already complete — which is exactly when a correction is
   /// needed.
   Future<void> _editSenderDetails() async {
-    ComplianceProfile existing;
+    GetComplianceProfileResponse form;
     try {
-      existing = await _cubit.complianceProfile();
+      form = await _cubit.complianceForm();
     } catch (e) {
       _snack(rmbFriendlyError(e));
       return;
     }
     if (!mounted) return;
-    final saved = await _openComplianceSheet(existing);
+    final saved = await _openComplianceSheet(form);
     if (saved == true && mounted) _snack('Sender details updated');
   }
 
-  Future<bool?> _openComplianceSheet(ComplianceProfile existing) {
-    const idTypeOptions = ['PASSPORT', 'ID_CARD', 'DRIVER_LICENSE'];
-    const idTypeLabels = {
-      'PASSPORT': 'International passport',
-      'ID_CARD': 'National ID',
-      'DRIVER_LICENSE': "Driver's licence",
-    };
+  Future<bool?> _openComplianceSheet(GetComplianceProfileResponse form) {
+    final existing = form.profile;
+    final states = form.senderStates;
+    final idRules = {for (final r in form.idRules) r.idType: r};
+    // Document types and their labels come from the server's rule table, so
+    // the typing cap, the label and the server's refusal are one source.
+    // The const list is the fallback for an older server that sends none.
+    final idTypeOptions = idRules.isNotEmpty
+        ? idRules.keys.toList()
+        : const ['PASSPORT', 'ID_CARD', 'DRIVER_LICENSE'];
+    final idTypeLabels = idRules.isNotEmpty
+        ? {for (final r in form.idRules) r.idType: r.label}
+        : const {
+            'PASSPORT': 'International passport',
+            'ID_CARD': 'National ID',
+            'DRIVER_LICENSE': "Driver's licence",
+          };
     String two(int n) => n.toString().padLeft(2, '0');
     String iso(DateTime d) => '${d.year}-${two(d.month)}-${two(d.day)}';
 
@@ -2035,19 +2069,15 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
           int.parse(dobMatch.group(2)!), int.parse(dobMatch.group(3)!));
     }
 
-    void disposeCtrls() {
-      for (final c in [
-        firstName,
-        lastName,
-        idNumber,
-        city,
-        stateC,
-        street,
-        postcode
-      ]) {
-        c.dispose();
-      }
-    }
+    // Popping while a field still holds focus fires onFocusChange on the way
+    // out, and a setModal after the route is gone rebuilds a dead subtree.
+    var sheetClosed = false;
+
+    // Hand ownership to the State. The previous batch (from an earlier open)
+    // is safe to destroy now — that sheet is long gone.
+    _disposeComplianceCtrls();
+    _complianceCtrls.addAll(
+        [firstName, lastName, idNumber, city, stateC, street, postcode]);
 
     final future = showModalBottomSheet<bool>(
       context: context,
@@ -2081,6 +2111,7 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
               {bool required = true,
               TextInputType? keyboard,
               List<TextInputFormatter>? formatters,
+              int? maxLength,
               String? Function(String)? errorFor}) {
             final err = (required && touched.contains(key))
                 ? (errorFor != null
@@ -2091,11 +2122,21 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
               padding: EdgeInsets.only(bottom: 10.h),
               child: Focus(
                 onFocusChange: (has) {
-                  if (!has) setModal(() => touched.add(key));
+                  if (!has && !sheetClosed) {
+                    setModal(() => touched.add(key));
+                  }
                 },
                 child: TextField(
                   controller: c,
                   keyboardType: keyboard,
+                  maxLength: maxLength,
+                  // The cap is enforced, not advertised — no counter under the
+                  // field, which would just add noise to a KYC form.
+                  buildCounter: (_,
+                          {required currentLength,
+                          required isFocused,
+                          maxLength}) =>
+                      null,
                   inputFormatters: formatters,
                   style: TextStyle(color: Colors.white, fontSize: 14.sp),
                   onChanged: (_) => setModal(() {}),
@@ -2144,6 +2185,124 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
                   ),
                 ),
               );
+
+          // State is chosen, never typed. The literal "State" reached the
+          // provider because this was a free-text box; a list of the 36 states
+          // plus the FCT removes the whole class of problem, and the names are
+          // the server's so they match what it validates against.
+          Future<void> pickState() async {
+            final chosen = await showModalBottomSheet<String>(
+              context: ctx,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (sheetCtx) {
+                var query = '';
+                return StatefulBuilder(
+                  builder: (sheetCtx, setSheet) {
+                    final matches = states
+                        .where((n) =>
+                            n.toLowerCase().contains(query.trim().toLowerCase()))
+                        .toList();
+                    return Container(
+                      height: MediaQuery.of(sheetCtx).size.height * 0.75,
+                      decoration: BoxDecoration(
+                        color: RmbUi.bg,
+                        borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(20.r)),
+                      ),
+                      padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 0),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 38.w,
+                            height: 4.h,
+                            decoration: BoxDecoration(
+                              color: RmbUi.border,
+                              borderRadius: BorderRadius.circular(2.r),
+                            ),
+                          ),
+                          SizedBox(height: 14.h),
+                          Row(
+                            children: [
+                              Text('Select state',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.w600)),
+                              const Spacer(),
+                              GestureDetector(
+                                onTap: () => Navigator.pop(sheetCtx),
+                                child: Icon(Icons.close_rounded,
+                                    size: 20.sp, color: RmbUi.textSecondary),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 12.h),
+                          TextField(
+                            autofocus: true,
+                            style: TextStyle(
+                                color: Colors.white, fontSize: 14.sp),
+                            onChanged: (v) => setSheet(() => query = v),
+                            decoration:
+                                _inputDecoration('Search states').copyWith(
+                              prefixIcon: Icon(Icons.search_rounded,
+                                  size: 18.sp, color: RmbUi.textSecondary),
+                            ),
+                          ),
+                          SizedBox(height: 8.h),
+                          Expanded(
+                            child: matches.isEmpty
+                                ? Center(
+                                    child: Text('No state matches "$query"',
+                                        style: TextStyle(
+                                            color: RmbUi.textSecondary,
+                                            fontSize: 13.sp)),
+                                  )
+                                : ListView.builder(
+                                    itemCount: matches.length,
+                                    itemBuilder: (_, i) {
+                                      final name = matches[i];
+                                      final selected =
+                                          name == stateC.text.trim();
+                                      return InkWell(
+                                        onTap: () =>
+                                            Navigator.pop(sheetCtx, name),
+                                        child: Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 13.h),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(name,
+                                                    style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 14.sp)),
+                                              ),
+                                              if (selected)
+                                                Icon(Icons.check_rounded,
+                                                    size: 17.sp,
+                                                    color: RmbUi.accent),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
+            );
+            if (chosen != null && chosen.isNotEmpty) {
+              setModal(() {
+                stateC.text = chosen;
+                touched.add('state');
+              });
+            }
+          }
 
           Future<void> pickDob() async {
             final now = DateTime.now();
@@ -2198,7 +2357,11 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
                                   fontWeight: FontWeight.w700)),
                         ),
                         GestureDetector(
-                          onTap: () => Navigator.pop(ctx, false),
+                          onTap: () {
+                            sheetClosed = true;
+                            FocusManager.instance.primaryFocus?.unfocus();
+                            Navigator.pop(ctx, false);
+                          },
                           child: _headerButton(Icons.close_rounded),
                         ),
                       ],
@@ -2233,7 +2396,27 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
                       // Its own validator: the generic one only asks whether
                       // something was typed, and "something" is how
                       // "888989898989" became a passport number.
-                      req('idNumber', idNumber, 'ID number',
+                      req(
+                          'idNumber',
+                          idNumber,
+                          idRules[idType]?.hint.isNotEmpty == true
+                              ? '${idTypeLabels[idType] ?? 'ID'} — e.g. ${idRules[idType]!.hint}'
+                              : 'ID number',
+                          // Hard cap WHILE TYPING, from the same rule table the
+                          // server validates against: input stops at the
+                          // document's length rather than running past it and
+                          // being told off afterwards.
+                          maxLength: idRules[idType]?.maxLength,
+                          keyboard: idRules[idType]?.inputMode == 'digits'
+                              ? TextInputType.number
+                              : null,
+                          formatters: idRules[idType]?.inputMode == 'digits'
+                              ? [FilteringTextInputFormatter.digitsOnly]
+                              : [
+                                  FilteringTextInputFormatter.allow(
+                                      RegExp(r'[A-Za-z0-9]')),
+                                  _UpperCaseFormatter(),
+                                ],
                           errorFor: (v) =>
                               senderIdError(v, idType, nationality)),
                     // Date of birth — tap to open the picker, unless it is
@@ -2285,7 +2468,50 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
                       children: [
                         Expanded(child: req('city', city, 'City')),
                         SizedBox(width: 10.w),
-                        Expanded(child: req('state', stateC, 'State')),
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(bottom: 10.h),
+                            child: GestureDetector(
+                              onTap: states.isEmpty ? null : pickState,
+                              behavior: HitTestBehavior.opaque,
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 14.w, vertical: 14.h),
+                                decoration: BoxDecoration(
+                                  color: RmbUi.card,
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  border: Border.all(
+                                      color: (touched.contains('state') &&
+                                              senderFieldError(
+                                                      stateC.text, 'State') !=
+                                                  null)
+                                          ? RmbUi.error
+                                          : RmbUi.border),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        stateC.text.trim().isEmpty
+                                            ? 'State'
+                                            : stateC.text,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            color: stateC.text.trim().isEmpty
+                                                ? RmbUi.label
+                                                : Colors.white,
+                                            fontSize: 14.sp),
+                                      ),
+                                    ),
+                                    Icon(Icons.keyboard_arrow_down_rounded,
+                                        size: 18.sp,
+                                        color: RmbUi.textSecondary),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                     // Street address is REQUIRED by the China corridor. It was
@@ -2329,7 +2555,12 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
                                     _snack('Please fill all required fields');
                                     return;
                                   }
-                                  if (ctx.mounted) Navigator.pop(ctx, true);
+                                  if (ctx.mounted) {
+                                    sheetClosed = true;
+                                    FocusManager.instance.primaryFocus
+                                        ?.unfocus();
+                                    Navigator.pop(ctx, true);
+                                  }
                                 } catch (e) {
                                   _snack(rmbFriendlyError(e));
                                 }
@@ -2343,7 +2574,8 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
         },
       ),
     );
-    return future.whenComplete(disposeCtrls);
+    // No whenComplete(dispose) — see _complianceCtrls.
+    return future;
   }
 
   // ── Shared small widgets ─────────────────────────────────────────────
@@ -2597,4 +2829,16 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
 
   void _snack(String m) =>
       Get.snackbar('RMB', m, snackPosition: SnackPosition.BOTTOM);
+}
+
+/// Uppercases as the user types.
+///
+/// Government ID numbers are conventionally uppercase, and the server
+/// normalises to uppercase before validating — showing the user something
+/// different from what is checked invites "but I typed it correctly".
+class _UpperCaseFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+          TextEditingValue oldValue, TextEditingValue newValue) =>
+      newValue.copyWith(text: newValue.text.toUpperCase());
 }

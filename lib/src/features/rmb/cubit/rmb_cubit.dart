@@ -79,6 +79,16 @@ class RmbCubit extends Cubit<RmbState> {
   Future<QuoteResponse> quote(RmbRail rail, int cnyAmountMinor) =>
       _client.getQuote(rail, cnyAmountMinor);
 
+  /// The sender profile plus the form's reference data.
+  ///
+  /// The whole response is returned, not just the profile: the states list and
+  /// the ID-document rules are served alongside it so the form never hardcodes
+  /// them. A list hardcoded in Dart drifts from the server that validates
+  /// against it, and the drift stays invisible until a provider rejects a
+  /// payout.
+  Future<GetComplianceProfileResponse> complianceForm() =>
+      _client.getComplianceProfile();
+
   Future<ComplianceProfile> complianceProfile() async {
     final resp = await _client.getComplianceProfile();
     return resp.profile;

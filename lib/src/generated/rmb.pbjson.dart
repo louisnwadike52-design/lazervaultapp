@@ -565,6 +565,27 @@ const GetComplianceProfileRequest$json = {
 final $typed_data.Uint8List getComplianceProfileRequestDescriptor =
     $convert.base64Decode('ChtHZXRDb21wbGlhbmNlUHJvZmlsZVJlcXVlc3Q=');
 
+@$core.Deprecated('Use idDocumentRuleDescriptor instead')
+const IdDocumentRule$json = {
+  '1': 'IdDocumentRule',
+  '2': [
+    {'1': 'id_type', '3': 1, '4': 1, '5': 9, '10': 'idType'},
+    {'1': 'label', '3': 2, '4': 1, '5': 9, '10': 'label'},
+    {'1': 'min_length', '3': 3, '4': 1, '5': 5, '10': 'minLength'},
+    {'1': 'max_length', '3': 4, '4': 1, '5': 5, '10': 'maxLength'},
+    {'1': 'input_mode', '3': 5, '4': 1, '5': 9, '10': 'inputMode'},
+    {'1': 'hint', '3': 6, '4': 1, '5': 9, '10': 'hint'},
+    {'1': 'help', '3': 7, '4': 1, '5': 9, '10': 'help'},
+  ],
+};
+
+/// Descriptor for `IdDocumentRule`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List idDocumentRuleDescriptor = $convert.base64Decode(
+    'Cg5JZERvY3VtZW50UnVsZRIXCgdpZF90eXBlGAEgASgJUgZpZFR5cGUSFAoFbGFiZWwYAiABKA'
+    'lSBWxhYmVsEh0KCm1pbl9sZW5ndGgYAyABKAVSCW1pbkxlbmd0aBIdCgptYXhfbGVuZ3RoGAQg'
+    'ASgFUgltYXhMZW5ndGgSHQoKaW5wdXRfbW9kZRgFIAEoCVIJaW5wdXRNb2RlEhIKBGhpbnQYBi'
+    'ABKAlSBGhpbnQSEgoEaGVscBgHIAEoCVIEaGVscA==');
+
 @$core.Deprecated('Use getComplianceProfileResponseDescriptor instead')
 const GetComplianceProfileResponse$json = {
   '1': 'GetComplianceProfileResponse',
@@ -577,14 +598,23 @@ const GetComplianceProfileResponse$json = {
       '6': '.rmb.ComplianceProfile',
       '10': 'profile'
     },
+    {'1': 'sender_states', '3': 2, '4': 3, '5': 9, '10': 'senderStates'},
+    {
+      '1': 'id_rules',
+      '3': 3,
+      '4': 3,
+      '5': 11,
+      '6': '.rmb.IdDocumentRule',
+      '10': 'idRules'
+    },
   ],
 };
 
 /// Descriptor for `GetComplianceProfileResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getComplianceProfileResponseDescriptor =
-    $convert.base64Decode(
-        'ChxHZXRDb21wbGlhbmNlUHJvZmlsZVJlc3BvbnNlEjAKB3Byb2ZpbGUYASABKAsyFi5ybWIuQ2'
-        '9tcGxpYW5jZVByb2ZpbGVSB3Byb2ZpbGU=');
+final $typed_data.Uint8List getComplianceProfileResponseDescriptor = $convert.base64Decode(
+    'ChxHZXRDb21wbGlhbmNlUHJvZmlsZVJlc3BvbnNlEjAKB3Byb2ZpbGUYASABKAsyFi5ybWIuQ2'
+    '9tcGxpYW5jZVByb2ZpbGVSB3Byb2ZpbGUSIwoNc2VuZGVyX3N0YXRlcxgCIAMoCVIMc2VuZGVy'
+    'U3RhdGVzEi4KCGlkX3J1bGVzGAMgAygLMhMucm1iLklkRG9jdW1lbnRSdWxlUgdpZFJ1bGVz');
 
 @$core.Deprecated('Use upsertComplianceProfileRequestDescriptor instead')
 const UpsertComplianceProfileRequest$json = {
