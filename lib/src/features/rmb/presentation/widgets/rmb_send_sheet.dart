@@ -1587,6 +1587,9 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
 
   // ── Confirm → compliance gate → PIN → initiate ───────────────────────
   Future<void> _confirm() async {
+    // Reachable from the Pay button AND from the end of an edit, so guard
+    // against running twice over.
+    if (_submitting) return;
     // Maintenance guard — the landing blocks sends during maintenance, but a
     // Repeat opens this sheet directly (bypassing that), so re-check here.
     final cfg = _cubit.config;
@@ -1609,28 +1612,9 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
     var q = _quote;
     if (q == null) return;
 
-    // Quotes go stale (~2 min). Refresh silently, show the new numbers, and
-    // let the user tap pay again rather than charging on changed figures.
-    if (q.hasExpiresAt() && q.expiresAt.toDateTime().isBefore(DateTime.now())) {
-      setState(() => _submitting = true);
-      try {
-        final fresh = await _cubit.quote(_rail, q.destAmountMinor.toInt());
-        if (!mounted) return;
-        final changed = fresh.totalMinor != q.totalMinor;
-        setState(() => _quote = fresh);
-        if (changed) {
-          _snack(
-              'The rate was refreshed — check the new total and tap pay again.');
-          return;
-        }
-        q = fresh;
-      } catch (e) {
-        _snack(rmbFriendlyError(e));
-        return;
-      } finally {
-        if (mounted) setState(() => _submitting = false);
-      }
-    }
+    final refreshed = await _ensureFreshQuote(q);
+    if (refreshed == null) return; // refused, changed, or we are gone
+    q = refreshed;
 
     final form = await _cubit.complianceForm();
     final profile = form.profile;
@@ -1660,6 +1644,14 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
     }
     if (!mounted) return;
 
+    // Re-check here, not only at the top. The compliance sheet can sit open
+    // for minutes — longer than a quote lives — so the quote checked before it
+    // is routinely dead by now. Every observed quote for this user expired
+    // unconsumed, which is what "quote expired" at the PIN actually was.
+    final beforePin = await _ensureFreshQuote(q);
+    if (beforePin == null || !mounted) return;
+    q = beforePin;
+
     final cnyMajor = q.destAmountMinor.toInt() / 100.0;
     InitiateTransferResponse? resp;
     try {
@@ -1673,6 +1665,11 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
         message:
             'Enter your transaction PIN to send ¥${cnyMajor.toStringAsFixed(2)}',
         showProcessingPhase: true,
+        // This sheet is itself a modal route. Without this, cancelling the PIN
+        // clears every popup down to the page and takes the whole send sheet
+        // with it — the user loses the amount, the recipient and the quote for
+        // tapping Cancel on a PIN pad.
+        preserveHostSheet: true,
         onPinValidated: (token) async {
           resp = await _submit(token, accountId, q!);
         },
@@ -1695,6 +1692,43 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
       } else {
         Get.toNamed(AppRoutes.rmbReceipt, arguments: args);
       }
+    }
+  }
+
+  /// Returns a quote that is safe to pay with, or null when the caller must
+  /// stop.
+  ///
+  /// Refreshes when the quote has expired OR is about to — PIN entry alone can
+  /// outlast the remaining life, and the server rightly refuses a dead quote.
+  /// Measured 2026-10-11: every quote this user created expired unconsumed,
+  /// which is what the "quote expired" at the PIN pad actually was.
+  ///
+  /// A refresh whose TOTAL is unchanged proceeds silently — nothing the user
+  /// agreed to has moved. A changed total always stops and asks: charging a
+  /// different figure than the one on screen is never ours to decide.
+  Future<QuoteResponse?> _ensureFreshQuote(QuoteResponse q) async {
+    // Enough headroom to enter a PIN and for the initiate round-trip.
+    const headroom = Duration(seconds: 60);
+    final expires = q.hasExpiresAt() ? q.expiresAt.toDateTime() : null;
+    if (expires != null && expires.isAfter(DateTime.now().add(headroom))) {
+      return q; // still comfortably alive
+    }
+    if (mounted) setState(() => _submitting = true);
+    try {
+      final fresh = await _cubit.quote(_rail, q.destAmountMinor.toInt());
+      if (!mounted) return null;
+      final changed = fresh.totalMinor != q.totalMinor;
+      setState(() => _quote = fresh);
+      if (changed) {
+        _snack('The rate changed — check the new total and tap pay again.');
+        return null;
+      }
+      return fresh;
+    } catch (e) {
+      if (mounted) _snack(rmbFriendlyError(e));
+      return null;
+    } finally {
+      if (mounted) setState(() => _submitting = false);
     }
   }
 
@@ -2019,7 +2053,14 @@ class _RmbSendSheetState extends State<RmbSendSheet> with TransactionPinMixin {
     }
     if (!mounted) return;
     final saved = await _openComplianceSheet(form);
-    if (saved == true && mounted) _snack('Sender details updated');
+    // Dismissed without saving → stay on the pay step, change nothing.
+    if (saved != true || !mounted) return;
+    _snack('Sender details updated');
+    // Carry straight on into payment. _confirm re-runs every guard — rail
+    // maintenance, amount limits, a stale quote, funding, the compliance gate
+    // (which now passes) — so the edge cases are handled by going through it
+    // rather than around it, and the user is not made to hunt for Pay again.
+    await _confirm();
   }
 
   Future<bool?> _openComplianceSheet(GetComplianceProfileResponse form) {
