@@ -621,6 +621,22 @@ TransactionServiceType refineUtilityServiceType(
   final byPrefix = _utilityTypeFromReference(reference);
   if (byPrefix != null) return byPrefix;
 
+  // SECOND authoritative arm: the description's LEADING WORD.
+  //
+  // Not every bill reference carries the product token. A capture writes
+  // `HOLD-CAP-<uuid>` — measured on prod, 43 of them — which strips to a UUID
+  // and names nothing. Those rows fell through every text arm to
+  // `return current`, and `current` is electricity because it is first in the
+  // family set, so a ₦380 data bundle showed a green lightning bolt.
+  //
+  // utility-payments always writes the product first: "Data 07033609489",
+  // "Airtime <id> 07012406678", "Data purchase hold - mtn-data …". The leading
+  // word is therefore as reliable as the reference token and far more reliable
+  // than searching anywhere in the string for "data", which would also match
+  // an account name or a reference.
+  final byLeadingWord = _utilityTypeFromLeadingWord(description);
+  if (byLeadingWord != null) return byLeadingWord;
+
   if (looksLikeEPinRef(reference) || has('recharge card') || has('epin')) {
     return TransactionServiceType.epin;
   }
@@ -649,6 +665,53 @@ TransactionServiceType refineUtilityServiceType(
     return TransactionServiceType.education;
   }
   return current;
+}
+
+/// The bill type named by the FIRST word of a utility-payments description.
+///
+/// Every description this service writes starts with the product
+/// ("Data 07033609489", "Airtime … 07012406678", "Intl data hold - GH …"),
+/// so the leading word identifies it without the loose substring matching
+/// that misread these rows for months. Returns null for anything unrecognised
+/// so the remaining arms still get their turn.
+TransactionServiceType? _utilityTypeFromLeadingWord(String description) {
+  final t = description.trim().toLowerCase();
+  if (t.isEmpty) return null;
+  // "intl data …" and "international data …" lead with a qualifier.
+  final lead = t.startsWith('intl ') || t.startsWith('international ')
+      ? t.split(RegExp(r'\s+')).skip(1).take(1).join()
+      : t.split(RegExp(r'\s+')).first;
+  switch (lead.replaceAll(RegExp(r'[^a-z]'), '')) {
+    case 'data':
+      return TransactionServiceType.data;
+    case 'airtime':
+      return TransactionServiceType.airtime;
+    case 'electricity':
+    case 'power':
+      return TransactionServiceType.electricity;
+    case 'water':
+      return TransactionServiceType.water;
+    case 'cable':
+    case 'tv':
+    case 'dstv':
+    case 'gotv':
+    case 'startimes':
+      return TransactionServiceType.tvSubscription;
+    case 'internet':
+    case 'broadband':
+      return TransactionServiceType.internet;
+    case 'education':
+    case 'waec':
+    case 'jamb':
+    case 'neco':
+      return TransactionServiceType.education;
+    case 'betting':
+      return TransactionServiceType.betting;
+    case 'epin':
+    case 'recharge':
+      return TransactionServiceType.epin;
+  }
+  return null;
 }
 
 /// The bill type encoded in a utility-payments reference, or null.

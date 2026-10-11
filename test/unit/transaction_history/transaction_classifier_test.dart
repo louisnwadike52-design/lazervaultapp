@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/transaction_history/data/repository/tran
 /// `service_name` (+ description). These tests lock in that behaviour so no
 /// non-giftcard capture regresses back to "Gift Card Purchase".
 void main() {
+  leadingWordTests();
   const hc = 'hold_capture';
   // The capture reference carries NO domain signal (always HOLD-CAP-…).
   const cap = 'HOLD-CAP-abc12345';
@@ -559,6 +560,77 @@ void main() {
         refineUtilityServiceType(
             TransactionServiceType.crypto, 'DATA-1-a', '', ''),
         TransactionServiceType.crypto,
+      );
+    });
+  });
+}
+
+// A ₦380 data bundle showed a green lightning bolt and read "Electricity".
+//
+// Measured on prod: utility captures write `HOLD-CAP-<uuid>` (43 of them),
+// which carries NO product token — stripping the wrapper leaves a UUID. The
+// text arms then needed "data bundle" / "data plan" / "mobile data", and the
+// real description is "Data 07033609489". It fell through to `return current`,
+// and `current` is electricity because it is first in the family set.
+void leadingWordTests() {
+  group('bill type from the description leading word', () {
+    test('a HOLD-CAP capture with no product token is still classified', () {
+      expect(
+        refineUtilityServiceType(
+          TransactionServiceType.electricity,
+          'HOLD-CAP-76b7aacd-5aec-4b48-958d-3ccd54c28dbf',
+          'Data 07033609489',
+          'hold_capture',
+        ),
+        TransactionServiceType.data,
+      );
+    });
+
+    test('airtime capture likewise', () {
+      expect(
+        refineUtilityServiceType(
+          TransactionServiceType.electricity,
+          'HOLD-CAP-02dd9d0f-c40b-4014-a7d5-08cd1feaedf5',
+          'Airtime 02dd9d0f-c40b-4014-a7d5 07012406678',
+          'hold_capture',
+        ),
+        TransactionServiceType.airtime,
+      );
+    });
+
+    test('international data leads with a qualifier', () {
+      expect(
+        refineUtilityServiceType(
+          TransactionServiceType.electricity,
+          'HOLD-CAP-1111',
+          'Intl data hold - GH 233852589580',
+          'hold_capture',
+        ),
+        TransactionServiceType.data,
+      );
+    });
+
+    test('the reference token still wins when present', () {
+      expect(
+        refineUtilityServiceType(
+          TransactionServiceType.unknown,
+          'HOLD-DATA-1760000000-abc',
+          'anything at all',
+          'bill_payment',
+        ),
+        TransactionServiceType.data,
+      );
+    });
+
+    test('a real electricity bill is untouched', () {
+      expect(
+        refineUtilityServiceType(
+          TransactionServiceType.unknown,
+          'HOLD-CAP-2222',
+          'Electricity 1111111111111',
+          'hold_capture',
+        ),
+        TransactionServiceType.electricity,
       );
     });
   });
