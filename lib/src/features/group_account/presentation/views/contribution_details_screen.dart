@@ -4218,7 +4218,17 @@ class _ContributionStateBadges extends StatelessWidget {
 
     switch (contribution.status) {
       case ContributionStatus.completed:
-        badges.add(const _StateBadgeSpec('Completed', Color(0xFF10B981)));
+        // A one-time goal closes on TIME now, not on reaching its target, so
+        // "Completed" would claim it met a goal it may have fallen short of.
+        // "Closed" states the fact; whether it got there is what Raised and
+        // the progress bar already say.
+        final metTarget = contribution.targetAmount <= 0 ||
+            contribution.amountRaised >= contribution.targetAmount;
+        if (contribution.type == ContributionType.oneTime && !metTarget) {
+          badges.add(const _StateBadgeSpec('Closed', Color(0xFF9CA3AF)));
+        } else {
+          badges.add(const _StateBadgeSpec('Completed', Color(0xFF10B981)));
+        }
         break;
       case ContributionStatus.cancelled:
         badges.add(const _StateBadgeSpec('Cancelled', Color(0xFF9CA3AF)));
