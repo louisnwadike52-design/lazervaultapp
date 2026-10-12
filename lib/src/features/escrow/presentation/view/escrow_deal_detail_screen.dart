@@ -24,6 +24,7 @@ import '../widgets/escrow_shimmer.dart';
 import '../widgets/escrow_empty_state.dart';
 import '../../domain/entities/escrow_deal_entity.dart';
 import 'escrow_role_labels.dart';
+import '../widgets/escrow_terms.dart';
 import 'escrow_theme.dart';
 import 'escrow_party_chat_action.dart';
 part 'escrow_deal_detail_screen_widgets.dart';
@@ -64,6 +65,39 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
   /// not something to leave implicit: the sheet finishes, THEN _release
   /// navigates, and the listener stands down.
   bool _releaseOwnedByPinSheet = false;
+
+  /// True from the moment a terminal money action is started until the deal
+  /// has been re-read.
+  ///
+  /// Without it the action bar stayed live through the whole round trip AND
+  /// through the gap before the reloaded deal arrived, so a second tap
+  /// re-opened the guide + reason sheet over a deal that had already been
+  /// cancelled. That is exactly what was reported: the "Escrow refunded" push
+  /// landing while an empty "Cancel & refund" sheet was still on screen. The
+  /// server is idempotent on cancel, so no money moved twice — but the UI was
+  /// inviting an action that no longer existed, which is indistinguishable
+  /// from a cancel that fired without being confirmed.
+  bool _actionBusy = false;
+
+  /// Runs a terminal money action once, with the action bar latched for its
+  /// whole life, and re-reads the deal before unlatching so the buttons are
+  /// rebuilt from the new status rather than the stale one.
+  Future<void> _runAction(Future<void> Function() body) async {
+    if (_actionBusy) return;
+    setState(() => _actionBusy = true);
+    try {
+      await body();
+    } finally {
+      if (mounted) {
+        try {
+          await context.read<EscrowCubit>().loadDeal(_dealId);
+        } catch (_) {
+          // A failed reload must not strand the bar disabled forever.
+        }
+      }
+      if (mounted) setState(() => _actionBusy = false);
+    }
+  }
 
   Future<void> _release(EscrowDealEntity deal) async {
     // Guidance BEFORE the PIN. Releasing from FUNDED means paying out for
@@ -301,7 +335,13 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
     final cubit = context.read<EscrowCubit>();
     final reason = await _promptSheet(
       title: 'Cancel & refund',
-      subtitle: 'The held funds go back to the buyer. This can\'t be undone.',
+      subtitle: deal.fee > 0
+          ? 'The ${_money(deal.buyerTotal, deal.currency)} held goes back to '
+              '${deal.buyerName.trim().isEmpty ? 'the buyer' : deal.buyerName} '
+              'in full, and the ${_money(deal.fee, deal.currency)} escrow fee '
+              'is charged to you. This can\'t be undone.'
+          : 'The ${_money(deal.buyerTotal, deal.currency)} held goes back to '
+              'the buyer. This can\'t be undone.',
       hint: 'Reason (optional)',
       confirmLabel: 'Cancel & refund',
       icon: Icons.undo_rounded,
@@ -1337,30 +1377,48 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
     final secondary = <Widget>[];
 
     if (deal.canMarkDelivered(uid)) {
-      primary.add(_primaryBtn('Mark as delivered', () => _markDelivered(deal)));
+      primary.add(_primaryBtn('Mark as delivered', () => _runAction(() => _markDelivered(deal))));
     }
     if (deal.canRelease(uid)) {
       primary.add(_primaryBtn(
-          'Confirm delivery & release funds', () => _release(deal)));
+          'Confirm delivery & release funds', () => _runAction(() => _release(deal))));
     }
     // Seller responds to a pending refund request.
     if (deal.canRespondRefund(uid)) {
-      primary.add(_primaryBtn('Accept and refund', () => _acceptRefund(deal)));
+      primary.add(_primaryBtn('Accept and refund', () => _runAction(() => _acceptRefund(deal))));
       secondary.add(_secondaryBtn(
-          'Decline', EscrowTheme.warning, () => _declineRefund(deal)));
+          'Decline', EscrowTheme.warning, () => _runAction(() => _declineRefund(deal))));
     }
     // Buyer asks for a refund after delivery.
     if (deal.canRequestRefund(uid)) {
       secondary.add(_secondaryBtn(
-          'Request a refund', EscrowTheme.amber, () => _requestRefund(deal)));
+          'Request a refund', EscrowTheme.amber, () => _runAction(() => _requestRefund(deal))));
     }
     if (deal.canDispute(uid)) {
       secondary.add(_secondaryBtn(
-          'Open a dispute', EscrowTheme.warning, () => _dispute(deal)));
+          'Open a dispute', EscrowTheme.warning, () => _runAction(() => _dispute(deal))));
     }
     if (deal.canCancel(uid)) {
       secondary.add(_secondaryBtn(
-          'Cancel & refund', EscrowTheme.error, () => _cancel(deal)));
+          'Cancel & refund', EscrowTheme.error, () => _runAction(() => _cancel(deal))));
+    }
+    // The buyer used to have this button and now does not. Saying why, where
+    // it used to be, is the difference between a rule and a missing feature —
+    // and it points at the route that IS theirs.
+    if (deal.isBuyer(uid) && deal.isFunded && !deal.canCancel(uid)) {
+      secondary.add(_ruleNote(
+          'Only the seller can cancel and refund this deal, because they are '
+          'still holding the goods. If something is wrong, open a dispute and '
+          'our team will review it — your money stays held until it is '
+          'settled.'));
+    }
+    // A closed deal states its finality here too, not only in the header, so
+    // the answer is next to where the buttons used to be.
+    if (deal.isReleased) {
+      secondary.add(_ruleNote(
+          'This deal is complete and closed. Released funds cannot be '
+          'cancelled, refunded or disputed through Lazervault — anything '
+          'further is between you and the other party directly.'));
     }
 
     // Always available: the escrow agreement, and (once money has moved) the
@@ -1388,6 +1446,10 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
       ...primary,
       ...secondary,
       _utilityRow(utility),
+      SizedBox(height: 4.h),
+      // Collapsed: the user came here to act, not to read. But the rules that
+      // decide who can move this money have to be ON the page that moves it.
+      const EscrowTermsCard(),
     ];
   }
 
@@ -1402,6 +1464,37 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
               Expanded(child: buttons[i]),
             ],
           ],
+        ),
+      );
+
+  /// A rule stated where its button would have been. Not a button: there is
+  /// deliberately nothing to tap.
+  Widget _ruleNote(String text) => Padding(
+        padding: EdgeInsets.only(bottom: 12.h),
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            color: EscrowTheme.textSecondary.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+                color: EscrowTheme.textSecondary.withValues(alpha: 0.30)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.info_outline,
+                  color: EscrowTheme.textSecondary, size: 17.sp),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Text(text,
+                    style: GoogleFonts.inter(
+                        color: EscrowTheme.textSecondary,
+                        fontSize: 12.sp,
+                        height: 1.45)),
+              ),
+            ],
+          ),
         ),
       );
 
@@ -1427,12 +1520,15 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
         ),
       );
 
+  /// A money CTA. Inert while [_actionBusy], so a deal cannot be acted on
+  /// twice while the first action is still in flight or the reloaded deal has
+  /// not arrived.
   Widget _primaryBtn(String label, VoidCallback onTap) => Padding(
         padding: EdgeInsets.only(bottom: 12.h),
         child: SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: onTap,
+            onPressed: _actionBusy ? null : onTap,
             style: ElevatedButton.styleFrom(
               backgroundColor: EscrowTheme.primary,
               padding: EdgeInsets.symmetric(vertical: 15.h),
@@ -1454,7 +1550,7 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
         child: SizedBox(
           width: double.infinity,
           child: OutlinedButton(
-            onPressed: onTap,
+            onPressed: _actionBusy ? null : onTap,
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: color),
               padding: EdgeInsets.symmetric(vertical: 14.h),

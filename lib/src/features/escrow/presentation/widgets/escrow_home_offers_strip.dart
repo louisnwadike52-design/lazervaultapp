@@ -108,9 +108,11 @@ class EscrowHomeOffersStrip extends StatelessWidget {
           // badge ("Seller listing" + "Seller pays all fees" cannot share a
           // 230.w row). Every card in a horizontal list shares one height, so
           // it has to be sized for the tallest stack, not the common one:
-          // 12 pad + title 18 + 5 + subtitle 15 + 5 + two badge rows 44 +
-          // gap 8 + amount 18 + 12 pad.
-          height: 142.h,
+          // 12 pad + title 18 + 5 + subtitle 15 + 5 + badge rows + gap 8 +
+          // amount 18 + 12 pad. Three badges (seat, direction, fee promo) can
+          // run to three rows at this width, so size for the worst case —
+          // every card in a horizontal list shares one height.
+          height: 164.h,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -134,7 +136,7 @@ class EscrowHomeOffersStrip extends StatelessWidget {
     return GestureDetector(
       onTap: () => onOpenOffer(o),
       child: Container(
-        width: 230.w,
+        width: 240.w,
         padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
           color: EscrowTheme.card,
@@ -182,6 +184,11 @@ class EscrowHomeOffersStrip extends StatelessWidget {
               spacing: 4.w,
               runSpacing: 4.h,
               children: <Widget?>[
+                // The viewer's own seat first. "Seller listing" says what the
+                // offer IS; it does not say which side of it you are on, and
+                // on a page showing both at once that is the thing you need
+                // before you can read the price.
+                EscrowRoles.seatBadge(o, viewerUserId, compact: true),
                 EscrowRoles.directionBadge(o, compact: true),
                 EscrowRoles.feePromoBadge(o, viewerUserId, compact: true),
               ].whereType<Widget>().toList(),

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
+
 import '../../domain/entities/escrow_deal_entity.dart';
 import '../view/escrow_theme.dart';
 
@@ -48,6 +51,9 @@ class EscrowActionGuide {
     this.warning,
     this.outOfSequence = false,
   });
+
+  static String _money(double v, String currency) =>
+      currency_formatter.CurrencySymbols.formatAmountWithCurrency(v, currency);
 
   /// Build the guidance for [action] from the deal's ACTUAL state, so the copy
   /// always describes where this deal really is rather than a generic flow.
@@ -98,12 +104,23 @@ class EscrowActionGuide {
         );
 
       case EscrowAction.cancel:
+        // Seller-only, and it costs them the escrow fee. Both facts belong
+        // here rather than in the error the server would otherwise return:
+        // a charge you were told about beforehand is a price, and the same
+        // charge discovered afterwards is a complaint.
+        final feeLine = deal.fee > 0
+            ? ' The ${_money(deal.fee, deal.currency)} escrow fee is charged '
+                'to you for holding and returning the money, whoever was '
+                'due to pay it originally.'
+            : '';
         return EscrowActionGuide(
           title: 'Cancel and refund?',
-          body: 'The full held amount goes back to $buyer and the deal closes. '
-              'Either side can do this, but only before delivery is marked.',
-          warning: 'This cannot be undone. If the item has already been sent, '
-              'open a dispute instead so our team can look at the evidence.',
+          body: 'The full ${_money(deal.buyerTotal, deal.currency)} held goes '
+              'back to $buyer and the deal closes.$feeLine',
+          warning: 'This cannot be undone, and only you — the seller — can do '
+              'it, and only before delivery is marked. If the item has '
+              'already been sent, open a dispute instead so our team can look '
+              'at the evidence.',
           confirmLabel: 'Cancel & refund',
           confirmColor: EscrowTheme.error,
         );

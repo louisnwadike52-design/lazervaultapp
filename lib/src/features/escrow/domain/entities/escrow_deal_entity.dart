@@ -103,11 +103,17 @@ class EscrowDealEntity {
   bool canRelease(String userId) =>
       isBuyer(userId) && (isFunded || isDelivered) && !requiresAdminReview;
 
-  /// Either party can cancel (refund) only BEFORE delivery. Once delivered the
-  /// buyer must release or dispute — mirrors the server rule so the UI doesn't
-  /// offer a cancel the backend will reject.
-  bool canCancel(String userId) =>
-      (isBuyer(userId) || isSeller(userId)) && isFunded;
+  /// ONLY THE SELLER can cancel and refund, and only BEFORE delivery.
+  ///
+  /// Not the buyer, and not whoever created the deal. The buyer's money is
+  /// what is at risk, so a buyer able to unwind the deal unilaterally turns
+  /// escrow into a free option on the seller's time; the seller is the party
+  /// still holding the goods, so the seller is the one who can call it off. A
+  /// buyer who wants out opens a dispute, which a human settles on evidence.
+  ///
+  /// Mirrors the server rule exactly so the UI never offers a cancel the
+  /// backend will reject — the server enforces it either way.
+  bool canCancel(String userId) => isSeller(userId) && isFunded;
 
   /// Either party can open a dispute while the deal is live.
   bool canDispute(String userId) =>
@@ -182,18 +188,38 @@ class EscrowDealEntity {
         return (text: 'Disputed. Our team is reviewing it.', yourTurn: false);
       case 'RELEASED':
       case 'RESOLVED_RELEASED':
+        // A release is FINAL. Saying only "completed" left both parties
+        // hunting for a cancel or refund button that is deliberately gone,
+        // so the sentence that matters is the one about what can no longer
+        // happen.
         return buyer
             ? (
-                text: 'Completed. You released the funds to $_sellerLabel.',
+                text: 'Completed and closed. You released the funds to '
+                    '$_sellerLabel — this deal can no longer be cancelled, '
+                    'refunded or disputed.',
                 yourTurn: false
               )
-            : (text: 'Completed. Funds were released to you.', yourTurn: false);
+            : (
+                text: 'Completed and closed. The funds were released to you — '
+                    'this deal can no longer be cancelled, refunded or '
+                    'disputed.',
+                yourTurn: false
+              );
       case 'CANCELLED':
       case 'REFUNDED':
       case 'RESOLVED_REFUNDED':
         return buyer
-            ? (text: 'Cancelled. You were refunded.', yourTurn: false)
-            : (text: 'Cancelled. No funds changed hands.', yourTurn: false);
+            ? (
+                text: 'Cancelled and closed. You were refunded in full and '
+                    'charged no fee.',
+                yourTurn: false
+              )
+            : (
+                text: 'Cancelled and closed. The buyer was refunded in full; '
+                    'the escrow fee for holding and returning the money was '
+                    'charged to you.',
+                yourTurn: false
+              );
       case 'EXPIRED':
         return (
           text: 'Expired. The held funds were returned to $_buyerLabel.',
