@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../view/escrow_theme.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/escrow/domain/repositories/escrow_repository.dart';
 
 /// The rules of an escrow deal, in the words a user would use, stated once.
 ///
@@ -117,10 +120,17 @@ class EscrowTermsCard extends StatefulWidget {
   final bool initiallyExpanded;
   final String title;
 
+  /// Admin-set terms as Markdown. When non-empty it REPLACES the built-in
+  /// clauses, so a legal correction is a dashboard edit rather than a store
+  /// release. Empty keeps the built-in copy, which is what an unconfigured
+  /// install and an older server both produce.
+  final String markdownOverride;
+
   const EscrowTermsCard({
     super.key,
     this.initiallyExpanded = false,
     this.title = 'How Escrow Pay works, and what we cover',
+    this.markdownOverride = '',
   });
 
   @override
@@ -164,7 +174,36 @@ class _EscrowTermsCardState extends State<EscrowTermsCard> {
               ),
             ),
           ),
-          if (_open)
+          if (_open && widget.markdownOverride.trim().isNotEmpty)
+            Padding(
+              padding: EdgeInsets.fromLTRB(14.w, 0, 14.w, 14.h),
+              child: MarkdownBody(
+                data: widget.markdownOverride.trim(),
+                styleSheet: MarkdownStyleSheet(
+                  p: GoogleFonts.inter(
+                      color: EscrowTheme.textSecondary,
+                      fontSize: 12.sp,
+                      height: 1.45),
+                  h1: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700),
+                  h2: GoogleFonts.inter(
+                      color: EscrowTheme.primaryLight,
+                      fontSize: 12.5.sp,
+                      fontWeight: FontWeight.w600),
+                  h3: GoogleFonts.inter(
+                      color: EscrowTheme.primaryLight,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600),
+                  listBullet: GoogleFonts.inter(
+                      color: EscrowTheme.textSecondary, fontSize: 12.sp),
+                  strong: GoogleFonts.inter(
+                      color: Colors.white, fontWeight: FontWeight.w600),
+                ),
+              ),
+            )
+          else if (_open)
             Padding(
               padding: EdgeInsets.fromLTRB(14.w, 0, 14.w, 14.h),
               child: Column(
@@ -422,8 +461,17 @@ class _ScrollToBottomButtonState extends State<_ScrollToBottomButton> {
 /// The terms on their own, from the info icon. Distinct from the first-run
 /// notice: no "don't show again", no dismissal to record, because this one
 /// was asked for.
-Future<void> showEscrowTermsSheet(BuildContext context) {
-  return showModalBottomSheet<void>(
+Future<void> showEscrowTermsSheet(BuildContext context) async {
+  // Fetched before the sheet opens rather than inside it: a sheet that
+  // swaps its own body a beat after appearing reads as a glitch, and the
+  // read fails soft to the built-in copy anyway.
+  var markdown = '';
+  try {
+    markdown =
+        (await serviceLocator<EscrowRepository>().getPolicy()).termsMarkdown;
+  } catch (_) {}
+  if (!context.mounted) return;
+  await showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -443,9 +491,10 @@ Future<void> showEscrowTermsSheet(BuildContext context) {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const EscrowTermsCard(
+            EscrowTermsCard(
               initiallyExpanded: true,
               title: 'Terms and conditions',
+              markdownOverride: markdown,
             ),
             SizedBox(height: 14.h),
             SizedBox(
