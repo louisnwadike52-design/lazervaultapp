@@ -15,8 +15,9 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/m
 import 'package:lazervault/src/features/notifications/data/notifications_remote_datasource.dart';
 import 'package:lazervault/src/features/notifications/presentation/cubit/notification_badge_cubit.dart';
 import 'package:lazervault/src/features/widgets/notifications_builder.dart';
-import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:get/get.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 
 /// Maps a backend notification `type` to the AppService whose icon the
 /// NotificationsBuilder renders. Defaults to a transfer icon for unknown types.
@@ -308,32 +309,32 @@ class _NotificationScreenState extends State<NotificationScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          // Per-service voice + chat icons — pin every session to
-          // chat-notifications-service via DIRECT_ROUTES['notifications'].
-          // Lets users say "mark all read" / "show unread" / "update
-          // notification preferences" via voice or chat.
-          ServiceVoiceButton(
-            serviceName: 'notifications',
-            iconColor: const Color.fromARGB(255, 78, 3, 208),
-            backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-          ),
-          SizedBox(width: 8.w),
+          // Chat only. The voice button was removed: a notifications list is a
+          // reading surface, and three header controls on it crowded out the
+          // one that matters.
+          //
+          // Service name is lowercase to match DIRECT_ROUTES['notifications']
+          // and the per-service feature-flag slug, so the icon's visibility
+          // flag and its routing key cannot disagree.
           MicroserviceChatIcon(
-            serviceName: 'Notifications',
+            serviceName: 'notifications',
             sourceContext: 'notifications',
             icon: Icons.chat_bubble_outline,
             iconColor: const Color.fromARGB(255, 78, 3, 208),
           ),
           SizedBox(width: 4.w),
           IconButton(
+            tooltip: 'Notification settings',
             icon: Icon(
               Icons.settings_outlined,
-              color: Color.fromARGB(255, 78, 3, 208),
+              color: const Color.fromARGB(255, 78, 3, 208),
               size: 24.sp,
             ),
-            onPressed: () {
-              // Handle notification settings
-            },
+            // Was an empty callback with a `// Handle notification settings`
+            // comment — a control that looked live and did nothing. The
+            // preferences live in the settings screen's
+            // "Notifications & Display" section.
+            onPressed: () => Get.toNamed(AppRoutes.profileSettings),
           ),
           SizedBox(width: 8.w),
         ],
