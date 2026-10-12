@@ -1414,11 +1414,20 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
 
     return RefreshIndicator(
       onRefresh: () async {
-        context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
+        // Both: the header totals come from the full load, the rows from the
+        // page. Refreshing one and not the other leaves them disagreeing.
+        final cubit = context.read<GroupAccountCubit>();
+        cubit.loadGroupDetails(widget.groupId);
+        cubit.invalidatePages();
+        await cubit.loadContributionsPage(
+            widget.groupId, page?.page ?? 1, force: true);
       },
       color: const Color.fromARGB(255, 78, 3, 208),
       backgroundColor: const Color(0xFF1F1F1F),
-      child: contributions.isEmpty
+      // Empty means the LIST is empty, not the page: a page past the end
+      // self-corrects in the cubit, so an empty page here really is a group
+      // with no contributions.
+      child: pageItems.isEmpty
           ? _buildEmptyContributions(group, isAdmin)
           : CustomScrollView(
               key: const PageStorageKey<String>('contributions'),
@@ -1431,7 +1440,11 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '${contributions.length} Contributions',
+                          // The server's total, not the page length: the
+                          // list below shows five at a time, and counting
+                          // it told a group with nine goals it had five.
+                          '${page?.totalItems ?? contributions.length} '
+                          'Contributions',
                           style: GoogleFonts.inter(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,

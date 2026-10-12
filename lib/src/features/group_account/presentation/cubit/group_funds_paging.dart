@@ -77,9 +77,14 @@ extension GroupFundsPaging on GroupAccountCubit {
       }
 
       groupsPage = result;
-      // Keep the flat cache in step so the stats tile and every other
-      // consumer of `cachedGroups` sees this page's rows.
-      _cachedGroups = result.items;
+      // `_cachedGroups` is deliberately NOT overwritten here.
+      //
+      // It means "the user's groups" and is read by the stats tile, the
+      // group-details fallback and the discover screen's membership check.
+      // Replacing it with five rows made the header report "5 groups" to
+      // someone with twelve, and made opening a group on page 2 miss its
+      // instant-render snapshot. loadUserGroups keeps that cache; this owns
+      // the page.
       emit(GroupAccountGroupsPageLoaded(result));
       if (page == 1) unawaited(_persistGroupsPage(result));
       unawaited(_prefetchGroups(page + 1));
@@ -141,7 +146,11 @@ extension GroupFundsPaging on GroupAccountCubit {
         totalPages: 1,
       );
       groupsPage = page;
-      _cachedGroups = items;
+      // Only when there is nothing better: on a cold start this IS the best
+      // the app has, and the group-details screen reads it to render
+      // instantly instead of showing a spinner. It is replaced the moment
+      // the unpaged load lands.
+      _cachedGroups ??= items;
       emit(GroupAccountGroupsPageLoaded(page, fromCache: true));
       return true;
     } catch (e) {

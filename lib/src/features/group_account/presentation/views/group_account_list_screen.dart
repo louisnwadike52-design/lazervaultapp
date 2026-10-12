@@ -886,7 +886,12 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
           SliverPadding(
             padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 12.h),
             sliver: SliverToBoxAdapter(
-              child: _buildStatsCard(groups),
+              // Fed the UNPAGED cache, not the page: the money and goal sums
+              // are about everything the user is in, and handing it five
+              // rows made the header describe the page instead of the user.
+              child: _buildStatsCard(
+                context.read<GroupAccountCubit>().cachedGroups ?? groups,
+              ),
             ),
           ),
           // Private / Public tabs (bottom-line style like leaderboard)
@@ -1120,7 +1125,15 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
   }
 
   Widget _buildStatsCard(List<GroupAccount>? groups) {
-    final totalGroups = groups?.length ?? 0;
+    // The COUNT comes from the server's total where we have it, not from the
+    // list length. The list is a page of five; counting it told someone with
+    // twelve groups that they had five. The money and goal sums below still
+    // come from the loaded list, which is the unpaged cache — the pager owns
+    // the rows on screen, not this header.
+    final pagedTotal = context.read<GroupAccountCubit>().groupsPage?.totalItems;
+    final totalGroups = (pagedTotal != null && pagedTotal > 0)
+        ? pagedTotal
+        : (groups?.length ?? 0);
     final activeGroups =
         groups?.where((g) => g.status == GroupAccountStatus.active).length ?? 0;
     // Goals tile reads the server-side denormalized counter rather
