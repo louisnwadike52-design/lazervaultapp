@@ -47,6 +47,14 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
 
+  /// Whether the member is typing a naira amount or a percentage of the goal.
+  ///
+  /// The AMOUNT is always what gets submitted; percent mode is an input aid
+  /// that writes into the same controller. Keeping one source of truth means
+  /// the balance check, the validation and the confirm sheet cannot disagree
+  /// with what is on screen.
+  bool _percentMode = false;
+
   // ---- Platform fee (admin-tunable; OFF unless an operator enables it) ----
   // Quoted by the SAME backend code that later charges it, so what the member
   // reads here is what they are actually debited. Debounced on typing and
@@ -271,13 +279,14 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
         final prefill = remainder ?? fixed;
         _amountController.text = prefill.toStringAsFixed(2);
       } else {
-        // One-time: prefill remaining balance as a suggestion. Field
-        // stays editable so members can pay any portion they can afford.
-        final remaining = widget.contribution!.targetAmount -
-            widget.contribution!.currentAmount;
-        if (remaining > 0) {
-          _amountController.text = remaining.toStringAsFixed(2);
-        }
+        // One-time: deliberately NOT prefilled.
+        //
+        // It used to arrive filled with the whole remaining balance, which is
+        // the entire goal for the first person to open it. A member reported
+        // paying the full target without meaning to — the field looked like a
+        // confirmation, not a question. A goal several people are funding has
+        // no obvious per-person number, so the honest default is empty, with
+        // the percentage presets below offering a share to pick from.
       }
     }
 
@@ -1093,56 +1102,149 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
     );
   }
 
+  /// Percentage presets, as percentages of the GOAL.
+  ///
+  /// Of the target rather than of what is left, because "I'll put in 20%"
+  /// means a fifth of the thing being funded — a share of the remainder
+  /// changes meaning every time somebody else pays, so the same chip would buy
+  /// a different amount each time it is opened.
+  static const List<int> _percentPresets = [10, 20, 25, 50];
+
+  void _setAmount(double value) {
+    _amountController.text = value.toStringAsFixed(2);
+    setState(() {}); // balance check + validation read the controller
+  }
+
   Widget _buildQuickAmountButtons() {
     final contribution = widget.contribution!;
     final remaining = contribution.targetAmount - contribution.currentAmount;
-    final quickAmounts = [
-      remaining * 0.25,
-      remaining * 0.5,
-      remaining * 0.75,
-      remaining,
-    ].where((amount) => amount > 0).toList();
+    final target = contribution.targetAmount;
+    if (target <= 0 && remaining <= 0) return const SizedBox.shrink();
 
-    if (quickAmounts.isEmpty) return const SizedBox.shrink();
+    Widget chip(String label, String sub, VoidCallback onTap) => GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2D2D2D),
+              borderRadius: BorderRadius.circular(8.r),
+              border: Border.all(color: const Color(0xFF3D3D3D)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(label,
+                    style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white)),
+                if (sub.isNotEmpty)
+                  Text(sub,
+                      style: GoogleFonts.inter(
+                          fontSize: 10.sp, color: const Color(0xFF9CA3AF))),
+              ],
+            ),
+          ),
+        );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Quick amounts',
-          style: GoogleFonts.inter(
-            fontSize: 12.sp,
-            color: const Color(0xFF888888),
-          ),
-        ),
-        SizedBox(height: 8.h),
-        Wrap(
-          spacing: 8.w,
-          runSpacing: 8.h,
-          children: quickAmounts.map((amount) {
-            return GestureDetector(
-              onTap: () {
-                _amountController.text = amount.toStringAsFixed(2);
-                setState(() {}); // Trigger balance check
-              },
+        Row(
+          children: [
+            Text(
+              'Pick a share',
+              style: GoogleFonts.inter(
+                fontSize: 12.sp,
+                color: const Color(0xFF888888),
+              ),
+            ),
+            const Spacer(),
+            // Amount / percent switch. Both write the same amount; this only
+            // changes how the member expresses it.
+            GestureDetector(
+              onTap: () => setState(() => _percentMode = !_percentMode),
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                padding:
+                    EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: const Color(0xFF2D2D2D),
-                  borderRadius: BorderRadius.circular(8.r),
+                  borderRadius: BorderRadius.circular(20.r),
                   border: Border.all(color: const Color(0xFF3D3D3D)),
                 ),
                 child: Text(
-                  '${contribution.currency} ${amount.toStringAsFixed(2)}',
+                  _percentMode ? 'Enter %' : 'Enter amount',
                   style: GoogleFonts.inter(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
-                  ),
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF9F7AEA)),
                 ),
               ),
-            );
-          }).toList(),
+            ),
+          ],
+        ),
+        SizedBox(height: 8.h),
+        // Percent entry. Deliberately its own field: _amountController must
+        // never hold a percentage, because the balance check, the validator
+        // and the fee quote all read it as money. Typing here writes the
+        // resolved amount there, so there is still one source of truth.
+        if (_percentMode) ...[
+          TextFormField(
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            onChanged: (v) {
+              final pct = double.tryParse(v.trim());
+              if (pct == null || pct <= 0) {
+                _amountController.clear();
+                setState(() {});
+                return;
+              }
+              _setAmount(target * pct / 100);
+            },
+            style: GoogleFonts.inter(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white),
+            decoration: InputDecoration(
+              hintText: 'e.g. 20',
+              hintStyle: GoogleFonts.inter(
+                  fontSize: 14.sp, color: const Color(0xFF666666)),
+              suffixText: '% of goal',
+              suffixStyle: GoogleFonts.inter(
+                  fontSize: 12.sp, color: const Color(0xFF9CA3AF)),
+              filled: true,
+              fillColor: const Color(0xFF2D2D2D),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.r),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+            ),
+          ),
+          SizedBox(height: 10.h),
+        ],
+        Wrap(
+          spacing: 8.w,
+          runSpacing: 8.h,
+          children: [
+            for (final pct in _percentPresets)
+              if (target * pct / 100 > 0)
+                chip(
+                  '$pct%',
+                  '${contribution.currency} '
+                      '${(target * pct / 100).toStringAsFixed(2)}',
+                  () => _setAmount(target * pct / 100),
+                ),
+            // Whatever is left to reach the goal. Named rather than shown as
+            // "100%", because after part-payments it is no longer the whole
+            // target and a chip reading 100% would be a lie.
+            if (remaining > 0)
+              chip(
+                'Remaining',
+                '${contribution.currency} ${remaining.toStringAsFixed(2)}',
+                () => _setAmount(remaining),
+              ),
+          ],
         ),
       ],
     );
