@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../domain/entities/group_entities.dart';
 import 'contribution_type_badge.dart';
 import 'created_by_you_badge.dart';
+import 'group_funds_avatar.dart';
 
 class ContributionCard extends StatelessWidget {
   final Contribution contribution;
@@ -60,6 +61,15 @@ class ContributionCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // The goal's own avatar. Six goals in a group used to draw
+                // six identical rows; initials alone already tell them
+                // apart, and an uploaded image does it at a glance.
+                GroupFundsAvatar(
+                  name: contribution.title,
+                  imageUrl: contribution.imageUrl,
+                  size: 36,
+                ),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

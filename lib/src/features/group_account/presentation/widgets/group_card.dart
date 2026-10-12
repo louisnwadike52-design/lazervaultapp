@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/group_entities.dart';
 import 'created_by_you_badge.dart';
+import 'group_funds_avatar.dart';
 
 class GroupCard extends StatelessWidget {
   final GroupAccount group;
@@ -57,31 +58,11 @@ class GroupCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Group Avatar
-                Container(
-                  width: 40.w,
-                  height: 40.w,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color.fromARGB(255, 78, 3, 208),
-                        const Color.fromARGB(255, 78, 3, 208)
-                            .withValues(alpha: 0.7),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(10.r),
-                  ),
-                  child: Center(
-                    child: Text(
-                      group.name.isNotEmpty ? group.name[0].toUpperCase() : 'G',
-                      style: GoogleFonts.inter(
-                        fontSize: 17.sp,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
+                // Group avatar — the uploaded image when there is one,
+                // initials otherwise. Shared with the contribution card so a
+                // goal and the group holding it never render differently in
+                // the same list.
+                GroupFundsAvatar(name: group.name, imageUrl: group.imageUrl),
                 SizedBox(width: 12.w),
 
                 // Group Info

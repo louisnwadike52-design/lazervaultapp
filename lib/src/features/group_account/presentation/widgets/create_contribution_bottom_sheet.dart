@@ -1,4 +1,8 @@
 import 'dart:async';
+import 'group_funds_avatar.dart';
+import '../../data/services/group_avatar_upload_service.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -115,6 +119,14 @@ class _CreateContributionBottomSheetState
   // share), OFF for a one-time goal (no fixed amount to take). See the type
   // card's onTap for why.
   bool _autoPayEnabled = false;
+
+  // Avatar for this goal. Uploaded BEFORE create — the create RPC carries a
+  // public URL, never bytes — so a failed upload costs the picture and not
+  // the contribution.
+  File? _avatarFile;
+  String? _avatarUrl;
+  bool _avatarUploading = false;
+  String? _avatarError;
   bool _allowPartialPayments = true;
   // Whether the platform should fire the payout automatically once a
   // receiver is set (default OFF — creators have to opt in). Distinct
@@ -654,6 +666,7 @@ class _CreateContributionBottomSheetState
       // order's first position, and the server ignores the field for it.
       payoutReceiverUserId:
           _selectedType == ContributionType.oneTime ? _payoutReceiverId : null,
+      imageUrl: _avatarUrl,
       // An esusu is created CLOSED so the creator can finish inviting people
       // before the rotation starts and the roster freezes. Invites sent from
       // this wizard have not been accepted yet — opening immediately would
@@ -943,6 +956,121 @@ class _CreateContributionBottomSheetState
     ];
   }
 
+  /// Optional avatar for the goal.
+  ///
+  /// Uploaded the moment it is picked rather than on submit, so a slow or
+  /// failed upload is dealt with here — while the creator is looking at the
+  /// picture — instead of surfacing as a failed Create five steps later.
+  /// The contribution is created with whatever URL succeeded; a failed
+  /// upload simply means no avatar, never a failed contribution.
+  Widget _buildAvatarPicker() {
+    return Row(
+      children: [
+        GestureDetector(
+          onTap: _avatarUploading ? null : _pickAvatar,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              GroupFundsAvatar(
+                name: _titleController.text.isNotEmpty
+                    ? _titleController.text
+                    : 'New goal',
+                imageUrl: _avatarUrl,
+                size: 56,
+              ),
+              if (_avatarUploading)
+                SizedBox(
+                  width: 20.w,
+                  height: 20.w,
+                  child: const CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.white),
+                ),
+            ],
+          ),
+        ),
+        SizedBox(width: 14.w),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _avatarUrl == null ? 'Add a picture (optional)' : 'Picture added',
+                style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white),
+              ),
+              SizedBox(height: 2.h),
+              Text(
+                _avatarError ??
+                    (_avatarUrl == null
+                        ? 'Helps members pick this goal out of a list'
+                        : 'Tap the image to change it'),
+                style: GoogleFonts.inter(
+                  fontSize: 11.5.sp,
+                  color: _avatarError != null
+                      ? const Color(0xFFEF4444)
+                      : const Color(0xFF9CA3AF),
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (_avatarUrl != null && !_avatarUploading)
+          TextButton(
+            onPressed: () => setState(() {
+              _avatarUrl = null;
+              _avatarFile = null;
+              _avatarError = null;
+            }),
+            child: Text('Remove',
+                style: GoogleFonts.inter(
+                    fontSize: 12.sp, color: const Color(0xFF9CA3AF))),
+          ),
+      ],
+    );
+  }
+
+  Future<void> _pickAvatar() async {
+    try {
+      final picked = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        // Capped at the picker rather than after the fact: an avatar is
+        // rendered at 56px, and uploading a 12MP original to draw it is
+        // bytes nobody benefits from.
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 90,
+      );
+      if (picked == null || !mounted) return;
+
+      setState(() {
+        _avatarFile = File(picked.path);
+        _avatarUploading = true;
+        _avatarError = null;
+      });
+
+      final result =
+          await GroupAvatarUploadService().uploadFromFile(_avatarFile!);
+      if (!mounted) return;
+      setState(() {
+        _avatarUrl = result.publicUrl;
+        _avatarUploading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _avatarUploading = false;
+        _avatarUrl = null;
+        // The upload service throws sentences written for the user; show
+        // them rather than a generic failure.
+        _avatarError = e is GroupAvatarUploadException
+            ? e.message
+            : 'That image could not be uploaded.';
+      });
+    }
+  }
+
   // ==================== PAGE 1: TYPE SELECTION ====================
   Widget _buildTypeSelectionPage() {
     return SingleChildScrollView(
@@ -1177,6 +1305,10 @@ class _CreateContributionBottomSheetState
             hasError: _fieldErrors.containsKey('title'),
           ),
           _buildFieldError('title'),
+          SizedBox(height: 20.h),
+
+          // Optional: avatar
+          _buildAvatarPicker(),
           SizedBox(height: 20.h),
 
           // Required: Description
