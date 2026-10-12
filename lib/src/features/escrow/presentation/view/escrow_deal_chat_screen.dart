@@ -9,6 +9,10 @@ import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 import 'package:lazervault/core/utils/dismiss_keyboard.dart';
 import 'package:lazervault/src/features/escrow/domain/entities/escrow_message_entity.dart';
 import 'package:lazervault/src/features/escrow/domain/repositories/escrow_repository.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
+import 'package:lazervault/src/features/escrow/data/services/escrow_media_upload_service.dart';
+import 'package:lazervault/src/features/escrow/domain/entities/escrow_deal_entity.dart';
+import 'package:lazervault/src/features/escrow/presentation/widgets/escrow_media_viewer.dart';
 
 /// The conversation attached to ONE escrow deal.
 ///
@@ -74,6 +78,16 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
   final Set<String> _pendingIds = {};
   final Set<String> _failedIds = {};
 
+  /// Images shared IN this thread. They ride the deal's attachment rail
+  /// under the `chat_attachment` purpose rather than a media field on the
+  /// message, so there is one upload path, one validation path and one
+  /// retention story — see models.AttachmentPurposeChatAttachment.
+  List<EscrowAttachmentEntity> _chatImages = const [];
+  bool _uploading = false;
+
+  late final EscrowMediaUploadService _uploader =
+      EscrowMediaUploadService(endpoints: endpointRegistry);
+
   EscrowRepository get _repo => serviceLocator<EscrowRepository>();
 
   @override
@@ -92,9 +106,19 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
   Future<void> _load() async {
     try {
       final msgs = await _repo.listDealMessages(widget.dealId);
+      // Best-effort: a thread that cannot list its images still reads. The
+      // conversation is the product; the pictures are an attachment to it.
+      List<EscrowAttachmentEntity> imgs = const [];
+      try {
+        final deal = await _repo.getDeal(widget.dealId);
+        imgs = deal.attachments
+            .where((a) => a.purpose == 'chat_attachment')
+            .toList(growable: false);
+      } catch (_) {}
       if (!mounted) return;
       setState(() {
         _messages = msgs;
+        _chatImages = imgs;
         _loading = false;
         _error = null;
       });
@@ -176,6 +200,39 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
         _failedIds.add(localId);
         _sending = false;
       });
+      showAppSnackbar('Escrow Pay', _friendly(e), type: AppSnackbarType.error);
+    }
+  }
+
+  /// Share a photo in the thread.
+  ///
+  /// Uploaded first, then recorded against the deal, then the thread is
+  /// re-read. No optimistic bubble here on purpose: a local file path is not
+  /// what the other party will see, and showing a picture that might fail
+  /// its server-side size or type check would be a promise we cannot keep.
+  Future<void> _sendImage() async {
+    if (_uploading) return;
+    setState(() => _uploading = true);
+    try {
+      final picked = await _uploader.pickAndUploadImage();
+      if (picked == null) {
+        if (mounted) setState(() => _uploading = false);
+        return;
+      }
+      await _repo.addAttachment(
+        dealId: widget.dealId,
+        purpose: 'chat_attachment',
+        mediaKind: picked.mediaKind,
+        url: picked.publicUrl,
+        contentType: picked.contentType,
+        sizeBytes: picked.sizeBytes,
+      );
+      if (!mounted) return;
+      setState(() => _uploading = false);
+      await _load();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _uploading = false);
       showAppSnackbar('Escrow Pay', _friendly(e), type: AppSnackbarType.error);
     }
   }
@@ -345,7 +402,7 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
         ),
       );
     }
-    if (_messages.isEmpty) {
+    if (_messages.isEmpty && _chatImages.isEmpty) {
       return Center(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 36.w),
@@ -358,6 +415,20 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
         ),
       );
     }
+    // Text and images are two stores (messages, attachments) but ONE
+    // conversation, so they are merged and ordered by time. Anything with no
+    // timestamp sorts last rather than jumping to the top, which is what an
+    // epoch-zero fallback would do.
+    final items = <({DateTime? at, Widget child})>[
+      for (final m in _messages) (at: m.createdAt, child: _bubble(m)),
+      for (final a in _chatImages) (at: a.createdAt, child: _imageBubble(a)),
+    ]..sort((x, y) {
+        if (x.at == null && y.at == null) return 0;
+        if (x.at == null) return 1;
+        if (y.at == null) return -1;
+        return x.at!.compareTo(y.at!);
+      });
+
     return RefreshIndicator(
       color: _accent,
       onRefresh: _load,
@@ -365,8 +436,8 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
         controller: _scroll,
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.fromLTRB(12.w, 6.h, 12.w, 10.h),
-        itemCount: _messages.length,
-        itemBuilder: (_, i) => _bubble(_messages[i]),
+        itemCount: items.length,
+        itemBuilder: (_, i) => items[i].child,
       ),
     );
   }
@@ -474,6 +545,57 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
     );
   }
 
+  /// A photo shared in the thread. Tap to open the same viewer the deal's
+  /// evidence uses, so there is one way to look at escrow media.
+  Widget _imageBubble(EscrowAttachmentEntity a) {
+    final mine = a.uploadedBy == widget.viewerUserId;
+    return Align(
+      alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: 8.h),
+        child: GestureDetector(
+          onTap: () => showEscrowMediaViewer(
+            context,
+            url: a.url,
+            isVideo: a.mediaKind == 'video',
+            heroTag: 'chat-${a.id}',
+          ),
+          child: Hero(
+            tag: 'chat-${a.id}',
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12.r),
+              child: Container(
+                constraints: BoxConstraints(maxWidth: 210.w, maxHeight: 210.h),
+                color: _card,
+                child: Image.network(
+                  a.url,
+                  fit: BoxFit.cover,
+                  // A broken image must not be a grey void the user cannot
+                  // interpret — say it did not load.
+                  errorBuilder: (_, __, ___) => Padding(
+                    padding: EdgeInsets.all(16.w),
+                    child: Text('Image unavailable',
+                        style: GoogleFonts.inter(
+                            color: _muted, fontSize: 11.sp)),
+                  ),
+                  loadingBuilder: (c, child, progress) => progress == null
+                      ? child
+                      : SizedBox(
+                          width: 160.w,
+                          height: 120.h,
+                          child: const Center(
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: _accent)),
+                        ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   /// A message whose timestamp did not parse still reads; it just has no
   /// time against it.
   String _time(DateTime? t) =>
@@ -489,6 +611,19 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
+          IconButton(
+            tooltip: 'Share a photo',
+            onPressed: _uploading ? null : _sendImage,
+            icon: _uploading
+                ? SizedBox(
+                    width: 18.sp,
+                    height: 18.sp,
+                    child: const CircularProgressIndicator(
+                        strokeWidth: 2, color: _accent),
+                  )
+                : Icon(Icons.add_photo_alternate_outlined,
+                    color: _muted, size: 22.sp),
+          ),
           Expanded(
             child: TextField(
               controller: _controller,
