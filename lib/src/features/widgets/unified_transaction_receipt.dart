@@ -278,6 +278,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
                                 _buildHeader(),
                                 SizedBox(height: 16.h),
                                 _buildDetailsCard(),
+                                if (!capturing) _buildOpenEscrowDealButton(),
                                 SizedBox(height: 24.h),
                                 if (capturing) _buildBrandingFooter(),
                               ],
@@ -299,6 +300,41 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
               ],
             );
           },
+        ),
+      ),
+    );
+  }
+
+  /// "Open the escrow deal" — only on an escrow leg, and never in the
+  /// exported document.
+  ///
+  /// A buyer's wallet carries exactly ONE escrow movement: the funding debit.
+  /// The release moves pool money to the seller, so there is nothing to write
+  /// on the buyer's ledger and inventing a zero-amount row would be a fake
+  /// transaction. The deal itself is where the release, the delivery and the
+  /// outcome live, so the receipt points at it instead of pretending to hold
+  /// a history it does not have.
+  Widget _buildOpenEscrowDealButton() {
+    final dealId = (tx.metadata?['escrow_deal_id'] ?? '').toString().trim();
+    if (dealId.isEmpty || !EscrowReceiptFields.describes(tx.metadata)) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: EdgeInsets.only(top: 14.h),
+      child: SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          onPressed: () => Get.toNamed(AppRoutes.escrowDetail, arguments: dealId),
+          icon: Icon(Icons.receipt_long_outlined, size: 17.sp),
+          label: Text('Open the escrow deal',
+              style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600)),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: const Color(0xFF8B5CF6),
+            side: const BorderSide(color: Color(0xFF8B5CF6)),
+            padding: EdgeInsets.symmetric(vertical: 13.h),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r)),
+          ),
         ),
       ),
     );

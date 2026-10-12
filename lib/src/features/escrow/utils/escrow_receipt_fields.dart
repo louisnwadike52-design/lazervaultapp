@@ -132,11 +132,15 @@ class EscrowReceiptFields {
         return 'The deal did not complete, so the money was returned to the '
             'buyer in full.';
       default:
+        // Deliberately the deal's RULE, not its current state. This row is
+        // stamped at funding and never rewritten, so "the money is currently
+        // held" starts lying the moment the deal is released — and the buyer
+        // reads this copy most often AFTER release.
         return isSeller
-            ? 'The buyer has paid. Lazervault is holding the money until they '
-                'confirm delivery.'
-            : 'Lazervault is holding this money — $who is not paid until you '
-                'confirm delivery.';
+            ? 'The buyer paid into escrow rather than paying you directly. '
+                'You are paid once they confirm delivery.'
+            : 'You paid into escrow rather than paying $who directly. The '
+                'money is released to them only once you confirm delivery.';
     }
   }
 

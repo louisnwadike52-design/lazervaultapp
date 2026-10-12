@@ -60,7 +60,7 @@ void main() {
       expect(valueFor(buyer, 'What this is'), 'Paid into escrow');
       expect(valueFor(seller, 'What this is'), 'Escrow released to you');
       expect(valueFor(buyer, 'Outcome'),
-          contains('is not paid until you confirm delivery'));
+          contains('You paid into escrow rather than paying'));
       expect(valueFor(seller, 'Outcome'), contains('released to you'));
     });
 
