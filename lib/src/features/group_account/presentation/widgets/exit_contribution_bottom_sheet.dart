@@ -54,21 +54,36 @@ class ExitContributionBottomSheet extends StatefulWidget {
     required String memberDisplayName,
     required bool actorIsSelf,
   }) {
+    // Read the cubit from the CALLER's context and hand it to the sheet.
+    //
+    // showModalBottomSheet builds against the Navigator's context, not this
+    // one, so a provider created inside the screen below that Navigator is
+    // invisible to the sheet. Without this, the sheet's context.read threw
+    // ProviderNotFound from _loadPreview — which runs after _loading is set
+    // true and is not guarded — so the spinner never cleared and "Remove"
+    // stayed disabled. Reported as removing a member just loading forever.
+    //
+    // Same shape every other sheet in this feature already uses (see
+    // cycle_details_bottom_sheet, past_contribution_details_sheet).
+    final cubit = context.read<GroupAccountCubit>();
     return showModalBottomSheet<bool>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       useRootNavigator: false,
-      builder: (_) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: ExitContributionBottomSheet(
-          contributionId: contributionId,
-          groupId: groupId,
-          memberUserId: memberUserId,
-          memberDisplayName: memberDisplayName,
-          actorIsSelf: actorIsSelf,
+      builder: (_) => BlocProvider<GroupAccountCubit>.value(
+        value: cubit,
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: ExitContributionBottomSheet(
+            contributionId: contributionId,
+            groupId: groupId,
+            memberUserId: memberUserId,
+            memberDisplayName: memberDisplayName,
+            actorIsSelf: actorIsSelf,
+          ),
         ),
       ),
     );
@@ -97,11 +112,21 @@ class _ExitContributionBottomSheetState
       _loading = true;
       _error = null;
     });
-    final cubit = context.read<GroupAccountCubit>();
-    final preview = await cubit.previewMemberExitForContribution(
-      contributionId: widget.contributionId,
-      userId: widget.memberUserId,
-    );
+    // Everything that can throw lives inside the try, including the provider
+    // lookup. A throw here used to escape an async method with _loading
+    // already true, which is an spinner that never ends — the one failure
+    // state a modal must not reach, because it has no way out but the X.
+    MemberExitPreview? preview;
+    try {
+      preview = await context
+          .read<GroupAccountCubit>()
+          .previewMemberExitForContribution(
+            contributionId: widget.contributionId,
+            userId: widget.memberUserId,
+          );
+    } catch (_) {
+      preview = null;
+    }
     if (!mounted) return;
     if (preview == null) {
       setState(() {
