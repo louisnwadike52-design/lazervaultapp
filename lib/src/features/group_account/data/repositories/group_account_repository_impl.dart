@@ -258,6 +258,10 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
   Future<Contribution> openContribution(String contributionId) =>
       remoteDataSource.openContribution(contributionId);
 
+  @override
+  Future<List<Contribution>> getOverdueContributions(String userId) =>
+      remoteDataSource.getOverdueContributions(userId);
+
   // ===== Per-user dashboard preferences =====
   //
   // Pass-throughs with no extra wrapping: the data source already throws a

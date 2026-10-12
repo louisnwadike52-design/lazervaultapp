@@ -68,6 +68,15 @@ abstract class GroupAccountRepository {
 
   /// Start an esusu and freeze its roster.
   Future<Contribution> openContribution(String contributionId);
+
+  /// Contributions the caller is behind on — a lump-sum goal past its
+  /// deadline, or a cycle whose payment date has gone.
+  ///
+  /// Scoped server-side to groups they belong to, over a 90-day lookback.
+  /// The RPC has existed and been forwarded since the service was built and
+  /// NOTHING in the app called it, so a member's only signal that they owed
+  /// a cycle was a push notification they may have dismissed.
+  Future<List<Contribution>> getOverdueContributions(String userId);
   Future<Contribution> updateContribution(Contribution contribution);
   Future<void> deleteContribution(String contributionId);
 

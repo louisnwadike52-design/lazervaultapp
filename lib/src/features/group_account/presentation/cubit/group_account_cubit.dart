@@ -50,6 +50,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   final HideDashboardItem? hideDashboardItem;
   final UnhideDashboardItem? unhideDashboardItem;
   final OpenContribution? openContribution;
+  final GetOverdueContributions? getOverdueContributions;
   final RemoveContributionShadow? removeContributionShadow;
   final PreviewMemberExit? previewMemberExit;
   // Cycle history.
@@ -233,6 +234,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     this.hideDashboardItem,
     this.unhideDashboardItem,
     this.openContribution,
+    this.getOverdueContributions,
     this.removeContributionShadow,
     this.previewMemberExit,
     this.listContributionCycles,
@@ -2640,6 +2642,26 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     } catch (e) {
       if (!_sessionStillCurrent(generation)) return null;
       return _opError('Could not open this esusu', e);
+    }
+  }
+
+  /// What the signed-in member is behind on, across every group.
+  ///
+  /// Returns an EMPTY list on any failure rather than throwing. It feeds a
+  /// reminder, and a reminder that cannot load is a reminder that does not
+  /// show — never an error on a screen the user opened to do something else.
+  Future<List<Contribution>> loadMyOverdueContributions() async {
+    final usecase = getOverdueContributions;
+    final userId = currentUserId;
+    if (isClosed || usecase == null || userId == null) return const [];
+    final generation = _sessionGeneration;
+    try {
+      final rows = await usecase(userId);
+      if (!_sessionStillCurrent(generation)) return const [];
+      return rows;
+    } catch (e) {
+      debugPrint('[GroupAccountCubit] overdue read failed: $e');
+      return const [];
     }
   }
 

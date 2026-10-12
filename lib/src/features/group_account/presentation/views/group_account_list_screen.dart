@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import '../widgets/group_funds_guide.dart';
 import '../widgets/group_funds_terms.dart';
 import 'past_groups_screen.dart';
+import '../widgets/cycles_due_reminder.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
 import '../../../../../core/types/app_routes.dart';
@@ -96,7 +97,57 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
       // Eagerly fetch pending invites so the tab badge is right on
       // first paint without the user having to switch tabs.
       context.read<GroupAccountCubit>().loadMyInvitations();
+      _maybeRemindAboutDueCycles();
     });
+  }
+
+  /// Asks about unpaid cycles the moment the member opens Group Funds.
+  ///
+  /// This is the cheapest moment to ask: they are already thinking about it.
+  /// An esusu pays its pot out on schedule whether or not everyone has paid,
+  /// so a member who forgets leaves the member whose turn it is short — and
+  /// a push notification is easy to dismiss and easy to miss.
+  ///
+  /// Deliberately quiet about failure. The read returns an empty list on any
+  /// error, the once-a-day gate fails open, and nothing here can produce an
+  /// error state on a screen the user opened to do something else.
+  Future<void> _maybeRemindAboutDueCycles() async {
+    if (!mounted) return;
+    if (!await CyclesDueReminder.shouldShowToday()) return;
+    if (!mounted) return;
+
+    final cubit = context.read<GroupAccountCubit>();
+    final overdue = await cubit.loadMyOverdueContributions();
+    if (!mounted || overdue.isEmpty) return;
+
+    // Marked BEFORE showing: if the user dismisses it by backing out, the
+    // reminder has still been seen, and re-showing it on the next open the
+    // same day is how a reminder becomes an obstacle.
+    await CyclesDueReminder.markShownToday();
+    if (!mounted) return;
+
+    final chosen = await showCyclesDueReminder(context, overdue);
+    if (chosen == null || !mounted) return;
+
+    // Tapping a row takes them to the group that holds it — the payment
+    // screen needs the group's members and permissions, which this list
+    // does not carry.
+    _navigateToGroupDetailsById(chosen.groupId);
+  }
+
+  void _navigateToGroupDetailsById(String groupId) {
+    final cubit = context.read<GroupAccountCubit>();
+    final group = (cubit.cachedGroups ?? const <GroupAccount>[])
+        .where((g) => g.id == groupId)
+        .firstOrNull;
+    if (group == null) {
+      // The group is not in the cached list — a stale cache, or a group
+      // joined on another device. Loading the list is more useful than
+      // doing nothing; the row is still reachable from it.
+      cubit.loadUserGroups();
+      return;
+    }
+    _navigateToGroupDetails(group);
   }
 
   @override

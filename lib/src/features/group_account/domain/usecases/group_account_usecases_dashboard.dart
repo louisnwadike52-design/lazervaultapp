@@ -102,3 +102,18 @@ class OpenContribution extends UseCase<Contribution, String> {
     return repository.openContribution(contributionId);
   }
 }
+
+/// What the caller is behind on, across every group they belong to.
+///
+/// Feeds the "cycles to pay" reminder. Read-only and cheap enough to call on
+/// a screen open: one query, 90-day lookback, capped at 100 rows server-side.
+class GetOverdueContributions extends UseCase<List<Contribution>, String> {
+  final GroupAccountRepository repository;
+
+  GetOverdueContributions(this.repository);
+
+  @override
+  Future<List<Contribution>> call(String userId) {
+    return repository.getOverdueContributions(userId);
+  }
+}
