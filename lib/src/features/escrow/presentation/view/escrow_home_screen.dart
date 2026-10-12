@@ -20,6 +20,7 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/m
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import '../widgets/escrow_terms.dart';
 
 class EscrowHomeScreen extends StatefulWidget {
   const EscrowHomeScreen({super.key});
@@ -55,7 +56,13 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _reload());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _reload();
+      // Shown once, before the first deal: users arrive expecting a
+      // marketplace and are not in one. Dismissible for good, and
+      // re-enableable from Settings.
+      showEscrowIntroNotice(context);
+    });
   }
 
   void _reload() {

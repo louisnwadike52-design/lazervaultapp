@@ -68,6 +68,7 @@ import 'package:lazervault/src/features/voice/widgets/voice_txpin_section.dart';
 import 'package:lazervault/src/features/widgets/themed_app_bar.dart';
 import 'package:lazervault/src/features/widgets/user_avatar.dart';
 import 'package:lazervault/src/features/settings/presentation/widgets/birthday_celebration_card.dart';
+import 'package:lazervault/src/features/escrow/presentation/widgets/escrow_terms.dart';
 part 'settings_screen_widgets.dart';
 
 // ============================================================
@@ -154,6 +155,11 @@ class _SettingsViewState extends State<_SettingsView> {
   bool? _emailOverride;
   bool? _smsOverride;
 
+  /// Whether the Escrow Pay "we are the payment channel, not the marketplace"
+  /// notice still shows on that page's first load. Stored on the device, not
+  /// the server: it records that THIS person has read it.
+  bool _escrowNoticeOn = true;
+
   /// Admin-configured Help & Support content (contact, terms/privacy/about
   /// links, support materials). Starts from the safe fallback so the section
   /// always renders, then refreshes from the admin endpoint.
@@ -189,6 +195,9 @@ class _SettingsViewState extends State<_SettingsView> {
   @override
   void initState() {
     super.initState();
+    EscrowTerms.introDismissed().then((dismissed) {
+      if (mounted) setState(() => _escrowNoticeOn = !dismissed);
+    });
     UpliftGuidePreference.isDismissed().then((v) {
       if (mounted) setState(() => _lazerfundsGuidesDismissed = v);
     });
@@ -1683,6 +1692,27 @@ class _SettingsViewState extends State<_SettingsView> {
     }
 
     return _filterableColumn([
+      _switchTile(
+        icon: Icons.shield_outlined,
+        title: 'Escrow Pay notice',
+        subtitle: 'Show the "how escrow works" notice on the Escrow Pay page',
+        value: _escrowNoticeOn,
+        onChanged: (v) async {
+          setState(() => _escrowNoticeOn = v);
+          await EscrowTerms.setIntroDismissed(!v);
+        },
+        keywords: const [
+          'escrow',
+          'escrow pay',
+          'escrow notice',
+          'escrow terms',
+          'escrow rules',
+          'liability',
+          'show again',
+          'middleman',
+          'payment channel',
+        ],
+      ),
       _switchTile(
         icon: Icons.notifications_outlined,
         title: 'Push Notifications',

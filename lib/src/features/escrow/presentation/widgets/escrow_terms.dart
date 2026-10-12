@@ -184,3 +184,122 @@ class _EscrowTermsCardState extends State<EscrowTermsCard> {
     );
   }
 }
+
+/// The one-time notice shown on the Escrow Pay landing page.
+///
+/// Users arrive here expecting a marketplace. They are not in one: we are the
+/// payment channel, and the difference decides who they can blame when a
+/// parcel does not turn up. Saying it once, before the first deal, is both
+/// the honest thing and the thing that keeps the platform out of a dispute
+/// it is not a party to.
+///
+/// Dismissible for good, and re-enableable from Settings (searchable as
+/// "Escrow"), so it is a notice rather than an obstacle.
+Future<void> showEscrowIntroNotice(BuildContext context) async {
+  if (await EscrowTerms.introDismissed()) return;
+  if (!context.mounted) return;
+  var dontShowAgain = false;
+  await showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setSheetState) => Container(
+        margin: EdgeInsets.all(14.w),
+        padding: EdgeInsets.all(18.w),
+        decoration: BoxDecoration(
+          color: EscrowTheme.card,
+          borderRadius: BorderRadius.circular(18.r),
+          border: Border.all(color: EscrowTheme.border),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.shield_outlined,
+                      color: EscrowTheme.primaryLight, size: 22.sp),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text('Before your first deal',
+                        style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w700)),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10.h),
+              Text(
+                'Escrow Pay is a payment channel, not a marketplace. We hold '
+                'the buyer\'s money and release it on the agreed trigger — we '
+                'do not list, inspect, verify, ship or insure anything being '
+                'traded, and we are not liable for the goods or services '
+                'themselves. Deal with people you have reason to trust.',
+                style: GoogleFonts.inter(
+                    color: EscrowTheme.textSecondary,
+                    fontSize: 12.5.sp,
+                    height: 1.5),
+              ),
+              SizedBox(height: 14.h),
+              const EscrowTermsCard(
+                initiallyExpanded: true,
+                title: 'The rules that apply to every deal',
+              ),
+              SizedBox(height: 12.h),
+              InkWell(
+                onTap: () => setSheetState(() => dontShowAgain = !dontShowAgain),
+                child: Row(
+                  children: [
+                    Icon(
+                        dontShowAgain
+                            ? Icons.check_box
+                            : Icons.check_box_outline_blank,
+                        color: dontShowAgain
+                            ? EscrowTheme.primaryLight
+                            : EscrowTheme.textSecondary,
+                        size: 20.sp),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                          'Don\'t show this again (you can turn it back on in '
+                          'Settings)',
+                          style: GoogleFonts.inter(
+                              color: EscrowTheme.textSecondary,
+                              fontSize: 12.sp)),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 14.h),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    if (dontShowAgain) {
+                      await EscrowTerms.setIntroDismissed(true);
+                    }
+                    if (ctx.mounted) Navigator.pop(ctx);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: EscrowTheme.primary,
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r)),
+                  ),
+                  child: Text('I understand',
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
