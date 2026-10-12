@@ -97,12 +97,43 @@ class _SelectPayoutReceiverBottomSheetState
     final activeMembers = widget.contribution.members
         .where((m) => m.isActiveParticipant)
         .toList();
+
+    // Members who are up to date FIRST — this list IS the suggestion.
+    //
+    // The creator usually opens this screen because the pot was held: the
+    // member whose turn it was owes the circle. Handing the turn to another
+    // member in arrears reproduces the hold at the next fire, and the server
+    // refuses it outright for a rotating circle. Ordering (rather than
+    // hiding) keeps the picker honest — the behind members are still visible,
+    // with what they owe, which is often the thing the creator wanted to see.
+    //
+    // Stable within each group: sorting a list the user is reading should not
+    // reshuffle names that are equally eligible.
+    if (widget.contribution.isRotatingSavings) {
+      activeMembers.sort((a, b) {
+        final ab = _owedCycles(a) > 0 ? 1 : 0;
+        final bb = _owedCycles(b) > 0 ? 1 : 0;
+        if (ab != bb) return ab - bb;
+        return 0;
+      });
+    }
+
     final q = _searchController.text.trim().toLowerCase();
     if (q.isEmpty) return activeMembers;
     return activeMembers.where((m) {
       return m.userName.toLowerCase().contains(q) ||
           m.email.toLowerCase().contains(q);
     }).toList();
+  }
+
+  /// Cycles this member owes the circle: historical misses plus the cycle
+  /// now closing if they have not paid it. Mirrors the server's own sum
+  /// (payouts.go recipientOwedCycles) so the two cannot disagree about who
+  /// is behind.
+  int _owedCycles(ContributionMember m) {
+    var owed = m.missedCycles;
+    if (!m.hasPaidCurrentCycle) owed++;
+    return owed;
   }
 
   Future<void> _save() async {
@@ -376,9 +407,16 @@ class _SelectPayoutReceiverBottomSheetState
         final m = members[idx];
         final isSelected = _selectedUserId == m.userId;
         final isCurrent = widget.currentReceiverUserId == m.userId;
+        // Behind on their own payments into this circle. The server refuses
+        // these for a rotating contribution while the arrears hold is on, so
+        // the row says so rather than letting the creator pick and be
+        // refused after the round-trip.
+        final owed = widget.contribution.isRotatingSavings ? _owedCycles(m) : 0;
+        final behind = owed > 0;
         return InkWell(
           borderRadius: BorderRadius.circular(10.r),
-          onTap: () => setState(() => _selectedUserId = m.userId),
+          onTap:
+              behind ? null : () => setState(() => _selectedUserId = m.userId),
           child: Container(
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
@@ -393,82 +431,111 @@ class _SelectPayoutReceiverBottomSheetState
                 width: isSelected ? 1.5 : 1,
               ),
             ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 18.r,
-                  backgroundColor: const Color.fromARGB(255, 78, 3, 208)
-                      .withValues(alpha: 0.2),
-                  backgroundImage:
-                      (m.profileImage != null && m.profileImage!.isNotEmpty)
-                          ? NetworkImage(m.profileImage!)
-                          : null,
-                  child: (m.profileImage == null || m.profileImage!.isEmpty)
-                      ? Text(
-                          _initials(m.userName),
-                          style: GoogleFonts.inter(
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.bold,
-                            color: const Color.fromARGB(255, 78, 3, 208),
-                          ),
-                        )
-                      : null,
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              m.userName,
-                              style: GoogleFonts.inter(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+            child: Opacity(
+              // Dimmed, not hidden: the creator often opens this screen to
+              // find out WHO is behind, and removing them would answer a
+              // different question than the one they came with.
+              opacity: behind ? 0.55 : 1,
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 18.r,
+                    backgroundColor: const Color.fromARGB(255, 78, 3, 208)
+                        .withValues(alpha: 0.2),
+                    backgroundImage:
+                        (m.profileImage != null && m.profileImage!.isNotEmpty)
+                            ? NetworkImage(m.profileImage!)
+                            : null,
+                    child: (m.profileImage == null || m.profileImage!.isEmpty)
+                        ? Text(
+                            _initials(m.userName),
+                            style: GoogleFonts.inter(
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.bold,
+                              color: const Color.fromARGB(255, 78, 3, 208),
                             ),
-                          ),
-                          if (isCurrent)
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 6.w, vertical: 2.h),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF10B981)
-                                    .withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(4.r),
-                              ),
+                          )
+                        : null,
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
                               child: Text(
-                                'Current',
+                                m.userName,
                                 style: GoogleFonts.inter(
-                                  fontSize: 9.sp,
+                                  fontSize: 14.sp,
                                   fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF10B981),
+                                  color: Colors.white,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (isCurrent)
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 6.w, vertical: 2.h),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF10B981)
+                                      .withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(4.r),
+                                ),
+                                child: Text(
+                                  'Current',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 9.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF10B981),
+                                  ),
                                 ),
                               ),
-                            ),
-                        ],
-                      ),
-                      SizedBox(height: 2.h),
-                      Text(
-                        m.email,
-                        style: GoogleFonts.inter(
-                          fontSize: 12.sp,
-                          color: Colors.grey[400],
+                          ],
                         ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                        SizedBox(height: 2.h),
+                        Text(
+                          m.email,
+                          style: GoogleFonts.inter(
+                            fontSize: 12.sp,
+                            color: behind ? Colors.grey[600] : Colors.grey[400],
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        // Says what they owe and why they cannot be picked.
+                        // A greyed-out row with no explanation reads as a bug;
+                        // this reads as the reason the pot was held.
+                        if (behind) ...[
+                          SizedBox(height: 4.h),
+                          Row(
+                            children: [
+                              Icon(Icons.error_outline,
+                                  size: 12.sp, color: const Color(0xFFF59E0B)),
+                              SizedBox(width: 4.w),
+                              Expanded(
+                                child: Text(
+                                  'Behind $owed ${owed == 1 ? 'cycle' : 'cycles'} '
+                                  '— cannot receive until they are up to date',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 10.5.sp,
+                                    color: const Color(0xFFF59E0B),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
-                ),
-                if (isSelected)
-                  Icon(Icons.check_circle,
-                      color: const Color.fromARGB(255, 78, 3, 208),
-                      size: 20.sp),
-              ],
+                  if (isSelected)
+                    Icon(Icons.check_circle,
+                        color: const Color.fromARGB(255, 78, 3, 208),
+                        size: 20.sp),
+                ],
+              ),
             ),
           ),
         );

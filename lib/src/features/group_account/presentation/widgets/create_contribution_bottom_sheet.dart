@@ -111,6 +111,9 @@ class _CreateContributionBottomSheetState
   DateTime _selectedDeadline =
       _endOfDay(DateTime.now().add(const Duration(days: 30)));
   DateTime? _selectedStartDate;
+  // Seeded by the type picker: ON for an esusu (a fixed, already-agreed
+  // share), OFF for a one-time goal (no fixed amount to take). See the type
+  // card's onTap for why.
   bool _autoPayEnabled = false;
   bool _allowPartialPayments = true;
   // Whether the platform should fire the payout automatically once a
@@ -190,6 +193,9 @@ class _CreateContributionBottomSheetState
       _selectedType = allowed.first;
       if (_selectedType == ContributionType.rotatingSavings) {
         _selectedFrequency = ContributionFrequency.monthly;
+        // Same default the type card applies — reached here when esusu is
+        // the only type the operator allows, so the picker is never tapped.
+        _autoPayEnabled = true;
       }
     }
     _localGroupMembers = List.from(widget.groupMembers);
@@ -1024,10 +1030,24 @@ class _CreateContributionBottomSheetState
           _selectedType = type;
           if (type == ContributionType.oneTime) {
             _selectedFrequency = null;
+            // A one-time goal has no fixed share per member — there is no
+            // amount to debit without asking.
             _autoPayEnabled = false;
           } else if (type == ContributionType.rotatingSavings) {
             _selectedFrequency = ContributionFrequency.monthly;
-            _autoPayEnabled = false;
+            // ON by default for an esusu.
+            //
+            // The share is FIXED and already agreed, so there is exactly one
+            // amount to take and no decision to interrupt anyone for. It is
+            // also what keeps the circle solvent: the cycle closes on a date
+            // whether or not everyone remembered, and the member whose turn
+            // it is collects the pot the others were supposed to fill. A
+            // circle that depends on twelve people remembering a date every
+            // month is a circle that short-pays somebody.
+            //
+            // Still a toggle, not a rule: a creator who wants everyone to
+            // pay by hand can turn it off before creating.
+            _autoPayEnabled = true;
           } else {
             _selectedFrequency ??= ContributionFrequency.monthly;
           }
@@ -1581,10 +1601,17 @@ class _CreateContributionBottomSheetState
           _buildSwitchTile(
             title: 'Auto-Pay',
             subtitle: isRotatingSavings
-                ? 'Disabled for rotating savings transparency'
+                ? "We'll debit each member's share when the cycle closes if "
+                    "they haven't paid it"
                 : 'Automatically process payments when due',
             value: _autoPayEnabled,
-            enabled: !isRotatingSavings,
+            // Editable for an esusu now. It used to be forced off "for
+            // rotating savings transparency", which in practice meant the
+            // pot was short whenever somebody forgot, and the member whose
+            // turn it was collected less than they had paid in for everyone
+            // else. The share is fixed and already agreed, so there is
+            // nothing opaque about taking it.
+            enabled: true,
             onChanged: (value) => setState(() => _autoPayEnabled = value),
             icon: Icons.payment,
           ),
