@@ -314,18 +314,33 @@ class AutoSavePdfService {
             ),
           ),
           pw.SizedBox(height: 6),
-          pw.Container(
-            padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: pw.BoxDecoration(
-              color: statusColor,
-              borderRadius: pw.BorderRadius.circular(20),
-            ),
-            child: pw.Text(
-              statusLabel,
-              style: pw.TextStyle(
-                color: PdfColors.white,
-                fontSize: 9,
-                fontWeight: pw.FontWeight.bold,
+          // Status chip.
+          //
+          // A 20pt corner radius on a chip barely 16pt tall renders as a
+          // pointed lozenge rather than a pill — the corners meet before the
+          // straight edge begins. 8pt matches every other card in the
+          // sendfunds receipt this document is meant to sit beside.
+          //
+          // Aligned left explicitly: inside a stretched column the chip would
+          // otherwise take the full width, which is why the badge looked like
+          // a banner rather than a label.
+          pw.Align(
+            alignment: pw.Alignment.centerLeft,
+            child: pw.Container(
+              padding:
+                  const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: pw.BoxDecoration(
+                color: statusColor,
+                borderRadius: pw.BorderRadius.circular(8),
+              ),
+              child: pw.Text(
+                statusLabel,
+                style: pw.TextStyle(
+                  color: PdfColors.white,
+                  fontSize: 9,
+                  fontWeight: pw.FontWeight.bold,
+                  letterSpacing: 0.6,
+                ),
               ),
             ),
           ),
