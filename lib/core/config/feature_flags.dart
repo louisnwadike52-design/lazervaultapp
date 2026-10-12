@@ -493,8 +493,21 @@ class FeatureFlags {
       spraymeLikeSoundKey,
       spraymeRecordingEnabled,
     ]) {
-      final v = remote[key];
-      if (v == null) continue;
+      final v = remote[key]?.trim();
+      // An EMPTY value is not `false`.
+      //
+      // A row can exist carrying no value at all — seeded before anyone chose,
+      // or a field cleared from the dashboard — and `'' == 'true'` is false,
+      // so storing it would write a hard OFF for a flag whose declared default
+      // is ON. For `group_funds_enabled` that reads as the entire service
+      // disappearing from every phone because a text field was blanked, with
+      // the getter's `?? true` powerless: a value IS stored, so the fallback
+      // never fires.
+      //
+      // Skipped rather than removed, so the last choice an operator actually
+      // recorded survives a degraded read; a key that was never written stays
+      // unwritten and the getter default stands.
+      if (v == null || v.isEmpty) continue;
       await prefs.setBool(key, v.toLowerCase() == 'true');
     }
     // Quick-service gates: a KEY FAMILY, not a fixed list. Persisted verbatim

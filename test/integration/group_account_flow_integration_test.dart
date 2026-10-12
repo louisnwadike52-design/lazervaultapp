@@ -261,13 +261,15 @@ void main() {
     );
 
     blocTest<GroupAccountCubit, GroupAccountState>(
-      'emits Error when no userId and not authenticated',
+      'emits a SILENT Unauthenticated state when there is no session',
+      // Not GroupAccountError. An auto-logout lands here — the session expires
+      // while the user is sitting on the group funds list — and an error state
+      // paints a snackbar reading "User not authenticated. Please log in." over
+      // the login screen they have already been returned to. The UI ignores
+      // GroupAccountUnauthenticated, which is the whole point of it existing.
       build: () => _buildCubit(mockRepository),
       act: (cubit) => cubit.loadUserGroups(),
-      expect: () => [
-        isA<GroupAccountError>()
-            .having((s) => s.message, 'message', contains('not authenticated')),
-      ],
+      expect: () => [isA<GroupAccountUnauthenticated>()],
     );
 
     blocTest<GroupAccountCubit, GroupAccountState>(
@@ -280,8 +282,15 @@ void main() {
       act: (cubit) => cubit.loadUserGroups('user-123'),
       expect: () => [
         isA<GroupAccountLoading>(),
-        isA<GroupAccountError>().having(
-            (s) => s.message, 'message', contains('Failed to load groups')),
+        // The REASON, not a prefix. Errors now go through friendlyError, which
+        // hands back the service's own sentence when it is fit to show and
+        // collapses raw transport/provider text to a generic line. The old
+        // 'Failed to load groups: Exception: …' said our layer's name twice
+        // and buried the only part the reader needed.
+        isA<GroupAccountError>()
+            .having((s) => s.message, 'message', contains('Network error'))
+            .having((s) => s.message, 'no Dart envelope',
+                isNot(contains('Exception:'))),
       ],
     );
   });
@@ -367,16 +376,13 @@ void main() {
     );
 
     blocTest<GroupAccountCubit, GroupAccountState>(
-      'emits Error when not authenticated',
+      'emits a SILENT Unauthenticated state when there is no session',
       build: () => _buildCubit(mockRepository, sessionUserId: null),
       act: (cubit) => cubit.createNewGroup(
         name: 'Test Group',
         description: 'A test group',
       ),
-      expect: () => [
-        isA<GroupAccountError>()
-            .having((s) => s.message, 'message', contains('not authenticated')),
-      ],
+      expect: () => [isA<GroupAccountUnauthenticated>()],
     );
   });
 
@@ -500,7 +506,11 @@ void main() {
     );
 
     blocTest<GroupAccountCubit, GroupAccountState>(
-      'emits Error when not authenticated',
+      'emits a SILENT Unauthenticated state when there is no session',
+      // A payment is the one place a silent state could hide a real problem,
+      // so note what it does NOT do: no money is attempted. The cubit refuses
+      // before it reaches the repository, and the user is already on the login
+      // screen — there is nobody on the contribution screen to read a snackbar.
       build: () => _buildCubit(mockRepository, sessionUserId: null),
       act: (cubit) => cubit.makePaymentToContribution(
         contributionId: 'contrib-001',
@@ -508,10 +518,17 @@ void main() {
         amount: 50000.0,
         currency: 'NGN',
       ),
-      expect: () => [
-        isA<GroupAccountError>()
-            .having((s) => s.message, 'message', contains('Please log in')),
-      ],
+      expect: () => [isA<GroupAccountUnauthenticated>()],
+      verify: (_) {
+        verifyNever(() => mockRepository.makeContributionPayment(
+              contributionId: any(named: 'contributionId'),
+              groupId: any(named: 'groupId'),
+              userId: any(named: 'userId'),
+              userName: any(named: 'userName'),
+              amount: any(named: 'amount'),
+              currency: any(named: 'currency'),
+            ));
+      },
     );
   });
 
