@@ -636,6 +636,17 @@ class GroupAccountServiceClient extends $grpc.Client {
   /// SetDashboardOrder persists the order the caller dragged their list
   /// into, so it survives the session and the next cold start. Per-user:
   /// it changes nobody else's list.
+  /// OpenContribution starts a rotating-savings circle: the roster is frozen
+  /// from this moment and the rotation begins. Creator / group admin only,
+  /// and idempotent — opening an already-open circle returns it unchanged
+  /// rather than erroring, because the client may retry.
+  $grpc.ResponseFuture<$0.OpenContributionResponse> openContribution(
+    $0.OpenContributionRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$openContribution, request, options: options);
+  }
+
   $grpc.ResponseFuture<$0.SetDashboardOrderResponse> setDashboardOrder(
     $0.SetDashboardOrderRequest request, {
     $grpc.CallOptions? options,
@@ -1048,6 +1059,11 @@ class GroupAccountServiceClient extends $grpc.Client {
       ($0.DeleteContributionMessageForEveryoneRequest value) =>
           value.writeToBuffer(),
       $0.DeleteContributionMessageForEveryoneResponse.fromBuffer);
+  static final _$openContribution = $grpc.ClientMethod<
+          $0.OpenContributionRequest, $0.OpenContributionResponse>(
+      '/group_accounts.GroupAccountService/OpenContribution',
+      ($0.OpenContributionRequest value) => value.writeToBuffer(),
+      $0.OpenContributionResponse.fromBuffer);
   static final _$setDashboardOrder = $grpc.ClientMethod<
           $0.SetDashboardOrderRequest, $0.SetDashboardOrderResponse>(
       '/group_accounts.GroupAccountService/SetDashboardOrder',
@@ -1730,6 +1746,15 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
             $0.DeleteContributionMessageForEveryoneRequest.fromBuffer(value),
         ($0.DeleteContributionMessageForEveryoneResponse value) =>
             value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.OpenContributionRequest,
+            $0.OpenContributionResponse>(
+        'OpenContribution',
+        openContribution_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.OpenContributionRequest.fromBuffer(value),
+        ($0.OpenContributionResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.SetDashboardOrderRequest,
             $0.SetDashboardOrderResponse>(
         'SetDashboardOrder',
@@ -2417,6 +2442,15 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
   $async.Future<$0.DeleteContributionMessageForEveryoneResponse>
       deleteContributionMessageForEveryone($grpc.ServiceCall call,
           $0.DeleteContributionMessageForEveryoneRequest request);
+
+  $async.Future<$0.OpenContributionResponse> openContribution_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.OpenContributionRequest> $request) async {
+    return openContribution($call, await $request);
+  }
+
+  $async.Future<$0.OpenContributionResponse> openContribution(
+      $grpc.ServiceCall call, $0.OpenContributionRequest request);
 
   $async.Future<$0.SetDashboardOrderResponse> setDashboardOrder_Pre(
       $grpc.ServiceCall $call,

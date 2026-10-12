@@ -1737,26 +1737,50 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               ),
             ),
             SizedBox(width: 12.w),
-            ElevatedButton.icon(
-              onPressed: () => _showAddMembersDialog(contribution),
-              icon: Icon(Icons.person_add_alt_1, size: 18.sp),
-              label: Text(
-                'Add',
+            // Hidden once an esusu has started: its roster is frozen and the
+            // server refuses the add. A visible button that always fails is
+            // worse than no button — the creator taps it, picks people, and
+            // only then learns it was never possible.
+            if (!contribution.isRotatingSavings || contribution.awaitingOpen)
+              ElevatedButton.icon(
+                onPressed: () => _showAddMembersDialog(contribution),
+                icon: Icon(Icons.person_add_alt_1, size: 18.sp),
+                label: Text(
+                  'Add',
                 style: GoogleFonts.inter(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w600,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.r),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                  foregroundColor: Colors.white,
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  elevation: 0,
                 ),
-                elevation: 0,
+              )
+            else
+              // Says WHY it is gone. Without this the control simply vanishes
+              // after the esusu starts, which reads as a bug.
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.lock_outline,
+                      size: 14.sp, color: const Color(0xFF9CA3AF)),
+                  SizedBox(width: 6.w),
+                  Text(
+                    'Members fixed',
+                    style: GoogleFonts.inter(
+                      fontSize: 12.sp,
+                      color: const Color(0xFF9CA3AF),
+                    ),
+                  ),
+                ],
               ),
-            ),
           ],
         ),
 

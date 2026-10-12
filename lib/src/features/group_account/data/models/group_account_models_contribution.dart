@@ -39,6 +39,7 @@ class ContributionModel extends Contribution {
     super.imageUrl,
     super.paidOut,
     super.paidOutAmount,
+    super.openedAt,
   });
 
   factory ContributionModel.fromJson(Map<String, dynamic> json) {
@@ -200,6 +201,7 @@ class ContributionModel extends Contribution {
       imageUrl: entity.imageUrl,
       paidOut: entity.paidOut,
       paidOutAmount: entity.paidOutAmount,
+      openedAt: entity.openedAt,
     );
   }
 
@@ -241,6 +243,7 @@ class ContributionModel extends Contribution {
     String? imageUrl,
     bool? paidOut,
     double? paidOutAmount,
+    DateTime? openedAt,
   }) {
     return ContributionModel(
       id: id ?? this.id,
@@ -280,6 +283,7 @@ class ContributionModel extends Contribution {
       imageUrl: imageUrl ?? this.imageUrl,
       paidOut: paidOut ?? this.paidOut,
       paidOutAmount: paidOutAmount ?? this.paidOutAmount,
+      openedAt: openedAt ?? this.openedAt,
     );
   }
 }

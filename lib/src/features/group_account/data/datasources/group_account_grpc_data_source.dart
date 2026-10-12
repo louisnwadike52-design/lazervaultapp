@@ -364,6 +364,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     Map<String, dynamic>? metadata,
     String? payoutReceiverUserId,
     String? imageUrl,
+    bool openLater = false,
   }) async {
     try {
       final request = pb.CreateContributionRequest()
@@ -401,6 +402,12 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       // URL, never bytes. Empty means "no avatar", which is valid.
       if (imageUrl != null && imageUrl.trim().isNotEmpty) {
         request.imageUrl = imageUrl.trim();
+      }
+      // Only ever true for an esusu the creator wants to assemble before it
+      // starts. The server treats the absent/false case as "open now", which
+      // is what every build before this one did.
+      if (openLater) {
+        request.openLater = true;
       }
 
       // Add metadata if provided
@@ -1257,6 +1264,12 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       imageUrl: contribution.imageUrl.isEmpty ? null : contribution.imageUrl,
       paidOut: contribution.paidOut,
       paidOutAmount: _int64ToAmount(contribution.paidOutAmountMinor),
+      // Absent on an older server, where it stays null — and `isOpen`
+      // answers true for everything except a rotating circle, so nothing
+      // regresses for a one-time goal.
+      openedAt: contribution.hasOpenedAt()
+          ? _timestampToDateTime(contribution.openedAt)
+          : null,
       currency: contribution.currency,
       deadline: _timestampToDateTime(contribution.deadline),
       createdAt: _timestampToDateTime(contribution.createdAt),
@@ -2079,6 +2092,23 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   // ==========================================================================
   // PER-USER DASHBOARD PREFERENCES
   // ==========================================================================
+
+  @override
+  Future<ContributionModel> openContribution(String contributionId) async {
+    try {
+      final request = pb.OpenContributionRequest()
+        ..contributionId = contributionId;
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response =
+          await _client.openContribution(request, options: callOptions);
+      return _mapContributionFromProto(response.contribution);
+    } on GrpcError catch (e) {
+      // InvalidArgument here is "needs at least 2 members" and the like —
+      // friendlyGrpcError passes those sentences through so the creator
+      // reads what to fix instead of a generic failure.
+      throw Exception(friendlyGrpcError(e, 'Failed to open this esusu'));
+    }
+  }
 
   @override
   Future<int> setDashboardOrder({

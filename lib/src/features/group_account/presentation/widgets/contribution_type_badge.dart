@@ -19,15 +19,19 @@ class ContributionTypeBadge extends StatelessWidget {
     final color = isRosca
         ? const Color.fromARGB(255, 78, 3, 208)
         : const Color(0xFF10B981);
-    final label = isRosca ? 'Rotating Savings' : 'One-time';
+    final label = isRosca ? 'Esusu · Rotating' : 'One-time';
     final icon = isRosca ? Icons.sync : Icons.flag_outlined;
 
+    // Lighter than it was (0.15 fill / 0.4 border). This is a quiet label
+    // saying which payout rules apply, sitting next to a status badge and a
+    // "Created by you" badge — three saturated pills in a row made the card
+    // read as three alerts rather than one goal.
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
+        color: color.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: color.withValues(alpha: 0.4)),
+        border: Border.all(color: color.withValues(alpha: 0.22)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

@@ -49,6 +49,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   final SetDashboardOrder? setDashboardOrder;
   final HideDashboardItem? hideDashboardItem;
   final UnhideDashboardItem? unhideDashboardItem;
+  final OpenContribution? openContribution;
   final RemoveContributionShadow? removeContributionShadow;
   final PreviewMemberExit? previewMemberExit;
   // Cycle history.
@@ -231,6 +232,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     this.setDashboardOrder,
     this.hideDashboardItem,
     this.unhideDashboardItem,
+    this.openContribution,
     this.removeContributionShadow,
     this.previewMemberExit,
     this.listContributionCycles,
@@ -832,6 +834,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     bool autoPayoutEnabled = false,
     Map<String, dynamic>? metadata,
     String? payoutReceiverUserId,
+    String? imageUrl,
+    bool openLater = false,
   }) async {
     if (isClosed) return;
     if (currentUserId == null) {
@@ -862,6 +866,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         autoPayoutEnabled: autoPayoutEnabled,
         metadata: metadata,
         payoutReceiverUserId: payoutReceiverUserId,
+        imageUrl: imageUrl,
+        openLater: openLater,
       ));
       if (isClosed) return;
 
@@ -2595,6 +2601,45 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     } catch (e) {
       if (!_sessionStillCurrent(generation)) return null;
       return _opError('Could not remove it from your list', e);
+    }
+  }
+
+  /// Start an esusu and freeze its roster.
+  ///
+  /// Returns null on success, or the reason it was refused — most often
+  /// "needs at least 2 members", which is something the creator fixes in the
+  /// next ten seconds and is worth showing verbatim.
+  Future<String?> openEsusu(String contributionId, {String? groupId}) async {
+    if (isClosed) return 'Opening is not available in this build.';
+    final usecase = openContribution;
+    if (usecase == null) return 'Opening is not available in this build.';
+
+    final generation = _sessionGeneration;
+    try {
+      final opened = await usecase(contributionId);
+      if (!_sessionStillCurrent(generation)) return null;
+      // Patch the loaded snapshot so the Open CTA goes and the rotation
+      // badge appears without waiting for a refetch.
+      final snapshot = _snapshotLoaded();
+      if (snapshot != null) {
+        _patchLoaded(
+          contributions: snapshot.contributions
+              .map((c) => c.id == contributionId ? opened : c)
+              .toList(),
+        );
+      }
+      emit(const GroupAccountSuccess(
+          'Esusu opened — the rotation has started and its members are now fixed'));
+      if (groupId != null) {
+        // Re-read in the background: opening arms the schedulers, and the
+        // next payout date the server computed is not something the client
+        // should guess at.
+        await loadGroupDetails(groupId, silent: true);
+      }
+      return null;
+    } catch (e) {
+      if (!_sessionStillCurrent(generation)) return null;
+      return _opError('Could not open this esusu', e);
     }
   }
 

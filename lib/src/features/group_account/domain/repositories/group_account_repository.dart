@@ -63,7 +63,11 @@ abstract class GroupAccountRepository {
     Map<String, dynamic>? metadata,
     String? payoutReceiverUserId,
     String? imageUrl,
+    bool openLater = false,
   });
+
+  /// Start an esusu and freeze its roster.
+  Future<Contribution> openContribution(String contributionId);
   Future<Contribution> updateContribution(Contribution contribution);
   Future<void> deleteContribution(String contributionId);
 

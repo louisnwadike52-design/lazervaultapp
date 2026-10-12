@@ -63,9 +63,10 @@ class StatusPill extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
+        // Lighter, with the rest of the badge row.
+        color: color.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(6.r),
-        border: Border.all(color: color.withValues(alpha: 0.4)),
+        border: Border.all(color: color.withValues(alpha: 0.22)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

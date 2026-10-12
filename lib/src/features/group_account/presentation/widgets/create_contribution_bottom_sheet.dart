@@ -648,6 +648,14 @@ class _CreateContributionBottomSheetState
       // order's first position, and the server ignores the field for it.
       payoutReceiverUserId:
           _selectedType == ContributionType.oneTime ? _payoutReceiverId : null,
+      // An esusu is created CLOSED so the creator can finish inviting people
+      // before the rotation starts and the roster freezes. Invites sent from
+      // this wizard have not been accepted yet — opening immediately would
+      // lock the circle around whoever happened to have accepted by the time
+      // Create was tapped.
+      //
+      // A one-time goal has no roster to freeze and starts immediately.
+      openLater: _selectedType == ContributionType.rotatingSavings,
     );
   }
 

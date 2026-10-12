@@ -53,6 +53,8 @@ class CreateContribution
       autoPayoutEnabled: params.autoPayoutEnabled,
       metadata: params.metadata,
       payoutReceiverUserId: params.payoutReceiverUserId,
+      imageUrl: params.imageUrl,
+      openLater: params.openLater,
     );
   }
 }
@@ -265,6 +267,14 @@ class CreateContributionParams {
   /// contribution's receiver comes from memberRotationOrder[0].
   final String? payoutReceiverUserId;
 
+  /// Esusu only: create it CLOSED so the creator can finish assembling the
+  /// roster, then open it. False (the default) starts it immediately, which
+  /// is how every build before the Open button behaved.
+  final bool openLater;
+
+  /// Avatar for the goal, already uploaded — a public URL, never bytes.
+  final String? imageUrl;
+
   CreateContributionParams({
     required this.groupId,
     required this.title,
@@ -287,6 +297,8 @@ class CreateContributionParams {
     this.autoPayoutEnabled = false,
     this.metadata,
     this.payoutReceiverUserId,
+    this.openLater = false,
+    this.imageUrl,
   });
 }
 

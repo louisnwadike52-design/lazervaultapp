@@ -1457,6 +1457,13 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                             onPayment: canPay
                                 ? () => _navigateToMakePayment(contribution)
                                 : null,
+                            // Only the person who may edit the contribution
+                            // can start it — the same gate the server
+                            // applies — so a member never sees a button
+                            // that would come back refused.
+                            onOpen: isAdmin && contribution.awaitingOpen
+                                ? () => _confirmOpenEsusu(contribution)
+                                : null,
                           ),
                         );
                       },
@@ -1603,6 +1610,80 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         );
         break;
     }
+  }
+
+  /// Confirms starting an esusu, and says plainly what it costs.
+  ///
+  /// Opening is not reversible: the roster freezes, nobody else can be added,
+  /// and the schedulers begin charging members and paying out the pot. A
+  /// creator who taps it expecting "save" and finds a locked circle has no
+  /// way back, so the dialog leads with the irreversible part rather than
+  /// burying it.
+  Future<void> _confirmOpenEsusu(Contribution contribution) async {
+    final memberCount = contribution.members
+        .where((m) => m.membershipStatus == ContributionMembershipStatus.active)
+        .length;
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Text('Start this esusu?',
+            style: GoogleFonts.inter(
+                color: Colors.white, fontWeight: FontWeight.w700)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'The rotation begins and the member list is fixed from now on — '
+              'nobody else can be added to "${contribution.title}".',
+              style: GoogleFonts.inter(color: Colors.grey[300], fontSize: 13.sp),
+            ),
+            SizedBox(height: 10.h),
+            Text(
+              '$memberCount ${memberCount == 1 ? 'member' : 'members'} will '
+              'each pay their share every cycle, and one of them collects the '
+              'pot each time, in the order you set.',
+              style: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Not yet',
+                style: GoogleFonts.inter(color: Colors.grey[400])),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Start esusu',
+                style: GoogleFonts.inter(
+                    color: const Color(0xFF10B981),
+                    fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+
+    final cubit = context.read<GroupAccountCubit>();
+    final error = await cubit.openEsusu(contribution.id, groupId: widget.groupId);
+    if (!mounted || error == null) return;
+    // The refusals that land here are actionable — "needs at least 2 members",
+    // "set the amount each member pays" — so they are shown verbatim rather
+    // than replaced with a generic failure.
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(error),
+        backgroundColor: const Color(0xFFEF4444),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+      ),
+    );
   }
 
   void _showLeaveGroupDialog(GroupAccount group) {

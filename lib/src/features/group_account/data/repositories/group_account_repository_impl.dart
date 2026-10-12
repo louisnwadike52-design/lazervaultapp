@@ -199,6 +199,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
     Map<String, dynamic>? metadata,
     String? payoutReceiverUserId,
     String? imageUrl,
+    bool openLater = false,
   }) async {
     try {
       final contributionModel = await remoteDataSource.createContribution(
@@ -224,6 +225,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
         metadata: metadata,
         payoutReceiverUserId: payoutReceiverUserId,
         imageUrl: imageUrl,
+        openLater: openLater,
       );
       return contributionModel;
     } catch (e) {
@@ -251,6 +253,10 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
       throw Exception('Failed to delete contribution: $e');
     }
   }
+
+  @override
+  Future<Contribution> openContribution(String contributionId) =>
+      remoteDataSource.openContribution(contributionId);
 
   // ===== Per-user dashboard preferences =====
   //

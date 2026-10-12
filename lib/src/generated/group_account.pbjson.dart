@@ -620,6 +620,14 @@ const ContributionMessage$json = {
       '5': 4,
       '10': 'paidOutAmountMinor'
     },
+    {
+      '1': 'opened_at',
+      '3': 37,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'openedAt'
+    },
   ],
 };
 
@@ -656,7 +664,8 @@ final $typed_data.Uint8List contributionMessageDescriptor = $convert.base64Decod
     'ZBggIAEoCFIRYXV0b1BheW91dEVuYWJsZWQSNQoXcmFpc2VkX3RoaXNfY3ljbGVfbWlub3IYIS'
     'ABKARSFHJhaXNlZFRoaXNDeWNsZU1pbm9yEhsKCWltYWdlX3VybBgiIAEoCVIIaW1hZ2VVcmwS'
     'GQoIcGFpZF9vdXQYIyABKAhSB3BhaWRPdXQSMQoVcGFpZF9vdXRfYW1vdW50X21pbm9yGCQgAS'
-    'gEUhJwYWlkT3V0QW1vdW50TWlub3I=');
+    'gEUhJwYWlkT3V0QW1vdW50TWlub3ISNwoJb3BlbmVkX2F0GCUgASgLMhouZ29vZ2xlLnByb3Rv'
+    'YnVmLlRpbWVzdGFtcFIIb3BlbmVkQXQ=');
 
 @$core.Deprecated('Use contributionMemberMessageDescriptor instead')
 const ContributionMemberMessage$json = {
@@ -2359,6 +2368,7 @@ const CreateContributionRequest$json = {
       '10': 'payoutReceiverUserId'
     },
     {'1': 'image_url', '3': 21, '4': 1, '5': 9, '10': 'imageUrl'},
+    {'1': 'open_later', '3': 22, '4': 1, '5': 8, '10': 'openLater'},
   ],
 };
 
@@ -2380,7 +2390,8 @@ final $typed_data.Uint8List createContributionRequestDescriptor = $convert.base6
     '9taW5pbXVtX2JhbGFuY2UYESABKARSDm1pbmltdW1CYWxhbmNlEhoKCG1ldGFkYXRhGBIgASgJ'
     'UghtZXRhZGF0YRIuChNhdXRvX3BheW91dF9lbmFibGVkGBMgASgIUhFhdXRvUGF5b3V0RW5hYm'
     'xlZBI1ChdwYXlvdXRfcmVjZWl2ZXJfdXNlcl9pZBgUIAEoCVIUcGF5b3V0UmVjZWl2ZXJVc2Vy'
-    'SWQSGwoJaW1hZ2VfdXJsGBUgASgJUghpbWFnZVVybA==');
+    'SWQSGwoJaW1hZ2VfdXJsGBUgASgJUghpbWFnZVVybBIdCgpvcGVuX2xhdGVyGBYgASgIUglvcG'
+    'VuTGF0ZXI=');
 
 @$core.Deprecated('Use createContributionResponseDescriptor instead')
 const CreateContributionResponse$json = {
@@ -4480,6 +4491,43 @@ final $typed_data.Uint8List withdrawJoinRequestResponseDescriptor =
     $convert.base64Decode(
         'ChtXaXRoZHJhd0pvaW5SZXF1ZXN0UmVzcG9uc2USGAoHbWVzc2FnZRgBIAEoCVIHbWVzc2FnZQ'
         '==');
+
+@$core.Deprecated('Use openContributionRequestDescriptor instead')
+const OpenContributionRequest$json = {
+  '1': 'OpenContributionRequest',
+  '2': [
+    {'1': 'contribution_id', '3': 1, '4': 1, '5': 9, '10': 'contributionId'},
+  ],
+};
+
+/// Descriptor for `OpenContributionRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List openContributionRequestDescriptor =
+    $convert.base64Decode(
+        'ChdPcGVuQ29udHJpYnV0aW9uUmVxdWVzdBInCg9jb250cmlidXRpb25faWQYASABKAlSDmNvbn'
+        'RyaWJ1dGlvbklk');
+
+@$core.Deprecated('Use openContributionResponseDescriptor instead')
+const OpenContributionResponse$json = {
+  '1': 'OpenContributionResponse',
+  '2': [
+    {
+      '1': 'contribution',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.group_accounts.ContributionMessage',
+      '10': 'contribution'
+    },
+    {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `OpenContributionResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List openContributionResponseDescriptor = $convert.base64Decode(
+    'ChhPcGVuQ29udHJpYnV0aW9uUmVzcG9uc2USRwoMY29udHJpYnV0aW9uGAEgASgLMiMuZ3JvdX'
+    'BfYWNjb3VudHMuQ29udHJpYnV0aW9uTWVzc2FnZVIMY29udHJpYnV0aW9uEhgKB3N1Y2Nlc3MY'
+    'AiABKAhSB3N1Y2Nlc3MSGAoHbWVzc2FnZRgDIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use setDashboardOrderRequestDescriptor instead')
 const SetDashboardOrderRequest$json = {

@@ -73,6 +73,15 @@ class Contribution extends Equatable {
   final bool paidOut;
   final double paidOutAmount;
 
+  /// When the creator OPENED this esusu, freezing its roster. Null means it
+  /// has not started: members can still be added, and nothing is charged or
+  /// paid out until it is opened.
+  ///
+  /// Only rotating savings uses it. A one-time goal has no roster to freeze
+  /// and is open from creation, which is why [isOpen] answers true for one
+  /// regardless of this field.
+  final DateTime? openedAt;
+
   const Contribution({
     required this.id,
     required this.groupId,
@@ -110,6 +119,7 @@ class Contribution extends Equatable {
     this.imageUrl,
     this.paidOut = false,
     this.paidOutAmount = 0,
+    this.openedAt,
   });
 
   @override
@@ -150,9 +160,21 @@ class Contribution extends Equatable {
         imageUrl,
         paidOut,
         paidOutAmount,
+        openedAt,
       ];
 
   bool get isCompleted => status == ContributionStatus.completed;
+
+  /// Whether this contribution has STARTED.
+  ///
+  /// A one-time goal always has: there is no roster to freeze and nothing
+  /// for an Open step to decide. An esusu starts when its creator opens it,
+  /// and until then no member is charged and no pot is paid out.
+  bool get isOpen => !isRotatingSavings || openedAt != null;
+
+  /// An esusu waiting for its creator to open it. The state where members
+  /// can still be added — and the only state where the Open CTA shows.
+  bool get awaitingOpen => isRotatingSavings && openedAt == null;
 
   /// Whether the deadline has passed. Separate from [isOverdue], which asks
   /// about the next PAYMENT date within a cycle.

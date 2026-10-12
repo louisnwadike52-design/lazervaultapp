@@ -15,12 +15,21 @@ class ContributionCard extends StatelessWidget {
   /// Null means the badge is not shown — never a wrong badge.
   final String? currentUserId;
 
+  /// Starts an esusu whose roster is still being assembled.
+  ///
+  /// Null means the viewer cannot open it (not the creator, or it is not an
+  /// unopened esusu), and the CTA is not drawn at all — the same contract as
+  /// [onPayment]: the parent owns the permission decision, so a member never
+  /// sees a button that would be refused.
+  final VoidCallback? onOpen;
+
   const ContributionCard({
     this.currentUserId,
     super.key,
     required this.contribution,
     this.onTap,
     this.onPayment,
+    this.onOpen,
   });
 
   @override
@@ -223,7 +232,43 @@ class ContributionCard extends StatelessWidget {
                 // role-permission helper to decide whether the
                 // current user is allowed to contribute, so a
                 // viewer never sees the button at all.
-                if (!isCompleted && onPayment != null) ...[
+                // Open comes BEFORE Contribute and replaces it: until the
+                // circle starts, there is no cycle to pay into — the server
+                // charges nobody and pays nobody out — so offering
+                // "Contribute" would take money for a cycle that does not
+                // exist yet.
+                if (contribution.awaitingOpen && onOpen != null) ...[
+                  SizedBox(width: 12.w),
+                  ElevatedButton(
+                    onPressed: onOpen,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 16.w, vertical: 10.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.play_arrow_rounded, size: 16.sp),
+                        SizedBox(width: 6.w),
+                        Text(
+                          'Start esusu',
+                          style: GoogleFonts.inter(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ] else if (!isCompleted &&
+                    !contribution.awaitingOpen &&
+                    onPayment != null) ...[
                   SizedBox(width: 12.w),
                   ElevatedButton(
                     onPressed: onPayment,
@@ -327,58 +372,63 @@ class ContributionCard extends StatelessWidget {
     );
   }
 
+  /// The badge, derived from what actually happened rather than from the
+  /// status column alone.
+  ///
+  /// The server has ONE `completed`, and it meant three different things:
+  /// the goal was funded, the clock ran out with it unfunded, or the money
+  /// has actually reached the recipient. A single word for all three told
+  /// the people who funded it the wrong story twice out of three times.
+  /// Contribution.displayState separates them; this just paints the result.
   Widget _buildStatusBadge(ContributionStatus status, bool isOverdue) {
-    Color backgroundColor;
-    Color textColor;
-    String displayText;
-    IconData icon;
-
-    if (isOverdue) {
-      backgroundColor = const Color(0xFFEF4444).withValues(alpha: 0.2);
-      textColor = const Color(0xFFEF4444);
-      displayText = 'Overdue';
-      icon = Icons.access_time;
-    } else {
-      switch (status) {
-        case ContributionStatus.active:
-          backgroundColor = const Color(0xFF10B981).withValues(alpha: 0.2);
-          textColor = const Color(0xFF10B981);
-          displayText = 'Active';
-          icon = Icons.trending_up;
-          break;
-        case ContributionStatus.completed:
-          backgroundColor = const Color(0xFF10B981).withValues(alpha: 0.2);
-          textColor = const Color(0xFF10B981);
-          displayText = 'Completed';
-          icon = Icons.check_circle;
-          break;
-        case ContributionStatus.paused:
-          backgroundColor = const Color(0xFFF59E0B).withValues(alpha: 0.2);
-          textColor = const Color(0xFFF59E0B);
-          displayText = 'Paused';
-          icon = Icons.pause_circle;
-          break;
-        case ContributionStatus.cancelled:
-          backgroundColor = const Color(0xFFEF4444).withValues(alpha: 0.2);
-          textColor = const Color(0xFFEF4444);
-          displayText = 'Cancelled';
-          icon = Icons.cancel;
-          break;
-      }
+    // An esusu the creator has not opened is not "Active" — nothing is
+    // charged and no pot is paid out until they start it. Saying Active
+    // would tell members their cycle is running when it has not begun.
+    if (contribution.awaitingOpen) {
+      return _statusPill(
+        const Color(0xFF9CA3AF),
+        'Not started',
+        Icons.hourglass_empty_rounded,
+      );
     }
+
+    final state = contribution.displayState;
+    switch (state) {
+      case ContributionDisplayState.overdue:
+        return _statusPill(const Color(0xFFEF4444), state.label, Icons.access_time);
+      case ContributionDisplayState.active:
+        return _statusPill(const Color(0xFF10B981), state.label, Icons.trending_up);
+      case ContributionDisplayState.completed:
+        return _statusPill(const Color(0xFF10B981), state.label, Icons.check_circle);
+      case ContributionDisplayState.paidOut:
+        // Distinct colour from Completed: "funded" and "the money has
+        // reached them" are different facts and a member checking on a
+        // wedding gift needs to tell them apart at a glance.
+        return _statusPill(const Color(0xFF3B82F6), state.label, Icons.task_alt);
+      case ContributionDisplayState.closed:
+        // Neutral, not green: it closed without reaching its target, and
+        // green would congratulate the group on falling short.
+        return _statusPill(const Color(0xFF9CA3AF), state.label, Icons.lock_clock);
+      case ContributionDisplayState.paused:
+        return _statusPill(const Color(0xFFF59E0B), state.label, Icons.pause_circle);
+      case ContributionDisplayState.cancelled:
+        return _statusPill(const Color(0xFFEF4444), state.label, Icons.cancel);
+    }
+  }
+
+  /// Lighter than it was: a 0.20 fill with a hard drop shadow made every row
+  /// shout its own status. The badge is a label, not a call to action.
+  Widget _statusPill(Color tint, String label, IconData icon) {
+    final backgroundColor = tint.withValues(alpha: 0.12);
+    final textColor = tint;
+    final displayText = label;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: tint.withValues(alpha: 0.22)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

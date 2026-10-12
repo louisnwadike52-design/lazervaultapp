@@ -637,6 +637,7 @@ class ContributionMessage extends $pb.GeneratedMessage {
     $core.String? imageUrl,
     $core.bool? paidOut,
     $fixnum.Int64? paidOutAmountMinor,
+    $1.Timestamp? openedAt,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -679,6 +680,7 @@ class ContributionMessage extends $pb.GeneratedMessage {
     if (paidOut != null) result.paidOut = paidOut;
     if (paidOutAmountMinor != null)
       result.paidOutAmountMinor = paidOutAmountMinor;
+    if (openedAt != null) result.openedAt = openedAt;
     return result;
   }
 
@@ -773,6 +775,8 @@ class ContributionMessage extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(
         36, _omitFieldNames ? '' : 'paidOutAmountMinor', $pb.PbFieldType.OU6,
         defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOM<$1.Timestamp>(37, _omitFieldNames ? '' : 'openedAt',
+        subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1134,6 +1138,23 @@ class ContributionMessage extends $pb.GeneratedMessage {
   $core.bool hasPaidOutAmountMinor() => $_has(35);
   @$pb.TagNumber(36)
   void clearPaidOutAmountMinor() => $_clearField(36);
+
+  /// When the creator OPENED this contribution, freezing its roster. Unset ⇒
+  /// not opened yet, which only ever happens on a rotating-savings circle
+  /// (a one-time goal has no roster to freeze and opens at creation).
+  ///
+  /// Drives the create flow's last step: while a circle is unopened, members
+  /// can still be added and the payout scheduler leaves it alone.
+  @$pb.TagNumber(37)
+  $1.Timestamp get openedAt => $_getN(36);
+  @$pb.TagNumber(37)
+  set openedAt($1.Timestamp value) => $_setField(37, value);
+  @$pb.TagNumber(37)
+  $core.bool hasOpenedAt() => $_has(36);
+  @$pb.TagNumber(37)
+  void clearOpenedAt() => $_clearField(37);
+  @$pb.TagNumber(37)
+  $1.Timestamp ensureOpenedAt() => $_ensure(36);
 }
 
 /// Member assigned to a contribution
@@ -6627,6 +6648,7 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
     $core.bool? autoPayoutEnabled,
     $core.String? payoutReceiverUserId,
     $core.String? imageUrl,
+    $core.bool? openLater,
   }) {
     final result = create();
     if (groupId != null) result.groupId = groupId;
@@ -6653,6 +6675,7 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
     if (payoutReceiverUserId != null)
       result.payoutReceiverUserId = payoutReceiverUserId;
     if (imageUrl != null) result.imageUrl = imageUrl;
+    if (openLater != null) result.openLater = openLater;
     return result;
   }
 
@@ -6709,6 +6732,7 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
     ..aOB(19, _omitFieldNames ? '' : 'autoPayoutEnabled')
     ..aOS(20, _omitFieldNames ? '' : 'payoutReceiverUserId')
     ..aOS(21, _omitFieldNames ? '' : 'imageUrl')
+    ..aOB(22, _omitFieldNames ? '' : 'openLater')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -6932,6 +6956,23 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
   $core.bool hasImageUrl() => $_has(20);
   @$pb.TagNumber(21)
   void clearImageUrl() => $_clearField(21);
+
+  /// Rotating savings only: create the circle CLOSED, so the creator can keep
+  /// adding members and then OPEN it when the roster is final.
+  ///
+  /// Defaults false, and that default is load-bearing. An app build that
+  /// predates the Open button never sends this field, so its esusus must
+  /// start immediately exactly as they always have — otherwise every circle
+  /// created on an older build would sit unopened forever, never charging and
+  /// never paying out, with no control anywhere to start it.
+  @$pb.TagNumber(22)
+  $core.bool get openLater => $_getBF(21);
+  @$pb.TagNumber(22)
+  set openLater($core.bool value) => $_setBool(21, value);
+  @$pb.TagNumber(22)
+  $core.bool hasOpenLater() => $_has(21);
+  @$pb.TagNumber(22)
+  void clearOpenLater() => $_clearField(22);
 }
 
 class CreateContributionResponse extends $pb.GeneratedMessage {
@@ -14631,6 +14672,149 @@ class WithdrawJoinRequestResponse extends $pb.GeneratedMessage {
 /// item_type vocabulary, shared by every request below.
 ///   "group"        → a joint-funds group on the My Groups list
 ///   "contribution" → a contribution on a group's contributions list
+class OpenContributionRequest extends $pb.GeneratedMessage {
+  factory OpenContributionRequest({
+    $core.String? contributionId,
+  }) {
+    final result = create();
+    if (contributionId != null) result.contributionId = contributionId;
+    return result;
+  }
+
+  OpenContributionRequest._();
+
+  factory OpenContributionRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory OpenContributionRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'OpenContributionRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'contributionId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  OpenContributionRequest clone() =>
+      OpenContributionRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  OpenContributionRequest copyWith(
+          void Function(OpenContributionRequest) updates) =>
+      super.copyWith((message) => updates(message as OpenContributionRequest))
+          as OpenContributionRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static OpenContributionRequest create() => OpenContributionRequest._();
+  @$core.override
+  OpenContributionRequest createEmptyInstance() => create();
+  static $pb.PbList<OpenContributionRequest> createRepeated() =>
+      $pb.PbList<OpenContributionRequest>();
+  @$core.pragma('dart2js:noInline')
+  static OpenContributionRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<OpenContributionRequest>(create);
+  static OpenContributionRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get contributionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set contributionId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContributionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContributionId() => $_clearField(1);
+}
+
+class OpenContributionResponse extends $pb.GeneratedMessage {
+  factory OpenContributionResponse({
+    ContributionMessage? contribution,
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (contribution != null) result.contribution = contribution;
+    if (success != null) result.success = success;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  OpenContributionResponse._();
+
+  factory OpenContributionResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory OpenContributionResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'OpenContributionResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOM<ContributionMessage>(1, _omitFieldNames ? '' : 'contribution',
+        subBuilder: ContributionMessage.create)
+    ..aOB(2, _omitFieldNames ? '' : 'success')
+    ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  OpenContributionResponse clone() =>
+      OpenContributionResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  OpenContributionResponse copyWith(
+          void Function(OpenContributionResponse) updates) =>
+      super.copyWith((message) => updates(message as OpenContributionResponse))
+          as OpenContributionResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static OpenContributionResponse create() => OpenContributionResponse._();
+  @$core.override
+  OpenContributionResponse createEmptyInstance() => create();
+  static $pb.PbList<OpenContributionResponse> createRepeated() =>
+      $pb.PbList<OpenContributionResponse>();
+  @$core.pragma('dart2js:noInline')
+  static OpenContributionResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<OpenContributionResponse>(create);
+  static OpenContributionResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  ContributionMessage get contribution => $_getN(0);
+  @$pb.TagNumber(1)
+  set contribution(ContributionMessage value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContribution() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContribution() => $_clearField(1);
+  @$pb.TagNumber(1)
+  ContributionMessage ensureContribution() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.bool get success => $_getBF(1);
+  @$pb.TagNumber(2)
+  set success($core.bool value) => $_setBool(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasSuccess() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSuccess() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get message => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set message($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMessage() => $_clearField(3);
+}
+
 class SetDashboardOrderRequest extends $pb.GeneratedMessage {
   factory SetDashboardOrderRequest({
     $core.String? itemType,

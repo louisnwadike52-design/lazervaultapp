@@ -61,7 +61,11 @@ abstract class GroupAccountRemoteDataSource {
     Map<String, dynamic>? metadata,
     String? payoutReceiverUserId,
     String? imageUrl,
+    bool openLater = false,
   });
+
+  /// Start an esusu and freeze its roster. Idempotent server-side.
+  Future<ContributionModel> openContribution(String contributionId);
   Future<ContributionModel> updateContribution(ContributionModel contribution);
   Future<void> deleteContribution(String contributionId);
 

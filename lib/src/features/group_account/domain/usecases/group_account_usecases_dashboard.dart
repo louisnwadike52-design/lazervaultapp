@@ -85,3 +85,20 @@ class UnhideDashboardItem extends UseCase<void, DashboardItemParams> {
     );
   }
 }
+
+/// Start an esusu and freeze its roster.
+///
+/// Lives alongside the dashboard use cases rather than with the contribution
+/// CRUD because it is a lifecycle transition, not an edit: it changes what
+/// the schedulers will do, and after it the member list is no longer
+/// editable at all.
+class OpenContribution extends UseCase<Contribution, String> {
+  final GroupAccountRepository repository;
+
+  OpenContribution(this.repository);
+
+  @override
+  Future<Contribution> call(String contributionId) {
+    return repository.openContribution(contributionId);
+  }
+}

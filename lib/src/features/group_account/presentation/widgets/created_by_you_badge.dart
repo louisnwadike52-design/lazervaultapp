@@ -32,7 +32,9 @@ class CreatedByYouBadge extends StatelessWidget {
         vertical: compact ? 1.5.h : 2.h,
       ),
       decoration: BoxDecoration(
-        color: _accent.withValues(alpha: 0.15),
+        // Lighter, with the rest of the badge row: this is a quiet
+        // provenance marker, not an alert.
+        color: _accent.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(5.r),
         border: Border.all(color: _accent.withValues(alpha: 0.35)),
       ),
