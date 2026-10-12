@@ -13,6 +13,7 @@ import '../../domain/repositories/electricity_bill_repository.dart';
 import '../../utils/meter_validation.dart';
 import 'meter_entry_mode.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/shared_widgets/screen_unavailable.dart';
 
 class MeterInputScreen extends StatefulWidget {
   const MeterInputScreen({super.key});
@@ -115,9 +116,10 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
   Widget build(BuildContext context) {
     final provider = _provider;
     if (provider == null) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF0A0A0A),
-        body: SizedBox.shrink(),
+      return const ScreenUnavailable(
+        title: 'Provider not available',
+        message: 'We could not load the electricity provider. Pick it again '
+            'to continue.',
       );
     }
 

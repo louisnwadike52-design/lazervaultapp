@@ -10,6 +10,7 @@ import '../cubit/data_bundles_state.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/bills/presentation/widgets/bill_failure_dialog.dart';
+import 'package:lazervault/core/utils/route_args.dart';
 part 'data_payment_processing_screen_widgets.dart';
 
 class DataPaymentProcessingScreen extends StatefulWidget {
@@ -22,6 +23,9 @@ class DataPaymentProcessingScreen extends StatefulWidget {
 
 class _DataPaymentProcessingScreenState
     extends State<DataPaymentProcessingScreen> with TickerProviderStateMixin {
+  /// Survives a modal sheet nulling the global. See RouteArgsCache.
+  final RouteArgsCache _routeArgs = RouteArgsCache();
+
   late AnimationController _stepController;
   bool _hasFailed = false;
 
@@ -115,7 +119,7 @@ class _DataPaymentProcessingScreenState
     if (_paymentTriggered) return;
     _paymentTriggered = true;
 
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final plan = args['plan'] as DataPlanEntity;
     final network = args['network'] as String;
     final phoneNumber = args['phoneNumber'] as String;
@@ -161,7 +165,7 @@ class _DataPaymentProcessingScreenState
       return const Scaffold(backgroundColor: Color(0xFF0A0A0A));
     }
 
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
 
     return PopScope(
       canPop: false,

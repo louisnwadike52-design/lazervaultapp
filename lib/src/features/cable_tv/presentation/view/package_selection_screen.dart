@@ -11,6 +11,7 @@ import '../../domain/entities/tv_package_entity.dart';
 import '../cubit/cable_tv_cubit.dart';
 import '../cubit/cable_tv_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/utils/route_args.dart';
 
 class PackageSelectionScreen extends StatefulWidget {
   const PackageSelectionScreen({super.key});
@@ -20,19 +21,22 @@ class PackageSelectionScreen extends StatefulWidget {
 }
 
 class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
+  /// Survives a modal sheet nulling the global. See RouteArgsCache.
+  final RouteArgsCache _routeArgs = RouteArgsCache();
+
   final _currencyFormat = NumberFormat('#,##0', 'en_NG');
 
   @override
   void initState() {
     super.initState();
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final provider = args['provider'] as CableTVProviderEntity;
     context.read<CableTVCubit>().getPackages(providerId: provider.serviceId);
   }
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final provider = args['provider'] as CableTVProviderEntity;
     final validation = args['validation'] as SmartCardValidationEntity;
     final smartCardNumber = args['smartCardNumber'] as String;

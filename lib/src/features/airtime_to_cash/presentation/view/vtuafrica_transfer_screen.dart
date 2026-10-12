@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import '../cubit/airtime_to_cash_cubit.dart';
 import '../cubit/airtime_to_cash_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/utils/route_args.dart';
 part 'vtuafrica_transfer_screen_widgets.dart';
 
 /// VTU Africa transfer confirmation screen.
@@ -19,13 +20,16 @@ class VtuafricaTransferScreen extends StatefulWidget {
 }
 
 class _VtuafricaTransferScreenState extends State<VtuafricaTransferScreen> {
+  /// Survives a modal sheet nulling the global. See RouteArgsCache.
+  final RouteArgsCache _routeArgs = RouteArgsCache();
+
   // Conversion-submit failures render inline here, not as a snackbar
   // (repo rule: on-widget error states, single-shot retry on the button).
   String? _errorText;
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final phoneNumber = args['phoneNumber'] as String;
     final network = args['network'] as String;
     final amount = args['amount'] as double;

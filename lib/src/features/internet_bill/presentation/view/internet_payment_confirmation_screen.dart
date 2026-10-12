@@ -19,6 +19,7 @@ import '../cubit/internet_beneficiary_cubit.dart';
 import '../widgets/internet_rollover_preference_sheet.dart';
 import '../../data/datasources/internet_beneficiary_remote_datasource.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/utils/route_args.dart';
 
 part 'internet_payment_confirmation_screen_widgets.dart';
 
@@ -45,6 +46,9 @@ class InternetPaymentConfirmationScreen extends StatefulWidget {
 
 class _InternetPaymentConfirmationScreenState
     extends State<InternetPaymentConfirmationScreen> with TransactionPinMixin {
+  /// Survives a modal sheet nulling the global. See RouteArgsCache.
+  final RouteArgsCache _routeArgs = RouteArgsCache();
+
   final _currencyFormat = NumberFormat('#,##0', 'en_NG');
   bool _isProcessing = false;
 
@@ -82,7 +86,7 @@ class _InternetPaymentConfirmationScreenState
   /// state that other screens rely on.
   Future<void> _probeExistingState() async {
     try {
-      final args = Get.arguments as Map<String, dynamic>;
+      final args = _routeArgs.value;
       final provider = args['provider'] as InternetProviderEntity;
       final accountNumber = args['accountNumber'] as String;
       final providerCode = _providerCodeFor(provider.serviceId);
@@ -234,7 +238,7 @@ class _InternetPaymentConfirmationScreenState
   void _onPay() async {
     if (_isProcessing) return;
 
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final provider = args['provider'] as InternetProviderEntity;
     final package = args['package'] as InternetPackageEntity;
     final accountNumber = args['accountNumber'] as String;
@@ -289,7 +293,7 @@ class _InternetPaymentConfirmationScreenState
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final provider = args['provider'] as InternetProviderEntity;
     final package = args['package'] as InternetPackageEntity;
     final validation = args['validation'] as InternetAccountValidationEntity;

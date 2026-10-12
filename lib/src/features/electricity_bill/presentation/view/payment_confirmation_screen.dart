@@ -28,6 +28,7 @@ import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'meter_entry_mode.dart';
 import '../../../../../core/widgets/amount_preset_row.dart';
+import 'package:lazervault/core/shared_widgets/screen_unavailable.dart';
 part 'payment_confirmation_screen_widgets.dart';
 
 class PaymentConfirmationScreen extends StatefulWidget {
@@ -700,9 +701,11 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
   @override
   Widget build(BuildContext context) {
     if (!_argsValid) {
-      return const Scaffold(
+      return const ScreenUnavailable(
+        title: 'Payment details not available',
+        message: 'We could not load this payment. Start it again from the '
+            'meter details.',
         backgroundColor: InvoiceThemeColors.primaryBackground,
-        body: SizedBox.shrink(),
       );
     }
 

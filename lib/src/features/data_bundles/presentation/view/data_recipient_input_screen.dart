@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/services/locale_manager.dart';
 import '../../domain/entities/data_plan_entity.dart';
+import 'package:lazervault/core/utils/route_args.dart';
 
 class DataRecipientInputScreen extends StatefulWidget {
   const DataRecipientInputScreen({super.key});
@@ -16,6 +17,9 @@ class DataRecipientInputScreen extends StatefulWidget {
 }
 
 class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
+  /// Survives a modal sheet nulling the global. See RouteArgsCache.
+  final RouteArgsCache _routeArgs = RouteArgsCache();
+
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   CountryLocale _selectedDialCountry =
@@ -168,7 +172,7 @@ class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
   }
 
   void _onPhoneChanged(String value) {
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final network = args['network'] as String;
     final normalized = _normalizedPhone();
     final error = _validatePhone(normalized, network);
@@ -178,7 +182,7 @@ class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
   }
 
   void _onContinue() {
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final network = args['network'] as String;
     final normalized = _normalizedPhone();
     final error = _validatePhone(normalized, network);
@@ -205,7 +209,7 @@ class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final networkName = args['networkName'] as String;
     final networkColorValue = args['networkColor'] as int;
     final networkColor = Color(networkColorValue);

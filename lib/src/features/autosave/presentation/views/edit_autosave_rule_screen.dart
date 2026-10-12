@@ -11,6 +11,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart'
     as currency_formatter;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/autosave/utils/autosave_schedule_time.dart';
+import 'package:lazervault/core/shared_widgets/screen_unavailable.dart';
 
 class EditAutoSaveRuleScreen extends StatefulWidget {
   const EditAutoSaveRuleScreen({super.key});
@@ -644,9 +645,11 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
   @override
   Widget build(BuildContext context) {
     if (_invalidArgs) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF0A0A0A),
-        body: SizedBox.shrink(),
+      return const ScreenUnavailable(
+        title: 'Rule not available',
+        message: 'We could not load the rule you were editing. Open it again '
+            'from your Auto-Save list.',
+        actionLabel: 'Go to Auto-Save',
       );
     }
     return PopScope(

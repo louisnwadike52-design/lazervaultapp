@@ -29,6 +29,7 @@ import 'package:lazervault/src/features/transaction_pin/services/transaction_pin
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/autosave/domain/repositories/i_autosave_repository.dart';
 import '../../utils/autosave_trigger_labels.dart';
+import 'package:lazervault/core/shared_widgets/screen_unavailable.dart';
 part 'autosave_rule_details_screen_widgets.dart';
 
 class AutoSaveRuleDetailsScreen extends StatefulWidget {
@@ -882,9 +883,11 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
     // No valid rule (bad/blank args) — render a placeholder while the
     // post-frame callback in initState routes back home. Never touch `rule`.
     if (_invalidArgs) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF0A0A0A),
-        body: SizedBox.shrink(),
+      return const ScreenUnavailable(
+        title: 'Rule not available',
+        message: 'We could not load this Auto-Save rule. Open it again from '
+            'your Auto-Save list.',
+        actionLabel: 'Go to Auto-Save',
       );
     }
     return BlocListener<AutoSaveCubit, AutoSaveState>(

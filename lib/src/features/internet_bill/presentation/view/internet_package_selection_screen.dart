@@ -11,6 +11,7 @@ import '../../domain/entities/internet_package_entity.dart';
 import '../cubit/internet_bill_cubit.dart';
 import '../cubit/internet_bill_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/utils/route_args.dart';
 
 class InternetPackageSelectionScreen extends StatefulWidget {
   const InternetPackageSelectionScreen({super.key});
@@ -22,12 +23,15 @@ class InternetPackageSelectionScreen extends StatefulWidget {
 
 class _InternetPackageSelectionScreenState
     extends State<InternetPackageSelectionScreen> {
+  /// Survives a modal sheet nulling the global. See RouteArgsCache.
+  final RouteArgsCache _routeArgs = RouteArgsCache();
+
   final _currencyFormat = NumberFormat('#,##0', 'en_NG');
 
   @override
   void initState() {
     super.initState();
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final provider = args['provider'] as InternetProviderEntity;
     context
         .read<InternetBillCubit>()
@@ -36,7 +40,7 @@ class _InternetPackageSelectionScreenState
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final provider = args['provider'] as InternetProviderEntity;
     final validation = args['validation'] as InternetAccountValidationEntity;
     final accountNumber = args['accountNumber'] as String;

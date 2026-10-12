@@ -12,6 +12,7 @@ import '../../domain/entities/water_beneficiary.dart';
 import '../../domain/entities/water_provider_entity.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/lifestyle/presentation/screens/partner_webview_screen.dart';
+import 'package:lazervault/core/utils/route_args.dart';
 
 part 'water_bill_payment_confirmation_screen_new_widgets.dart';
 
@@ -36,6 +37,9 @@ class WaterBillPaymentConfirmationScreenNew extends StatefulWidget {
 
 class _WaterBillPaymentConfirmationScreenNewState
     extends State<WaterBillPaymentConfirmationScreenNew> {
+  /// Survives a modal sheet nulling the global. See RouteArgsCache.
+  final RouteArgsCache _routeArgs = RouteArgsCache();
+
   // Save-as-beneficiary state
   bool _saveBeneficiary = false;
   String? _beneficiaryNickname;
@@ -62,7 +66,7 @@ class _WaterBillPaymentConfirmationScreenNewState
 
   Future<void> _probeExistingState() async {
     try {
-      final args = Get.arguments as Map<String, dynamic>;
+      final args = _routeArgs.value;
       final provider = args['provider'] as WaterProviderEntity;
       final customerNumber = args['customerNumber'] as String;
       final providerCode = provider.providerCode.toUpperCase();
@@ -141,7 +145,7 @@ class _WaterBillPaymentConfirmationScreenNewState
       });
       return;
     }
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final provider = args['provider'] as WaterProviderEntity;
     final customerNumber = args['customerNumber'] as String;
     final amount = args['amount'] as double;
@@ -176,7 +180,7 @@ class _WaterBillPaymentConfirmationScreenNewState
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final provider = args['provider'] as WaterProviderEntity;
     final customerNumber = args['customerNumber'] as String;
     final customerName = args['customerName'] as String?;

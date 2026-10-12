@@ -20,6 +20,7 @@ import '../../services/internet_bill_pdf_service.dart';
 import '../widgets/internet_rollover_preference_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/widgets/bill_status_auto_refresh.dart';
+import 'package:lazervault/core/utils/route_args.dart';
 
 class InternetPaymentReceiptScreen extends StatefulWidget {
   const InternetPaymentReceiptScreen({super.key});
@@ -34,6 +35,9 @@ class _InternetPaymentReceiptScreenState
     with
         WidgetsBindingObserver,
         BillStatusAutoRefresh<InternetPaymentReceiptScreen> {
+  /// Survives a modal sheet nulling the global. See RouteArgsCache.
+  final RouteArgsCache _routeArgs = RouteArgsCache();
+
   /// Replaces a bespoke Timer.periodic(4s, maxPolls) that polled at a fixed
   /// rate, kept polling while the app was BACKGROUNDED, and could stack a
   /// second request behind a slow one. The shared mixin backs off, pauses on
@@ -411,7 +415,7 @@ class _InternetPaymentReceiptScreenState
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final argsPayment = args['payment'] as InternetPaymentEntity;
     // Prefer the refreshed snapshot (pull-to-refresh / poll) so async status
     // updates are reflected without a full navigation reset.

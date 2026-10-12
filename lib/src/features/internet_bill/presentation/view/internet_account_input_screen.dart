@@ -10,6 +10,7 @@ import '../../domain/entities/internet_account_validation_entity.dart';
 import '../cubit/internet_bill_cubit.dart';
 import '../cubit/internet_bill_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/utils/route_args.dart';
 part 'internet_account_input_screen_widgets.dart';
 
 class InternetAccountInputScreen extends StatefulWidget {
@@ -22,6 +23,9 @@ class InternetAccountInputScreen extends StatefulWidget {
 
 class _InternetAccountInputScreenState
     extends State<InternetAccountInputScreen> {
+  /// Survives a modal sheet nulling the global. See RouteArgsCache.
+  final RouteArgsCache _routeArgs = RouteArgsCache();
+
   final _formKey = GlobalKey<FormState>();
   final _accountController = TextEditingController();
   bool _isValidated = false;
@@ -43,7 +47,7 @@ class _InternetAccountInputScreenState
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final provider = args['provider'] as InternetProviderEntity;
     _rules = _IspInputRules.forServiceId(provider.serviceId);
     // Repeat-purchase / saved-contact entry points pass a pre-filled
@@ -83,7 +87,7 @@ class _InternetAccountInputScreenState
 
   void _onValidate() {
     if (!_formKey.currentState!.validate()) return;
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final provider = args['provider'] as InternetProviderEntity;
 
     context.read<InternetBillCubit>().validateAccount(
@@ -107,7 +111,7 @@ class _InternetAccountInputScreenState
   /// can proceed to package selection.
   void _onProceedWithoutVerify() {
     if (!_formKey.currentState!.validate()) return;
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final provider = args['provider'] as InternetProviderEntity;
     final accountNumber = _normalizeAccount(_accountController.text);
 
@@ -131,7 +135,7 @@ class _InternetAccountInputScreenState
   }
 
   void _onContinue() {
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final provider = args['provider'] as InternetProviderEntity;
     final cubitState = context.read<InternetBillCubit>().state;
 
@@ -170,7 +174,7 @@ class _InternetAccountInputScreenState
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final provider = args['provider'] as InternetProviderEntity;
     final rules = _rules ?? _IspInputRules.forServiceId(provider.serviceId);
 

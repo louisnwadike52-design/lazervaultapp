@@ -19,6 +19,7 @@ import 'package:lazervault/src/features/funds/presentation/widgets/saved_batch/a
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/shared_widgets/screen_unavailable.dart';
 
 /// Detail / edit screen for a single saved batch. Lets the user rename
 /// the batch, add or remove recipients, edit per-item amounts, apply a
@@ -774,9 +775,11 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
               return _buildErrorScaffold(state.message);
             }
             if (state is! SavedBatchDetailLoaded) {
-              return const Scaffold(
+              return const ScreenUnavailable(
+                title: 'Batch not available',
+                message: 'We could not load this saved batch. Open it again '
+                    'from your saved batches.',
                 backgroundColor: btBackground,
-                body: SizedBox.shrink(),
               );
             }
             return _buildLoaded(state);

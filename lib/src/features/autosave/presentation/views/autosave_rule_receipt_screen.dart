@@ -13,6 +13,7 @@ import 'package:lazervault/src/features/autosave/utils/autosave_trigger_labels.d
 import 'package:lazervault/src/features/funds/presentation/widgets/payment_receipt_shared.dart';
 import 'package:lazervault/src/features/tag_pay/services/tag_pay_pdf_service.dart'
     show TagPayPdfService;
+import 'package:lazervault/core/shared_widgets/screen_unavailable.dart';
 
 part 'autosave_rule_receipt_screen_widgets.dart';
 
@@ -159,9 +160,14 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen> {
   @override
   Widget build(BuildContext context) {
     if (_invalidArgs || _rule == null) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF0A0A0A),
-        body: SizedBox.shrink(),
+      // Not an empty box: if this is ever reached after the first frame the
+      // initState redirect has already run and nothing else will fire, so the
+      // user would be stranded on black.
+      return const ScreenUnavailable(
+        title: 'Receipt no longer available',
+        message: 'This receipt is shown once, right after a rule is created. '
+            'Open the rule from your Auto-Save list to see its details.',
+        actionLabel: 'Go to Auto-Save',
       );
     }
     final rule = _rule!;

@@ -10,6 +10,7 @@ import '../../domain/entities/customer_validation_result.dart';
 import '../../domain/entities/water_payment_entity.dart';
 import '../cubit/water_bill_cubit.dart';
 import '../cubit/water_bill_state.dart';
+import 'package:lazervault/core/utils/route_args.dart';
 
 class WaterBillPaymentProcessingScreen extends StatefulWidget {
   const WaterBillPaymentProcessingScreen({super.key});
@@ -22,6 +23,9 @@ class WaterBillPaymentProcessingScreen extends StatefulWidget {
 class _WaterBillPaymentProcessingScreenState
     extends State<WaterBillPaymentProcessingScreen>
     with TickerProviderStateMixin {
+  /// Survives a modal sheet nulling the global. See RouteArgsCache.
+  final RouteArgsCache _routeArgs = RouteArgsCache();
+
   late AnimationController _pulseController;
   late AnimationController _rotationController;
   late Animation<double> _pulseAnimation;
@@ -91,7 +95,7 @@ class _WaterBillPaymentProcessingScreenState
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final provider = args['provider'] as WaterProviderEntity;
     final validationResult =
         args['validationResult'] as CustomerValidationResult;

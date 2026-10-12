@@ -24,6 +24,7 @@ import '../../domain/entities/smart_card_validation_entity.dart';
 import '../../domain/entities/tv_package_entity.dart';
 import '../widgets/cable_tv_rollover_preference_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/utils/route_args.dart';
 
 part 'cable_tv_payment_confirmation_screen_widgets.dart';
 
@@ -51,6 +52,9 @@ class CableTVPaymentConfirmationScreen extends StatefulWidget {
 
 class _CableTVPaymentConfirmationScreenState
     extends State<CableTVPaymentConfirmationScreen> with TransactionPinMixin {
+  /// Survives a modal sheet nulling the global. See RouteArgsCache.
+  final RouteArgsCache _routeArgs = RouteArgsCache();
+
   final _currencyFormat = NumberFormat('#,##0', 'en_NG');
   bool _isProcessing = false;
 
@@ -132,7 +136,7 @@ class _CableTVPaymentConfirmationScreenState
   /// state that other screens rely on.
   Future<void> _probeExistingState() async {
     try {
-      final args = Get.arguments as Map<String, dynamic>;
+      final args = _routeArgs.value;
       final smartCardNumber = args['smartCardNumber'] as String;
       final provider = args['provider'] as CableTVProviderEntity;
       final providerCode = provider.serviceId.toLowerCase();
@@ -253,7 +257,7 @@ class _CableTVPaymentConfirmationScreenState
   void _onPay() async {
     if (_isProcessing) return;
 
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final provider = args['provider'] as CableTVProviderEntity;
     final package = args['package'] as TVPackageEntity;
     final smartCardNumber = args['smartCardNumber'] as String;
@@ -346,7 +350,7 @@ class _CableTVPaymentConfirmationScreenState
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>;
+    final args = _routeArgs.value;
     final provider = args['provider'] as CableTVProviderEntity;
     final package = args['package'] as TVPackageEntity;
     final validation = args['validation'] as SmartCardValidationEntity;

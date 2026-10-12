@@ -10,6 +10,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/autosave/domain/repositories/i_autosave_repository.dart';
 import 'package:lazervault/src/features/autosave/utils/autosave_trigger_labels.dart';
+import 'package:lazervault/core/shared_widgets/screen_unavailable.dart';
 
 class AutoSaveRuleReviewScreen extends StatefulWidget {
   const AutoSaveRuleReviewScreen({super.key});
@@ -156,9 +157,11 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
   @override
   Widget build(BuildContext context) {
     if (_invalidArgs) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF0A0A0A),
-        body: SizedBox.shrink(),
+      return const ScreenUnavailable(
+        title: 'Nothing to review',
+        message: 'The details for this rule are no longer in memory. Start the '
+            'rule again to review it.',
+        actionLabel: 'Go to Auto-Save',
       );
     }
     return Scaffold(
