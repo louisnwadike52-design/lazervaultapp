@@ -295,13 +295,23 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
     return true;
   }
 
+  /// The rate the user actually RECEIVES: mid-market less the convert margin.
+  ///
+  /// This used to be the bare fromPrice/toPrice, which is the rate before our
+  /// margin and therefore not a rate anyone is offered. The screen showed it
+  /// beside the summary's post-margin "effective rate" and the two disagreed
+  /// by exactly the margin.
+  ///
+  /// It also fed [_minFromForDeliverable], which asks "how much must they part
+  /// with for the DELIVERED amount to clear the floor" — a question only the
+  /// post-margin rate answers. Using the pre-margin one over-estimated the
+  /// delivery and could pass a swap that lands under the minimum; the 2%
+  /// headroom there was masking it rather than covering it.
   double get _exchangeRate {
     if (_fromHolding == null || _toCrypto == null) return 0.0;
-    // Displayed as "1 <from> → X <to>", so X = value-of-one-from expressed in to
-    // = fromPrice / toPrice. (Previously toPrice/fromPrice, which is the INVERSE
-    // and rendered e.g. "1 TRX → 3.068 USDT" instead of 0.325.)
     if (_toCrypto!.currentPrice <= 0) return 0.0; // Guard division by zero
-    return _fromHolding!.currentPrice / _toCrypto!.currentPrice;
+    final mid = _fromHolding!.currentPrice / _toCrypto!.currentPrice;
+    return mid * (1 - _convertMarginFraction);
   }
 
   /// Resolves an asset's real logo URL by ticker from the CryptoCubit catalogue
@@ -414,9 +424,13 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                               ),
                             ],
                             SizedBox(height: 24.h),
+                            // No separate "Exchange Rate" card. It showed
+                            // fromPrice/toPrice with NO margin applied, while
+                            // the summary below shows the rate actually
+                            // received — the two differed by exactly the
+                            // convert margin, so the screen advertised a rate
+                            // nobody could get. The summary is the one rate.
                             if (_fromHolding != null && _toCrypto != null) ...[
-                              _buildExchangeRate(),
-                              SizedBox(height: 24.h),
                               if (_hasValidAmount) _buildSwapSummary(),
                               if (_hasValidAmount) SizedBox(height: 24.h),
                             ],
@@ -926,112 +940,6 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
     );
   }
 
-  Widget _buildExchangeRate() {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-            const Color(0xFF1F1F1F),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.trending_up,
-                color: const Color(0xFF9F7AEA),
-                size: 20.sp,
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                'Exchange Rate',
-                style: GoogleFonts.inter(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              const Spacer(),
-              GestureDetector(
-                onTap: () {
-                  // Simulate rate refresh
-                  setState(() {});
-                },
-                child: Container(
-                  padding: EdgeInsets.all(6.w),
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 78, 3, 208)
-                        .withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Icon(
-                    Icons.refresh,
-                    color: const Color(0xFF9F7AEA),
-                    size: 16.sp,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '1 ${_fromHolding!.cryptoSymbol.toUpperCase()}',
-                style: GoogleFonts.inter(
-                  fontSize: 14.sp,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Row(
-                children: [
-                  Icon(
-                    Icons.arrow_forward,
-                    color: const Color(0xFF9F7AEA),
-                    size: 16.sp,
-                  ),
-                  SizedBox(width: 8.w),
-                  Text(
-                    '${_exchangeRate.toStringAsFixed(6)} ${_toCrypto!.symbol.toUpperCase()}',
-                    style: GoogleFonts.inter(
-                      fontSize: 14.sp,
-                      color: const Color(0xFF9F7AEA),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Rate updates every 30 seconds',
-            style: GoogleFonts.inter(
-              fontSize: 12.sp,
-              color: Colors.white.withValues(alpha: 0.6),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildSwapSummary() {
     // No fee estimate here. Both rows it fed are gone: the trading fee is the

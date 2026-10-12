@@ -14,6 +14,36 @@ class UnifiedTransaction extends Equatable {
   final UnifiedTransactionStatus status;
   final TransactionFlow flow;
   final String? transactionReference;
+
+  /// The reference as the CUSTOMER should see it.
+  ///
+  /// A reservation is booked against accounts-service under its own key,
+  /// "HOLD-<business reference>" (utility-payments bill_reserve_funds.go), and
+  /// that is the right key for the hold: it is what capture and release look
+  /// the reservation up by. It is not a reference the customer has any use
+  /// for, and while a purchase is still pending it was the only thing the
+  /// receipt had to show — an airtime purchase displayed, copied, shared and
+  /// QR-encoded "HOLD-AIR-1791750032-332db828".
+  ///
+  /// The business reference is the part after the prefix, and it is also what
+  /// support can actually find: it is bill_payments.reference. Stripping is
+  /// done HERE rather than at each call site so the detail row, the copy
+  /// button, the QR and the shared PDF cannot disagree about what the
+  /// reference is.
+  ///
+  /// Only the reservation prefixes are removed. HOLD-CAP-<id> is deliberately
+  /// left alone: that is a settlement row in its own right, and
+  /// external_transfer_merge keys on it.
+  String? get displayReference {
+    final raw = transactionReference?.trim();
+    if (raw == null || raw.isEmpty) return transactionReference;
+    if (raw.startsWith('HOLD-CAP')) return raw;
+    if (raw.startsWith('HOLD-')) {
+      final stripped = raw.substring(5).trim();
+      if (stripped.isNotEmpty) return stripped;
+    }
+    return raw;
+  }
   final Map<String, dynamic>? metadata;
   final String? counterpartyName;
   final String? counterpartyAccount;

@@ -186,7 +186,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     // Treat an empty string the same as absent — a proto string field defaults
     // to '' (not null), so `??` alone would let an empty reference through and
     // feed empty data to the QR BarcodeWidget.
-    final ref = tx.transactionReference;
+    final ref = tx.displayReference;
     if (ref != null && ref.isNotEmpty) return ref;
     return tx.id;
   }
@@ -597,7 +597,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     final cryptoRows = CryptoReceiptFields.rows(
       tx.metadata,
       fiatSymbol: _currencySymbol,
-      reference: tx.transactionReference,
+      reference: tx.displayReference,
     );
     if (cryptoRows.isNotEmpty) {
       return _detailsCardFrom([
@@ -619,7 +619,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     final escrowRows = EscrowReceiptFields.rows(
       tx.metadata,
       fiatSymbol: _currencySymbol,
-      reference: tx.transactionReference,
+      reference: tx.displayReference,
     );
     if (escrowRows.isNotEmpty) {
       return _detailsCardFrom([
@@ -651,8 +651,8 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
             logoBankName: bankName, logoBankCode: bankCode),
       if (tx.description != null && !_isPlaceholderValue(tx.description!))
         _DetailEntry('Description', _cleanDescription(tx.description!)),
-      if (tx.transactionReference != null)
-        _DetailEntry('Reference', tx.transactionReference!, copyable: true),
+      if (tx.displayReference != null)
+        _DetailEntry('Reference', tx.displayReference!, copyable: true),
       // Wallet balance either side of the movement. Shown as a PAIR or not at
       // all — one half on its own cannot be reconciled against anything, and a
       // crypto leg has no naira balance to state (both are null there).
@@ -1199,7 +1199,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   List<MapEntry<String, String>> get _escrowRows => EscrowReceiptFields.rows(
         tx.metadata,
         fiatSymbol: _currencySymbol,
-        reference: tx.transactionReference,
+        reference: tx.displayReference,
       );
 
   /// Contribution-payload rows for the PDF body, mirroring _invoiceRows.
