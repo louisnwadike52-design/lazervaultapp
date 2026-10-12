@@ -305,6 +305,18 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
   // The operator who switches it off is making a deliberate, server-side,
   // reversible choice — which is what "admin-tunable" has to mean to be worth
   // anything.
+  Widget _buildSkipButton() => TextButton(
+        onPressed:
+            (_submitting || _resending) ? null : _onSkipDeviceVerification,
+        child: Text(
+          'Skip for now',
+          style: TextStyle(
+              color: _textSecondary,
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600),
+        ),
+      );
+
   void _onSkipDeviceVerification() {
     // WAS: Get.offAllNamed(freshLoginEntry) — which sent the user BACK to the
     // login screen they had just come through. Not a workaround: there was no
@@ -525,19 +537,23 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
               // and is the same key the SERVER checks before honouring a skip
               // — so the control and the capability can no longer disagree,
               // and a visible button is always one the backend will accept.
-              if (EndpointRegistry.instance.otpSkipButtonVisible)
-                TextButton(
-                  onPressed: (_submitting || _resending)
-                      ? null
-                      : _onSkipDeviceVerification,
-                  child: Text(
-                    'Skip for now',
-                    style: TextStyle(
-                        color: _textSecondary,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600),
-                  ),
-                ),
+              // Rebuilt on the registry's changeTick, because on a NEW DEVICE
+              // the snapshot is not there yet when this screen first paints.
+              //
+              // ensureReady() seeds the cache from SharedPreferences and then
+              // refreshes in the background. A fresh install has no prefs, so
+              // the first read falls to the 'false' default and the button is
+              // hidden — on precisely the login that raises a device
+              // challenge, which is the only time it is offered. Listening
+              // means it appears the moment the snapshot lands instead of
+              // staying hidden for that whole session.
+              ValueListenableBuilder<int>(
+                valueListenable: EndpointRegistry.instance.changeTick,
+                builder: (context, _, __) =>
+                    EndpointRegistry.instance.otpSkipButtonVisible
+                        ? _buildSkipButton()
+                        : const SizedBox.shrink(),
+              ),
             ],
           ),
         ),

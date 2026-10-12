@@ -141,6 +141,20 @@ String classifyDomain(String category, String description, String reference,
       (svc.contains('group-accounts') && s.contains('contribution'))) {
     return 'group_contribution';
   }
+  // The PAYOUT leg of the same product, which the arm above misses.
+  //
+  // group-accounts writes it as "Payout from: <contribution title>" — a
+  // narration with no "contribution" in it — so a member who RECEIVED their
+  // joint-funds payout saw it fall through to a plain transfer and reported
+  // not finding it in their history at all. The payment leg was classified;
+  // only the leg that pays the member out was not.
+  //
+  // Same reasoning as the text match above: new rows now carry
+  // metadata.service, but this retroactively fixes every payout already
+  // written without it.
+  if (svc.contains('group-accounts') && s.contains('payout')) {
+    return 'group_contribution';
+  }
   // Lazerfunds (uplift is its internal code name) writes through the same
   // multi-product service and sits in exactly the same trap.
   if (cat.startsWith('uplift')) {
