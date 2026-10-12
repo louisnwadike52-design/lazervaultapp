@@ -323,7 +323,8 @@ class ContributionChatCubit extends ChangeNotifier {
   /// against the final text by the composer, so a name deleted after being
   /// picked is not in this list.
   Future<void> send(String body,
-      {List<String> mentionedUserIds = const []}) async {
+      {List<String> mentionedUserIds = const [],
+      bool mentionSupport = false}) async {
     final text = body.trim();
     if (text.isEmpty) return;
     final clientId = _uuid.v4();
@@ -344,6 +345,11 @@ class ContributionChatCubit extends ChangeNotifier {
       replyToBody: reply?.body ?? '',
       replyToSender: reply?.senderName ?? '',
       status: ChatDeliveryStatus.sending,
+      mentionedUserIds: mentionedUserIds,
+      // Shown on the optimistic bubble too: the member tagged support and
+      // should see that it registered, rather than wondering whether the tag
+      // took until the server echoes back.
+      supportRequested: mentionSupport,
     );
     messages.add(optimistic);
     replyingTo = null;
@@ -358,6 +364,7 @@ class ContributionChatCubit extends ChangeNotifier {
         clientMessageId: clientId,
         replyToMessageId: reply?.id ?? '',
         mentionedUserIds: mentionedUserIds,
+        mentionSupport: mentionSupport,
       );
       final i = messages
           .indexWhere((m) => m.clientMessageId == clientId && m.id.isEmpty);

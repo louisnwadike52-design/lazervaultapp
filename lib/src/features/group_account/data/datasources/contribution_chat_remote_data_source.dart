@@ -55,6 +55,17 @@ class ContributionMessage {
   /// True ⇒ render "This message was deleted" in place of the content.
   final bool deletedForEveryone;
 
+  /// A member tagged Lazervault support on this message. The bubble shows a
+  /// "support asked" marker so the circle can see the request was made —
+  /// otherwise two members both ask, or neither does because each assumed
+  /// the other had.
+  final bool supportRequested;
+
+  /// Posted BY Lazervault support. Rendered distinctly: a member has to be
+  /// able to tell us apart from the person in their circle who is asking
+  /// them for money.
+  final bool isSupport;
+
   /// Client-side only: never sent to the server.
   final ChatDeliveryStatus status;
 
@@ -80,6 +91,8 @@ class ContributionMessage {
     this.status = ChatDeliveryStatus.sent,
     this.localMediaPath,
     this.mentionedUserIds = const [],
+    this.supportRequested = false,
+    this.isSupport = false,
   });
 
   bool get isText => kind == 'text';
@@ -111,6 +124,9 @@ class ContributionMessage {
       deletedForEveryone: deletedForEveryone ?? this.deletedForEveryone,
       status: status ?? this.status,
       localMediaPath: localMediaPath,
+      mentionedUserIds: mentionedUserIds,
+      supportRequested: supportRequested,
+      isSupport: isSupport,
     );
   }
 
@@ -155,6 +171,11 @@ class ContributionMessage {
       deletedForEveryone:
           (j['deletedForEveryone'] ?? j['deleted_for_everyone']) as bool? ??
               false,
+      // Absent on an older server, where both read false — an ordinary
+      // member message, which is what it is.
+      supportRequested:
+          (j['supportRequested'] ?? j['support_requested']) as bool? ?? false,
+      isSupport: (j['isSupport'] ?? j['is_support']) as bool? ?? false,
     );
   }
 }
@@ -363,6 +384,7 @@ class ContributionChatRemoteDataSource {
     int durationMs = 0,
     String replyToMessageId = '',
     List<String> mentionedUserIds = const [],
+    bool mentionSupport = false,
   }) async {
     final uri = Uri.parse('$_base/v1/contributions/$contributionId/messages');
     final res = await _client.post(
@@ -379,6 +401,9 @@ class ContributionChatRemoteDataSource {
         // Omitted when empty so an older gateway that does not know the field
         // is never sent a null it has to interpret.
         if (mentionedUserIds.isNotEmpty) 'mentioned_user_ids': mentionedUserIds,
+        // Same reason: omitted when false so an older gateway never has to
+        // interpret a field it does not know.
+        if (mentionSupport) 'mention_support': true,
       }),
     );
     if (res.statusCode < 200 || res.statusCode >= 300) {

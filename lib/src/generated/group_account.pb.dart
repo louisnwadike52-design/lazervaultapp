@@ -7506,9 +7506,16 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
   /// above: 0 with total_cycles_set=false means "leave alone", which matters
   /// because every other caller of this RPC omits it.
   ///
-  /// The rotation itself loops indefinitely — this drives the "cycle x of y"
-  /// the app shows, and the payout schedule derived from it. Validated
-  /// server-side against the current cycle and the rotation size.
+  /// The agreed number of cycles. When cycles_completed reaches it the
+  /// rotation CLOSES: the contribution goes to completed, the remaining
+  /// payout slots are cancelled, and nothing further is charged or paid.
+  ///
+  /// It used to be purely informational while the app asked for it and showed
+  /// the creator a "Rotation Ends" date — so the circle promised an end the
+  /// server never delivered, and no member could ever leave it cleanly.
+  ///
+  /// A contribution with no count stored still rotates indefinitely, which is
+  /// the real-world esusu that runs as long as its members want it to.
   @$pb.TagNumber(10)
   $core.int get totalCycles => $_getIZ(9);
   @$pb.TagNumber(10)
@@ -12064,6 +12071,8 @@ class ContributionMessageProto extends $pb.GeneratedMessage {
     $core.String? editedAt,
     $core.bool? deletedForEveryone,
     $core.Iterable<$core.String>? mentionedUserIds,
+    $core.bool? supportRequested,
+    $core.bool? isSupport,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -12084,6 +12093,8 @@ class ContributionMessageProto extends $pb.GeneratedMessage {
       result.deletedForEveryone = deletedForEveryone;
     if (mentionedUserIds != null)
       result.mentionedUserIds.addAll(mentionedUserIds);
+    if (supportRequested != null) result.supportRequested = supportRequested;
+    if (isSupport != null) result.isSupport = isSupport;
     return result;
   }
 
@@ -12116,6 +12127,8 @@ class ContributionMessageProto extends $pb.GeneratedMessage {
     ..aOS(14, _omitFieldNames ? '' : 'editedAt')
     ..aOB(15, _omitFieldNames ? '' : 'deletedForEveryone')
     ..pPS(16, _omitFieldNames ? '' : 'mentionedUserIds')
+    ..aOB(17, _omitFieldNames ? '' : 'supportRequested')
+    ..aOB(18, _omitFieldNames ? '' : 'isSupport')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -12285,6 +12298,29 @@ class ContributionMessageProto extends $pb.GeneratedMessage {
   /// and lets a client tell "you were tagged" without a second lookup.
   @$pb.TagNumber(16)
   $pb.PbList<$core.String> get mentionedUserIds => $_getList(15);
+
+  /// A member tagged Lazervault support on this message. Drives the "waiting
+  /// on support" marker in the bubble and the operator queue.
+  @$pb.TagNumber(17)
+  $core.bool get supportRequested => $_getBF(16);
+  @$pb.TagNumber(17)
+  set supportRequested($core.bool value) => $_setBool(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasSupportRequested() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearSupportRequested() => $_clearField(17);
+
+  /// Posted BY support, through the admin surface. The app renders it
+  /// differently: a member has to be able to tell Lazervault apart from the
+  /// person in their circle who is asking them for money.
+  @$pb.TagNumber(18)
+  $core.bool get isSupport => $_getBF(17);
+  @$pb.TagNumber(18)
+  set isSupport($core.bool value) => $_setBool(17, value);
+  @$pb.TagNumber(18)
+  $core.bool hasIsSupport() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearIsSupport() => $_clearField(18);
 }
 
 class SendContributionMessageRequest extends $pb.GeneratedMessage {
@@ -12297,6 +12333,7 @@ class SendContributionMessageRequest extends $pb.GeneratedMessage {
     $core.String? clientMessageId,
     $core.String? replyToMessageId,
     $core.Iterable<$core.String>? mentionedUserIds,
+    $core.bool? mentionSupport,
   }) {
     final result = create();
     if (contributionId != null) result.contributionId = contributionId;
@@ -12308,6 +12345,7 @@ class SendContributionMessageRequest extends $pb.GeneratedMessage {
     if (replyToMessageId != null) result.replyToMessageId = replyToMessageId;
     if (mentionedUserIds != null)
       result.mentionedUserIds.addAll(mentionedUserIds);
+    if (mentionSupport != null) result.mentionSupport = mentionSupport;
     return result;
   }
 
@@ -12332,6 +12370,7 @@ class SendContributionMessageRequest extends $pb.GeneratedMessage {
     ..aOS(6, _omitFieldNames ? '' : 'clientMessageId')
     ..aOS(7, _omitFieldNames ? '' : 'replyToMessageId')
     ..pPS(8, _omitFieldNames ? '' : 'mentionedUserIds')
+    ..aOB(9, _omitFieldNames ? '' : 'mentionSupport')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -12435,6 +12474,21 @@ class SendContributionMessageRequest extends $pb.GeneratedMessage {
   /// sends a push carrying a preview of a private group's messages.
   @$pb.TagNumber(8)
   $pb.PbList<$core.String> get mentionedUserIds => $_getList(7);
+
+  /// Tag Lazervault support on this message.
+  ///
+  /// A separate flag rather than a sentinel id in mentioned_user_ids: support
+  /// is not a member, has no user id in this group, and must not be pushed a
+  /// member notification. Mixing it in would put a fake user into the one
+  /// field that decides who receives a preview of a private conversation.
+  @$pb.TagNumber(9)
+  $core.bool get mentionSupport => $_getBF(8);
+  @$pb.TagNumber(9)
+  set mentionSupport($core.bool value) => $_setBool(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasMentionSupport() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearMentionSupport() => $_clearField(9);
 }
 
 class SendContributionMessageResponse extends $pb.GeneratedMessage {

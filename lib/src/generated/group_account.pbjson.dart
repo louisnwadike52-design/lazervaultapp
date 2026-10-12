@@ -3811,6 +3811,14 @@ const ContributionMessageProto$json = {
       '5': 9,
       '10': 'mentionedUserIds'
     },
+    {
+      '1': 'support_requested',
+      '3': 17,
+      '4': 1,
+      '5': 8,
+      '10': 'supportRequested'
+    },
+    {'1': 'is_support', '3': 18, '4': 1, '5': 8, '10': 'isSupport'},
   ],
 };
 
@@ -3826,7 +3834,8 @@ final $typed_data.Uint8List contributionMessageProtoDescriptor = $convert.base64
     'ABKAlSC3JlcGx5VG9Cb2R5EiYKD3JlcGx5X3RvX3NlbmRlchgNIAEoCVINcmVwbHlUb1NlbmRl'
     'chIbCgllZGl0ZWRfYXQYDiABKAlSCGVkaXRlZEF0EjAKFGRlbGV0ZWRfZm9yX2V2ZXJ5b25lGA'
     '8gASgIUhJkZWxldGVkRm9yRXZlcnlvbmUSLAoSbWVudGlvbmVkX3VzZXJfaWRzGBAgAygJUhBt'
-    'ZW50aW9uZWRVc2VySWRz');
+    'ZW50aW9uZWRVc2VySWRzEisKEXN1cHBvcnRfcmVxdWVzdGVkGBEgASgIUhBzdXBwb3J0UmVxdW'
+    'VzdGVkEh0KCmlzX3N1cHBvcnQYEiABKAhSCWlzU3VwcG9ydA==');
 
 @$core.Deprecated('Use sendContributionMessageRequestDescriptor instead')
 const SendContributionMessageRequest$json = {
@@ -3852,6 +3861,7 @@ const SendContributionMessageRequest$json = {
       '5': 9,
       '10': 'mentionedUserIds'
     },
+    {'1': 'mention_support', '3': 9, '4': 1, '5': 8, '10': 'mentionSupport'},
   ],
 };
 
@@ -3862,7 +3872,8 @@ final $typed_data.Uint8List sendContributionMessageRequestDescriptor = $convert.
     'ZHkSGwoJbWVkaWFfdXJsGAQgASgJUghtZWRpYVVybBIfCgtkdXJhdGlvbl9tcxgFIAEoBVIKZH'
     'VyYXRpb25NcxIqChFjbGllbnRfbWVzc2FnZV9pZBgGIAEoCVIPY2xpZW50TWVzc2FnZUlkEi0K'
     'E3JlcGx5X3RvX21lc3NhZ2VfaWQYByABKAlSEHJlcGx5VG9NZXNzYWdlSWQSLAoSbWVudGlvbm'
-    'VkX3VzZXJfaWRzGAggAygJUhBtZW50aW9uZWRVc2VySWRz');
+    'VkX3VzZXJfaWRzGAggAygJUhBtZW50aW9uZWRVc2VySWRzEicKD21lbnRpb25fc3VwcG9ydBgJ'
+    'IAEoCFIObWVudGlvblN1cHBvcnQ=');
 
 @$core.Deprecated('Use sendContributionMessageResponseDescriptor instead')
 const SendContributionMessageResponse$json = {

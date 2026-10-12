@@ -50,6 +50,19 @@ class ContributionChatScreen extends StatefulWidget {
   State<ContributionChatScreen> createState() => _ContributionChatScreenState();
 }
 
+/// The id used for the "Lazervault Support" mention candidate.
+///
+/// Never sent to the server as a mention — [_ContributionChatScreenState._send]
+/// pulls it out and sets mention_support instead. It exists only so the
+/// picker, which is keyed by user id, has something to key on.
+const String _supportMentionId = 'lazervault-support';
+
+const MentionCandidate _supportCandidate = MentionCandidate(
+  userId: _supportMentionId,
+  name: 'Lazervault Support',
+  username: 'support',
+);
+
 class _ContributionChatScreenState extends State<ContributionChatScreen>
     with WidgetsBindingObserver {
   static const _bg = Color(0xFF0A0A0A);
@@ -171,11 +184,29 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
   List<MentionCandidate> get _mentionMatches {
     final q = _mentionQuery;
     if (q == null) return const [];
-    return MentionText.rank(
+    final matches = MentionText.rank(
       widget.mentionCandidates.where((c) => c.userId != widget.currentUserId),
       q.term,
       nameOf: (c) => c.name,
     ).take(12).toList();
+
+    // Lazervault Support, offered alongside the members.
+    //
+    // A circle asks for help inside the conversation the help is ABOUT — who
+    // owes what, why a payout was held — and making them leave for a support
+    // form means the answer lands somewhere the other members cannot see it.
+    //
+    // It is a sentinel candidate, not a user: the send path pulls it out and
+    // sends mention_support instead of putting a fake id into the array that
+    // decides who gets pushed a preview of a private conversation.
+    if (MentionText.rank(
+      const [_supportCandidate],
+      q.term,
+      nameOf: (c) => c.name,
+    ).isNotEmpty) {
+      matches.insert(0, _supportCandidate);
+    }
+    return matches;
   }
 
   void _onComposerChanged(String value) {
@@ -271,13 +302,22 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
     // Re-derived from the final text, not from what was picked: a name deleted
     // after selection must not still notify that person.
     final mentions = MentionText.survivingMentions(text, _pickedMentions);
+    // Support is a sentinel, never a member id. Pulled out here so the array
+    // that reaches the server contains only real members — the server would
+    // drop it anyway (it validates every id against active membership), but
+    // then the tag would silently do nothing.
+    final mentionSupport = mentions.remove(_supportMentionId);
     _input.clear();
     setState(() {
       _pickedMentions.clear();
       _mentionBoundary = 0;
       _mentionQuery = null;
     });
-    await _chat.send(text, mentionedUserIds: mentions);
+    await _chat.send(
+      text,
+      mentionedUserIds: mentions,
+      mentionSupport: mentionSupport,
+    );
     _scrollToBottom();
   }
 
@@ -688,29 +728,52 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
           constraints: BoxConstraints(maxWidth: 0.76.sw),
           decoration: BoxDecoration(
-            color: mine ? _mine : _card,
+            // A support message is neither "mine" nor another member's, and
+            // it must not look like either: the member has to be able to
+            // tell Lazervault apart from the person in their circle who is
+            // asking them for money.
+            color: m.isSupport
+                ? const Color(0xFF13302A)
+                : (mine ? _mine : _card),
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(14.r),
               topRight: Radius.circular(14.r),
               bottomLeft: Radius.circular(mine ? 14.r : 4.r),
               bottomRight: Radius.circular(mine ? 4.r : 14.r),
             ),
-            border: mine ? null : Border.all(color: _border),
+            border: m.isSupport
+                ? Border.all(color: const Color(0xFF10B981))
+                : (mine ? null : Border.all(color: _border)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (showSender)
+              // Support is always labelled, even on a run of consecutive
+              // messages where a member's name would be collapsed away. Who
+              // said it is the whole point of the distinction.
+              if (showSender || m.isSupport)
                 Padding(
                   padding: EdgeInsets.only(bottom: 3.h),
-                  child: Text(
-                    m.senderName,
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF9B6DFF),
-                      fontSize: 11.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (m.isSupport) ...[
+                        Icon(Icons.verified_rounded,
+                            size: 12.sp, color: const Color(0xFF10B981)),
+                        SizedBox(width: 4.w),
+                      ],
+                      Text(
+                        m.senderName,
+                        style: GoogleFonts.inter(
+                          color: m.isSupport
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFF9B6DFF),
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               if (m.hasReply) _replyQuote(m, mine),
@@ -723,6 +786,28 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
                 _voiceBubble(m)
               else
                 _bodyWithMentions(m),
+              // "Support asked" on the message that asked. Without it two
+              // members both raise the same request, or neither does because
+              // each assumed the other had.
+              if (m.supportRequested) ...[
+                SizedBox(height: 4.h),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.support_agent_rounded,
+                        size: 12.sp, color: const Color(0xFF10B981)),
+                    SizedBox(width: 4.w),
+                    Text(
+                      'Lazervault support asked',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF10B981),
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               SizedBox(height: 3.h),
               Row(
                 mainAxisSize: MainAxisSize.min,
