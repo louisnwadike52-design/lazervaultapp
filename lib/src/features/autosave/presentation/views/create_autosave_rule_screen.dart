@@ -636,8 +636,12 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           _TriggerCard(
             tint: AutoSaveTriggerLabels.colorOf(order[i]),
             icon: AutoSaveTriggerLabels.iconOf(order[i]),
-            title: AutoSaveTriggerLabels.nameOf(order[i]),
-            description: AutoSaveTriggerLabels.descriptionOf(order[i]),
+            // Admin-set wording where there is any; the built-in copy
+            // otherwise. This screen already holds capabilities for the
+            // visibility gate, so the words come from the same read.
+            title: AutoSaveTriggerLabels.nameFor(order[i], _capabilities),
+            description:
+                AutoSaveTriggerLabels.descriptionFor(order[i], _capabilities),
             selected: _selectedTriggerType == order[i],
             onTap: () => _selectTrigger(order[i]),
           ),

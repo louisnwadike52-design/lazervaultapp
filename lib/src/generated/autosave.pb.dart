@@ -2110,6 +2110,9 @@ class GetAutoSaveCapabilitiesResponse extends $pb.GeneratedMessage {
     $fixnum.Int64? minSaveKobo,
     $core.bool? feeEnabled,
     $core.String? bankInflowDisabledReason,
+    $core.Iterable<$core.MapEntry<$core.String, $core.String>>? triggerLabels,
+    $core.Iterable<$core.MapEntry<$core.String, $core.String>>?
+        triggerDescriptions,
   }) {
     final result = create();
     if (bankInflowEnabled != null) result.bankInflowEnabled = bankInflowEnabled;
@@ -2117,6 +2120,9 @@ class GetAutoSaveCapabilitiesResponse extends $pb.GeneratedMessage {
     if (feeEnabled != null) result.feeEnabled = feeEnabled;
     if (bankInflowDisabledReason != null)
       result.bankInflowDisabledReason = bankInflowDisabledReason;
+    if (triggerLabels != null) result.triggerLabels.addEntries(triggerLabels);
+    if (triggerDescriptions != null)
+      result.triggerDescriptions.addEntries(triggerDescriptions);
     return result;
   }
 
@@ -2137,6 +2143,18 @@ class GetAutoSaveCapabilitiesResponse extends $pb.GeneratedMessage {
     ..aInt64(2, _omitFieldNames ? '' : 'minSaveKobo')
     ..aOB(3, _omitFieldNames ? '' : 'feeEnabled')
     ..aOS(4, _omitFieldNames ? '' : 'bankInflowDisabledReason')
+    ..m<$core.String, $core.String>(5, _omitFieldNames ? '' : 'triggerLabels',
+        entryClassName: 'GetAutoSaveCapabilitiesResponse.TriggerLabelsEntry',
+        keyFieldType: $pb.PbFieldType.OS,
+        valueFieldType: $pb.PbFieldType.OS,
+        packageName: const $pb.PackageName('pb'))
+    ..m<$core.String, $core.String>(
+        6, _omitFieldNames ? '' : 'triggerDescriptions',
+        entryClassName:
+            'GetAutoSaveCapabilitiesResponse.TriggerDescriptionsEntry',
+        keyFieldType: $pb.PbFieldType.OS,
+        valueFieldType: $pb.PbFieldType.OS,
+        packageName: const $pb.PackageName('pb'))
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2200,6 +2218,24 @@ class GetAutoSaveCapabilitiesResponse extends $pb.GeneratedMessage {
   $core.bool hasBankInflowDisabledReason() => $_has(3);
   @$pb.TagNumber(4)
   void clearBankInflowDisabledReason() => $_clearField(4);
+
+  /// ADMIN-TUNABLE TRIGGER COPY, keyed by the stored trigger_type
+  /// (on_deposit, scheduled, round_up, external_inflow, scheduled_external).
+  ///
+  /// The five trigger names and their one-line explanations were compiled
+  /// into the app, so renaming one — "Round-Up" to "Amount Spend", say —
+  /// took a store release, and the admin console described a product by a
+  /// name the service could not change.
+  ///
+  /// A key that is ABSENT means "use the app's built-in copy". An empty map
+  /// is therefore the correct response from a server that has no overrides,
+  /// and from an older server that does not know these fields at all, which
+  /// is what makes adding them safe.
+  @$pb.TagNumber(5)
+  $pb.PbMap<$core.String, $core.String> get triggerLabels => $_getMap(4);
+
+  @$pb.TagNumber(6)
+  $pb.PbMap<$core.String, $core.String> get triggerDescriptions => $_getMap(5);
 }
 
 /// Get auto-save transactions request

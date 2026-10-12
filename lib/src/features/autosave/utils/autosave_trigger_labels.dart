@@ -17,7 +17,50 @@ import '../domain/repositories/i_autosave_repository.dart';
 class AutoSaveTriggerLabels {
   const AutoSaveTriggerLabels._();
 
-  /// Short name for chips, list rows, tables and PDFs.
+  /// The stored `trigger_type` for [t] — the key the server uses for both
+  /// per-trigger pricing and admin-set copy. The Dart enum name is camelCase
+  /// and the server's is snake_case, and conflating the two is how an
+  /// override silently fails to apply.
+  static String wireName(TriggerType t) {
+    switch (t) {
+      case TriggerType.onDeposit:
+        return 'on_deposit';
+      case TriggerType.scheduled:
+        return 'scheduled';
+      case TriggerType.roundUp:
+        return 'round_up';
+      case TriggerType.externalInflow:
+        return 'external_inflow';
+      case TriggerType.scheduledExternal:
+        return 'scheduled_external';
+      case TriggerType.unknown:
+        return '';
+    }
+  }
+
+  /// The trigger's name, preferring what an admin has set.
+  ///
+  /// The built-in copy below is the FALLBACK, not the default-to-be-edited:
+  /// an absent or blank override means "use the app's wording", so an
+  /// operator clearing a box restores it, an older server changes nothing,
+  /// and a failed capabilities call changes nothing either. A trigger
+  /// rendering with no name at all would be worse than any wording.
+  static String nameFor(TriggerType t, AutoSaveCapabilities? caps) =>
+      _override(caps?.triggerLabels, t) ?? nameOf(t);
+
+  /// The trigger's one-line explanation, preferring what an admin has set.
+  static String descriptionFor(TriggerType t, AutoSaveCapabilities? caps) =>
+      _override(caps?.triggerDescriptions, t) ?? descriptionOf(t);
+
+  static String? _override(Map<String, String>? from, TriggerType t) {
+    final key = wireName(t);
+    if (from == null || key.isEmpty) return null;
+    final v = (from[key] ?? '').trim();
+    return v.isEmpty ? null : v;
+  }
+
+  /// Short name for chips, list rows, tables and PDFs. The BUILT-IN wording;
+  /// prefer [nameFor] wherever capabilities are available.
   static String nameOf(TriggerType t) {
     switch (t) {
       case TriggerType.onDeposit:
@@ -170,4 +213,8 @@ class AutoSaveTriggerLabels {
 
   /// Uppercase variant for compact history chips.
   static String chipLabelOf(TriggerType t) => nameOf(t).toUpperCase();
+
+  /// Admin-aware variant of [chipLabelOf].
+  static String chipLabelFor(TriggerType t, AutoSaveCapabilities? caps) =>
+      nameFor(t, caps).toUpperCase();
 }

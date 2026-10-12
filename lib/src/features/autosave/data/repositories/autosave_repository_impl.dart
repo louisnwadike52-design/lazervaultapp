@@ -584,6 +584,12 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         minSave: response.minSaveKobo.toDouble() / 100,
         feeEnabled: response.feeEnabled,
         bankInflowDisabledReason: response.bankInflowDisabledReason,
+        // Copied into plain maps so nothing downstream holds a protobuf
+        // view. An older server sends neither field and both arrive empty,
+        // which is exactly "no overrides".
+        triggerLabels: Map<String, String>.from(response.triggerLabels),
+        triggerDescriptions:
+            Map<String, String>.from(response.triggerDescriptions),
       ));
     } catch (e) {
       // Fail CLOSED: callers fall back to hiding the optional trigger rather

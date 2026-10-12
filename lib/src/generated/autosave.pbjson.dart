@@ -629,16 +629,62 @@ const GetAutoSaveCapabilitiesResponse$json = {
       '5': 9,
       '10': 'bankInflowDisabledReason'
     },
+    {
+      '1': 'trigger_labels',
+      '3': 5,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.GetAutoSaveCapabilitiesResponse.TriggerLabelsEntry',
+      '10': 'triggerLabels'
+    },
+    {
+      '1': 'trigger_descriptions',
+      '3': 6,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.GetAutoSaveCapabilitiesResponse.TriggerDescriptionsEntry',
+      '10': 'triggerDescriptions'
+    },
+  ],
+  '3': [
+    GetAutoSaveCapabilitiesResponse_TriggerLabelsEntry$json,
+    GetAutoSaveCapabilitiesResponse_TriggerDescriptionsEntry$json
   ],
 };
 
+@$core.Deprecated('Use getAutoSaveCapabilitiesResponseDescriptor instead')
+const GetAutoSaveCapabilitiesResponse_TriggerLabelsEntry$json = {
+  '1': 'TriggerLabelsEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
+  ],
+  '7': {'7': true},
+};
+
+@$core.Deprecated('Use getAutoSaveCapabilitiesResponseDescriptor instead')
+const GetAutoSaveCapabilitiesResponse_TriggerDescriptionsEntry$json = {
+  '1': 'TriggerDescriptionsEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
+  ],
+  '7': {'7': true},
+};
+
 /// Descriptor for `GetAutoSaveCapabilitiesResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getAutoSaveCapabilitiesResponseDescriptor =
-    $convert.base64Decode(
-        'Ch9HZXRBdXRvU2F2ZUNhcGFiaWxpdGllc1Jlc3BvbnNlEi4KE2JhbmtfaW5mbG93X2VuYWJsZW'
-        'QYASABKAhSEWJhbmtJbmZsb3dFbmFibGVkEiIKDW1pbl9zYXZlX2tvYm8YAiABKANSC21pblNh'
-        'dmVLb2JvEh8KC2ZlZV9lbmFibGVkGAMgASgIUgpmZWVFbmFibGVkEj0KG2JhbmtfaW5mbG93X2'
-        'Rpc2FibGVkX3JlYXNvbhgEIAEoCVIYYmFua0luZmxvd0Rpc2FibGVkUmVhc29u');
+final $typed_data.Uint8List getAutoSaveCapabilitiesResponseDescriptor = $convert.base64Decode(
+    'Ch9HZXRBdXRvU2F2ZUNhcGFiaWxpdGllc1Jlc3BvbnNlEi4KE2JhbmtfaW5mbG93X2VuYWJsZW'
+    'QYASABKAhSEWJhbmtJbmZsb3dFbmFibGVkEiIKDW1pbl9zYXZlX2tvYm8YAiABKANSC21pblNh'
+    'dmVLb2JvEh8KC2ZlZV9lbmFibGVkGAMgASgIUgpmZWVFbmFibGVkEj0KG2JhbmtfaW5mbG93X2'
+    'Rpc2FibGVkX3JlYXNvbhgEIAEoCVIYYmFua0luZmxvd0Rpc2FibGVkUmVhc29uEl0KDnRyaWdn'
+    'ZXJfbGFiZWxzGAUgAygLMjYucGIuR2V0QXV0b1NhdmVDYXBhYmlsaXRpZXNSZXNwb25zZS5Ucm'
+    'lnZ2VyTGFiZWxzRW50cnlSDXRyaWdnZXJMYWJlbHMSbwoUdHJpZ2dlcl9kZXNjcmlwdGlvbnMY'
+    'BiADKAsyPC5wYi5HZXRBdXRvU2F2ZUNhcGFiaWxpdGllc1Jlc3BvbnNlLlRyaWdnZXJEZXNjcm'
+    'lwdGlvbnNFbnRyeVITdHJpZ2dlckRlc2NyaXB0aW9ucxpAChJUcmlnZ2VyTGFiZWxzRW50cnkS'
+    'EAoDa2V5GAEgASgJUgNrZXkSFAoFdmFsdWUYAiABKAlSBXZhbHVlOgI4ARpGChhUcmlnZ2VyRG'
+    'VzY3JpcHRpb25zRW50cnkSEAoDa2V5GAEgASgJUgNrZXkSFAoFdmFsdWUYAiABKAlSBXZhbHVl'
+    'OgI4AQ==');
 
 @$core.Deprecated('Use getAutoSaveTransactionsRequestDescriptor instead')
 const GetAutoSaveTransactionsRequest$json = {

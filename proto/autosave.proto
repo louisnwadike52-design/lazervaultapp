@@ -1,31 +1,38 @@
+// MIRROR — DO NOT EDIT, AND DO NOT GENERATE FROM THIS FILE.
+//
+// The authoritative copy is services/products-gateway/proto/autosave.proto,
+// and lib/src/generated/autosave.* is produced FROM THAT PATH:
+//
+//   cd services/products-gateway
+//   PATH="$HOME/.pub-cache/bin:$PATH" protoc \
+//     --dart_out=grpc:../../lazervaultapp/lib/src/generated \
+//     -Iproto proto/autosave.proto
+//
+// Use protoc_plugin 22.5.0 — 25.x emits short BuilderInfo names (aE/aI/pPM)
+// that do not exist on the protobuf 4.x this app pins, and the failure only
+// shows up in a RELEASE build.
+//
+// WHY THE WARNING: this file sat 133 lines behind the real one, missing
+// GetAutoSaveCapabilitiesRequest/Response entirely, while the committed
+// generated Dart contained them. Regenerating from here would have compiled
+// and silently DELETED the capabilities RPC the trigger picker depends on.
+// It is kept only so the app tree shows the contract it speaks.
+
 syntax = "proto3";
 
 package pb;
 option go_package = "lazervaultGo/pb";
 
 import "google/api/annotations.proto";
-import "protoc-gen-openapiv2/options/annotations.proto";
 import "google/protobuf/timestamp.proto";
-
-option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
-    info: {
-        title: "LazerVault AutoSave API"
-        version: "1.0"
-        description: "Automated savings service for LazerVault"
-    }
-    schemes: HTTP
-    schemes: HTTPS
-    consumes: "application/json"
-    produces: "application/json"
-};
 
 // Auto-save rule trigger types
 enum TriggerType {
     TRIGGER_UNKNOWN = 0;
-    TRIGGER_ON_DEPOSIT = 1;      // Trigger when money is deposited
-    TRIGGER_SCHEDULED = 2;        // Trigger on a schedule
-    TRIGGER_ROUND_UP = 3;         // Round up transactions to nearest value
-    TRIGGER_EXTERNAL_INFLOW = 4;  // Money arriving in a linked external bank account
+    TRIGGER_ON_DEPOSIT = 1;
+    TRIGGER_SCHEDULED = 2;
+    TRIGGER_ROUND_UP = 3;
+    TRIGGER_EXTERNAL_INFLOW = 4;
     TRIGGER_SCHEDULED_EXTERNAL = 5; // Recurring standing-order pull from a linked bank account
 }
 
@@ -50,67 +57,52 @@ enum AutoSaveStatus {
 // Amount calculation type
 enum AmountType {
     AMOUNT_UNKNOWN = 0;
-    AMOUNT_FIXED = 1;           // Fixed amount per trigger
-    AMOUNT_PERCENTAGE = 2;      // Percentage of incoming amount
+    AMOUNT_FIXED = 1;
+    AMOUNT_PERCENTAGE = 2;
 }
 
 // Auto-save rule definition
 message AutoSaveRule {
     string id = 1;
     string user_id = 2;
-    string name = 3;                           // User-defined name for the rule
+    string name = 3;
     string description = 4;
     TriggerType trigger_type = 5;
     AmountType amount_type = 6;
-    double amount_value = 7;                   // Fixed amount or percentage value
-    string source_account_id = 8;              // Account to debit from
-    string destination_account_id = 9;         // Savings account to credit
+    double amount_value = 7;
+    string source_account_id = 8;
+    string destination_account_id = 9;
     AutoSaveStatus status = 10;
-
-    // For scheduled triggers
     ScheduleFrequency frequency = 11;
-    string schedule_time = 12;                 // HH:MM format
-    int32 schedule_day = 13;                   // Day of week (1-7) or month (1-31)
-
-    // For round-up triggers
-    int32 round_up_to = 14;                    // Round up to nearest (e.g., 100, 1000)
-
-    // Goals and limits
-    double target_amount = 15;                 // Optional savings goal
-    double minimum_balance = 16;               // Min balance to maintain in source
-    double maximum_per_save = 17;              // Max amount per save
-
-    // Metadata
+    string schedule_time = 12;
+    int32 schedule_day = 13;
+    int32 round_up_to = 14;
+    double target_amount = 15;
+    double minimum_balance = 16;
+    double maximum_per_save = 17;
     google.protobuf.Timestamp created_at = 18;
     google.protobuf.Timestamp updated_at = 19;
     google.protobuf.Timestamp last_triggered_at = 20;
-    int32 trigger_count = 21;                  // Number of times triggered
-    double total_saved = 22;                   // Total amount saved via this rule
+    int32 trigger_count = 21;
+    double total_saved = 22;
 
     // External-inflow trigger: the Mono-linked bank account that feeds this
     // rule (banking-service pulls the save via its Direct Debit mandate).
     // source_account_id is unused for TRIGGER_EXTERNAL_INFLOW.
     string source_linked_account_id = 23;
     string source_bank_name = 24;
-
-    // Pending manual-save prompt for a reactive external_inflow rule: money
-    // landed in the linked bank and is ready to save, but a bank pull incurs a
-    // fee so it's never auto-executed. The app surfaces "₦X available to save".
-    // Types MUST match the backend proto (kobo int64 + strings) for the wire
-    // format. Zero/empty when nothing is pending.
+    // Pending detected inflow awaiting the user's PIN-confirmed save. The
+    // backend populates these and the app renders "₦X available — tap to
+    // save", but the gateway message stopped at 24 and silently DROPPED
+    // them, so that prompt could never appear (Bank Inflow's entire UX).
+    // Kept (and now forwarded) so legacy paused rules display honestly.
     int64 pending_inflow_kobo = 25;
     string pending_inflow_ext_txn_id = 26;
-    string pending_inflow_at = 27;       // RFC3339, empty when none
+    string pending_inflow_at = 27;
 }
 
 // Create auto-save rule request
 message CreateAutoSaveRuleRequest {
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-        json_schema: {
-            required: ["name", "trigger_type", "amount_type", "amount_value", "source_account_id", "destination_account_id"]
-        }
-    };
-
     string name = 1;
     string description = 2;
     TriggerType trigger_type = 3;
@@ -118,25 +110,19 @@ message CreateAutoSaveRuleRequest {
     double amount_value = 5;
     string source_account_id = 6;
     string destination_account_id = 7;
-
-    // Optional fields based on trigger type
     ScheduleFrequency frequency = 8;
     string schedule_time = 9;
     int32 schedule_day = 10;
     int32 round_up_to = 11;
-
-    // Optional goals and limits
     double target_amount = 12;
     double minimum_balance = 13;
     double maximum_per_save = 14;
-
     // Required when trigger_type is TRIGGER_EXTERNAL_INFLOW; source_account_id
     // is ignored for that trigger.
     string source_linked_account_id = 15;
     string source_bank_name = 16;
 }
 
-// Create auto-save rule response
 message CreateAutoSaveRuleResponse {
     bool success = 1;
     string msg = 2;
@@ -144,20 +130,22 @@ message CreateAutoSaveRuleResponse {
 }
 
 // Get auto-save rules request. Server-side filter / sort / pagination
-// support so the All-Rules screen can scroll through hundreds of
-// rules without loading the full collection on every interaction.
+// support so the Flutter All-Rules screen can scroll through hundreds
+// of rules without loading the full collection on every interaction.
 message GetAutoSaveRulesRequest {
-    string account_id = 1;          // Optional: filter by account
-    AutoSaveStatus status = 2;       // Optional: filter by status
-    string search = 3;               // Substring match (name + description)
-    string sort_by = 4;              // "created_at" | "name" | "total_saved" | "last_triggered_at"
-    string sort_dir = 5;             // "asc" | "desc"
+    string account_id = 1;
+    AutoSaveStatus status = 2;
+    // Substring match against name + description (case-insensitive).
+    string search = 3;
+    // sort_by: "created_at" | "name" | "total_saved" | "last_triggered_at".
+    string sort_by = 4;
+    // sort_dir: "asc" | "desc". Default "desc".
+    string sort_dir = 5;
     int32 limit = 6;
     int32 offset = 7;
     string trigger_type = 8;
 }
 
-// Get auto-save rules response
 message GetAutoSaveRulesResponse {
     bool success = 1;
     string msg = 2;
@@ -168,49 +156,32 @@ message GetAutoSaveRulesResponse {
 
 // Update auto-save rule request
 message UpdateAutoSaveRuleRequest {
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-        json_schema: {
-            required: ["rule_id"]
-        }
-    };
-
     string rule_id = 1;
     string name = 2;
     string description = 3;
     AmountType amount_type = 4;
     double amount_value = 5;
-
-    // Optional fields
     ScheduleFrequency frequency = 6;
     string schedule_time = 7;
     int32 schedule_day = 8;
     int32 round_up_to = 9;
-
     double target_amount = 10;
     double minimum_balance = 11;
     double maximum_per_save = 12;
 }
 
-// Update auto-save rule response
 message UpdateAutoSaveRuleResponse {
     bool success = 1;
     string msg = 2;
     AutoSaveRule rule = 3;
 }
 
-// Pause/resume auto-save rule request
+// Toggle auto-save rule request
 message ToggleAutoSaveRuleRequest {
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-        json_schema: {
-            required: ["rule_id", "action"]
-        }
-    };
-
     string rule_id = 1;
-    string action = 2;  // "pause" or "resume"
+    string action = 2;
 }
 
-// Pause/resume auto-save rule response
 message ToggleAutoSaveRuleResponse {
     bool success = 1;
     string msg = 2;
@@ -219,16 +190,9 @@ message ToggleAutoSaveRuleResponse {
 
 // Delete auto-save rule request
 message DeleteAutoSaveRuleRequest {
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-        json_schema: {
-            required: ["rule_id"]
-        }
-    };
-
     string rule_id = 1;
 }
 
-// Delete auto-save rule response
 message DeleteAutoSaveRuleResponse {
     bool success = 1;
     string msg = 2;
@@ -243,15 +207,15 @@ message AutoSaveTransaction {
     string destination_account_id = 5;
     double amount = 6;
     TriggerType trigger_type = 7;
-    string trigger_reason = 8;           // Description of what triggered the save
+    string trigger_reason = 8;
     bool success = 9;
     string error_message = 10;
     google.protobuf.Timestamp created_at = 11;
     // JSON context; external_inflow links the save to its banking deposit
     // ({"deposit_reference", "external_txn_id", "bank_name"}).
     string metadata = 12;
-    // Platform fee (kobo) deducted from the save: `amount` is the NET kept,
-    // gross_amount = amount + fee.
+    // Platform fee (major units) deducted from the save: `amount` is the NET
+    // kept, gross_amount = amount + fee.
     double fee = 13;
     double gross_amount = 14;
     string deposit_status = 15;  // ''=wallet; pending|completed|failed
@@ -259,7 +223,7 @@ message AutoSaveTransaction {
 }
 
 // Fee quote for the rule-review + manual-save sheets. Math is server-side
-// (single source with the executor) — the app never computes a fee itself.
+// (single source with the executor) — the app never computes a fee.
 message GetAutoSaveFeeQuoteRequest {
     int64 amount_kobo = 1;
     string trigger_type = 2;
@@ -275,15 +239,40 @@ message GetAutoSaveFeeQuoteResponse {
     int64 fixed_kobo = 7;
 }
 
-// Get auto-save transactions request
-message GetAutoSaveTransactionsRequest {
-    string rule_id = 1;              // Optional: filter by rule
-    string account_id = 2;           // Optional: filter by account
-    int32 limit = 3;                 // Optional: limit results
-    int32 offset = 4;                // Optional: pagination offset
+// Which triggers the app may offer, read from admin settings. Asked before the
+// trigger picker is drawn so a switched-off trigger is never shown; the server
+// re-checks on create/resume/trigger, so this is a display hint, not the gate.
+message GetAutoSaveCapabilitiesRequest {}
+
+message GetAutoSaveCapabilitiesResponse {
+    bool bank_inflow_enabled = 1;
+    int64 min_save_kobo = 2;
+    bool fee_enabled = 3;
+    string bank_inflow_disabled_reason = 4;
+    // ADMIN-TUNABLE TRIGGER COPY, keyed by the stored trigger_type
+    // (on_deposit, scheduled, round_up, external_inflow, scheduled_external).
+    //
+    // The five trigger names and their one-line explanations were compiled
+    // into the app, so renaming one — "Round-Up" to "Amount Spend", say —
+    // took a store release, and the admin console described a product by a
+    // name the service could not change.
+    //
+    // A key that is ABSENT means "use the app's built-in copy". An empty map
+    // is therefore the correct response from a server that has no overrides,
+    // and from an older server that does not know these fields at all, which
+    // is what makes adding them safe.
+    map<string, string> trigger_labels = 5;
+    map<string, string> trigger_descriptions = 6;
 }
 
-// Get auto-save transactions response
+// Get auto-save transactions request
+message GetAutoSaveTransactionsRequest {
+    string rule_id = 1;
+    string account_id = 2;
+    int32 limit = 3;
+    int32 offset = 4;
+}
+
 message GetAutoSaveTransactionsResponse {
     bool success = 1;
     string msg = 2;
@@ -301,170 +290,92 @@ message AutoSaveStatistics {
     int32 total_transactions = 6;
     double average_save_amount = 7;
     AutoSaveRule most_active_rule = 8;
+    // Rule with the highest lifetime total_saved (distinct from
+    // most_active_rule which uses trigger_count).
     AutoSaveRule top_rule_by_total_saved = 9;
+    // Per-status counters maintained alongside active_rules_count.
     int32 paused_rules_count = 10;
     int32 completed_rules_count = 11;
     int32 cancelled_rules_count = 12;
 }
 
-// Get auto-save statistics request
 message GetAutoSaveStatisticsRequest {}
 
-// Get auto-save statistics response
 message GetAutoSaveStatisticsResponse {
     bool success = 1;
     string msg = 2;
     AutoSaveStatistics statistics = 3;
 }
 
-// Manual trigger auto-save request (for testing or manual execution)
+// Manual trigger auto-save request
 message TriggerAutoSaveRequest {
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-        json_schema: {
-            required: ["rule_id"]
-        }
-    };
-
     string rule_id = 1;
-    double custom_amount = 2;  // Optional: override calculated amount
+    double custom_amount = 2;
     string transaction_pin_token = 15;  // Pre-validated PIN token for financial security
 }
 
-// Manual trigger auto-save response
 message TriggerAutoSaveResponse {
     bool success = 1;
     string msg = 2;
     AutoSaveTransaction transaction = 3;
 }
 
-// Service definition
+// AutoSave Service definition
 service AutoSaveService {
-    // Create a new auto-save rule
     rpc CreateAutoSaveRule(CreateAutoSaveRuleRequest) returns (CreateAutoSaveRuleResponse) {
         option (google.api.http) = {
             post: "/v1/autosave/rules"
             body: "*"
         };
-        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-            summary: "Create Auto-Save Rule"
-            description: "Creates a new automated savings rule for the authenticated user."
-            tags: ["AutoSave"]
-            security: {
-                security_requirement: {
-                    key: "bearer" value: {}
-                }
-            }
-        };
     }
 
-    // Get all auto-save rules for the user
     rpc GetAutoSaveRules(GetAutoSaveRulesRequest) returns (GetAutoSaveRulesResponse) {
         option (google.api.http) = {
             get: "/v1/autosave/rules"
         };
-        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-            summary: "Get Auto-Save Rules"
-            description: "Retrieves all auto-save rules for the authenticated user."
-            tags: ["AutoSave"]
-            security: {
-                security_requirement: {
-                    key: "bearer" value: {}
-                }
-            }
-        };
     }
 
-    // Update an existing auto-save rule
     rpc UpdateAutoSaveRule(UpdateAutoSaveRuleRequest) returns (UpdateAutoSaveRuleResponse) {
         option (google.api.http) = {
             put: "/v1/autosave/rules/{rule_id}"
             body: "*"
         };
-        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-            summary: "Update Auto-Save Rule"
-            description: "Updates an existing auto-save rule."
-            tags: ["AutoSave"]
-            security: {
-                security_requirement: {
-                    key: "bearer" value: {}
-                }
-            }
-        };
     }
 
-    // Pause or resume an auto-save rule
     rpc ToggleAutoSaveRule(ToggleAutoSaveRuleRequest) returns (ToggleAutoSaveRuleResponse) {
         option (google.api.http) = {
             post: "/v1/autosave/rules/{rule_id}/toggle"
             body: "*"
         };
-        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-            summary: "Toggle Auto-Save Rule"
-            description: "Pauses or resumes an auto-save rule."
-            tags: ["AutoSave"]
-            security: {
-                security_requirement: {
-                    key: "bearer" value: {}
-                }
-            }
-        };
     }
 
-    // Delete an auto-save rule
     rpc DeleteAutoSaveRule(DeleteAutoSaveRuleRequest) returns (DeleteAutoSaveRuleResponse) {
         option (google.api.http) = {
             delete: "/v1/autosave/rules/{rule_id}"
         };
-        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-            summary: "Delete Auto-Save Rule"
-            description: "Deletes an auto-save rule."
-            tags: ["AutoSave"]
-            security: {
-                security_requirement: {
-                    key: "bearer" value: {}
-                }
-            }
-        };
     }
 
-    // Get auto-save transaction history
     rpc GetAutoSaveTransactions(GetAutoSaveTransactionsRequest) returns (GetAutoSaveTransactionsResponse) {
         option (google.api.http) = {
             get: "/v1/autosave/transactions"
         };
-        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-            summary: "Get Auto-Save Transactions"
-            description: "Retrieves auto-save transaction history."
-            tags: ["AutoSave"]
-            security: {
-                security_requirement: {
-                    key: "bearer" value: {}
-                }
-            }
-        };
     }
 
-    // Get auto-save statistics
     rpc GetAutoSaveStatistics(GetAutoSaveStatisticsRequest) returns (GetAutoSaveStatisticsResponse) {
         option (google.api.http) = {
             get: "/v1/autosave/statistics"
         };
-        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-            summary: "Get Auto-Save Statistics"
-            description: "Retrieves auto-save statistics for the authenticated user."
-            tags: ["AutoSave"]
-            security: {
-                security_requirement: {
-                    key: "bearer" value: {}
-                }
-            }
-        };
     }
 
-    // Manually trigger an auto-save rule
     rpc GetAutoSaveFeeQuote(GetAutoSaveFeeQuoteRequest) returns (GetAutoSaveFeeQuoteResponse) {
         option (google.api.http) = {
             get: "/api/v1/autosave/fee-quote"
+        };
+    }
+
+    rpc GetAutoSaveCapabilities(GetAutoSaveCapabilitiesRequest) returns (GetAutoSaveCapabilitiesResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/autosave/capabilities"
         };
     }
 
@@ -472,16 +383,6 @@ service AutoSaveService {
         option (google.api.http) = {
             post: "/v1/autosave/rules/{rule_id}/trigger"
             body: "*"
-        };
-        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-            summary: "Trigger Auto-Save Manually"
-            description: "Manually triggers an auto-save rule execution."
-            tags: ["AutoSave"]
-            security: {
-                security_requirement: {
-                    key: "bearer" value: {}
-                }
-            }
         };
     }
 }

@@ -29,11 +29,24 @@ class AutoSaveCapabilities {
   /// hard-codes a second explanation that can drift from the backend's.
   final String bankInflowDisabledReason;
 
+  /// Admin overrides for the trigger picker's words, keyed by the stored
+  /// trigger_type (on_deposit, scheduled, round_up, external_inflow,
+  /// scheduled_external).
+  ///
+  /// EMPTY MEANS "use the built-in copy", and so does a missing key. That is
+  /// what makes this safe against an older server, an unseeded settings
+  /// table and a failed capabilities call alike: every one of them yields an
+  /// empty map, and every one of them renders exactly today's wording.
+  final Map<String, String> triggerLabels;
+  final Map<String, String> triggerDescriptions;
+
   const AutoSaveCapabilities({
     required this.bankInflowEnabled,
     required this.minSave,
     required this.feeEnabled,
     this.bankInflowDisabledReason = '',
+    this.triggerLabels = const {},
+    this.triggerDescriptions = const {},
   });
 
   static const fallback = AutoSaveCapabilities(
