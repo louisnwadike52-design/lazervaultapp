@@ -43,6 +43,7 @@ import 'package:lazervault/src/features/widgets/budget_override_dialog.dart';
 import 'package:lazervault/src/features/funds/cubit/recurring_transfer_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/recurring_transfer_entity.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/recipient_filter_chip_card.dart';
+import 'package:lazervault/core/shared_widgets/staggered_entrance.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/enhanced_recipient_selection_bottom_sheet.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
@@ -1738,6 +1739,10 @@ class _SelectRecipientsState extends State<SelectRecipients>
             AddRecipient(
               embedded: true,
               onRecipientSelected: _onShortRecipientPicked,
+              // Two-way: the pills and the form read this, and the swipe over
+              // the saved-recipients area below writes it, so both routes to
+              // a tab change move the same single value.
+              method: _shortMethod,
               onMethodChanged: (m) => setState(() => _shortMethod = m),
               // Scan Account now lives at the right edge of the account-number
               // box; tapping it runs the shared bank-scan → send pipeline.
@@ -1751,6 +1756,21 @@ class _SelectRecipientsState extends State<SelectRecipients>
             SizedBox(height: 28.h),
             Divider(color: Colors.grey[200], height: 1, thickness: 1),
             SizedBox(height: 20.h),
+            // Swipe left/right anywhere in the saved-recipients block, and in
+            // the empty space beneath it, to move between the Bank and
+            // Lazervault tabs — the same two the selector above toggles.
+            //
+            // Opaque so the blank area below the cards is part of the gesture
+            // surface rather than dead space. The rail's own horizontal
+            // ListView sits inside this and wins the arena for drags that
+            // start on it, so flicking through the cards still scrolls them
+            // instead of changing tab.
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onHorizontalDragEnd: _onSavedAreaHorizontalSwipe,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
             // Header row: "Saved recipients" with the "View all" CTA on the RIGHT
             // (opens the full list + search sheet). Only shown when there are any.
             Row(
@@ -1830,10 +1850,34 @@ class _SelectRecipientsState extends State<SelectRecipients>
             ),
             SizedBox(height: 8.h),
             _buildShortSavedList(state),
+                  // Keeps the swipe target alive below the cards: without a
+                  // box here the gesture would end where the list does, and
+                  // the empty region the user actually swipes on is below it.
+                  SizedBox(height: 140.h),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  /// Bank <-> Lazervault on a horizontal fling over the saved-recipients area.
+  ///
+  /// Velocity-gated: a slow drag is usually someone starting a vertical scroll
+  /// at an angle, and flipping the tab under them loses their place. Contacts
+  /// is deliberately not in the cycle — the selector above offers it, but it
+  /// has no saved-recipients list of its own to swipe between.
+  void _onSavedAreaHorizontalSwipe(DragEndDetails details) {
+    const minVelocity = 220.0;
+    final v = details.primaryVelocity ?? 0;
+    if (v.abs() < minVelocity) return;
+    final next = v < 0
+        ? AddRecipientMethod.lazervaultUser // swipe left: forward
+        : AddRecipientMethod.bankDetails; // swipe right: back
+    if (next == _shortMethod) return;
+    setState(() => _shortMethod = next);
   }
 
   /// Favorites-first ordering of the saved recipients in [state] (empty for
@@ -2069,7 +2113,16 @@ class _SelectRecipientsState extends State<SelectRecipients>
             )
           : Column(
               children: [
-                for (final r in preview) _buildRecipientItem(r),
+                // Same one-by-one entrance as the rail, so the two layouts
+                // behave alike. Column items come from below rather than the
+                // side, which is the direction the eye reads them in.
+                for (final (i, r) in preview.indexed)
+                  StaggeredEntrance(
+                    key: ValueKey('saved-list-${r.id}'),
+                    index: i,
+                    beginOffset: const Offset(0, 0.18),
+                    child: _buildRecipientItem(r),
+                  ),
               ],
             ),
     );

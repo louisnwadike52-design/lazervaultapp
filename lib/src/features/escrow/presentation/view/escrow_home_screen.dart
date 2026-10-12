@@ -199,12 +199,18 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
             child: Icon(Icons.arrow_back, color: Colors.white, size: 20.sp),
           ),
         ),
+        // Beside the back button, not centred. With four action buttons on
+        // the right there is no room to centre it against, so centring only
+        // pushed it into them; left-aligned it reads as the page's name.
+        titleSpacing: 4.w,
         title: Text('Escrow Pay',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 20.sp,
                 fontWeight: FontWeight.w700)),
-        centerTitle: true,
+        centerTitle: false,
         actions: [
           ServiceVoiceButton(
             serviceName: 'escrow',

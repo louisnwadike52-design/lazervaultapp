@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:lazervault/core/shared_widgets/staggered_entrance.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/widgets/p2p_chat_icon.dart';
 import '../../../../../core/utils/brand_bank.dart';
@@ -121,11 +122,21 @@ class SavedRecipientsRail extends StatelessWidget {
         padding: EdgeInsets.fromLTRB(4.w, 8.h, 4.w, 14.h),
         itemCount: recipients.length,
         separatorBuilder: (_, __) => SizedBox(width: 10.w),
-        itemBuilder: (_, i) => _RecipientCard(
-          recipient: recipients[i],
-          width: _cardWidth.w,
-          onTap: () => onTap(recipients[i]),
-          onMore: () => onMore(recipients[i]),
+        // One by one, after the sheet itself has finished rising. The cards
+        // arriving in sequence is what makes the rail read as populated
+        // rather than simply present.
+        itemBuilder: (_, i) => StaggeredEntrance(
+          index: i,
+          // Keyed by recipient so switching the Bank / Lazervault tab replays
+          // the stagger for the new set instead of reusing the old State and
+          // showing them already in place.
+          key: ValueKey('saved-rail-${recipients[i].id}'),
+          child: _RecipientCard(
+            recipient: recipients[i],
+            width: _cardWidth.w,
+            onTap: () => onTap(recipients[i]),
+            onMore: () => onMore(recipients[i]),
+          ),
         ),
       ),
     );

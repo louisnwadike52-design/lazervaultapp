@@ -72,12 +72,23 @@ class AddRecipient extends StatefulWidget {
   /// any caller that doesn't wire the pipeline (e.g. batch) is unaffected.
   final VoidCallback? onScanAccount;
 
+  /// Drives the active tab FROM the host screen.
+  ///
+  /// The tab is owned here (the pills and the forms both read it), so a host
+  /// that wants to change it — SelectRecipients, when the user swipes over
+  /// its saved-recipients area — cannot just set its own copy: the pills
+  /// would keep showing the old tab and the two would disagree. Passing the
+  /// value down keeps ONE source of truth; [onMethodChanged] still reports
+  /// changes made in here, so the binding works both ways.
+  final AddRecipientMethod? method;
+
   const AddRecipient({
     super.key,
     this.embedded = false,
     this.onRecipientSelected,
     this.onMethodChanged,
     this.onScanAccount,
+    this.method,
   });
 
   @override
@@ -149,6 +160,17 @@ class _AddRecipientState extends State<AddRecipient>
     }
   }
 
+  @override
+  void didUpdateWidget(covariant AddRecipient old) {
+    super.didUpdateWidget(old);
+    // Host changed the tab. _selectMethod early-returns when it already
+    // matches, so the host reporting a change we made here cannot loop.
+    final wanted = widget.method;
+    if (wanted != null && wanted != _selectedMethod) {
+      _selectMethod(wanted);
+    }
+  }
+
   /// Single entry point for switching recipient-method tabs. Re-syncs the
   /// prediction tooltip on the next frame (after the OverlayPortal for the new
   /// tab has attached/detached) so it never leaks across tabs.
@@ -166,6 +188,7 @@ class _AddRecipientState extends State<AddRecipient>
   @override
   void initState() {
     super.initState();
+    if (widget.method != null) _selectedMethod = widget.method!;
     WidgetsBinding.instance.addObserver(this);
     _initializeCountryAndLoadBanks();
   }
