@@ -499,7 +499,21 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
                   final p = people[i];
                   final reader = readerById[p.userId];
                   final caughtUp = reader?.lastReadAt != null;
-                  return Row(
+                  // Tapping anyone but yourself tags them. The sheet is
+                  // where you go to find out who is in the room, and the
+                  // next thing you usually want is to say something to one
+                  // of them — making the row inert would send you back to
+                  // the composer to type a name you just read.
+                  final taggable = p.userId != widget.currentUserId;
+                  return InkWell(
+                    borderRadius: BorderRadius.circular(8.r),
+                    onTap: taggable
+                        ? () {
+                            Navigator.of(ctx).pop();
+                            _mentionFromSheet(p.userId, p.name);
+                          }
+                        : null,
+                    child: Row(
                     children: [
                       CircleAvatar(
                         radius: 16.r,
@@ -532,7 +546,13 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
                               : const Color(0xFF9CA3AF),
                         ),
                       ),
+                      if (taggable) ...[
+                        SizedBox(width: 8.w),
+                        Icon(Icons.alternate_email,
+                            size: 14.sp, color: const Color(0xFF9B6DFF)),
+                      ],
                     ],
+                  ),
                   );
                 },
               ),
@@ -550,6 +570,43 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
     if (parts.length == 1) return parts.first.characters.first.toUpperCase();
     return (parts.first.characters.first + parts.last.characters.first)
         .toUpperCase();
+  }
+
+  /// Tag a member chosen from the Members sheet.
+  ///
+  /// Appends "@Name " at the caret rather than going through
+  /// [_applyMention], which replaces the token the picker was opened on —
+  /// there is no such token here, because the choice came from a sheet
+  /// instead of from typing an "@".
+  ///
+  /// The mention is registered the same way the picker's is, so
+  /// [MentionText.survivingMentions] still gets the final say at send time:
+  /// delete the name and the tag goes with it.
+  void _mentionFromSheet(String userId, String name) {
+    final text = _input.text;
+    final sel = _input.selection;
+    final caret = sel.isValid ? sel.baseOffset : text.length;
+
+    // A space before, unless we are at the start or one is already there —
+    // tagging someone mid-sentence should not weld the tag onto the last
+    // word.
+    final needsLeadingSpace =
+        caret > 0 && !RegExp(r'\s$').hasMatch(text.substring(0, caret));
+    final token = '${needsLeadingSpace ? ' ' : ''}@$name ';
+    final next = text.replaceRange(caret, caret, token);
+
+    _input.value = TextEditingValue(
+      text: next,
+      selection: TextSelection.collapsed(offset: caret + token.length),
+    );
+    setState(() {
+      _pickedMentions[userId] = name;
+      // Past the inserted name, so the picker does not immediately reopen
+      // over the tag that was just added.
+      _mentionBoundary = caret + token.length;
+      _mentionQuery = null;
+      _hasText = next.trim().isNotEmpty;
+    });
   }
 
   String _subtitle() {
