@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/utils/social_link_helpers.dart';
+import '../utils/group_validators.dart';
 import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
@@ -391,6 +392,21 @@ class _EditGroupBottomSheetState extends State<EditGroupBottomSheet> {
                         controller: _whatsappLinkController,
                         focusNode: _whatsappFocus,
                         style: GoogleFonts.inter(color: Colors.white),
+                        // This sheet had NO validator while the full-screen
+                        // Edit Group did, so a link the server refuses got
+                        // through and failed the whole update — including
+                        // edits that had nothing to do with it. A group
+                        // whose stored link was chat.whatsapp.com/invite (a
+                        // 6-character code, under the 8-character minimum)
+                        // could not be renamed at all: the pre-filled bad
+                        // value was resubmitted on every save.
+                        //
+                        // The controller holds the SUFFIX; the canonical
+                        // prefix is drawn as decoration, so rebuild the full
+                        // URL before validating — that is what gets sent.
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        validator: (v) => GroupValidators.whatsappLink(
+                            buildSocialFullUrl(v ?? '', whatsappLinkPrefix)),
                         decoration: InputDecoration(
                           hintText:
                               _whatsappFocus.hasFocus ? 'invite-code' : '',
@@ -443,6 +459,9 @@ class _EditGroupBottomSheetState extends State<EditGroupBottomSheet> {
                       TextFormField(
                         controller: _telegramLinkController,
                         focusNode: _telegramFocus,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        validator: (v) => GroupValidators.telegramLink(
+                            buildSocialFullUrl(v ?? '', telegramLinkPrefix)),
                         style: GoogleFonts.inter(color: Colors.white),
                         decoration: InputDecoration(
                           hintText:

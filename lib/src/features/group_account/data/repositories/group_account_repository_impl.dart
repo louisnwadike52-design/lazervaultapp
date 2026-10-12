@@ -198,6 +198,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
     bool autoPayoutEnabled = false,
     Map<String, dynamic>? metadata,
     String? payoutReceiverUserId,
+    String? imageUrl,
   }) async {
     try {
       final contributionModel = await remoteDataSource.createContribution(
@@ -222,6 +223,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
         autoPayoutEnabled: autoPayoutEnabled,
         metadata: metadata,
         payoutReceiverUserId: payoutReceiverUserId,
+        imageUrl: imageUrl,
       );
       return contributionModel;
     } catch (e) {
@@ -248,6 +250,50 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
     } catch (e) {
       throw Exception('Failed to delete contribution: $e');
     }
+  }
+
+  // ===== Per-user dashboard preferences =====
+  //
+  // Pass-throughs with no extra wrapping: the data source already throws a
+  // message written for the user (the "leave it first" refusal in
+  // particular), and re-wrapping it in 'Failed to ...: $e' is exactly what
+  // buried it behind two envelopes before.
+
+  @override
+  Future<int> setDashboardOrder({
+    required String itemType,
+    required List<String> orderedItemIds,
+    String? scopeId,
+    int startIndex = 0,
+  }) {
+    return remoteDataSource.setDashboardOrder(
+      itemType: itemType,
+      orderedItemIds: orderedItemIds,
+      scopeId: scopeId,
+      startIndex: startIndex,
+    );
+  }
+
+  @override
+  Future<void> hideDashboardItem({
+    required String itemType,
+    required String itemId,
+  }) {
+    return remoteDataSource.hideDashboardItem(
+      itemType: itemType,
+      itemId: itemId,
+    );
+  }
+
+  @override
+  Future<void> unhideDashboardItem({
+    required String itemType,
+    required String itemId,
+  }) {
+    return remoteDataSource.unhideDashboardItem(
+      itemType: itemType,
+      itemId: itemId,
+    );
   }
 
   @override

@@ -634,6 +634,9 @@ class ContributionMessage extends $pb.GeneratedMessage {
     $core.Iterable<ContributionMemberMessage>? members,
     $core.bool? autoPayoutEnabled,
     $fixnum.Int64? raisedThisCycleMinor,
+    $core.String? imageUrl,
+    $core.bool? paidOut,
+    $fixnum.Int64? paidOutAmountMinor,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -672,6 +675,10 @@ class ContributionMessage extends $pb.GeneratedMessage {
     if (autoPayoutEnabled != null) result.autoPayoutEnabled = autoPayoutEnabled;
     if (raisedThisCycleMinor != null)
       result.raisedThisCycleMinor = raisedThisCycleMinor;
+    if (imageUrl != null) result.imageUrl = imageUrl;
+    if (paidOut != null) result.paidOut = paidOut;
+    if (paidOutAmountMinor != null)
+      result.paidOutAmountMinor = paidOutAmountMinor;
     return result;
   }
 
@@ -760,6 +767,11 @@ class ContributionMessage extends $pb.GeneratedMessage {
     ..aOB(32, _omitFieldNames ? '' : 'autoPayoutEnabled')
     ..a<$fixnum.Int64>(
         33, _omitFieldNames ? '' : 'raisedThisCycleMinor', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(34, _omitFieldNames ? '' : 'imageUrl')
+    ..aOB(35, _omitFieldNames ? '' : 'paidOut')
+    ..a<$fixnum.Int64>(
+        36, _omitFieldNames ? '' : 'paidOutAmountMinor', $pb.PbFieldType.OU6,
         defaultOrMaker: $fixnum.Int64.ZERO)
     ..hasRequiredFields = false;
 
@@ -1082,6 +1094,46 @@ class ContributionMessage extends $pb.GeneratedMessage {
   $core.bool hasRaisedThisCycleMinor() => $_has(32);
   @$pb.TagNumber(33)
   void clearRaisedThisCycleMinor() => $_clearField(33);
+
+  /// Contribution avatar. Same shape and storage rail as
+  /// GroupAccountMessage.image_url (field 14): a storage-service public URL
+  /// the client uploads to BEFORE create/update, never raw bytes on this RPC.
+  /// Empty ⇒ the client draws its initials placeholder, so a contribution
+  /// without one is a normal state and not a broken image.
+  @$pb.TagNumber(34)
+  $core.String get imageUrl => $_getSZ(33);
+  @$pb.TagNumber(34)
+  set imageUrl($core.String value) => $_setString(33, value);
+  @$pb.TagNumber(34)
+  $core.bool hasImageUrl() => $_has(33);
+  @$pb.TagNumber(34)
+  void clearImageUrl() => $_clearField(34);
+
+  /// Whether any payout on this contribution has actually SETTLED, and for
+  /// how much. Derived (not stored): the sum of completed payout_transactions.
+  ///
+  /// The list could not tell "completed" apart from "completed AND the money
+  /// has gone out", so a one-time goal that had paid its recipient looked
+  /// identical to one still holding the pot. Carried as a flag rather than the
+  /// payout_history array because the list endpoint deliberately does not
+  /// preload history — one grouped aggregate per page, not one query per row.
+  @$pb.TagNumber(35)
+  $core.bool get paidOut => $_getBF(34);
+  @$pb.TagNumber(35)
+  set paidOut($core.bool value) => $_setBool(34, value);
+  @$pb.TagNumber(35)
+  $core.bool hasPaidOut() => $_has(34);
+  @$pb.TagNumber(35)
+  void clearPaidOut() => $_clearField(35);
+
+  @$pb.TagNumber(36)
+  $fixnum.Int64 get paidOutAmountMinor => $_getI64(35);
+  @$pb.TagNumber(36)
+  set paidOutAmountMinor($fixnum.Int64 value) => $_setInt64(35, value);
+  @$pb.TagNumber(36)
+  $core.bool hasPaidOutAmountMinor() => $_has(35);
+  @$pb.TagNumber(36)
+  void clearPaidOutAmountMinor() => $_clearField(36);
 }
 
 /// Member assigned to a contribution
@@ -4687,6 +4739,8 @@ class PastContributionEntry extends $pb.GeneratedMessage {
     $fixnum.Int64? forfeitedAmount,
     $core.String? refundFailedReason,
     $core.bool? selfExit,
+    $core.bool? hidden,
+    $1.Timestamp? hiddenAt,
   }) {
     final result = create();
     if (contribution != null) result.contribution = contribution;
@@ -4701,6 +4755,8 @@ class PastContributionEntry extends $pb.GeneratedMessage {
     if (refundFailedReason != null)
       result.refundFailedReason = refundFailedReason;
     if (selfExit != null) result.selfExit = selfExit;
+    if (hidden != null) result.hidden = hidden;
+    if (hiddenAt != null) result.hiddenAt = hiddenAt;
     return result;
   }
 
@@ -4731,6 +4787,9 @@ class PastContributionEntry extends $pb.GeneratedMessage {
     ..aInt64(8, _omitFieldNames ? '' : 'forfeitedAmount')
     ..aOS(9, _omitFieldNames ? '' : 'refundFailedReason')
     ..aOB(10, _omitFieldNames ? '' : 'selfExit')
+    ..aOB(11, _omitFieldNames ? '' : 'hidden')
+    ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'hiddenAt',
+        subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -4851,6 +4910,29 @@ class PastContributionEntry extends $pb.GeneratedMessage {
   $core.bool hasSelfExit() => $_has(9);
   @$pb.TagNumber(10)
   void clearSelfExit() => $_clearField(10);
+
+  /// The caller "deleted" this row from their own lists. Nothing is removed
+  /// from the database — this is a per-user hide, so the row still appears
+  /// under the Deleted tab and every audit/report still counts it.
+  @$pb.TagNumber(11)
+  $core.bool get hidden => $_getBF(10);
+  @$pb.TagNumber(11)
+  set hidden($core.bool value) => $_setBool(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasHidden() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearHidden() => $_clearField(11);
+
+  @$pb.TagNumber(12)
+  $1.Timestamp get hiddenAt => $_getN(11);
+  @$pb.TagNumber(12)
+  set hiddenAt($1.Timestamp value) => $_setField(12, value);
+  @$pb.TagNumber(12)
+  $core.bool hasHiddenAt() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearHiddenAt() => $_clearField(12);
+  @$pb.TagNumber(12)
+  $1.Timestamp ensureHiddenAt() => $_ensure(11);
 }
 
 class ListPastContributionsRequest extends $pb.GeneratedMessage {
@@ -4858,11 +4940,13 @@ class ListPastContributionsRequest extends $pb.GeneratedMessage {
     $core.int? page,
     $core.int? pageSize,
     $core.String? filter,
+    $core.String? visibility,
   }) {
     final result = create();
     if (page != null) result.page = page;
     if (pageSize != null) result.pageSize = pageSize;
     if (filter != null) result.filter = filter;
+    if (visibility != null) result.visibility = visibility;
     return result;
   }
 
@@ -4882,6 +4966,7 @@ class ListPastContributionsRequest extends $pb.GeneratedMessage {
     ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
     ..a<$core.int>(2, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
     ..aOS(3, _omitFieldNames ? '' : 'filter')
+    ..aOS(4, _omitFieldNames ? '' : 'visibility')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -4935,6 +5020,21 @@ class ListPastContributionsRequest extends $pb.GeneratedMessage {
   $core.bool hasFilter() => $_has(2);
   @$pb.TagNumber(3)
   void clearFilter() => $_clearField(3);
+
+  /// Independent of `filter` (which is about WHY the membership ended).
+  /// ""|"visible" → rows the caller has not deleted; "hidden" → only the
+  /// deleted ones (the Deleted tab); "all" → both.
+  ///
+  /// The default EXCLUDES hidden rows: "delete" has to mean the row stops
+  /// appearing where the user deleted it from, or the control does nothing.
+  @$pb.TagNumber(4)
+  $core.String get visibility => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set visibility($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasVisibility() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearVisibility() => $_clearField(4);
 }
 
 class ListPastContributionsResponse extends $pb.GeneratedMessage {
@@ -5014,6 +5114,8 @@ class PastGroupEntry extends $pb.GeneratedMessage {
     $1.Timestamp? leftAt,
     $core.bool? selfExit,
     $core.int? activeContributionsAtExit,
+    $core.bool? hidden,
+    $1.Timestamp? hiddenAt,
   }) {
     final result = create();
     if (group != null) result.group = group;
@@ -5021,6 +5123,8 @@ class PastGroupEntry extends $pb.GeneratedMessage {
     if (selfExit != null) result.selfExit = selfExit;
     if (activeContributionsAtExit != null)
       result.activeContributionsAtExit = activeContributionsAtExit;
+    if (hidden != null) result.hidden = hidden;
+    if (hiddenAt != null) result.hiddenAt = hiddenAt;
     return result;
   }
 
@@ -5044,6 +5148,9 @@ class PastGroupEntry extends $pb.GeneratedMessage {
     ..aOB(3, _omitFieldNames ? '' : 'selfExit')
     ..a<$core.int>(4, _omitFieldNames ? '' : 'activeContributionsAtExit',
         $pb.PbFieldType.O3)
+    ..aOB(5, _omitFieldNames ? '' : 'hidden')
+    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'hiddenAt',
+        subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -5106,6 +5213,27 @@ class PastGroupEntry extends $pb.GeneratedMessage {
   $core.bool hasActiveContributionsAtExit() => $_has(3);
   @$pb.TagNumber(4)
   void clearActiveContributionsAtExit() => $_clearField(4);
+
+  /// Per-user hide — see PastContributionEntry.hidden.
+  @$pb.TagNumber(5)
+  $core.bool get hidden => $_getBF(4);
+  @$pb.TagNumber(5)
+  set hidden($core.bool value) => $_setBool(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasHidden() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearHidden() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $1.Timestamp get hiddenAt => $_getN(5);
+  @$pb.TagNumber(6)
+  set hiddenAt($1.Timestamp value) => $_setField(6, value);
+  @$pb.TagNumber(6)
+  $core.bool hasHiddenAt() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearHiddenAt() => $_clearField(6);
+  @$pb.TagNumber(6)
+  $1.Timestamp ensureHiddenAt() => $_ensure(5);
 }
 
 class ListPastGroupsRequest extends $pb.GeneratedMessage {
@@ -5113,11 +5241,13 @@ class ListPastGroupsRequest extends $pb.GeneratedMessage {
     $core.int? page,
     $core.int? pageSize,
     $core.String? filter,
+    $core.String? visibility,
   }) {
     final result = create();
     if (page != null) result.page = page;
     if (pageSize != null) result.pageSize = pageSize;
     if (filter != null) result.filter = filter;
+    if (visibility != null) result.visibility = visibility;
     return result;
   }
 
@@ -5137,6 +5267,7 @@ class ListPastGroupsRequest extends $pb.GeneratedMessage {
     ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
     ..a<$core.int>(2, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
     ..aOS(3, _omitFieldNames ? '' : 'filter')
+    ..aOS(4, _omitFieldNames ? '' : 'visibility')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -5188,6 +5319,16 @@ class ListPastGroupsRequest extends $pb.GeneratedMessage {
   $core.bool hasFilter() => $_has(2);
   @$pb.TagNumber(3)
   void clearFilter() => $_clearField(3);
+
+  /// ""|"visible"|"hidden"|"all" — see ListPastContributionsRequest.
+  @$pb.TagNumber(4)
+  $core.String get visibility => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set visibility($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasVisibility() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearVisibility() => $_clearField(4);
 }
 
 class ListPastGroupsResponse extends $pb.GeneratedMessage {
@@ -6485,6 +6626,7 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
     $core.String? metadata,
     $core.bool? autoPayoutEnabled,
     $core.String? payoutReceiverUserId,
+    $core.String? imageUrl,
   }) {
     final result = create();
     if (groupId != null) result.groupId = groupId;
@@ -6510,6 +6652,7 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
     if (autoPayoutEnabled != null) result.autoPayoutEnabled = autoPayoutEnabled;
     if (payoutReceiverUserId != null)
       result.payoutReceiverUserId = payoutReceiverUserId;
+    if (imageUrl != null) result.imageUrl = imageUrl;
     return result;
   }
 
@@ -6565,6 +6708,7 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
     ..aOS(18, _omitFieldNames ? '' : 'metadata')
     ..aOB(19, _omitFieldNames ? '' : 'autoPayoutEnabled')
     ..aOS(20, _omitFieldNames ? '' : 'payoutReceiverUserId')
+    ..aOS(21, _omitFieldNames ? '' : 'imageUrl')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -6777,6 +6921,17 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
   $core.bool hasPayoutReceiverUserId() => $_has(19);
   @$pb.TagNumber(20)
   void clearPayoutReceiverUserId() => $_clearField(20);
+
+  /// Optional avatar, as a storage-service public URL already uploaded by
+  /// the client. Empty is valid and means "no avatar".
+  @$pb.TagNumber(21)
+  $core.String get imageUrl => $_getSZ(20);
+  @$pb.TagNumber(21)
+  set imageUrl($core.String value) => $_setString(20, value);
+  @$pb.TagNumber(21)
+  $core.bool hasImageUrl() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearImageUrl() => $_clearField(21);
 }
 
 class CreateContributionResponse extends $pb.GeneratedMessage {
@@ -7140,6 +7295,8 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
     $core.bool? autoPayoutEnabledSet,
     $core.int? totalCycles,
     $core.bool? totalCyclesSet,
+    $core.String? imageUrl,
+    $core.bool? imageUrlSet,
   }) {
     final result = create();
     if (contributionId != null) result.contributionId = contributionId;
@@ -7154,6 +7311,8 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
       result.autoPayoutEnabledSet = autoPayoutEnabledSet;
     if (totalCycles != null) result.totalCycles = totalCycles;
     if (totalCyclesSet != null) result.totalCyclesSet = totalCyclesSet;
+    if (imageUrl != null) result.imageUrl = imageUrl;
+    if (imageUrlSet != null) result.imageUrlSet = imageUrlSet;
     return result;
   }
 
@@ -7188,6 +7347,8 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
     ..aOB(9, _omitFieldNames ? '' : 'autoPayoutEnabledSet')
     ..a<$core.int>(10, _omitFieldNames ? '' : 'totalCycles', $pb.PbFieldType.O3)
     ..aOB(11, _omitFieldNames ? '' : 'totalCyclesSet')
+    ..aOS(12, _omitFieldNames ? '' : 'imageUrl')
+    ..aOB(13, _omitFieldNames ? '' : 'imageUrlSet')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -7324,6 +7485,28 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
   $core.bool hasTotalCyclesSet() => $_has(10);
   @$pb.TagNumber(11)
   void clearTotalCyclesSet() => $_clearField(11);
+
+  /// Avatar, with the same explicit-set pattern as the toggles above —
+  /// needed in BOTH directions here: without the flag an empty string is
+  /// indistinguishable from "field omitted", so REMOVING an avatar would be
+  /// impossible, and every caller that omits it would silently clear one.
+  @$pb.TagNumber(12)
+  $core.String get imageUrl => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set imageUrl($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasImageUrl() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearImageUrl() => $_clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.bool get imageUrlSet => $_getBF(12);
+  @$pb.TagNumber(13)
+  set imageUrlSet($core.bool value) => $_setBool(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasImageUrlSet() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearImageUrlSet() => $_clearField(13);
 }
 
 class UpdateContributionResponse extends $pb.GeneratedMessage {
@@ -14443,6 +14626,473 @@ class WithdrawJoinRequestResponse extends $pb.GeneratedMessage {
   $core.bool hasMessage() => $_has(0);
   @$pb.TagNumber(1)
   void clearMessage() => $_clearField(1);
+}
+
+/// item_type vocabulary, shared by every request below.
+///   "group"        → a joint-funds group on the My Groups list
+///   "contribution" → a contribution on a group's contributions list
+class SetDashboardOrderRequest extends $pb.GeneratedMessage {
+  factory SetDashboardOrderRequest({
+    $core.String? itemType,
+    $core.Iterable<$core.String>? orderedItemIds,
+    $core.String? scopeId,
+    $core.int? startIndex,
+  }) {
+    final result = create();
+    if (itemType != null) result.itemType = itemType;
+    if (orderedItemIds != null) result.orderedItemIds.addAll(orderedItemIds);
+    if (scopeId != null) result.scopeId = scopeId;
+    if (startIndex != null) result.startIndex = startIndex;
+    return result;
+  }
+
+  SetDashboardOrderRequest._();
+
+  factory SetDashboardOrderRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SetDashboardOrderRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SetDashboardOrderRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'itemType')
+    ..pPS(2, _omitFieldNames ? '' : 'orderedItemIds')
+    ..aOS(3, _omitFieldNames ? '' : 'scopeId')
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'startIndex', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SetDashboardOrderRequest clone() =>
+      SetDashboardOrderRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SetDashboardOrderRequest copyWith(
+          void Function(SetDashboardOrderRequest) updates) =>
+      super.copyWith((message) => updates(message as SetDashboardOrderRequest))
+          as SetDashboardOrderRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SetDashboardOrderRequest create() => SetDashboardOrderRequest._();
+  @$core.override
+  SetDashboardOrderRequest createEmptyInstance() => create();
+  static $pb.PbList<SetDashboardOrderRequest> createRepeated() =>
+      $pb.PbList<SetDashboardOrderRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SetDashboardOrderRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SetDashboardOrderRequest>(create);
+  static SetDashboardOrderRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get itemType => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set itemType($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasItemType() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearItemType() => $_clearField(1);
+
+  /// ordered_item_ids is the FULL visible page order after the drag, front
+  /// to back. Sent as a list rather than one moved item + index because the
+  /// client already knows the final order and a single (item, index) pair
+  /// cannot express a reorder without the server re-deriving everyone
+  /// else's position — which is exactly where two concurrent drags drift.
+  @$pb.TagNumber(2)
+  $pb.PbList<$core.String> get orderedItemIds => $_getList(1);
+
+  /// Required when item_type == "contribution": the group whose list was
+  /// reordered. Scopes the write so a drag in one group cannot renumber
+  /// another group's contributions.
+  @$pb.TagNumber(3)
+  $core.String get scopeId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set scopeId($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasScopeId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearScopeId() => $_clearField(3);
+
+  /// 0-based rank of ordered_item_ids[0] within the whole list. Non-zero on
+  /// page 2+ of a paginated list, so reordering page 3 does not renumber
+  /// those rows to the front of the list.
+  @$pb.TagNumber(4)
+  $core.int get startIndex => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set startIndex($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasStartIndex() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearStartIndex() => $_clearField(4);
+}
+
+class SetDashboardOrderResponse extends $pb.GeneratedMessage {
+  factory SetDashboardOrderResponse({
+    $core.bool? success,
+    $core.String? message,
+    $core.int? itemsUpdated,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (message != null) result.message = message;
+    if (itemsUpdated != null) result.itemsUpdated = itemsUpdated;
+    return result;
+  }
+
+  SetDashboardOrderResponse._();
+
+  factory SetDashboardOrderResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SetDashboardOrderResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SetDashboardOrderResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'itemsUpdated', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SetDashboardOrderResponse clone() =>
+      SetDashboardOrderResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SetDashboardOrderResponse copyWith(
+          void Function(SetDashboardOrderResponse) updates) =>
+      super.copyWith((message) => updates(message as SetDashboardOrderResponse))
+          as SetDashboardOrderResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SetDashboardOrderResponse create() => SetDashboardOrderResponse._();
+  @$core.override
+  SetDashboardOrderResponse createEmptyInstance() => create();
+  static $pb.PbList<SetDashboardOrderResponse> createRepeated() =>
+      $pb.PbList<SetDashboardOrderResponse>();
+  @$core.pragma('dart2js:noInline')
+  static SetDashboardOrderResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SetDashboardOrderResponse>(create);
+  static SetDashboardOrderResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get itemsUpdated => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set itemsUpdated($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasItemsUpdated() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearItemsUpdated() => $_clearField(3);
+}
+
+class HideDashboardItemRequest extends $pb.GeneratedMessage {
+  factory HideDashboardItemRequest({
+    $core.String? itemType,
+    $core.String? itemId,
+  }) {
+    final result = create();
+    if (itemType != null) result.itemType = itemType;
+    if (itemId != null) result.itemId = itemId;
+    return result;
+  }
+
+  HideDashboardItemRequest._();
+
+  factory HideDashboardItemRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory HideDashboardItemRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'HideDashboardItemRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'itemType')
+    ..aOS(2, _omitFieldNames ? '' : 'itemId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  HideDashboardItemRequest clone() =>
+      HideDashboardItemRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  HideDashboardItemRequest copyWith(
+          void Function(HideDashboardItemRequest) updates) =>
+      super.copyWith((message) => updates(message as HideDashboardItemRequest))
+          as HideDashboardItemRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static HideDashboardItemRequest create() => HideDashboardItemRequest._();
+  @$core.override
+  HideDashboardItemRequest createEmptyInstance() => create();
+  static $pb.PbList<HideDashboardItemRequest> createRepeated() =>
+      $pb.PbList<HideDashboardItemRequest>();
+  @$core.pragma('dart2js:noInline')
+  static HideDashboardItemRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<HideDashboardItemRequest>(create);
+  static HideDashboardItemRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get itemType => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set itemType($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasItemType() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearItemType() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get itemId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set itemId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasItemId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearItemId() => $_clearField(2);
+}
+
+class HideDashboardItemResponse extends $pb.GeneratedMessage {
+  factory HideDashboardItemResponse({
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  HideDashboardItemResponse._();
+
+  factory HideDashboardItemResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory HideDashboardItemResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'HideDashboardItemResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  HideDashboardItemResponse clone() =>
+      HideDashboardItemResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  HideDashboardItemResponse copyWith(
+          void Function(HideDashboardItemResponse) updates) =>
+      super.copyWith((message) => updates(message as HideDashboardItemResponse))
+          as HideDashboardItemResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static HideDashboardItemResponse create() => HideDashboardItemResponse._();
+  @$core.override
+  HideDashboardItemResponse createEmptyInstance() => create();
+  static $pb.PbList<HideDashboardItemResponse> createRepeated() =>
+      $pb.PbList<HideDashboardItemResponse>();
+  @$core.pragma('dart2js:noInline')
+  static HideDashboardItemResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<HideDashboardItemResponse>(create);
+  static HideDashboardItemResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
+}
+
+class UnhideDashboardItemRequest extends $pb.GeneratedMessage {
+  factory UnhideDashboardItemRequest({
+    $core.String? itemType,
+    $core.String? itemId,
+  }) {
+    final result = create();
+    if (itemType != null) result.itemType = itemType;
+    if (itemId != null) result.itemId = itemId;
+    return result;
+  }
+
+  UnhideDashboardItemRequest._();
+
+  factory UnhideDashboardItemRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory UnhideDashboardItemRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'UnhideDashboardItemRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'itemType')
+    ..aOS(2, _omitFieldNames ? '' : 'itemId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  UnhideDashboardItemRequest clone() =>
+      UnhideDashboardItemRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  UnhideDashboardItemRequest copyWith(
+          void Function(UnhideDashboardItemRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as UnhideDashboardItemRequest))
+          as UnhideDashboardItemRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UnhideDashboardItemRequest create() => UnhideDashboardItemRequest._();
+  @$core.override
+  UnhideDashboardItemRequest createEmptyInstance() => create();
+  static $pb.PbList<UnhideDashboardItemRequest> createRepeated() =>
+      $pb.PbList<UnhideDashboardItemRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UnhideDashboardItemRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<UnhideDashboardItemRequest>(create);
+  static UnhideDashboardItemRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get itemType => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set itemType($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasItemType() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearItemType() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get itemId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set itemId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasItemId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearItemId() => $_clearField(2);
+}
+
+class UnhideDashboardItemResponse extends $pb.GeneratedMessage {
+  factory UnhideDashboardItemResponse({
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  UnhideDashboardItemResponse._();
+
+  factory UnhideDashboardItemResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory UnhideDashboardItemResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'UnhideDashboardItemResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  UnhideDashboardItemResponse clone() =>
+      UnhideDashboardItemResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  UnhideDashboardItemResponse copyWith(
+          void Function(UnhideDashboardItemResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as UnhideDashboardItemResponse))
+          as UnhideDashboardItemResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UnhideDashboardItemResponse create() =>
+      UnhideDashboardItemResponse._();
+  @$core.override
+  UnhideDashboardItemResponse createEmptyInstance() => create();
+  static $pb.PbList<UnhideDashboardItemResponse> createRepeated() =>
+      $pb.PbList<UnhideDashboardItemResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UnhideDashboardItemResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<UnhideDashboardItemResponse>(create);
+  static UnhideDashboardItemResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
 }
 
 class GroupPaginationInfo extends $pb.GeneratedMessage {

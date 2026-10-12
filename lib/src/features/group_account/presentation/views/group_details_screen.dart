@@ -21,7 +21,7 @@ import '../widgets/create_contribution_bottom_sheet.dart';
 import '../widgets/edit_group_bottom_sheet.dart';
 import '../widgets/member_detail_dialog.dart';
 import '../views/group_account_report_screen.dart';
-import '../views/past_groups_screen.dart';
+import '../views/past_contributions_screen.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
 import '../../../../../core/services/account_manager.dart';
@@ -911,18 +911,22 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                       ],
                     ),
                   ),
-                // Past Groups — caller's exit history across every
-                // group. Always visible (it's about *me*, not this
-                // group), so even members of one group only can drill
-                // into history elsewhere.
+                // History belongs with the list it is the history OF.
+                //
+                // This screen is where a group's CONTRIBUTIONS are listed,
+                // so "Past contributions" is the entry that belongs here;
+                // "Past groups" moved to the groups landing page, which is
+                // where all the groups are. Both are about the caller
+                // rather than about this group, so neither is gated on a
+                // role.
                 PopupMenuItem(
-                  value: 'past_groups',
+                  value: 'past_contributions',
                   child: Row(
                     children: [
-                      Icon(Icons.history, color: Colors.white, size: 20.sp),
+                      Icon(Icons.history_edu, color: Colors.white, size: 20.sp),
                       SizedBox(width: 12.w),
                       Text(
-                        'Past groups',
+                        'Past contributions',
                         style: GoogleFonts.inter(color: Colors.white),
                       ),
                     ],
@@ -1587,12 +1591,14 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
       case 'leave':
         _showLeaveGroupDialog(group);
         break;
-      case 'past_groups':
+      case 'past_contributions':
+        // Threading the same cubit through preserves auth + caches so the
+        // list lands instantly instead of cold-loading.
         final pastCubit = context.read<GroupAccountCubit>();
         Get.to(
           () => BlocProvider<GroupAccountCubit>.value(
             value: pastCubit,
-            child: const PastGroupsScreen(),
+            child: const PastContributionsScreen(),
           ),
         );
         break;

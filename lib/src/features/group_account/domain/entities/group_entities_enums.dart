@@ -69,6 +69,55 @@ enum ContributionStatus {
   cancelled,
 }
 
+/// What a contribution's badge says, derived from status + the facts on the
+/// wire. See Contribution.displayState.
+///
+/// Distinct from [ContributionStatus], which is the server's state machine.
+/// The server has one `completed`; the member reading the card needs to know
+/// which KIND of completed: the goal was funded, the clock ran out, or the
+/// money has actually reached the recipient.
+enum ContributionDisplayState {
+  active,
+  paused,
+  /// Past its deadline and still open.
+  overdue,
+  /// Closed with the target met.
+  completed,
+  /// Closed because the deadline arrived, target unmet.
+  closed,
+  /// Closed, and a payout has settled.
+  paidOut,
+  cancelled,
+}
+
+extension ContributionDisplayStateLabel on ContributionDisplayState {
+  String get label {
+    switch (this) {
+      case ContributionDisplayState.active:
+        return 'Active';
+      case ContributionDisplayState.paused:
+        return 'Paused';
+      case ContributionDisplayState.overdue:
+        return 'Overdue';
+      case ContributionDisplayState.completed:
+        return 'Completed';
+      case ContributionDisplayState.closed:
+        return 'Closed';
+      case ContributionDisplayState.paidOut:
+        return 'Paid out';
+      case ContributionDisplayState.cancelled:
+        return 'Cancelled';
+    }
+  }
+
+  /// True for the states that mean "this contribution is over".
+  bool get isTerminal =>
+      this == ContributionDisplayState.completed ||
+      this == ContributionDisplayState.closed ||
+      this == ContributionDisplayState.paidOut ||
+      this == ContributionDisplayState.cancelled;
+}
+
 enum PaymentStatus {
   pending,
   processing,

@@ -24,7 +24,6 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import '../widgets/exit_contribution_bottom_sheet.dart';
 import 'contribution_cycles_history_screen.dart';
 import 'edit_contribution_screen.dart';
-import 'past_contributions_screen.dart';
 import '../widgets/payment_group_widgets.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import '../widgets/mention_picker.dart';
@@ -792,6 +791,26 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                   context.read<GroupAccountCubit>().currentUserId;
               final canEditContribution = currentUserId != null &&
                   contribution.createdBy == currentUserId;
+
+              // Can the person reading this leave it?
+              //
+              // Only an ACTIVE member can, and only while the contribution
+              // is still running: the exit saga refuses a settled one-time
+              // (the funds are already disbursed), so offering the item
+              // there would offer a guaranteed failure. The sheet still
+              // asks the server for the real preview — this only decides
+              // whether to show the affordance.
+              final myMembership = currentUserId == null
+                  ? null
+                  : contribution.members
+                      .where((m) =>
+                          m.userId == currentUserId &&
+                          m.membershipStatus ==
+                              ContributionMembershipStatus.active)
+                      .firstOrNull;
+              final canExitContribution = myMembership != null &&
+                  !contribution.displayState.isTerminal;
+
               return [
                 PopupMenuItem(
                   value: 'share',
@@ -866,23 +885,26 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                     ],
                   ),
                 ),
-                // Past Contributions — same caller, different
-                // contribution(s). Always visible because the entry
-                // surfaces the *user's* exit history, not anything
-                // about the contribution they're currently viewing.
-                PopupMenuItem(
-                  value: 'past_contributions',
-                  child: Row(
-                    children: [
-                      Icon(Icons.history_edu, color: Colors.white, size: 20.sp),
-                      SizedBox(width: 12.w),
-                      Text(
-                        'Past contributions',
-                        style: GoogleFonts.inter(color: Colors.white),
-                      ),
-                    ],
+                // Leaving. This is where a member looks for it — the
+                // only other way in was a row inside the Members tab,
+                // which is where you go to act on SOMEBODY ELSE.
+                //
+                // "Past contributions" moved to the group screen, which is
+                // where a group's contributions are listed.
+                if (canExitContribution)
+                  PopupMenuItem(
+                    value: 'exit_contribution',
+                    child: Row(
+                      children: [
+                        Icon(Icons.logout, color: Colors.red, size: 20.sp),
+                        SizedBox(width: 12.w),
+                        Text(
+                          'Exit contribution',
+                          style: GoogleFonts.inter(color: Colors.red),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
               ];
             },
             onSelected: (value) => _handleMenuAction(value, contribution),
@@ -2391,16 +2413,14 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           ),
         );
         break;
-      case 'past_contributions':
-        // Threading the same cubit through preserves auth + cached
-        // groups so the past-contributions list lands instantly.
-        final pastCubit = context.read<GroupAccountCubit>();
-        Get.to(
-          () => BlocProvider<GroupAccountCubit>.value(
-            value: pastCubit,
-            child: const PastContributionsScreen(),
-          ),
-        );
+      case 'exit_contribution':
+        final myUserId = context.read<GroupAccountCubit>().currentUserId;
+        if (myUserId != null) {
+          // The same sheet the Members tab uses, with actorIsSelf: it
+          // previews the refund / forfeit the saga will actually perform
+          // before anything is confirmed.
+          _confirmLeaveContribution(contribution, myUserId);
+        }
         break;
     }
   }

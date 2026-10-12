@@ -59,6 +59,20 @@ class Contribution extends Equatable {
   // Members assigned to this contribution
   final List<ContributionMember> members;
 
+  /// Avatar for this goal, as a storage-service public URL. Empty/null is
+  /// a normal state — the card draws initials — so nothing may assume one.
+  final String? imageUrl;
+
+  /// Whether a payout on this contribution has actually SETTLED, and for
+  /// how much.
+  ///
+  /// Only completed payouts count. A pending payout is money committed but
+  /// not gone, and badging that "Paid out" would tell a member their
+  /// recipient has been paid while the transfer could still fail back into
+  /// the pot.
+  final bool paidOut;
+  final double paidOutAmount;
+
   const Contribution({
     required this.id,
     required this.groupId,
@@ -93,6 +107,9 @@ class Contribution extends Equatable {
     this.minimumBalance,
     this.autoPayoutEnabled = false,
     this.members = const [],
+    this.imageUrl,
+    this.paidOut = false,
+    this.paidOutAmount = 0,
   });
 
   @override
@@ -130,9 +147,45 @@ class Contribution extends Equatable {
         minimumBalance,
         autoPayoutEnabled,
         members,
+        imageUrl,
+        paidOut,
+        paidOutAmount,
       ];
 
   bool get isCompleted => status == ContributionStatus.completed;
+
+  /// Whether the deadline has passed. Separate from [isOverdue], which asks
+  /// about the next PAYMENT date within a cycle.
+  bool get deadlinePassed => DateTime.now().isAfter(deadline);
+
+  /// Whether the target was actually met, measured against what the cycle
+  /// RAISED rather than the live balance — a payout empties the pot, and a
+  /// fully funded goal does not stop having been fully funded.
+  bool get targetMet => targetAmount > 0 && amountRaised >= targetAmount;
+
+  /// What a badge should say.
+  ///
+  /// `status == completed` meant two different things and the UI showed one
+  /// word for both: a one-time goal that reached its target, and one the
+  /// scheduler closed at its deadline without reaching it. They are not the
+  /// same outcome to the people who funded it, so they get different words.
+  ContributionDisplayState get displayState {
+    switch (status) {
+      case ContributionStatus.cancelled:
+        return ContributionDisplayState.cancelled;
+      case ContributionStatus.paused:
+        return ContributionDisplayState.paused;
+      case ContributionStatus.completed:
+        if (paidOut) return ContributionDisplayState.paidOut;
+        if (targetMet) return ContributionDisplayState.completed;
+        // Closed by its deadline with the target unmet. "Completed" would
+        // claim something that did not happen.
+        return ContributionDisplayState.closed;
+      case ContributionStatus.active:
+        if (deadlinePassed) return ContributionDisplayState.overdue;
+        return ContributionDisplayState.active;
+    }
+  }
   bool get isActive => status == ContributionStatus.active;
   bool get isRotatingSavings => type == ContributionType.rotatingSavings;
   bool get hasSchedule => frequency != null && regularAmount != null;

@@ -633,6 +633,36 @@ class GroupAccountServiceClient extends $grpc.Client {
         options: options);
   }
 
+  /// SetDashboardOrder persists the order the caller dragged their list
+  /// into, so it survives the session and the next cold start. Per-user:
+  /// it changes nobody else's list.
+  $grpc.ResponseFuture<$0.SetDashboardOrderResponse> setDashboardOrder(
+    $0.SetDashboardOrderRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$setDashboardOrder, request, options: options);
+  }
+
+  /// HideDashboardItem is the "delete" the user asks for: the row stops
+  /// appearing on their lists, and NOTHING is removed from the database.
+  /// Refused while the caller is still an ACTIVE member — you leave first,
+  /// then you may clear it away — so hiding can never be a way to walk away
+  /// from a contribution that still holds your money.
+  $grpc.ResponseFuture<$0.HideDashboardItemResponse> hideDashboardItem(
+    $0.HideDashboardItemRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$hideDashboardItem, request, options: options);
+  }
+
+  /// UnhideDashboardItem restores a hidden row to the caller's past lists.
+  $grpc.ResponseFuture<$0.UnhideDashboardItemResponse> unhideDashboardItem(
+    $0.UnhideDashboardItemRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$unhideDashboardItem, request, options: options);
+  }
+
   // method descriptors
 
   static final _$createGroup =
@@ -1018,6 +1048,21 @@ class GroupAccountServiceClient extends $grpc.Client {
       ($0.DeleteContributionMessageForEveryoneRequest value) =>
           value.writeToBuffer(),
       $0.DeleteContributionMessageForEveryoneResponse.fromBuffer);
+  static final _$setDashboardOrder = $grpc.ClientMethod<
+          $0.SetDashboardOrderRequest, $0.SetDashboardOrderResponse>(
+      '/group_accounts.GroupAccountService/SetDashboardOrder',
+      ($0.SetDashboardOrderRequest value) => value.writeToBuffer(),
+      $0.SetDashboardOrderResponse.fromBuffer);
+  static final _$hideDashboardItem = $grpc.ClientMethod<
+          $0.HideDashboardItemRequest, $0.HideDashboardItemResponse>(
+      '/group_accounts.GroupAccountService/HideDashboardItem',
+      ($0.HideDashboardItemRequest value) => value.writeToBuffer(),
+      $0.HideDashboardItemResponse.fromBuffer);
+  static final _$unhideDashboardItem = $grpc.ClientMethod<
+          $0.UnhideDashboardItemRequest, $0.UnhideDashboardItemResponse>(
+      '/group_accounts.GroupAccountService/UnhideDashboardItem',
+      ($0.UnhideDashboardItemRequest value) => value.writeToBuffer(),
+      $0.UnhideDashboardItemResponse.fromBuffer);
 }
 
 @$pb.GrpcServiceName('group_accounts.GroupAccountService')
@@ -1685,6 +1730,33 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
             $0.DeleteContributionMessageForEveryoneRequest.fromBuffer(value),
         ($0.DeleteContributionMessageForEveryoneResponse value) =>
             value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SetDashboardOrderRequest,
+            $0.SetDashboardOrderResponse>(
+        'SetDashboardOrder',
+        setDashboardOrder_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.SetDashboardOrderRequest.fromBuffer(value),
+        ($0.SetDashboardOrderResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.HideDashboardItemRequest,
+            $0.HideDashboardItemResponse>(
+        'HideDashboardItem',
+        hideDashboardItem_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.HideDashboardItemRequest.fromBuffer(value),
+        ($0.HideDashboardItemResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UnhideDashboardItemRequest,
+            $0.UnhideDashboardItemResponse>(
+        'UnhideDashboardItem',
+        unhideDashboardItem_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.UnhideDashboardItemRequest.fromBuffer(value),
+        ($0.UnhideDashboardItemResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.CreateGroupResponse> createGroup_Pre($grpc.ServiceCall $call,
@@ -2345,4 +2417,31 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
   $async.Future<$0.DeleteContributionMessageForEveryoneResponse>
       deleteContributionMessageForEveryone($grpc.ServiceCall call,
           $0.DeleteContributionMessageForEveryoneRequest request);
+
+  $async.Future<$0.SetDashboardOrderResponse> setDashboardOrder_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.SetDashboardOrderRequest> $request) async {
+    return setDashboardOrder($call, await $request);
+  }
+
+  $async.Future<$0.SetDashboardOrderResponse> setDashboardOrder(
+      $grpc.ServiceCall call, $0.SetDashboardOrderRequest request);
+
+  $async.Future<$0.HideDashboardItemResponse> hideDashboardItem_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.HideDashboardItemRequest> $request) async {
+    return hideDashboardItem($call, await $request);
+  }
+
+  $async.Future<$0.HideDashboardItemResponse> hideDashboardItem(
+      $grpc.ServiceCall call, $0.HideDashboardItemRequest request);
+
+  $async.Future<$0.UnhideDashboardItemResponse> unhideDashboardItem_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.UnhideDashboardItemRequest> $request) async {
+    return unhideDashboardItem($call, await $request);
+  }
+
+  $async.Future<$0.UnhideDashboardItemResponse> unhideDashboardItem(
+      $grpc.ServiceCall call, $0.UnhideDashboardItemRequest request);
 }

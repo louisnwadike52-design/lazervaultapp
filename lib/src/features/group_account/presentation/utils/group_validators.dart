@@ -87,7 +87,14 @@ class GroupValidators {
       return 'Link is too long (max $linkMaxLength characters)';
     }
     if (!_whatsappPattern.hasMatch(value)) {
-      return 'Enter a valid WhatsApp invite link (https://chat.whatsapp.com/... or https://wa.me/...)';
+      // Name the part that actually failed. The old wording said "must be
+      // https://chat.whatsapp.com/..." to someone who had typed exactly
+      // that — the real rejection was an invite code shorter than 8
+      // characters, and the message sent them looking at the half that was
+      // already right. Matches the server's wording word for word.
+      return 'Paste the full WhatsApp invite link: chat.whatsapp.com/ '
+          'followed by the invite code (at least 8 characters), '
+          'or wa.me/<phone number>';
     }
     return null;
   }
@@ -101,7 +108,8 @@ class GroupValidators {
       return 'Link is too long (max $linkMaxLength characters)';
     }
     if (!_telegramPattern.hasMatch(value)) {
-      return 'Enter a valid Telegram invite link (https://t.me/...)';
+      return 'Paste the full Telegram link: t.me/ followed by the group '
+          'handle or invite code (at least 4 characters)';
     }
     return null;
   }

@@ -575,11 +575,30 @@ String _unwrappedMessage(Object? error) {
     if (inner.isNotEmpty) text = inner;
   }
   // "Exception: foo", "_TypeError: foo", "SomeFailure: foo"
-  final match = RegExp(r'^[A-Za-z_][A-Za-z0-9_]*(Exception|Error|Failure)?\s*:\s*(.+)$',
-          dotAll: true)
-      .firstMatch(text);
-  if (match != null && (match.group(2) ?? '').trim().isNotEmpty) {
-    text = match.group(2)!.trim();
+  //
+  // Stripped REPEATEDLY, not once. An error that crosses two layers — a data
+  // source that throws `Exception(friendly(...))` and a cubit that then
+  // formats `'$context: $e'` — arrives double-wrapped, and a single pass
+  // left the user reading
+  //
+  //   Failed to update group: Exception: Failed to update group: Exception:
+  //   invalid request: whatsapp link must be a valid invite URL
+  //
+  // which buries the one sentence that tells them what to fix. The loop is
+  // bounded so a pathological string cannot spin, and it stops as soon as a
+  // pass changes nothing.
+  final envelope = RegExp(
+      r'^[A-Za-z_][A-Za-z0-9_]*(Exception|Error|Failure)?\s*:\s*(.+)$',
+      dotAll: true);
+  for (var i = 0; i < 4; i++) {
+    final match = envelope.firstMatch(text);
+    if (match == null) break;
+    final inner = (match.group(2) ?? '').trim();
+    // Only unwrap when something is actually left, and when the unwrap made
+    // progress — otherwise a sentence that legitimately contains a colon
+    // ("Note: ...") would be chewed down a character at a time.
+    if (inner.isEmpty || inner == text) break;
+    text = inner;
   }
   return text;
 }

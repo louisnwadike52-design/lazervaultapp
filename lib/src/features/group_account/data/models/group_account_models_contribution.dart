@@ -36,6 +36,9 @@ class ContributionModel extends Contribution {
     super.minimumBalance,
     super.autoPayoutEnabled,
     super.members,
+    super.imageUrl,
+    super.paidOut,
+    super.paidOutAmount,
   });
 
   factory ContributionModel.fromJson(Map<String, dynamic> json) {
@@ -194,6 +197,9 @@ class ContributionModel extends Contribution {
       allowPartialPayments: entity.allowPartialPayments,
       minimumBalance: entity.minimumBalance,
       autoPayoutEnabled: entity.autoPayoutEnabled,
+      imageUrl: entity.imageUrl,
+      paidOut: entity.paidOut,
+      paidOutAmount: entity.paidOutAmount,
     );
   }
 
@@ -232,6 +238,9 @@ class ContributionModel extends Contribution {
     bool? allowPartialPayments,
     double? minimumBalance,
     bool? autoPayoutEnabled,
+    String? imageUrl,
+    bool? paidOut,
+    double? paidOutAmount,
   }) {
     return ContributionModel(
       id: id ?? this.id,
@@ -268,6 +277,9 @@ class ContributionModel extends Contribution {
       allowPartialPayments: allowPartialPayments ?? this.allowPartialPayments,
       minimumBalance: minimumBalance ?? this.minimumBalance,
       autoPayoutEnabled: autoPayoutEnabled ?? this.autoPayoutEnabled,
+      imageUrl: imageUrl ?? this.imageUrl,
+      paidOut: paidOut ?? this.paidOut,
+      paidOutAmount: paidOutAmount ?? this.paidOutAmount,
     );
   }
 }

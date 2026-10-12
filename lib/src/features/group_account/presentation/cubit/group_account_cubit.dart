@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart' show Rect;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/core/services/secure_storage_defaults.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/utils/user_search_query.dart';
@@ -42,6 +43,12 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   final GetGroupActivityLogs? getGroupActivityLogs;
   final GetContributionActivityLogs? getContributionActivityLogs;
   final RemoveMemberFromContribution? removeMemberFromContribution;
+  // Per-user dashboard preferences (hide / reorder). Optional like the
+  // use cases above so existing test constructions keep compiling; the
+  // methods below say so plainly when one is not wired.
+  final SetDashboardOrder? setDashboardOrder;
+  final HideDashboardItem? hideDashboardItem;
+  final UnhideDashboardItem? unhideDashboardItem;
   final RemoveContributionShadow? removeContributionShadow;
   final PreviewMemberExit? previewMemberExit;
   // Cycle history.
@@ -119,6 +126,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   void setUserId(String userId, {String? userName}) {
     final isUserSwitch = _currentUserId != null && _currentUserId != userId;
     if (isUserSwitch) {
+      _sessionGeneration++;
       _clearUserScopedState();
     }
     _currentUserId = userId;
@@ -127,16 +135,59 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     loadUserGroups();
   }
 
+  /// Bumped on every logout and user switch.
+  ///
+  /// A load started before the session ended still has a request in flight
+  /// when the user is signed out. Without this, that response arrives after
+  /// `clearOnLogout` and emits `GroupAccountGroupsLoaded` with the PREVIOUS
+  /// user's groups — onto the screen the next person is looking at. Each
+  /// load captures the generation it started in and emits nothing if the
+  /// session has moved on since.
+  int _sessionGeneration = 0;
+
+  /// Whether a load that began at [startedAt] may still publish its result.
+  bool _sessionStillCurrent(int startedAt) =>
+      !isClosed && _sessionGeneration == startedAt;
+
   /// Drop every piece of in-memory state owned by the previous user.
   /// Safe to call at any time — used by setUserId on user switch and by
   /// the auth flow on explicit logout.
   void clearOnLogout() {
+    _sessionGeneration++;
     _currentUserId = null;
     _currentUserName = null;
     _clearUserScopedState();
     if (!isClosed) {
-      emit(GroupAccountInitial());
+      // Unauthenticated rather than Initial: Initial renders as a loading
+      // skeleton, which is a spinner nobody is waiting for once the user
+      // has been signed out.
+      emit(const GroupAccountUnauthenticated());
     }
+  }
+
+  /// One user-facing sentence for a failed group operation.
+  ///
+  /// `'$prefix: ${e.toString()}'` was what every catch block here did, and
+  /// across two layers it produced
+  ///
+  ///   Failed to update group: Exception: Failed to update group: Exception:
+  ///   invalid request: whatsapp link must be a valid invite URL (...)
+  ///
+  /// — the one sentence that tells the user what to fix, buried under three
+  /// envelopes. [friendlyError] unwraps those and lets a real business
+  /// message through while replacing genuinely technical text with a line a
+  /// person can read.
+  ///
+  /// When it yields only the generic line, [prefix] is better than nothing —
+  /// it at least says WHICH action failed — so the two are combined. When it
+  /// yields the service's own sentence, that sentence stands alone: prefixing
+  /// "Failed to update group:" in front of "Paste the full WhatsApp invite
+  /// link…" adds nothing and pushes the instruction off a snackbar.
+  static String _opError(String prefix, Object e) {
+    const generic = 'Something went wrong. Please try again.';
+    final detail = friendlyError(e);
+    if (detail.isEmpty || detail == generic) return '$prefix. Please try again.';
+    return detail;
   }
 
   void _clearUserScopedState() {
@@ -177,6 +228,9 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     this.getGroupActivityLogs,
     this.getContributionActivityLogs,
     this.removeMemberFromContribution,
+    this.setDashboardOrder,
+    this.hideDashboardItem,
+    this.unhideDashboardItem,
     this.removeContributionShadow,
     this.previewMemberExit,
     this.listContributionCycles,
@@ -239,7 +293,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       // dropped us here without an auth state).
       if (_currentUserId != null) return _currentUserId;
       if (!isClosed) {
-        emit(const GroupAccountError('Please log in to view your groups.'));
+        emit(const GroupAccountUnauthenticated());
       }
       return null;
     }
@@ -249,6 +303,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       // uses the new user's account.
       debugPrint('[GroupAccountCubit] user mismatch '
           'cached=$_currentUserId live=$liveId — clearing caches');
+      _sessionGeneration++;
       _clearUserScopedState();
       _currentUserName = null;
     }
@@ -342,7 +397,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     final effectiveUserId = userId ?? currentUserId;
     if (effectiveUserId == null) {
       if (isClosed) return;
-      emit(const GroupAccountError('User not authenticated. Please log in.'));
+      emit(const GroupAccountUnauthenticated());
       return;
     }
 
@@ -354,13 +409,17 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       emit(const GroupAccountLoading(message: 'Loading groups...'));
     }
 
+    final generation = _sessionGeneration;
+
     try {
       final groups = await getUserGroups(effectiveUserId);
-      if (isClosed) return;
+      // The session can end while this is in flight (auto-logout, user
+      // switch). Publishing now would paint the previous user's groups.
+      if (!_sessionStillCurrent(generation)) return;
       _cachedGroups = groups;
       emit(GroupAccountGroupsLoaded(groups));
     } catch (e) {
-      if (isClosed) return;
+      if (!_sessionStillCurrent(generation)) return;
       if (hasCache) {
         // Background refresh failed but the user already sees cached data.
         // Stay quiet. Logging only so we don't trigger an error UI for
@@ -369,7 +428,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
             '[GroupAccountCubit] background refresh of groups failed: $e');
         return;
       }
-      emit(GroupAccountError('Failed to load groups: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to load groups', e)));
     }
   }
 
@@ -463,7 +522,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
           return;
         }
         emit(
-            GroupAccountError('Failed to load group details: ${e.toString()}'));
+            GroupAccountError(_opError('Failed to load group details', e)));
       }
     }
   }
@@ -519,7 +578,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       return;
     }
     if (currentUserId == null) {
-      emit(const GroupAccountError('User not authenticated'));
+      emit(const GroupAccountUnauthenticated());
       return;
     }
 
@@ -554,7 +613,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       unawaited(generateGroupCreationReport(group: group));
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountError('Failed to create group: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to create group', e)));
     }
   }
 
@@ -597,7 +656,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     } catch (e) {
       if (isClosed) return;
       if (snapshot != null) _restoreSnapshot(snapshot);
-      emit(GroupAccountError('Failed to update group: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to update group', e)));
     }
   }
 
@@ -612,7 +671,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       await loadUserGroups();
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountError('Failed to delete group: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to delete group', e)));
     }
   }
 
@@ -628,7 +687,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       emit(UsersFound(users: users, query: query));
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountError('Failed to search users: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to search users', e)));
     }
   }
 
@@ -694,7 +753,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       return newMember;
     } catch (e) {
       if (isClosed) return null;
-      emit(GroupAccountError('Failed to add member: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to add member', e)));
       return null;
     }
   }
@@ -723,7 +782,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     } catch (e) {
       if (isClosed) return;
       if (snapshot != null) _restoreSnapshot(snapshot);
-      emit(GroupAccountError('Failed to update member role: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to update member role', e)));
     }
   }
 
@@ -747,7 +806,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     } catch (e) {
       if (isClosed) return;
       if (snapshot != null) _restoreSnapshot(snapshot);
-      emit(GroupAccountError('Failed to remove member: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to remove member', e)));
     }
   }
 
@@ -776,7 +835,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   }) async {
     if (isClosed) return;
     if (currentUserId == null) {
-      emit(const GroupAccountError('User not authenticated'));
+      emit(const GroupAccountUnauthenticated());
       return;
     }
     emit(const GroupAccountLoading(message: 'Creating contribution...'));
@@ -852,7 +911,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       }
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountError('Failed to create contribution: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to create contribution', e)));
     }
   }
 
@@ -872,7 +931,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     } catch (e) {
       if (isClosed) return;
       if (snapshot != null) _restoreSnapshot(snapshot);
-      emit(GroupAccountError('Failed to update contribution: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to update contribution', e)));
     }
   }
 
@@ -892,7 +951,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     } catch (e) {
       if (isClosed) return;
       if (snapshot != null) _restoreSnapshot(snapshot);
-      emit(GroupAccountError('Failed to delete contribution: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to delete contribution', e)));
     }
   }
 
@@ -962,7 +1021,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       emit(GroupAccountSuccess('Contribution loaded'));
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountError('Failed to load contribution: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to load contribution', e)));
     }
   }
 
@@ -1197,7 +1256,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       emit(GroupAccountReceiptGenerated(receipt));
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountError('Failed to generate receipt: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to generate receipt', e)));
     }
   }
 
@@ -1205,7 +1264,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     if (isClosed) return;
     final effectiveUserId = userId ?? currentUserId;
     if (effectiveUserId == null) {
-      emit(const GroupAccountError('User not authenticated'));
+      emit(const GroupAccountUnauthenticated());
       return;
     }
     emit(const GroupAccountLoading(message: 'Loading receipts...'));
@@ -1215,7 +1274,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       emit(GroupAccountSuccess('Receipts loaded'));
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountError('Failed to load receipts: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to load receipts', e)));
     }
   }
 
@@ -1229,7 +1288,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       emit(GroupAccountTranscriptGenerated(transcript));
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountError('Failed to generate transcript: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to generate transcript', e)));
     }
   }
 
@@ -1243,7 +1302,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       emit(GroupAccountSuccess('Statistics loaded'));
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountError('Failed to load statistics: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to load statistics', e)));
     }
   }
 
@@ -1251,7 +1310,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     if (isClosed) return;
     final effectiveUserId = userId ?? currentUserId;
     if (effectiveUserId == null) {
-      emit(const GroupAccountError('User not authenticated'));
+      emit(const GroupAccountUnauthenticated());
       return;
     }
     emit(const GroupAccountLoading(message: 'Loading user statistics...'));
@@ -1262,7 +1321,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     } catch (e) {
       if (isClosed) return;
       emit(
-          GroupAccountError('Failed to load user statistics: ${e.toString()}'));
+          GroupAccountError(_opError('Failed to load user statistics', e)));
     }
   }
 
@@ -1456,7 +1515,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       return true;
     } catch (e) {
       if (isClosed) return false;
-      emit(GroupAccountError('Failed to send invite: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to send invite', e)));
       return false;
     }
   }
@@ -1505,7 +1564,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       emit(GroupActivityLogsLoaded(logs: logs, groupId: groupId));
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountError('Failed to load activity logs: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to load activity logs', e)));
     }
   }
 
@@ -1524,7 +1583,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
           logs: logs, contributionId: contributionId));
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountError('Failed to load activity logs: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to load activity logs', e)));
     }
   }
 
@@ -1561,7 +1620,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       return result;
     } catch (e) {
       if (isClosed) return null;
-      emit(GroupAccountError('Failed to remove member: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to remove member', e)));
       return null;
     }
   }
@@ -1604,7 +1663,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       await loadGroupDetails(groupId);
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountError('Failed to re-invite: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to re-invite', e)));
     }
   }
 
@@ -2021,7 +2080,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
           _cachedPublicGroups!.isNotEmpty) {
         return;
       }
-      emit(GroupAccountError('Failed to load public groups: ${e.toString()}'));
+      emit(GroupAccountError(_opError('Failed to load public groups', e)));
     }
   }
 
@@ -2258,8 +2317,11 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     }
   }
 
+  /// [visibility] picks the Exited vs Deleted view: '' (or 'visible')
+  /// leaves out rows the user deleted, 'hidden' returns only those.
   Future<void> loadPastContributions({
     String filter = '',
+    String visibility = '',
     String? accessToken,
   }) async {
     if (isClosed) return;
@@ -2275,17 +2337,21 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       final entries = await _pastMemberships.listPastContributions(
         token: token,
         filter: filter,
+        visibility: visibility,
       );
       if (isClosed) return;
-      emit(PastContributionsLoaded(entries: entries, filter: filter));
+      emit(PastContributionsLoaded(
+          entries: entries, filter: filter, visibility: visibility));
     } catch (e) {
       if (isClosed) return;
       emit(PastContributionsError('Failed to load past contributions: $e'));
     }
   }
 
+  /// See [loadPastContributions] for [visibility].
   Future<void> loadPastGroups({
     String filter = '',
+    String visibility = '',
     String? accessToken,
   }) async {
     if (isClosed) return;
@@ -2301,9 +2367,11 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       final entries = await _pastMemberships.listPastGroups(
         token: token,
         filter: filter,
+        visibility: visibility,
       );
       if (isClosed) return;
-      emit(PastGroupsLoaded(entries: entries, filter: filter));
+      emit(PastGroupsLoaded(
+          entries: entries, filter: filter, visibility: visibility));
     } catch (e) {
       if (isClosed) return;
       emit(PastGroupsError('Failed to load past groups: $e'));
@@ -2436,6 +2504,116 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       if (isClosed) return null;
       emit(GroupAccountError('Failed to restart contribution: $e'));
       return null;
+    }
+  }
+
+  // ==========================================================================
+  // PER-USER DASHBOARD PREFERENCES  (hide = "delete", and persisted order)
+  // ==========================================================================
+
+  /// Persist the order the user dragged a list into.
+  ///
+  /// The list on screen has ALREADY moved — a drag that snaps back while a
+  /// request flies is worse than one that is briefly wrong — so this does
+  /// not touch state on success. On failure it reloads, which puts the
+  /// server's order back rather than guessing what it was.
+  ///
+  /// Returns true when the order was saved.
+  Future<bool> persistListOrder({
+    required String itemType,
+    required List<String> orderedItemIds,
+    String? scopeId,
+    int startIndex = 0,
+  }) async {
+    if (isClosed) return false;
+    final usecase = setDashboardOrder;
+    if (usecase == null) {
+      emit(const GroupAccountError(
+          'Reordering is not available in this build.'));
+      return false;
+    }
+    if (orderedItemIds.isEmpty) return true;
+
+    final generation = _sessionGeneration;
+    try {
+      await usecase(SetDashboardOrderParams(
+        itemType: itemType,
+        orderedItemIds: orderedItemIds,
+        scopeId: scopeId,
+        startIndex: startIndex,
+      ));
+      return _sessionStillCurrent(generation);
+    } catch (e) {
+      if (!_sessionStillCurrent(generation)) return false;
+      emit(GroupAccountError(_opError('Could not save your new order', e)));
+      // Re-read so the screen shows what the server actually holds. Leaving
+      // the dragged order on screen would tell the user it was saved.
+      if (itemType == DashboardItemTypes.group) {
+        await loadUserGroups();
+      } else if (scopeId != null) {
+        await loadGroupDetails(scopeId, silent: true);
+      }
+      return false;
+    }
+  }
+
+  /// Remove an item from THIS user's lists. Nothing is deleted.
+  ///
+  /// Returns null on success, or the reason it was refused — most often
+  /// "leave it first", which is a precondition rather than a fault and is
+  /// worth showing verbatim.
+  Future<String?> removeFromMyLists({
+    required String itemType,
+    required String itemId,
+  }) async {
+    if (isClosed) return 'Removing is not available in this build.';
+    final usecase = hideDashboardItem;
+    if (usecase == null) return 'Removing is not available in this build.';
+
+    final generation = _sessionGeneration;
+    try {
+      await usecase(DashboardItemParams(itemType: itemType, itemId: itemId));
+      if (!_sessionStillCurrent(generation)) return null;
+      // Drop it from the cached list so the row goes immediately rather
+      // than on the next fetch.
+      if (itemType == DashboardItemTypes.group) {
+        final cached = _cachedGroups;
+        if (cached != null) {
+          _cachedGroups = cached.where((g) => g.id != itemId).toList();
+          emit(GroupAccountGroupsLoaded(_cachedGroups!));
+        }
+      } else {
+        final snapshot = _snapshotLoaded();
+        if (snapshot != null) {
+          _patchLoaded(
+            contributions:
+                snapshot.contributions.where((c) => c.id != itemId).toList(),
+          );
+        }
+      }
+      return null;
+    } catch (e) {
+      if (!_sessionStillCurrent(generation)) return null;
+      return _opError('Could not remove it from your list', e);
+    }
+  }
+
+  /// Put a hidden item back on the caller's lists.
+  Future<String?> restoreToMyLists({
+    required String itemType,
+    required String itemId,
+  }) async {
+    if (isClosed) return 'Restoring is not available in this build.';
+    final usecase = unhideDashboardItem;
+    if (usecase == null) return 'Restoring is not available in this build.';
+
+    final generation = _sessionGeneration;
+    try {
+      await usecase(DashboardItemParams(itemType: itemType, itemId: itemId));
+      return null;
+    } catch (e) {
+      if (!_sessionStillCurrent(generation)) return null;
+      return _opError('Could not restore it', e);
     }
   }
 }

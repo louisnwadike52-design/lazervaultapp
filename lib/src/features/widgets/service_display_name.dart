@@ -58,8 +58,8 @@ const Map<String, String> _kServiceDisplayNames = {
   'insurance': 'Insurance',
   'loans': 'Loans',
   // Groups
-  'group_accounts': 'Joint Funds',
-  'groups': 'Joint Funds',
+  'group_accounts': 'Group Funds',
+  'groups': 'Group Funds',
   'crowdfund': 'Crowdfunding',
   'sprayme': 'LazerSpray',
   'lazerspray': 'LazerSpray',

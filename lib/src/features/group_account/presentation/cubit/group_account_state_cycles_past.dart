@@ -77,9 +77,17 @@ class PastContributionsLoaded extends GroupAccountState {
   // back where it lives.
   final List<dynamic> entries;
   final String filter; // ""|"removed"|"left"
-  const PastContributionsLoaded({required this.entries, required this.filter});
+  /// ""|"visible"|"hidden"|"all" — independent of [filter]. Carried on the
+  /// state so the tab that asked for it can tell whether the list it is
+  /// looking at is the one it requested.
+  final String visibility;
+  const PastContributionsLoaded({
+    required this.entries,
+    required this.filter,
+    this.visibility = '',
+  });
   @override
-  List<Object?> get props => [entries.length, filter];
+  List<Object?> get props => [entries.length, filter, visibility];
 }
 
 class PastContributionsError extends GroupAccountState {
@@ -96,9 +104,14 @@ class PastGroupsLoading extends GroupAccountState {
 class PastGroupsLoaded extends GroupAccountState {
   final List<dynamic> entries;
   final String filter;
-  const PastGroupsLoaded({required this.entries, required this.filter});
+  final String visibility;
+  const PastGroupsLoaded({
+    required this.entries,
+    required this.filter,
+    this.visibility = '',
+  });
   @override
-  List<Object?> get props => [entries.length, filter];
+  List<Object?> get props => [entries.length, filter, visibility];
 }
 
 class PastGroupsError extends GroupAccountState {

@@ -107,6 +107,14 @@ class EndpointRegistry {
     // flag, wire ALL of: the write allowlist, the bulk-read filter, THIS set,
     // and the FeatureFlags hydration list.
     'intl_payout_enabled',
+    // Group Funds availability — the whole feature, and which kind of
+    // contribution may be created. Same chain as intl_payout_enabled above,
+    // and listed here for the same reason: nonUrlSnapshot() emits only keys
+    // in this set, so an omission here means the operator's value never
+    // reaches FeatureFlags and the code default wins on every launch.
+    'group_funds_enabled',
+    'group_funds_one_time_enabled',
+    'group_funds_esusu_enabled',
     // Which explanation the tab shows while payout is off ('generic' |
     // 'account' | 'country'). Same chain, same reason.
     'intl_payout_unavailable_scope',

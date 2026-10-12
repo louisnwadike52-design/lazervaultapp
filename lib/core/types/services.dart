@@ -113,7 +113,10 @@ extension AppServiceNameExtension on AppServiceName {
         // have to be unmistakable on a grid where they sit near each other.
         return 'Accept Cards';
       case AppServiceName.groupAccount:
-        return 'Joint Funds';
+        // Named for what it is on the dashboard grid: a GROUP of people
+        // with a shared pot. "Joint" reads as two-party (a joint account)
+        // and this is a class, an alumni set, an esusu circle.
+        return 'Group Funds';
       case AppServiceName.insurance:
         return 'Insurance';
       case AppServiceName.airtime:

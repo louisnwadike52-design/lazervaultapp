@@ -60,9 +60,41 @@ abstract class GroupAccountRemoteDataSource {
     bool autoPayoutEnabled = false,
     Map<String, dynamic>? metadata,
     String? payoutReceiverUserId,
+    String? imageUrl,
   });
   Future<ContributionModel> updateContribution(ContributionModel contribution);
   Future<void> deleteContribution(String contributionId);
+
+  // ===== Per-user dashboard preferences (hide / reorder) =====
+  //
+  // All three act on the CALLING user only: the server reads the identity
+  // from the token, so none of them can change what anybody else sees.
+
+  /// Persist the order the user dragged a list into.
+  ///
+  /// [orderedItemIds] is the FULL visible page order, front to back.
+  /// [scopeId] is the group id when ordering contributions. [startIndex] is
+  /// the rank of the first id within the whole list, so reordering page 3
+  /// does not renumber those rows to the front.
+  Future<int> setDashboardOrder({
+    required String itemType,
+    required List<String> orderedItemIds,
+    String? scopeId,
+    int startIndex = 0,
+  });
+
+  /// Remove an item from the caller's own lists. Nothing is deleted from
+  /// the database; it stays readable under their Deleted tab.
+  Future<void> hideDashboardItem({
+    required String itemType,
+    required String itemId,
+  });
+
+  /// Put a hidden item back.
+  Future<void> unhideDashboardItem({
+    required String itemType,
+    required String itemId,
+  });
 
   // Contribution Member methods
   Future<List<ContributionMemberModel>> addMembersToContribution({

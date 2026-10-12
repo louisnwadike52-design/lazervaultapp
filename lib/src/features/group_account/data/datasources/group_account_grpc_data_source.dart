@@ -363,6 +363,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     bool autoPayoutEnabled = false,
     Map<String, dynamic>? metadata,
     String? payoutReceiverUserId,
+    String? imageUrl,
   }) async {
     try {
       final request = pb.CreateContributionRequest()
@@ -395,6 +396,11 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       }
       if (penaltyAmount != null) {
         request.penaltyAmount = _amountToInt64(penaltyAmount);
+      }
+      // Avatar, already uploaded by the client — this carries the public
+      // URL, never bytes. Empty means "no avatar", which is valid.
+      if (imageUrl != null && imageUrl.trim().isNotEmpty) {
+        request.imageUrl = imageUrl.trim();
       }
 
       // Add metadata if provided
@@ -450,6 +456,15 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
           ..totalCycles = contribution.totalCycles!
           ..totalCyclesSet = true;
       }
+
+      // Avatar. Same explicit-set sentinel as the flags above, and needed
+      // in BOTH directions here: without it an empty string is
+      // indistinguishable from "field omitted", so REMOVING an avatar would
+      // be impossible and every caller that omits one would clear it.
+      // The edit form always carries an intent, so set is always true.
+      request
+        ..imageUrl = contribution.imageUrl ?? ''
+        ..imageUrlSet = true;
 
       // Include metadata if present
       if (contribution.metadata != null && contribution.metadata!.isNotEmpty) {
@@ -1236,6 +1251,12 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       // What the cycle RAISED. Absent on older servers, where it arrives as
       // 0 and the entity falls back to currentAmount — the prior behaviour.
       raisedThisCycle: _int64ToAmount(contribution.raisedThisCycleMinor),
+      // Avatar + settled-payout facts. All three are absent on older
+      // servers, where they arrive as the proto defaults ('' / false / 0)
+      // and every surface falls back to the behaviour it had before.
+      imageUrl: contribution.imageUrl.isEmpty ? null : contribution.imageUrl,
+      paidOut: contribution.paidOut,
+      paidOutAmount: _int64ToAmount(contribution.paidOutAmountMinor),
       currency: contribution.currency,
       deadline: _timestampToDateTime(contribution.deadline),
       createdAt: _timestampToDateTime(contribution.createdAt),
@@ -2052,6 +2073,70 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     } on GrpcError catch (e) {
       throw Exception(
           'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to join public group'}');
+    }
+  }
+
+  // ==========================================================================
+  // PER-USER DASHBOARD PREFERENCES
+  // ==========================================================================
+
+  @override
+  Future<int> setDashboardOrder({
+    required String itemType,
+    required List<String> orderedItemIds,
+    String? scopeId,
+    int startIndex = 0,
+  }) async {
+    try {
+      final request = pb.SetDashboardOrderRequest()
+        ..itemType = itemType
+        ..orderedItemIds.addAll(orderedItemIds)
+        ..startIndex = startIndex;
+      if (scopeId != null && scopeId.isNotEmpty) {
+        request.scopeId = scopeId;
+      }
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response =
+          await _client.setDashboardOrder(request, options: callOptions);
+      return response.itemsUpdated;
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to save your list order'));
+    }
+  }
+
+  @override
+  Future<void> hideDashboardItem({
+    required String itemType,
+    required String itemId,
+  }) async {
+    try {
+      final request = pb.HideDashboardItemRequest()
+        ..itemType = itemType
+        ..itemId = itemId;
+      final callOptions = await _callOptionsHelper.withAuth();
+      await _client.hideDashboardItem(request, options: callOptions);
+    } on GrpcError catch (e) {
+      // FailedPrecondition is the "leave it first" refusal and carries a
+      // sentence written for the user; friendlyGrpcError passes those
+      // through rather than replacing them with a generic line.
+      throw Exception(friendlyGrpcError(e, 'Failed to remove it from your list'));
+    }
+  }
+
+  @override
+  Future<void> unhideDashboardItem({
+    required String itemType,
+    required String itemId,
+  }) async {
+    try {
+      final request = pb.UnhideDashboardItemRequest()
+        ..itemType = itemType
+        ..itemId = itemId;
+      final callOptions = await _callOptionsHelper.withAuth();
+      await _client.unhideDashboardItem(request, options: callOptions);
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to restore it'));
     }
   }
 

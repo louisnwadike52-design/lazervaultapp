@@ -62,9 +62,39 @@ abstract class GroupAccountRepository {
     bool autoPayoutEnabled = false,
     Map<String, dynamic>? metadata,
     String? payoutReceiverUserId,
+    String? imageUrl,
   });
   Future<Contribution> updateContribution(Contribution contribution);
   Future<void> deleteContribution(String contributionId);
+
+  // ===== Per-user dashboard preferences =====
+  //
+  // Hiding and ordering belong to the VIEWER, not to the group or the
+  // contribution: a flag on the row itself would hide it for every member
+  // and let the last person to drag a row rearrange everybody's dashboard.
+
+  /// Persist the order the user dragged a list into. [orderedItemIds] is the
+  /// visible page, front to back; [startIndex] is the rank of its first row
+  /// within the whole list.
+  Future<int> setDashboardOrder({
+    required String itemType,
+    required List<String> orderedItemIds,
+    String? scopeId,
+    int startIndex = 0,
+  });
+
+  /// Take an item off the caller's lists. Nothing is deleted.
+  Future<void> hideDashboardItem({
+    required String itemType,
+    required String itemId,
+  });
+
+  /// Put a hidden item back.
+  Future<void> unhideDashboardItem({
+    required String itemType,
+    required String itemId,
+  });
+
 
   // Contribution Member methods
   Future<List<ContributionMember>> addMembersToContribution({

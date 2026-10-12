@@ -3420,6 +3420,14 @@ Future<void> init() async {
       () => RemoveContributionShadow(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(
       () => PreviewMemberExit(serviceLocator<GroupAccountRepository>()));
+  // Per-user dashboard preferences: the persisted list order, and the
+  // "delete from my list" hide/restore pair.
+  serviceLocator.registerLazySingleton(
+      () => SetDashboardOrder(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => HideDashboardItem(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => UnhideDashboardItem(serviceLocator<GroupAccountRepository>()));
   // Cycle history use cases.
   serviceLocator.registerLazySingleton(
       () => ListContributionCycles(serviceLocator<GroupAccountRepository>()));
@@ -3480,6 +3488,9 @@ Future<void> init() async {
             serviceLocator<RemoveMemberFromContribution>(),
         removeContributionShadow: serviceLocator<RemoveContributionShadow>(),
         previewMemberExit: serviceLocator<PreviewMemberExit>(),
+        setDashboardOrder: serviceLocator<SetDashboardOrder>(),
+        hideDashboardItem: serviceLocator<HideDashboardItem>(),
+        unhideDashboardItem: serviceLocator<UnhideDashboardItem>(),
         listContributionCycles: serviceLocator<ListContributionCycles>(),
         getContributionCycleDetails:
             serviceLocator<GetContributionCycleDetails>(),

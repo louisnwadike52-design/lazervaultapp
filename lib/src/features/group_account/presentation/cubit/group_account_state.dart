@@ -18,6 +18,22 @@ abstract class GroupAccountState extends Equatable {
 
 class GroupAccountInitial extends GroupAccountState {}
 
+/// Nobody is signed in.
+///
+/// Deliberately NOT a [GroupAccountError]. On auto-logout the session is
+/// cleared while this feature is still on screen, and anything that then
+/// touches a per-user read used to emit an error — which the list screen
+/// turned into a red "User not authenticated. Please log in." snackbar that
+/// floated over the passcode screen the user had just been sent to.
+///
+/// Not being logged in is not a failure of this screen, and there is nothing
+/// for the user to do about it that the login screen in front of them is not
+/// already asking. So it gets its own state, every surface renders it as a
+/// quiet signed-out placeholder, and no surface toasts it.
+class GroupAccountUnauthenticated extends GroupAccountState {
+  const GroupAccountUnauthenticated();
+}
+
 class GroupAccountLoading extends GroupAccountState {
   final String? message;
 

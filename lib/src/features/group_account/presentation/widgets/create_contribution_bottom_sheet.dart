@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -96,6 +97,10 @@ class _CreateContributionBottomSheetState
   final FocusNode _telegramLinkFocus = FocusNode();
 
   // Form values
+  // Seeded in initState from what the operator currently allows: defaulting
+  // to oneTime unconditionally would pre-select a type that is switched off,
+  // and a user who never touched the picker would walk the whole wizard and
+  // be refused at the end.
   ContributionType _selectedType = ContributionType.oneTime;
   ContributionFrequency? _selectedFrequency;
   // Deadline is treated as end-of-day in the user's local timezone so a
@@ -177,6 +182,16 @@ class _CreateContributionBottomSheetState
   void initState() {
     super.initState();
     _pageController = PageController();
+    // Start on a type the operator actually allows. With one-time withdrawn,
+    // the default would otherwise pre-select it, the picker would not show it,
+    // and the user would walk five steps to be refused at the end.
+    final allowed = _availableTypes;
+    if (allowed.isNotEmpty && !allowed.contains(_selectedType)) {
+      _selectedType = allowed.first;
+      if (_selectedType == ContributionType.rotatingSavings) {
+        _selectedFrequency = ContributionFrequency.monthly;
+      }
+    }
     _localGroupMembers = List.from(widget.groupMembers);
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is AuthenticationSuccess) {
@@ -935,11 +950,57 @@ class _CreateContributionBottomSheetState
             style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.grey[400]),
           ),
           SizedBox(height: 24.h),
-          ...ContributionType.values.map((type) => _buildTypeCard(type)),
+          ..._availableTypes.map((type) => _buildTypeCard(type)),
+          // Both types withdrawn. The wizard still opens (it is reached from
+          // a group an admin may still be running) so this has to say why
+          // rather than show an empty list under "Choose Contribution Type".
+          if (_availableTypes.isEmpty)
+            Container(
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(14.r),
+                border: Border.all(color: const Color(0xFF2D2D2D)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.info_outline,
+                      color: const Color(0xFF9CA3AF), size: 18.sp),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text(
+                      'New contributions are paused at the moment. Existing '
+                      'ones carry on as normal.',
+                      style: GoogleFonts.inter(
+                        fontSize: 13.sp,
+                        color: const Color(0xFF9CA3AF),
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );
   }
+
+  /// The contribution types an operator currently allows.
+  ///
+  /// Read from [FeatureFlags], which the admin dashboard is the source of
+  /// truth for — not a constant here. Both default ON, so an unconfigured
+  /// platform behaves exactly as before.
+  ///
+  /// This is the UI half only. group-accounts refuses a withdrawn type as
+  /// well, because an app already on someone's phone cannot be stopped from
+  /// asking for one.
+  List<ContributionType> get _availableTypes => [
+        if (FeatureFlags.groupFundsOneTimeAvailable) ContributionType.oneTime,
+        if (FeatureFlags.groupFundsEsusuAvailable)
+          ContributionType.rotatingSavings,
+      ];
 
   Widget _buildTypeCard(ContributionType type) {
     final isSelected = _selectedType == type;

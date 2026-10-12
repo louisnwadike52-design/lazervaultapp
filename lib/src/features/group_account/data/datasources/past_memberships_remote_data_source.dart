@@ -22,6 +22,12 @@ class PastContributionEntry {
   final String refundFailedReason;
   final bool selfExit;
 
+  /// The CALLER deleted this row from their own lists. Nothing was removed
+  /// from the database — the row still exists for everyone else, and still
+  /// counts in every report. It simply moved to their Deleted tab.
+  final bool hidden;
+  final DateTime? hiddenAt;
+
   const PastContributionEntry({
     required this.contribution,
     required this.group,
@@ -33,6 +39,8 @@ class PastContributionEntry {
     required this.forfeitedAmount,
     required this.refundFailedReason,
     required this.selfExit,
+    this.hidden = false,
+    this.hiddenAt,
   });
 }
 
@@ -42,11 +50,17 @@ class PastGroupEntry {
   final bool selfExit;
   final int activeContributionsAtExit;
 
+  /// See PastContributionEntry.hidden.
+  final bool hidden;
+  final DateTime? hiddenAt;
+
   const PastGroupEntry({
     required this.group,
     required this.leftAt,
     required this.selfExit,
     required this.activeContributionsAtExit,
+    this.hidden = false,
+    this.hiddenAt,
   });
 }
 
@@ -97,9 +111,14 @@ class PastMembershipsRemoteDataSource {
         'Content-Type': 'application/json',
       };
 
+  /// [visibility] is the second, independent axis: `filter` says WHY the
+  /// membership ended ("removed" / "left"), `visibility` says whether the
+  /// caller has deleted the row from their lists. '' and 'visible' exclude
+  /// deleted rows, 'hidden' returns only those, 'all' returns both.
   Future<List<PastContributionEntry>> listPastContributions({
     required String token,
     String filter = '',
+    String visibility = '',
     int page = 1,
     int pageSize = 20,
   }) async {
@@ -107,6 +126,7 @@ class PastMembershipsRemoteDataSource {
       'page': '$page',
       'pageSize': '$pageSize',
       if (filter.isNotEmpty) 'filter': filter,
+      if (visibility.isNotEmpty) 'visibility': visibility,
     };
     final uri = Uri.parse('$_base/v1/me/past-contributions')
         .replace(queryParameters: qp);
@@ -121,9 +141,11 @@ class PastMembershipsRemoteDataSource {
         .toList(growable: false);
   }
 
+  /// See [listPastContributions] for the two independent axes.
   Future<List<PastGroupEntry>> listPastGroups({
     required String token,
     String filter = '',
+    String visibility = '',
     int page = 1,
     int pageSize = 20,
   }) async {
@@ -131,6 +153,7 @@ class PastMembershipsRemoteDataSource {
       'page': '$page',
       'pageSize': '$pageSize',
       if (filter.isNotEmpty) 'filter': filter,
+      if (visibility.isNotEmpty) 'visibility': visibility,
     };
     final uri =
         Uri.parse('$_base/v1/me/past-groups').replace(queryParameters: qp);
@@ -191,6 +214,10 @@ class PastMembershipsRemoteDataSource {
         forfeitedAmount: int.tryParse('${m['forfeitedAmount'] ?? 0}') ?? 0,
         refundFailedReason: m['refundFailedReason'] as String? ?? '',
         selfExit: (m['selfExit'] as bool?) ?? false,
+        // Absent on older servers, where it reads false and every row shows
+        // under Exited exactly as before.
+        hidden: (m['hidden'] as bool?) ?? false,
+        hiddenAt: _ts(m['hiddenAt']),
       );
 
   PastGroupEntry _groupEntryFromJson(Map<String, dynamic> m) => PastGroupEntry(
@@ -200,6 +227,8 @@ class PastMembershipsRemoteDataSource {
         selfExit: (m['selfExit'] as bool?) ?? false,
         activeContributionsAtExit:
             (m['activeContributionsAtExit'] as num?)?.toInt() ?? 0,
+        hidden: (m['hidden'] as bool?) ?? false,
+        hiddenAt: _ts(m['hiddenAt']),
       );
 
   GroupAccount _groupFromJson(Map<String, dynamic> m) {

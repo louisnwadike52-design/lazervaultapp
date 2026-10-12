@@ -373,6 +373,18 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     if (!FeatureFlags.cardAcceptanceVisible) {
       hidden.add(AppServiceName.cardAcceptance);
     }
+    // Group Funds. Admin-gated but visible by DEFAULT — unlike the three
+    // above, this is a live feature and the switch exists to WITHDRAW it, not
+    // to stage a rollout.
+    //
+    // Same chokepoint for the same reason: the grid, the All-Services search
+    // corpus and every per-account-type list are filtered by construction, so
+    // turning it off cannot leave a reachable entry point behind in one of
+    // them. (Disabling only one CONTRIBUTION TYPE leaves the service visible
+    // and is handled in the create flow, not here.)
+    if (!FeatureFlags.groupFundsAvailable) {
+      hidden.add(AppServiceName.groupAccount);
+    }
     // Outside NGN, hide every service the region cannot actually complete.
     //
     // This is an allow-list rather than a deny-list on purpose: a service

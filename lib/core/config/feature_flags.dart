@@ -73,6 +73,47 @@ class FeatureFlags {
   static bool get intlPayoutAvailable =>
       _prefs?.getBool(intlPayoutEnabled) ?? false;
 
+  // ── Group Funds, admin-tunable ───────────────────────────────────────────
+  //
+  // Three switches, from the whole feature down to which KIND of contribution
+  // may be created. All default ON, so an unset key leaves today's behaviour
+  // and an operator never has to seed a row to keep things working.
+  //
+  // Why type-level and not just one switch: the two products carry different
+  // risk. A one-time goal pays out once to a named person. An esusu is a
+  // rotating obligation across months, where one member walking away leaves
+  // the others short — so it is the half an operator may want to withdraw
+  // while leaving the rest of the feature running.
+  //
+  // These are a UI gate. The server refuses a disabled type as well, because
+  // an app already installed cannot be prevented from asking.
+  static const String groupFundsEnabled = 'group_funds_enabled';
+  static const String groupFundsOneTimeEnabled = 'group_funds_one_time_enabled';
+  static const String groupFundsEsusuEnabled = 'group_funds_esusu_enabled';
+
+  /// Whether Group Funds is available at all. Default true.
+  static bool get groupFundsAvailable =>
+      _prefs?.getBool(groupFundsEnabled) ?? true;
+
+  /// Whether a one-time contribution may be created. Default true.
+  static bool get groupFundsOneTimeAvailable =>
+      _prefs?.getBool(groupFundsOneTimeEnabled) ?? true;
+
+  /// Whether an esusu (rotating savings) contribution may be created.
+  /// Default true.
+  static bool get groupFundsEsusuAvailable =>
+      _prefs?.getBool(groupFundsEsusuEnabled) ?? true;
+
+  /// Whether ANY contribution type can be created right now.
+  ///
+  /// Both types off is a valid configuration — an operator parking new
+  /// contributions while leaving existing ones running — so the create
+  /// surface has to have something to say about it rather than opening a
+  /// wizard with an empty type picker.
+  static bool get groupFundsCanCreateContribution =>
+      groupFundsAvailable &&
+      (groupFundsOneTimeAvailable || groupFundsEsusuAvailable);
+
   /// Normalised unavailability scope. Anything unrecognised — including a value
   /// written before this app version knew about it — falls back to 'generic',
   /// which is the only message that is true regardless of why it is off.
@@ -446,6 +487,9 @@ class FeatureFlags {
       appUpdateEnabledKey,
       crowdfundDonationAlertsVisible,
       intlPayoutEnabled,
+      groupFundsEnabled,
+      groupFundsOneTimeEnabled,
+      groupFundsEsusuEnabled,
       spraymeLikeSoundKey,
       spraymeRecordingEnabled,
     ]) {

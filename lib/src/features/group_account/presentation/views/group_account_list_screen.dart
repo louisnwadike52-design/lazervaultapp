@@ -4,6 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import '../widgets/group_funds_guide.dart';
+import '../widgets/group_funds_terms.dart';
+import 'past_groups_screen.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
 import '../../../../../core/types/app_routes.dart';
@@ -267,12 +270,74 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
           ServiceVoiceButton(serviceName: 'groups'),
           SizedBox(width: 8.w),
           MicroserviceChatIcon(
-            serviceName: 'Joint Funds',
+            serviceName: 'Group Funds',
             sourceContext: 'group_accounts',
           ),
+          _buildOverflowMenu(),
         ],
       ),
     );
+  }
+
+  /// The landing page's overflow menu.
+  ///
+  /// "Past groups" lives HERE, not on a single group's screen: it is the
+  /// history of every group the user has left, so it belongs where all the
+  /// groups are. (A group's own screen carries "Past contributions" for the
+  /// same reason — that is where its contributions are listed.)
+  ///
+  /// It also carries the two explainers, the way Escrow Pay does: a user
+  /// deciding whether to put money into a pot with eleven other people
+  /// should be able to find out who holds it and what happens when someone
+  /// stops paying, without having to start a group to find out.
+  Widget _buildOverflowMenu() {
+    return PopupMenuButton<String>(
+      icon: Icon(Icons.more_vert, color: Colors.white, size: 22.sp),
+      color: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+      itemBuilder: (_) => [
+        _overflowItem('past_groups', Icons.history, 'Past groups'),
+        _overflowItem('how_it_works', Icons.help_outline, 'How it works'),
+        _overflowItem('terms', Icons.gavel_rounded, 'Terms and conditions'),
+      ],
+      onSelected: _onOverflowSelected,
+    );
+  }
+
+  PopupMenuItem<String> _overflowItem(
+      String value, IconData icon, String label) {
+    return PopupMenuItem<String>(
+      value: value,
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white, size: 19.sp),
+          SizedBox(width: 12.w),
+          Text(label, style: GoogleFonts.inter(color: Colors.white)),
+        ],
+      ),
+    );
+  }
+
+  void _onOverflowSelected(String value) {
+    switch (value) {
+      case 'past_groups':
+        // Threading the live cubit through keeps auth and caches, so the
+        // list lands instantly rather than cold-loading behind a spinner.
+        final cubit = context.read<GroupAccountCubit>();
+        Get.to(
+          () => BlocProvider<GroupAccountCubit>.value(
+            value: cubit,
+            child: const PastGroupsScreen(),
+          ),
+        );
+        break;
+      case 'how_it_works':
+        showGroupFundsHowItWorks(context);
+        break;
+      case 'terms':
+        showGroupFundsTermsSheet(context);
+        break;
+    }
   }
 
   Widget _buildTabBar() {
@@ -412,6 +477,14 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
   Widget _buildMyGroupsTab() {
     return BlocConsumer<GroupAccountCubit, GroupAccountState>(
       listener: (context, state) {
+        if (state is GroupAccountUnauthenticated) {
+          // Auto-logout while this screen was open. Anything already
+          // queued was queued by the session that just ended, and a red
+          // banner floating over the passcode screen is noise the user
+          // can do nothing about — the login screen is already the ask.
+          ScaffoldMessenger.of(context).clearSnackBars();
+          return;
+        }
         if (state is GroupAccountError && _tabController.index == 0) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -477,10 +550,18 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
         return current is GroupAccountGroupsLoaded ||
             current is GroupAccountLoading ||
             current is GroupAccountInitial ||
+            current is GroupAccountUnauthenticated ||
             (current is GroupAccountError && _tabController.index == 0);
       },
       builder: (context, state) {
         final cubit = context.read<GroupAccountCubit>();
+
+        // Signed out. A spinner here would spin forever (there is nobody to
+        // load groups for) and an error would blame the screen for
+        // something the session did.
+        if (state is GroupAccountUnauthenticated) {
+          return _buildSignedOutView();
+        }
 
         if (state is GroupAccountLoading || state is GroupAccountInitial) {
           return _buildMyGroupsLoadingView();
@@ -502,6 +583,34 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
 
         return _buildMyGroupsEmptyView();
       },
+    );
+  }
+
+  /// Shown when there is no signed-in user.
+  ///
+  /// Static and quiet on purpose: the app's auth router is already moving
+  /// the user to the passcode screen, so this is a frame or two of
+  /// transition, not a destination that needs a call to action.
+  Widget _buildSignedOutView() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.lock_outline, size: 36.sp, color: const Color(0xFF9CA3AF)),
+            SizedBox(height: 12.h),
+            Text(
+              'Sign in to see your joint funds',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                color: const Color(0xFF9CA3AF),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

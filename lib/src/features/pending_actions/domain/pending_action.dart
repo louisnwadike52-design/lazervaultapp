@@ -37,7 +37,7 @@ extension PendingActionSourceX on PendingActionSource {
         PendingActionSource.invoice => 'Invoice',
         PendingActionSource.splitBill => 'Split Bill',
         PendingActionSource.familyInvite => 'Family',
-        PendingActionSource.groupInvite => 'Joint Funds',
+        PendingActionSource.groupInvite => 'Group Funds',
         PendingActionSource.connectionRequest => 'Connection',
       };
 

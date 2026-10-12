@@ -611,6 +611,15 @@ const ContributionMessage$json = {
       '5': 4,
       '10': 'raisedThisCycleMinor'
     },
+    {'1': 'image_url', '3': 34, '4': 1, '5': 9, '10': 'imageUrl'},
+    {'1': 'paid_out', '3': 35, '4': 1, '5': 8, '10': 'paidOut'},
+    {
+      '1': 'paid_out_amount_minor',
+      '3': 36,
+      '4': 1,
+      '5': 4,
+      '10': 'paidOutAmountMinor'
+    },
   ],
 };
 
@@ -645,7 +654,9 @@ final $typed_data.Uint8List contributionMessageDescriptor = $convert.base64Decod
     'c3NhZ2VSDXBheW91dEhpc3RvcnkSQwoHbWVtYmVycxgfIAMoCzIpLmdyb3VwX2FjY291bnRzLk'
     'NvbnRyaWJ1dGlvbk1lbWJlck1lc3NhZ2VSB21lbWJlcnMSLgoTYXV0b19wYXlvdXRfZW5hYmxl'
     'ZBggIAEoCFIRYXV0b1BheW91dEVuYWJsZWQSNQoXcmFpc2VkX3RoaXNfY3ljbGVfbWlub3IYIS'
-    'ABKARSFHJhaXNlZFRoaXNDeWNsZU1pbm9y');
+    'ABKARSFHJhaXNlZFRoaXNDeWNsZU1pbm9yEhsKCWltYWdlX3VybBgiIAEoCVIIaW1hZ2VVcmwS'
+    'GQoIcGFpZF9vdXQYIyABKAhSB3BhaWRPdXQSMQoVcGFpZF9vdXRfYW1vdW50X21pbm9yGCQgAS'
+    'gEUhJwYWlkT3V0QW1vdW50TWlub3I=');
 
 @$core.Deprecated('Use contributionMemberMessageDescriptor instead')
 const ContributionMemberMessage$json = {
@@ -1727,6 +1738,15 @@ const PastContributionEntry$json = {
       '10': 'refundFailedReason'
     },
     {'1': 'self_exit', '3': 10, '4': 1, '5': 8, '10': 'selfExit'},
+    {'1': 'hidden', '3': 11, '4': 1, '5': 8, '10': 'hidden'},
+    {
+      '1': 'hidden_at',
+      '3': 12,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'hiddenAt'
+    },
   ],
 };
 
@@ -1741,7 +1761,8 @@ final $typed_data.Uint8List pastContributionEntryDescriptor = $convert.base64Dec
     'ZnVuZFN0YXR1cxIjCg1yZWZ1bmRfYW1vdW50GAcgASgDUgxyZWZ1bmRBbW91bnQSKQoQZm9yZm'
     'VpdGVkX2Ftb3VudBgIIAEoA1IPZm9yZmVpdGVkQW1vdW50EjAKFHJlZnVuZF9mYWlsZWRfcmVh'
     'c29uGAkgASgJUhJyZWZ1bmRGYWlsZWRSZWFzb24SGwoJc2VsZl9leGl0GAogASgIUghzZWxmRX'
-    'hpdA==');
+    'hpdBIWCgZoaWRkZW4YCyABKAhSBmhpZGRlbhI3CgloaWRkZW5fYXQYDCABKAsyGi5nb29nbGUu'
+    'cHJvdG9idWYuVGltZXN0YW1wUghoaWRkZW5BdA==');
 
 @$core.Deprecated('Use listPastContributionsRequestDescriptor instead')
 const ListPastContributionsRequest$json = {
@@ -1750,6 +1771,7 @@ const ListPastContributionsRequest$json = {
     {'1': 'page', '3': 1, '4': 1, '5': 5, '10': 'page'},
     {'1': 'page_size', '3': 2, '4': 1, '5': 5, '10': 'pageSize'},
     {'1': 'filter', '3': 3, '4': 1, '5': 9, '10': 'filter'},
+    {'1': 'visibility', '3': 4, '4': 1, '5': 9, '10': 'visibility'},
   ],
 };
 
@@ -1757,7 +1779,8 @@ const ListPastContributionsRequest$json = {
 final $typed_data.Uint8List listPastContributionsRequestDescriptor =
     $convert.base64Decode(
         'ChxMaXN0UGFzdENvbnRyaWJ1dGlvbnNSZXF1ZXN0EhIKBHBhZ2UYASABKAVSBHBhZ2USGwoJcG'
-        'FnZV9zaXplGAIgASgFUghwYWdlU2l6ZRIWCgZmaWx0ZXIYAyABKAlSBmZpbHRlcg==');
+        'FnZV9zaXplGAIgASgFUghwYWdlU2l6ZRIWCgZmaWx0ZXIYAyABKAlSBmZpbHRlchIeCgp2aXNp'
+        'YmlsaXR5GAQgASgJUgp2aXNpYmlsaXR5');
 
 @$core.Deprecated('Use listPastContributionsResponseDescriptor instead')
 const ListPastContributionsResponse$json = {
@@ -1816,6 +1839,15 @@ const PastGroupEntry$json = {
       '5': 5,
       '10': 'activeContributionsAtExit'
     },
+    {'1': 'hidden', '3': 5, '4': 1, '5': 8, '10': 'hidden'},
+    {
+      '1': 'hidden_at',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'hiddenAt'
+    },
   ],
 };
 
@@ -1824,7 +1856,9 @@ final $typed_data.Uint8List pastGroupEntryDescriptor = $convert.base64Decode(
     'Cg5QYXN0R3JvdXBFbnRyeRI5CgVncm91cBgBIAEoCzIjLmdyb3VwX2FjY291bnRzLkdyb3VwQW'
     'Njb3VudE1lc3NhZ2VSBWdyb3VwEjMKB2xlZnRfYXQYAiABKAsyGi5nb29nbGUucHJvdG9idWYu'
     'VGltZXN0YW1wUgZsZWZ0QXQSGwoJc2VsZl9leGl0GAMgASgIUghzZWxmRXhpdBI/ChxhY3Rpdm'
-    'VfY29udHJpYnV0aW9uc19hdF9leGl0GAQgASgFUhlhY3RpdmVDb250cmlidXRpb25zQXRFeGl0');
+    'VfY29udHJpYnV0aW9uc19hdF9leGl0GAQgASgFUhlhY3RpdmVDb250cmlidXRpb25zQXRFeGl0'
+    'EhYKBmhpZGRlbhgFIAEoCFIGaGlkZGVuEjcKCWhpZGRlbl9hdBgGIAEoCzIaLmdvb2dsZS5wcm'
+    '90b2J1Zi5UaW1lc3RhbXBSCGhpZGRlbkF0');
 
 @$core.Deprecated('Use listPastGroupsRequestDescriptor instead')
 const ListPastGroupsRequest$json = {
@@ -1833,13 +1867,15 @@ const ListPastGroupsRequest$json = {
     {'1': 'page', '3': 1, '4': 1, '5': 5, '10': 'page'},
     {'1': 'page_size', '3': 2, '4': 1, '5': 5, '10': 'pageSize'},
     {'1': 'filter', '3': 3, '4': 1, '5': 9, '10': 'filter'},
+    {'1': 'visibility', '3': 4, '4': 1, '5': 9, '10': 'visibility'},
   ],
 };
 
 /// Descriptor for `ListPastGroupsRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List listPastGroupsRequestDescriptor = $convert.base64Decode(
     'ChVMaXN0UGFzdEdyb3Vwc1JlcXVlc3QSEgoEcGFnZRgBIAEoBVIEcGFnZRIbCglwYWdlX3Npem'
-    'UYAiABKAVSCHBhZ2VTaXplEhYKBmZpbHRlchgDIAEoCVIGZmlsdGVy');
+    'UYAiABKAVSCHBhZ2VTaXplEhYKBmZpbHRlchgDIAEoCVIGZmlsdGVyEh4KCnZpc2liaWxpdHkY'
+    'BCABKAlSCnZpc2liaWxpdHk=');
 
 @$core.Deprecated('Use listPastGroupsResponseDescriptor instead')
 const ListPastGroupsResponse$json = {
@@ -2322,6 +2358,7 @@ const CreateContributionRequest$json = {
       '5': 9,
       '10': 'payoutReceiverUserId'
     },
+    {'1': 'image_url', '3': 21, '4': 1, '5': 9, '10': 'imageUrl'},
   ],
 };
 
@@ -2343,7 +2380,7 @@ final $typed_data.Uint8List createContributionRequestDescriptor = $convert.base6
     '9taW5pbXVtX2JhbGFuY2UYESABKARSDm1pbmltdW1CYWxhbmNlEhoKCG1ldGFkYXRhGBIgASgJ'
     'UghtZXRhZGF0YRIuChNhdXRvX3BheW91dF9lbmFibGVkGBMgASgIUhFhdXRvUGF5b3V0RW5hYm'
     'xlZBI1ChdwYXlvdXRfcmVjZWl2ZXJfdXNlcl9pZBgUIAEoCVIUcGF5b3V0UmVjZWl2ZXJVc2Vy'
-    'SWQ=');
+    'SWQSGwoJaW1hZ2VfdXJsGBUgASgJUghpbWFnZVVybA==');
 
 @$core.Deprecated('Use createContributionResponseDescriptor instead')
 const CreateContributionResponse$json = {
@@ -2491,6 +2528,8 @@ const UpdateContributionRequest$json = {
     },
     {'1': 'total_cycles', '3': 10, '4': 1, '5': 5, '10': 'totalCycles'},
     {'1': 'total_cycles_set', '3': 11, '4': 1, '5': 8, '10': 'totalCyclesSet'},
+    {'1': 'image_url', '3': 12, '4': 1, '5': 9, '10': 'imageUrl'},
+    {'1': 'image_url_set', '3': 13, '4': 1, '5': 8, '10': 'imageUrlSet'},
   ],
 };
 
@@ -2504,7 +2543,8 @@ final $typed_data.Uint8List updateContributionRequestDescriptor = $convert.base6
     'IaCghtZXRhZGF0YRgHIAEoCVIIbWV0YWRhdGESLgoTYXV0b19wYXlvdXRfZW5hYmxlZBgIIAEo'
     'CFIRYXV0b1BheW91dEVuYWJsZWQSNQoXYXV0b19wYXlvdXRfZW5hYmxlZF9zZXQYCSABKAhSFG'
     'F1dG9QYXlvdXRFbmFibGVkU2V0EiEKDHRvdGFsX2N5Y2xlcxgKIAEoBVILdG90YWxDeWNsZXMS'
-    'KAoQdG90YWxfY3ljbGVzX3NldBgLIAEoCFIOdG90YWxDeWNsZXNTZXQ=');
+    'KAoQdG90YWxfY3ljbGVzX3NldBgLIAEoCFIOdG90YWxDeWNsZXNTZXQSGwoJaW1hZ2VfdXJsGA'
+    'wgASgJUghpbWFnZVVybBIiCg1pbWFnZV91cmxfc2V0GA0gASgIUgtpbWFnZVVybFNldA==');
 
 @$core.Deprecated('Use updateContributionResponseDescriptor instead')
 const UpdateContributionResponse$json = {
@@ -4440,6 +4480,99 @@ final $typed_data.Uint8List withdrawJoinRequestResponseDescriptor =
     $convert.base64Decode(
         'ChtXaXRoZHJhd0pvaW5SZXF1ZXN0UmVzcG9uc2USGAoHbWVzc2FnZRgBIAEoCVIHbWVzc2FnZQ'
         '==');
+
+@$core.Deprecated('Use setDashboardOrderRequestDescriptor instead')
+const SetDashboardOrderRequest$json = {
+  '1': 'SetDashboardOrderRequest',
+  '2': [
+    {'1': 'item_type', '3': 1, '4': 1, '5': 9, '10': 'itemType'},
+    {'1': 'ordered_item_ids', '3': 2, '4': 3, '5': 9, '10': 'orderedItemIds'},
+    {'1': 'scope_id', '3': 3, '4': 1, '5': 9, '10': 'scopeId'},
+    {'1': 'start_index', '3': 4, '4': 1, '5': 5, '10': 'startIndex'},
+  ],
+};
+
+/// Descriptor for `SetDashboardOrderRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List setDashboardOrderRequestDescriptor = $convert.base64Decode(
+    'ChhTZXREYXNoYm9hcmRPcmRlclJlcXVlc3QSGwoJaXRlbV90eXBlGAEgASgJUghpdGVtVHlwZR'
+    'IoChBvcmRlcmVkX2l0ZW1faWRzGAIgAygJUg5vcmRlcmVkSXRlbUlkcxIZCghzY29wZV9pZBgD'
+    'IAEoCVIHc2NvcGVJZBIfCgtzdGFydF9pbmRleBgEIAEoBVIKc3RhcnRJbmRleA==');
+
+@$core.Deprecated('Use setDashboardOrderResponseDescriptor instead')
+const SetDashboardOrderResponse$json = {
+  '1': 'SetDashboardOrderResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    {'1': 'items_updated', '3': 3, '4': 1, '5': 5, '10': 'itemsUpdated'},
+  ],
+};
+
+/// Descriptor for `SetDashboardOrderResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List setDashboardOrderResponseDescriptor = $convert.base64Decode(
+    'ChlTZXREYXNoYm9hcmRPcmRlclJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGA'
+    'oHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIjCg1pdGVtc191cGRhdGVkGAMgASgFUgxpdGVtc1Vw'
+    'ZGF0ZWQ=');
+
+@$core.Deprecated('Use hideDashboardItemRequestDescriptor instead')
+const HideDashboardItemRequest$json = {
+  '1': 'HideDashboardItemRequest',
+  '2': [
+    {'1': 'item_type', '3': 1, '4': 1, '5': 9, '10': 'itemType'},
+    {'1': 'item_id', '3': 2, '4': 1, '5': 9, '10': 'itemId'},
+  ],
+};
+
+/// Descriptor for `HideDashboardItemRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List hideDashboardItemRequestDescriptor =
+    $convert.base64Decode(
+        'ChhIaWRlRGFzaGJvYXJkSXRlbVJlcXVlc3QSGwoJaXRlbV90eXBlGAEgASgJUghpdGVtVHlwZR'
+        'IXCgdpdGVtX2lkGAIgASgJUgZpdGVtSWQ=');
+
+@$core.Deprecated('Use hideDashboardItemResponseDescriptor instead')
+const HideDashboardItemResponse$json = {
+  '1': 'HideDashboardItemResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `HideDashboardItemResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List hideDashboardItemResponseDescriptor =
+    $convert.base64Decode(
+        'ChlIaWRlRGFzaGJvYXJkSXRlbVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGA'
+        'oHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+
+@$core.Deprecated('Use unhideDashboardItemRequestDescriptor instead')
+const UnhideDashboardItemRequest$json = {
+  '1': 'UnhideDashboardItemRequest',
+  '2': [
+    {'1': 'item_type', '3': 1, '4': 1, '5': 9, '10': 'itemType'},
+    {'1': 'item_id', '3': 2, '4': 1, '5': 9, '10': 'itemId'},
+  ],
+};
+
+/// Descriptor for `UnhideDashboardItemRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List unhideDashboardItemRequestDescriptor =
+    $convert.base64Decode(
+        'ChpVbmhpZGVEYXNoYm9hcmRJdGVtUmVxdWVzdBIbCglpdGVtX3R5cGUYASABKAlSCGl0ZW1UeX'
+        'BlEhcKB2l0ZW1faWQYAiABKAlSBml0ZW1JZA==');
+
+@$core.Deprecated('Use unhideDashboardItemResponseDescriptor instead')
+const UnhideDashboardItemResponse$json = {
+  '1': 'UnhideDashboardItemResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `UnhideDashboardItemResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List unhideDashboardItemResponseDescriptor =
+    $convert.base64Decode(
+        'ChtVbmhpZGVEYXNoYm9hcmRJdGVtUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
+        'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use groupPaginationInfoDescriptor instead')
 const GroupPaginationInfo$json = {
