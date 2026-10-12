@@ -1383,24 +1383,45 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // A finished contribution has nothing "remaining" — it has a
+          // result. Showing a shortfall on a goal that has closed (or worse,
+          // on one that was fully funded and paid out) describes a future
+          // that is not coming.
           _buildStatCard(
-            title: 'Remaining Amount',
-            value: '${contribution.currency} ${remaining.toStringAsFixed(2)}',
-            icon: Icons.account_balance_wallet,
-            color: const Color(0xFF3B82F6),
+            title: contribution.displayState.isTerminal
+                ? (contribution.paidOut ? 'Paid out' : 'Total raised')
+                : 'Remaining Amount',
+            value: contribution.displayState.isTerminal
+                ? '${contribution.currency} '
+                    '${(contribution.paidOut ? contribution.paidOutAmount : contribution.amountRaised).toStringAsFixed(2)}'
+                : '${contribution.currency} ${remaining.toStringAsFixed(2)}',
+            icon: contribution.displayState.isTerminal
+                ? Icons.check_circle_outline
+                : Icons.account_balance_wallet,
+            color: contribution.displayState.isTerminal
+                ? const Color(0xFF10B981)
+                : const Color(0xFF3B82F6),
           ),
           SizedBox(height: 16.h),
           // A finished contribution has no days remaining and cannot be
           // overdue. Showing "Overdue" in red beside a Completed badge was
           // the screen contradicting itself.
           _buildStatCard(
-            title: contribution.isCompleted ? 'Closed' : 'Days Remaining',
-            value: contribution.isCompleted
+            // Reads off the same derived state as the badge, so the two
+            // cannot disagree: a cancelled contribution is not "Closed" on
+            // one card and "Cancelled" on the badge above it.
+            title: contribution.displayState.isTerminal
+                ? contribution.displayState.label
+                : 'Days Remaining',
+            value: contribution.displayState.isTerminal
                 ? DateFormat('MMM d, yyyy').format(contribution.deadline)
                 : _calculateDaysRemaining(contribution.deadline),
             icon: Icons.schedule,
-            color: contribution.isCompleted
-                ? const Color(0xFF10B981)
+            color: contribution.displayState.isTerminal
+                ? (contribution.displayState ==
+                        ContributionDisplayState.cancelled
+                    ? const Color(0xFFEF4444)
+                    : const Color(0xFF10B981))
                 : contribution.isOverdue
                     ? const Color(0xFFEF4444)
                     : const Color(0xFF10B981),
