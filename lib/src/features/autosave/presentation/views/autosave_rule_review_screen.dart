@@ -157,11 +157,14 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
   @override
   Widget build(BuildContext context) {
     if (_invalidArgs) {
-      return const ScreenUnavailable(
+      return ScreenUnavailable(
         title: 'Nothing to review',
         message: 'The details for this rule are no longer in memory. Start the '
             'rule again to review it.',
         actionLabel: 'Go to Auto-Save',
+        // The label names a destination, so the button must go there
+        // rather than pop to whatever happens to be underneath.
+        onAction: () => Get.offAllNamed(AppRoutes.autoSaveDashboard),
       );
     }
     return Scaffold(

@@ -883,11 +883,14 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
     // No valid rule (bad/blank args) — render a placeholder while the
     // post-frame callback in initState routes back home. Never touch `rule`.
     if (_invalidArgs) {
-      return const ScreenUnavailable(
+      return ScreenUnavailable(
         title: 'Rule not available',
         message: 'We could not load this Auto-Save rule. Open it again from '
             'your Auto-Save list.',
         actionLabel: 'Go to Auto-Save',
+        // The label names a destination, so the button must go there
+        // rather than pop to whatever happens to be underneath.
+        onAction: () => Get.offAllNamed(AppRoutes.autoSaveDashboard),
       );
     }
     return BlocListener<AutoSaveCubit, AutoSaveState>(

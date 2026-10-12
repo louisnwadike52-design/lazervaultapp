@@ -645,11 +645,14 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
   @override
   Widget build(BuildContext context) {
     if (_invalidArgs) {
-      return const ScreenUnavailable(
+      return ScreenUnavailable(
         title: 'Rule not available',
         message: 'We could not load the rule you were editing. Open it again '
             'from your Auto-Save list.',
         actionLabel: 'Go to Auto-Save',
+        // The label names a destination, so the button must go there
+        // rather than pop to whatever happens to be underneath.
+        onAction: () => Get.offAllNamed(AppRoutes.autoSaveDashboard),
       );
     }
     return PopScope(

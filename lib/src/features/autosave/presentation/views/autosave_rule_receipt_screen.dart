@@ -163,11 +163,14 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen> {
       // Not an empty box: if this is ever reached after the first frame the
       // initState redirect has already run and nothing else will fire, so the
       // user would be stranded on black.
-      return const ScreenUnavailable(
+      return ScreenUnavailable(
         title: 'Receipt no longer available',
         message: 'This receipt is shown once, right after a rule is created. '
             'Open the rule from your Auto-Save list to see its details.',
         actionLabel: 'Go to Auto-Save',
+        // The label names a destination, so the button must go there
+        // rather than pop to whatever happens to be underneath.
+        onAction: () => Get.offAllNamed(AppRoutes.autoSaveDashboard),
       );
     }
     final rule = _rule!;

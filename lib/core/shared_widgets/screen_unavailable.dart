@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 
 /// What a screen shows when it cannot render: a way out, never an empty box.
 ///
@@ -45,9 +46,11 @@ class ScreenUnavailable extends StatelessWidget {
   final String message;
   final String actionLabel;
 
-  /// Defaults to popping, falling back to the previous route only when there
-  /// is one — a screen reached by a redirect may be the only one on the stack,
-  /// and a dead button is the problem this widget exists to remove.
+  /// Defaults to popping, and when there is nothing to pop to, going home.
+  ///
+  /// A screen reached by a redirect can be the only route on the stack, and
+  /// `Get.until(isFirst)` is a no-op there — which would leave exactly the
+  /// dead button this widget exists to remove.
   final VoidCallback? onAction;
 
   final Color backgroundColor;
@@ -59,9 +62,9 @@ class ScreenUnavailable extends StatelessWidget {
   void _defaultAction() {
     if (Get.key.currentState?.canPop() ?? false) {
       Get.back();
-    } else {
-      Get.until((route) => route.isFirst);
+      return;
     }
+    Get.offAllNamed(AppRoutes.dashboard);
   }
 
   @override
