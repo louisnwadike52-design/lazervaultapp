@@ -81,11 +81,16 @@ class SavedRecipientsRail extends StatelessWidget {
     required this.recipients,
     required this.onTap,
     required this.onMore,
+    this.since,
   });
 
   final List<RecipientModel> recipients;
   final void Function(RecipientModel) onTap;
   final void Function(RecipientModel) onMore;
+
+  /// When the host screen appeared, so a late-arriving list is not held back
+  /// a second time. See StaggeredEntrance.since.
+  final DateTime? since;
 
   static const _cardWidth = 150.0;
 
@@ -127,6 +132,7 @@ class SavedRecipientsRail extends StatelessWidget {
         // rather than simply present.
         itemBuilder: (_, i) => StaggeredEntrance(
           index: i,
+          since: since,
           // Keyed by recipient so switching the Bank / Lazervault tab replays
           // the stagger for the new set instead of reusing the old State and
           // showing them already in place.

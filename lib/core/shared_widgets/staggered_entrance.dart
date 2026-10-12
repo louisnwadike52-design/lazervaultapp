@@ -31,6 +31,7 @@ class StaggeredEntrance extends StatefulWidget {
     this.duration = const Duration(milliseconds: 380),
     this.beginOffset = const Offset(0.12, 0),
     this.maxStaggerIndex = 8,
+    this.since,
   });
 
   final Widget child;
@@ -49,6 +50,19 @@ class StaggeredEntrance extends StatefulWidget {
 
   final int maxStaggerIndex;
 
+  /// When the HOST SCREEN appeared.
+  ///
+  /// [startDelay] exists to hold the first item back until the page animation
+  /// has landed, so it has to be measured from the page, not from this item.
+  /// Measured from the item, a list that arrives late — a slow recipients
+  /// fetch — was held a further [startDelay] after the page had already
+  /// settled, which is a dead gap at exactly the moment the data showed up.
+  ///
+  /// Only the START is shortened; the per-item gap is kept, so a late list
+  /// still reads in one by one instead of all landing together. Null keeps
+  /// the old behaviour.
+  final DateTime? since;
+
   /// The delay for [index], exposed for testing: the stagger is the whole
   /// point of this widget, so it is worth asserting rather than eyeballing.
   static Duration delayFor(
@@ -56,11 +70,14 @@ class StaggeredEntrance extends StatefulWidget {
     Duration startDelay = const Duration(milliseconds: 780),
     Duration stagger = const Duration(milliseconds: 90),
     int maxStaggerIndex = 8,
+    Duration elapsed = Duration.zero,
   }) {
     final capped = index < 0
         ? 0
         : (index > maxStaggerIndex ? maxStaggerIndex : index);
-    return startDelay + stagger * capped;
+    var start = startDelay - elapsed;
+    if (start < Duration.zero) start = Duration.zero;
+    return start + stagger * capped;
   }
 
   @override
@@ -87,12 +104,14 @@ class _StaggeredEntranceState extends State<StaggeredEntrance>
     _slide = Tween<Offset>(begin: widget.beginOffset, end: Offset.zero)
         .animate(CurvedAnimation(parent: _controller!, curve: Curves.easeOut));
 
+    final since = widget.since;
     _timer = Timer(
       StaggeredEntrance.delayFor(
         widget.index,
         startDelay: widget.startDelay,
         stagger: widget.stagger,
         maxStaggerIndex: widget.maxStaggerIndex,
+        elapsed: since == null ? Duration.zero : DateTime.now().difference(since),
       ),
       () {
         // The screen can be popped while the item is still waiting its turn.

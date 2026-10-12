@@ -150,6 +150,12 @@ class _SelectRecipientsState extends State<SelectRecipients>
   // recipients show (Bank → external only, Lazervault user → internal only).
   AddRecipientMethod _shortMethod = AddRecipientMethod.bankDetails;
 
+  /// When this screen appeared, so the saved-recipients stagger measures its
+  /// start delay from the PAGE rather than from each item's own mount. A
+  /// slow fetch would otherwise hold the list a further delay after the page
+  /// had already settled. See StaggeredEntrance.since.
+  final DateTime _screenShownAt = DateTime.now();
+
   // Extra saved-recipient filter applied via the filter-icon sheet (on top of
   // the bank/Lazervault tab): favourites-only.
   bool _savedFavoritesOnly = false;
@@ -2107,6 +2113,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
       padding: EdgeInsets.only(top: wantInternal ? 14.h : 0),
       child: _savedView == SavedRecipientsView.rail
           ? SavedRecipientsRail(
+              since: _screenShownAt,
               recipients: preview,
               onTap: _onRecipientTapped,
               onMore: _showRecipientOptionsSheet,
@@ -2120,6 +2127,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
                   StaggeredEntrance(
                     key: ValueKey('saved-list-${r.id}'),
                     index: i,
+                    since: _screenShownAt,
                     beginOffset: const Offset(0, 0.18),
                     child: _buildRecipientItem(r),
                   ),
