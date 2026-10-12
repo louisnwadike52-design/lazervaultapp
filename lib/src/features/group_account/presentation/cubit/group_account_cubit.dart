@@ -2622,6 +2622,12 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
           _cachedGroups = cached.where((g) => g.id != itemId).toList();
           emit(GroupAccountGroupsLoaded(_cachedGroups!));
         }
+        // The list just got shorter, so the held page and its prefetch are
+        // both describing a list that no longer exists — and the page the
+        // user is on may now be past the end. Re-read rather than patch.
+        final current = groupsPage?.page ?? 1;
+        invalidatePages();
+        await loadGroupsPage(current, force: true);
       } else {
         final snapshot = _snapshotLoaded();
         if (snapshot != null) {

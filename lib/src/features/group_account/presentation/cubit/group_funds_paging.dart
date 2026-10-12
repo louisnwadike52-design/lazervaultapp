@@ -60,8 +60,22 @@ extension GroupFundsPaging on GroupAccountCubit {
       emit(const GroupAccountLoading(message: 'Loading groups...'));
     }
     try {
-      final result = await usecase(PageParams(page: page, pageSize: pageSize));
+      var result = await usecase(PageParams(page: page, pageSize: pageSize));
       if (!_sessionStillCurrent(generation)) return;
+
+      // Stranded past the end.
+      //
+      // Hiding rows (or someone else removing you from a group) shrinks the
+      // list under the user. Asking for page 3 of a list that now has two
+      // leaves them looking at an empty page with a pager that says there is
+      // nothing beyond it — and no obvious way back. Step to the last page
+      // that exists instead.
+      if (result.items.isEmpty && result.totalPages > 0 && page > result.totalPages) {
+        result = await usecase(
+            PageParams(page: result.totalPages, pageSize: pageSize));
+        if (!_sessionStillCurrent(generation)) return;
+      }
+
       groupsPage = result;
       // Keep the flat cache in step so the stats tile and every other
       // consumer of `cachedGroups` sees this page's rows.
@@ -176,7 +190,7 @@ extension GroupFundsPaging on GroupAccountCubit {
 
     final generation = _sessionGeneration;
     try {
-      final result = await usecase(GroupPageParams(
+      var result = await usecase(GroupPageParams(
         groupId: groupId,
         page: page,
         pageSize: pageSize,
@@ -184,6 +198,19 @@ extension GroupFundsPaging on GroupAccountCubit {
       if (!_sessionStillCurrent(generation) ||
           contributionsPageGroupId != groupId) {
         return;
+      }
+      // See loadGroupsPage: a hidden or deleted contribution can shrink the
+      // list out from under the page the user is on.
+      if (result.items.isEmpty && result.totalPages > 0 && page > result.totalPages) {
+        result = await usecase(GroupPageParams(
+          groupId: groupId,
+          page: result.totalPages,
+          pageSize: pageSize,
+        ));
+        if (!_sessionStillCurrent(generation) ||
+            contributionsPageGroupId != groupId) {
+          return;
+        }
       }
       contributionsPage = result;
       emit(GroupAccountContributionsPageLoaded(groupId, result));
