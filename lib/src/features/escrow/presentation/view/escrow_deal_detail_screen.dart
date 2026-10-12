@@ -95,11 +95,24 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
         context: context,
         transactionId: txnId,
         transactionType: 'escrow_release',
-        amount: deal.sellerNet,
+        // The PIN authorises releasing what is HELD, which is what the buyer
+        // locked at funding (buyerTotal) — not the seller's net. Showing
+        // sellerNet made the sheet read ₦475.00 against a ₦525.00 lock, which
+        // looks like a second, different debit.
+        //
+        // Same field the funding sheet used, deliberately: that sheet locks
+        // `_quote.buyerTotal`, so quoting the same number end to end is the
+        // only way the two screens cannot disagree.
+        amount: deal.buyerTotal,
         currency: deal.currency,
         title: 'Release funds',
-        message:
-            'Release ${_money(deal.sellerNet, deal.currency)} to ${deal.sellerName}',
+        message: 'Release the ${_money(deal.buyerTotal, deal.currency)} held '
+            'for this deal — ${_money(deal.sellerNet, deal.currency)} to '
+            '${deal.sellerName}'
+            '${deal.fee > 0 ? ' and ${_money(deal.fee, deal.currency)} escrow fee' : ''}.'
+            '\n\nYou are not being charged again. This money left your balance '
+            'when you funded the deal; the PIN is confirming it is safe to pay '
+            'out.',
         successMessage: 'Funds released',
         processingSubtitle:
             'Releasing ${_money(deal.sellerNet, deal.currency)} to ${deal.sellerName}…',
