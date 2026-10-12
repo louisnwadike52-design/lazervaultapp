@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/src/core/network/grpc_client.dart';
 import '../../domain/entities/escrow_deal_entity.dart';
@@ -34,12 +35,75 @@ class EscrowCubit extends Cubit<EscrowState> {
   }
 
   /// Load the caller's deals. role: "", "buyer", "seller".
-  Future<void> loadDeals({String role = '', String status = ''}) async {
-    emit(const EscrowLoading());
+  /// Page size for the deals list. Small enough that a page is one screen
+  /// or two, which is what makes numbered pages meaningful.
+  static const int dealsPageSize = 20;
+
+  /// The next page, fetched in the background after the current one lands.
+  /// Keyed by (role, status, page) so a filter change cannot serve a page
+  /// prefetched for a different list — the bug that makes prefetching worse
+  /// than not prefetching.
+  String? _prefetchKey;
+  EscrowDealsPage? _prefetched;
+
+  String _key(String role, String status, int page) => '$role|$status|$page';
+
+  Future<void> loadDeals({
+    String role = '',
+    String status = '',
+    int page = 1,
+  }) async {
+    // A page change keeps the current list visible and flags it loading; a
+    // first load has nothing to keep, so it shows the shimmer.
+    final current = state;
+    if (current is EscrowDealsLoaded && page != current.page) {
+      emit(current.copyWith(pageLoading: true));
+    } else {
+      emit(const EscrowLoading());
+    }
     try {
       final uid = await _userId();
-      final deals = await repository.listMyDeals(role: role, status: status);
-      emit(EscrowDealsLoaded(deals, uid));
+
+      // Serve the prefetch when it is for exactly this list and page.
+      EscrowDealsPage result;
+      final want = _key(role, status, page);
+      final hit = _prefetched;
+      if (hit != null && _prefetchKey == want) {
+        result = hit;
+      } else {
+        result = await repository.listMyDealsPaged(
+            role: role, status: status, page: page, limit: dealsPageSize);
+      }
+      _prefetched = null;
+      _prefetchKey = null;
+
+      emit(EscrowDealsLoaded(
+        result.items,
+        uid,
+        page: result.page,
+        totalPages: result.totalPages,
+      ));
+
+      // Warm the next page AFTER emitting, so it never delays what the user
+      // asked for. Failures are swallowed: a prefetch that cannot run is a
+      // missed optimisation, not an error anyone should see.
+      if (result.page < result.totalPages) {
+        final nextPage = result.page + 1;
+        unawaited(repository
+            .listMyDealsPaged(
+                role: role,
+                status: status,
+                page: nextPage,
+                limit: dealsPageSize)
+            .then((p) {
+          _prefetched = p;
+          _prefetchKey = _key(role, status, nextPage);
+        }).catchError((_) {
+          _prefetched = null;
+          _prefetchKey = null;
+          return;
+        }));
+      }
     } catch (e) {
       emit(EscrowError(_clean(e)));
     }

@@ -156,6 +156,31 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
   /// error — confirming a deal exists to someone not on it leaks that two
   /// people are transacting.
   @override
+  Future<EscrowDealsPage> listMyDealsPaged({
+    String role = '',
+    String status = '',
+    int page = 1,
+    int limit = 20,
+  }) async {
+    return retryWithBackoff(operation: () async {
+      final req = pb.ListMyDealsRequest()
+        ..role = role
+        ..status = status
+        ..page = page
+        ..limit = limit;
+      final options = await grpcClient.callOptions;
+      final resp =
+          await grpcClient.escrowClient.listMyDeals(req, options: options);
+      return EscrowDealsPage(
+        items: resp.deals.map(_dealFromProto).toList(),
+        total: resp.total,
+        page: page,
+        limit: limit,
+      );
+    });
+  }
+
+  @override
   Future<EscrowPolicy> getPolicy() async {
     // FAIL SOFT. A policy read must never be the reason someone cannot
     // create a deal, so every failure resolves to the built-in defaults,

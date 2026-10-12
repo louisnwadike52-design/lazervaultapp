@@ -10,6 +10,18 @@ abstract class EscrowRepository {
   /// Separate from the parties' general direct-message thread so a dispute
   /// has "the chat for this deal" and an admin adjudicating it reads that
   /// and nothing else.
+  /// One page of this user's deals, WITH the server's total.
+  ///
+  /// Separate from listMyDeals because that one discards `total`, and
+  /// without a total the app cannot say how many pages there are, which is
+  /// the whole point of numbered pagination.
+  Future<EscrowDealsPage> listMyDealsPaged({
+    String role,
+    String status,
+    int page,
+    int limit,
+  });
+
   /// The rules the app must obey and show, from admin settings.
   ///
   /// Never throws: callers get the built-in defaults when the server cannot
@@ -197,4 +209,27 @@ class EscrowPolicy {
   int get specs => specsMaxChars > 0 ? specsMaxChars : fallback.specsMaxChars;
   int get message =>
       messageMaxChars > 0 ? messageMaxChars : fallback.messageMaxChars;
+}
+
+/// One page of deals plus the server's total, so the UI can render real
+/// page numbers rather than guessing from whether a page came back full.
+class EscrowDealsPage {
+  final List<EscrowDealEntity> items;
+  final int total;
+  final int page;
+  final int limit;
+
+  const EscrowDealsPage({
+    required this.items,
+    required this.total,
+    required this.page,
+    required this.limit,
+  });
+
+  static const empty =
+      EscrowDealsPage(items: [], total: 0, page: 1, limit: 20);
+
+  /// At least 1, so an empty list is "page 1 of 1" rather than "of 0",
+  /// which reads as a broken counter.
+  int get totalPages => total <= 0 ? 1 : ((total + limit - 1) ~/ limit);
 }

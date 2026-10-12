@@ -23,6 +23,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import '../widgets/escrow_terms.dart';
 import '../widgets/escrow_how_it_works.dart';
 import '../widgets/swipe_between_tabs.dart';
+import '../widgets/paged_pagination_bar.dart';
 
 class EscrowHomeScreen extends StatefulWidget {
   const EscrowHomeScreen({super.key});
@@ -62,7 +63,7 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
   }
 
   void _reload() {
-    context.read<EscrowCubit>().loadDeals(role: _role);
+    context.read<EscrowCubit>().loadDeals(role: _role, page: _page);
     _loadActiveOffers();
   }
 
@@ -92,7 +93,10 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
   }
 
   void _setRole(String role) {
-    setState(() => _role = role);
+    setState(() {
+      _role = role;
+      _page = 1;
+    });
     _reload();
   }
 
@@ -108,7 +112,14 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
     return () => _setRole(_roleOrder[next]);
   }
 
-  void _setStatus(String status) => setState(() => _status = status);
+  /// 1-based. A filter or role change resets it: page 4 of a list that no
+  /// longer has four pages is an empty screen that looks like lost data.
+  int _page = 1;
+
+  void _setStatus(String status) => setState(() {
+        _status = status;
+        _page = 1;
+      });
 
   /// Client-side status-group filter over the already-loaded list.
   /// True once we know whether this user has ever finished a deal, so the
@@ -304,6 +315,26 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
                     },
                   ),
                 ),
+              ),
+              // Numbered pages under the list. Hidden at one page, and the
+              // controls go inert while a page is in flight so a second tap
+              // cannot queue a third request.
+              BlocBuilder<EscrowCubit, EscrowState>(
+                builder: (context, state) {
+                  if (state is! EscrowDealsLoaded) {
+                    return const SizedBox.shrink();
+                  }
+                  return PagedPaginationBar(
+                    page: state.page,
+                    totalPages: state.totalPages,
+                    onGoTo: state.pageLoading
+                        ? null
+                        : (p) {
+                            setState(() => _page = p);
+                            _reload();
+                          },
+                  );
+                },
               ),
             ],
           ),

@@ -17,7 +17,31 @@ class EscrowLoading extends EscrowState {
 class EscrowDealsLoaded extends EscrowState {
   final List<EscrowDealEntity> deals;
   final String currentUserId;
-  const EscrowDealsLoaded(this.deals, this.currentUserId);
+
+  /// 1-based page and how many there are, so the bar can render numbers.
+  final int page;
+  final int totalPages;
+
+  /// True while the NEXT page is being fetched. The current page stays on
+  /// screen underneath, because blanking a list the user is reading to show
+  /// a spinner loses their place for no gain.
+  final bool pageLoading;
+
+  const EscrowDealsLoaded(
+    this.deals,
+    this.currentUserId, {
+    this.page = 1,
+    this.totalPages = 1,
+    this.pageLoading = false,
+  });
+
+  EscrowDealsLoaded copyWith({bool? pageLoading}) => EscrowDealsLoaded(
+        deals,
+        currentUserId,
+        page: page,
+        totalPages: totalPages,
+        pageLoading: pageLoading ?? this.pageLoading,
+      );
 }
 
 class EscrowDealLoaded extends EscrowState {
