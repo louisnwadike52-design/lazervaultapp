@@ -378,7 +378,11 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
     try {
       final res = await serviceLocator<IAutoSaveRepository>().getFeeQuote(
         amount: netNaira,
-        triggerType: rule.triggerType.name,
+        // The STORED trigger_type, not the Dart enum name. Pricing is
+        // per trigger and keyed on the former; sending the latter relies
+        // on the server tolerating camelCase, which is a fallback rather
+        // than the contract.
+        triggerType: AutoSaveTriggerLabels.wireName(rule.triggerType),
       );
       res.fold((_) {}, (q) {
         if (q.enabled) {

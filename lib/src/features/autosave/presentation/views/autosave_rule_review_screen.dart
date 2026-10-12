@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_e
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/autosave/domain/repositories/i_autosave_repository.dart';
+import 'package:lazervault/src/features/autosave/utils/autosave_trigger_labels.dart';
 
 class AutoSaveRuleReviewScreen extends StatefulWidget {
   const AutoSaveRuleReviewScreen({super.key});
@@ -430,7 +431,8 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
       double amount, TriggerType t) async {
     final res = await serviceLocator<IAutoSaveRepository>().getFeeQuote(
       amount: amount,
-      triggerType: t.name,
+      // The stored trigger_type — see the note in the details screen.
+      triggerType: AutoSaveTriggerLabels.wireName(t),
     );
     // Quote failures never block review — no card rather than a wrong number.
     return res.fold((_) => AutoSaveFeeQuote.none, (q) => q);
