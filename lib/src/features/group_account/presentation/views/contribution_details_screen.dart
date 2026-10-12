@@ -585,10 +585,17 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
 
   void _showAutoDebitDialog(Contribution contribution,
       {required bool hasPaid}) {
-    final due = contribution.nextPaymentDate;
+    // A one-time contribution has no cycles. It is collected once and that
+    // closes it, so "the next cycle close" describes something that will
+    // never happen and "you've already paid for this cycle" implies another
+    // one is coming.
+    final isOneTime = contribution.type == ContributionType.oneTime;
+    // One-time has no next payment date; its deadline IS the date.
+    final due = contribution.nextPaymentDate ??
+        (isOneTime ? contribution.deadline : null);
     final dueLabel = due != null
         ? DateFormat('MMM dd, yyyy').format(due)
-        : 'the next cycle close';
+        : (isOneTime ? 'the due date' : 'the next cycle close');
     final amountLabel = contribution.regularAmount != null &&
             contribution.regularAmount! > 0
         ? '${contribution.currency} ${_fmtAmount(contribution.regularAmount!)}'
@@ -598,7 +605,9 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     final title = hasPaid ? 'You\'re covered' : 'Auto-debit is on';
 
     final body = hasPaid
-        ? 'You\'ve already paid for this cycle, so no auto-charge will run for you.'
+        ? (isOneTime
+            ? 'You\'ve already paid, so no auto-charge will run for you.'
+            : 'You\'ve already paid for this cycle, so no auto-charge will run for you.')
         : amountLabel != null
             ? 'If you don\'t pay $amountLabel manually before $dueLabel, we\'ll auto-debit it from your account.'
             : 'If you don\'t pay manually before $dueLabel, we\'ll auto-debit your account.';
@@ -1115,22 +1124,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                   color: Colors.white.withValues(alpha: 0.75),
                 ),
               ),
-              Text(
-                contribution.isCompleted
-                    ? 'Completed'
-                    : contribution.isOverdue
-                        ? 'Overdue'
-                        : 'Active',
-                style: GoogleFonts.inter(
-                  fontSize: 10.sp,
-                  fontWeight: FontWeight.w600,
-                  color: contribution.isCompleted
-                      ? const Color(0xFF10B981)
-                      : contribution.isOverdue
-                          ? const Color(0xFFEF4444)
-                          : Colors.white,
-                ),
-              ),
+              _ContributionStateBadges(contribution: contribution),
             ],
           ),
         ],
@@ -1374,13 +1368,20 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             color: const Color(0xFF3B82F6),
           ),
           SizedBox(height: 16.h),
+          // A finished contribution has no days remaining and cannot be
+          // overdue. Showing "Overdue" in red beside a Completed badge was
+          // the screen contradicting itself.
           _buildStatCard(
-            title: 'Days Remaining',
-            value: _calculateDaysRemaining(contribution.deadline),
+            title: contribution.isCompleted ? 'Closed' : 'Days Remaining',
+            value: contribution.isCompleted
+                ? DateFormat('MMM d, yyyy').format(contribution.deadline)
+                : _calculateDaysRemaining(contribution.deadline),
             icon: Icons.schedule,
-            color: contribution.isOverdue
-                ? const Color(0xFFEF4444)
-                : const Color(0xFF10B981),
+            color: contribution.isCompleted
+                ? const Color(0xFF10B981)
+                : contribution.isOverdue
+                    ? const Color(0xFFEF4444)
+                    : const Color(0xFF10B981),
           ),
           SizedBox(height: 16.h),
           _buildStatCard(
@@ -4186,4 +4187,87 @@ extension ChangeCyclesDialog on _ContributionDetailsScreenState {
       ),
     );
   }
+}
+
+
+/// The contribution's state, as badges rather than one word.
+///
+/// It used to render a single label — Completed / Overdue / Active — which
+/// could not say the two things that matter most at the end of a one-time
+/// contribution: that it finished, and that the money has actually been paid
+/// out. A screen reading "Completed" while separately showing "Overdue" and a
+/// full target still "remaining" is telling the user three different stories.
+///
+/// Overdue is suppressed once the contribution is finished. A deadline that
+/// passed after the goal was met is not a problem, and flagging it red says
+/// something is wrong when nothing is.
+class _ContributionStateBadges extends StatelessWidget {
+  const _ContributionStateBadges({required this.contribution});
+
+  final Contribution contribution;
+
+  /// True when money has actually reached a recipient — a COMPLETED payout,
+  /// not a scheduled or pending one. "Paid out" is a statement about money
+  /// having moved, so a pending row must not claim it.
+  bool get _paidOut => contribution.payoutHistory
+      .any((p) => p.status == PayoutTransactionStatus.completed);
+
+  @override
+  Widget build(BuildContext context) {
+    final badges = <_StateBadgeSpec>[];
+
+    switch (contribution.status) {
+      case ContributionStatus.completed:
+        badges.add(const _StateBadgeSpec('Completed', Color(0xFF10B981)));
+        break;
+      case ContributionStatus.cancelled:
+        badges.add(const _StateBadgeSpec('Cancelled', Color(0xFF9CA3AF)));
+        break;
+      case ContributionStatus.paused:
+        badges.add(const _StateBadgeSpec('Paused', Color(0xFFFB923C)));
+        break;
+      case ContributionStatus.active:
+        // Only an UNFINISHED contribution can be overdue.
+        if (contribution.isOverdue) {
+          badges.add(const _StateBadgeSpec('Overdue', Color(0xFFEF4444)));
+        } else {
+          badges.add(const _StateBadgeSpec('Active', Color(0xFF60A5FA)));
+        }
+        break;
+    }
+
+    if (_paidOut) {
+      badges.add(const _StateBadgeSpec('Paid out', Color(0xFF8B5CF6)));
+    }
+
+    return Wrap(
+      spacing: 6,
+      runSpacing: 4,
+      children: [
+        for (final b in badges)
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+            decoration: BoxDecoration(
+              color: b.color.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(6.r),
+              border: Border.all(color: b.color.withValues(alpha: 0.55)),
+            ),
+            child: Text(
+              b.label,
+              style: GoogleFonts.inter(
+                fontSize: 10.sp,
+                fontWeight: FontWeight.w700,
+                color: b.color,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _StateBadgeSpec {
+  const _StateBadgeSpec(this.label, this.color);
+  final String label;
+  final Color color;
 }
