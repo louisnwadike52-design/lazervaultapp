@@ -17,6 +17,78 @@ class _Msg {
 }
 
 void main() {
+  group('hydrateChatWidgetMetadata sentinel-carried payloads', () {
+    // The direct path's transport has ONE slot for structured data, so the
+    // chat-proxy-gateway re-injects each card into entities under the sentinel
+    // key the live cubit strips, and history is saved from that same map.
+    // Before the proxy did that, these payloads were dropped in transit and
+    // the sentinel reads could never fire: a chart asked for in a per-service
+    // chat arrived as a sentence.
+    test('a chart stored under its sentinel is hydrated for history', () {
+      final out = hydrateChatWidgetMetadata(
+        entities: {
+          '_analytics_card_pending': {'title': 'August'},
+          'amount': 500,
+        },
+      );
+      expect(out, isNotNull);
+      expect((out![kChatMetaAnalyticsCard] as Map)['title'], 'August');
+      // Ordinary entities are not widgets and must not be promoted.
+      expect(out.containsKey('amount'), isFalse);
+    });
+
+    test('every sentinel maps to the key its renderer reads', () {
+      for (final entry in kChatEntitySentinelToMetaKey.entries) {
+        final out = hydrateChatWidgetMetadata(
+          entities: {entry.key: const {'x': 1}},
+        );
+        expect(out?.containsKey(entry.value), isTrue,
+            reason: '${entry.key} must hydrate as ${entry.value}');
+      }
+    });
+
+    test('a batch of receipt cards survives as a list', () {
+      final out = hydrateChatWidgetMetadata(
+        entities: {
+          '_receipt_card_pending': [
+            {'reference': 'a'},
+            {'reference': 'b'},
+          ],
+        },
+      );
+      expect((out![kChatMetaReceiptCard] as List).length, 2);
+    });
+
+    test('stored metadata wins over the sentinel echo', () {
+      // Both present means the gateway surfaced it top-level AND echoed it in
+      // entities. They are the same payload; taking metadata keeps one source
+      // of truth rather than letting the echo overwrite it.
+      final out = hydrateChatWidgetMetadata(
+        storedMetadata: {
+          kChatMetaAnalyticsCard: {'title': 'surfaced'},
+        },
+        entities: {
+          '_analytics_card_pending': {'title': 'echo'},
+        },
+      );
+      expect((out![kChatMetaAnalyticsCard] as Map)['title'], 'surfaced');
+    });
+
+    test('a non-payload value under a sentinel is ignored', () {
+      final out = hydrateChatWidgetMetadata(
+        entities: {'_qr_card_pending': 'not a card'},
+      );
+      expect(out, isNull);
+    });
+
+    test('a plain text turn still hydrates nothing', () {
+      expect(
+        hydrateChatWidgetMetadata(entities: {'amount': 500}),
+        isNull,
+      );
+    });
+  });
+
   group('hydrateChatWidgetMetadata', () {
     test('carries the confirm-transfer prompt forward', () {
       // The widget in the screenshot. Losing it means re-entering a chat mid-transfer

@@ -346,6 +346,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             final receiptCard = _entities.remove('_receipt_card_pending');
             final recipientCard = _entities.remove('_recipient_card_pending');
             final analyticsCard = _entities.remove('_analytics_card_pending');
+            final qrCard = _entities.remove('_qr_card_pending');
 
             final messageMetadata = <String, dynamic>{};
             // Degradation chrome, matching the general chat: the same LLM
@@ -389,6 +390,13 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             if (analyticsCard is Map) {
               messageMetadata['analytics_card'] =
                   Map<String, dynamic>.from(analyticsCard);
+            }
+            // Scannable QR for a payment-request turn. A QR is the one
+            // answer that cannot be delivered as text, and the agent's reply
+            // already says to share it from the card above.
+            if (qrCard is Map) {
+              messageMetadata['qr_card'] =
+                  Map<String, dynamic>.from(qrCard);
             }
 
             final botMessage = MicroserviceChatMessageEntity(
@@ -446,6 +454,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
               responseEntities.remove('_recipient_card_pending');
           final analyticsCard =
               responseEntities.remove('_analytics_card_pending');
+          final qrCard = responseEntities.remove('_qr_card_pending');
 
           final messageMetadata = <String, dynamic>{};
           // Degradation chrome, matching the general chat: the same LLM
@@ -489,6 +498,13 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           if (analyticsCard is Map) {
             messageMetadata['analytics_card'] =
                 Map<String, dynamic>.from(analyticsCard);
+          }
+          // Scannable QR for a payment-request turn. A QR is the one answer
+          // that cannot be delivered as text, and the agent's reply already
+          // says to share it from the card above.
+          if (qrCard is Map) {
+            messageMetadata['qr_card'] =
+                Map<String, dynamic>.from(qrCard);
           }
           // AI "jump to message": the locate tool returns deterministic anchors
           // under the TRANSIENT `_jump_to_messages` key. Remove it (so it never
@@ -593,6 +609,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             final receiptCard = _entities.remove('_receipt_card_pending');
             final recipientCard = _entities.remove('_recipient_card_pending');
             final analyticsCard = _entities.remove('_analytics_card_pending');
+            final qrCard = _entities.remove('_qr_card_pending');
             final pinPrompt = _entities.remove('_pin_prompt_pending');
             final messageMetadata = <String, dynamic>{};
             // Degradation chrome, matching the general chat: the same LLM
@@ -623,6 +640,13 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             if (analyticsCard is Map) {
               messageMetadata['analytics_card'] =
                   Map<String, dynamic>.from(analyticsCard);
+            }
+            // Scannable QR for a payment-request turn. A QR is the one
+            // answer that cannot be delivered as text, and the agent's reply
+            // already says to share it from the card above.
+            if (qrCard is Map) {
+              messageMetadata['qr_card'] =
+                  Map<String, dynamic>.from(qrCard);
             }
             if (pinPrompt is Map) {
               messageMetadata['pin_prompt'] =
@@ -673,6 +697,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
               responseEntities.remove('_recipient_card_pending');
           final analyticsCard =
               responseEntities.remove('_analytics_card_pending');
+          final qrCard = responseEntities.remove('_qr_card_pending');
           final messageMetadata = <String, dynamic>{};
           // Degradation chrome, matching the general chat: the same LLM
           // failure must explain itself here too rather than leaving the
@@ -698,6 +723,13 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           if (analyticsCard is Map) {
             messageMetadata['analytics_card'] =
                 Map<String, dynamic>.from(analyticsCard);
+          }
+          // Scannable QR for a payment-request turn. A QR is the one answer
+          // that cannot be delivered as text, and the agent's reply already
+          // says to share it from the card above.
+          if (qrCard is Map) {
+            messageMetadata['qr_card'] =
+                Map<String, dynamic>.from(qrCard);
           }
           final botMessage = MicroserviceChatMessageEntity(
             text: chatResponse.response,

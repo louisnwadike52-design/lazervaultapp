@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,7 +8,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
@@ -117,6 +121,10 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
   // a different network that DOES support deposits (e.g. BTC via BEP20).
   String _error = '';
   String _addressError = '';
+
+  // Guards the share CTA while the PNG is being encoded, so a double tap
+  // cannot open two share sheets.
+  bool _sharing = false;
   double? _liveBalance;
   double? _liveFiatValue;
   double? _livePrice;
@@ -256,6 +264,126 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
     );
+  }
+
+  /// Human name of the network the sheet is showing, e.g. "Tron (TRC20)".
+  ///
+  /// Shared and displayed text must always carry this: an address is only
+  /// valid on its own chain, and a deposit sent on the wrong one is not
+  /// recoverable, so the chain travels with the address everywhere it goes.
+  String get _selectedNetworkLabel {
+    final sel = _selectedNetwork;
+    if (sel == null || sel.isEmpty) return '';
+    final n = _networks.firstWhereOrNull((e) => e.network == sel);
+    if (n == null) return sel.toUpperCase();
+    return n.networkName.isNotEmpty
+        ? '${n.networkName} (${n.network.toUpperCase()})'
+        : n.network.toUpperCase();
+  }
+
+  /// Renders the QR to a PNG and shares it alongside the address text.
+  ///
+  /// The sheet could only ever COPY the address, so handing it to someone
+  /// meant pasting it into another app and the QR — the part that removes the
+  /// chance of a mistyped address — could not leave the screen at all.
+  ///
+  /// The PNG is composited onto white with a quiet zone HERE rather than
+  /// relying on the painter: `QrPainter.toPicture` leaves the background
+  /// transparent, and a transparent QR dropped into a dark-themed chat is
+  /// unscannable, which is the one failure that would make sharing worse than
+  /// not sharing.
+  Future<void> _share() async {
+    if (_address.isEmpty || _sharing) return;
+    setState(() => _sharing = true);
+    final symbol = widget.cryptoSymbol.toUpperCase();
+    final net = _selectedNetworkLabel;
+    final tag = _destinationTag;
+    final text = StringBuffer()
+      ..writeln('My Lazervault $symbol deposit address')
+      ..writeln(_address);
+    if (net.isNotEmpty) text.writeln('Network: $net');
+    if (tag.isNotEmpty) text.writeln('Destination tag: $tag');
+    if (net.isNotEmpty) {
+      text.writeln('Only send $symbol on $net to this address.');
+    }
+
+    XFile? png;
+    try {
+      png = await _qrPngFile(symbol);
+    } catch (_) {
+      // Sharing the address alone is still useful, so a failed image is not
+      // a failed share.
+      png = null;
+    }
+
+    try {
+      await SharePlus.instance.share(ShareParams(
+        // iOS needs a non-zero popover anchor; CGRectZero throws and the
+        // share silently does nothing on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+        files: png == null ? null : [png],
+        text: text.toString().trimRight(),
+        subject: 'My Lazervault $symbol address',
+      ));
+    } catch (e) {
+      if (mounted) {
+        Get.snackbar(
+          'Could not share',
+          friendlyCryptoError(e, context: 'sharing your wallet address'),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xCCDC2626),
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _sharing = false);
+    }
+  }
+
+  Future<XFile> _qrPngFile(String symbol) async {
+    const double qrSize = 720;
+    const double quietZone = 56;
+    const double canvasSize = qrSize + quietZone * 2;
+
+    final painter = QrPainter(
+      data: _address,
+      version: QrVersions.auto,
+      gapless: true,
+      errorCorrectionLevel: QrErrorCorrectLevel.M,
+      eyeStyle: const QrEyeStyle(
+        eyeShape: QrEyeShape.square,
+        color: Color(0xFF000000),
+      ),
+      dataModuleStyle: const QrDataModuleStyle(
+        dataModuleShape: QrDataModuleShape.square,
+        color: Color(0xFF000000),
+      ),
+    );
+
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    canvas.drawRect(
+      const Rect.fromLTWH(0, 0, canvasSize, canvasSize),
+      Paint()..color = Colors.white,
+    );
+    canvas.translate(quietZone, quietZone);
+    painter.paint(canvas, const Size(qrSize, qrSize));
+    final image = await recorder
+        .endRecording()
+        .toImage(canvasSize.toInt(), canvasSize.toInt());
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    if (bytes == null) {
+      throw StateError('QR image encoding returned no bytes');
+    }
+
+    final dir = await getTemporaryDirectory();
+    final file = File(
+      '${dir.path}/lazervault-$symbol-address-'
+      '${DateTime.now().millisecondsSinceEpoch}.png',
+    );
+    await file.writeAsBytes(bytes.buffer.asUint8List(), flush: true);
+    return XFile(file.path, mimeType: 'image/png');
   }
 
   void _onNetworkChange(String? net) {
@@ -507,7 +635,13 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
               // Quidax balance is the same on every chain). Self-resolving,
               // shimmers while loading, hides itself when not held.
               SizedBox(height: 6.h),
-              AssetNetworkBadge(symbol: symbol, compact: true),
+              AssetNetworkBadge(
+                symbol: symbol,
+                compact: true,
+                // Must name the chain whose address is on screen; see the
+                // selectedNetwork doc on AssetNetworkBadge.
+                selectedNetwork: _selectedNetwork,
+              ),
             ],
           ),
         ),
@@ -997,6 +1131,35 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
                 ),
               ),
               SizedBox(width: 4.w),
+              // Share sits beside Copy rather than below as a full-width CTA,
+              // matching the copy icon's weight: both are ways of handing the
+              // same address to someone, so neither outranks the other.
+              IconButton(
+                onPressed: _sharing ? null : _share,
+                tooltip: 'Share address and QR',
+                splashRadius: 22.r,
+                padding: EdgeInsets.all(6.w),
+                constraints: BoxConstraints(
+                  minWidth: 36.w,
+                  minHeight: 36.w,
+                ),
+                icon: _sharing
+                    ? SizedBox(
+                        width: 18.sp,
+                        height: 18.sp,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white.withValues(alpha: 0.92),
+                          ),
+                        ),
+                      )
+                    : Icon(
+                        Icons.ios_share_rounded,
+                        color: Colors.white.withValues(alpha: 0.92),
+                        size: 20.sp,
+                      ),
+              ),
               IconButton(
                 onPressed: _copy,
                 tooltip: 'Copy address',

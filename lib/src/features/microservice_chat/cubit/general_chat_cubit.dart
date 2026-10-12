@@ -394,6 +394,7 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
                 'receipt_card': response.receiptCard,
               'recipient_card': response.recipientCard,
               'analytics_card': response.analyticsCard,
+              'qr_card': response.qrCard,
               // Surface the classified LLM-provider error code (set by
               // chat-agent-gateway's llm_failover module) so the chat content
               // widget can render the downgrade banner + retry CTA. The
@@ -523,6 +524,7 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
                 'receipt_card': response.receiptCard,
               'recipient_card': response.recipientCard,
               'analytics_card': response.analyticsCard,
+              'qr_card': response.qrCard,
             },
           );
           _currentMessages.add(botMessage);

@@ -22,6 +22,7 @@ import 'llm_error_banner.dart';
 import 'chat_receipt_card_v2.dart';
 import 'chat_pin_prompt_card.dart';
 import 'chat_pin_auto_opener.dart';
+import 'chat_qr_card.dart';
 import 'chat_recipient_card.dart';
 import 'chat_analytics_card.dart';
 import 'chat_reply_widgets.dart';
@@ -1031,6 +1032,15 @@ class _GeneralChatContentState extends State<GeneralChatContent>
                     ChatAnalyticsCard(
                       payload: Map<String, dynamic>.from(
                         message.metadata!['analytics_card'] as Map,
+                      ),
+                    ),
+                  // The scannable QR, same payload the per-service surfaces
+                  // draw. Without it the agent's "share it from the card
+                  // above" pointed at nothing.
+                  if (!isUser && message.metadata?['qr_card'] is Map)
+                    ChatQrCard(
+                      payload: Map<String, dynamic>.from(
+                        message.metadata!['qr_card'] as Map,
                       ),
                     ),
                   if (!isUser && message.metadata?['recipient_card'] is Map)

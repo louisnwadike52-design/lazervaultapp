@@ -142,12 +142,13 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
   /// been told the limits of. The guide is skipped entirely if the user
   /// dismissed the notice without reading, because stacking a second sheet
   /// onto someone who just closed one is how a first run feels like a wall.
-  Future<void> _noteFirstRunEligibility(List<EscrowDealEntity> deals) async {
+  Future<void> _noteFirstRunEligibility() async {
     if (_firstRunResolved) return;
     _firstRunResolved = true;
 
-    final completed = deals
-        .any((d) => d.isReleased || d.isRefunded || d.status == 'CANCELLED');
+    // Asked of the server, not of the loaded page: see
+    // EscrowCubit.hasCompletedAnyDeal for why the page cannot answer it.
+    final completed = await context.read<EscrowCubit>().hasCompletedAnyDeal();
     if (completed || !mounted) return;
 
     await showEscrowIntroNotice(context, hasCompletedDeal: false);
@@ -299,7 +300,14 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
                         // First-run material is gated on experience, not on a
                         // dismissal flag: someone who has completed a deal has
                         // met the rules by using them.
-                        _noteFirstRunEligibility(state.deals);
+                        //
+                        // Deferred to after this frame: it opens a bottom
+                        // sheet, and pushing a route from inside build() is
+                        // a mutation during layout — it throws in debug and
+                        // can be dropped in release.
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          _noteFirstRunEligibility();
+                        });
                         final deals = state.deals;
                         if (deals.isEmpty) return _empty();
                         return RefreshIndicator(

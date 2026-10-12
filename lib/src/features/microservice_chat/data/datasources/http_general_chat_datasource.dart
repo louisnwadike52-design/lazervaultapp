@@ -139,6 +139,11 @@ class GeneralChatResponse {
   /// chat-agent-gateway on the same rail as receipt_card. Drives
   /// ChatAnalyticsCard so "how am I doing?" renders as charts.
   final dynamic analyticsCard;
+
+  /// `qr_card` — the scannable code a payment-request turn produced, on the
+  /// same rail. Drives ChatQrCard; before it was surfaced the agent's reply
+  /// said "share it from the card above" with no card above it.
+  final dynamic qrCard;
   // Classified LLM-provider error code (insufficient_credit /
   // model_not_found / auth_failed / provider_rate_limit / timeout / …).
   // Surfaced top-level by the chat-agent-gateway so the cubit can
@@ -160,6 +165,7 @@ class GeneralChatResponse {
     this.receiptCard,
     this.recipientCard,
     this.analyticsCard,
+    this.qrCard,
     this.llmErrorCode,
     this.metadata,
   });
@@ -190,6 +196,7 @@ class GeneralChatResponse {
       receiptCard: json['receipt_card'],
       recipientCard: json['recipient_card'],
       analyticsCard: json['analytics_card'],
+      qrCard: json['qr_card'],
       llmErrorCode: json['llm_error_code'] as String?,
       metadata: json['metadata'] as Map<String, dynamic>?,
     );

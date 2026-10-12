@@ -40,6 +40,17 @@ class AssetNetworkBadge extends StatefulWidget {
   /// Optional tap handler, e.g. to open the network picker sheet.
   final VoidCallback? onTap;
 
+  /// The network the HOST surface is currently showing, as the Quidax network
+  /// id (`trx`, `bsc`, ...).
+  ///
+  /// Without this the chip labelled whichever network the server marks active,
+  /// which is independent of what the user picked. Beside a deposit address
+  /// that belongs to exactly one chain, the sheet then named two: the chip read
+  /// "BNB Smart Chain +9" while the selector read "Tron (TRC20)". Depositing on
+  /// the chain the chip names would send the funds to an address that cannot
+  /// receive them, so the label has to follow the address, not the server.
+  final String? selectedNetwork;
+
   const AssetNetworkBadge({
     super.key,
     required this.symbol,
@@ -47,6 +58,7 @@ class AssetNetworkBadge extends StatefulWidget {
     this.onGradient = false,
     this.heldHint = false,
     this.onTap,
+    this.selectedNetwork,
   });
 
   @override
@@ -97,6 +109,14 @@ class _AssetNetworkBadgeState extends State<AssetNetworkBadge> {
 
   AssetNetworkStatusEntry? _activeEntry(GetAssetNetworkStatusResponse st) {
     if (st.networks.isEmpty) return null;
+    // The host's selection wins over the server's idea of "active": the chip
+    // sits next to that network's address and must agree with it.
+    final picked = widget.selectedNetwork?.trim().toLowerCase();
+    if (picked != null && picked.isNotEmpty) {
+      for (final e in st.networks) {
+        if (e.network.network.toLowerCase() == picked) return e;
+      }
+    }
     for (final e in st.networks) {
       if (e.active) return e;
     }

@@ -109,6 +109,39 @@ class EscrowCubit extends Cubit<EscrowState> {
     }
   }
 
+  /// Statuses that mean a deal reached its end, whichever way it ended.
+  ///
+  /// Kept here beside the query that uses it, and deliberately the same set
+  /// [EscrowDealEntity.isReleased] and `.isRefunded` recognise.
+  static const String _terminalStatuses =
+      'RELEASED,RESOLVED_RELEASED,REFUNDED,RESOLVED_REFUNDED,CANCELLED';
+
+  /// Whether this user has EVER finished an escrow deal.
+  ///
+  /// Asks the server for one terminal-status row rather than inspecting the
+  /// loaded list. The list is one page and is filtered by whatever chip is
+  /// selected, so reading experience off it got the answer wrong two ways:
+  /// a user whose completed deals sit on page 2+ looked new, and so did one
+  /// who happened to arrive with the "In escrow" filter applied, because a
+  /// filtered page contains no completed deals by construction.
+  ///
+  /// Cheap: `limit: 1`, and the `(user_id, status, created_at DESC)` index
+  /// covers it. Returns false on failure — showing the terms to someone who
+  /// has already seen them is a far smaller harm than hiding them from
+  /// someone who never has, so this fails toward disclosure.
+  Future<bool> hasCompletedAnyDeal() async {
+    try {
+      final page = await repository.listMyDealsPaged(
+        status: _terminalStatuses,
+        page: 1,
+        limit: 1,
+      );
+      return page.total > 0 || page.items.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<void> loadDeal(String dealId) async {
     emit(const EscrowLoading());
     try {

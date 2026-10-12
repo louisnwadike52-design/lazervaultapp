@@ -4,6 +4,7 @@ import 'bill_receipt_deeplink.dart';
 import 'chat_analytics_card.dart';
 import 'chat_pin_auto_opener.dart';
 import 'chat_pin_prompt_card.dart';
+import 'chat_qr_card.dart';
 import 'chat_receipt_card.dart';
 import 'chat_receipt_card_v2.dart';
 import 'chat_recipient_card.dart';
@@ -81,6 +82,16 @@ class ChatStructuredPayloads extends StatelessWidget {
     if (md['analytics_card'] is Map) {
       children.add(ChatAnalyticsCard(
         payload: Map<String, dynamic>.from(md['analytics_card'] as Map),
+      ));
+    }
+
+    // The scannable QR. The commerce agent's own words are "share it from the
+    // card above", and until this was wired there was no card above: the
+    // widget existed, the backend emitted the payload, and no surface ever
+    // built it, so the one answer that cannot work as text arrived as text.
+    if (md['qr_card'] is Map) {
+      children.add(ChatQrCard(
+        payload: Map<String, dynamic>.from(md['qr_card'] as Map),
       ));
     }
 

@@ -51,6 +51,23 @@ const String kChatMetaRecipientCard = 'recipient_card';
 /// re-querying is what pins it to the question that produced it.
 const String kChatMetaAnalyticsCard = 'analytics_card';
 
+/// Sentinel keys the chat-proxy-gateway stores a widget payload under.
+///
+/// The direct path's transport has one slot for structured data — the entities
+/// map — so the proxy re-injects each card there under the key the live cubit
+/// already strips (see services/chat-proxy-gateway/chat_widget_payloads.go).
+/// History is saved from that same map, so a reopened thread finds them here.
+///
+/// Mapped to the metadata key the renderer reads. `_receipt_data` is handled
+/// separately below because it is the older, differently-named channel.
+const Map<String, String> kChatEntitySentinelToMetaKey = {
+  '_pin_prompt_pending': kChatMetaPinPrompt,
+  '_receipt_card_pending': kChatMetaReceiptCard,
+  '_recipient_card_pending': kChatMetaRecipientCard,
+  '_analytics_card_pending': kChatMetaAnalyticsCard,
+  '_qr_card_pending': kChatMetaQrCard,
+};
+
 /// Rebuilds the widget metadata for ONE stored message.
 ///
 /// [storedMetadata] is the message's persisted `metadata`; [entities] is the agent's
@@ -102,6 +119,15 @@ Map<String, dynamic>? hydrateChatWidgetMetadata({
   ]) {
     final v = storedMetadata?[key];
     if (v is Map || v is List) put(key, v);
+  }
+
+  // Sentinel-carried payloads from the direct path. Stored metadata wins: when
+  // a message has both, metadata is the surfaced copy and the sentinel is the
+  // transport's own echo of it.
+  for (final entry in kChatEntitySentinelToMetaKey.entries) {
+    if (out?.containsKey(entry.value) ?? false) continue;
+    final v = entities?[entry.key];
+    if (v is Map || v is List) put(entry.value, v);
   }
 
   return out;
