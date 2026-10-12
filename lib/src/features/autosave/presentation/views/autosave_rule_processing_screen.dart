@@ -232,8 +232,10 @@ class _AutoSaveRuleProcessingScreenState
                       child: LinearProgressIndicator(
                         value: currentStepIndex / totalSteps,
                         backgroundColor: const Color(0xFF2D2D2D),
+                        // Lightened: the brand violet sat too close to the
+                        // #2D2D2D track to read on this dark screen.
                         valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF4E03D0),
+                          Color(0xFFA78BFA),
                         ),
                         minHeight: 8.h,
                       ),
@@ -242,7 +244,10 @@ class _AutoSaveRuleProcessingScreenState
                     Text(
                       'Step $currentStepIndex of $totalSteps',
                       style: GoogleFonts.inter(
-                        color: Colors.grey[600],
+                        // grey[600] on near-black is below any sane contrast
+                        // ratio; this is the same lightened purple family as
+                        // the bar it labels.
+                        color: const Color(0xFFC4B5FD),
                         fontSize: 12.sp,
                       ),
                     ),
@@ -313,11 +318,11 @@ class _AutoSaveRuleProcessingScreenState
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: isCompleted || isCurrent
-                        ? const Color(0xFF4E03D0)
+                        ? const Color(0xFF8B5CF6)
                         : const Color(0xFF2D2D2D),
                     border: Border.all(
                       color: isCompleted || isCurrent
-                          ? const Color(0xFF4E03D0)
+                          ? const Color(0xFFA78BFA)
                           : const Color(0xFF2D2D2D),
                       width: 2,
                     ),
@@ -359,7 +364,7 @@ class _AutoSaveRuleProcessingScreenState
                 height: 2.h,
                 margin: EdgeInsets.only(bottom: 24.h),
                 color: isCompleted
-                    ? const Color(0xFF4E03D0)
+                    ? const Color(0xFF8B5CF6)
                     : const Color(0xFF2D2D2D),
               ),
           ],

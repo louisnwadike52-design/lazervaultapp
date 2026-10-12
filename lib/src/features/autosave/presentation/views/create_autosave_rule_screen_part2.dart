@@ -255,15 +255,40 @@ class _AccountDropdown extends StatelessWidget {
           items: accounts.map<DropdownMenuItem<String>>((a) {
             final id = a.id.toString();
             final label = '${a.accountType} (****${a.accountNumberLast4})';
+            // The user's own label for the wallet, when it adds something the
+            // type does not already say. Two family pools render as
+            // "Family & Friends (****9533)" twice otherwise, which is not a
+            // choice anyone can make.
+            final name = (a.accountName ?? '').toString().trim();
+            final showName = name.isNotEmpty &&
+                name.toLowerCase() != a.accountType.toString().toLowerCase();
             return DropdownMenuItem<String>(
               value: id,
-              child: Text(
-                label,
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (showName)
+                    Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        color: _textMuted,
+                        fontSize: 11.5.sp,
+                      ),
+                    ),
+                ],
               ),
             );
           }).toList(),

@@ -151,9 +151,27 @@ class _StepBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 28.h),
-      child: child,
+    // The header sits directly above this viewport, so scrolled content used
+    // to be guillotined at the boundary: step 1 showed half a sentence and
+    // step 2 half a heading, both of which read as a broken layout rather
+    // than as "there is more above".
+    //
+    // A short fade at the top edge says it is scrolled, and the extra top
+    // padding keeps the first card clear of the header before any scrolling
+    // has happened. ShaderMask only affects the scroll viewport, so the
+    // header and the action bar are untouched.
+    return ShaderMask(
+      shaderCallback: (rect) => const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Colors.transparent, Colors.black, Colors.black],
+        stops: [0.0, 0.045, 1.0],
+      ).createShader(rect),
+      blendMode: BlendMode.dstIn,
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(20.w, 26.h, 20.w, 28.h),
+        child: child,
+      ),
     );
   }
 }

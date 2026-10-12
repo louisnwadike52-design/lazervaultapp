@@ -83,6 +83,14 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0A0A),
+        // The Create Rule tile sits in a row near the top and scrolls away
+        // with everything else, so on a page of rules the primary action is
+        // off screen exactly when a user has decided to add another. The FAB
+        // keeps it reachable from anywhere in the list; the tile stays, since
+        // it is what the first-run, empty page leads with.
+        floatingActionButton: _CreateRuleFab(
+          onTap: () => Get.toNamed(AppRoutes.createAutoSaveRule),
+        ),
         body: SafeArea(
           child: BlocListener<AutoSaveCubit, AutoSaveState>(
             listener: (context, state) {
@@ -649,7 +657,9 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
                   Text(
                     rule.formattedProgress,
                     style: GoogleFonts.inter(
-                      color: const Color(0xFF4E03D0),
+                      // Same lightening as the bar below it: the deep violet
+                      // was barely legible on this card's dark surface.
+                      color: const Color(0xFFA78BFA),
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
                     ),
@@ -711,5 +721,55 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
       default:
         return 'UNKNOWN';
     }
+  }
+}
+
+/// Extended FAB for "New rule", in the lightened purple the rest of this
+/// screen's progress UI now uses so it reads on near-black.
+class _CreateRuleFab extends StatelessWidget {
+  final VoidCallback onTap;
+  const _CreateRuleFab({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(30.r),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF8B5CF6).withValues(alpha: 0.38),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(30.r),
+          onTap: onTap,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.add_rounded, color: Colors.white, size: 20.sp),
+                SizedBox(width: 8.w),
+                Text('New rule',
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

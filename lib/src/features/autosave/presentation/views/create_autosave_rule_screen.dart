@@ -1140,6 +1140,30 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                     a.accountType.toLowerCase().contains('money market'))
                 .toList();
 
+            // A savings wallet is the DESTINATION kind. Offering it as a
+            // source let a rule be built that saves savings into savings,
+            // which either moves money in a circle or fails at the executor
+            // — and either way it is not a thing anyone meant to set up.
+            // Business and family wallets stay: they are real sources people
+            // genuinely sweep from.
+            //
+            // Whichever account is already chosen as the DESTINATION is also
+            // removed, mirroring the destination list's exclusion of the
+            // source. Each half of a transfer must name a different wallet,
+            // and the rule should be unbuildable rather than refused later.
+            final sources = all
+                .where((a) =>
+                    // An account ALREADY chosen as the source stays in the
+                    // list whatever the filters say. DropdownButton throws
+                    // when its value is not among its items, so an existing
+                    // rule being edited would otherwise crash the step rather
+                    // than quietly disallow a wallet.
+                    a.id.toString() == _selectedSourceAccountId ||
+                    (!(a.accountType.toLowerCase().contains('saving') ||
+                            a.accountType.toLowerCase().contains('money market')) &&
+                        a.id.toString() != _selectedDestinationAccountId))
+                .toList();
+
             if (_selectedDestinationAccountId == null && dests.isNotEmpty) {
               final firstDest = dests.first.id.toString();
               if (firstDest != _selectedSourceAccountId) {
@@ -1157,7 +1181,8 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                 _LabeledField(
                   label: 'Source account',
                   child: _AccountDropdown(
-                    accounts: all,
+                    // Never `all`: see the `sources` filter above.
+                    accounts: sources,
                     valueId: _selectedSourceAccountId,
                     hint: 'Where to save from',
                     onChanged: (v) => setState(() {
@@ -1181,6 +1206,9 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                         .where(
                             (a) => a.id.toString() != _selectedSourceAccountId)
                         .toList(),
+                    // (dests.isEmpty falls back to every other account, which
+                    // is right: a user with no savings wallet must still be
+                    // able to finish, and the source is excluded above.)
                     valueId: _selectedDestinationAccountId,
                     hint: 'Where the money lands',
                     onChanged: (v) => setState(() {

@@ -34,10 +34,15 @@ class AutoSaveProgressIndicator extends StatelessWidget {
               child: Container(
                 height: height.h,
                 decoration: BoxDecoration(
+                  // Lightened for a dark background. #4E03D0 is a deep,
+                  // heavily saturated violet: against near-black it reads as
+                  // a dark bar on a dark track, and a 1%-complete rule was
+                  // effectively invisible. These two sit well clear of the
+                  // #2D2D2D track at every width.
                   gradient: const LinearGradient(
                     colors: [
-                      Color(0xFF4E03D0),
-                      Color(0xFF6B21E0),
+                      Color(0xFF8B5CF6),
+                      Color(0xFFA78BFA),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(height.r / 2),
