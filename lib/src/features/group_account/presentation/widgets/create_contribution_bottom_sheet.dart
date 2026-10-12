@@ -1251,10 +1251,16 @@ class _CreateContributionBottomSheetState
             ),
             SizedBox(height: 24.h),
           ] else ...[
-            // For ROSCA, surface the schedule-derived deadline as a
-            // read-only preview so the user understands when the goal
-            // ends without having to tap into page 2.
-            _buildRoscaDeadlinePreview(),
+            // NOT the cycle-end preview. It used to live here and read
+            // "Cycle 1 ends <date> (one month from today)" — on the step
+            // BEFORE the one where the cadence is chosen, using the default
+            // monthly. A creator who then picked Daily had already been told
+            // a date that was a month out and wrong.
+            //
+            // The preview now sits on the Schedule step, under the frequency
+            // and start date it is derived from. This just says where it is
+            // coming from, so the missing deadline field is not a mystery.
+            _buildRoscaDeadlineDeferredNote(),
             SizedBox(height: 24.h),
           ],
 
@@ -1434,7 +1440,21 @@ class _CreateContributionBottomSheetState
           SizedBox(height: 24.h),
 
           // Required: Frequency
-          _buildFieldLabel('Payment Frequency', required: true),
+          _buildFieldLabel('Cycle length', required: true),
+          SizedBox(height: 4.h),
+          // "Payment Frequency" was ambiguous in exactly the way that
+          // matters: in a circle it is BOTH. Members pay once per cycle and
+          // one member is paid at the end of each cycle, so the same number
+          // sets the paying-in rhythm and the paying-out rhythm — and a
+          // creator who read it as only one of those would set the wrong
+          // number.
+          Text(
+            'Members pay once per cycle, and one member collects the pot at '
+            'the end of each cycle.',
+            style: GoogleFonts.inter(
+                fontSize: 11.5.sp, color: const Color(0xFF9CA3AF)),
+          ),
+          SizedBox(height: 8.h),
           SizedBox(height: 8.h),
           _buildFrequencySelector(
               hasError: _fieldErrors.containsKey('frequency')),
@@ -1514,7 +1534,50 @@ class _CreateContributionBottomSheetState
             ),
           ],
 
+          // The cycle-end preview, now that both of its inputs — the
+          // cadence above and the start date — are on this same screen and
+          // whatever it says is derived from what the creator just chose.
+          if (_selectedType == ContributionType.rotatingSavings) ...[
+            SizedBox(height: 20.h),
+            _buildRoscaDeadlinePreview(),
+          ],
+
           SizedBox(height: 40.h),
+        ],
+      ),
+    );
+  }
+
+  /// Shown on the Details step in place of a deadline field.
+  ///
+  /// A rotating circle has no single deadline — it has a cycle length, set
+  /// on the next step. This says so rather than leaving a gap where every
+  /// other type has a date.
+  Widget _buildRoscaDeadlineDeferredNote() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.event_repeat,
+              size: 16.sp, color: const Color(0xFF9CA3AF)),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              'An esusu runs in cycles rather than to a single deadline. You '
+              'set the cycle length on the next step, and the dates follow '
+              'from it.',
+              style: GoogleFonts.inter(
+                fontSize: 12.sp,
+                color: const Color(0xFF9CA3AF),
+                height: 1.4,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -1873,18 +1936,31 @@ class _CreateContributionBottomSheetState
 
           // Summary cards
           _buildReviewCard([
-            _ReviewItem('Target Amount', currencyFormat.format(targetAmount)),
-            _ReviewItem(
-              'Deadline',
-              (_selectedDeadline.hour == 0 && _selectedDeadline.minute == 0)
-                  ? '${DateFormat('MMM dd, yyyy').format(_selectedDeadline)} (midnight)'
-                  : DateFormat('MMM dd, yyyy h:mm a').format(_selectedDeadline),
-            ),
-            if (_selectedType != ContributionType.oneTime && regularAmount > 0)
+            // Labels follow the TYPE. "Target Amount ₦500" on an esusu whose
+            // pot is ₦1,000 (two members × ₦500) read as the goal when it is
+            // the per-member share — the single most confusable number on
+            // this screen, and the one the creator is confirming.
+            if (_selectedType == ContributionType.rotatingSavings) ...[
+              if (regularAmount > 0)
+                _ReviewItem('Each member pays',
+                    '${currencyFormat.format(regularAmount)} per cycle'),
+              if (regularAmount > 0 && _rotationOrder.isNotEmpty)
+                _ReviewItem(
+                  'Pot per cycle',
+                  '${currencyFormat.format(regularAmount * _rotationOrder.length)}'
+                      ' (${_rotationOrder.length} × ${currencyFormat.format(regularAmount)})',
+                ),
+              if (_selectedFrequency != null)
+                _ReviewItem('Cycle length', _selectedFrequency!.displayName),
+            ] else ...[
+              _ReviewItem('Target Amount', currencyFormat.format(targetAmount)),
               _ReviewItem(
-                  'Regular Payment', currencyFormat.format(regularAmount)),
-            if (_selectedFrequency != null)
-              _ReviewItem('Frequency', _selectedFrequency!.displayName),
+                'Deadline',
+                (_selectedDeadline.hour == 0 && _selectedDeadline.minute == 0)
+                    ? '${DateFormat('MMM dd, yyyy').format(_selectedDeadline)} (midnight)'
+                    : DateFormat('MMM dd, yyyy h:mm a').format(_selectedDeadline),
+              ),
+            ],
             // ROSCA-specific schedule disclosure. The two
             // server-required fields (start_date + total_cycles) are
             // shown here even when the user didn't fill them in,
@@ -1947,7 +2023,14 @@ class _CreateContributionBottomSheetState
           SizedBox(height: 16.h),
 
           _buildReviewCard([
-            _ReviewItem('Auto-Pay', _autoPayEnabled ? 'Enabled' : 'Disabled'),
+            _ReviewItem(
+              'Auto-Pay',
+              _autoPayEnabled
+                  ? (_selectedType == ContributionType.rotatingSavings
+                      ? "On — we debit each member's share at cycle close"
+                      : 'Enabled')
+                  : 'Off — members pay by hand',
+            ),
             _ReviewItem('Partial Payments',
                 _allowPartialPayments ? 'Allowed' : 'Not allowed'),
             if (_visibleOptionalFields.contains('penalty'))
@@ -2183,7 +2266,7 @@ class _CreateContributionBottomSheetState
           'Cycle deadlines are derived from the payment schedule on the next step. Each cycle\'s pot must land before the cycle ends.';
     } else {
       final cycleOneStr = DateFormat('MMM dd, yyyy').format(cycleOne);
-      final freqLabel = _frequencyLabel(_selectedFrequency);
+      final freqLabel = _frequencyDurationLabel(_selectedFrequency);
       final startLabel = _selectedStartDate != null
           ? DateFormat('MMM dd').format(_selectedStartDate!)
           : 'today';
@@ -2193,8 +2276,10 @@ class _CreateContributionBottomSheetState
       // persisted. Showing it here would imply a single deadline for
       // the whole contribution, which is misleading once the user
       // hasn't yet entered total_cycles on the Schedule step.
-      body =
-          'Cycle 1 ends $cycleOneStr (one $freqLabel from $startLabel). Each subsequent cycle ends one $freqLabel later.';
+      // "one <label>" reads wrong for the cadences whose label is already
+      // plural — "one two weeks" — so the label carries its own article.
+      body = 'Cycle 1 ends $cycleOneStr, $freqLabel from $startLabel. '
+          'Each cycle after that ends $freqLabel later.';
     }
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
@@ -2222,20 +2307,26 @@ class _CreateContributionBottomSheetState
     );
   }
 
-  String _frequencyLabel(ContributionFrequency? f) {
+  /// The cadence as a DURATION phrase, article included.
+  ///
+  /// The previous helper returned a bare noun ("month", "two weeks") for use
+  /// after a number. Dropping that straight into prose gave "one two weeks
+  /// from today"; carrying the article here keeps every cadence readable in
+  /// the one sentence that actually tells the creator when a cycle ends.
+  String _frequencyDurationLabel(ContributionFrequency? f) {
     switch (f) {
       case ContributionFrequency.daily:
-        return 'day';
+        return 'a day';
       case ContributionFrequency.weekly:
-        return 'week';
+        return 'a week';
       case ContributionFrequency.biWeekly:
         return 'two weeks';
       case ContributionFrequency.monthly:
-        return 'month';
+        return 'a month';
       case ContributionFrequency.quarterly:
-        return 'quarter';
+        return 'three months';
       case null:
-        return 'cycle';
+        return 'one cycle';
     }
   }
 

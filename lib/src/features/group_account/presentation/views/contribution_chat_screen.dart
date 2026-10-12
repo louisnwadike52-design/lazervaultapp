@@ -299,6 +299,36 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
           foregroundColor: Colors.white,
           iconTheme: const IconThemeData(color: Colors.white),
           actionsIconTheme: const IconThemeData(color: Colors.white),
+          // Left, beside the back arrow. AppBar.centerTitle defaults to TRUE
+          // on iOS, so the title floated to the middle there while sitting
+          // left on Android — and a centred title next to a back arrow leaves
+          // the name of the thing you are reading nowhere near the thing.
+          centerTitle: false,
+          actions: [
+            PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert, color: Colors.white, size: 22.sp),
+              color: const Color(0xFF1F1F1F),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r)),
+              itemBuilder: (_) => [
+                PopupMenuItem<String>(
+                  value: 'members',
+                  child: Row(
+                    children: [
+                      Icon(Icons.group_outlined,
+                          color: Colors.white, size: 19.sp),
+                      SizedBox(width: 12.w),
+                      Text('Members in this chat',
+                          style: GoogleFonts.inter(color: Colors.white)),
+                    ],
+                  ),
+                ),
+              ],
+              onSelected: (v) {
+                if (v == 'members') _showChatMembers();
+              },
+            ),
+          ],
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -349,6 +379,137 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
         ),
       ),
     );
+  }
+
+  /// Who can read this chat, and who has caught up.
+  ///
+  /// The member list is the one the chat itself already has — the same
+  /// candidates the @-mention picker offers — rather than a fresh fetch, so
+  /// opening this cannot disagree with who you can actually tag.
+  ///
+  /// Read state comes from the chat's readers, which carry a last-read
+  /// watermark. A member with no watermark has not opened the chat at all,
+  /// which is worth seeing: it is usually the answer to "did they get it?".
+  void _showChatMembers() {
+    final readerById = {
+      for (final r in _chat.readers) r.userId: r,
+    };
+    // Candidates exclude the signed-in user (the picker has no reason to
+    // offer you yourself), so they are added back here — this list is about
+    // who is in the room, and you are.
+    final people = <({String userId, String name})>[
+      (userId: widget.currentUserId, name: 'You'),
+      ...widget.mentionCandidates
+          .where((c) => c.userId != widget.currentUserId)
+          .map((c) => (userId: c.userId, name: c.name)),
+    ];
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        constraints:
+            BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.7),
+        margin: EdgeInsets.fromLTRB(14.w, 0, 14.w, 14.h),
+        padding: EdgeInsets.fromLTRB(18.w, 14.h, 18.w, 16.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(18.r),
+          border: Border.all(color: const Color(0xFF2D2D2D)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${people.length} in this chat',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  icon: Icon(Icons.close,
+                      color: const Color(0xFF9CA3AF), size: 20.sp),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              'Everyone here can read this chat. Type @ to tag someone.',
+              style: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF), fontSize: 11.5.sp),
+            ),
+            SizedBox(height: 12.h),
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: people.length,
+                separatorBuilder: (_, __) => SizedBox(height: 8.h),
+                itemBuilder: (_, i) {
+                  final p = people[i];
+                  final reader = readerById[p.userId];
+                  final caughtUp = reader?.lastReadAt != null;
+                  return Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 16.r,
+                        backgroundColor: _mine.withValues(alpha: 0.2),
+                        child: Text(
+                          _initialsOf(p.name),
+                          style: GoogleFonts.inter(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.bold,
+                            color: _mine,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: Text(
+                          p.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                              color: Colors.white, fontSize: 13.sp),
+                        ),
+                      ),
+                      Text(
+                        caughtUp ? 'Caught up' : 'Not opened yet',
+                        style: GoogleFonts.inter(
+                          fontSize: 10.5.sp,
+                          color: caughtUp
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFF9CA3AF),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static String _initialsOf(String name) {
+    final parts =
+        name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    if (parts.isEmpty) return '?';
+    if (parts.length == 1) return parts.first.characters.first.toUpperCase();
+    return (parts.first.characters.first + parts.last.characters.first)
+        .toUpperCase();
   }
 
   String _subtitle() {
