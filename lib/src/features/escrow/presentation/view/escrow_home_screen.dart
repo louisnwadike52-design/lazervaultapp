@@ -145,6 +145,10 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
   Future<void> _noteFirstRunEligibility() async {
     if (_firstRunResolved) return;
     _firstRunResolved = true;
+    // Runs from a post-frame callback, so the screen may already be gone by
+    // the time it fires: reading an inherited widget off a defunct element
+    // throws.
+    if (!mounted) return;
 
     // Asked of the server, not of the loaded page: see
     // EscrowCubit.hasCompletedAnyDeal for why the page cannot answer it.
