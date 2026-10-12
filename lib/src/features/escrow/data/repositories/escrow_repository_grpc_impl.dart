@@ -155,6 +155,29 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
   /// A non-party gets NOT_FOUND from the server rather than a permission
   /// error — confirming a deal exists to someone not on it leaks that two
   /// people are transacting.
+  @override
+  Future<EscrowPolicy> getPolicy() async {
+    // FAIL SOFT. A policy read must never be the reason someone cannot
+    // create a deal, so every failure resolves to the built-in defaults,
+    // which match the service's own. An older server answers UNIMPLEMENTED
+    // and lands here too, which is what makes adding this RPC safe.
+    try {
+      final options = await grpcClient.callOptions;
+      final resp = await grpcClient.escrowClient.getEscrowPolicy(
+        pb.GetEscrowPolicyRequest(),
+        options: options,
+      );
+      return EscrowPolicy(
+        titleMaxChars: resp.titleMaxChars,
+        specsMaxChars: resp.specsMaxChars,
+        messageMaxChars: resp.messageMaxChars,
+        termsMarkdown: resp.termsMarkdown,
+      );
+    } catch (_) {
+      return EscrowPolicy.fallback;
+    }
+  }
+
   Future<List<EscrowMessageEntity>> listDealMessages(String dealId) async {
     final options = await grpcClient.callOptions;
     final resp = await grpcClient.escrowClient.listDealMessages(

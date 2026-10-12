@@ -85,6 +85,9 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
   List<EscrowAttachmentEntity> _chatImages = const [];
   bool _uploading = false;
 
+  /// Admin-set caps; the built-in defaults until the server answers.
+  EscrowPolicy _policy = EscrowPolicy.fallback;
+
   late final EscrowMediaUploadService _uploader =
       EscrowMediaUploadService(endpoints: endpointRegistry);
 
@@ -94,6 +97,9 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
   void initState() {
     super.initState();
     _load();
+    _repo.getPolicy().then((p) {
+      if (mounted) setState(() => _policy = p);
+    });
   }
 
   @override
@@ -629,9 +635,10 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
               controller: _controller,
               minLines: 1,
               maxLines: 4,
-              // Matches the server's limit, so a long message is stopped
-              // where it is typed rather than refused after sending.
-              maxLength: 4000,
+              // The server's limit, read from policy rather than compiled
+              // in: it is admin-tunable, so a hardcoded 4000 would start
+              // lying the moment an operator changed it.
+              maxLength: _policy.message,
               textInputAction: TextInputAction.newline,
               style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp),
               decoration: InputDecoration(

@@ -963,3 +963,30 @@ const DealMessageResponse$json = {
 final $typed_data.Uint8List dealMessageResponseDescriptor = $convert.base64Decode(
     'ChNEZWFsTWVzc2FnZVJlc3BvbnNlEi0KB21lc3NhZ2UYASABKAsyEy5lc2Nyb3cuRGVhbE1lc3'
     'NhZ2VSB21lc3NhZ2U=');
+
+@$core.Deprecated('Use getEscrowPolicyRequestDescriptor instead')
+const GetEscrowPolicyRequest$json = {
+  '1': 'GetEscrowPolicyRequest',
+};
+
+/// Descriptor for `GetEscrowPolicyRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getEscrowPolicyRequestDescriptor =
+    $convert.base64Decode('ChZHZXRFc2Nyb3dQb2xpY3lSZXF1ZXN0');
+
+@$core.Deprecated('Use getEscrowPolicyResponseDescriptor instead')
+const GetEscrowPolicyResponse$json = {
+  '1': 'GetEscrowPolicyResponse',
+  '2': [
+    {'1': 'title_max_chars', '3': 1, '4': 1, '5': 5, '10': 'titleMaxChars'},
+    {'1': 'specs_max_chars', '3': 2, '4': 1, '5': 5, '10': 'specsMaxChars'},
+    {'1': 'message_max_chars', '3': 3, '4': 1, '5': 5, '10': 'messageMaxChars'},
+    {'1': 'terms_markdown', '3': 4, '4': 1, '5': 9, '10': 'termsMarkdown'},
+  ],
+};
+
+/// Descriptor for `GetEscrowPolicyResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getEscrowPolicyResponseDescriptor = $convert.base64Decode(
+    'ChdHZXRFc2Nyb3dQb2xpY3lSZXNwb25zZRImCg90aXRsZV9tYXhfY2hhcnMYASABKAVSDXRpdG'
+    'xlTWF4Q2hhcnMSJgoPc3BlY3NfbWF4X2NoYXJzGAIgASgFUg1zcGVjc01heENoYXJzEioKEW1l'
+    'c3NhZ2VfbWF4X2NoYXJzGAMgASgFUg9tZXNzYWdlTWF4Q2hhcnMSJQoOdGVybXNfbWFya2Rvd2'
+    '4YBCABKAlSDXRlcm1zTWFya2Rvd24=');

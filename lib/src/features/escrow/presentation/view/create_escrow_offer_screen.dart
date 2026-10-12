@@ -15,6 +15,8 @@ import '../../data/services/escrow_media_upload_service.dart';
 import '../cubit/escrow_cubit.dart';
 import '../widgets/escrow_attachment_picker.dart';
 import 'escrow_theme.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/escrow/domain/repositories/escrow_repository.dart';
 
 part 'create_escrow_offer_screen_widgets.dart';
 
@@ -44,6 +46,11 @@ class _CreateEscrowOfferScreenState extends State<CreateEscrowOfferScreen> {
 
   String _direction = 'sell_offer';
   bool get _isSell => _direction == 'sell_offer';
+
+  /// Admin-set caps. Starts at the built-in defaults so the first frame has
+  /// real limits rather than none, then refreshes from the server. The
+  /// service enforces the same numbers, so the two cannot disagree for long.
+  EscrowPolicy _policy = EscrowPolicy.fallback;
 
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
@@ -77,6 +84,9 @@ class _CreateEscrowOfferScreenState extends State<CreateEscrowOfferScreen> {
   @override
   void initState() {
     super.initState();
+    serviceLocator<EscrowRepository>().getPolicy().then((p) {
+      if (mounted) setState(() => _policy = p);
+    });
     final args = Get.arguments;
     if (args is Map && args['direction'] is String) {
       final d = args['direction'] as String;

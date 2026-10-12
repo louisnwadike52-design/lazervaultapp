@@ -55,6 +55,20 @@ class EscrowServiceClient extends $grpc.Client {
     return $createUnaryCall(_$listMyDeals, request, options: options);
   }
 
+  /// The rules the APP has to obey and show, read from admin settings.
+  ///
+  /// Added because the character limits became admin-tunable and the app had
+  /// no way to read them: it enforced its own compiled-in numbers, so an
+  /// operator lowering a limit produced a server rejection the user met only
+  /// after typing. The terms text rides along for the same reason — copy that
+  /// needs a store release is copy that stays wrong.
+  $grpc.ResponseFuture<$0.GetEscrowPolicyResponse> getEscrowPolicy(
+    $0.GetEscrowPolicyRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getEscrowPolicy, request, options: options);
+  }
+
   /// Single deal detail (+ timeline events). Caller must be a party or admin.
   $grpc.ResponseFuture<$0.DealResponse> getDeal(
     $0.GetDealRequest request, {
@@ -237,6 +251,11 @@ class EscrowServiceClient extends $grpc.Client {
           '/escrow.EscrowService/ListMyDeals',
           ($0.ListMyDealsRequest value) => value.writeToBuffer(),
           $0.ListDealsResponse.fromBuffer);
+  static final _$getEscrowPolicy =
+      $grpc.ClientMethod<$0.GetEscrowPolicyRequest, $0.GetEscrowPolicyResponse>(
+          '/escrow.EscrowService/GetEscrowPolicy',
+          ($0.GetEscrowPolicyRequest value) => value.writeToBuffer(),
+          $0.GetEscrowPolicyResponse.fromBuffer);
   static final _$getDeal =
       $grpc.ClientMethod<$0.GetDealRequest, $0.DealResponse>(
           '/escrow.EscrowService/GetDeal',
@@ -354,6 +373,15 @@ abstract class EscrowServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.ListMyDealsRequest.fromBuffer(value),
         ($0.ListDealsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetEscrowPolicyRequest,
+            $0.GetEscrowPolicyResponse>(
+        'GetEscrowPolicy',
+        getEscrowPolicy_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetEscrowPolicyRequest.fromBuffer(value),
+        ($0.GetEscrowPolicyResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetDealRequest, $0.DealResponse>(
         'GetDeal',
         getDeal_Pre,
@@ -524,6 +552,15 @@ abstract class EscrowServiceBase extends $grpc.Service {
 
   $async.Future<$0.ListDealsResponse> listMyDeals(
       $grpc.ServiceCall call, $0.ListMyDealsRequest request);
+
+  $async.Future<$0.GetEscrowPolicyResponse> getEscrowPolicy_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetEscrowPolicyRequest> $request) async {
+    return getEscrowPolicy($call, await $request);
+  }
+
+  $async.Future<$0.GetEscrowPolicyResponse> getEscrowPolicy(
+      $grpc.ServiceCall call, $0.GetEscrowPolicyRequest request);
 
   $async.Future<$0.DealResponse> getDeal_Pre($grpc.ServiceCall $call,
       $async.Future<$0.GetDealRequest> $request) async {

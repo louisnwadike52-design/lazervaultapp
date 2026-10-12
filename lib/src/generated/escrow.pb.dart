@@ -3875,6 +3875,154 @@ class DealMessageResponse extends $pb.GeneratedMessage {
   DealMessage ensureMessage() => $_ensure(0);
 }
 
+class GetEscrowPolicyRequest extends $pb.GeneratedMessage {
+  factory GetEscrowPolicyRequest() => create();
+
+  GetEscrowPolicyRequest._();
+
+  factory GetEscrowPolicyRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetEscrowPolicyRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetEscrowPolicyRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'escrow'),
+      createEmptyInstance: create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetEscrowPolicyRequest clone() =>
+      GetEscrowPolicyRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetEscrowPolicyRequest copyWith(
+          void Function(GetEscrowPolicyRequest) updates) =>
+      super.copyWith((message) => updates(message as GetEscrowPolicyRequest))
+          as GetEscrowPolicyRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetEscrowPolicyRequest create() => GetEscrowPolicyRequest._();
+  @$core.override
+  GetEscrowPolicyRequest createEmptyInstance() => create();
+  static $pb.PbList<GetEscrowPolicyRequest> createRepeated() =>
+      $pb.PbList<GetEscrowPolicyRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetEscrowPolicyRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetEscrowPolicyRequest>(create);
+  static GetEscrowPolicyRequest? _defaultInstance;
+}
+
+/// What the app must enforce and display. Every field has a sane fallback in
+/// the app, so an older server or an unseeded settings table degrades to
+/// today's behaviour rather than to a blank screen or a zero limit.
+class GetEscrowPolicyResponse extends $pb.GeneratedMessage {
+  factory GetEscrowPolicyResponse({
+    $core.int? titleMaxChars,
+    $core.int? specsMaxChars,
+    $core.int? messageMaxChars,
+    $core.String? termsMarkdown,
+  }) {
+    final result = create();
+    if (titleMaxChars != null) result.titleMaxChars = titleMaxChars;
+    if (specsMaxChars != null) result.specsMaxChars = specsMaxChars;
+    if (messageMaxChars != null) result.messageMaxChars = messageMaxChars;
+    if (termsMarkdown != null) result.termsMarkdown = termsMarkdown;
+    return result;
+  }
+
+  GetEscrowPolicyResponse._();
+
+  factory GetEscrowPolicyResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetEscrowPolicyResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetEscrowPolicyResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'escrow'),
+      createEmptyInstance: create)
+    ..a<$core.int>(
+        1, _omitFieldNames ? '' : 'titleMaxChars', $pb.PbFieldType.O3)
+    ..a<$core.int>(
+        2, _omitFieldNames ? '' : 'specsMaxChars', $pb.PbFieldType.O3)
+    ..a<$core.int>(
+        3, _omitFieldNames ? '' : 'messageMaxChars', $pb.PbFieldType.O3)
+    ..aOS(4, _omitFieldNames ? '' : 'termsMarkdown')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetEscrowPolicyResponse clone() =>
+      GetEscrowPolicyResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetEscrowPolicyResponse copyWith(
+          void Function(GetEscrowPolicyResponse) updates) =>
+      super.copyWith((message) => updates(message as GetEscrowPolicyResponse))
+          as GetEscrowPolicyResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetEscrowPolicyResponse create() => GetEscrowPolicyResponse._();
+  @$core.override
+  GetEscrowPolicyResponse createEmptyInstance() => create();
+  static $pb.PbList<GetEscrowPolicyResponse> createRepeated() =>
+      $pb.PbList<GetEscrowPolicyResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetEscrowPolicyResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetEscrowPolicyResponse>(create);
+  static GetEscrowPolicyResponse? _defaultInstance;
+
+  /// Free-text caps, enforced server-side. The app mirrors them so a user is
+  /// stopped where they type rather than refused after sending. Zero means
+  /// "not configured", and the app keeps its own default.
+  @$pb.TagNumber(1)
+  $core.int get titleMaxChars => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set titleMaxChars($core.int value) => $_setSignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasTitleMaxChars() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTitleMaxChars() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get specsMaxChars => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set specsMaxChars($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasSpecsMaxChars() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSpecsMaxChars() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get messageMaxChars => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set messageMaxChars($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasMessageMaxChars() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMessageMaxChars() => $_clearField(3);
+
+  /// Terms, as Markdown, admin-editable. Empty means "use the app's built-in
+  /// copy" — the same rule the autosave trigger copy follows, and what makes
+  /// adding this safe.
+  @$pb.TagNumber(4)
+  $core.String get termsMarkdown => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set termsMarkdown($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasTermsMarkdown() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTermsMarkdown() => $_clearField(4);
+}
+
 const $core.bool _omitFieldNames =
     $core.bool.fromEnvironment('protobuf.omit_field_names');
 const $core.bool _omitMessageNames =

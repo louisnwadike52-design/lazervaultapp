@@ -10,6 +10,13 @@ abstract class EscrowRepository {
   /// Separate from the parties' general direct-message thread so a dispute
   /// has "the chat for this deal" and an admin adjudicating it reads that
   /// and nothing else.
+  /// The rules the app must obey and show, from admin settings.
+  ///
+  /// Never throws: callers get the built-in defaults when the server cannot
+  /// answer, because a policy read must not be the thing that stops someone
+  /// creating a deal.
+  Future<EscrowPolicy> getPolicy();
+
   Future<List<EscrowMessageEntity>> listDealMessages(String dealId);
 
   Future<EscrowMessageEntity> sendDealMessage({
@@ -159,4 +166,35 @@ abstract class EscrowRepository {
     int sizeBytes = 0,
     int durationSeconds = 0,
   });
+}
+
+/// Admin-set limits and copy. Zero/empty means "not configured", and the
+/// app keeps its own default, which is what lets this ship before anything
+/// is set in the dashboard.
+class EscrowPolicy {
+  final int titleMaxChars;
+  final int specsMaxChars;
+  final int messageMaxChars;
+  final String termsMarkdown;
+
+  const EscrowPolicy({
+    this.titleMaxChars = 0,
+    this.specsMaxChars = 0,
+    this.messageMaxChars = 0,
+    this.termsMarkdown = '',
+  });
+
+  /// Built-in fallbacks, matching the service's own defaults. Kept in step
+  /// deliberately: two different numbers would mean the app stops a user at
+  /// one length and the server at another.
+  static const fallback = EscrowPolicy(
+    titleMaxChars: 120,
+    specsMaxChars: 1000,
+    messageMaxChars: 4000,
+  );
+
+  int get title => titleMaxChars > 0 ? titleMaxChars : fallback.titleMaxChars;
+  int get specs => specsMaxChars > 0 ? specsMaxChars : fallback.specsMaxChars;
+  int get message =>
+      messageMaxChars > 0 ? messageMaxChars : fallback.messageMaxChars;
 }

@@ -48,11 +48,16 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
       );
 
   Widget _field(TextEditingController ctrl, String hint,
-          {int maxLines = 1, TextInputType? keyboard}) =>
+          {int maxLines = 1, TextInputType? keyboard, int? maxLength}) =>
       TextField(
         controller: ctrl,
         maxLines: maxLines,
         keyboardType: keyboard,
+        // Stopped where it is typed rather than refused after sending. The
+        // server enforces these caps and they are admin-tunable, so a
+        // compiled-in number would start lying the moment one was changed —
+        // the limit comes from the policy read.
+        maxLength: maxLength,
         onChanged: (_) => _refresh(),
         style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
         decoration: InputDecoration(
@@ -81,7 +86,8 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
             _label(
                 _isSell ? 'What are you selling?' : 'What do you want to buy?'),
             _field(_titleCtrl,
-                _isSell ? 'e.g. iPhone 13 Pro, 256GB' : 'e.g. PS5 console'),
+                _isSell ? 'e.g. iPhone 13 Pro, 256GB' : 'e.g. PS5 console',
+                maxLength: _policy.title),
             SizedBox(height: 14.h),
             _label('Specs / details (optional)'),
             _field(
@@ -89,7 +95,8 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
                 _isSell
                     ? 'Condition, specs, what\'s included…'
                     : 'Exactly what you expect: condition, specs, colour…',
-                maxLines: 3),
+                maxLines: 3,
+                maxLength: _policy.specs),
             SizedBox(height: 14.h),
             _label(_isSell ? 'Condition' : 'Condition you\'ll accept'),
             _conditionPicker(),
