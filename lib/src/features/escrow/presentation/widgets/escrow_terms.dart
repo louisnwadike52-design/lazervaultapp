@@ -24,61 +24,69 @@ class EscrowTerms {
   const EscrowTerms._();
 
   /// Heading → body. Ordered as the deal happens.
+  /// Six points, not a contract. The earlier version ran to seven long
+  /// paragraphs, which on a phone is a wall nobody reads, and an unread
+  /// disclaimer protects no one. Each is now one sentence of what happens
+  /// plus one of what it means for you.
+  ///
+  /// Admin-tunable: [EscrowTermsConfig] replaces any of these from the
+  /// dashboard, and this list is the fallback when nothing is configured.
   static const List<({String title, String body})> clauses = [
     (
       title: 'We hold the money, not the goods',
-      body: 'Lazervault is the payment channel for this deal. We hold the '
-          'buyer\'s payment and release it on the agreed trigger. We are not '
-          'the buyer or the seller, we take no part in the sale itself, and '
-          'we do not inspect, test, store, ship or insure anything that is '
-          'being traded.',
+      body: 'Lazervault is the payment channel for this deal. We do not '
+          'inspect, test, ship or insure anything being traded.',
     ),
     (
-      title: 'The money moves only on an agreed trigger',
-      body: 'The buyer pays into escrow. Nothing reaches the seller until the '
-          'buyer confirms delivery and releases, or until our team resolves a '
-          'dispute. Neither party can move the money on their own.',
+      title: 'Money moves only on an agreed trigger',
+      body: 'The buyer pays into escrow. Nothing reaches the seller until '
+          'the buyer confirms delivery, or our team settles a dispute.',
     ),
     (
-      title: 'Only the seller can cancel and refund',
-      body: 'The seller still holds the goods, so the seller is the one who '
-          'can call the deal off — before delivery is marked, whoever created '
-          'it. The buyer\'s route out is a dispute, not a cancellation, so a '
-          'buyer cannot unwind a deal a seller has already worked on.',
+      title: 'Only the seller can cancel',
+      body: 'The seller still holds the goods, so the seller calls the deal '
+          'off. Cancelling refunds the buyer in full, automatically.',
     ),
     (
-      title: 'Either party can open a dispute',
-      body: 'While the deal is live, either side can raise a dispute. The '
-          'money stays held and untouched while our team reviews what both '
-          'sides submit, and we decide only where the held funds go — not who '
-          'was right about the goods.',
+      title: 'Either side can open a dispute',
+      body: 'The money stays frozen while our team reviews what both sides '
+          'submit. We decide only where the held funds go.',
     ),
     (
       title: 'Releasing is final',
-      body: 'Once the buyer releases the funds, the deal is closed. It cannot '
-          'then be cancelled, refunded or disputed through Lazervault, and '
-          'anything further is between the buyer and the seller directly.',
-    ),
-    (
-      title: 'The escrow fee pays for the custody, not the outcome',
-      body: 'The fee covers holding the money and moving it safely, so it is '
-          'earned whether the deal completes or is called off. On a '
-          'cancellation the buyer is refunded in full and pays nothing; the '
-          'fee is charged to the seller who cancelled.',
+      body: 'Once the buyer releases, the deal is closed. It cannot then be '
+          'cancelled, refunded or disputed through Lazervault.',
     ),
     (
       title: 'What we are not responsible for',
-      body: 'We do not guarantee the quality, condition, authenticity, '
-          'legality, fitness or delivery of anything traded, and we are not '
-          'liable for loss, damage or delay arising from the trade itself. '
-          'Our responsibility is limited to holding the funds and moving them '
-          'as these rules describe. Choose who you deal with carefully.',
+      body: 'We do not guarantee the quality, condition or delivery of '
+          'anything traded. Our responsibility is limited to holding the '
+          'funds and moving them as described above.',
     ),
   ];
 
   /// Key for the landing-page notice's "don't show this again" preference.
   /// Readable from settings so a user can turn the notice back on.
   static const String introDismissedKey = 'escrow_intro_notice_dismissed';
+
+  /// Set once the three-slide guide has been seen through to the end.
+  static const String guideSeenKey = 'escrow_guide_seen';
+
+  static Future<bool> guideSeen() async {
+    try {
+      return (await SharedPreferences.getInstance()).getBool(guideSeenKey) ??
+          false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static Future<void> setGuideSeen() async {
+    try {
+      await (await SharedPreferences.getInstance())
+          .setBool(guideSeenKey, true);
+    } catch (_) {}
+  }
 
   static Future<bool> introDismissed() async {
     try {
@@ -195,7 +203,15 @@ class _EscrowTermsCardState extends State<EscrowTermsCard> {
 ///
 /// Dismissible for good, and re-enableable from Settings (searchable as
 /// "Escrow"), so it is a notice rather than an obstacle.
-Future<void> showEscrowIntroNotice(BuildContext context) async {
+Future<void> showEscrowIntroNotice(
+  BuildContext context, {
+  required bool hasCompletedDeal,
+}) async {
+  // Someone who has completed a deal has met the rules by using them, and a
+  // disclaimer that keeps reappearing after that reads as nagging rather
+  // than informing. The info icon keeps it reachable for anyone who wants
+  // it back.
+  if (hasCompletedDeal) return;
   if (await EscrowTerms.introDismissed()) return;
   if (!context.mounted) return;
   var dontShowAgain = false;
@@ -246,7 +262,7 @@ Future<void> showEscrowIntroNotice(BuildContext context) async {
                   SizedBox(height: 10.h),
                   Text(
                     'Escrow Pay is a payment channel, not a marketplace. We hold '
-                    'the buyer\'s money and release it on the agreed trigger — we '
+                    'the buyer\'s money and release it on the agreed trigger. We '
                     'do not list, inspect, verify, ship or insure anything being '
                     'traded, and we are not liable for the goods or services '
                     'themselves. Deal with people you have reason to trust.',
@@ -401,4 +417,57 @@ class _ScrollToBottomButtonState extends State<_ScrollToBottomButton> {
       ),
     );
   }
+}
+
+/// The terms on their own, from the info icon. Distinct from the first-run
+/// notice: no "don't show again", no dismissal to record, because this one
+/// was asked for.
+Future<void> showEscrowTermsSheet(BuildContext context) {
+  return showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (ctx) => Container(
+      constraints:
+          BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.86),
+      margin: EdgeInsets.fromLTRB(
+          14.w, MediaQuery.of(ctx).padding.top + 14.h, 14.w, 14.h),
+      padding: EdgeInsets.all(18.w),
+      decoration: BoxDecoration(
+        color: EscrowTheme.card,
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(color: EscrowTheme.border),
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const EscrowTermsCard(
+              initiallyExpanded: true,
+              title: 'Terms and conditions',
+            ),
+            SizedBox(height: 14.h),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: EscrowTheme.primary,
+                  padding: EdgeInsets.symmetric(vertical: 13.h),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r)),
+                ),
+                child: Text('Close',
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 13.5.sp,
+                        fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }

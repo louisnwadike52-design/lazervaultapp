@@ -21,6 +21,8 @@ import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import '../widgets/escrow_terms.dart';
+import '../widgets/escrow_how_it_works.dart';
+import '../widgets/swipe_between_tabs.dart';
 
 class EscrowHomeScreen extends StatefulWidget {
   const EscrowHomeScreen({super.key});
@@ -56,13 +58,7 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _reload();
-      // Shown once, before the first deal: users arrive expecting a
-      // marketplace and are not in one. Dismissible for good, and
-      // re-enableable from Settings.
-      showEscrowIntroNotice(context);
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _reload());
   }
 
   void _reload() {
@@ -100,9 +96,53 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
     _reload();
   }
 
+  /// The role tabs in display order, so a swipe can step through them.
+  static const List<String> _roleOrder = ['', 'buyer', 'seller'];
+
+  /// Null at the ends rather than wrapping: wrapping from Selling back to
+  /// All loses a user's place with nothing on screen to say it happened.
+  VoidCallback? _roleStep(int delta) {
+    final i = _roleOrder.indexOf(_role);
+    final next = i + delta;
+    if (i < 0 || next < 0 || next >= _roleOrder.length) return null;
+    return () => _setRole(_roleOrder[next]);
+  }
+
   void _setStatus(String status) => setState(() => _status = status);
 
   /// Client-side status-group filter over the already-loaded list.
+  /// True once we know whether this user has ever finished a deal, so the
+  /// first-run sheets are decided from fact rather than shown optimistically
+  /// and withdrawn.
+  bool _firstRunResolved = false;
+
+  /// Runs the first-run sequence at most once per screen, and only for a
+  /// user with no completed deal behind them.
+  ///
+  /// ORDER MATTERS: the liability notice first, the guide second. The notice
+  /// says what we are and are not; the guide says how to use it. Showing the
+  /// how before the what teaches someone to operate a thing they have not
+  /// been told the limits of. The guide is skipped entirely if the user
+  /// dismissed the notice without reading, because stacking a second sheet
+  /// onto someone who just closed one is how a first run feels like a wall.
+  Future<void> _noteFirstRunEligibility(List<EscrowDealEntity> deals) async {
+    if (_firstRunResolved) return;
+    _firstRunResolved = true;
+
+    final completed = deals
+        .any((d) => d.isReleased || d.isRefunded || d.status == 'CANCELLED');
+    if (completed || !mounted) return;
+
+    await showEscrowIntroNotice(context, hasCompletedDeal: false);
+    if (!mounted) return;
+    if (await EscrowTerms.guideSeen()) return;
+    if (!mounted) return;
+    final finished = await showEscrowHowItWorks(context);
+    // Only a user who reached the end has "seen" it. Skipping leaves it to
+    // reappear next time, which is the right default for a guide.
+    if (finished) await EscrowTerms.setGuideSeen();
+  }
+
   List<EscrowDealEntity> _applyStatusFilter(List<EscrowDealEntity> deals) {
     switch (_status) {
       case 'in_escrow':
@@ -170,6 +210,14 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
             ),
             tooltip: 'Offers',
           ),
+          // How it works / the rules, on demand. The first-run sheets stop
+          // appearing once a deal is done, so this is the way back to them.
+          IconButton(
+            onPressed: () => showEscrowInfoMenu(context),
+            icon: Icon(Icons.info_outline,
+                color: EscrowTheme.primary, size: 20.sp),
+            tooltip: 'How Escrow Pay works',
+          ),
           MicroserviceChatIcon(
             serviceName: 'Escrow Pay',
             sourceContext: 'escrow',
@@ -213,37 +261,48 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
               _roleTabs(),
               _statusFilterRow(),
               Expanded(
-                child: BlocConsumer<EscrowCubit, EscrowState>(
-                  listener: (context, state) {
-                    if (state is EscrowError) {
-                      showAppSnackbar('Escrow Pay', state.message,
-                          type: AppSnackbarType.error);
-                    }
-                  },
-                  builder: (context, state) {
-                    if (state is EscrowLoading || state is EscrowInitial) {
+                // Swiping the list moves between All / Buying / Selling,
+                // which is the axis a user thinks in. The status chips stay
+                // a tap, because they are a filter rather than a place.
+                child: SwipeBetweenTabs(
+                  onNext: _roleStep(1),
+                  onPrevious: _roleStep(-1),
+                  child: BlocConsumer<EscrowCubit, EscrowState>(
+                    listener: (context, state) {
+                      if (state is EscrowError) {
+                        showAppSnackbar('Escrow Pay', state.message,
+                            type: AppSnackbarType.error);
+                      }
+                    },
+                    builder: (context, state) {
+                      if (state is EscrowLoading || state is EscrowInitial) {
+                        return const EscrowListShimmer();
+                      }
+                      if (state is EscrowError) {
+                        return EscrowEmptyState.error(onRetry: _reload);
+                      }
+                      if (state is EscrowDealsLoaded) {
+                        // First-run material is gated on experience, not on a
+                        // dismissal flag: someone who has completed a deal has
+                        // met the rules by using them.
+                        _noteFirstRunEligibility(state.deals);
+                        final deals = _applyStatusFilter(state.deals);
+                        if (deals.isEmpty) return _empty();
+                        return RefreshIndicator(
+                          color: EscrowTheme.primary,
+                          onRefresh: () async => _reload(),
+                          child: ListView.separated(
+                            padding: EdgeInsets.all(16.w),
+                            itemCount: deals.length,
+                            separatorBuilder: (_, __) => SizedBox(height: 12.h),
+                            itemBuilder: (context, i) =>
+                                _dealCard(deals[i], state.currentUserId),
+                          ),
+                        );
+                      }
                       return const EscrowListShimmer();
-                    }
-                    if (state is EscrowError) {
-                      return EscrowEmptyState.error(onRetry: _reload);
-                    }
-                    if (state is EscrowDealsLoaded) {
-                      final deals = _applyStatusFilter(state.deals);
-                      if (deals.isEmpty) return _empty();
-                      return RefreshIndicator(
-                        color: EscrowTheme.primary,
-                        onRefresh: () async => _reload(),
-                        child: ListView.separated(
-                          padding: EdgeInsets.all(16.w),
-                          itemCount: deals.length,
-                          separatorBuilder: (_, __) => SizedBox(height: 12.h),
-                          itemBuilder: (context, i) =>
-                              _dealCard(deals[i], state.currentUserId),
-                        ),
-                      );
-                    }
-                    return const EscrowListShimmer();
-                  },
+                    },
+                  ),
                 ),
               ),
             ],
