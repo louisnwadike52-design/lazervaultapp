@@ -31,6 +31,7 @@ class AmountPresetRow extends StatelessWidget {
     this.selected,
     this.isEnabled,
     this.accent = const Color(0xFF4E03D0),
+    this.brightness,
   });
 
   final List<int> amounts;
@@ -47,6 +48,14 @@ class AmountPresetRow extends StatelessWidget {
 
   final Color accent;
 
+  /// The surface this row is drawn ON, when it differs from the app theme.
+  ///
+  /// Every bill screen that uses this row paints its own near-black
+  /// background while the app theme is light, so reading the ambient
+  /// `Theme.of(context).brightness` produced WHITE chips on a black screen.
+  /// A widget cannot see what is painted behind it, so the caller says.
+  final Brightness? brightness;
+
   /// 1000 -> "1k", 1500 -> "1.5k", 500 -> "500".
   ///
   /// Abbreviating is what makes five presets fit one line. Below 1000 there is
@@ -62,8 +71,14 @@ class AmountPresetRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (amounts.isEmpty) return const SizedBox.shrink();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final surface = isDark ? const Color(0xFF232323) : const Color(0xFFF1F1F4);
+    final isDark =
+        (brightness ?? Theme.of(context).brightness) == Brightness.dark;
+    // Unselected chips are now TINTED AND BORDERED rather than a flat slab:
+    // a solid light surface read as a disabled button on the dark screens,
+    // and gave the row no relationship to the accent the selected chip uses.
+    final surface = isDark
+        ? Color.alphaBlend(accent.withValues(alpha: 0.16), const Color(0xFF121212))
+        : Color.alphaBlend(accent.withValues(alpha: 0.08), Colors.white);
     final labelColor = isDark ? Colors.white : const Color(0xFF111827);
 
     return Row(
@@ -78,6 +93,7 @@ class AmountPresetRow extends StatelessWidget {
               surface: surface,
               labelColor: labelColor,
               accent: accent,
+              isDark: isDark,
               onTap: () => onSelected(amounts[i]),
             ),
           ),
@@ -95,6 +111,7 @@ class _Chip extends StatelessWidget {
     required this.surface,
     required this.labelColor,
     required this.accent,
+    required this.isDark,
     required this.onTap,
   });
 
@@ -104,6 +121,7 @@ class _Chip extends StatelessWidget {
   final Color surface;
   final Color labelColor;
   final Color accent;
+  final bool isDark;
   final VoidCallback onTap;
 
   @override
@@ -125,6 +143,17 @@ class _Chip extends StatelessWidget {
         decoration: BoxDecoration(
           color: bg,
           borderRadius: BorderRadius.circular(10.r),
+          // The border is what makes an unselected chip read as a control
+          // rather than a filled label. The selected one keeps a brighter
+          // edge so the choice is unmistakable at a glance.
+          border: Border.all(
+            color: !enabled
+                ? accent.withValues(alpha: 0.18)
+                : selected
+                    ? accent.withValues(alpha: 0.95)
+                    : accent.withValues(alpha: isDark ? 0.55 : 0.40),
+            width: selected ? 1.4 : 1.1,
+          ),
           boxShadow: !enabled
               ? null
               : [

@@ -1,3 +1,5 @@
+import 'package:lazervault/core/utils/brand_bank.dart';
+
 // Banks Data by Country
 // Comprehensive list of banks for recipient bank selection by country/locale
 //
@@ -124,11 +126,17 @@ class BanksData {
   static String displayName(String? bankName, String? code) {
     final name = (bankName ?? '').trim();
     final c = (code ?? '').trim();
-    // Canonicalise the internal brand: older records/sentinels store the bank
-    // as "LazerVault" (PascalCase). The user-facing brand is "Lazervault" — fix
-    // the casing here so every receipt/history row shows it correctly, while
-    // the raw sentinel value keeps driving internal/external routing untouched.
-    if (name.toLowerCase() == 'lazervault') return 'Lazervault';
+    // Canonicalise the internal brand: older records and sentinels store the
+    // bank as "LazerVault" (PascalCase), and the NIBSS registry returns us
+    // under several spellings ("LAZERVAULT LTD", "Lazervault MFB"). The
+    // user-facing brand is "Lazervault", so fix it here and every receipt,
+    // history row and saved-recipient card shows it correctly; the raw value
+    // keeps driving internal/external routing untouched.
+    //
+    // Delegates to BrandBank, which matches on SUBSTRING. An exact-equality
+    // check missed every variant with a suffix, which is why the saved
+    // recipients list still read "LazerVault".
+    if (BrandBank.isOurs(name)) return BrandBank.displayName;
     final looksLikeCode = name.isEmpty || RegExp(r'^\d{2,8}$').hasMatch(name);
     if (!looksLikeCode) return name;
     final lookup = c.isNotEmpty ? c : name;

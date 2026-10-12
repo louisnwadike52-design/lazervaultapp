@@ -25,7 +25,9 @@ class AutoSaveTriggerLabels {
       case TriggerType.scheduled:
         return 'Scheduled from Wallet';
       case TriggerType.roundUp:
-        return 'Round-Up';
+        // Named for what the user DOES (spends), not for the arithmetic we
+        // do to it. "Round-Up" described our implementation.
+        return 'Amount Spend';
       case TriggerType.externalInflow:
         return 'Bank Inflow';
       case TriggerType.scheduledExternal:

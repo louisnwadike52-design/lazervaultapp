@@ -643,6 +643,9 @@ class _WaterQuickBuyState extends State<WaterQuickBuy>
   }
 
   Widget _amountChips() => AmountPresetRow(
+        // These screens paint their own near-black background while the app
+        // theme is light, so the row cannot read it from the ambient theme.
+        brightness: Brightness.dark,
         amounts: _quickAmounts,
         selected: _amount,
         onSelected: _selectAmount,

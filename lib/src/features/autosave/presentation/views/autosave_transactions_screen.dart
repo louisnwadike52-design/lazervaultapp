@@ -317,7 +317,7 @@ class _AutoSaveTransactionsScreenState
         accent: Color(0xFF10B981),
       ),
       const _FilterOption(
-        label: 'Round-Up',
+        label: 'Amount Spend',
         value: TriggerType.roundUp,
         icon: Icons.savings_outlined,
         accent: Color(0xFFF59E0B),
