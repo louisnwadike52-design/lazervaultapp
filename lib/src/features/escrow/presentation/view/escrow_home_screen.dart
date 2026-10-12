@@ -63,7 +63,8 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
   }
 
   void _reload() {
-    context.read<EscrowCubit>().loadDeals(role: _role, page: _page);
+    context.read<EscrowCubit>()
+        .loadDeals(role: _role, status: _statusQuery, page: _page);
     _loadActiveOffers();
   }
 
@@ -116,10 +117,15 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
   /// longer has four pages is an empty screen that looks like lost data.
   int _page = 1;
 
-  void _setStatus(String status) => setState(() {
-        _status = status;
-        _page = 1;
-      });
+  void _setStatus(String status) {
+    setState(() {
+      _status = status;
+      _page = 1;
+    });
+    // Refetches: the filter is applied by the server now, so re-filtering
+    // the page in place would show a stale list.
+    _reload();
+  }
 
   /// Client-side status-group filter over the already-loaded list.
   /// True once we know whether this user has ever finished a deal, so the
@@ -154,26 +160,23 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
     if (finished) await EscrowTerms.setGuideSeen();
   }
 
-  List<EscrowDealEntity> _applyStatusFilter(List<EscrowDealEntity> deals) {
-    switch (_status) {
-      case 'in_escrow':
-        return deals.where((d) => d.isFunded).toList();
-      case 'delivered':
-        return deals.where((d) => d.isDelivered).toList();
-      case 'refund_requested':
-        return deals.where((d) => d.isRefundRequested).toList();
-      case 'disputed':
-        return deals.where((d) => d.isDisputed).toList();
-      case 'completed':
-        return deals.where((d) => d.isReleased).toList();
-      case 'refunded':
-        return deals
-            .where((d) => d.isRefunded || d.status == 'EXPIRED')
-            .toList();
-      default:
-        return deals;
-    }
-  }
+  /// The server-side statuses each filter chip stands for.
+  ///
+  /// Sent to the backend rather than applied to the loaded page. Filtering
+  /// client-side was survivable while the screen loaded everything; with
+  /// real pagination it hid matching deals on later pages and left the page
+  /// count describing the unfiltered list. The service accepts a
+  /// comma-separated group, so the filter and the count now agree.
+  static const Map<String, List<String>> _statusGroups = {
+    'in_escrow': ['FUNDED', 'IN_PROGRESS'],
+    'delivered': ['DELIVERED'],
+    'refund_requested': ['REFUND_REQUESTED'],
+    'disputed': ['DISPUTED'],
+    'completed': ['RELEASED', 'RESOLVED_RELEASED'],
+    'refunded': ['REFUNDED', 'CANCELLED', 'RESOLVED_REFUNDED', 'EXPIRED'],
+  };
+
+  String get _statusQuery => (_statusGroups[_status] ?? const []).join(',');
 
   @override
   Widget build(BuildContext context) {
@@ -297,7 +300,7 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
                         // dismissal flag: someone who has completed a deal has
                         // met the rules by using them.
                         _noteFirstRunEligibility(state.deals);
-                        final deals = _applyStatusFilter(state.deals);
+                        final deals = state.deals;
                         if (deals.isEmpty) return _empty();
                         return RefreshIndicator(
                           color: EscrowTheme.primary,
