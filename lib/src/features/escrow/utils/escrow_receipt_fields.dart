@@ -30,7 +30,8 @@ class EscrowReceiptFields {
   /// in the class comment.
   static bool describes(Map<String, dynamic>? metadata) {
     final event = _str(metadata, 'escrow_event').toLowerCase();
-    return const {'funded', 'released', 'refunded'}.contains(event) &&
+    return const {'funded', 'released', 'refunded', 'cancel_fee'}
+            .contains(event) &&
         _str(metadata, 'escrow_reference').isNotEmpty;
   }
 
@@ -45,6 +46,8 @@ class EscrowReceiptFields {
         return isSeller ? 'Escrow released to you' : 'Escrow released';
       case 'refunded':
         return 'Escrow refunded to you';
+      case 'cancel_fee':
+        return 'Escrow cancellation fee';
       default:
         return isSeller ? 'Escrow funded' : 'Paid into escrow';
     }
@@ -131,6 +134,11 @@ class EscrowReceiptFields {
       case 'refunded':
         return 'The deal did not complete, so the money was returned to the '
             'buyer in full.';
+      case 'cancel_fee':
+        // The one leg where the amount IS the fee. Saying why stops it
+        // reading as a second, unexplained charge beside the refund.
+        return 'You cancelled this deal. The buyer was refunded in full, and '
+            'this is the escrow fee for holding and returning their money.';
       default:
         // Deliberately the deal's RULE, not its current state. This row is
         // stamped at funding and never rewritten, so "the money is currently
@@ -182,6 +190,11 @@ class EscrowReceiptFields {
 
   static double _round2(double v) => (v * 100).roundToDouble() / 100;
 
+  /// Public aliases so the sibling projection in this file can read the same
+  /// payload without each of them re-implementing the parsing.
+  static String str(Map<String, dynamic>? m, String k) => _str(m, k);
+  static double num_(Map<String, dynamic>? m, String k) => _num(m, k);
+
   static String _str(Map<String, dynamic>? m, String k) =>
       (m?[k] ?? '').toString().trim();
 
@@ -189,5 +202,103 @@ class EscrowReceiptFields {
     final v = m?[k];
     if (v is num) return v.toDouble();
     return double.tryParse('${v ?? ''}'.trim()) ?? 0;
+  }
+}
+
+/// The figures a transfer-shaped document needs for an escrow leg.
+///
+/// The unified transfer PDF reads `metadata['Fee']` and falls back to the
+/// transaction title for the beneficiary. Escrow writes neither, so an escrow
+/// funding receipt printed "Fee ₦0.00" against a deal that definitely had one,
+/// and "Beneficiary: Debit" — the row title, because there was nothing else.
+///
+/// This maps the escrow payload onto that document's three slots: the item
+/// price, the fee THIS viewer bore, and the other party's name.
+class EscrowTransferView {
+  /// The item price — never the total. A ₦200 item with a ₦20 fee is not a
+  /// ₦220 purchase, and the document has a separate line for the fee.
+  final double principal;
+
+  /// The fee borne by the party this copy belongs to. Zero for a buyer on a
+  /// cancellation: they are refunded in full and pay nothing.
+  final double fee;
+
+  /// The OTHER party, for the beneficiary / from block.
+  final String counterpartyName;
+
+  /// What the document calls this movement.
+  final String transferType;
+
+  const EscrowTransferView({
+    required this.principal,
+    required this.fee,
+    required this.counterpartyName,
+    required this.transferType,
+  });
+
+  /// Null when the row is not an escrow leg carrying the payload, so callers
+  /// keep their existing behaviour for everything else.
+  static EscrowTransferView? of(Map<String, dynamic>? metadata) {
+    if (!EscrowReceiptFields.describes(metadata)) return null;
+    final event = EscrowReceiptFields.str(metadata, 'escrow_event').toLowerCase();
+    final isSeller =
+        EscrowReceiptFields.str(metadata, 'escrow_role').toLowerCase() ==
+            'seller';
+    final amount = EscrowReceiptFields.num_(metadata, 'escrow_amount');
+    final feeTotal = EscrowReceiptFields.num_(metadata, 'escrow_fee');
+    final buyerTotal = EscrowReceiptFields.num_(metadata, 'escrow_buyer_total');
+    final sellerNet = EscrowReceiptFields.num_(metadata, 'escrow_seller_net');
+    // counterparty_name is written by the service, but deriving it from the
+    // role is free and keeps a partial payload from printing a blank
+    // beneficiary — the exact failure this class exists to end.
+    var other = EscrowReceiptFields.str(metadata, 'counterparty_name');
+    if (other.isEmpty) {
+      other = isSeller
+          ? EscrowReceiptFields.str(metadata, 'escrow_buyer_name')
+          : EscrowReceiptFields.str(metadata, 'escrow_seller_name');
+    }
+
+    // Each side's share comes from the RECORDED totals, never from halving
+    // the fee again, so the figures match the money that moved — including
+    // the odd kobo, which a split lands on one party.
+    final buyerShare = _round2(buyerTotal - amount);
+    final sellerShare = _round2(amount - sellerNet);
+
+    switch (event) {
+      case 'released':
+        return EscrowTransferView(
+          principal: amount,
+          fee: isSeller ? sellerShare : buyerShare,
+          counterpartyName: other,
+          transferType: 'Escrow release',
+        );
+      case 'refunded':
+        // A cancellation refunds the buyer in full; the fee is the seller's.
+        return EscrowTransferView(
+          principal: buyerTotal,
+          fee: 0,
+          counterpartyName: other,
+          transferType: 'Escrow refund',
+        );
+      case 'cancel_fee':
+        return EscrowTransferView(
+          principal: feeTotal,
+          fee: 0,
+          counterpartyName: other,
+          transferType: 'Escrow cancellation fee',
+        );
+      default:
+        return EscrowTransferView(
+          principal: amount,
+          fee: isSeller ? sellerShare : buyerShare,
+          counterpartyName: other,
+          transferType: 'Escrow funding',
+        );
+    }
+  }
+
+  static double _round2(double v) {
+    final r = (v * 100).roundToDouble() / 100;
+    return r < 0 ? 0 : r;
   }
 }

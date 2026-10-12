@@ -126,5 +126,57 @@ void main() {
       expect(valueFor(rows, 'Item price'), '₦200.00');
       expect(valueFor(rows, 'Escrow fee'), '₦20.00');
     });
+
+    group('EscrowTransferView (what the transfer PDF prints)', () {
+      // The unified PDF read metadata['Fee'] and fell back to the row title
+      // for the beneficiary, so an escrow funding receipt printed
+      // "Fee ₦0.00" and "Beneficiary: Debit".
+      test('is null for a row that is not an escrow leg', () {
+        expect(EscrowTransferView.of({'business_reference': 'x'}), isNull);
+      });
+
+      test('a funded leg prints the item price and the buyer\'s fee share', () {
+        final v = EscrowTransferView.of(
+            deal(feePayer: 'split', buyerTotal: 210, sellerNet: 190))!;
+        expect(v.principal, 200);
+        expect(v.fee, 10);
+        expect(v.counterpartyName, 'Nnaemeka Ezeke');
+        expect(v.transferType, 'Escrow funding');
+      });
+
+      test('a seller-covered fee costs the buyer nothing on their copy', () {
+        final v = EscrowTransferView.of(deal())!;
+        expect(v.principal, 200);
+        expect(v.fee, 0);
+      });
+
+      test('a release prints the seller\'s share, not the buyer\'s', () {
+        final v = EscrowTransferView.of(deal(
+            event: 'released',
+            role: 'seller',
+            feePayer: 'split',
+            buyerTotal: 210,
+            sellerNet: 190))!;
+        expect(v.principal, 200);
+        expect(v.fee, 10);
+        expect(v.counterpartyName, 'Praiz Onah');
+        expect(v.transferType, 'Escrow release');
+      });
+
+      test('a refund returns the whole total and charges the buyer nothing', () {
+        final v = EscrowTransferView.of(deal(
+            event: 'refunded', feePayer: 'split', buyerTotal: 210, sellerNet: 190))!;
+        expect(v.principal, 210);
+        expect(v.fee, 0);
+        expect(v.transferType, 'Escrow refund');
+      });
+
+      test('a share can never print as negative', () {
+        // Defensive: a malformed payload must not produce a -₦10.00 fee row.
+        final v = EscrowTransferView.of(
+            deal(feePayer: 'split', buyerTotal: 190, sellerNet: 210))!;
+        expect(v.fee, greaterThanOrEqualTo(0));
+      });
+    });
   });
 }

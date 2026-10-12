@@ -194,6 +194,17 @@ class EscrowPdfService {
                 _detailRow('Item amount', _money(deal.amount, deal.currency)),
                 _detailRow('Platform fee',
                     '${_money(deal.fee, deal.currency)} (${_feePayerLabel(deal.feePayer)})'),
+                // A split is the one mode the line above cannot settle on its
+                // own: "split evenly" does not say how much either side bore,
+                // and that is the figure each party is checking for. Derived
+                // from the recorded totals so the odd kobo lands where the
+                // money actually landed.
+                if (_isSplit(deal.feePayer) && deal.fee > 0) ...[
+                  _detailRow('— paid by buyer',
+                      _money(_buyerFeeShare(deal), deal.currency)),
+                  _detailRow('— paid by seller',
+                      _money(_sellerFeeShare(deal), deal.currency)),
+                ],
                 _detailRow(
                     'Buyer total', _money(deal.buyerTotal, deal.currency),
                     isBold: true),
@@ -314,6 +325,12 @@ class EscrowPdfService {
                 _detailRow('Item amount', _money(deal.amount, deal.currency)),
                 _detailRow('Platform fee',
                     '${_money(deal.fee, deal.currency)} (${_feePayerLabel(deal.feePayer)})'),
+                if (_isSplit(deal.feePayer) && deal.fee > 0) ...[
+                  _detailRow('— paid by buyer',
+                      _money(_buyerFeeShare(deal), deal.currency)),
+                  _detailRow('— paid by seller',
+                      _money(_sellerFeeShare(deal), deal.currency)),
+                ],
                 _detailRow('Buyer pays (total)',
                     _money(deal.buyerTotal, deal.currency),
                     isBold: true),
@@ -547,6 +564,24 @@ class EscrowPdfService {
       default:
         return status;
     }
+  }
+
+  /// An empty fee payer means the deal deferred to configuration, whose
+  /// default is a split — the same rule the app and the backend apply.
+  static bool _isSplit(String feePayer) {
+    final p = feePayer.trim().toLowerCase();
+    return p.isEmpty || p == 'split';
+  }
+
+  static double _buyerFeeShare(dynamic deal) =>
+      _round2((deal.buyerTotal as double) - (deal.amount as double));
+
+  static double _sellerFeeShare(dynamic deal) =>
+      _round2((deal.amount as double) - (deal.sellerNet as double));
+
+  static double _round2(double v) {
+    final r = (v * 100).roundToDouble() / 100;
+    return r < 0 ? 0 : r;
   }
 
   static String _feePayerLabel(String feePayer) =>

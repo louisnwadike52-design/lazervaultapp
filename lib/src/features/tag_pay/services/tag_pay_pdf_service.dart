@@ -17,6 +17,7 @@ import 'package:lazervault/src/features/widgets/receipt_metadata_humanizer.dart'
 import 'package:lazervault/src/features/crypto/utils/crypto_receipt_fields.dart';
 
 import 'package:lazervault/core/config/receipt_footer.dart';
+import 'package:lazervault/src/features/escrow/utils/escrow_receipt_fields.dart';
 
 part 'tag_pay_pdf_helpers.dart';
 part 'tag_pay_pdf_builders.dart';
@@ -922,13 +923,41 @@ class TagPayPdfService {
     //
     // Provider-agnostic on purpose — Flutterwave, Nomba or anything else, the
     // rail never changes who paid the fee.
-    final feeAmount = double.tryParse(
+    var feeAmount = double.tryParse(
             _firstNonEmpty([metadata['Fee'], metadata['fee']])
                     ?.replaceAll(RegExp(r'[^0-9.]'), '') ??
                 '0') ??
         0.0;
-    final principalAmount =
+    var principalAmount =
         _principalOf(transaction.amount, feeAmount, incoming);
+
+    // AN ESCROW LEG CARRIES ITS OWN FIGURES.
+    //
+    // Escrow writes neither `Fee` nor any recipient key, so the lookups above
+    // produced "Fee ₦0.00" on a deal that definitely had one, and the
+    // beneficiary block fell all the way through to the ROW TITLE — printing
+    // "Beneficiary: Debit" on a document someone keeps as proof of payment.
+    //
+    // The escrow payload has the item price, each side's fee share and both
+    // names, so take them from there. Non-escrow rows are untouched.
+    final escrowView = EscrowTransferView.of(metadata);
+    var escrowTransferType = '';
+    if (escrowView != null) {
+      principalAmount = escrowView.principal;
+      feeAmount = escrowView.fee;
+      escrowTransferType = escrowView.transferType;
+    }
+
+    // The OTHER party, named. On an escrow inflow (the seller's release, the
+    // buyer's refund) the counterparty belongs in FROM; on an outflow they are
+    // the beneficiary. Both slots fell back to the row title before.
+    final escrowOther = (escrowView?.counterpartyName ?? '').trim();
+    final resolvedRecipient = (escrowView != null && !incoming && escrowOther.isNotEmpty)
+        ? escrowOther
+        : recipientName;
+    final resolvedSourceName = (escrowView != null && incoming && escrowOther.isNotEmpty)
+        ? escrowOther
+        : sourceAccountName;
 
     return generateTransferReceiptFile(
       copyType: copyType,
@@ -936,7 +965,7 @@ class TagPayPdfService {
       transferDetails: {
         'amount': principalAmount,
         'currency': transaction.currency,
-        'recipientName': recipientName,
+        'recipientName': resolvedRecipient,
         // On an inflow the entity's counterpartyAccount is the SENDER's
         // account — it must not appear under Beneficiary Details.
         'recipientAccountMasked': incoming
@@ -960,19 +989,21 @@ class TagPayPdfService {
                 metadata['Beneficiary Bank'],
                 metadata['bank_name'],
               ]),
-        'sourceAccountName': sourceAccountName,
+        'sourceAccountName': resolvedSourceName,
         // Don't print the same string twice when both slots resolved from the
         // one key that was available.
         'sourceAccountInfo':
-            sourceAccountInfo == sourceAccountName ? null : sourceAccountInfo,
+            sourceAccountInfo == resolvedSourceName ? null : sourceAccountInfo,
         // NEVER fall back to the raw transaction UUID — receipts must not
         // carry the transaction id. An absent reference omits the row/QR.
         'reference': transaction.transactionReference ?? '',
         'narration': transaction.description,
         'status': transaction.status.displayName,
-        'transferType': metadata['Transfer Type']?.toString() ??
-            metadata['transferType']?.toString() ??
-            'Fund Transfer',
+        'transferType': escrowTransferType.isNotEmpty
+            ? escrowTransferType
+            : (metadata['Transfer Type']?.toString() ??
+                metadata['transferType']?.toString() ??
+                'Fund Transfer'),
         'transactionId': transaction.id,
         'fee': feeAmount,
         'timestamp': transaction.createdAt,

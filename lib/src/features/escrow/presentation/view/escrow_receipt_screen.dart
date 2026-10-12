@@ -168,6 +168,22 @@ class _EscrowReceiptScreenState extends State<EscrowReceiptScreen>
   /// deal; if it is somehow empty (older deals created before the buyer name was
   /// stamped), it falls back to "You" for the viewer's own side and a neutral
   /// dash otherwise — never the misleading "Lazervault user".
+  /// Who actually bore the escrow fee, from this viewer's seat.
+  String _feeBearerLine(EscrowDealEntity deal) {
+    switch (deal.feePayer.trim().toLowerCase()) {
+      case 'buyer':
+        return _viewerIsBuyer ? 'You, in full' : 'The buyer, in full';
+      case 'seller':
+        return _viewerIsSeller ? 'You, in full' : 'The seller, in full';
+      case 'none':
+        return 'No fee on this deal';
+      default:
+        // Empty means the deal deferred to configuration, whose default is a
+        // split — the same rule the app and the backend apply.
+        return 'Split evenly — half the buyer, half the seller';
+    }
+  }
+
   String _partyName(String raw, {required bool viewerIsThisParty}) {
     final n = raw.trim();
     if (n.isNotEmpty) return n;
@@ -452,6 +468,12 @@ class _EscrowReceiptScreenState extends State<EscrowReceiptScreen>
                 ]
               : const <_DetailEntry>[];
         }(),
+      // WHO BORE THE FEE, named. The share row above says what it cost the
+      // viewer; it does not say whether the other side paid anything, and
+      // "Platform fee ₦25.00" against a ₦500 item is the single most queried
+      // line on these documents. Says who, without printing the other party's
+      // totals — on a split the halves are equal, so nothing is revealed.
+      if (deal.fee > 0) _DetailEntry('Fee paid by', _feeBearerLine(deal)),
       // Each party sees THEIR OWN figure. Printing both put the counterparty's
       // total on every receipt: a seller learned exactly what the buyer was
       // charged, and a buyer exactly what the seller pocketed — neither is

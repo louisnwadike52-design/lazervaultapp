@@ -71,6 +71,7 @@ String classifyDomain(String category, String description, String reference,
   // all fell through to the generic tail and rendered as "Debit" / "Credit" —
   // which is how a seller ends up reading their own payout as an unexplained
   // credit, and a buyer reads a ₦200 hold as an anonymous debit.
+  if (cat.contains('escrow_cancel_fee')) return 'escrow_cancel_fee';
   if (cat.contains('escrow_release')) return 'escrow_release';
   if (cat.contains('escrow_refund')) return 'escrow_refund';
   if (cat.contains('escrow')) return 'escrow_fund';
@@ -257,6 +258,10 @@ String? titleForDomain(String domain, String typeLower) {
       return credit ? 'Escrow Released to You' : 'Escrow Released';
     case 'escrow_refund':
       return credit ? 'Escrow Refund' : 'Escrow Refund Sent';
+    case 'escrow_cancel_fee':
+      // Charged to the seller who cancelled. Named so it does not read as a
+      // second, unexplained debit beside the buyer's refund.
+      return 'Escrow Cancellation Fee';
     case 'giftcard':
       return credit ? 'Gift Card Refund' : 'Gift Card Purchase';
     default:
@@ -366,6 +371,7 @@ TransactionServiceType? serviceTypeForDomain(String domain) {
     case 'escrow_fund':
     case 'escrow_release':
     case 'escrow_refund':
+    case 'escrow_cancel_fee':
       return TransactionServiceType.escrow;
     default:
       return null;
