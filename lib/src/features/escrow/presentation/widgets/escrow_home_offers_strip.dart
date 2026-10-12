@@ -99,20 +99,20 @@ class EscrowHomeOffersStrip extends StatelessWidget {
                   height: 1.4)),
         ),
         SizedBox(
-          // Tall enough for the card's full stack (title row + subtitle +
-          // direction/fee badges + amount) plus padding — the old 92.h clipped
-          // the bottom (the amount hugged/overflowed the border).
+          // Every card in a horizontal list shares ONE height, so it has to
+          // fit the tallest — but sizing for the theoretical worst case left
+          // a visible void under every ordinary card. So measure the list
+          // that is actually being drawn: the badge Wrap only runs to a
+          // third row when a fee-promo badge joins the seat and direction
+          // ones, and most lists have none.
           //
-          // 118.h still clipped it whenever the badge Wrap ran to TWO lines,
-          // which it does as soon as a fee-promo badge joins the direction
-          // badge ("Seller listing" + "Seller pays all fees" cannot share a
-          // 230.w row). Every card in a horizontal list shares one height, so
-          // it has to be sized for the tallest stack, not the common one:
-          // 12 pad + title 18 + 5 + subtitle 15 + 5 + badge rows + gap 8 +
-          // amount 18 + 12 pad. Three badges (seat, direction, fee promo) can
-          // run to three rows at this width, so size for the worst case —
-          // every card in a horizontal list shares one height.
-          height: 164.h,
+          // 12 pad + title 18 + 5 + subtitle 15 + 5 + badges + 8 + amount 18
+          // + 12 pad, with badges at ~20 per row.
+          height: (offers.any((o) =>
+                      EscrowRoles.feePromoBadge(o, viewerUserId) != null)
+                  ? 158.0
+                  : 136.0)
+              .h,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -193,11 +193,11 @@ class EscrowHomeOffersStrip extends StatelessWidget {
                 EscrowRoles.feePromoBadge(o, viewerUserId, compact: true),
               ].whereType<Widget>().toList(),
             ),
-            // A minimum gap as well as the Spacer: the Spacer alone collapses
-            // to zero on the tallest card, which is exactly the card where the
-            // amount was touching the badges.
+            // No Spacer. Pinning the amount to the card's floor turned every
+            // pixel of leftover height into a gap between the badges and the
+            // price; grouping the stack at the top reads as one card with
+            // padding under it, which is what it is.
             SizedBox(height: 8.h),
-            const Spacer(),
             Text(
                 currency_formatter.CurrencySymbols.formatAmountWithCurrency(
                     o.amount, o.currency),

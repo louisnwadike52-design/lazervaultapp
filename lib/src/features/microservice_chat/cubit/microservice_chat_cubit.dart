@@ -35,6 +35,12 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
   List<MicroserviceChatMessageEntity> _currentMessages = [];
   late String _sessionId;
 
+  /// The conversation this cubit is bound to. Exposed read-only so the chat
+  /// surface can scope per-answer feedback to it — a verdict with no session
+  /// cannot be stored, and one stored against the wrong session trains on
+  /// the wrong exchange.
+  String get sessionId => _sessionId;
+
   /// Re-keys the conversation when the user switches REGION.
   ///
   /// Same reason as GeneralChatCubit: the session id embeds the locale and

@@ -22,6 +22,11 @@ import 'chat_reply_widgets.dart';
 import 'quick_action_chips.dart';
 import 'package:lazervault/core/services/voice_record_configs.dart';
 import 'package:lazervault/core/branding/assistant_identity.dart';
+import 'package:dio/dio.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/grpc_call_options_helper.dart';
+import 'package:lazervault/src/features/microservice_chat/data/datasources/chat_feedback_datasource.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_response_actions.dart';
 
 class MicroserviceChatContent extends StatefulWidget {
   final String serviceName;
@@ -46,6 +51,45 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
   /// here, so without it a money move confirmed in a service chat showed a card the
   /// user had to find and tap while the message told them a pad was waiting.
   final ChatPinAutoOpener _pinAutoOpener = ChatPinAutoOpener();
+
+  /// This viewer's thumbs on assistant answers, keyed by [_responseKey].
+  /// See the general chat for why a rating is keyed on the message's own
+  /// timestamp rather than its index.
+  final Map<String, ChatFeedbackVerdict> _feedback = {};
+  String? _feedbackSessionId;
+  late final ChatFeedbackDataSource _feedbackApi = ChatFeedbackDataSource(
+    dio: serviceLocator<Dio>(),
+    callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+  );
+
+  String _responseKey(DateTime ts) => 'a${ts.millisecondsSinceEpoch}';
+
+  Future<void> _loadFeedback(String sessionId) async {
+    if (sessionId.isEmpty || sessionId == _feedbackSessionId) return;
+    _feedbackSessionId = sessionId;
+    final v = await _feedbackApi.forSession(sessionId);
+    if (!mounted || v.isEmpty) return;
+    setState(() => _feedback.addAll(v));
+  }
+
+  Future<void> _rate(
+      MicroserviceChatMessageEntity m, ChatFeedbackVerdict verdict) async {
+    final sessionId = context.read<MicroserviceChatCubit>().sessionId;
+    if (sessionId.isEmpty) return;
+    final key = _responseKey(m.timestamp);
+    final previous = _feedback[key] ?? ChatFeedbackVerdict.none;
+    setState(() => _feedback[key] = verdict);
+    final ok = await _feedbackApi.submit(
+      sessionId: sessionId,
+      responseKey: key,
+      verdict: verdict,
+      service: widget.serviceName,
+      sourceContext: widget.serviceName,
+      response: m.text,
+    );
+    if (!mounted || ok) return;
+    setState(() => _feedback[key] = previous);
+  }
 
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -353,6 +397,11 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
             isLiveTurn: state is MicroserviceChatMessageSuccess,
           );
 
+          // Same emission hook: the session is reliably known here, and a
+          // verdict is scoped to it. _loadFeedback no-ops after the first
+          // call for a given session.
+          _loadFeedback(context.read<MicroserviceChatCubit>().sessionId);
+
           if (state is MicroserviceChatMessageSuccess) {
             _scrollToBottom();
           } else if (state is MicroserviceChatMessageLoading) {
@@ -646,6 +695,15 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           bubbleRow,
+          if (!isUser)
+            ChatResponseActions(
+              responseText: message.text,
+              verdict: _feedback[_responseKey(message.timestamp)] ??
+                  ChatFeedbackVerdict.none,
+              canRate:
+                  context.read<MicroserviceChatCubit>().sessionId.isNotEmpty,
+              onVerdict: (v) => _rate(message, v),
+            ),
           if (quickActions != null && quickActions.isNotEmpty)
             QuickActionChips(
               actions: quickActions,

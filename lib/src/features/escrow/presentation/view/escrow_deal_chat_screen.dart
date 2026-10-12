@@ -31,11 +31,21 @@ class EscrowDealChatScreen extends StatefulWidget {
     required this.dealId,
     required this.dealTitle,
     required this.viewerUserId,
+    this.buyerName = '',
+    this.sellerName = '',
+    this.viewerIsBuyer = false,
   });
 
   final String dealId;
   final String dealTitle;
   final String viewerUserId;
+
+  /// Both parties, so the header can name who is in the conversation.
+  /// Empty is tolerated: an open-link deal may not have resolved a name yet,
+  /// and a blank chip is better than a wrong one.
+  final String buyerName;
+  final String sellerName;
+  final bool viewerIsBuyer;
 
   @override
   State<EscrowDealChatScreen> createState() => _EscrowDealChatScreenState();
@@ -56,6 +66,13 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
   bool _loading = true;
   bool _sending = false;
   String? _error;
+
+  /// Local ids of messages shown before the server confirmed them, and of
+  /// those whose send failed. A sent message that sits invisible until a
+  /// round trip completes reads as a dropped message, which is why the
+  /// bubble goes up first and is marked rather than withheld.
+  final Set<String> _pendingIds = {};
+  final Set<String> _failedIds = {};
 
   EscrowRepository get _repo => serviceLocator<EscrowRepository>();
 
@@ -92,34 +109,73 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
   }
 
   /// The newest message is the one you came to read.
+  ///
+  /// Scrolled TWICE on purpose. One post-frame callback lands before the
+  /// list has finished laying out tall or wrapped bubbles, so maxScrollExtent
+  /// is still short and the thread opens part-way up. The second pass runs
+  /// once that layout has settled.
   void _jumpToEnd() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_scroll.hasClients) return;
+    void go() {
+      if (!mounted || !_scroll.hasClients) return;
       _scroll.jumpTo(_scroll.position.maxScrollExtent);
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      go();
+      WidgetsBinding.instance.addPostFrameCallback((_) => go());
     });
   }
 
   Future<void> _send() async {
     final body = _controller.text.trim();
     if (body.isEmpty || _sending) return;
-    setState(() => _sending = true);
+
+    // OPTIMISTIC. The bubble appears on the tap, not on the round trip.
+    // Waiting for the server left a visibly empty thread for as long as the
+    // network took, which reads as "my message did not send" and provokes a
+    // second send of the same thing.
+    final localId = 'local-${DateTime.now().microsecondsSinceEpoch}';
+    final optimistic = EscrowMessageEntity(
+      id: localId,
+      dealId: widget.dealId,
+      senderId: widget.viewerUserId,
+      senderRole: widget.viewerIsBuyer ? 'buyer' : 'seller',
+      senderName: '',
+      body: body,
+      createdAt: DateTime.now(),
+    );
+    setState(() {
+      _messages = [..._messages, optimistic];
+      _pendingIds.add(localId);
+      _controller.clear();
+      _sending = true;
+    });
+    _jumpToEnd();
+
     try {
-      final sent = await _repo.sendDealMessage(dealId: widget.dealId, body: body);
+      final sent =
+          await _repo.sendDealMessage(dealId: widget.dealId, body: body);
       if (!mounted) return;
       setState(() {
-        // Appended locally rather than re-fetching the whole thread: the
-        // server already returned the stored message, and a refetch would
-        // make a one-line reply cost a full page load on a slow connection.
-        _messages = [..._messages, sent];
-        _controller.clear();
+        // Swap the local copy for the stored one, in place, so the bubble
+        // does not jump. A refetch of the whole thread would make a one-line
+        // reply cost a full page load on a slow connection.
+        _messages = [
+          for (final m in _messages) if (m.id == localId) sent else m,
+        ];
+        _pendingIds.remove(localId);
         _sending = false;
       });
-      _jumpToEnd();
     } catch (e) {
       if (!mounted) return;
-      setState(() => _sending = false);
-      // The draft is deliberately NOT cleared on failure — losing what
-      // someone typed because the network blinked is its own bug.
+      setState(() {
+        _pendingIds.remove(localId);
+        // Kept in the thread and MARKED, not silently removed. A message
+        // that vanishes is indistinguishable from one that was sent, and
+        // the text is still recoverable by long-pressing to copy.
+        _failedIds.add(localId);
+        _sending = false;
+      });
       showAppSnackbar('Escrow Pay', _friendly(e), type: AppSnackbarType.error);
     }
   }
@@ -191,7 +247,7 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
                     Expanded(
                       child: Text(
                         'Messages here belong to this deal. If it is disputed, '
-                        'LazerVault support can read this conversation and reply in it.',
+                        'Lazervault support can read this conversation and reply in it.',
                         style: GoogleFonts.inter(
                             color: _muted, fontSize: 10.5.sp, height: 1.35),
                       ),
@@ -199,10 +255,60 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
                   ],
                 ),
               ),
+              _buildParticipants(),
               Expanded(child: _buildBody()),
               _buildComposer(),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  /// Who is in this conversation.
+  ///
+  /// Two strangers mid-transaction, plus support if it is disputed — and
+  /// until now the thread named nobody, so a user could not tell a
+  /// counterparty's message from support's except by the tint. Omitted
+  /// entirely when neither name resolved, because two blank chips say less
+  /// than no chips.
+  Widget _buildParticipants() {
+    final buyer = widget.buyerName.trim();
+    final seller = widget.sellerName.trim();
+    if (buyer.isEmpty && seller.isEmpty) return const SizedBox.shrink();
+
+    Widget chip(String name, String role, bool isYou) => Container(
+          margin: EdgeInsets.only(right: 8.w),
+          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+          decoration: BoxDecoration(
+            color: isYou
+                ? _accent.withValues(alpha: 0.18)
+                : _card,
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(
+                color: isYou ? _accent.withValues(alpha: 0.55) : _border),
+          ),
+          child: Text(
+            isYou ? '$name (you)' : '$name · $role',
+            style: GoogleFonts.inter(
+              color: isYou ? Colors.white : _muted,
+              fontSize: 10.5.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        );
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(14.w, 8.h, 14.w, 2.h),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            if (buyer.isNotEmpty)
+              chip(buyer, 'buyer', widget.viewerIsBuyer),
+            if (seller.isNotEmpty)
+              chip(seller, 'seller', !widget.viewerIsBuyer),
+          ],
         ),
       ),
     );
@@ -286,7 +392,7 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
               children: [
                 Icon(Icons.verified_user, size: 12.sp, color: Colors.white70),
                 SizedBox(width: 5.w),
-                Text(m.senderName.isEmpty ? 'LazerVault Support' : m.senderName,
+                Text(m.senderName.isEmpty ? 'Lazervault Support' : m.senderName,
                     style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 11.sp,
@@ -333,9 +439,35 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
                 style: GoogleFonts.inter(
                     color: Colors.white, fontSize: 12.5.sp, height: 1.35)),
             SizedBox(height: 3.h),
-            Text(_time(m.createdAt),
-                style: GoogleFonts.inter(
-                    color: mine ? Colors.white70 : _muted, fontSize: 9.5.sp)),
+            // An optimistic bubble must say it is not yet confirmed, and a
+            // failed one must say it did not go — a message that merely
+            // appears is indistinguishable from one that was delivered.
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(_time(m.createdAt),
+                    style: GoogleFonts.inter(
+                        color: mine ? Colors.white70 : _muted,
+                        fontSize: 9.5.sp)),
+                if (_pendingIds.contains(m.id)) ...[
+                  SizedBox(width: 5.w),
+                  SizedBox(
+                    width: 8.sp,
+                    height: 8.sp,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 1.4, color: Colors.white70),
+                  ),
+                ] else if (_failedIds.contains(m.id)) ...[
+                  SizedBox(width: 5.w),
+                  Icon(Icons.error_outline,
+                      size: 11.sp, color: const Color(0xFFFCA5A5)),
+                  SizedBox(width: 3.w),
+                  Text('Not sent',
+                      style: GoogleFonts.inter(
+                          color: const Color(0xFFFCA5A5), fontSize: 9.5.sp)),
+                ],
+              ],
+            ),
           ],
         ),
       ),

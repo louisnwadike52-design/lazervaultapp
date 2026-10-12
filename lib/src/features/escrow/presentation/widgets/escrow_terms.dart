@@ -199,107 +199,206 @@ Future<void> showEscrowIntroNotice(BuildContext context) async {
   if (await EscrowTerms.introDismissed()) return;
   if (!context.mounted) return;
   var dontShowAgain = false;
+  final scroll = ScrollController();
   await showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setSheetState) => Container(
-        margin: EdgeInsets.all(14.w),
+        // isScrollControlled lets a tall sheet grow to the full screen, and
+        // the full screen includes the status bar — the heading was sitting
+        // under the clock. Cap the height and keep the notch's worth of
+        // margin on top, so the sheet always reads as a sheet.
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(ctx).size.height * 0.86,
+        ),
+        margin: EdgeInsets.fromLTRB(
+            14.w, MediaQuery.of(ctx).padding.top + 14.h, 14.w, 14.h),
         padding: EdgeInsets.all(18.w),
         decoration: BoxDecoration(
           color: EscrowTheme.card,
           borderRadius: BorderRadius.circular(18.r),
           border: Border.all(color: EscrowTheme.border),
         ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              controller: scroll,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.shield_outlined,
-                      color: EscrowTheme.primaryLight, size: 22.sp),
-                  SizedBox(width: 10.w),
-                  Expanded(
-                    child: Text('Before your first deal',
-                        style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w700)),
+                  Row(
+                    children: [
+                      Icon(Icons.shield_outlined,
+                          color: EscrowTheme.primaryLight, size: 22.sp),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: Text('Before your first deal',
+                            style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w700)),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10.h),
+                  Text(
+                    'Escrow Pay is a payment channel, not a marketplace. We hold '
+                    'the buyer\'s money and release it on the agreed trigger — we '
+                    'do not list, inspect, verify, ship or insure anything being '
+                    'traded, and we are not liable for the goods or services '
+                    'themselves. Deal with people you have reason to trust.',
+                    style: GoogleFonts.inter(
+                        color: EscrowTheme.textSecondary,
+                        fontSize: 12.5.sp,
+                        height: 1.5),
+                  ),
+                  SizedBox(height: 14.h),
+                  const EscrowTermsCard(
+                    initiallyExpanded: true,
+                    title: 'The rules that apply to every deal',
+                  ),
+                  SizedBox(height: 12.h),
+                  InkWell(
+                    onTap: () =>
+                        setSheetState(() => dontShowAgain = !dontShowAgain),
+                    child: Row(
+                      children: [
+                        Icon(
+                            dontShowAgain
+                                ? Icons.check_box
+                                : Icons.check_box_outline_blank,
+                            color: dontShowAgain
+                                ? EscrowTheme.primaryLight
+                                : EscrowTheme.textSecondary,
+                            size: 20.sp),
+                        SizedBox(width: 8.w),
+                        Expanded(
+                          child: Text(
+                              'Don\'t show this again (you can turn it back on in '
+                              'Settings)',
+                              style: GoogleFonts.inter(
+                                  color: EscrowTheme.textSecondary,
+                                  fontSize: 12.sp)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 14.h),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        if (dontShowAgain) {
+                          await EscrowTerms.setIntroDismissed(true);
+                        }
+                        if (ctx.mounted) Navigator.pop(ctx);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: EscrowTheme.primary,
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r)),
+                      ),
+                      child: Text('I understand',
+                          style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w700)),
+                    ),
                   ),
                 ],
               ),
-              SizedBox(height: 10.h),
-              Text(
-                'Escrow Pay is a payment channel, not a marketplace. We hold '
-                'the buyer\'s money and release it on the agreed trigger — we '
-                'do not list, inspect, verify, ship or insure anything being '
-                'traded, and we are not liable for the goods or services '
-                'themselves. Deal with people you have reason to trust.',
-                style: GoogleFonts.inter(
-                    color: EscrowTheme.textSecondary,
-                    fontSize: 12.5.sp,
-                    height: 1.5),
-              ),
-              SizedBox(height: 14.h),
-              const EscrowTermsCard(
-                initiallyExpanded: true,
-                title: 'The rules that apply to every deal',
-              ),
-              SizedBox(height: 12.h),
-              InkWell(
-                onTap: () => setSheetState(() => dontShowAgain = !dontShowAgain),
-                child: Row(
-                  children: [
-                    Icon(
-                        dontShowAgain
-                            ? Icons.check_box
-                            : Icons.check_box_outline_blank,
-                        color: dontShowAgain
-                            ? EscrowTheme.primaryLight
-                            : EscrowTheme.textSecondary,
-                        size: 20.sp),
-                    SizedBox(width: 8.w),
-                    Expanded(
-                      child: Text(
-                          'Don\'t show this again (you can turn it back on in '
-                          'Settings)',
-                          style: GoogleFonts.inter(
-                              color: EscrowTheme.textSecondary,
-                              fontSize: 12.sp)),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 14.h),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    if (dontShowAgain) {
-                      await EscrowTerms.setIntroDismissed(true);
-                    }
-                    if (ctx.mounted) Navigator.pop(ctx);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: EscrowTheme.primary,
-                    padding: EdgeInsets.symmetric(vertical: 14.h),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r)),
-                  ),
-                  child: Text('I understand',
-                      style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w700)),
-                ),
-              ),
-            ],
-          ),
+            ),
+            // Circular scroll-to-bottom, bottom right. The rules list is long
+            // enough that the "I understand" button sits below the fold on a
+            // phone, and a user who cannot see a dismiss control reads the
+            // sheet as stuck.
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: _ScrollToBottomButton(controller: scroll),
+            ),
+          ],
         ),
       ),
     ),
   );
+  scroll.dispose();
+}
+
+/// A circular down-arrow that scrolls its list to the end, shown only while
+/// there is somewhere to scroll TO.
+///
+/// Always-visible would cover content it is not needed for; never-visible is
+/// how a long sheet reads as stuck. It listens to the controller so it
+/// appears and disappears with the scroll position rather than on a timer.
+class _ScrollToBottomButton extends StatefulWidget {
+  final ScrollController controller;
+  const _ScrollToBottomButton({required this.controller});
+
+  @override
+  State<_ScrollToBottomButton> createState() => _ScrollToBottomButtonState();
+}
+
+class _ScrollToBottomButtonState extends State<_ScrollToBottomButton> {
+  bool _show = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_sync);
+    // The first frame has no scroll metrics yet, so the initial decision
+    // waits for one.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _sync());
+  }
+
+  void _sync() {
+    if (!mounted || !widget.controller.hasClients) return;
+    final p = widget.controller.position;
+    // 24px of slack: an exact comparison flickers the button on and off
+    // during an overscroll bounce.
+    final next = p.maxScrollExtent - p.pixels > 24;
+    if (next != _show) setState(() => _show = next);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_sync);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedOpacity(
+      opacity: _show ? 1 : 0,
+      duration: const Duration(milliseconds: 160),
+      child: IgnorePointer(
+        ignoring: !_show,
+        child: Material(
+          color: EscrowTheme.primary,
+          shape: const CircleBorder(),
+          elevation: 4,
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: () {
+              if (!widget.controller.hasClients) return;
+              widget.controller.animateTo(
+                widget.controller.position.maxScrollExtent,
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeOut,
+              );
+            },
+            child: Padding(
+              padding: EdgeInsets.all(10.w),
+              child: Icon(Icons.keyboard_arrow_down_rounded,
+                  color: Colors.white, size: 24.sp),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

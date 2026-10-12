@@ -123,6 +123,12 @@ void openEscrowPartyChat(
         // deal; an untitled deal is ordinary for an open-link escrow.
         dealTitle: deal.title.trim().isNotEmpty ? deal.title.trim() : deal.reference,
         viewerUserId: viewerUserId,
+        // Both names, so the thread can say WHO is in it. A conversation
+        // that does not name its participants is the one place a user
+        // cannot tell a counterparty from support.
+        buyerName: deal.buyerName,
+        sellerName: deal.sellerName,
+        viewerIsBuyer: deal.isBuyer(viewerUserId),
       ));
 }
 

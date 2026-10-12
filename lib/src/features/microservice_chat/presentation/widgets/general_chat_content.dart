@@ -28,6 +28,11 @@ import 'chat_reply_widgets.dart';
 import 'chat_sessions_drawer.dart';
 import 'quick_action_chips.dart';
 import 'package:lazervault/core/services/voice_record_configs.dart';
+import 'package:dio/dio.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/grpc_call_options_helper.dart';
+import 'package:lazervault/src/features/microservice_chat/data/datasources/chat_feedback_datasource.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_response_actions.dart';
 
 class GeneralChatContent extends StatefulWidget {
   const GeneralChatContent({super.key});
@@ -45,6 +50,51 @@ class _GeneralChatContentState extends State<GeneralChatContent>
   /// and tap. The AI chat surface already auto-opened, which made the same money move
   /// behave differently depending on which assistant you asked.
   final ChatPinAutoOpener _pinAutoOpener = ChatPinAutoOpener();
+
+  /// This viewer's thumbs, keyed by [_responseKey]. Loaded once per session
+  /// so reopening a conversation shows the ratings already given instead of
+  /// a blank row that invites a second vote.
+  final Map<String, ChatFeedbackVerdict> _feedback = {};
+  String? _feedbackSessionId;
+  late final ChatFeedbackDataSource _feedbackApi = ChatFeedbackDataSource(
+    dio: serviceLocator<Dio>(),
+    callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+  );
+
+  /// A rating has to survive history paging and re-ordering, so it is keyed
+  /// on the message's own timestamp rather than its position in the list.
+  /// Two assistant turns in the same millisecond are not a real case.
+  String _responseKey(DateTime ts) => 'a${ts.millisecondsSinceEpoch}';
+
+  Future<void> _loadFeedback(String sessionId) async {
+    if (sessionId.isEmpty || sessionId == _feedbackSessionId) return;
+    _feedbackSessionId = sessionId;
+    final v = await _feedbackApi.forSession(sessionId);
+    if (!mounted || v.isEmpty) return;
+    setState(() => _feedback.addAll(v));
+  }
+
+  Future<void> _rate(
+      GeneralChatMessageEntity m, ChatFeedbackVerdict verdict) async {
+    final sessionId =
+        context.read<GeneralChatCubit>().currentSessionId ?? '';
+    if (sessionId.isEmpty) return;
+    final key = _responseKey(m.timestamp);
+    final previous = _feedback[key] ?? ChatFeedbackVerdict.none;
+    // Optimistic: the thumb answers the tap, then quietly reverts if the
+    // write did not land. A rating is never worth an error dialog over an
+    // answer the user was happy with.
+    setState(() => _feedback[key] = verdict);
+    final ok = await _feedbackApi.submit(
+      sessionId: sessionId,
+      responseKey: key,
+      verdict: verdict,
+      service: m.serviceRoutedTo ?? 'general',
+      response: m.text,
+    );
+    if (!mounted || ok) return;
+    setState(() => _feedback[key] = previous);
+  }
 
   /// The session the opener's guard cells belong to. A drawer switch keeps this
   /// State alive, so the opener has to be told the conversation changed.
@@ -317,6 +367,9 @@ class _GeneralChatContentState extends State<GeneralChatContent>
           // conversation whose prompt happens to carry a lower sequence is
           // declined as "already handled".
           final sessionId = context.read<GeneralChatCubit>().currentSessionId;
+          // Same hook the PIN opener uses: the session id is first reliably
+          // known here, and it is what a verdict is scoped to.
+          if (sessionId != null) _loadFeedback(sessionId);
           if (sessionId != _pinOpenerSessionId) {
             _pinOpenerSessionId = sessionId;
             _pinAutoOpener.reset();
@@ -1075,6 +1128,19 @@ class _GeneralChatContentState extends State<GeneralChatContent>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           bubbleRow,
+          // Copy / rate, under the answer it refers to. Assistant turns
+          // only: there is nothing to rate about your own message.
+          if (!isUser)
+            ChatResponseActions(
+              responseText: message.text,
+              verdict:
+                  _feedback[_responseKey(message.timestamp)] ??
+                      ChatFeedbackVerdict.none,
+              canRate:
+                  (context.read<GeneralChatCubit>().currentSessionId ?? '')
+                      .isNotEmpty,
+              onVerdict: (v) => _rate(message, v),
+            ),
           if (quickActions != null && quickActions.isNotEmpty)
             QuickActionChips(
               actions: quickActions,
