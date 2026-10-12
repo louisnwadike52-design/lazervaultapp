@@ -51,6 +51,7 @@ import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono
 import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_fee_mixin.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import '../../utils/autosave_trigger_labels.dart';
+import 'package:lazervault/src/features/autosave/utils/autosave_schedule_time.dart';
 part 'create_autosave_rule_screen_part1.dart';
 part 'create_autosave_rule_screen_part2.dart';
 
@@ -204,15 +205,9 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         rule.triggerType == TriggerType.scheduledExternal) {
       _selectedFrequency = rule.frequency;
       _selectedScheduleDay = rule.scheduleDay;
-      if (rule.scheduleTime != null && rule.scheduleTime!.length >= 4) {
-        final parts = rule.scheduleTime!.split(':');
-        if (parts.length == 2) {
-          _selectedTime = TimeOfDay(
-            hour: int.tryParse(parts[0]) ?? 0,
-            minute: int.tryParse(parts[1]) ?? 0,
-          );
-        }
-      }
+      // Stored in UTC; the picker holds the user's own clock.
+      final localTime = AutoSaveScheduleTime.toLocalTimeOfDay(rule.scheduleTime);
+      if (localTime != null) _selectedTime = localTime;
     }
     if (rule.triggerType == TriggerType.roundUp && rule.roundUpTo != null) {
       _selectedRoundUpTo = rule.roundUpTo;
@@ -436,7 +431,9 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         'sourceAccountName': sourceName,
         'destinationAccountName': destName,
         'frequency': usesSchedule ? _selectedFrequency : null,
-        'scheduleTime': usesSchedule ? _formatTime(_selectedTime) : null,
+        // Converted on the way out: the worker reads this field as UTC.
+        'scheduleTime':
+            usesSchedule ? AutoSaveScheduleTime.toUtcHhmm(_selectedTime) : null,
         'scheduleDay': usesSchedule ? _selectedScheduleDay : null,
         'roundUpTo': isRoundUp ? _resolvedRoundUpTo() : null,
         'targetAmount': _targetAmountController.text.isEmpty
@@ -1541,9 +1538,6 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
     if (_selectedRoundUpTo != null) return _selectedRoundUpTo;
     return int.tryParse(_customRoundUpController.text);
   }
-
-  String _formatTime(TimeOfDay t) =>
-      '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 
   String _currencyLabel(double v) {
     final symbol = CurrencySymbols.currentSymbol;

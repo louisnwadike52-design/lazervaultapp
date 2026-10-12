@@ -7,6 +7,7 @@ import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_e
 import 'package:intl/intl.dart';
 import 'dart:ui' show Rect;
 import 'autosave_trigger_labels.dart';
+import 'autosave_schedule_time.dart';
 
 class AutoSaveExportHelper {
   /// Export a list of autosave rules to CSV format and share
@@ -57,7 +58,8 @@ class AutoSaveExportHelper {
         rule.minimumBalance ?? '',
         rule.maximumPerSave ?? '',
         rule.frequency != null ? _getFrequencyText(rule.frequency!) : '',
-        rule.scheduleTime ?? '',
+        // Exports are read by a person, so the local clock, not UTC.
+        AutoSaveScheduleTime.formatLocal(rule.scheduleTime),
         rule.scheduleDay ?? '',
         rule.roundUpTo ?? '',
         DateFormat('yyyy-MM-dd HH:mm:ss').format(rule.createdAt),
@@ -220,7 +222,7 @@ Rule: ${rule.name}
               'frequency': rule.frequency != null
                   ? _getFrequencyText(rule.frequency!)
                   : null,
-              'time': rule.scheduleTime,
+              'time': AutoSaveScheduleTime.formatLocal(rule.scheduleTime),
               'day': rule.scheduleDay,
             }
           : null,

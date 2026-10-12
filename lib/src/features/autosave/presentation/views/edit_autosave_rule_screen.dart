@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_sta
 import 'package:lazervault/core/utils/currency_formatter.dart'
     as currency_formatter;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/autosave/utils/autosave_schedule_time.dart';
 
 class EditAutoSaveRuleScreen extends StatefulWidget {
   const EditAutoSaveRuleScreen({super.key});
@@ -91,15 +92,10 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
       _selectedFrequency = originalRule.frequency;
       _selectedDay = originalRule.scheduleDay;
 
-      if (originalRule.scheduleTime != null) {
-        final timeParts = originalRule.scheduleTime!.split(':');
-        if (timeParts.length == 2) {
-          _selectedTime = TimeOfDay(
-            hour: int.parse(timeParts[0]),
-            minute: int.parse(timeParts[1]),
-          );
-        }
-      }
+      // Stored in UTC; the picker holds the user's own clock.
+      final localTime =
+          AutoSaveScheduleTime.toLocalTimeOfDay(originalRule.scheduleTime);
+      if (localTime != null) _selectedTime = localTime;
     }
 
     // Add listeners to track changes
@@ -115,14 +111,9 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
   /// The rule's schedule time as the picker holds it, so the comparison below
   /// is like-for-like with [_selectedTime] instead of parsing on both sides.
   TimeOfDay? get _originalTime {
-    final raw = originalRule.scheduleTime;
-    if (raw == null || raw.isEmpty) return null;
-    final parts = raw.split(':');
-    if (parts.length != 2) return null;
-    final h = int.tryParse(parts[0]);
-    final m = int.tryParse(parts[1]);
-    if (h == null || m == null) return null;
-    return TimeOfDay(hour: h, minute: m);
+    // Local, to match _selectedTime: comparing a UTC reading against a local
+    // one would report a change on every open for any user not on UTC.
+    return AutoSaveScheduleTime.toLocalTimeOfDay(originalRule.scheduleTime);
   }
 
   void _checkForChanges() {
@@ -615,8 +606,8 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
     if ((originalRule.triggerType == TriggerType.scheduled ||
             originalRule.triggerType == TriggerType.scheduledExternal) &&
         _selectedTime != null) {
-      scheduleTime =
-          '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}';
+      // Converted on the way out: the worker reads this field as UTC.
+      scheduleTime = AutoSaveScheduleTime.toUtcHhmm(_selectedTime!);
     }
 
     // Round-up denomination — only round-up rules have one. Parse to

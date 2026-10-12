@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../utils/autosave_schedule_time.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart'
     as currency_formatter;
 
@@ -188,7 +189,9 @@ class AutoSaveRuleEntity extends Equatable {
     }
 
     if (scheduleTime != null) {
-      freq += ' at $scheduleTime';
+      // schedule_time is stored and fired in UTC. Printing it raw told a
+      // Lagos user 16:45 for a rule that runs at 17:45 their time.
+      freq += ' at ${AutoSaveScheduleTime.formatLocal(scheduleTime)}';
     }
 
     return freq;
