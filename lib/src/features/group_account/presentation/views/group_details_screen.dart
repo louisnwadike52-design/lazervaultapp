@@ -22,6 +22,8 @@ import '../widgets/edit_group_bottom_sheet.dart';
 import '../widgets/member_detail_dialog.dart';
 import '../views/group_account_report_screen.dart';
 import '../views/past_contributions_screen.dart';
+import '../widgets/list_pager.dart';
+import '../../domain/usecases/group_account_usecases.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
 import '../../../../../core/services/account_manager.dart';
@@ -45,6 +47,10 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late TabController _tabController;
   bool _isLeavingGroup = false;
+
+  /// Swallows a second page tap while one is in flight, so two page changes
+  /// cannot race and land the user on the wrong one.
+  bool _contributionsPageBusy = false;
   final ScrollController _membersScrollController = ScrollController();
   // Debounce so a Future.wait of N adds (each emitting MemberAddedSuccess)
   // produces a single scroll animation instead of N stacked ones.
@@ -64,6 +70,14 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     // Load group details if not already loaded
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
+      // The first page of contributions, alongside the group. Separate from
+      // loadGroupDetails because that one fetches EVERYTHING (members,
+      // contributions, the group) for the header's totals — this is the
+      // paged view the list actually renders, and asking for both is one
+      // extra read in exchange for a list that pages.
+      context
+          .read<GroupAccountCubit>()
+          .loadContributionsPage(widget.groupId, 1, force: true);
       // Resolve the badge alongside the group. Failure is silent — see
       // _refreshPendingJoinRequestCount.
       _refreshPendingJoinRequestCount();
@@ -121,6 +135,11 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
           buildWhen: (previous, current) =>
               current is GroupAccountLoading ||
               current is GroupAccountGroupLoaded ||
+              // A page landing has to repaint the list. The screen renders
+              // from the cubit's held page, so without this the first page
+              // would arrive and nothing would redraw until something else
+              // happened to emit.
+              current is GroupAccountContributionsPageLoaded ||
               current is GroupAccountAwaitingApproval ||
               current is GroupAccountError,
           listener: (context, state) {
@@ -1383,6 +1402,16 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     // "can create contributions".
     final isAdmin = canCreateContribution;
 
+    // Paged when the cubit has a page for THIS group; the full list
+    // otherwise, which is what an older composition (or a cold open before
+    // the page lands) still produces. Either way the rows below come from
+    // `pageItems`, so the two paths cannot render differently.
+    final cubit = context.read<GroupAccountCubit>();
+    final page = cubit.contributionsPageGroupId == widget.groupId
+        ? cubit.contributionsPage
+        : null;
+    final pageItems = page?.items ?? contributions;
+
     return RefreshIndicator(
       onRefresh: () async {
         context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
@@ -1435,17 +1464,30 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                 ),
                 SliverPadding(
                   padding: EdgeInsets.only(top: 16.h, left: 20.w, right: 20.w),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final contribution = contributions[index];
-                        // Pass onPayment only if the current user's
-                        // group membership permits making contributions
-                        // RIGHT NOW (role + active status). The card
-                        // hides the button when onPayment is null.
-                        final canPay = GroupRolePermissions.canMember(
-                            currentUserMember, GroupAction.makeContribution);
-                        return Padding(
+                  // Long-press to drag. The order is this VIEWER's own —
+                  // dragging here changes nothing for the other members —
+                  // which is why it is persisted per user rather than on
+                  // the contribution row.
+                  sliver: SliverReorderableList(
+                    itemCount: pageItems.length,
+                    onReorder: (oldIndex, newIndex) => _onContributionsReordered(
+                      pageItems,
+                      oldIndex,
+                      newIndex,
+                      page?.startIndex ?? 0,
+                    ),
+                    itemBuilder: (context, index) {
+                      final contribution = pageItems[index];
+                      // Pass onPayment only if the current user's
+                      // group membership permits making contributions
+                      // RIGHT NOW (role + active status). The card
+                      // hides the button when onPayment is null.
+                      final canPay = GroupRolePermissions.canMember(
+                          currentUserMember, GroupAction.makeContribution);
+                      return ReorderableDelayedDragStartListener(
+                        key: ValueKey('contribution-${contribution.id}'),
+                        index: index,
+                        child: Padding(
                           padding: EdgeInsets.only(bottom: 12.h),
                           child: ContributionCard(
                             contribution: contribution,
@@ -1465,15 +1507,82 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                                 ? () => _confirmOpenEsusu(contribution)
                                 : null,
                           ),
-                        );
-                      },
-                      childCount: contributions.length,
-                    ),
+                        ),
+                      );
+                    },
                   ),
                 ),
+                // The pager, under the rows it pages. Draws nothing while
+                // there is only one page, which is the common case for a
+                // group with a handful of goals.
+                if (page != null)
+                  SliverToBoxAdapter(
+                    child: ListPager(
+                      currentPage: page.page,
+                      totalPages: page.totalPages,
+                      busy: _contributionsPageBusy,
+                      onPageSelected: (p) => _goToContributionsPage(p),
+                    ),
+                  ),
+                SliverPadding(padding: EdgeInsets.only(bottom: 24.h)),
               ],
             ),
     );
+  }
+
+  /// Persist a contribution drag.
+  ///
+  /// Scoped to this group, so a drag here cannot renumber another group's
+  /// contributions — the server checks that too, and refuses a list whose
+  /// ids are not all in the scope it was given.
+  ///
+  /// [startIndex] is the rank of this page's first row in the whole list;
+  /// without it, reordering page 2 would number those rows 0..4 and move
+  /// them to the front.
+  Future<void> _onContributionsReordered(
+    List<Contribution> visible,
+    int oldIndex,
+    int newIndex,
+    int startIndex,
+  ) async {
+    // Flutter reports newIndex as the slot BEFORE removal, so a downward
+    // move is one too high. The classic off-by-one of this API, and it
+    // leaves the card one place from where the user dropped it.
+    if (newIndex > oldIndex) newIndex -= 1;
+    if (oldIndex == newIndex) return;
+
+    final reordered = [...visible];
+    reordered.insert(newIndex, reordered.removeAt(oldIndex));
+
+    setState(() => _contributionsPageBusy = true);
+    final cubit = context.read<GroupAccountCubit>();
+    final ok = await cubit.persistListOrder(
+      itemType: DashboardItemTypes.contribution,
+      orderedItemIds: reordered.map((c) => c.id).toList(),
+      scopeId: widget.groupId,
+      startIndex: startIndex,
+    );
+    if (!mounted) return;
+    setState(() => _contributionsPageBusy = false);
+    // Re-read either way: on success to pick up the persisted order, on
+    // failure to replace the dragged order with what the server actually
+    // holds. Leaving a rejected order on screen would say it was saved.
+    await cubit.loadContributionsPage(widget.groupId, 1, force: true);
+  }
+
+  /// Load a page of this group's contributions.
+  ///
+  /// The current page stays on screen until the next one lands, so a page
+  /// turn reads as a page turn rather than as the list emptying and
+  /// refilling.
+  Future<void> _goToContributionsPage(int page) async {
+    if (_contributionsPageBusy) return;
+    setState(() => _contributionsPageBusy = true);
+    await context
+        .read<GroupAccountCubit>()
+        .loadContributionsPage(widget.groupId, page);
+    if (!mounted) return;
+    setState(() => _contributionsPageBusy = false);
   }
 
   Widget _buildEmptyContributions(GroupAccount group, bool isAdmin) {

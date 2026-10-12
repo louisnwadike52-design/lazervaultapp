@@ -262,6 +262,44 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
   Future<List<Contribution>> getOverdueContributions(String userId) =>
       remoteDataSource.getOverdueContributions(userId);
 
+  @override
+  Future<PagedResult<GroupAccount>> getUserGroupsPage({
+    required int page,
+    required int pageSize,
+  }) async {
+    final p =
+        await remoteDataSource.getUserGroupsPage(page: page, pageSize: pageSize);
+    // The models ARE the entities (they extend them); the cast widens the
+    // list type so the domain layer never has to know about the data one.
+    return PagedResult<GroupAccount>(
+      items: List<GroupAccount>.from(p.items),
+      page: p.page,
+      pageSize: p.pageSize,
+      totalItems: p.totalItems,
+      totalPages: p.totalPages,
+    );
+  }
+
+  @override
+  Future<PagedResult<Contribution>> getGroupContributionsPage({
+    required String groupId,
+    required int page,
+    required int pageSize,
+  }) async {
+    final p = await remoteDataSource.getGroupContributionsPage(
+      groupId: groupId,
+      page: page,
+      pageSize: pageSize,
+    );
+    return PagedResult<Contribution>(
+      items: List<Contribution>.from(p.items),
+      page: p.page,
+      pageSize: p.pageSize,
+      totalItems: p.totalItems,
+      totalPages: p.totalPages,
+    );
+  }
+
   // ===== Per-user dashboard preferences =====
   //
   // Pass-throughs with no extra wrapping: the data source already throws a

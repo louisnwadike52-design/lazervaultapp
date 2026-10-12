@@ -3,6 +3,17 @@ import '../../domain/entities/group_entities.dart';
 
 abstract class GroupAccountRemoteDataSource {
   Future<List<GroupAccountModel>> getUserGroups(String userId);
+
+  /// One page of the caller's groups, WITH the server's pagination facts.
+  ///
+  /// [getUserGroups] asks for 100 and throws the pagination away, which is
+  /// fine for a stat tile and useless for a numbered pager: it cannot know
+  /// how many pages exist, and inferring it from `items.length < pageSize`
+  /// gets the last page wrong whenever the total is an exact multiple.
+  Future<PagedResult<GroupAccountModel>> getUserGroupsPage({
+    required int page,
+    required int pageSize,
+  });
   Future<GroupAccountModel> getGroupById(String groupId);
   Future<GroupAccountModel> createGroup({
     required String name,
@@ -37,6 +48,14 @@ abstract class GroupAccountRemoteDataSource {
   Future<List<GroupMemberModel>> searchUsers(String query);
 
   Future<List<ContributionModel>> getGroupContributions(String groupId);
+
+  /// One page of a group's contributions, with pagination. See
+  /// [getUserGroupsPage].
+  Future<PagedResult<ContributionModel>> getGroupContributionsPage({
+    required String groupId,
+    required int page,
+    required int pageSize,
+  });
   Future<ContributionModel> getContributionById(String contributionId);
   Future<ContributionModel> createContribution({
     required String groupId,

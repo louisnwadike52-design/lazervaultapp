@@ -43,6 +43,42 @@ class GroupAccountLoading extends GroupAccountState {
   List<Object?> get props => [message];
 }
 
+/// One PAGE of the caller's groups.
+///
+/// Distinct from [GroupAccountGroupsLoaded], which carries "all the groups"
+/// and is what every older consumer (the stats tile, the leaderboard seed)
+/// still reads. Keeping them apart means adding paging to one screen did
+/// not have to change what the others mean by "loaded".
+class GroupAccountGroupsPageLoaded extends GroupAccountState {
+  final PagedResult<GroupAccount> page;
+
+  /// Painted from the disk cache, before the network answered. The list
+  /// renders normally; the flag exists so a surface can show a quiet
+  /// "updating" hint rather than pretending the data is fresh.
+  final bool fromCache;
+
+  const GroupAccountGroupsPageLoaded(this.page, {this.fromCache = false});
+
+  @override
+  List<Object?> get props => [page, fromCache];
+}
+
+/// One PAGE of a group's contributions.
+class GroupAccountContributionsPageLoaded extends GroupAccountState {
+  final String groupId;
+  final PagedResult<Contribution> page;
+  final bool fromCache;
+
+  const GroupAccountContributionsPageLoaded(
+    this.groupId,
+    this.page, {
+    this.fromCache = false,
+  });
+
+  @override
+  List<Object?> get props => [groupId, page, fromCache];
+}
+
 class GroupAccountGroupsLoaded extends GroupAccountState {
   final List<GroupAccount> groups;
   final bool isStale;

@@ -12,6 +12,7 @@ import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 import '../widgets/past_group_details_sheet.dart';
 import '../widgets/status_pill.dart';
+import '../../domain/usecases/group_account_usecases.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Lists every group the caller has been removed from or left
@@ -32,7 +33,11 @@ class _PastGroupsScreenState extends State<PastGroupsScreen>
   @override
   void initState() {
     super.initState();
-    _tab = TabController(length: 2, vsync: this);
+    // Three: why the membership ended (Removed / Left), plus the rows the
+    // user has cleared off this very list. Deleted is a VISIBILITY, not a
+    // reason — it is an independent axis, which is why it gets its own tab
+    // rather than being folded into the other two.
+    _tab = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -86,6 +91,7 @@ class _PastGroupsScreenState extends State<PastGroupsScreen>
                 tabs: const [
                   Tab(text: 'Removed'),
                   Tab(text: 'Left'),
+                  Tab(text: 'Deleted'),
                 ],
               ),
             ),
@@ -97,6 +103,8 @@ class _PastGroupsScreenState extends State<PastGroupsScreen>
         children: const [
           _PastGroupsList(filter: 'removed'),
           _PastGroupsList(filter: 'left'),
+          // Everything the user deleted, whichever way they left it.
+          _PastGroupsList(filter: '', visibility: 'hidden'),
         ],
       ),
     );
@@ -105,7 +113,13 @@ class _PastGroupsScreenState extends State<PastGroupsScreen>
 
 class _PastGroupsList extends StatefulWidget {
   final String filter;
-  const _PastGroupsList({required this.filter});
+
+  /// '' / 'visible' leaves out rows the user deleted; 'hidden' shows only
+  /// those. Independent of [filter], which is about WHY the membership
+  /// ended.
+  final String visibility;
+
+  const _PastGroupsList({required this.filter, this.visibility = ''});
 
   @override
   State<_PastGroupsList> createState() => _PastGroupsListState();
@@ -134,7 +148,11 @@ class _PastGroupsListState extends State<_PastGroupsList>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final s = context.read<GroupAccountCubit>().state;
-      if (s is PastGroupsLoaded && s.filter == widget.filter) {
+      // Both axes, or the Deleted pane would accept the Left pane's result
+      // (same filter '' on an older build) and show the wrong rows.
+      if (s is PastGroupsLoaded &&
+          s.filter == widget.filter &&
+          s.visibility == widget.visibility) {
         return;
       }
       _kickedOff = true;
@@ -148,6 +166,7 @@ class _PastGroupsListState extends State<_PastGroupsList>
         auth is AuthenticationSuccess ? auth.profile.session.accessToken : null;
     context.read<GroupAccountCubit>().loadPastGroups(
           filter: widget.filter,
+          visibility: widget.visibility,
           accessToken: token,
         );
   }
@@ -165,7 +184,10 @@ class _PastGroupsListState extends State<_PastGroupsList>
         itemCount: entries.length,
         itemBuilder: (_, i) => Padding(
           padding: EdgeInsets.only(bottom: 12.h),
-          child: _PastGroupCard(entry: entries[i]),
+          child: _PastGroupCard(
+            entry: entries[i],
+            onChanged: _load,
+          ),
         ),
       ),
     );
@@ -180,7 +202,9 @@ class _PastGroupsListState extends State<_PastGroupsList>
           b is PastGroupsLoaded ||
           b is PastGroupsError,
       builder: (context, state) {
-        if (state is PastGroupsLoaded && state.filter == widget.filter) {
+        if (state is PastGroupsLoaded &&
+            state.filter == widget.filter &&
+            state.visibility == widget.visibility) {
           _lastGood = state.entries.cast<PastGroupEntry>().toList();
           _lastGoodEmpty = _lastGood!.isEmpty;
           return _renderList(_lastGood!);
@@ -269,7 +293,51 @@ class _PastGroupsListState extends State<_PastGroupsList>
 
 class _PastGroupCard extends StatelessWidget {
   final PastGroupEntry entry;
-  const _PastGroupCard({required this.entry});
+
+  /// Re-reads the pane after a delete or a restore, because the row has
+  /// just moved to a different tab and leaving it on screen would be the
+  /// list disagreeing with itself.
+  final VoidCallback onChanged;
+
+  const _PastGroupCard({required this.entry, required this.onChanged});
+
+  /// Remove from my lists, or put it back.
+  ///
+  /// "Delete" here never deletes: the group, its contributions, its payouts
+  /// and every report that counts them are untouched, and so is every other
+  /// member's view. It is a per-user hide, which is why the row reappears
+  /// under Deleted rather than vanishing.
+  Future<void> _toggleHidden(BuildContext context) async {
+    final cubit = context.read<GroupAccountCubit>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    final error = entry.hidden
+        ? await cubit.restoreToMyLists(
+            itemType: DashboardItemTypes.group,
+            itemId: entry.group.id,
+          )
+        : await cubit.removeFromMyLists(
+            itemType: DashboardItemTypes.group,
+            itemId: entry.group.id,
+          );
+
+    if (error != null) {
+      messenger.showSnackBar(SnackBar(
+        content: Text(error),
+        backgroundColor: const Color(0xFFEF4444),
+        behavior: SnackBarBehavior.floating,
+      ));
+      return;
+    }
+    messenger.showSnackBar(SnackBar(
+      content: Text(entry.hidden
+          ? 'Restored to your past groups'
+          : 'Removed from your lists — find it under Deleted'),
+      backgroundColor: const Color(0xFF10B981),
+      behavior: SnackBarBehavior.floating,
+    ));
+    onChanged();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -350,6 +418,36 @@ class _PastGroupCard extends StatelessWidget {
                   ],
                 ],
               ),
+            ),
+            PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert, size: 18.sp, color: Colors.grey[600]),
+              color: const Color(0xFF1F1F1F),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.r)),
+              itemBuilder: (_) => [
+                PopupMenuItem<String>(
+                  value: 'toggle',
+                  child: Row(
+                    children: [
+                      Icon(
+                        entry.hidden
+                            ? Icons.restore_from_trash
+                            : Icons.delete_outline,
+                        size: 18.sp,
+                        color: entry.hidden
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFEF4444),
+                      ),
+                      SizedBox(width: 10.w),
+                      Text(
+                        entry.hidden ? 'Restore' : 'Remove from my lists',
+                        style: GoogleFonts.inter(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              onSelected: (_) => _toggleHidden(context),
             ),
             Icon(Icons.chevron_right, size: 20.sp, color: Colors.grey[600]),
           ],

@@ -10,6 +10,7 @@ import '../../../authentication/cubit/authentication_state.dart';
 import '../../data/datasources/past_memberships_remote_data_source.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
+import '../../domain/usecases/group_account_usecases.dart';
 import '../widgets/contribution_type_badge.dart';
 import '../widgets/past_contribution_details_sheet.dart';
 import '../widgets/status_pill.dart';
@@ -35,7 +36,10 @@ class _PastContributionsScreenState extends State<PastContributionsScreen>
   @override
   void initState() {
     super.initState();
-    _tab = TabController(length: 2, vsync: this);
+    // Three: why the membership ended, plus the rows the user has cleared
+    // off this list. See past_groups_screen.dart for why Deleted is its own
+    // tab rather than a filter value.
+    _tab = TabController(length: 3, vsync: this);
     // Each tab pane (`_PastContributionsList`) handles its own load
     // when it becomes visible, so the parent only owns the controller.
   }
@@ -97,6 +101,7 @@ class _PastContributionsScreenState extends State<PastContributionsScreen>
                 tabs: const [
                   Tab(text: 'Removed'),
                   Tab(text: 'Left'),
+                  Tab(text: 'Deleted'),
                 ],
               ),
             ),
@@ -112,6 +117,7 @@ class _PastContributionsScreenState extends State<PastContributionsScreen>
         children: const [
           _PastContributionsList(filter: 'removed'),
           _PastContributionsList(filter: 'left'),
+          _PastContributionsList(filter: '', visibility: 'hidden'),
         ],
       ),
     );
@@ -124,7 +130,12 @@ class _PastContributionsScreenState extends State<PastContributionsScreen>
 /// becoming visible the first time.
 class _PastContributionsList extends StatefulWidget {
   final String filter;
-  const _PastContributionsList({required this.filter});
+
+  /// '' / 'visible' leaves out rows the user deleted; 'hidden' shows only
+  /// those. Independent of [filter].
+  final String visibility;
+
+  const _PastContributionsList({required this.filter, this.visibility = ''});
 
   @override
   State<_PastContributionsList> createState() => _PastContributionsListState();
@@ -160,7 +171,9 @@ class _PastContributionsListState extends State<_PastContributionsList>
       final s = context.read<GroupAccountCubit>().state;
       // Skip if we already have this filter loaded (e.g. user
       // navigated back into the tab it had already opened).
-      if (s is PastContributionsLoaded && s.filter == widget.filter) {
+      if (s is PastContributionsLoaded &&
+          s.filter == widget.filter &&
+          s.visibility == widget.visibility) {
         return;
       }
       _kickedOff = true;
@@ -174,6 +187,7 @@ class _PastContributionsListState extends State<_PastContributionsList>
         auth is AuthenticationSuccess ? auth.profile.session.accessToken : null;
     context.read<GroupAccountCubit>().loadPastContributions(
           filter: widget.filter,
+          visibility: widget.visibility,
           accessToken: token,
         );
   }
@@ -191,7 +205,10 @@ class _PastContributionsListState extends State<_PastContributionsList>
         itemCount: entries.length,
         itemBuilder: (_, i) => Padding(
           padding: EdgeInsets.only(bottom: 12.h),
-          child: _PastContributionCard(entry: entries[i]),
+          child: _PastContributionCard(
+            entry: entries[i],
+            onChanged: _load,
+          ),
         ),
       ),
     );
@@ -206,7 +223,9 @@ class _PastContributionsListState extends State<_PastContributionsList>
           b is PastContributionsLoaded ||
           b is PastContributionsError,
       builder: (context, state) {
-        if (state is PastContributionsLoaded && state.filter == widget.filter) {
+        if (state is PastContributionsLoaded &&
+            state.filter == widget.filter &&
+            state.visibility == widget.visibility) {
           // Refresh the local cache. Saved on the State so the next
           // rebuild against a sibling-tab state still has data to
           // render — no flicker when the other tab loads.
@@ -250,7 +269,47 @@ class _PastContributionsListState extends State<_PastContributionsList>
 
 class _PastContributionCard extends StatelessWidget {
   final PastContributionEntry entry;
-  const _PastContributionCard({required this.entry});
+
+  /// Re-reads the pane after a delete or a restore: the row has just moved
+  /// to a different tab.
+  final VoidCallback onChanged;
+
+  const _PastContributionCard({required this.entry, required this.onChanged});
+
+  /// See _PastGroupCard._toggleHidden — same contract. "Delete" is a
+  /// per-user hide; nothing leaves the database and no other member's view
+  /// changes.
+  Future<void> _toggleHidden(BuildContext context) async {
+    final cubit = context.read<GroupAccountCubit>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    final error = entry.hidden
+        ? await cubit.restoreToMyLists(
+            itemType: DashboardItemTypes.contribution,
+            itemId: entry.contribution.id,
+          )
+        : await cubit.removeFromMyLists(
+            itemType: DashboardItemTypes.contribution,
+            itemId: entry.contribution.id,
+          );
+
+    if (error != null) {
+      messenger.showSnackBar(SnackBar(
+        content: Text(error),
+        backgroundColor: const Color(0xFFEF4444),
+        behavior: SnackBarBehavior.floating,
+      ));
+      return;
+    }
+    messenger.showSnackBar(SnackBar(
+      content: Text(entry.hidden
+          ? 'Restored to your past contributions'
+          : 'Removed from your lists — find it under Deleted'),
+      backgroundColor: const Color(0xFF10B981),
+      behavior: SnackBarBehavior.floating,
+    ));
+    onChanged();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -314,6 +373,38 @@ class _PastContributionCard extends StatelessWidget {
                   ),
                 ),
                 ContributionTypeBadge(type: c.type),
+                PopupMenuButton<String>(
+                  icon:
+                      Icon(Icons.more_vert, size: 18.sp, color: Colors.grey[600]),
+                  color: const Color(0xFF1F1F1F),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.r)),
+                  padding: EdgeInsets.zero,
+                  itemBuilder: (_) => [
+                    PopupMenuItem<String>(
+                      value: 'toggle',
+                      child: Row(
+                        children: [
+                          Icon(
+                            entry.hidden
+                                ? Icons.restore_from_trash
+                                : Icons.delete_outline,
+                            size: 18.sp,
+                            color: entry.hidden
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFFEF4444),
+                          ),
+                          SizedBox(width: 10.w),
+                          Text(
+                            entry.hidden ? 'Restore' : 'Remove from my lists',
+                            style: GoogleFonts.inter(color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  onSelected: (_) => _toggleHidden(context),
+                ),
               ],
             ),
             SizedBox(height: 10.h),

@@ -5,6 +5,8 @@ import 'package:flutter/widgets.dart' show Rect;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
+import '../../data/services/group_funds_page_cache.dart';
+import '../../data/models/group_account_models.dart';
 import 'package:lazervault/core/services/secure_storage_defaults.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/utils/user_search_query.dart';
@@ -13,6 +15,8 @@ import '../../domain/usecases/group_account_usecases.dart';
 import '../../domain/entities/group_entities.dart';
 import '../../services/group_account_report_service.dart';
 import 'group_account_state.dart';
+
+part 'group_funds_paging.dart';
 
 class GroupAccountCubit extends Cubit<GroupAccountState> {
   final GetUserGroups getUserGroups;
@@ -51,6 +55,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   final UnhideDashboardItem? unhideDashboardItem;
   final OpenContribution? openContribution;
   final GetOverdueContributions? getOverdueContributions;
+  final GetUserGroupsPage? getUserGroupsPage;
+  final GetGroupContributionsPage? getGroupContributionsPage;
   final RemoveContributionShadow? removeContributionShadow;
   final PreviewMemberExit? previewMemberExit;
   // Cycle history.
@@ -89,6 +95,18 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   String? get currentUserName => _currentUserName;
 
   // Cached groups list for restoring state when returning from details
+  // ── Paging state (see group_funds_paging.dart) ──────────────────────
+  //
+  // Held on the cubit rather than in the widgets so a page survives a
+  // rebuild, a tab switch and a navigation away-and-back — the three things
+  // that would otherwise send the user back to page 1 having just reached
+  // page 3.
+  PagedResult<GroupAccount>? groupsPage;
+  final Map<int, PagedResult<GroupAccount>> groupsPrefetch = {};
+  PagedResult<Contribution>? contributionsPage;
+  final Map<int, PagedResult<Contribution>> contributionsPrefetch = {};
+  String? contributionsPageGroupId;
+
   List<GroupAccount>? _cachedGroups;
   List<GroupAccount>? get cachedGroups => _cachedGroups;
 
@@ -193,6 +211,18 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   }
 
   void _clearUserScopedState() {
+    // Paging and its prefetch are per-user: two people share a phone more
+    // often than product analytics suggests, and a held page of the
+    // previous user's groups must not survive into the next session.
+    groupsPage = null;
+    groupsPrefetch.clear();
+    contributionsPage = null;
+    contributionsPrefetch.clear();
+    contributionsPageGroupId = null;
+    // Disk too. Keyed by user id, so this is belt-and-braces — but the
+    // belt is what stops a stale key surviving a reinstall-era id reuse.
+    unawaited(GroupFundsPageCache.clearAll());
+
     _cachedGroups = null;
     _cachedReport = null;
     _cachedPublicGroups = null;
@@ -235,6 +265,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     this.unhideDashboardItem,
     this.openContribution,
     this.getOverdueContributions,
+    this.getUserGroupsPage,
+    this.getGroupContributionsPage,
     this.removeContributionShadow,
     this.previewMemberExit,
     this.listContributionCycles,

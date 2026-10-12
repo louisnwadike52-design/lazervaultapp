@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 part 'group_entities_enums.dart';
+part 'group_entities_page.dart';
 part 'group_entities_contribution.dart';
 part 'group_entities_payout.dart';
 part 'group_entities_activity.dart';

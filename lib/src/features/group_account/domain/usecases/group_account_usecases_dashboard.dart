@@ -117,3 +117,50 @@ class GetOverdueContributions extends UseCase<List<Contribution>, String> {
     return repository.getOverdueContributions(userId);
   }
 }
+
+class PageParams {
+  final int page;
+  final int pageSize;
+  const PageParams({this.page = 1, this.pageSize = 5});
+}
+
+class GroupPageParams extends PageParams {
+  final String groupId;
+  const GroupPageParams({
+    required this.groupId,
+    super.page,
+    super.pageSize,
+  });
+}
+
+/// One page of the caller's groups.
+class GetUserGroupsPage extends UseCase<PagedResult<GroupAccount>, PageParams> {
+  final GroupAccountRepository repository;
+
+  GetUserGroupsPage(this.repository);
+
+  @override
+  Future<PagedResult<GroupAccount>> call(PageParams params) {
+    return repository.getUserGroupsPage(
+      page: params.page,
+      pageSize: params.pageSize,
+    );
+  }
+}
+
+/// One page of a group's contributions.
+class GetGroupContributionsPage
+    extends UseCase<PagedResult<Contribution>, GroupPageParams> {
+  final GroupAccountRepository repository;
+
+  GetGroupContributionsPage(this.repository);
+
+  @override
+  Future<PagedResult<Contribution>> call(GroupPageParams params) {
+    return repository.getGroupContributionsPage(
+      groupId: params.groupId,
+      page: params.page,
+      pageSize: params.pageSize,
+    );
+  }
+}

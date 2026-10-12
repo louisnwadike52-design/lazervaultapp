@@ -117,6 +117,17 @@ class ContributionModel extends Contribution {
                   ContributionMemberModel.fromJson(x as Map<String, dynamic>))
               .toList() ??
           [],
+      imageUrl: json['imageUrl'] as String?,
+      paidOut: json['paidOut'] as bool? ?? false,
+      paidOutAmount: json['paidOutAmount'] != null
+          ? (json['paidOutAmount'] as num).toDouble()
+          : 0,
+      // An entry written before these existed simply has no key, and the
+      // null reads as "not opened" — correct for an esusu and ignored for
+      // a one-time goal, which is open regardless.
+      openedAt: json['openedAt'] != null
+          ? DateTime.tryParse(json['openedAt'] as String)
+          : null,
     );
   }
 
@@ -161,6 +172,13 @@ class ContributionModel extends Contribution {
       'autoPayoutEnabled': autoPayoutEnabled,
       'members':
           members.map((x) => (x as ContributionMemberModel).toJson()).toList(),
+      // Round-tripped so the disk cache paints the same card the network
+      // did. Omitting them would make a cached row briefly lose its avatar
+      // and its badge — a flicker that reads as data changing under you.
+      'imageUrl': imageUrl,
+      'paidOut': paidOut,
+      'paidOutAmount': paidOutAmount,
+      'openedAt': openedAt?.toIso8601String(),
     };
   }
 

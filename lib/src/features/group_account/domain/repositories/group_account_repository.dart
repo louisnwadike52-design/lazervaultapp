@@ -69,6 +69,19 @@ abstract class GroupAccountRepository {
   /// Start an esusu and freeze its roster.
   Future<Contribution> openContribution(String contributionId);
 
+  /// One page of the caller's groups, with the server's pagination facts.
+  Future<PagedResult<GroupAccount>> getUserGroupsPage({
+    required int page,
+    required int pageSize,
+  });
+
+  /// One page of a group's contributions, with pagination.
+  Future<PagedResult<Contribution>> getGroupContributionsPage({
+    required String groupId,
+    required int page,
+    required int pageSize,
+  });
+
   /// Contributions the caller is behind on — a lump-sum goal past its
   /// deadline, or a cycle whose payment date has gone.
   ///

@@ -3432,6 +3432,10 @@ Future<void> init() async {
       () => OpenContribution(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(
       () => GetOverdueContributions(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetUserGroupsPage(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GetGroupContributionsPage(serviceLocator<GroupAccountRepository>()));
   // Cycle history use cases.
   serviceLocator.registerLazySingleton(
       () => ListContributionCycles(serviceLocator<GroupAccountRepository>()));
@@ -3497,6 +3501,9 @@ Future<void> init() async {
         unhideDashboardItem: serviceLocator<UnhideDashboardItem>(),
         openContribution: serviceLocator<OpenContribution>(),
         getOverdueContributions: serviceLocator<GetOverdueContributions>(),
+        getUserGroupsPage: serviceLocator<GetUserGroupsPage>(),
+        getGroupContributionsPage:
+            serviceLocator<GetGroupContributionsPage>(),
         listContributionCycles: serviceLocator<ListContributionCycles>(),
         getContributionCycleDetails:
             serviceLocator<GetContributionCycleDetails>(),

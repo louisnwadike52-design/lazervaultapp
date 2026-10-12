@@ -69,6 +69,34 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   }
 
   @override
+  Future<PagedResult<GroupAccountModel>> getUserGroupsPage({
+    required int page,
+    required int pageSize,
+  }) async {
+    try {
+      final request = pb.ListUserGroupsRequest()
+        ..page = page
+        ..pageSize = pageSize;
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response =
+          await _client.listUserGroups(request, options: callOptions);
+
+      return _pageFrom(
+        items: response.groups.map(_mapGroupFromProto).toList(),
+        requestedPage: page,
+        requestedSize: pageSize,
+        currentPage: response.pagination.currentPage,
+        totalItems: response.pagination.totalItems,
+        totalPages: response.pagination.totalPages,
+        itemsPerPage: response.pagination.itemsPerPage,
+      );
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to get your groups'));
+    }
+  }
+
+  @override
   Future<GroupAccountModel> getGroupById(String groupId) async {
     try {
       final request = pb.GetGroupRequest()..groupId = groupId;
@@ -338,6 +366,72 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     } on GrpcError catch (e) {
       throw Exception(friendlyGrpcError(e, 'Failed to get contribution'));
     }
+  }
+
+  @override
+  Future<PagedResult<ContributionModel>> getGroupContributionsPage({
+    required String groupId,
+    required int page,
+    required int pageSize,
+  }) async {
+    try {
+      final request = pb.ListGroupContributionsRequest()
+        ..groupId = groupId
+        ..page = page
+        ..pageSize = pageSize;
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response =
+          await _client.listGroupContributions(request, options: callOptions);
+
+      return _pageFrom(
+        items:
+            response.contributions.map(_mapContributionFromProto).toList(),
+        requestedPage: page,
+        requestedSize: pageSize,
+        currentPage: response.pagination.currentPage,
+        totalItems: response.pagination.totalItems,
+        totalPages: response.pagination.totalPages,
+        itemsPerPage: response.pagination.itemsPerPage,
+      );
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to get contributions'));
+    }
+  }
+
+  /// Builds a [PagedResult] from a response, repairing what an older server
+  /// may not have sent.
+  ///
+  /// The pagination block is a proto message, so an older build returns it
+  /// as all-zeros rather than as absent. Trusting that gives totalPages=0 —
+  /// a pager that says there are no pages while rendering five rows. Every
+  /// field falls back to something derived from what we DID get.
+  static PagedResult<T> _pageFrom<T>({
+    required List<T> items,
+    required int requestedPage,
+    required int requestedSize,
+    required int currentPage,
+    required int totalItems,
+    required int totalPages,
+    required int itemsPerPage,
+  }) {
+    final size = itemsPerPage > 0 ? itemsPerPage : requestedSize;
+    final page = currentPage > 0 ? currentPage : requestedPage;
+    // With no total, assume this page is the last one we know about —
+    // which is what a client that cannot count pages has to assume.
+    final total =
+        totalItems > 0 ? totalItems : ((page - 1) * size) + items.length;
+    var pages = totalPages;
+    if (pages <= 0) {
+      pages = size > 0 ? (total + size - 1) ~/ size : (items.isEmpty ? 0 : 1);
+    }
+    return PagedResult<T>(
+      items: items,
+      page: page,
+      pageSize: size,
+      totalItems: total,
+      totalPages: pages,
+    );
   }
 
   @override

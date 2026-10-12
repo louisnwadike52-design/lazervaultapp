@@ -8,6 +8,8 @@ import '../widgets/group_funds_guide.dart';
 import '../widgets/group_funds_terms.dart';
 import 'past_groups_screen.dart';
 import '../widgets/cycles_due_reminder.dart';
+import '../widgets/list_pager.dart';
+import '../../domain/usecases/group_account_usecases.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
 import '../../../../../core/types/app_routes.dart';
@@ -83,6 +85,18 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
     'newest',
   ];
 
+  /// The order the user just dragged into, held until the save lands.
+  ///
+  /// The list on screen comes from the cubit, and a drag that waited for the
+  /// round-trip before moving would feel broken. This is the optimistic
+  /// overlay; it is dropped on failure (the cubit re-reads) and on a page
+  /// turn (different rows).
+  List<GroupAccount>? _reorderedGroups;
+
+  /// Disables the pager and swallows a second drag while a write is in
+  /// flight, so two page changes cannot race and land on the wrong one.
+  bool _groupsPageBusy = false;
+
   @override
   void initState() {
     super.initState();
@@ -98,6 +112,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
       // first paint without the user having to switch tabs.
       context.read<GroupAccountCubit>().loadMyInvitations();
       _maybeRemindAboutDueCycles();
+      _primeGroupsPage();
     });
   }
 
@@ -599,6 +614,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
       },
       buildWhen: (previous, current) {
         return current is GroupAccountGroupsLoaded ||
+            current is GroupAccountGroupsPageLoaded ||
             current is GroupAccountLoading ||
             current is GroupAccountInitial ||
             current is GroupAccountUnauthenticated ||
@@ -618,8 +634,14 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
           return _buildMyGroupsLoadingView();
         }
 
+        // The paged state wins when it is what just landed: it carries the
+        // page the user is actually on, which the flat list cannot.
+        if (state is GroupAccountGroupsPageLoaded) {
+          return _buildMyGroupsList(state.page.items, page: state.page);
+        }
+
         if (state is GroupAccountGroupsLoaded) {
-          return _buildMyGroupsList(state.groups);
+          return _buildMyGroupsList(state.groups, page: cubit.groupsPage);
         }
 
         if (state is GroupAccountError && _tabController.index == 0) {
@@ -629,12 +651,117 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
         // Use cached groups for any other state
         final cachedGroups = cubit.cachedGroups;
         if (cachedGroups != null && cachedGroups.isNotEmpty) {
-          return _buildMyGroupsList(cachedGroups);
+          return _buildMyGroupsList(cachedGroups, page: cubit.groupsPage);
         }
 
         return _buildMyGroupsEmptyView();
       },
     );
+  }
+
+  /// Pull-to-refresh for the groups list.
+  ///
+  /// Refresh means "get me the truth", so the prefetched next page and the
+  /// optimistic drag order both go: serving a page fetched before the pull,
+  /// or an order the server rejected, is the opposite of what was asked for.
+  ///
+  /// Reloads the page the user is ON rather than snapping to page 1 — they
+  /// pulled to refresh what they were looking at.
+  Future<void> _refreshGroups() async {
+    final cubit = context.read<GroupAccountCubit>();
+    final page = cubit.groupsPage?.page ?? 1;
+    cubit.invalidatePages();
+    if (mounted) setState(() => _reorderedGroups = null);
+    await cubit.loadGroupsPage(page, force: true);
+  }
+
+  /// Paint the last-seen page from disk, then fetch the live one.
+  ///
+  /// The cached page is a HEAD START, never the answer: the network read
+  /// follows immediately and replaces it. Nothing here shows an error — a
+  /// cold cache is the ordinary case, and the normal load path owns
+  /// reporting a failed fetch.
+  Future<void> _primeGroupsPage() async {
+    final cubit = context.read<GroupAccountCubit>();
+    await cubit.hydrateGroupsFromCache();
+    if (!mounted) return;
+    await cubit.loadGroupsPage(1, force: true);
+  }
+
+  /// One row of the groups list. Shared by the reorderable and the
+  /// search-filtered list so a dragged card and a searched card cannot
+  /// drift apart.
+  Widget _groupRow(GroupAccount group) {
+    return GroupCard(
+      group: group,
+      // Marks the groups this user started, so a list of group funds
+      // distinguishes the ones they run from the ones they merely belong to.
+      currentUserId: context.read<AuthenticationCubit>().userId,
+      onTap: () => _navigateToGroupDetails(group),
+    );
+  }
+
+  /// Persist a drag.
+  ///
+  /// The list has ALREADY moved on screen — a drag that snaps back while a
+  /// request flies is worse than one that is briefly wrong — so this sends
+  /// the new order and only acts if it fails, in which case the cubit
+  /// re-reads and the server's order wins.
+  ///
+  /// start_index is the rank of this page's first row in the WHOLE list.
+  /// Without it, reordering page 3 would number those five rows 0..4 and
+  /// teleport them to the front.
+  Future<void> _onGroupsReordered(
+    List<GroupAccount> visible,
+    int oldIndex,
+    int newIndex,
+  ) async {
+    // Flutter reports newIndex as the slot BEFORE removal, so a downward
+    // move is one too high. Getting this wrong puts the card one place from
+    // where the user dropped it — the classic off-by-one of this API.
+    if (newIndex > oldIndex) newIndex -= 1;
+    if (oldIndex == newIndex) return;
+
+    final reordered = [...visible];
+    final moved = reordered.removeAt(oldIndex);
+    reordered.insert(newIndex, moved);
+
+    final cubit = context.read<GroupAccountCubit>();
+    final page = cubit.groupsPage;
+
+    setState(() {
+      _reorderedGroups = reordered;
+      _groupsPageBusy = true;
+    });
+
+    final ok = await cubit.persistListOrder(
+      itemType: DashboardItemTypes.group,
+      orderedItemIds: reordered.map((g) => g.id).toList(),
+      startIndex: page?.startIndex ?? 0,
+    );
+    if (!mounted) return;
+    setState(() {
+      _groupsPageBusy = false;
+      if (!ok) _reorderedGroups = null;
+    });
+  }
+
+  Future<void> _goToGroupsPage(int page) async {
+    if (_groupsPageBusy) return;
+    setState(() {
+      _groupsPageBusy = true;
+      // A page turn replaces the rows, so a local reorder overlay from the
+      // previous page must not survive it.
+      _reorderedGroups = null;
+    });
+    await context.read<GroupAccountCubit>().loadGroupsPage(page);
+    if (!mounted) return;
+    setState(() => _groupsPageBusy = false);
+    // Back to the top: landing on page 2 half-way down is disorienting when
+    // every page is the same height.
+    if (_myGroupsScrollController.hasClients) {
+      _myGroupsScrollController.jumpTo(0);
+    }
   }
 
   /// Shown when there is no signed-in user.
@@ -667,9 +794,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
 
   Widget _buildMyGroupsLoadingView() {
     return RefreshIndicator(
-      onRefresh: () async {
-        context.read<GroupAccountCubit>().loadUserGroups();
-      },
+      onRefresh: _refreshGroups,
       color: const Color.fromARGB(255, 78, 3, 208),
       backgroundColor: const Color(0xFF1F1F1F),
       child: CustomScrollView(
@@ -704,7 +829,10 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
     );
   }
 
-  Widget _buildMyGroupsList(List<GroupAccount> groups) {
+  Widget _buildMyGroupsList(
+    List<GroupAccount> groups, {
+    PagedResult<GroupAccount>? page,
+  }) {
     if (groups.isEmpty) {
       return _buildMyGroupsEmptyView();
     }
@@ -716,8 +844,25 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
 
     // Filter by search query
     final query = _myGroupsSearchQuery.toLowerCase();
-    final filteredGroups =
+    var filteredGroups =
         _myGroupsTabIndex == 0 ? privateGroups : publicGroups;
+    // The optimistic drag order wins while a save is in flight, so the card
+    // stays where the user dropped it instead of snapping back for the
+    // moment between the drop and the response.
+    final overlay = _reorderedGroups;
+    if (overlay != null && query.isEmpty) {
+      final byId = {for (final g in filteredGroups) g.id: g};
+      final applied = <GroupAccount>[
+        for (final g in overlay)
+          if (byId.containsKey(g.id)) byId[g.id]!,
+      ];
+      // Only if it still describes the same set — a refresh that changed the
+      // rows underneath makes the overlay meaningless.
+      if (applied.length == filteredGroups.length) {
+        filteredGroups = applied;
+      }
+    }
+
     final displayGroups = query.isEmpty
         ? filteredGroups
         : filteredGroups
@@ -727,9 +872,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
             .toList();
 
     return RefreshIndicator(
-      onRefresh: () async {
-        context.read<GroupAccountCubit>().loadUserGroups();
-      },
+      onRefresh: _refreshGroups,
       color: const Color.fromARGB(255, 78, 3, 208),
       backgroundColor: const Color(0xFF1F1F1F),
       child: CustomScrollView(
@@ -869,25 +1012,49 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
           else
             SliverPadding(
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final group = displayGroups[index];
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: 10.h),
-                      child: GroupCard(
-                        group: group,
-                        // Marks the groups this user started, so a list of
-                        // joint funds distinguishes the ones they run from the
-                        // ones they merely belong to.
-                        currentUserId:
-                            context.read<AuthenticationCubit>().userId,
-                        onTap: () => _navigateToGroupDetails(group),
+              // Long-press to drag. Reorderable only when the list is
+              // UNFILTERED: a search result is a subset, and persisting the
+              // order of three rows out of nine would renumber them against
+              // positions the user cannot see.
+              sliver: query.isEmpty
+                  ? SliverReorderableList(
+                      itemCount: displayGroups.length,
+                      onReorder: (oldIndex, newIndex) =>
+                          _onGroupsReordered(displayGroups, oldIndex, newIndex),
+                      // The card IS the drag handle: a separate grip on a
+                      // card that is already one big tap target is a second
+                      // thing to aim at for no reason.
+                      itemBuilder: (context, index) {
+                        final group = displayGroups[index];
+                        return ReorderableDelayedDragStartListener(
+                          key: ValueKey('group-${group.id}'),
+                          index: index,
+                          child: Padding(
+                            padding: EdgeInsets.only(bottom: 10.h),
+                            child: _groupRow(group),
+                          ),
+                        );
+                      },
+                    )
+                  : SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => Padding(
+                          padding: EdgeInsets.only(bottom: 10.h),
+                          child: _groupRow(displayGroups[index]),
+                        ),
+                        childCount: displayGroups.length,
                       ),
-                    );
-                  },
-                  childCount: displayGroups.length,
-                ),
+                    ),
+            ),
+          // The pager, under the rows it pages. Draws nothing when there is
+          // only one page.
+          if (page != null && query.isEmpty)
+            SliverToBoxAdapter(
+              child: ListPager(
+                currentPage: page.page,
+                totalPages: page.totalPages,
+                busy: _groupsPageBusy,
+                onPageSelected: _goToGroupsPage,
               ),
             ),
           SliverPadding(padding: EdgeInsets.only(bottom: 80.h)),
@@ -1066,9 +1233,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
 
   Widget _buildMyGroupsEmptyView() {
     return RefreshIndicator(
-      onRefresh: () async {
-        context.read<GroupAccountCubit>().loadUserGroups();
-      },
+      onRefresh: _refreshGroups,
       color: const Color.fromARGB(255, 78, 3, 208),
       backgroundColor: const Color(0xFF1F1F1F),
       child: CustomScrollView(
@@ -1183,9 +1348,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
 
   Widget _buildMyGroupsErrorView(String message) {
     return RefreshIndicator(
-      onRefresh: () async {
-        context.read<GroupAccountCubit>().loadUserGroups();
-      },
+      onRefresh: _refreshGroups,
       color: const Color.fromARGB(255, 78, 3, 208),
       backgroundColor: const Color(0xFF1F1F1F),
       child: CustomScrollView(
