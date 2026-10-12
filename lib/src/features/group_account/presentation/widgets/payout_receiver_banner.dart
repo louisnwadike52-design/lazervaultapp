@@ -757,7 +757,13 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
       code == 'RECIPIENT_ACCOUNT_FROZEN' ||
       code == 'RECIPIENT_KYC_INSUFFICIENT' ||
       code == 'NO_RECEIVER' ||
-      code == 'RECEIVER_ACCOUNT_MISSING';
+      code == 'RECEIVER_ACCOUNT_MISSING' ||
+      // The receiver is behind on their OWN payments into this circle, so
+      // the pot is held. Grouped with the destination problems for the same
+      // reason: it does not clear by firing again, and the fix is either the
+      // member paying up or the creator moving the turn — both of which the
+      // "Change receiver" affordance already leads to.
+      code == 'RECIPIENT_IN_ARREARS';
 
   /// A payout that failed but still has automatic attempts left.
   ///
