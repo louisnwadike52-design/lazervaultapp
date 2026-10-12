@@ -396,11 +396,28 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
 
     final amtStr = currency_formatter.CurrencySymbols.formatAmountWithCurrency(
         saveAmount, rule.currency);
-    final confirmMessage = feeNaira > 0
-        ? 'Save $amtStr from your bank by direct debit. A fee of '
-            '${currency_formatter.CurrencySymbols.formatAmountWithCurrency(feeNaira, rule.currency)} applies. '
-            '${currency_formatter.CurrencySymbols.formatAmountWithCurrency(netNaira, rule.currency)} will be added to your goal.'
-        : 'Save $amtStr now';
+    String money(double v) =>
+        currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+            v, rule.currency);
+
+    // The fee sentence has to match the rule it describes. This branched on
+    // `feeNaira > 0` alone and said "from your bank by direct debit" for ANY
+    // priced save — which was harmless only while the platform fee was a
+    // single global switch that was off. Now that a fee can be set for one
+    // WALLET trigger on its own, a round-up with a fee would have told the
+    // user we were debiting a bank the rule never touches.
+    final String confirmMessage;
+    if (feeNaira <= 0) {
+      confirmMessage = 'Save $amtStr now';
+    } else if (_isLinkedBankRule) {
+      confirmMessage = 'Save $amtStr from your bank by direct debit. A fee of '
+          '${money(feeNaira)} applies. ${money(netNaira)} will be added to '
+          'your goal.';
+    } else {
+      confirmMessage = 'Save $amtStr from your wallet. A fee of '
+          '${money(feeNaira)} applies. ${money(netNaira)} will be added to '
+          'your goal.';
+    }
 
     String? verificationToken;
 
@@ -409,10 +426,13 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
       transactionId: transactionId,
       transactionType: 'autosave_trigger',
       amount: saveAmount,
-      // For a linked-bank pull, surface the aggregated direct-debit fee + the
-      // amount actually leaving the bank so the PIN sheet shows the real cost.
-      fee: _isLinkedBankRule && feeNaira > 0 ? feeNaira : null,
-      totalAmount: _isLinkedBankRule ? saveAmount : null,
+      // The fee row was gated on _isLinkedBankRule, so a WALLET save with a
+      // platform fee quoted it in the sentence above and then showed no fee
+      // line at all — the one place a user looks for the number before
+      // entering a PIN. It is shown whenever there IS a fee, from either
+      // source; the sentence above says which.
+      fee: feeNaira > 0 ? feeNaira : null,
+      totalAmount: feeNaira > 0 ? saveAmount : null,
       currency: rule.currency,
       title: 'Confirm Manual Save',
       message: confirmMessage,
