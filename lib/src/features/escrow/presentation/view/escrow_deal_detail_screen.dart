@@ -88,7 +88,18 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
     try {
       await body();
     } finally {
-      if (mounted) {
+      // Only re-read while this screen is still the one on top.
+      //
+      // _release and the refund paths navigate to a receipt themselves, and
+      // _release clears _releaseOwnedByPinSheet before it does. Reloading
+      // here would emit EscrowActionSuccess again with that guard already
+      // down, and the listener would push a SECOND receipt over the first —
+      // a back button that lands on another copy of the same document.
+      // isCurrent is false the moment a route replacement is under way, so
+      // an action that navigated reloads nothing, and one that stayed put
+      // (mark delivered, dispute) still refreshes its buttons.
+      final stillHere = mounted && (ModalRoute.of(context)?.isCurrent ?? false);
+      if (stillHere) {
         try {
           await context.read<EscrowCubit>().loadDeal(_dealId);
         } catch (_) {
