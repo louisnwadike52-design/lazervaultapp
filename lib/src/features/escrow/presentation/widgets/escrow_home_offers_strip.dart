@@ -102,7 +102,15 @@ class EscrowHomeOffersStrip extends StatelessWidget {
           // Tall enough for the card's full stack (title row + subtitle +
           // direction/fee badges + amount) plus padding — the old 92.h clipped
           // the bottom (the amount hugged/overflowed the border).
-          height: 118.h,
+          //
+          // 118.h still clipped it whenever the badge Wrap ran to TWO lines,
+          // which it does as soon as a fee-promo badge joins the direction
+          // badge ("Seller listing" + "Seller pays all fees" cannot share a
+          // 230.w row). Every card in a horizontal list shares one height, so
+          // it has to be sized for the tallest stack, not the common one:
+          // 12 pad + title 18 + 5 + subtitle 15 + 5 + two badge rows 44 +
+          // gap 8 + amount 18 + 12 pad.
+          height: 142.h,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -178,6 +186,10 @@ class EscrowHomeOffersStrip extends StatelessWidget {
                 EscrowRoles.feePromoBadge(o, viewerUserId, compact: true),
               ].whereType<Widget>().toList(),
             ),
+            // A minimum gap as well as the Spacer: the Spacer alone collapses
+            // to zero on the tallest card, which is exactly the card where the
+            // amount was touching the badges.
+            SizedBox(height: 8.h),
             const Spacer(),
             Text(
                 currency_formatter.CurrencySymbols.formatAmountWithCurrency(

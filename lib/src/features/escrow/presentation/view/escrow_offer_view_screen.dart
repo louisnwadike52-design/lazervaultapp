@@ -32,7 +32,7 @@ import 'escrow_theme.dart';
 ///   {'shareToken': …}  — share-link / web-handoff entry (any signed-in user)
 ///
 /// Role-aware CTAs:
-///   buyer (addressed, or link-opener on an open sell_offer) → Buy securely
+///   buyer (addressed, or link-opener on an open sell_offer) → Accept offer to buy
 ///   seller on a buy_request                                → Accept / Decline
 ///   creator                                                → Share / Withdraw
 ///   terminal states                                        → status banner
@@ -783,8 +783,20 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
 
     // Confirmation IS the money action: fund a sell listing / a buy request.
     if (offer.canFund(userId)) {
+      // This is still the OFFER stage — the thing on screen is an offer with a
+      // Decline beside it, so the primary action has to read as its opposite.
+      // "Buy securely" described the mechanic and not the decision, and left
+      // the pair reading "Buy / Decline", which is not a pair.
+      //
+      // On a sell listing accepting IS paying (there is no second step), so
+      // the label says both. A buy request that a seller has already accepted
+      // is purely the payment leg, and says so.
       out.add(_primaryBtn(
-          offer.isSellOffer ? 'Buy securely' : 'Fund the escrow now',
+          offer.isSellOffer
+              ? 'Accept offer to buy'
+              : (offer.isAwaitingFunding
+                  ? 'Pay into escrow'
+                  : 'Accept request and fund'),
           () => _buy(offer)));
     }
     // The addressed counterparty can DECLINE while the offer is still open.

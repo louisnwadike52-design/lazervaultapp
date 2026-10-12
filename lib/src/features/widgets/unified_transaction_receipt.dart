@@ -26,6 +26,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:lazervault/core/utils/transfer_bank_display.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/receipt_metadata_humanizer.dart';
+import 'package:lazervault/src/features/escrow/utils/escrow_receipt_fields.dart';
 part 'unified_transaction_receipt_widgets.dart';
 
 class UnifiedTransactionReceipt extends StatefulWidget {
@@ -565,6 +566,31 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     if (cryptoRows.isNotEmpty) {
       return _detailsCardFrom([
         for (final r in cryptoRows) _DetailEntry(r.key, r.value),
+      ]);
+    }
+
+    // AN ESCROW LEG RENDERS THE DEAL, NOT A BARE DEBIT.
+    //
+    // Escrow rows used to carry one metadata key (business_reference), so both
+    // parties got the same anonymous debit-shaped document for two different
+    // events: the buyer's "money is being held" and the seller's "you have
+    // been paid". escrow-service now stamps the deal on all three legs and
+    // EscrowReceiptFields projects it, naming both parties, separating the
+    // item price from the fee, saying who bore the fee, and stating what
+    // actually happened to the money.
+    //
+    // Rows predating the payload are not matched and keep today's rendering.
+    final escrowRows = EscrowReceiptFields.rows(
+      tx.metadata,
+      fiatSymbol: _currencySymbol,
+      reference: tx.transactionReference,
+    );
+    if (escrowRows.isNotEmpty) {
+      return _detailsCardFrom([
+        for (final r in escrowRows)
+          _DetailEntry(r.key, r.value,
+              copyable: r.key == 'Escrow reference' ||
+                  r.key == 'Transaction reference'),
       ]);
     }
 
@@ -1129,6 +1155,17 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     return rows;
   }
 
+  /// Escrow-payload rows for the PDF body, mirroring [_invoiceRows].
+  ///
+  /// Without these the exported document is an anonymous debit for an
+  /// arbitrary amount — useless as proof that a specific deal was funded,
+  /// released or refunded, which is the entire reason either party saves it.
+  List<MapEntry<String, String>> get _escrowRows => EscrowReceiptFields.rows(
+        tx.metadata,
+        fiatSymbol: _currencySymbol,
+        reference: tx.transactionReference,
+      );
+
   /// Contribution-payload rows for the PDF body, mirroring _invoiceRows.
   /// group-accounts-service writes these onto the debit, so the exported
   /// document says which group and which contribution the money settled —
@@ -1619,7 +1656,10 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
               // The card the on-screen receipt resolved, so the SAVED document
               // names it too rather than being a strictly poorer copy.
               extraRows: _giftCard?.rows ??
-                  _invoiceRows + _contributionRows + _billRows,
+                  _invoiceRows +
+                      _contributionRows +
+                      _billRows +
+                      _escrowRows,
               currentUserName: _currentUserName,
             );
 
@@ -1649,7 +1689,11 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
           copyType: _chosenCopy,
           format: _chosenFormat,
           extraRows:
-              _giftCard?.rows ?? _invoiceRows + _contributionRows + _billRows,
+              _giftCard?.rows ??
+                  _invoiceRows +
+                      _contributionRows +
+                      _billRows +
+                      _escrowRows,
           currentUserName: _currentUserName,
           // Anchors the iPad share popover; omitted it anchored top-left.
           sharePositionOrigin: _shareOrigin(),

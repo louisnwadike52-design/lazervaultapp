@@ -241,8 +241,8 @@ class EscrowRoles {
     // OPEN sell_offer.
     if (buying == false) {
       // "until they pay" described a two-step flow this one does not have. On a
-      // sell offer the buyer's only action is "Buy securely", which funds the
-      // deal in the same tap — accepting IS paying. Saying "pays" left sellers
+      // sell offer the buyer's only action is "Accept offer to buy", which
+      // funds the deal in the same tap — accepting IS paying. Saying "pays" left sellers
       // waiting for a second step that never comes, and buyers surprised that
       // accepting moved their money.
       return 'Nothing moves until $buyer accepts. Accepting takes the payment '
@@ -309,6 +309,51 @@ class EscrowRoles {
         return 'The $total escrow fee was split evenly — half added to the '
             'buyer\'s payment, half taken from the seller\'s proceeds.';
     }
+  }
+
+  /// What the release PIN sheet tells the buyer they are authorising.
+  ///
+  /// The sheet quotes what is HELD (buyerTotal), because that is what the PIN
+  /// releases — quoting the seller's net read as a second, smaller debit, and
+  /// a ₦200 deal whose seller covers the fee showed "Release ₦180.00" to a
+  /// buyer who had paid ₦200.
+  ///
+  /// The fee line then names who actually bore it. "and ₦20.00 escrow fee"
+  /// against the buyer's own total reads as a charge to whoever is looking at
+  /// it, which is wrong in two of the three fee modes.
+  static String releaseSheetMessage(
+      EscrowDealEntity d, String Function(double) money) {
+    final seller = d.sellerName.trim().isEmpty ? 'the seller' : d.sellerName.trim();
+    final held = money(d.buyerTotal);
+    final net = money(d.sellerNet);
+    final fee = money(d.fee);
+
+    final String body;
+    if (d.fee <= 0 || d.feePayer == 'none') {
+      body = 'Release the $held held for this deal to $seller. '
+          'There is no escrow fee on it.';
+    } else {
+      switch (d.feePayer) {
+        case 'seller':
+          body = 'Release the $held held for this deal. $seller receives $net '
+              '— the $fee escrow fee is covered by the seller, so you pay only '
+              'the item price.';
+          break;
+        case 'buyer':
+          body = 'Release the $held held for this deal. $seller receives $net, '
+              'and $fee is the escrow fee you paid when you funded it.';
+          break;
+        default: // split
+          final buyerHalf = money(_round2(d.buyerTotal - d.amount));
+          final sellerHalf = money(_round2(d.amount - d.sellerNet));
+          body = 'Release the $held held for this deal. $seller receives $net. '
+              'The $fee escrow fee is split — $buyerHalf from you, '
+              '$sellerHalf from the seller.';
+      }
+    }
+    return '$body\n\nYou are not being charged again. This money left your '
+        'balance when you funded the deal; the PIN is confirming it is safe to '
+        'pay out.';
   }
 
   /// How a deal's fee split reads on a document showing BOTH sides (invoice,

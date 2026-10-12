@@ -106,13 +106,12 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
         amount: deal.buyerTotal,
         currency: deal.currency,
         title: 'Release funds',
-        message: 'Release the ${_money(deal.buyerTotal, deal.currency)} held '
-            'for this deal — ${_money(deal.sellerNet, deal.currency)} to '
-            '${deal.sellerName}'
-            '${deal.fee > 0 ? ' and ${_money(deal.fee, deal.currency)} escrow fee' : ''}.'
-            '\n\nYou are not being charged again. This money left your balance '
-            'when you funded the deal; the PIN is confirming it is safe to pay '
-            'out.',
+        // Fee-payer aware: "and ₦20.00 escrow fee" tacked onto the buyer's own
+        // total read as a charge to them, which is wrong whenever the seller
+        // covers it or it is split. EscrowRoles owns the wording so the sheet,
+        // the detail page and the receipt cannot disagree.
+        message: EscrowRoles.releaseSheetMessage(
+            deal, (v) => _money(v, deal.currency)),
         successMessage: 'Funds released',
         processingSubtitle:
             'Releasing ${_money(deal.sellerNet, deal.currency)} to ${deal.sellerName}…',

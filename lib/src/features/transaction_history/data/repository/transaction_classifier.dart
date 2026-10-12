@@ -65,6 +65,16 @@ String classifyDomain(String category, String description, String reference,
   if (cat.contains('crypto_convert')) return 'crypto_swap';
   if (cat.contains('crypto_send')) return 'crypto_send';
 
+  // Escrow. The three legs are three different events and must not share a
+  // title: funding is money LEAVING the buyer into the hold, release is money
+  // ARRIVING for the seller, refund is money coming back. Without this they
+  // all fell through to the generic tail and rendered as "Debit" / "Credit" —
+  // which is how a seller ends up reading their own payout as an unexplained
+  // credit, and a buyer reads a ₦200 hold as an anonymous debit.
+  if (cat.contains('escrow_release')) return 'escrow_release';
+  if (cat.contains('escrow_refund')) return 'escrow_refund';
+  if (cat.contains('escrow')) return 'escrow_fund';
+
   // Invoice creation/unlock fee — a PLATFORM fee into the revenue ledger,
   // never a transfer. Must win before the core-payments⇒transfer branch:
   // legacy rows were stamped service_name=core-payments-service and category
@@ -238,6 +248,15 @@ String? titleForDomain(String domain, String typeLower) {
       return credit ? 'Transfer Received' : 'Transfer Sent';
     case 'withdrawal':
       return 'Account Withdrawal';
+    case 'escrow_fund':
+      // The credit side of a funding leg is the pool's, never a user's, so
+      // the buyer's wording is the only one this can reach.
+      return 'Escrow Funding';
+    case 'escrow_release':
+      // Written on the SELLER's account: this is the payout.
+      return credit ? 'Escrow Released to You' : 'Escrow Released';
+    case 'escrow_refund':
+      return credit ? 'Escrow Refund' : 'Escrow Refund Sent';
     case 'giftcard':
       return credit ? 'Gift Card Refund' : 'Gift Card Purchase';
     default:
@@ -342,6 +361,12 @@ TransactionServiceType? serviceTypeForDomain(String domain) {
       return TransactionServiceType.withdrawal;
     case 'giftcard':
       return TransactionServiceType.giftCard;
+    // All three escrow legs are the same service to the filter chips and the
+    // icon — only their titles differ.
+    case 'escrow_fund':
+    case 'escrow_release':
+    case 'escrow_refund':
+      return TransactionServiceType.escrow;
     default:
       return null;
   }
