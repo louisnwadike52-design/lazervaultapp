@@ -385,7 +385,7 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
             currency_formatter.CurrencySymbols.formatAmountWithCurrency(v, ccy);
         final sym = currency_formatter.CurrencySymbols.getSymbol(ccy);
         final detail = quotable
-            ? 'Fee ${money(q.fee)} per save — ${money(q.net)} reaches your savings.'
+            ? 'Fee ${money(q.fee)} per save. ${money(q.net)} reaches your savings.'
             : 'Fee ${q.describe(sym)} of each save, deducted from the amount saved.';
         return Container(
           margin: EdgeInsets.only(bottom: 12.h),
@@ -442,8 +442,8 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
     final amountType = ruleData['amountType'] as AmountType?;
     final amountValue = (ruleData['amountValue'] as double?) ?? 0;
     final headline = isScheduled
-        ? 'This runs automatically on your schedule. Each scheduled save pulls from your bank by direct debit — a fee applies every time.'
-        : 'Saving from your bank uses direct debit — a fee applies each time (you confirm every save).';
+        ? 'This runs automatically on your schedule. Each scheduled save pulls from your bank by direct debit. A fee applies every time.'
+        : 'Saving from your bank uses direct debit. A fee applies each time (you confirm every save).';
 
     Widget feeLine;
     if (amountType == AmountType.fixed && amountValue > 0) {
@@ -461,7 +461,7 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
           }
           // Quote values are KOBO (gRPC minor units) — convert to naira.
           return Text(
-            'Fee ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(q.fee / 100, 'NGN')} per save — '
+            'Fee ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(q.fee / 100, 'NGN')} per save. '
             '${currency_formatter.CurrencySymbols.formatAmountWithCurrency(q.netAmount / 100, 'NGN')} reaches your goal.'
             '${q.discount > 0 ? ' You save ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(q.discount / 100, 'NGN')} (discount).' : ''}',
             style: GoogleFonts.inter(

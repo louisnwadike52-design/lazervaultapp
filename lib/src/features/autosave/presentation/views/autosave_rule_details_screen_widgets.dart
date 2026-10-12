@@ -35,8 +35,8 @@ String _minimumBalanceHint(TriggerType trigger) {
   final readsLiveBalance =
       AutoSaveTriggerLabels.enforcesMinimumBalance(trigger);
   return readsLiveBalance
-      ? 'The floor you keep in your source account. A save is trimmed — or '
-          'skipped entirely — rather than take you below this.'
+      ? 'The floor you keep in your source account. A save is trimmed, or '
+          'skipped entirely, rather than take you below this.'
       : 'Applies to wallet-deposit and round-up saves, which can read your '
           'live balance. This rule fires on a schedule, so only your '
           'available funds limit a save.';

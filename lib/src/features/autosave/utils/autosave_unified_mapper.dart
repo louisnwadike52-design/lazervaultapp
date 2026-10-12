@@ -102,7 +102,7 @@ UnifiedTransaction autoSaveTxnToUnified(
                 txn.fee, txn.currency),
       },
       if (txn.isAwaitingSettlement)
-        'settlement': 'Awaiting your bank — this completes once the debit '
+        'settlement': 'Awaiting your bank. This completes once the debit '
             'settles.',
       if (!txn.success && (txn.errorMessage ?? '').isNotEmpty)
         'failure_reason': txn.errorMessage!,

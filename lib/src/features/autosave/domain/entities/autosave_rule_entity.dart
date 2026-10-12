@@ -159,8 +159,8 @@ class AutoSaveRuleEntity extends Equatable {
       case TriggerType.scheduledExternal:
         final schedule = _scheduleDescription;
         return sourceBankName.isNotEmpty
-            ? '$schedule — direct debit from $sourceBankName'
-            : '$schedule — direct debit from your linked bank';
+            ? '$schedule, direct debit from $sourceBankName'
+            : '$schedule, direct debit from your linked bank';
       default:
         return 'Unknown trigger';
     }

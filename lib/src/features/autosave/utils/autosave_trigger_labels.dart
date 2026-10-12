@@ -58,13 +58,13 @@ class AutoSaveTriggerLabels {
             'fixed amount or a percentage of that deposit.';
       case TriggerType.scheduled:
         return 'Move a fixed amount from your Lazervault wallet into savings '
-            'on a schedule you choose — daily, weekly or monthly.';
+            'on a schedule you choose: daily, weekly or monthly.';
       case TriggerType.roundUp:
         return 'Round each wallet spend up to the nearest amount you pick and '
             'save the difference. Passive, small, adds up.';
       case TriggerType.externalInflow:
         return 'Watches your linked bank and offers to save a cut whenever '
-            'money lands there. You confirm each save — nothing is pulled '
+            'money lands there. You confirm each save, and nothing is pulled '
             'automatically.';
       case TriggerType.scheduledExternal:
         return 'Pulls your set amount from your linked bank into Lazervault on '

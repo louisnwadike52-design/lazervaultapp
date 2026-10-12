@@ -1108,7 +1108,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             // how much a round-up actually saves, and where to cap it
             // if you want to.
             body: 'Each save is just the rounding difference, so it is '
-                'always smaller than your round-up unit — spending '
+                'always smaller than your round-up unit. Spending '
                 '₦8,050 with a ₦100 unit saves ₦50.\n\n'
                 'Want a ceiling on a single round-up? Set "Maximum per '
                 'save" on the last step.',
@@ -1256,7 +1256,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                       icon: Icons.link_off_rounded,
                       title: 'No linked banks yet',
                       body:
-                          'Link your bank to fund autosave by Direct Debit — no need to leave for the Deposit screen.',
+                          'Link your bank to fund autosave by Direct Debit, with no need to leave for the Deposit screen.',
                     ),
                     SizedBox(height: 12.h),
                     _linkBankButton(label: 'Link a bank'),
@@ -1467,7 +1467,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             _LabeledField(
               label: 'Minimum balance to keep',
               optional: true,
-              help: 'A save is trimmed — or skipped entirely — rather than '
+              help: 'A save is trimmed, or skipped entirely, rather than '
                   'take your source below this.',
               child: _TextInput(
                 controller: _minimumBalanceController,

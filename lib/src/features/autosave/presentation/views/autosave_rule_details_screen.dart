@@ -120,7 +120,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
             ),
             SizedBox(height: 6.h),
             Text(
-              'Your rule and its history are safe — you can resume it once '
+              'Your rule and its history are safe. You can resume it once '
               'Bank Inflow is switched back on.',
               style: GoogleFonts.inter(
                   color: const Color(0xFF6B7280), fontSize: 12.sp, height: 1.5),
@@ -394,7 +394,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
         saveAmount, rule.currency);
     final confirmMessage = feeNaira > 0
         ? 'Save $amtStr from your bank by direct debit. A fee of '
-            '${currency_formatter.CurrencySymbols.formatAmountWithCurrency(feeNaira, rule.currency)} applies — '
+            '${currency_formatter.CurrencySymbols.formatAmountWithCurrency(feeNaira, rule.currency)} applies. '
             '${currency_formatter.CurrencySymbols.formatAmountWithCurrency(netNaira, rule.currency)} will be added to your goal.'
         : 'Save $amtStr now';
 
@@ -1176,7 +1176,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen>
                           fontWeight: FontWeight.w700)),
                   SizedBox(height: 2.h),
                   Text(
-                      'Money arrived in $bank. Tap to save it — a direct debit fee applies.',
+                      'Money arrived in $bank. Tap to save it. A direct debit fee applies.',
                       style: GoogleFonts.inter(
                           fontSize: 12.sp,
                           color: const Color(0xFF9CA3AF),

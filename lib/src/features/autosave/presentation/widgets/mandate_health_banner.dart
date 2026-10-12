@@ -95,7 +95,7 @@ class MandateHealthBanner extends StatelessWidget {
           MandateAuthAttemptStore.openedRecently(mandate.id)) {
         return const _BannerCopy(
           title: 'Direct Debit is setting up',
-          body: 'Your bank is confirming your authorization — this can take up '
+          body: 'Your bank is confirming your authorization. This can take up '
               'to 30 minutes and completes automatically.',
           cta: 'View status',
           info: true,
