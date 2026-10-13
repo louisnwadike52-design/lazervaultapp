@@ -323,6 +323,10 @@ class ContributionMemberModel extends ContributionMember {
     super.missedCycles = 0,
     super.membershipStatus = ContributionMembershipStatus.active,
     super.linkedInvitationId,
+    super.autoChargeStatus = '',
+    super.autoChargeAttempts = 0,
+    super.autoChargeLastAttemptAt,
+    super.autoChargeLastError = '',
   });
 
   factory ContributionMemberModel.fromJson(Map<String, dynamic> json) {

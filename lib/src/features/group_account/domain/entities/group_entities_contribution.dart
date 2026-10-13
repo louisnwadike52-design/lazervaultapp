@@ -454,6 +454,17 @@ class ContributionMember extends Equatable {
   /// the UI deep-link to the invite detail or surface "Invite Sent".
   final String? linkedInvitationId;
 
+  /// Auto-charge attempt state for THIS member's current cycle.
+  ///
+  /// Empty when auto-pay is off or nothing has been attempted. Before these
+  /// existed, auto-pay could fail, retry and exhaust its attempts while the
+  /// member saw only that they were behind — with no way to learn that we had
+  /// tried at all, how many times, or what went wrong.
+  final String autoChargeStatus; // ''|pending|succeeded|failed|exhausted
+  final int autoChargeAttempts;
+  final DateTime? autoChargeLastAttemptAt;
+  final String autoChargeLastError;
+
   const ContributionMember({
     required this.id,
     required this.contributionId,
@@ -469,7 +480,19 @@ class ContributionMember extends Equatable {
     this.missedCycles = 0,
     this.membershipStatus = ContributionMembershipStatus.active,
     this.linkedInvitationId,
+    this.autoChargeStatus = '',
+    this.autoChargeAttempts = 0,
+    this.autoChargeLastAttemptAt,
+    this.autoChargeLastError = '',
   });
+
+  /// True when auto-pay tried and has not succeeded for this cycle.
+  bool get autoChargeTriedAndFailed =>
+      autoChargeStatus == 'failed' || autoChargeStatus == 'exhausted';
+
+  /// True when auto-pay has given up: max attempts reached, nothing further
+  /// will happen on its own and the member has to pay manually.
+  bool get autoChargeExhausted => autoChargeStatus == 'exhausted';
 
   /// Convenience for filtering member lists down to active
   /// participants when computing financial roll-ups.
@@ -498,6 +521,10 @@ class ContributionMember extends Equatable {
         missedCycles,
         membershipStatus,
         linkedInvitationId,
+        autoChargeStatus,
+        autoChargeAttempts,
+        autoChargeLastAttemptAt,
+        autoChargeLastError,
       ];
 
   ContributionMember copyWith({

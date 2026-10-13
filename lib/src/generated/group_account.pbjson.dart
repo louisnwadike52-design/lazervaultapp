@@ -737,6 +737,35 @@ const ContributionMemberMessage$json = {
       '5': 9,
       '10': 'refundFailedReason'
     },
+    {
+      '1': 'auto_charge_status',
+      '3': 21,
+      '4': 1,
+      '5': 9,
+      '10': 'autoChargeStatus'
+    },
+    {
+      '1': 'auto_charge_attempts',
+      '3': 22,
+      '4': 1,
+      '5': 5,
+      '10': 'autoChargeAttempts'
+    },
+    {
+      '1': 'auto_charge_last_attempt_at',
+      '3': 23,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'autoChargeLastAttemptAt'
+    },
+    {
+      '1': 'auto_charge_last_error',
+      '3': 24,
+      '4': 1,
+      '5': 9,
+      '10': 'autoChargeLastError'
+    },
   ],
 };
 
@@ -756,7 +785,12 @@ final $typed_data.Uint8List contributionMemberMessageDescriptor = $convert.base6
     'VkQXQSJQoOcmVtb3ZhbF9yZWFzb24YECABKAlSDXJlbW92YWxSZWFzb24SIwoNcmVmdW5kX2Ft'
     'b3VudBgRIAEoA1IMcmVmdW5kQW1vdW50EikKEGZvcmZlaXRlZF9hbW91bnQYEiABKANSD2Zvcm'
     'ZlaXRlZEFtb3VudBIjCg1yZWZ1bmRfc3RhdHVzGBMgASgJUgxyZWZ1bmRTdGF0dXMSMAoUcmVm'
-    'dW5kX2ZhaWxlZF9yZWFzb24YFCABKAlSEnJlZnVuZEZhaWxlZFJlYXNvbg==');
+    'dW5kX2ZhaWxlZF9yZWFzb24YFCABKAlSEnJlZnVuZEZhaWxlZFJlYXNvbhIsChJhdXRvX2NoYX'
+    'JnZV9zdGF0dXMYFSABKAlSEGF1dG9DaGFyZ2VTdGF0dXMSMAoUYXV0b19jaGFyZ2VfYXR0ZW1w'
+    'dHMYFiABKAVSEmF1dG9DaGFyZ2VBdHRlbXB0cxJYChthdXRvX2NoYXJnZV9sYXN0X2F0dGVtcH'
+    'RfYXQYFyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUhdhdXRvQ2hhcmdlTGFzdEF0'
+    'dGVtcHRBdBIzChZhdXRvX2NoYXJnZV9sYXN0X2Vycm9yGBggASgJUhNhdXRvQ2hhcmdlTGFzdE'
+    'Vycm9y');
 
 @$core.Deprecated('Use contributionPaymentMessageDescriptor instead')
 const ContributionPaymentMessage$json = {

@@ -1861,8 +1861,13 @@ class _CreateContributionBottomSheetState
           _buildSwitchTile(
             title: 'Auto-Pay',
             subtitle: isRotatingSavings
-                ? "We'll debit each member's share when the cycle closes if "
-                    "they haven't paid it"
+                // The debit runs at the START of each cycle, not at its close.
+                // Saying "when the cycle closes" described the old behaviour,
+                // where auto-pay only ran from the overdue sweep once the
+                // cycle was already over — which left members marked behind
+                // for the whole cycle they had asked to be debited for.
+                ? "We'll debit each member's share at the start of every "
+                    "cycle, and retry daily if it doesn't go through"
                 : 'Automatically process payments when due',
             value: _autoPayEnabled,
             // Editable for an esusu now. It used to be forced off "for

@@ -634,6 +634,15 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
 
   void _showAutoDebitDialog(Contribution contribution,
       {required bool hasPaid}) {
+    // The viewer's own member row, resolved the same way the chips row does —
+    // the attempt history below is about THIS person, not the circle.
+    final currentUserId = context.read<GroupAccountCubit>().currentUserId;
+    final me = currentUserId == null
+        ? null
+        : contribution.members
+            .where((m) => m.userId == currentUserId)
+            .cast<ContributionMember?>()
+            .firstOrNull;
     // A one-time contribution has no cycles. It is collected once and that
     // closes it, so "the next cycle close" describes something that will
     // never happen and "you've already paid for this cycle" implies another
@@ -653,13 +662,63 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     final accent = hasPaid ? const Color(0xFF10B981) : const Color(0xFFFB923C);
     final title = hasPaid ? 'You\'re covered' : 'Auto-debit is on';
 
+    // WHEN the debit happens, correctly.
+    //
+    // This said "if you don't pay before <the cycle close>, we'll auto-debit"
+    // — which described the old behaviour, where auto-pay only ran from the
+    // overdue sweep after the cycle had already closed. The debit now runs
+    // when the cycle STARTS, so the copy would have been a plain untruth about
+    // somebody's money.
     final body = hasPaid
         ? (isOneTime
             ? 'You\'ve already paid, so no auto-charge will run for you.'
             : 'You\'ve already paid for this cycle, so no auto-charge will run for you.')
-        : amountLabel != null
-            ? 'If you don\'t pay $amountLabel manually before $dueLabel, we\'ll auto-debit it from your account.'
-            : 'If you don\'t pay manually before $dueLabel, we\'ll auto-debit your account.';
+        : isOneTime
+            ? (amountLabel != null
+                ? 'If you haven\'t paid $amountLabel by $dueLabel, we\'ll auto-debit it from your account.'
+                : 'If you haven\'t paid by $dueLabel, we\'ll auto-debit your account.')
+            : (amountLabel != null
+                ? 'We collect $amountLabel from your account at the start of each cycle. If it doesn\'t go through, we try again once a day until it does.'
+                : 'We collect your share from your account at the start of each cycle. If it doesn\'t go through, we try again once a day until it does.');
+
+    final sections = <_DialogSection>[
+      _DialogSection(heading: 'How it works', body: body),
+    ];
+
+    // What we have actually TRIED, for this member, this cycle.
+    //
+    // Until this existed the attempt history lived only in the service's own
+    // table: auto-pay could fail, retry and exhaust its attempts while the
+    // member saw nothing but "behind". Somebody whose card was empty on the
+    // 1st deserves to know we tried, how many times, and what the bank said.
+    final attempts = me?.autoChargeAttempts ?? 0;
+    if (me != null && attempts > 0) {
+      final when = me.autoChargeLastAttemptAt;
+      final whenLabel = when != null
+          ? DateFormat('MMM d, h:mm a').format(when.toLocal())
+          : null;
+      final reason = me.autoChargeLastError.trim();
+      final buf = StringBuffer();
+      buf.write(attempts == 1 ? 'We tried once' : 'We tried $attempts times');
+      if (whenLabel != null) buf.write(', last on $whenLabel');
+      buf.write('. ');
+      if (me.autoChargeExhausted) {
+        buf.write('We have stopped trying for this cycle, so please pay '
+            'manually.');
+      } else if (me.autoChargeTriedAndFailed) {
+        buf.write('We will try again tomorrow. You can also pay manually '
+            'at any time.');
+      } else {
+        buf.write('It went through.');
+      }
+      if (reason.isNotEmpty && !me.autoChargeStatus.startsWith('succ')) {
+        buf.write('\n\nLast reason: $reason');
+      }
+      sections.add(_DialogSection(
+        heading: me.autoChargeExhausted ? 'We stopped trying' : 'What we tried',
+        body: buf.toString(),
+      ));
+    }
 
     showDialog(
       context: context,
@@ -668,9 +727,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         accent: accent,
         icon: hasPaid ? Icons.check_circle : Icons.bolt,
         title: title,
-        sections: [
-          _DialogSection(heading: 'How it works', body: body),
-        ],
+        sections: sections,
       ),
     );
   }

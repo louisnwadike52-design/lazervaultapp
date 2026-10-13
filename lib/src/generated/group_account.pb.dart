@@ -1197,6 +1197,10 @@ class ContributionMemberMessage extends $pb.GeneratedMessage {
     $fixnum.Int64? forfeitedAmount,
     $core.String? refundStatus,
     $core.String? refundFailedReason,
+    $core.String? autoChargeStatus,
+    $core.int? autoChargeAttempts,
+    $1.Timestamp? autoChargeLastAttemptAt,
+    $core.String? autoChargeLastError,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -1222,6 +1226,13 @@ class ContributionMemberMessage extends $pb.GeneratedMessage {
     if (refundStatus != null) result.refundStatus = refundStatus;
     if (refundFailedReason != null)
       result.refundFailedReason = refundFailedReason;
+    if (autoChargeStatus != null) result.autoChargeStatus = autoChargeStatus;
+    if (autoChargeAttempts != null)
+      result.autoChargeAttempts = autoChargeAttempts;
+    if (autoChargeLastAttemptAt != null)
+      result.autoChargeLastAttemptAt = autoChargeLastAttemptAt;
+    if (autoChargeLastError != null)
+      result.autoChargeLastError = autoChargeLastError;
     return result;
   }
 
@@ -1267,6 +1278,12 @@ class ContributionMemberMessage extends $pb.GeneratedMessage {
     ..aInt64(18, _omitFieldNames ? '' : 'forfeitedAmount')
     ..aOS(19, _omitFieldNames ? '' : 'refundStatus')
     ..aOS(20, _omitFieldNames ? '' : 'refundFailedReason')
+    ..aOS(21, _omitFieldNames ? '' : 'autoChargeStatus')
+    ..a<$core.int>(
+        22, _omitFieldNames ? '' : 'autoChargeAttempts', $pb.PbFieldType.O3)
+    ..aOM<$1.Timestamp>(23, _omitFieldNames ? '' : 'autoChargeLastAttemptAt',
+        subBuilder: $1.Timestamp.create)
+    ..aOS(24, _omitFieldNames ? '' : 'autoChargeLastError')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1493,6 +1510,54 @@ class ContributionMemberMessage extends $pb.GeneratedMessage {
   $core.bool hasRefundFailedReason() => $_has(19);
   @$pb.TagNumber(20)
   void clearRefundFailedReason() => $_clearField(20);
+
+  /// Auto-charge attempt state for THIS member's current cycle.
+  ///
+  /// Carried on the member row rather than behind a new RPC: the app already
+  /// reads these rows to draw the roster, and the person asking "why was I not
+  /// debited?" is looking at their own row when they ask it. Before this the
+  /// attempt history existed only in contribution_auto_charges, which nothing
+  /// outside the service could read — so auto-pay could quietly exhaust its
+  /// retries and the member had no way to find out.
+  ///
+  /// All zero when auto-pay is off or no attempt has been made.
+  @$pb.TagNumber(21)
+  $core.String get autoChargeStatus => $_getSZ(20);
+  @$pb.TagNumber(21)
+  set autoChargeStatus($core.String value) => $_setString(20, value);
+  @$pb.TagNumber(21)
+  $core.bool hasAutoChargeStatus() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearAutoChargeStatus() => $_clearField(21);
+
+  @$pb.TagNumber(22)
+  $core.int get autoChargeAttempts => $_getIZ(21);
+  @$pb.TagNumber(22)
+  set autoChargeAttempts($core.int value) => $_setSignedInt32(21, value);
+  @$pb.TagNumber(22)
+  $core.bool hasAutoChargeAttempts() => $_has(21);
+  @$pb.TagNumber(22)
+  void clearAutoChargeAttempts() => $_clearField(22);
+
+  @$pb.TagNumber(23)
+  $1.Timestamp get autoChargeLastAttemptAt => $_getN(22);
+  @$pb.TagNumber(23)
+  set autoChargeLastAttemptAt($1.Timestamp value) => $_setField(23, value);
+  @$pb.TagNumber(23)
+  $core.bool hasAutoChargeLastAttemptAt() => $_has(22);
+  @$pb.TagNumber(23)
+  void clearAutoChargeLastAttemptAt() => $_clearField(23);
+  @$pb.TagNumber(23)
+  $1.Timestamp ensureAutoChargeLastAttemptAt() => $_ensure(22);
+
+  @$pb.TagNumber(24)
+  $core.String get autoChargeLastError => $_getSZ(23);
+  @$pb.TagNumber(24)
+  set autoChargeLastError($core.String value) => $_setString(23, value);
+  @$pb.TagNumber(24)
+  $core.bool hasAutoChargeLastError() => $_has(23);
+  @$pb.TagNumber(24)
+  void clearAutoChargeLastError() => $_clearField(24);
 }
 
 class ContributionPaymentMessage extends $pb.GeneratedMessage {

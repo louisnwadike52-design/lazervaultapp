@@ -1434,6 +1434,14 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       linkedInvitationId: member.linkedInvitationId.isNotEmpty
           ? member.linkedInvitationId
           : null,
+      // Auto-charge attempt state for the current cycle. Empty when auto-pay
+      // is off or nothing has been attempted, so the UI simply shows nothing.
+      autoChargeStatus: member.autoChargeStatus,
+      autoChargeAttempts: member.autoChargeAttempts,
+      autoChargeLastAttemptAt: member.hasAutoChargeLastAttemptAt()
+          ? _timestampToDateTime(member.autoChargeLastAttemptAt)
+          : null,
+      autoChargeLastError: member.autoChargeLastError,
     );
   }
 
