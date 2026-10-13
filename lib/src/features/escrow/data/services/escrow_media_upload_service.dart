@@ -39,7 +39,7 @@ const int kEscrowMaxVideosPerStep = 1;
 /// deal plus the metadata the backend's `addAttachment` needs.
 class EscrowMediaUploadResult {
   final String publicUrl;
-  final String mediaKind; // 'image' | 'video'
+  final String mediaKind; // 'image' | 'video' | 'voice'
   final String contentType;
   final int sizeBytes;
   final int durationSeconds; // 0 for images
@@ -52,6 +52,7 @@ class EscrowMediaUploadResult {
   });
 
   bool get isVideo => mediaKind == 'video';
+  bool get isVoice => mediaKind == 'voice';
 }
 
 /// Thrown with a warm, human message the user can act on (compress, trim, sign
@@ -103,6 +104,12 @@ class EscrowMediaUploadService {
   /// null when the user backs out of the picker.
   Future<EscrowMediaUploadResult?> pickAndUploadImage({
     ImageSource source = ImageSource.gallery,
+  /// Called with the chosen file the moment it is picked, BEFORE validation,
+  /// compression and upload. The chat composer uses it to put the tile in the
+  /// thread immediately — the picture is already on the device, so making the
+  /// user watch a spinner until a round trip finishes is a delay with nothing
+  /// behind it.
+    void Function(File picked)? onPicked,
   }) async {
     final XFile? x = await _picker.pickImage(
       source: source,
@@ -110,6 +117,7 @@ class EscrowMediaUploadService {
       imageQuality: 90,
     );
     if (x == null) return null;
+    onPicked?.call(File(x.path));
 
     // Read the real bytes and validate the RAW pick first (no auto-fix).
     var bytes = await File(x.path).readAsBytes();
@@ -146,12 +154,15 @@ class EscrowMediaUploadService {
   /// and upload. Returns null when the user backs out of the picker.
   Future<EscrowMediaUploadResult?> pickAndUploadVideo({
     ImageSource source = ImageSource.gallery,
+    /// See [pickAndUploadImage]'s onPicked.
+    void Function(File picked)? onPicked,
   }) async {
     final XFile? x = await _picker.pickVideo(
       source: source,
       maxDuration: const Duration(seconds: kEscrowVideoMaxSeconds),
     );
     if (x == null) return null;
+    onPicked?.call(File(x.path));
 
     File file = File(x.path);
     int sizeBytes = await file.length();
@@ -236,6 +247,50 @@ class EscrowMediaUploadService {
       contentType: contentType,
       mediaKind: 'video',
       durationSeconds: durationSeconds,
+    );
+  }
+
+  /// Upload an already-recorded voice note.
+  ///
+  /// Unlike the photo and video entry points there is no picker here: the
+  /// clip was captured by the composer's own recorder, which already knows
+  /// how long it is. [durationMs] comes from that recorder rather than being
+  /// probed back off the file — a container written a moment ago does not
+  /// always report its duration yet, and a zero would be rejected by the
+  /// server as a failed capture.
+  ///
+  /// Caps are checked BEFORE the upload so a clip that cannot be accepted
+  /// does not spend the user's data first. The limits mirror the server's
+  /// (5 minutes, 6 MB); the server remains the authority.
+  Future<EscrowMediaUploadResult> uploadVoiceNote(
+    File file, {
+    required int durationMs,
+  }) async {
+    final seconds = (durationMs / 1000).round();
+    if (seconds <= 0) {
+      throw const EscrowMediaUploadException(
+        'That recording came out empty. Please try again.',
+      );
+    }
+    if (seconds > 300) {
+      throw const EscrowMediaUploadException(
+        'Voice notes can be up to 5 minutes long.',
+      );
+    }
+    final bytes = await file.readAsBytes();
+    if (bytes.lengthInBytes > 6 * 1024 * 1024) {
+      throw const EscrowMediaUploadException(
+        'That voice note is too large to send.',
+      );
+    }
+    return _upload(
+      bytes: bytes,
+      filename: _basename(file.path, 'escrow-voice.m4a'),
+      // The recorder writes AAC in an m4a container; audio/mp4 is the type
+      // the gateway allow-lists and the one AVPlayer/ExoPlayer recognise.
+      contentType: 'audio/mp4',
+      mediaKind: 'voice',
+      durationSeconds: seconds,
     );
   }
 

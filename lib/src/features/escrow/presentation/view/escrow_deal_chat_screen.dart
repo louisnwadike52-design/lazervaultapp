@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -13,6 +16,10 @@ import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/src/features/escrow/data/services/escrow_media_upload_service.dart';
 import 'package:lazervault/src/features/escrow/domain/entities/escrow_deal_entity.dart';
 import 'package:lazervault/src/features/escrow/presentation/widgets/escrow_media_viewer.dart';
+import 'package:lazervault/core/services/voice_record_configs.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_voice_note_player.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart';
 
 /// The conversation attached to ONE escrow deal.
 ///
@@ -85,6 +92,27 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
   List<EscrowAttachmentEntity> _chatImages = const [];
   bool _uploading = false;
 
+  /// Media that has been chosen or recorded but is not yet on the server.
+  ///
+  /// The photo goes into the thread the instant it is picked, showing the
+  /// LOCAL file, exactly as the text bubble goes up before its round trip.
+  /// Waiting for the upload meant tapping send and watching nothing happen
+  /// for several seconds on a slow connection, which reads as a dropped
+  /// message — the very thing the text path already refuses to do.
+  final List<_PendingMedia> _pendingMedia = [];
+
+  /// Voice capture. One recorder for the screen, stopped in dispose: an
+  /// abandoned recorder keeps the microphone open after the user leaves.
+  final AudioRecorder _recorder = AudioRecorder();
+  bool _recording = false;
+  Duration _recordedFor = Duration.zero;
+  Timer? _recordTimer;
+
+  /// Hard stop for a recording the user forgets to end. Matches the server's
+  /// five-minute cap, so the composer can never produce a clip the backend
+  /// will refuse.
+  static const _maxRecording = Duration(minutes: 5);
+
   /// Admin-set caps; the built-in defaults until the server answers.
   EscrowPolicy _policy = EscrowPolicy.fallback;
 
@@ -104,6 +132,12 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
 
   @override
   void dispose() {
+    _recordTimer?.cancel();
+    // Release the mic and stop any note still playing: both outlive this
+    // screen otherwise, and a voice note that keeps playing after you leave
+    // the conversation is startling.
+    _recorder.dispose();
+    ChatVoiceNotePlayer.instance.stop();
     _controller.dispose();
     _scroll.dispose();
     super.dispose();
@@ -210,37 +244,279 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
     }
   }
 
-  /// Share a photo in the thread.
+  /// Offer the three things you can put in a deal thread.
   ///
-  /// Uploaded first, then recorded against the deal, then the thread is
-  /// re-read. No optimistic bubble here on purpose: a local file path is not
-  /// what the other party will see, and showing a picture that might fail
-  /// its server-side size or type check would be a promise we cannot keep.
-  Future<void> _sendImage() async {
+  /// A single "add photo" button was the whole of the media story here, which
+  /// is why a buyer asked to send a screenshot could reply only in words and
+  /// a seller could not show the parcel moving.
+  Future<void> _showAttachSheet() async {
+    if (_uploading || _recording) return;
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: _card,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 8.h),
+            Container(
+              width: 36.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: _border,
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            SizedBox(height: 8.h),
+            ListTile(
+              leading: Icon(Icons.photo_outlined, color: Colors.white, size: 20.sp),
+              title: Text('Photo',
+                  style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
+              subtitle: Text('Up to 8 MB',
+                  style: GoogleFonts.inter(color: _muted, fontSize: 10.5.sp)),
+              onTap: () => Navigator.pop(ctx, 'image'),
+            ),
+            ListTile(
+              leading: Icon(Icons.videocam_outlined, color: Colors.white, size: 20.sp),
+              title: Text('Video',
+                  style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
+              subtitle: Text('Up to 60 seconds',
+                  style: GoogleFonts.inter(color: _muted, fontSize: 10.5.sp)),
+              onTap: () => Navigator.pop(ctx, 'video'),
+            ),
+            SizedBox(height: 6.h),
+          ],
+        ),
+      ),
+    );
+    if (choice == 'image') {
+      await _sendMedia(kind: 'image');
+    } else if (choice == 'video') {
+      await _sendMedia(kind: 'video');
+    }
+  }
+
+  /// Pick a photo or video and share it in the thread.
+  ///
+  /// Optimistic, like the text path: the tile appears from the LOCAL file as
+  /// soon as it is chosen, carries a spinner while it uploads, and is marked
+  /// — not removed — if it fails. A tile that vanishes is indistinguishable
+  /// from one that sent.
+  Future<void> _sendMedia({required String kind}) async {
     if (_uploading) return;
-    setState(() => _uploading = true);
+    _PendingMedia? pending;
+    // The tile goes up from the LOCAL file the moment the picker returns, so
+    // the thread reacts to the tap rather than to the upload finishing.
+    void onPicked(File f) {
+      if (!mounted) return;
+      pending = _PendingMedia(
+        localId: 'local-${DateTime.now().microsecondsSinceEpoch}',
+        kind: kind,
+        localPath: f.path,
+        at: DateTime.now(),
+      );
+      setState(() {
+        _pendingMedia.add(pending!);
+        _uploading = true;
+      });
+      _jumpToEnd();
+    }
+
     try {
-      final picked = await _uploader.pickAndUploadImage();
-      if (picked == null) {
+      final up = kind == 'video'
+          ? await _uploader.pickAndUploadVideo(onPicked: onPicked)
+          : await _uploader.pickAndUploadImage(onPicked: onPicked);
+      if (up == null) {
+        // Cancelled at the picker — nothing was ever shown.
         if (mounted) setState(() => _uploading = false);
         return;
       }
       await _repo.addAttachment(
         dealId: widget.dealId,
         purpose: 'chat_attachment',
-        mediaKind: picked.mediaKind,
-        url: picked.publicUrl,
-        contentType: picked.contentType,
-        sizeBytes: picked.sizeBytes,
+        mediaKind: up.mediaKind,
+        url: up.publicUrl,
+        contentType: up.contentType,
+        sizeBytes: up.sizeBytes,
       );
       if (!mounted) return;
-      setState(() => _uploading = false);
+      setState(() {
+        if (pending != null) _pendingMedia.remove(pending);
+        _uploading = false;
+      });
       await _load();
     } catch (e) {
       if (!mounted) return;
-      setState(() => _uploading = false);
-      showAppSnackbar('Escrow Pay', _friendly(e), type: AppSnackbarType.error);
+      setState(() {
+        if (pending != null) pending!.failed = true;
+        _uploading = false;
+      });
+      showAppSnackbar('Escrow Pay', _friendlyMedia(e), type: AppSnackbarType.error);
     }
+  }
+
+  // ---- Voice notes --------------------------------------------------------
+
+  Future<void> _toggleRecording() async {
+    if (_recording) {
+      await _stopRecording(send: true);
+    } else {
+      await _startRecording();
+    }
+  }
+
+  Future<void> _startRecording() async {
+    if (_recording || _uploading) return;
+    if (!await _recorder.hasPermission()) {
+      if (!mounted) return;
+      showAppSnackbar('Escrow Pay',
+          'Microphone access is needed to record a voice note.',
+          type: AppSnackbarType.error);
+      return;
+    }
+    final dir = await getTemporaryDirectory();
+    final path =
+        '${dir.path}/escrow_voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+    try {
+      // kVoiceNoteRecordConfig, not a hand-rolled RecordConfig: the package
+      // default is STEREO, which silently fails to initialise on most Android
+      // mics and writes an empty file. See voice_record_configs.dart.
+      await _recorder.start(kVoiceNoteRecordConfig, path: path);
+    } catch (_) {
+      if (!mounted) return;
+      showAppSnackbar('Escrow Pay',
+          'Could not start recording. Please try again.',
+          type: AppSnackbarType.error);
+      return;
+    }
+    if (!mounted) return;
+    setState(() {
+      _recording = true;
+      _recordedFor = Duration.zero;
+    });
+    _recordTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      setState(() => _recordedFor += const Duration(seconds: 1));
+      if (_recordedFor >= _maxRecording) _stopRecording(send: true);
+    });
+  }
+
+  Future<void> _stopRecording({required bool send}) async {
+    _recordTimer?.cancel();
+    _recordTimer = null;
+    if (!_recording) return;
+    final ms = _recordedFor.inMilliseconds;
+    final path = await _recorder.stop();
+    if (mounted) {
+      setState(() {
+        _recording = false;
+        _recordedFor = Duration.zero;
+      });
+    }
+    if (!send || path == null) return;
+    if (ms < 700) {
+      if (mounted) {
+        showAppSnackbar('Escrow Pay', 'Hold the mic a little longer to record.',
+            type: AppSnackbarType.error);
+      }
+      return;
+    }
+    // A capture can fail without throwing — the file exists but is empty.
+    // Catching it here is the difference between "try again" and a bubble
+    // that plays nothing.
+    var ok = false;
+    try {
+      ok = await File(path).length() > 1024;
+    } catch (_) {}
+    if (!ok) {
+      if (mounted) {
+        showAppSnackbar('Escrow Pay',
+            'That recording came out empty. Please try again.',
+            type: AppSnackbarType.error);
+      }
+      return;
+    }
+    await _sendVoice(path, ms);
+  }
+
+  Future<void> _sendVoice(String path, int durationMs) async {
+    final pending = _PendingMedia(
+      localId: 'local-${DateTime.now().microsecondsSinceEpoch}',
+      kind: 'voice',
+      localPath: path,
+      durationMs: durationMs,
+      at: DateTime.now(),
+    );
+    setState(() {
+      _pendingMedia.add(pending);
+      _uploading = true;
+    });
+    _jumpToEnd();
+    try {
+      final up =
+          await _uploader.uploadVoiceNote(File(path), durationMs: durationMs);
+      await _repo.addAttachment(
+        dealId: widget.dealId,
+        purpose: 'chat_attachment',
+        mediaKind: up.mediaKind,
+        url: up.publicUrl,
+        contentType: up.contentType,
+        sizeBytes: up.sizeBytes,
+        durationSeconds: up.durationSeconds,
+      );
+      if (!mounted) return;
+      setState(() {
+        _pendingMedia.remove(pending);
+        _uploading = false;
+      });
+      await _load();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        pending.failed = true;
+        _uploading = false;
+      });
+      showAppSnackbar('Escrow Pay', _friendlyMedia(e), type: AppSnackbarType.error);
+    }
+  }
+
+  /// Copy for a failed ATTACHMENT, which is not a failed message.
+  ///
+  /// Everything unrecognised used to collapse to "Could not send your
+  /// message", which was wrong twice over: it named the wrong thing, and it
+  /// told the user to retry a refusal that will fail identically every time
+  /// — a cap reached, a clip too long, a deal already closed. The server
+  /// sends those as sentences meant to be read, so they are shown.
+  String _friendlyMedia(Object e) {
+    final raw = e.toString();
+    final s = raw.toLowerCase();
+    if (s.contains('unavailable') || s.contains('socket') || s.contains('network')) {
+      return 'Server not reachable. Please try again.';
+    }
+    if (s.contains('not found')) return 'This conversation is not available.';
+    for (final marker in const [
+      'you can attach',
+      'voice note',
+      'shared files',
+      'too big',
+      'too large',
+      'seconds long',
+      'this deal is closed',
+      'minutes long',
+      'came out empty',
+      'signed in',
+    ]) {
+      if (s.contains(marker)) {
+        // Strip the gRPC envelope so the sentence reads on its own.
+        final m = RegExp(r'desc\s*=\s*(.+)$', dotAll: true).firstMatch(raw);
+        final text = (m?.group(1) ?? raw).trim();
+        return text.isEmpty ? 'That file could not be shared.' : text;
+      }
+    }
+    return 'That file could not be shared. Please try again.';
   }
 
   String _friendly(Object e) {
@@ -266,6 +542,11 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
         appBar: AppBar(
           backgroundColor: _bg,
           elevation: 0,
+          // Beside the back button, not centred. iOS centres by default and
+          // the two-line title then sits oddly adrift from the control that
+          // owns it; every other chat in the app reads left-aligned.
+          centerTitle: false,
+          titleSpacing: 0,
           leading: IconButton(
             icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
             onPressed: () => Get.back(),
@@ -408,7 +689,7 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
         ),
       );
     }
-    if (_messages.isEmpty && _chatImages.isEmpty) {
+    if (_messages.isEmpty && _chatImages.isEmpty && _pendingMedia.isEmpty) {
       return Center(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 36.w),
@@ -427,7 +708,11 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
     // epoch-zero fallback would do.
     final items = <({DateTime? at, Widget child})>[
       for (final m in _messages) (at: m.createdAt, child: _bubble(m)),
-      for (final a in _chatImages) (at: a.createdAt, child: _imageBubble(a)),
+      for (final a in _chatImages) (at: a.createdAt, child: _mediaBubble(a)),
+      // Not yet on the server, so they sort by when they were picked — which
+      // is always "now", i.e. the bottom of the thread, where the user is
+      // looking.
+      for (final m in _pendingMedia) (at: m.at, child: _pendingBubble(m)),
     ]..sort((x, y) {
         if (x.at == null && y.at == null) return 0;
         if (x.at == null) return 1;
@@ -551,6 +836,227 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
     );
   }
 
+  /// Anything shared in the thread, dispatched by kind.
+  Widget _mediaBubble(EscrowAttachmentEntity a) {
+    if (a.mediaKind == 'voice') return _voiceBubble(a);
+    if (a.mediaKind == 'video') return _videoBubble(a);
+    return _imageBubble(a);
+  }
+
+  /// A clip shared in the thread.
+  ///
+  /// Deliberately NOT an Image.network of the video URL — that was what the
+  /// single image path did to anything that was not a photo, and it rendered
+  /// every clip as "Image unavailable". There is no server-side thumbnail, so
+  /// the tile states what it is and opens the player on tap.
+  Widget _videoBubble(EscrowAttachmentEntity a) {
+    final mine = a.uploadedBy == widget.viewerUserId;
+    return Align(
+      alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: 8.h),
+        child: GestureDetector(
+          onTap: () => showEscrowMediaViewer(
+            context,
+            url: a.url,
+            isVideo: true,
+            heroTag: 'chat-${a.id}',
+          ),
+          child: Hero(
+            tag: 'chat-${a.id}',
+            child: Container(
+              width: 190.w,
+              height: 120.h,
+              decoration: BoxDecoration(
+                color: _card,
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: _border),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.play_circle_fill,
+                      color: Colors.white, size: 34.sp),
+                  SizedBox(height: 6.h),
+                  Text(
+                    a.durationSeconds > 0
+                        ? 'Video · ${_clock(Duration(seconds: a.durationSeconds))}'
+                        : 'Video',
+                    style: GoogleFonts.inter(color: _muted, fontSize: 10.5.sp),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// A voice note. Playback goes through the app-wide single player so that
+  /// scrolling the bubble off-screen does not dispose the audio mid-sentence.
+  Widget _voiceBubble(EscrowAttachmentEntity a) {
+    final mine = a.uploadedBy == widget.viewerUserId;
+    final id = a.url;
+    return Align(
+      alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: 8.h),
+        child: Container(
+          constraints: BoxConstraints(maxWidth: 230.w),
+          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 9.h),
+          decoration: BoxDecoration(
+            color: mine ? _accent : _card,
+            borderRadius: BorderRadius.circular(12.r),
+            border: mine ? null : Border.all(color: _border),
+          ),
+          child: ValueListenableBuilder<String?>(
+            valueListenable: ChatVoiceNotePlayer.instance.currentId,
+            builder: (_, currentId, __) {
+              final isCurrent = currentId == id;
+              return ValueListenableBuilder<bool>(
+                valueListenable: ChatVoiceNotePlayer.instance.playing,
+                builder: (_, playing, __) {
+                  final isPlaying = isCurrent && playing;
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      GestureDetector(
+                        onTap: () => ChatVoiceNotePlayer.instance.toggle(
+                          id,
+                          mediaUrl: a.url,
+                          fallbackDurationMs: a.durationSeconds * 1000,
+                        ),
+                        child: Icon(
+                          isPlaying
+                              ? Icons.pause_circle_filled
+                              : Icons.play_circle_fill,
+                          color: Colors.white,
+                          size: 28.sp,
+                        ),
+                      ),
+                      SizedBox(width: 8.w),
+                      Icon(Icons.graphic_eq,
+                          color: Colors.white.withValues(alpha: 0.75),
+                          size: 16.sp),
+                      SizedBox(width: 8.w),
+                      Text(
+                        _clock(Duration(seconds: a.durationSeconds)),
+                        style: GoogleFonts.inter(
+                            color: Colors.white, fontSize: 11.5.sp),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Media that is still uploading, or whose upload failed.
+  Widget _pendingBubble(_PendingMedia m) {
+    final failed = m.failed;
+    Widget inner;
+    if (m.kind == 'voice') {
+      inner = Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.mic, color: Colors.white, size: 18.sp),
+          SizedBox(width: 8.w),
+          Text(_clock(Duration(milliseconds: m.durationMs)),
+              style:
+                  GoogleFonts.inter(color: Colors.white, fontSize: 11.5.sp)),
+        ],
+      );
+    } else if (m.kind == 'video') {
+      inner = Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.videocam, color: Colors.white, size: 18.sp),
+          SizedBox(width: 8.w),
+          Text('Video',
+              style:
+                  GoogleFonts.inter(color: Colors.white, fontSize: 11.5.sp)),
+        ],
+      );
+    } else {
+      inner = ClipRRect(
+        borderRadius: BorderRadius.circular(10.r),
+        child: Image.file(
+          File(m.localPath),
+          width: 150.w,
+          height: 110.h,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => SizedBox(
+            width: 150.w,
+            height: 110.h,
+            child: Center(
+              child: Icon(Icons.photo, color: _muted, size: 22.sp),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: 8.h),
+        child: Opacity(
+          opacity: failed ? 0.65 : 0.85,
+          child: Container(
+            padding: EdgeInsets.all(8.w),
+            decoration: BoxDecoration(
+              color: _accent,
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                inner,
+                SizedBox(height: 4.h),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (failed) ...[
+                      Icon(Icons.error_outline,
+                          size: 11.sp, color: const Color(0xFFFCA5A5)),
+                      SizedBox(width: 3.w),
+                      Text('Not sent',
+                          style: GoogleFonts.inter(
+                              color: const Color(0xFFFCA5A5), fontSize: 9.5.sp)),
+                    ] else ...[
+                      SizedBox(
+                        width: 9.sp,
+                        height: 9.sp,
+                        child: const CircularProgressIndicator(
+                            strokeWidth: 1.5, color: Colors.white),
+                      ),
+                      SizedBox(width: 5.w),
+                      Text('Sending…',
+                          style: GoogleFonts.inter(
+                              color: Colors.white70, fontSize: 9.5.sp)),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  static String _clock(Duration d) {
+    final m = d.inMinutes;
+    final sec = d.inSeconds % 60;
+    return '$m:${sec.toString().padLeft(2, '0')}';
+  }
+
   /// A photo shared in the thread. Tap to open the same viewer the deal's
   /// evidence uses, so there is one way to look at escrow media.
   Widget _imageBubble(EscrowAttachmentEntity a) {
@@ -618,8 +1124,8 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           IconButton(
-            tooltip: 'Share a photo',
-            onPressed: _uploading ? null : _sendImage,
+            tooltip: 'Share a photo or video',
+            onPressed: (_uploading || _recording) ? null : _showAttachSheet,
             icon: _uploading
                 ? SizedBox(
                     width: 18.sp,
@@ -630,7 +1136,50 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
                 : Icon(Icons.add_photo_alternate_outlined,
                     color: _muted, size: 22.sp),
           ),
-          Expanded(
+          if (_recording)
+            Expanded(
+              child: Row(
+                children: [
+                  // Cancel, deliberately to the LEFT of the send control and
+                  // visually distinct: discarding a recording by mistake is
+                  // the one irreversible thing this composer can do.
+                  IconButton(
+                    tooltip: 'Discard recording',
+                    onPressed: () => _stopRecording(send: false),
+                    icon: Icon(Icons.delete_outline,
+                        color: const Color(0xFFFCA5A5), size: 20.sp),
+                  ),
+                  Container(
+                    width: 8.w,
+                    height: 8.w,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFEF4444),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    _clock(_recordedFor),
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600),
+                  ),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: Text(
+                      'Recording… tap the tick to send',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                          GoogleFonts.inter(color: _muted, fontSize: 11.sp),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            Expanded(
             child: TextField(
               controller: _controller,
               minLines: 1,
@@ -656,9 +1205,17 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
               ),
             ),
           ),
-          SizedBox(width: 8.w),
+          if (!_recording)
+            IconButton(
+              tooltip: 'Record a voice note',
+              onPressed: _uploading ? null : _toggleRecording,
+              icon: Icon(Icons.mic_none_rounded, color: _muted, size: 22.sp),
+            ),
+          SizedBox(width: 4.w),
           GestureDetector(
-            onTap: _sending ? null : _send,
+            onTap: _recording
+                ? () => _stopRecording(send: true)
+                : (_sending ? null : _send),
             child: Container(
               width: 42.w,
               height: 42.w,
@@ -672,11 +1229,32 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
                       child: const CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white),
                     )
-                  : Icon(Icons.send_rounded, color: Colors.white, size: 18.sp),
+                  : Icon(_recording ? Icons.check_rounded : Icons.send_rounded,
+                      color: Colors.white, size: 18.sp),
             ),
           ),
         ],
       ),
     );
   }
+}
+
+/// One picture, clip or voice note that is in the thread but not yet on the
+/// server. Mutable `failed` only: everything else about it is fixed at the
+/// moment of picking.
+class _PendingMedia {
+  _PendingMedia({
+    required this.localId,
+    required this.kind,
+    required this.localPath,
+    required this.at,
+    this.durationMs = 0,
+  });
+
+  final String localId;
+  final String kind; // image | video | voice
+  final String localPath;
+  final DateTime at;
+  final int durationMs;
+  bool failed = false;
 }
