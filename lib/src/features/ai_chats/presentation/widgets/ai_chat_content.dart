@@ -1782,8 +1782,16 @@ class _AiChatContentState extends State<AiChatContent>
       }
     });
     HapticFeedback.selectionClick();
-    final applied = _answerRatings[key];
-    if (applied == null) return;
+    // CLEARING is sent too, as the empty string — the endpoint takes 'up',
+    // 'down' or '' and '' nulls the column.
+    //
+    // This used to return early on a clear, which was invisible while
+    // ratings were never read back: the thumb went out, nothing contradicted
+    // it. Now that history restores the stored rating, an un-tap that never
+    // reached the server would come back the next time the thread loaded,
+    // and the user would be told they had said something they had just
+    // retracted.
+    final applied = _answerRatings[key] ?? '';
     unawaited(context.read<AIChatCubit>().rateAnswer(
           serverMessageId: message.serverMessageId,
           rating: applied,
