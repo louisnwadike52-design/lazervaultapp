@@ -3,6 +3,8 @@ import 'package:lazervault/src/features/uplift/data/services/uplift_guide_prefer
 import 'package:lazervault/src/features/impersonation/presentation/impersonation_entry_tile.dart';
 import 'package:lazervault/src/features/voice_session/data/voice_guide_preference.dart';
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/group_account/presentation/widgets/group_funds_terms.dart';
+import 'package:lazervault/src/features/group_account/data/services/group_funds_terms_prefs.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/inactivity_preference.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -677,6 +679,22 @@ class _SettingsViewState extends State<_SettingsView> {
             'bills voice', 'exchange voice',
           ],
         ),
+      _SectionSpec(
+        title: 'Group Funds',
+        icon: Icons.groups_outlined,
+        body: _groupFundsBody(),
+        keywords: const [
+          'group funds',
+          'esusu',
+          'rosca',
+          'contribution',
+          'terms',
+          'terms and conditions',
+          'how it works',
+          'show terms again',
+          'reset terms',
+        ],
+      ),
       _SectionSpec(
         title: 'Statements & Data',
         icon: Icons.description_outlined,
@@ -2007,6 +2025,44 @@ class _SettingsViewState extends State<_SettingsView> {
             s.label.toLowerCase(),
             s.slug,
           ],
+        ),
+    ]);
+  }
+
+  /// Group Funds settings.
+  ///
+  /// Only one thing lives here today: bringing back the terms sheet someone
+  /// dismissed on the landing page. It is in Settings rather than buried in
+  /// the Group Funds menu because "I turned something off, where do I turn it
+  /// back on" is a Settings question — and the dismiss copy promises exactly
+  /// this, so the promise has to be findable by searching "terms".
+  Widget _groupFundsBody() {
+    return _filterableColumn([
+      _navTile(
+          icon: Icons.gavel_rounded,
+          title: 'Show the Group Funds terms again',
+          subtitle:
+              'Reopens the terms on your next visit to Group Funds. Nothing '
+              'about your groups changes.',
+          onTap: () async {
+            final userId = context.read<AuthenticationCubit>().userId ?? '';
+            await GroupFundsTermsPrefs.reset(userId);
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                    'The terms will open next time you visit Group Funds.'),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
+        ),
+      _navTile(
+          icon: Icons.help_outline,
+          title: 'Read the terms now',
+          subtitle: 'Who holds the money, and what happens if someone stops '
+              'paying.',
+          onTap: () => showGroupFundsTermsSheet(context),
         ),
     ]);
   }

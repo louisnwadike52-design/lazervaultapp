@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/group_account/data/services/group_funds_terms_prefs.dart';
 import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -101,6 +102,14 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
   @override
   void initState() {
     super.initState();
+    // The terms, once.
+    //
+    // Someone deciding whether to put money into a pot with other people
+    // should meet "who holds this and what happens if someone stops paying"
+    // without going looking for it. Shown after the first frame so it never
+    // competes with the list painting, and only until dismissed — a sheet
+    // that reappears every visit stops being read.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowTerms());
     // 4 tabs: My Groups / Discover / Invites / Leaderboard. Invites
     // sits between Discover and Leaderboard so the badge is visible
     // without scrolling and the LTR reading order is "what I have
@@ -710,6 +719,19 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
   /// drift apart.
   /// One row. [reorderIndex] is non-null only in the reorderable list, where
   /// the card's handle drags it; in search results there is no order to drag.
+  /// Open the terms on first visit, unless the user has dismissed them.
+  Future<void> _maybeShowTerms() async {
+    if (!mounted) return;
+    final userId = context.read<AuthenticationCubit>().userId ?? '';
+    if (!await GroupFundsTermsPrefs.shouldShow(userId)) return;
+    if (!mounted) return;
+    await showGroupFundsTermsSheet(
+      context,
+      offerDismiss: true,
+      onDismissForever: () => GroupFundsTermsPrefs.dismiss(userId),
+    );
+  }
+
   Widget _groupRow(GroupAccount group, {int? reorderIndex}) {
     final card = GroupCard(
       group: group,

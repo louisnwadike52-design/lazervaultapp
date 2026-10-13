@@ -54,7 +54,16 @@ class GroupFundsTerms {
 
 /// Shows the terms. Read-only; there is nothing to accept here, because the
 /// acceptance that matters happens at the point of paying.
-Future<void> showGroupFundsTermsSheet(BuildContext context) async {
+/// Shows the terms, optionally with a "Don't show this again" action.
+///
+/// [offerDismiss] is true only for the automatic first-visit opening on the
+/// landing page. Opened deliberately from the menu there is nothing to
+/// suppress — you asked for it.
+Future<void> showGroupFundsTermsSheet(
+  BuildContext context, {
+  bool offerDismiss = false,
+  VoidCallback? onDismissForever,
+}) async {
   await showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -153,6 +162,30 @@ Future<void> showGroupFundsTermsSheet(BuildContext context) async {
                       fontWeight: FontWeight.w700)),
             ),
           ),
+          // Only on the automatic first opening. Phrased as what it does
+          // rather than "OK": the terms are not being accepted here, they are
+          // being stopped from opening themselves — and Settings says where
+          // to find them again, so dismissing is not a one-way door.
+          if (offerDismiss) ...[
+            SizedBox(height: 6.h),
+            TextButton(
+              onPressed: () {
+                onDismissForever?.call();
+                Navigator.of(ctx).pop();
+              },
+              child: Text(
+                "Don't show this again",
+                style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF), fontSize: 12.5.sp),
+              ),
+            ),
+            Text(
+              'You can reopen it any time from Settings.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                  color: const Color(0xFF6B7280), fontSize: 10.5.sp),
+            ),
+          ],
         ],
       ),
     ),
