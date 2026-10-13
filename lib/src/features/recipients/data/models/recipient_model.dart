@@ -156,20 +156,62 @@ class RecipientModel {
   /// Only strips when the prefix is THIS recipient's own bankName, so a person
   /// whose name legitimately contains a slash is never mangled, and a different
   /// institution's label is left visible rather than silently hidden.
+  /// Institution tokens that appear in a provider's ACCOUNT NAME but are not
+  /// part of the person's name.
+  ///
+  /// Name-enquiry and settlement rails decorate the account holder: a prefix
+  /// ("LAZERVAULT/Nnaemeka Ezeke") or a trailing processor tag ("Promise
+  /// Ezike FLW"). Financial Connections and the saved lists are about PEOPLE,
+  /// so the decoration is noise — and on a one-line row it is noise that
+  /// pushes the actual name out.
+  static const _institutionTokens = <String>{
+    'lazervault', 'flw', 'flutterwave', 'nomba', 'moniepoint', 'paystack',
+    'kuda', 'opay', 'palmpay', 'providus', 'wema', 'sterling', 'mfb',
+  };
+
+  /// Strips a leading `INSTITUTION/` from an account name.
+  ///
+  /// Matches the recipient's own bankName when we have one, and falls back to
+  /// a known-institution list when we do not — which is the case that leaked:
+  /// a P2P connection row often carries no bank at all, so the old
+  /// `bank.isEmpty` early-return left "LAZERVAULT/Nnaemeka Ezeke" intact.
   String _withoutInstitutionPrefix(String value) {
     final v = value.trim();
-    final bank = bankName.trim();
-    if (bank.isEmpty || !v.contains('/')) return v;
+    if (!v.contains('/')) return v;
     final head = v.substring(0, v.indexOf('/')).trim();
-    if (head.toLowerCase() != bank.toLowerCase()) return v;
+    final bank = bankName.trim();
+    final headIsInstitution = (bank.isNotEmpty &&
+            head.toLowerCase() == bank.toLowerCase()) ||
+        _institutionTokens.contains(head.toLowerCase());
+    if (!headIsInstitution) return v;
     final tail = v.substring(v.indexOf('/') + 1).trim();
     // Never strip down to nothing — a bare institution name beats an empty row.
     return tail.isEmpty ? v : tail;
   }
 
+  /// Strips a TRAILING processor tag ("Promise Ezike FLW" -> "Promise Ezike").
+  ///
+  /// Only a final standalone token, and only one from the known list, so a
+  /// real surname is never eaten. Never strips the whole string: a name that
+  /// is nothing but an institution token is left as it is, because an empty
+  /// row is worse than a wrong one.
+  String _withoutInstitutionSuffix(String value) {
+    final v = value.trim();
+    final parts = v.split(RegExp(r'\s+'));
+    if (parts.length < 2) return v;
+    final last = parts.last.replaceAll(RegExp(r'[^A-Za-z]'), '').toLowerCase();
+    if (!_institutionTokens.contains(last)) return v;
+    final head = parts.sublist(0, parts.length - 1).join(' ').trim();
+    return head.isEmpty ? v : head;
+  }
+
+  /// A person's name with the rail's decoration removed, both ends.
+  String _personName(String value) =>
+      _withoutInstitutionSuffix(_withoutInstitutionPrefix(value));
+
   String get displayName {
     if (alias != null && alias!.trim().isNotEmpty) return alias!.trim();
-    if (!_isUnusableName(name)) return _withoutInstitutionPrefix(name);
+    if (!_isUnusableName(name)) return _personName(name);
     if (email != null && email!.contains('@')) {
       final local = email!.split('@').first.trim();
       if (local.isNotEmpty) return local;

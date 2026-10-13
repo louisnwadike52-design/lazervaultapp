@@ -653,15 +653,20 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
         _DetailEntry('Description', _cleanDescription(tx.description!)),
       if (tx.displayReference != null)
         _DetailEntry('Reference', tx.displayReference!, copyable: true),
-      // Wallet balance either side of the movement. Shown as a PAIR or not at
-      // all — one half on its own cannot be reconciled against anything, and a
-      // crypto leg has no naira balance to state (both are null there).
-      if (tx.hasBalances) ...[
-        _DetailEntry('Balance before',
-            '$_currencySymbol${NumberFormat('#,##0.00').format(tx.balanceBefore!)}'),
-        _DetailEntry('Balance after',
-            '$_currencySymbol${NumberFormat('#,##0.00').format(tx.balanceAfter!)}'),
-      ],
+      // BALANCE BEFORE / AFTER IS NOT ON A RECEIPT.
+      //
+      // A receipt answers "did this payment happen, for how much, to whom" —
+      // and it is the one artefact built to be handed to somebody else. Both
+      // this screen and its PDF have Download and Share, and the running
+      // wallet balance either side of the movement is not the counterparty's
+      // business. Sharing proof of a GBP100 transfer should not also disclose
+      // that the sender holds GBP59,602.
+      //
+      // The figures still exist and are still reachable: they belong on the
+      // STATEMENT OF ACCOUNT, which is an account-holder document reached
+      // from the dashboard / account details / settings, where a running
+      // balance is the entire point and nobody is sharing it as proof of one
+      // payment. See transaction_export_helper.dart, which keeps them.
       // WHICH gift card this was. Placed above the generic rows because it is
       // the detail that makes the transaction recognisable; Type/Category say
       // the same thing for every gift-card row.
@@ -1490,12 +1495,22 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   /// and which FORMAT (PDF / PNG / JPG) before running [action].
   Future<void> _withReceiptOptions(
       String actionLabel, Future<void> Function() action) async {
-    // ALWAYS offer the sender/recipient copy choice on a transfer receipt —
-    // regardless of fee and of where the receipt was opened from (user
-    // directive: the copy sheet must show no matter the source). A zero-fee
-    // transfer still has two meaningfully different documents: whose copy
-    // the headline declares.
-    final offerCopy = tx.serviceType == TransactionServiceType.transfer;
+    // Offer the sender/recipient copy choice on an OUTGOING transfer only.
+    //
+    // The earlier rule was "always, regardless of fee and of where the
+    // receipt was opened from". The source part of that still holds — the
+    // sheet shows no matter which screen you came from. What direction adds:
+    // on money sent TO you there is no choice to make. You are the recipient;
+    // a "sender's copy" of somebody else's payment is not yours to issue, and
+    // it itemises a fee you did not pay. Asking is a question with one
+    // correct answer, which is a worse experience than not asking.
+    //
+    // An OUTGOING transfer keeps the choice: a zero-fee transfer still has
+    // two meaningfully different documents, and the sender genuinely may want
+    // either — their own record, or the beneficiary's copy to hand over as
+    // proof of payment.
+    final offerCopy = tx.serviceType == TransactionServiceType.transfer &&
+        tx.flow != TransactionFlow.incoming;
     if (offerCopy) {
       final copy = await _showReceiptCopySheet();
       if (copy == null || !mounted) return;

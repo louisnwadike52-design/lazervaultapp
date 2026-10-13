@@ -249,7 +249,7 @@ class _RecipientCard extends StatelessWidget {
                       BankLogo(
                         bankName: _isInternal && recipient.bankName.trim().isEmpty
                             ? BrandBank.displayName
-                            : recipient.bankName,
+                            : recipient.displayBankName,
                         bankCode: recipient.sortCode,
                         size: 34.w,
                         borderRadius: 17.w,
@@ -291,7 +291,20 @@ class _RecipientCard extends StatelessWidget {
                   ),
                   SizedBox(height: 2.h),
                   Text(
-                    recipient.bankName.isNotEmpty ? recipient.bankName : '—',
+                    // displayBankName, not the raw column.
+                    //
+                    // The stored value is whatever the rail it came from
+                    // wrote — "LazerVault" from an older record, "LAZERVAULT
+                    // LTD" or "Lazervault MFB" from the NIBSS registry — and
+                    // this was the last place rendering it verbatim, so the
+                    // saved cards read "LazerVault" (the old logotype, which
+                    // reads as a typo) while every other surface had already
+                    // been canonicalised. The raw value still drives
+                    // internal/external routing and beneficiary matching
+                    // untouched; only the copy changes. See BrandBank.
+                    recipient.displayBankName.isNotEmpty
+                        ? recipient.displayBankName
+                        : '—',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(color: secondaryText, fontSize: 11.sp),

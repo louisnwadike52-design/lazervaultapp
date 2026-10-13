@@ -410,29 +410,41 @@ class _CreateContributionBottomSheetState
         debugPrint('🟢 Page 2 (Schedule) validation: PASS');
         return true;
 
-      default:
-        // The SETTINGS page lands here, and "default: return true" is why
-        // Continue went straight through a visible validation error: the
-        // minimum-balance field painted its red border and its "Cannot
-        // exceed target amount" message, and the step advanced anyway.
-        //
-        // Re-checked from the controllers rather than trusting _fieldErrors.
-        // That map is populated by a post-frame callback from the inline
-        // Builder, and _clearErrors() at the top of this method wipes it
-        // before this switch runs — so by the time we got here the error the
-        // user could see on screen was not in the map to test.
-        //
-        // The invariant itself: a payout floor above the target can never be
-        // reached, so the contribution could never pay out.
+      // SETTINGS. Index 3 for both flows — see _pageNames:
+      //   one-time: Type, Details, Members,  Settings, Review
+      //   esusu:    Type, Details, Rotation, Settings, Review
+      //
+      // Named explicitly rather than left to `default` so the check cannot
+      // also fire on REVIEW (index 4), where the minimum-balance field is not
+      // on screen: the user would be blocked with no control to fix it and
+      // would have to guess their way back two pages. Review is unreachable
+      // with an invalid value anyway, because this gate stands in front of it
+      // — including when the target is lowered on Details afterwards, since
+      // the only way forward is back through here.
+      case 3:
         final target = _parseAmount(_targetAmountController.text);
         final minBal = _parseAmount(_minimumBalanceController.text);
         if (minBal > 0 && target > 0 && minBal > target) {
           _setFieldError('minimumBalance', 'Cannot exceed target amount');
           _showErrorBanner(
               'Minimum balance for payout cannot exceed the target amount');
-          debugPrint('🔴 Page $_currentPage validation: min balance > target');
+          debugPrint('🔴 Page 3 (Settings) validation: min balance > target');
           return false;
         }
+        debugPrint('🟢 Page 3 (Settings) validation: PASS');
+        return true;
+
+      default:
+        // Review and anything added later. The Settings gate above is what
+        // stops an invalid minimum balance reaching here; this stays a pass
+        // so a new page is not silently blocked by a rule that is not its
+        // own.
+        //
+        // The Settings check reads the CONTROLLERS, not _fieldErrors: that
+        // map is filled by a post-frame callback from an inline Builder, and
+        // _clearErrors() at the top of this method wipes it before the switch
+        // runs — so the error the user could see on screen was not in the map
+        // to test. That is why Continue sailed past a red field.
         debugPrint('🟢 Page $_currentPage validation: PASS (default)');
         return true;
     }
