@@ -144,6 +144,14 @@ class _SettingsViewState extends State<_SettingsView> {
   /// load runs once per user rather than on every rebuild.
   String? _voiceGuidesUidLoaded;
 
+  /// Whether the Group Funds terms have been dismissed, and for whom.
+  ///
+  /// SharedPreferences is async and this section renders synchronously, so
+  /// the value is read once per uid and cached — the same shape the voice
+  /// guides tile above uses.
+  bool _groupFundsTermsDismissed = false;
+  String? _groupFundsTermsUidLoaded;
+
   /// Last successfully-loaded profile state. Cached so that a background
   /// ProfileLoading (triggered by a preference toggle) does NOT blank the whole
   /// screen — we keep rendering the loaded content and only show the full-screen
@@ -2037,26 +2045,63 @@ class _SettingsViewState extends State<_SettingsView> {
   /// back on" is a Settings question — and the dismiss copy promises exactly
   /// this, so the promise has to be findable by searching "terms".
   Widget _groupFundsBody() {
+    final uid = context.read<AuthenticationCubit>().userId ?? '';
+    // Read once per uid. Until it lands the switch shows ON, which matches
+    // GroupFundsTermsPrefs.shouldShow failing open.
+    if (uid.isNotEmpty && _groupFundsTermsUidLoaded != uid) {
+      _groupFundsTermsUidLoaded = uid;
+      GroupFundsTermsPrefs.shouldShow(uid).then((show) {
+        if (mounted && _groupFundsTermsDismissed == show) {
+          setState(() => _groupFundsTermsDismissed = !show);
+        }
+      });
+    }
+
     return _filterableColumn([
-      _navTile(
-          icon: Icons.gavel_rounded,
-          title: 'Show the Group Funds terms again',
-          subtitle:
-              'Reopens the terms on your next visit to Group Funds. Nothing '
-              'about your groups changes.',
-          onTap: () async {
-            final userId = context.read<AuthenticationCubit>().userId ?? '';
-            await GroupFundsTermsPrefs.reset(userId);
-            if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                    'The terms will open next time you visit Group Funds.'),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          },
-        ),
+      // A SWITCH, not a one-way "show them again" button.
+      //
+      // As a nav tile this row did its job and then said nothing: it reset
+      // the flag, showed a snackbar, and left the screen looking exactly as
+      // it had before. There was no way to see whether the terms were
+      // currently suppressed, and no way to suppress them again from here —
+      // so from Settings the setting appeared to do nothing at all.
+      //
+      // Reads and writes the SAME uid-scoped flag the sheet's "Don't show
+      // this again" checkbox writes, so the two can never disagree.
+      _switchTile(
+        icon: Icons.gavel_rounded,
+        title: 'Group Funds terms on first visit',
+        subtitle:
+            'Open the terms when you next visit Group Funds. Nothing about '
+            'your groups changes.',
+        keywords: const [
+          'group funds terms',
+          'terms',
+          'first visit',
+          'show terms again',
+          'reset terms',
+          'dont show again',
+          "don't show again",
+        ],
+        value: !_groupFundsTermsDismissed,
+        onChanged: (v) async {
+          if (uid.isEmpty) return; // no profile yet — nothing to scope to
+          if (v) {
+            await GroupFundsTermsPrefs.reset(uid);
+          } else {
+            await GroupFundsTermsPrefs.dismiss(uid);
+          }
+          if (!mounted) return;
+          setState(() => _groupFundsTermsDismissed = !v);
+          showAppSnackbar(
+            v ? 'Group Funds terms on' : 'Group Funds terms off',
+            v
+                ? 'They will open next time you visit Group Funds.'
+                : 'They stay closed. You can read them below any time.',
+            type: AppSnackbarType.success,
+          );
+        },
+      ),
       _navTile(
           icon: Icons.help_outline,
           title: 'Read the terms now',

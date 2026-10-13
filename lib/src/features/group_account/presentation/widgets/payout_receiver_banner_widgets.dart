@@ -68,12 +68,22 @@ class AutoPayoutScheduledChip extends StatefulWidget {
   // tabs) reflect the new state without the user pulling-to-refresh.
   final VoidCallback? onReceiverChanged;
 
+  /// Fired whenever the chip starts or stops rendering anything.
+  ///
+  /// The chip decides for itself — it collapses to nothing unless the payout
+  /// is SCHEDULED — and a parent laying chips out in a row has no other way
+  /// to know. Without this the parent reserved a slot for a zero-height chip
+  /// and the chips after it were pushed onto a row of their own, which is
+  /// what put the Role tile on a line of its own underneath the tab bar.
+  final ValueChanged<bool>? onVisibilityChanged;
+
   const AutoPayoutScheduledChip({
     super.key,
     required this.contribution,
     this.cycleIndex = 0,
     required this.isAdmin,
     this.onReceiverChanged,
+    this.onVisibilityChanged,
   });
 
   @override
@@ -84,6 +94,20 @@ class AutoPayoutScheduledChip extends StatefulWidget {
 class _AutoPayoutScheduledChipState extends State<AutoPayoutScheduledChip> {
   pb.GetPayoutReceiverResponse? _state;
   Timer? _pollTimer;
+  bool? _lastReportedVisible;
+
+  /// Reported from build, so the answer is whatever was actually painted.
+  /// Deferred to after the frame because a parent that rebuilds its layout in
+  /// response cannot setState during this one.
+  void _reportVisibility(bool visible) {
+    if (_lastReportedVisible == visible) return;
+    _lastReportedVisible = visible;
+    final cb = widget.onVisibilityChanged;
+    if (cb == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) cb(visible);
+    });
+  }
 
   @override
   void initState() {
@@ -169,13 +193,22 @@ class _AutoPayoutScheduledChipState extends State<AutoPayoutScheduledChip> {
   @override
   Widget build(BuildContext context) {
     final s = _state;
-    if (s == null) return const SizedBox.shrink();
+    if (s == null) {
+      _reportVisibility(false);
+      return const SizedBox.shrink();
+    }
     final status = s.scheduledPayout.status;
     final isScheduled = status ==
         pb_enum.ScheduledPayoutStatus.SCHEDULED_PAYOUT_STATUS_SCHEDULED;
-    if (!isScheduled) return const SizedBox.shrink();
+    if (!isScheduled) {
+      _reportVisibility(false);
+      return const SizedBox.shrink();
+    }
+    _reportVisibility(true);
 
-    const accent = Color(0xFF4E03D0);
+    // Violet-400: this chip only ever paints on #1F1F1F, where the brand
+    // purple reads as a slightly-off grey. See GroupFundsPalette.
+    const accent = GroupFundsPalette.onDark;
     return Material(
       color: const Color(0xFF1F1F1F),
       elevation: 3,

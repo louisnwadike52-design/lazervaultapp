@@ -32,6 +32,7 @@ import '../../../authentication/cubit/authentication_state.dart';
 import '../../../../../core/services/account_manager.dart';
 import '../../../../../core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import '../utils/group_funds_palette.dart';
 part 'group_details_screen_widgets.dart';
 
 class GroupDetailsScreen extends StatefulWidget {
@@ -476,31 +477,42 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
       children: [
         _buildHeader(group),
         Expanded(
-          child: NestedScrollView(
-            headerSliverBuilder: (context, innerBoxIsScrolled) {
-              return [
-                SliverToBoxAdapter(
-                  child: _buildGroupOverview(group, members, contributions),
-                ),
-                if (currentUserMember != null)
-                  SliverToBoxAdapter(
-                    child: _buildCompactRoleChip(currentUserMember, group),
-                  ),
-                SliverPersistentHeader(
-                  pinned: true,
-                  delegate: _SliverTabBarDelegate(
-                    child: _buildTabBar(),
-                    height: 46 + 20.h,
-                  ),
-                ),
-              ];
+          child: RefreshIndicator(
+            onRefresh: () async {
+              final cubit = context.read<GroupAccountCubit>();
+              cubit.loadGroupDetails(widget.groupId);
+              cubit.invalidatePages();
+              await cubit.loadContributionsPage(widget.groupId, 1, force: true);
             },
-            body: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildMembersTab(members, group, contributions),
-                _buildContributionsTab(contributions, group, currentUserMember),
-              ],
+            color: GroupFundsPalette.onDark,
+            backgroundColor: const Color(0xFF1F1F1F),
+            child: NestedScrollView(
+              headerSliverBuilder: (context, innerBoxIsScrolled) {
+                return [
+                  SliverToBoxAdapter(
+                    child: _buildGroupOverview(group, members, contributions),
+                  ),
+                  if (currentUserMember != null)
+                    SliverToBoxAdapter(
+                      child: _buildCompactRoleChip(currentUserMember, group),
+                    ),
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _SliverTabBarDelegate(
+                      child: _buildTabBar(),
+                      height: 46 + 20.h,
+                    ),
+                  ),
+                ];
+              },
+              body: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildMembersTab(members, group, contributions),
+                  _buildContributionsTab(
+                      contributions, group, currentUserMember),
+                ],
+              ),
             ),
           ),
         ),
@@ -1327,7 +1339,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
       onRefresh: () async {
         context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
       },
-      color: const Color.fromARGB(255, 78, 3, 208),
+      color: GroupFundsPalette.onDark,
       backgroundColor: const Color(0xFF1F1F1F),
       child: CustomScrollView(
         key: const PageStorageKey<String>('members'),
@@ -1449,10 +1461,10 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         final cubit = context.read<GroupAccountCubit>();
         cubit.loadGroupDetails(widget.groupId);
         cubit.invalidatePages();
-        await cubit.loadContributionsPage(
-            widget.groupId, page?.page ?? 1, force: true);
+        await cubit.loadContributionsPage(widget.groupId, page?.page ?? 1,
+            force: true);
       },
-      color: const Color.fromARGB(255, 78, 3, 208),
+      color: GroupFundsPalette.onDark,
       backgroundColor: const Color(0xFF1F1F1F),
       // Empty means the LIST is empty, not the page: a page past the end
       // self-corrects in the cubit, so an empty page here really is a group
@@ -1513,7 +1525,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                   // the contribution row.
                   sliver: SliverReorderableList(
                     itemCount: pageItems.length,
-                    onReorder: (oldIndex, newIndex) => _onContributionsReordered(
+                    onReorder: (oldIndex, newIndex) =>
+                        _onContributionsReordered(
                       pageItems,
                       oldIndex,
                       newIndex,

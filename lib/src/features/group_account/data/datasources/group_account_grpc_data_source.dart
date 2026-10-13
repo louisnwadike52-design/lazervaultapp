@@ -6,6 +6,7 @@ import 'package:lazervault/src/generated/group_account.pbgrpc.dart' as pb;
 import 'package:lazervault/src/generated/group_account.pbenum.dart' as pb_enum;
 import '../models/group_account_models.dart';
 import '../../domain/entities/group_entities.dart';
+import '../../domain/entities/pending_join_request.dart';
 import 'group_account_remote_data_source.dart'
     show GroupAccountRemoteDataSource, ActivityLogEntryModel;
 import 'package:fixnum/fixnum.dart' as fixnum;
@@ -2134,6 +2135,36 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       final response =
           await _client.listJoinRequests(request, options: callOptions);
       return response.requests.map(_mapMemberFromProto).toList();
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to load join requests'));
+    }
+  }
+
+  /// Every request awaiting this admin, across all their groups.
+  ///
+  /// One call rather than listJoinRequests per administered group: the Join
+  /// Requests tab opens on every visit, and a request-per-group fan-out cannot
+  /// sort the combined queue by age either. Authorisation is server-side —
+  /// the query only returns groups where the caller is an active admin.
+  Future<List<PendingJoinRequest>> listMyPendingJoinRequests({
+    int limit = 50,
+  }) async {
+    try {
+      final request = pb.ListMyPendingJoinRequestsRequest()..limit = limit;
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.listMyPendingJoinRequests(
+        request,
+        options: callOptions,
+      );
+      return response.requests
+          .map((r) => PendingJoinRequest(
+                member: _mapMemberFromProto(r.member),
+                groupId: r.groupId,
+                groupName: r.groupName,
+                groupImageUrl: r.groupImageUrl,
+                groupMemberCount: r.groupMemberCount,
+              ))
+          .toList();
     } on GrpcError catch (e) {
       throw Exception(friendlyGrpcError(e, 'Failed to load join requests'));
     }

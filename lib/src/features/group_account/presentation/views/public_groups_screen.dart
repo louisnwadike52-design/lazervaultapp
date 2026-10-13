@@ -388,10 +388,47 @@ class _PublicGroupsScreenState extends State<PublicGroupsScreen> {
     );
   }
 
-  /// Members see a non-actionable "Joined" chip; non-members see the
-  /// interactive "Join" button. Never render a Join CTA for a group the
-  /// user already belongs to.
+  /// THREE states, because there are three.
+  ///
+  /// A public group that requires approval is not joined by tapping — the tap
+  /// files a request an admin has to accept. Labelling that "Join" promises
+  /// something the tap does not do, and the person then sees no membership and
+  /// assumes it failed. So:
+  ///
+  ///   member                     → "Joined"     (chip, not a button)
+  ///   request already pending    → "Requested"  (chip, not a button)
+  ///   requires approval          → "Request to join"
+  ///   open group                 → "Join"       (unchanged — it does join)
+  ///
+  /// requiresApproval and hasPendingJoinRequest are both exact values from the
+  /// public-group payload, not inferred.
   Widget _buildCta(GroupAccount group, bool isMember) {
+    // Asked already, waiting on an admin. A chip rather than a button: there
+    // is nothing useful to tap, and a second request is refused server-side.
+    if (!isMember && group.hasPendingJoinRequest) {
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(
+              color: const Color(0xFFF59E0B).withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.hourglass_top_rounded,
+                size: 13.sp, color: const Color(0xFFF59E0B)),
+            SizedBox(width: 4.w),
+            Text('Requested',
+                style: GoogleFonts.inter(
+                    color: const Color(0xFFF59E0B),
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600)),
+          ],
+        ),
+      );
+    }
     if (isMember) {
       return Container(
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
@@ -449,7 +486,9 @@ class _PublicGroupsScreenState extends State<PublicGroupsScreen> {
             Opacity(
               opacity: isJoining ? 0.0 : 1.0,
               child: Text(
-                'Join',
+                // Say what the tap does. An approval-gated group files a
+                // request; it does not join.
+                group.requiresApproval ? 'Request to join' : 'Join',
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 13.sp,

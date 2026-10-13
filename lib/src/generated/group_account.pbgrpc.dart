@@ -518,6 +518,16 @@ class GroupAccountServiceClient extends $grpc.Client {
   /// ---- Join requests -----------------------------------------------------
   /// The admin's queue for one group. Admin/moderator only: this lists people
   /// waiting on a decision about access to the group's money.
+  /// Everything awaiting this admin's decision, across their groups.
+  $grpc.ResponseFuture<$0.ListMyPendingJoinRequestsResponse>
+      listMyPendingJoinRequests(
+    $0.ListMyPendingJoinRequestsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$listMyPendingJoinRequests, request,
+        options: options);
+  }
+
   $grpc.ResponseFuture<$0.ListJoinRequestsResponse> listJoinRequests(
     $0.ListJoinRequestsRequest request, {
     $grpc.CallOptions? options,
@@ -990,6 +1000,12 @@ class GroupAccountServiceClient extends $grpc.Client {
           '/group_accounts.GroupAccountService/JoinPublicGroup',
           ($0.JoinPublicGroupRequest value) => value.writeToBuffer(),
           $0.JoinPublicGroupResponse.fromBuffer);
+  static final _$listMyPendingJoinRequests = $grpc.ClientMethod<
+          $0.ListMyPendingJoinRequestsRequest,
+          $0.ListMyPendingJoinRequestsResponse>(
+      '/group_accounts.GroupAccountService/ListMyPendingJoinRequests',
+      ($0.ListMyPendingJoinRequestsRequest value) => value.writeToBuffer(),
+      $0.ListMyPendingJoinRequestsResponse.fromBuffer);
   static final _$listJoinRequests = $grpc.ClientMethod<
           $0.ListJoinRequestsRequest, $0.ListJoinRequestsResponse>(
       '/group_accounts.GroupAccountService/ListJoinRequests',
@@ -1627,6 +1643,15 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.JoinPublicGroupRequest.fromBuffer(value),
         ($0.JoinPublicGroupResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ListMyPendingJoinRequestsRequest,
+            $0.ListMyPendingJoinRequestsResponse>(
+        'ListMyPendingJoinRequests',
+        listMyPendingJoinRequests_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.ListMyPendingJoinRequestsRequest.fromBuffer(value),
+        ($0.ListMyPendingJoinRequestsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.ListJoinRequestsRequest,
             $0.ListJoinRequestsResponse>(
         'ListJoinRequests',
@@ -2322,6 +2347,15 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
 
   $async.Future<$0.JoinPublicGroupResponse> joinPublicGroup(
       $grpc.ServiceCall call, $0.JoinPublicGroupRequest request);
+
+  $async.Future<$0.ListMyPendingJoinRequestsResponse>
+      listMyPendingJoinRequests_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.ListMyPendingJoinRequestsRequest> $request) async {
+    return listMyPendingJoinRequests($call, await $request);
+  }
+
+  $async.Future<$0.ListMyPendingJoinRequestsResponse> listMyPendingJoinRequests(
+      $grpc.ServiceCall call, $0.ListMyPendingJoinRequestsRequest request);
 
   $async.Future<$0.ListJoinRequestsResponse> listJoinRequests_Pre(
       $grpc.ServiceCall $call,

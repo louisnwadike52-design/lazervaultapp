@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../utils/group_funds_palette.dart';
 
 /// "Created by you" — shown on a group or contribution the signed-in user
 /// started.
@@ -22,7 +23,9 @@ class CreatedByYouBadge extends StatelessWidget {
   /// Tighter padding for dense list rows.
   final bool compact;
 
-  static const _accent = Color(0xFF8B5CF6);
+  // Violet-400. This badge only ever paints on #1F1F1F cards; violet-500 as
+  // INK at 10% fill was reported as invisible there. See GroupFundsPalette.
+  static const _accent = GroupFundsPalette.onDark;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +37,7 @@ class CreatedByYouBadge extends StatelessWidget {
       decoration: BoxDecoration(
         // Lighter, with the rest of the badge row: this is a quiet
         // provenance marker, not an alert.
-        color: _accent.withValues(alpha: 0.10),
+        color: _accent.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(5.r),
         border: Border.all(color: _accent.withValues(alpha: 0.35)),
       ),

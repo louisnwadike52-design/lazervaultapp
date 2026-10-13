@@ -1,5 +1,6 @@
 import '../models/group_account_models.dart';
 import '../../domain/entities/group_entities.dart';
+import '../../domain/entities/pending_join_request.dart';
 
 abstract class GroupAccountRemoteDataSource {
   Future<List<GroupAccountModel>> getUserGroups(String userId);
@@ -249,6 +250,14 @@ abstract class GroupAccountRemoteDataSource {
   /// answers PERMISSION_DENIED for anyone else rather than an empty list, so
   /// the UI can say why instead of implying nobody is waiting.
   Future<List<GroupMemberModel>> listJoinRequests(String groupId);
+
+  /// Every request awaiting the CALLER, across all groups they administer.
+  ///
+  /// One call rather than listJoinRequests per group: the Join Requests tab
+  /// opens on every visit, and a per-group fan-out cannot order the combined
+  /// queue by age. The server scopes it to groups where the caller is an
+  /// active admin, so there is nothing for a client to widen.
+  Future<List<PendingJoinRequest>> listMyPendingJoinRequests({int limit});
 
   /// Approves or rejects one request. One call with a bool, mirroring the
   /// server, so a client cannot approve when it meant to reject.

@@ -6,6 +6,7 @@ import '../../domain/entities/group_entities.dart';
 import 'contribution_type_badge.dart';
 import 'created_by_you_badge.dart';
 import 'group_funds_avatar.dart';
+import '../utils/group_funds_palette.dart';
 
 class ContributionCard extends StatelessWidget {
   final Contribution contribution;
@@ -42,7 +43,9 @@ class ContributionCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.all(16.w),
+        // 12, not 16. Four of these cards have to be scannable on one
+        // screen; the card was ~340pt tall and showed one and a bit.
+        padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(16.r),
@@ -99,10 +102,10 @@ class ContributionCard extends StatelessWidget {
                           color: Colors.grey[400],
                           height: 1.25,
                         ),
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      SizedBox(height: 8.h),
+                      SizedBox(height: 6.h),
                       // Surface the contribution type so a glance at
                       // the list distinguishes rotating-savings cycles
                       // from one-time goals — they have different
@@ -119,7 +122,7 @@ class ContributionCard extends StatelessWidget {
               ],
             ),
 
-            SizedBox(height: 16.h),
+            SizedBox(height: 10.h),
 
             // Progress Section
             Column(
@@ -147,9 +150,9 @@ class ContributionCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 8.h),
+                SizedBox(height: 6.h),
                 Container(
-                  height: 8.h,
+                  height: 6.h,
                   decoration: BoxDecoration(
                     color: Colors.grey[800],
                     borderRadius: BorderRadius.circular(4.r),
@@ -164,7 +167,7 @@ class ContributionCard extends StatelessWidget {
                                 ? const Color(0xFF10B981)
                                 : isOverdue
                                     ? const Color(0xFFEF4444)
-                                    : const Color.fromARGB(255, 78, 3, 208),
+                                    : GroupFundsPalette.onDarkMuted,
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                         ),
@@ -175,7 +178,7 @@ class ContributionCard extends StatelessWidget {
               ],
             ),
 
-            SizedBox(height: 16.h),
+            SizedBox(height: 10.h),
 
             // Amount Section
             Row(
@@ -195,7 +198,7 @@ class ContributionCard extends StatelessWidget {
                     Text(
                       '${contribution.currency} ${_formatAmount(contribution.currentAmount)}',
                       style: GoogleFonts.inter(
-                        fontSize: 16.sp,
+                        fontSize: 15.sp,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
@@ -206,7 +209,7 @@ class ContributionCard extends StatelessWidget {
               ],
             ),
 
-            SizedBox(height: 16.h),
+            SizedBox(height: 10.h),
 
             // Footer Section
             Row(

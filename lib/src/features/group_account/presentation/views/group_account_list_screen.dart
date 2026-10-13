@@ -1,5 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/group_account/data/datasources/group_account_remote_data_source.dart';
+import 'package:lazervault/src/features/group_account/presentation/widgets/join_requests_tab.dart';
+
 import 'package:lazervault/src/features/group_account/data/services/group_funds_terms_prefs.dart';
 import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -44,7 +48,10 @@ class GroupFundsTab {
   static const int myGroups = 0;
   static const int discover = 1;
   static const int invites = 2;
-  static const int leaderboard = 3;
+  /// Requests from OTHER people to join groups this user runs. Distinct from
+  /// `invites`, which is what others have asked of them.
+  static const int joinRequests = 3;
+  static const int leaderboard = 4;
 }
 
 class _GroupAccountListScreenState extends State<GroupAccountListScreen>
@@ -62,6 +69,13 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
   // _joinedGroupIds because the two are mutually exclusive states of the same
   // CTA, and a request that is approved moves from one set to the other.
   final Set<String> _pendingRequestGroupIds = {};
+
+  /// How many people are waiting on THIS user to let them into a group.
+  /// Drives the Requests tab badge; kept here rather than in the tab so the
+  /// badge is right before the tab has ever been opened.
+  int _pendingJoinRequestCount = 0;
+  final GlobalKey<JoinRequestsTabState> _joinRequestsKey =
+      GlobalKey<JoinRequestsTabState>();
   String _selectedSort = 'most_members';
 
   // Leaderboard tab state
@@ -150,7 +164,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
     // without scrolling and the LTR reading order is "what I have
     // now → what's available → what's pending → who's leading".
     _tabController = TabController(
-      length: 4,
+      length: 5,
       vsync: this,
       // Land on the tab the caller asked for.
       //
@@ -334,6 +348,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
                     _buildMyGroupsTab(),
                     _buildDiscoverTab(),
                     _buildInvitesTab(),
+                    _buildJoinRequestsTab(),
                     _buildLeaderboardTab(),
                   ],
                 ),
@@ -519,6 +534,39 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
                 Icon(Icons.groups, size: 16.sp),
                 SizedBox(width: 6.w),
                 Text('My Groups'),
+              ],
+            ),
+          ),
+          // Requests from OTHER people to join groups this user runs.
+          // Distinct from Invites, which is what others asked of them — and
+          // the reason it needs its own tab: a request sitting unseen on a
+          // group's own screen is a person who never gets in.
+          Tab(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.how_to_reg_outlined, size: 16.sp),
+                SizedBox(width: 6.w),
+                const Text('Requests'),
+                if (_pendingJoinRequestCount > 0) ...[
+                  SizedBox(width: 6.w),
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Text(
+                      '$_pendingJoinRequestCount',
+                      style: GoogleFonts.inter(
+                        color: Colors.black,
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -2294,6 +2342,23 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
   /// Renders the user's pending group invitations. Each card calls
   /// the cubit's respondToInvitation; per-card `_busy` set tracks
   /// in-flight taps so a slow gRPC doesn't lock the whole list.
+  /// Requests waiting on this user, across every group they administer.
+  ///
+  /// The datasource is resolved from the locator rather than threaded through
+  /// the cubit: this is a read-and-decide surface with no state the rest of
+  /// the screen shares, and the existing JoinRequestsSheet already talks to
+  /// the datasource the same way.
+  Widget _buildJoinRequestsTab() {
+    return JoinRequestsTab(
+      key: _joinRequestsKey,
+      dataSource: serviceLocator<GroupAccountRemoteDataSource>(),
+      onCountChanged: (n) {
+        if (!mounted || n == _pendingJoinRequestCount) return;
+        setState(() => _pendingJoinRequestCount = n);
+      },
+    );
+  }
+
   Widget _buildInvitesTab() {
     return BlocConsumer<GroupAccountCubit, GroupAccountState>(
       listenWhen: (prev, curr) =>

@@ -40,6 +40,7 @@ import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/features/support/data/support_api.dart';
 import 'select_payout_receiver_bottom_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import '../utils/group_funds_palette.dart';
 part 'payout_receiver_banner_widgets.dart';
 
 class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {

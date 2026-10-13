@@ -587,6 +587,38 @@ String _unwrappedMessage(Object? error) {
   // which buries the one sentence that tells them what to fix. The loop is
   // bounded so a pathological string cannot spin, and it stops as soon as a
   // pass changes nothing.
+  // Server SENTINEL prefixes, which are two words and so survive the
+  // single-token envelope below.
+  //
+  // Go services wrap a business refusal as `fmt.Errorf("%w: ...", ErrInvalidRequest)`,
+  // and the sentinel's own text leads the sentence. The user then reads
+  // "invalid request: an esusu needs at least 2 members who have accepted
+  // before it can start — it has 1": a perfectly good sentence with a
+  // developer's error-type bolted to the front, which reads as a fault in the
+  // app rather than a thing they can fix.
+  //
+  // Stripped here rather than at each call site because every service wraps
+  // this way and every surface would otherwise need its own rule.
+  for (final sentinel in const [
+    'invalid request: ',
+    'invalid argument: ',
+    'unauthorized: ',
+    'permission denied: ',
+    'failed precondition: ',
+    'not found: ',
+  ]) {
+    final lower = text.toLowerCase();
+    if (lower.startsWith(sentinel)) {
+      final stripped = text.substring(sentinel.length).trim();
+      // Only when something readable is left — a bare sentinel with nothing
+      // after it is better shown whole than reduced to an empty string.
+      if (stripped.isNotEmpty) {
+        text = stripped[0].toUpperCase() + stripped.substring(1);
+      }
+      break;
+    }
+  }
+
   final envelope = RegExp(
       r'^[A-Za-z_][A-Za-z0-9_]*(Exception|Error|Failure)?\s*:\s*(.+)$',
       dotAll: true);

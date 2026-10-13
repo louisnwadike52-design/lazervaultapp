@@ -4452,6 +4452,76 @@ final $typed_data.Uint8List listJoinRequestsRequestDescriptor =
     $convert.base64Decode(
         'ChdMaXN0Sm9pblJlcXVlc3RzUmVxdWVzdBIZCghncm91cF9pZBgBIAEoCVIHZ3JvdXBJZA==');
 
+@$core.Deprecated('Use listMyPendingJoinRequestsRequestDescriptor instead')
+const ListMyPendingJoinRequestsRequest$json = {
+  '1': 'ListMyPendingJoinRequestsRequest',
+  '2': [
+    {'1': 'limit', '3': 1, '4': 1, '5': 5, '10': 'limit'},
+  ],
+};
+
+/// Descriptor for `ListMyPendingJoinRequestsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listMyPendingJoinRequestsRequestDescriptor =
+    $convert.base64Decode(
+        'CiBMaXN0TXlQZW5kaW5nSm9pblJlcXVlc3RzUmVxdWVzdBIUCgVsaW1pdBgBIAEoBVIFbGltaX'
+        'Q=');
+
+@$core.Deprecated('Use listMyPendingJoinRequestsResponseDescriptor instead')
+const ListMyPendingJoinRequestsResponse$json = {
+  '1': 'ListMyPendingJoinRequestsResponse',
+  '2': [
+    {
+      '1': 'requests',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.group_accounts.PendingJoinRequest',
+      '10': 'requests'
+    },
+    {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+  ],
+};
+
+/// Descriptor for `ListMyPendingJoinRequestsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listMyPendingJoinRequestsResponseDescriptor =
+    $convert.base64Decode(
+        'CiFMaXN0TXlQZW5kaW5nSm9pblJlcXVlc3RzUmVzcG9uc2USPgoIcmVxdWVzdHMYASADKAsyIi'
+        '5ncm91cF9hY2NvdW50cy5QZW5kaW5nSm9pblJlcXVlc3RSCHJlcXVlc3RzEhQKBXRvdGFsGAIg'
+        'ASgFUgV0b3RhbA==');
+
+@$core.Deprecated('Use pendingJoinRequestDescriptor instead')
+const PendingJoinRequest$json = {
+  '1': 'PendingJoinRequest',
+  '2': [
+    {
+      '1': 'member',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.group_accounts.GroupMemberMessage',
+      '10': 'member'
+    },
+    {'1': 'group_id', '3': 2, '4': 1, '5': 9, '10': 'groupId'},
+    {'1': 'group_name', '3': 3, '4': 1, '5': 9, '10': 'groupName'},
+    {'1': 'group_image_url', '3': 4, '4': 1, '5': 9, '10': 'groupImageUrl'},
+    {
+      '1': 'group_member_count',
+      '3': 5,
+      '4': 1,
+      '5': 5,
+      '10': 'groupMemberCount'
+    },
+  ],
+};
+
+/// Descriptor for `PendingJoinRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List pendingJoinRequestDescriptor = $convert.base64Decode(
+    'ChJQZW5kaW5nSm9pblJlcXVlc3QSOgoGbWVtYmVyGAEgASgLMiIuZ3JvdXBfYWNjb3VudHMuR3'
+    'JvdXBNZW1iZXJNZXNzYWdlUgZtZW1iZXISGQoIZ3JvdXBfaWQYAiABKAlSB2dyb3VwSWQSHQoK'
+    'Z3JvdXBfbmFtZRgDIAEoCVIJZ3JvdXBOYW1lEiYKD2dyb3VwX2ltYWdlX3VybBgEIAEoCVINZ3'
+    'JvdXBJbWFnZVVybBIsChJncm91cF9tZW1iZXJfY291bnQYBSABKAVSEGdyb3VwTWVtYmVyQ291'
+    'bnQ=');
+
 @$core.Deprecated('Use listJoinRequestsResponseDescriptor instead')
 const ListJoinRequestsResponse$json = {
   '1': 'ListJoinRequestsResponse',

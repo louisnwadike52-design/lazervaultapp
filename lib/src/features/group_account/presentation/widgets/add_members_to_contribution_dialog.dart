@@ -1125,8 +1125,12 @@ class _AddMembersToContributionDialogState
                           SizedBox(width: 4.w),
                           Expanded(
                             child: Text(
+                              // "Invite sent" says what WE did and why they
+                              // cannot be added yet, without implying the
+                              // person has done something wrong — they may
+                              // simply not have opened the app.
                               member.isPartial
-                                  ? 'Not accepted group invite yet'
+                                  ? 'Invite sent — not accepted yet'
                                   : 'Account not linked yet',
                               style: GoogleFonts.inter(
                                 fontSize: 11.5.sp,

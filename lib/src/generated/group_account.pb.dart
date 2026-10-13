@@ -14480,6 +14480,254 @@ class ListJoinRequestsRequest extends $pb.GeneratedMessage {
   void clearGroupId() => $_clearField(1);
 }
 
+/// Every join request awaiting THIS admin, across all their groups.
+///
+/// ListJoinRequests is per-group, which suits the group's own screen but cannot
+/// answer "is anything waiting on me?" — the question the Group Funds tab
+/// exists to answer. Asking it per-group from the client would be one RPC per
+/// group the user administers, on a tab that opens on every visit.
+class ListMyPendingJoinRequestsRequest extends $pb.GeneratedMessage {
+  factory ListMyPendingJoinRequestsRequest({
+    $core.int? limit,
+  }) {
+    final result = create();
+    if (limit != null) result.limit = limit;
+    return result;
+  }
+
+  ListMyPendingJoinRequestsRequest._();
+
+  factory ListMyPendingJoinRequestsRequest.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ListMyPendingJoinRequestsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ListMyPendingJoinRequestsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListMyPendingJoinRequestsRequest clone() =>
+      ListMyPendingJoinRequestsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListMyPendingJoinRequestsRequest copyWith(
+          void Function(ListMyPendingJoinRequestsRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as ListMyPendingJoinRequestsRequest))
+          as ListMyPendingJoinRequestsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListMyPendingJoinRequestsRequest create() =>
+      ListMyPendingJoinRequestsRequest._();
+  @$core.override
+  ListMyPendingJoinRequestsRequest createEmptyInstance() => create();
+  static $pb.PbList<ListMyPendingJoinRequestsRequest> createRepeated() =>
+      $pb.PbList<ListMyPendingJoinRequestsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ListMyPendingJoinRequestsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ListMyPendingJoinRequestsRequest>(
+          create);
+  static ListMyPendingJoinRequestsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get limit => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set limit($core.int value) => $_setSignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasLimit() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLimit() => $_clearField(1);
+}
+
+class ListMyPendingJoinRequestsResponse extends $pb.GeneratedMessage {
+  factory ListMyPendingJoinRequestsResponse({
+    $core.Iterable<PendingJoinRequest>? requests,
+    $core.int? total,
+  }) {
+    final result = create();
+    if (requests != null) result.requests.addAll(requests);
+    if (total != null) result.total = total;
+    return result;
+  }
+
+  ListMyPendingJoinRequestsResponse._();
+
+  factory ListMyPendingJoinRequestsResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ListMyPendingJoinRequestsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ListMyPendingJoinRequestsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..pc<PendingJoinRequest>(
+        1, _omitFieldNames ? '' : 'requests', $pb.PbFieldType.PM,
+        subBuilder: PendingJoinRequest.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListMyPendingJoinRequestsResponse clone() =>
+      ListMyPendingJoinRequestsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListMyPendingJoinRequestsResponse copyWith(
+          void Function(ListMyPendingJoinRequestsResponse) updates) =>
+      super.copyWith((message) =>
+              updates(message as ListMyPendingJoinRequestsResponse))
+          as ListMyPendingJoinRequestsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListMyPendingJoinRequestsResponse create() =>
+      ListMyPendingJoinRequestsResponse._();
+  @$core.override
+  ListMyPendingJoinRequestsResponse createEmptyInstance() => create();
+  static $pb.PbList<ListMyPendingJoinRequestsResponse> createRepeated() =>
+      $pb.PbList<ListMyPendingJoinRequestsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ListMyPendingJoinRequestsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ListMyPendingJoinRequestsResponse>(
+          create);
+  static ListMyPendingJoinRequestsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<PendingJoinRequest> get requests => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => $_clearField(2);
+}
+
+/// A request plus the group it is for, so the tab can render a row without a
+/// second fetch per group.
+class PendingJoinRequest extends $pb.GeneratedMessage {
+  factory PendingJoinRequest({
+    GroupMemberMessage? member,
+    $core.String? groupId,
+    $core.String? groupName,
+    $core.String? groupImageUrl,
+    $core.int? groupMemberCount,
+  }) {
+    final result = create();
+    if (member != null) result.member = member;
+    if (groupId != null) result.groupId = groupId;
+    if (groupName != null) result.groupName = groupName;
+    if (groupImageUrl != null) result.groupImageUrl = groupImageUrl;
+    if (groupMemberCount != null) result.groupMemberCount = groupMemberCount;
+    return result;
+  }
+
+  PendingJoinRequest._();
+
+  factory PendingJoinRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory PendingJoinRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'PendingJoinRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOM<GroupMemberMessage>(1, _omitFieldNames ? '' : 'member',
+        subBuilder: GroupMemberMessage.create)
+    ..aOS(2, _omitFieldNames ? '' : 'groupId')
+    ..aOS(3, _omitFieldNames ? '' : 'groupName')
+    ..aOS(4, _omitFieldNames ? '' : 'groupImageUrl')
+    ..a<$core.int>(
+        5, _omitFieldNames ? '' : 'groupMemberCount', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PendingJoinRequest clone() => PendingJoinRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PendingJoinRequest copyWith(void Function(PendingJoinRequest) updates) =>
+      super.copyWith((message) => updates(message as PendingJoinRequest))
+          as PendingJoinRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static PendingJoinRequest create() => PendingJoinRequest._();
+  @$core.override
+  PendingJoinRequest createEmptyInstance() => create();
+  static $pb.PbList<PendingJoinRequest> createRepeated() =>
+      $pb.PbList<PendingJoinRequest>();
+  @$core.pragma('dart2js:noInline')
+  static PendingJoinRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<PendingJoinRequest>(create);
+  static PendingJoinRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  GroupMemberMessage get member => $_getN(0);
+  @$pb.TagNumber(1)
+  set member(GroupMemberMessage value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasMember() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMember() => $_clearField(1);
+  @$pb.TagNumber(1)
+  GroupMemberMessage ensureMember() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get groupId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set groupId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasGroupId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearGroupId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get groupName => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set groupName($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasGroupName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearGroupName() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get groupImageUrl => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set groupImageUrl($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasGroupImageUrl() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearGroupImageUrl() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get groupMemberCount => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set groupMemberCount($core.int value) => $_setSignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasGroupMemberCount() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearGroupMemberCount() => $_clearField(5);
+}
+
 class ListJoinRequestsResponse extends $pb.GeneratedMessage {
   factory ListJoinRequestsResponse({
     $core.Iterable<GroupMemberMessage>? requests,

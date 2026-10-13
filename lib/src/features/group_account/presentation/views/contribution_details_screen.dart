@@ -29,6 +29,7 @@ import 'edit_contribution_screen.dart';
 import '../widgets/payment_group_widgets.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import '../widgets/mention_picker.dart';
+import '../utils/group_funds_palette.dart';
 part 'contribution_details_sheets.dart';
 part 'contribution_details_banners.dart';
 part 'contribution_details_payment_widgets.dart';
@@ -78,6 +79,14 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   /// Unread messages waiting in this contribution's chat. Drives the badge on
   /// the chat CTA so new messages are discoverable without opening it.
   int _chatUnread = 0;
+
+  /// Whether the auto-payout chip is currently painting anything.
+  ///
+  /// It only renders while the payout is SCHEDULED and decides that for
+  /// itself after fetching. Reserving a layout slot for it before it has
+  /// decided meant a zero-height chip took half a row, which pushed the Role
+  /// tile onto a row of its own — the row the tab bar then clipped.
+  bool _autoPayoutChipVisible = false;
   final ContributionChatRemoteDataSource _chatDs =
       ContributionChatRemoteDataSource();
 
@@ -367,65 +376,74 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         // rather than shoving them off, and the scroll view means nothing
         // inside it is lost when it does.
         Flexible(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                _buildContributionSummary(contribution),
-                // Directly under the statistics, above everything else that competes
-                // for attention. An esusu that has not started is the one state where
-                // nothing else on this screen can proceed — no payment, no payout, no
-                // rotation — so the action that unblocks it belongs at the top rather
-                // than only on the card in the list behind.
-                // Not started: Start and Set receiver as ONE compact pair.
-                //
-                // Both used to be full-width banners with their whole explanation
-                // inline. Stacked under the summary card they filled the screen and
-                // pushed the tab bar off the bottom, so Overview / Payments /
-                // Members could not be reached at all on a phone. The detail now
-                // lives in a dialog behind each button, which is where somebody
-                // about to take an irreversible action (starting locks the roster)
-                // should be reading it anyway.
-                if (contribution.awaitingOpen)
-                  _buildAwaitingOpenActions(contribution, isAdmin),
-                if (!contribution.awaitingOpen) _buildStartBanner(contribution),
-                // Payout receiver banner — surfaces the scheduled-payout state
-                // (pending_receiver / ready / scheduled / in_flight / settled
-                // / failed / exhausted) with the right CTA for the role. Only
-                // admin/creator gets actionable buttons; members see read-only
-                // status. The banner self-loads + polls in_flight states.
-                PayoutReceiverBanner(
-                  contribution: contribution,
-                  cycleIndex:
-                      contribution.type == ContributionType.rotatingSavings
-                          ? (contribution.currentCycle ?? 1)
-                          : 0,
-                  isAdmin: isAdmin,
-                  // SCHEDULED state is rendered as a compact chip in the
-                  // status row below; the banner only owns the actionable /
-                  // exceptional states (pending, ready, in_flight, failed,
-                  // exhausted, settled).
-                  hideScheduled: true,
-                  // Offered in the compact pair above while the circle has not
-                  // started, so the tall version here would be a second copy of the
-                  // same action.
-                  hidePendingReceiver: contribution.awaitingOpen,
-                  // After a manual trigger settles, the saga creates a new
-                  // payout_transaction + zeros current_amount on the
-                  // contribution. Refreshing the contribution details here
-                  // makes the Payments / Overview tabs reflect the new state
-                  // without the user pulling-to-refresh.
-                  onStateChanged: _loadContributionDetails,
-                ),
-                // Status chips row: auto-debit + auto-payout (when scheduled)
-                // + role rendered side-by-side. Each chip is borderless, uses
-                // elevation, and opens a styled dialog with the full detail
-                // when tapped. Wraps to two rows on narrow screens.
-                _buildStatusChipsRow(
-                    contribution, isCreator, isMember, isAdmin),
-                if (contribution.hasExternalLinks)
-                  _buildExternalLinksSection(contribution),
-                SizedBox(height: 8.h),
-              ],
+          // Pull-to-refresh here as well as on each tab. This block carries
+          // the summary, the Start / Receiver pair and the payout banner —
+          // exactly the things that change when somebody else acts — and it
+          // is where a user whose eye is on the CTA will pull.
+          child: RefreshIndicator(
+            onRefresh: () async => _loadContributionDetails(force: true),
+            color: GroupFundsPalette.onDark,
+            backgroundColor: const Color(0xFF1F1F1F),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                children: [
+                  _buildContributionSummary(contribution),
+                  // Directly under the statistics, above everything else that competes
+                  // for attention. An esusu that has not started is the one state where
+                  // nothing else on this screen can proceed — no payment, no payout, no
+                  // rotation — so the action that unblocks it belongs at the top rather
+                  // than only on the card in the list behind.
+                  // Not started: Start and Set receiver as ONE compact pair.
+                  //
+                  // Both used to be full-width banners with their whole explanation
+                  // inline. Stacked under the summary card they filled the screen and
+                  // pushed the tab bar off the bottom, so Overview / Payments /
+                  // Members could not be reached at all on a phone. The detail now
+                  // lives in a dialog behind each button, which is where somebody
+                  // about to take an irreversible action (starting locks the roster)
+                  // should be reading it anyway.
+                  if (contribution.awaitingOpen)
+                    _buildAwaitingOpenActions(contribution, isAdmin),
+                  // Payout receiver banner — surfaces the scheduled-payout state
+                  // (pending_receiver / ready / scheduled / in_flight / settled
+                  // / failed / exhausted) with the right CTA for the role. Only
+                  // admin/creator gets actionable buttons; members see read-only
+                  // status. The banner self-loads + polls in_flight states.
+                  PayoutReceiverBanner(
+                    contribution: contribution,
+                    cycleIndex:
+                        contribution.type == ContributionType.rotatingSavings
+                            ? (contribution.currentCycle ?? 1)
+                            : 0,
+                    isAdmin: isAdmin,
+                    // SCHEDULED state is rendered as a compact chip in the
+                    // status row below; the banner only owns the actionable /
+                    // exceptional states (pending, ready, in_flight, failed,
+                    // exhausted, settled).
+                    hideScheduled: true,
+                    // Offered in the compact pair above while the circle has not
+                    // started, so the tall version here would be a second copy of the
+                    // same action.
+                    hidePendingReceiver: contribution.awaitingOpen,
+                    // After a manual trigger settles, the saga creates a new
+                    // payout_transaction + zeros current_amount on the
+                    // contribution. Refreshing the contribution details here
+                    // makes the Payments / Overview tabs reflect the new state
+                    // without the user pulling-to-refresh.
+                    onStateChanged: _loadContributionDetails,
+                  ),
+                  // Status chips row: auto-debit + auto-payout (when scheduled)
+                  // + role rendered side-by-side. Each chip is borderless, uses
+                  // elevation, and opens a styled dialog with the full detail
+                  // when tapped. Wraps to two rows on narrow screens.
+                  _buildStatusChipsRow(
+                      contribution, isCreator, isMember, isAdmin),
+                  if (contribution.hasExternalLinks)
+                    _buildExternalLinksSection(contribution),
+                  SizedBox(height: 8.h),
+                ],
+              ),
             ),
           ),
         ),
@@ -501,30 +519,48 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         onTap: () => _showAutoDebitDialog(contribution, hasPaid: hasPaid),
       ));
     }
-    if (showAutoPayout) {
-      // The chip itself decides whether to render based on the live
-      // payout-receiver status. We always include it in the layout
-      // candidates; if backend says we're not in SCHEDULED, the chip
-      // returns SizedBox.shrink() and the wrap collapses cleanly.
-      chips.add(AutoPayoutScheduledChip(
-        contribution: contribution,
-        cycleIndex: contribution.type == ContributionType.rotatingSavings
-            ? (contribution.currentCycle ?? 1)
-            : 0,
-        isAdmin: isAdmin,
-        onReceiverChanged: _loadContributionDetails,
-      ));
+    final autoPayoutChip = !showAutoPayout
+        ? null
+        : AutoPayoutScheduledChip(
+            contribution: contribution,
+            cycleIndex: contribution.type == ContributionType.rotatingSavings
+                ? (contribution.currentCycle ?? 1)
+                : 0,
+            isAdmin: isAdmin,
+            onReceiverChanged: _loadContributionDetails,
+            // Tells us whether it actually painted. Until it does, it must not
+            // hold a slot — see _autoPayoutChipVisible.
+            onVisibilityChanged: (visible) {
+              if (!mounted || _autoPayoutChipVisible == visible) return;
+              setState(() => _autoPayoutChipVisible = visible);
+            },
+          );
+    if (autoPayoutChip != null && _autoPayoutChipVisible) {
+      chips.add(autoPayoutChip);
     }
     chips.add(roleChip);
 
+    // The chip only learns it should appear by fetching the receiver state,
+    // and it can only fetch while it is in the tree. While it is reporting
+    // itself invisible it is parked in a zero-size Offstage below the row —
+    // mounted, polling, taking no space — rather than left out entirely,
+    // which would mean it never appeared at all.
+    final parkedProbe = autoPayoutChip != null && !_autoPayoutChipVisible
+        ? Offstage(child: autoPayoutChip)
+        : null;
+
+    Widget withProbe(Widget row) => parkedProbe == null
+        ? row
+        : Column(mainAxisSize: MainAxisSize.min, children: [row, parkedProbe]);
+
     if (chips.length == 1) {
-      return Padding(
+      return withProbe(Padding(
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
         child: chips.first,
-      );
+      ));
     }
 
-    return Padding(
+    return withProbe(Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
       child: LayoutBuilder(
         builder: (ctx, constraints) {
@@ -564,7 +600,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           );
         },
       ),
-    );
+    ));
   }
 
   String _roleLabel(bool isCreator, bool isMember) => isCreator
@@ -733,8 +769,13 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   }
 
   Widget _buildHeader(Contribution contribution) {
+    // Deliberately tight. Everything on this screen that matters — the
+    // summary, the Start / Receiver pair, the tabs — has to fit above the
+    // fold on a phone, and the header was spending ~96pt of that on a title
+    // the user just tapped to get here. Sizes below are the smallest that
+    // keep the title legible at one line.
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+      padding: EdgeInsets.fromLTRB(16.w, 9.h, 8.w, 9.h),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         border: Border(
@@ -746,19 +787,19 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           GestureDetector(
             onTap: () => Get.back(),
             child: Container(
-              padding: EdgeInsets.all(12.w),
+              padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
                 color: const Color(0xFF2D2D2D),
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(10.r),
               ),
               child: Icon(
                 Icons.arrow_back,
                 color: Colors.white,
-                size: 20.sp,
+                size: 18.sp,
               ),
             ),
           ),
-          SizedBox(width: 16.w),
+          SizedBox(width: 10.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -766,9 +807,10 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 Text(
                   contribution.title,
                   style: GoogleFonts.inter(
-                    fontSize: 18.sp,
+                    fontSize: 15.sp,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
+                    height: 1.15,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -776,8 +818,9 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 Text(
                   'Contribution Details',
                   style: GoogleFonts.inter(
-                    fontSize: 12.sp,
+                    fontSize: 10.5.sp,
                     color: Colors.grey[400],
+                    height: 1.2,
                   ),
                 ),
                 // ROSCA / one-time pill in the header — surfaces the
@@ -786,7 +829,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 // screen. Intrinsic-width badge so the row doesn't
                 // stretch; clipped if the title squeezes the column.
                 Padding(
-                  padding: EdgeInsets.only(top: 4.h),
+                  padding: EdgeInsets.only(top: 3.h),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: ContributionTypeBadge(type: contribution.type),
@@ -797,6 +840,11 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           ),
           IconButton(
             tooltip: 'Chat',
+            // Default IconButton reserves 48x48; three of those set the
+            // header's floor height on their own.
+            padding: EdgeInsets.all(6.w),
+            constraints: const BoxConstraints(),
+            visualDensity: VisualDensity.compact,
             // Unread badge: without it nobody learns there are new messages
             // until they happen to open the chat. Count comes from the chat
             // state endpoint (messages from others past the caller's read
@@ -805,7 +853,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               clipBehavior: Clip.none,
               children: [
                 Icon(Icons.chat_bubble_outline,
-                    color: Colors.white, size: 22.sp),
+                    color: Colors.white, size: 19.sp),
                 if (_chatUnread > 0)
                   Positioned(
                     right: -4.w,
@@ -883,10 +931,12 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             },
           ),
           PopupMenuButton<String>(
+            padding: EdgeInsets.all(6.w),
+            constraints: const BoxConstraints(),
             icon: Icon(
               Icons.more_vert,
               color: Colors.white,
-              size: 24.sp,
+              size: 20.sp,
             ),
             color: const Color(0xFF1F1F1F),
             itemBuilder: (context) {
@@ -1079,6 +1129,19 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       );
     }
 
+    // The server refuses a circle of fewer than two ACCEPTED members, and it
+    // used to be the only thing that said so — the creator pressed Start and
+    // got a red sentence back. The requirement is knowable here, before the
+    // tap, so it is stated here: the tile reads "Needs 1 more", the colour
+    // drops to grey, and the sheet it opens explains what to do instead of
+    // reporting a failure.
+    //
+    // minRotationMembers on the server. Kept as a named constant on this side
+    // too so the two can be compared by eye rather than by memory.
+    const minMembersToStart = 2;
+    final shortBy = minMembersToStart - active;
+    final canStartNow = shortBy <= 0;
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
       child: Row(
@@ -1086,11 +1149,19 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           if (canStart)
             Expanded(
               child: _compactAction(
-                icon: Icons.play_arrow_rounded,
+                icon: canStartNow
+                    ? Icons.play_arrow_rounded
+                    : Icons.group_add_outlined,
                 label: 'Start',
-                sub: 'Set the schedule',
-                color: const Color(0xFFF59E0B),
-                onTap: () => _showStartDialog(contribution, active),
+                sub: canStartNow
+                    ? 'Set the schedule'
+                    : 'Needs $shortBy more ${shortBy == 1 ? 'member' : 'members'}',
+                color: canStartNow
+                    ? const Color(0xFFF59E0B)
+                    : const Color(0xFF6B7280),
+                onTap: () => canStartNow
+                    ? _showStartDialog(contribution, active)
+                    : _showNeedsMembersDialog(contribution, active),
               ),
             ),
           if (canStart && isAdmin) SizedBox(width: 10.w),
@@ -1163,6 +1234,28 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
 
   /// The detail that used to sit in the banner, in front of the button that
   /// commits it. Starting locks the roster, so it is worth a confirmation.
+  /// Shown instead of the schedule sheet when the circle cannot legally
+  /// start yet. Says the rule, says the count, and offers the action that
+  /// fixes it — rather than letting the creator discover the rule by being
+  /// refused.
+  Future<void> _showNeedsMembersDialog(
+      Contribution contribution, int active) async {
+    final go = await _actionDialog(
+      icon: Icons.group_add_outlined,
+      color: const Color(0xFFF59E0B),
+      title: 'Add one more member first',
+      body: 'An esusu is a rotation, so it needs at least 2 members who have '
+          'ACCEPTED their invite before it can start. '
+          '${active == 0 ? 'Nobody has' : active == 1 ? 'Only 1 person has' : '$active people have'} '
+          'accepted so far.\n\nPeople you have invited who have not accepted '
+          'yet do not count — they can still be added, and the circle will '
+          'start once they are in.',
+      cta: 'Add members',
+    );
+    if (go != true || !mounted) return;
+    _showAddMembersDialog(contribution);
+  }
+
   Future<void> _showStartDialog(Contribution contribution, int active) async {
     final go = await _actionDialog(
       icon: Icons.play_circle_outline,
@@ -1248,77 +1341,6 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             child: Text(cta,
                 style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStartBanner(Contribution contribution) {
-    final cubit = context.read<GroupAccountCubit>();
-    final myUserId = cubit.currentUserId;
-    final canStart = contribution.createdBy == myUserId ||
-        GroupRolePermissions.canMember(
-            _currentGroupMember, GroupAction.editContribution);
-    final active = contribution.members
-        .where((m) => m.membershipStatus == ContributionMembershipStatus.active)
-        .length;
-
-    return Container(
-      width: double.infinity,
-      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
-      padding: EdgeInsets.all(13.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1206),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF7A5B00)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.play_circle_outline,
-                  color: const Color(0xFFF59E0B), size: 19.sp),
-              SizedBox(width: 8.w),
-              Expanded(
-                child: Text('This esusu has not started',
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w700)),
-              ),
-            ],
-          ),
-          SizedBox(height: 5.h),
-          Text(
-            canStart
-                ? 'Add everyone first — starting sets the schedule and locks '
-                    'the members. $active ${active == 1 ? 'person is' : 'people are'} in so far.'
-                : 'The creator sets the schedule and starts it. Nobody can pay '
-                    'in until then.',
-            style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF), fontSize: 11.5.sp, height: 1.4),
-          ),
-          if (canStart) ...[
-            SizedBox(height: 10.h),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () => _startEsusu(contribution),
-                icon: Icon(Icons.play_arrow_rounded, size: 18.sp),
-                label: Text('Start contribution',
-                    style: GoogleFonts.inter(
-                        fontSize: 13.sp, fontWeight: FontWeight.w600)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF59E0B),
-                  foregroundColor: Colors.black,
-                  padding: EdgeInsets.symmetric(vertical: 12.h),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.r)),
-                ),
-              ),
-            ),
-          ],
         ],
       ),
     );
