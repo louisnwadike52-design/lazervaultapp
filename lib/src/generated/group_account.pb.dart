@@ -12351,6 +12351,7 @@ class SendContributionMessageRequest extends $pb.GeneratedMessage {
     $core.String? replyToMessageId,
     $core.Iterable<$core.String>? mentionedUserIds,
     $core.bool? mentionSupport,
+    $core.bool? mentionAll,
   }) {
     final result = create();
     if (contributionId != null) result.contributionId = contributionId;
@@ -12363,6 +12364,7 @@ class SendContributionMessageRequest extends $pb.GeneratedMessage {
     if (mentionedUserIds != null)
       result.mentionedUserIds.addAll(mentionedUserIds);
     if (mentionSupport != null) result.mentionSupport = mentionSupport;
+    if (mentionAll != null) result.mentionAll = mentionAll;
     return result;
   }
 
@@ -12388,6 +12390,7 @@ class SendContributionMessageRequest extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'replyToMessageId')
     ..pPS(8, _omitFieldNames ? '' : 'mentionedUserIds')
     ..aOB(9, _omitFieldNames ? '' : 'mentionSupport')
+    ..aOB(10, _omitFieldNames ? '' : 'mentionAll')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -12506,6 +12509,22 @@ class SendContributionMessageRequest extends $pb.GeneratedMessage {
   $core.bool hasMentionSupport() => $_has(8);
   @$pb.TagNumber(9)
   void clearMentionSupport() => $_clearField(9);
+
+  /// Tag EVERY active member ("@all").
+  ///
+  /// A flag rather than the client listing every id: the roster is the
+  /// server's to know, and a client that last loaded the member list an hour
+  /// ago would tag the people it remembers rather than the people who are
+  /// actually in the circle. The service expands it against active membership
+  /// at send time, which is the same check every explicit id already passes.
+  @$pb.TagNumber(10)
+  $core.bool get mentionAll => $_getBF(9);
+  @$pb.TagNumber(10)
+  set mentionAll($core.bool value) => $_setBool(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasMentionAll() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearMentionAll() => $_clearField(10);
 }
 
 class SendContributionMessageResponse extends $pb.GeneratedMessage {

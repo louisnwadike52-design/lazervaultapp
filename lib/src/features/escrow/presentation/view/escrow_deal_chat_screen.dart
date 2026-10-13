@@ -215,7 +215,17 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
       _sending = true;
     });
     _jumpToEnd();
+    await _deliver(localId, body);
+  }
 
+  /// Push one optimistic message to the server and settle its bubble.
+  ///
+  /// Split out of [_send] so a FAILED bubble can be sent again without
+  /// retyping it. The p2p chat this screen was modelled on has had
+  /// retryMessage since it shipped; here a failure left "Not sent" on screen
+  /// with no way forward, so the only recovery was to select the text, copy
+  /// it, and type it again.
+  Future<void> _deliver(String localId, String body) async {
     try {
       final sent =
           await _repo.sendDealMessage(dealId: widget.dealId, body: body);
@@ -228,6 +238,7 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
           for (final m in _messages) if (m.id == localId) sent else m,
         ];
         _pendingIds.remove(localId);
+        _failedIds.remove(localId);
         _sending = false;
       });
     } catch (e) {
@@ -235,13 +246,23 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
       setState(() {
         _pendingIds.remove(localId);
         // Kept in the thread and MARKED, not silently removed. A message
-        // that vanishes is indistinguishable from one that was sent, and
-        // the text is still recoverable by long-pressing to copy.
+        // that vanishes is indistinguishable from one that was sent.
         _failedIds.add(localId);
         _sending = false;
       });
       showAppSnackbar('Escrow Pay', _friendly(e), type: AppSnackbarType.error);
     }
+  }
+
+  /// Send a failed message again, from its own bubble.
+  Future<void> _retry(EscrowMessageEntity m) async {
+    if (_sending || !_failedIds.contains(m.id)) return;
+    setState(() {
+      _failedIds.remove(m.id);
+      _pendingIds.add(m.id);
+      _sending = true;
+    });
+    await _deliver(m.id, m.body);
   }
 
   /// Offer the three things you can put in a deal thread.
@@ -354,7 +375,7 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
         if (pending != null) pending!.failed = true;
         _uploading = false;
       });
-      showAppSnackbar('Escrow Pay', _friendlyMedia(e), type: AppSnackbarType.error);
+      showAppSnackbar('Escrow Pay', escrowMediaErrorMessage(e), type: AppSnackbarType.error);
     }
   }
 
@@ -479,7 +500,7 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
         pending.failed = true;
         _uploading = false;
       });
-      showAppSnackbar('Escrow Pay', _friendlyMedia(e), type: AppSnackbarType.error);
+      showAppSnackbar('Escrow Pay', escrowMediaErrorMessage(e), type: AppSnackbarType.error);
     }
   }
 
@@ -490,35 +511,6 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
   /// told the user to retry a refusal that will fail identically every time
   /// — a cap reached, a clip too long, a deal already closed. The server
   /// sends those as sentences meant to be read, so they are shown.
-  String _friendlyMedia(Object e) {
-    final raw = e.toString();
-    final s = raw.toLowerCase();
-    if (s.contains('unavailable') || s.contains('socket') || s.contains('network')) {
-      return 'Server not reachable. Please try again.';
-    }
-    if (s.contains('not found')) return 'This conversation is not available.';
-    for (final marker in const [
-      'you can attach',
-      'voice note',
-      'shared files',
-      'too big',
-      'too large',
-      'seconds long',
-      'this deal is closed',
-      'minutes long',
-      'came out empty',
-      'signed in',
-    ]) {
-      if (s.contains(marker)) {
-        // Strip the gRPC envelope so the sentence reads on its own.
-        final m = RegExp(r'desc\s*=\s*(.+)$', dotAll: true).firstMatch(raw);
-        final text = (m?.group(1) ?? raw).trim();
-        return text.isEmpty ? 'That file could not be shared.' : text;
-      }
-    }
-    return 'That file could not be shared. Please try again.';
-  }
-
   String _friendly(Object e) {
     final s = e.toString().toLowerCase();
     if (s.contains('not found')) {
@@ -827,6 +819,24 @@ class _EscrowDealChatScreenState extends State<EscrowDealChatScreen> {
                   Text('Not sent',
                       style: GoogleFonts.inter(
                           color: const Color(0xFFFCA5A5), fontSize: 9.5.sp)),
+                  // The way out of a failed send. Without it "Not sent" is a
+                  // dead end and the only recovery is to retype the message.
+                  SizedBox(width: 6.w),
+                  GestureDetector(
+                    onTap: () => _retry(m),
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      // Widens the tap target without moving the text.
+                      padding: EdgeInsets.symmetric(vertical: 3.h, horizontal: 2.w),
+                      child: Text('Retry',
+                          style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 9.5.sp,
+                              fontWeight: FontWeight.w600,
+                              decoration: TextDecoration.underline,
+                              decorationColor: Colors.white70)),
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -1257,4 +1267,63 @@ class _PendingMedia {
   final DateTime at;
   final int durationMs;
   bool failed = false;
+}
+
+/// The sentence a person sees when sharing a file in a deal chat fails.
+///
+/// Top-level, and therefore testable: this function is the only thing standing
+/// between an internal error string and the user, and it has leaked once
+/// already. See the guard inside for what went wrong.
+String escrowMediaErrorMessage(Object e) {
+  final raw = e.toString();
+  final s = raw.toLowerCase();
+  if (s.contains('unavailable') || s.contains('socket') || s.contains('network')) {
+    return 'Server not reachable. Please try again.';
+  }
+  if (s.contains('not found')) return 'This conversation is not available.';
+  // Never pass a TECHNICAL sentence through, whatever else it contains.
+  //
+  // The marker list below exists to let the server's own user-facing
+  // refusals ("you can attach up to 5 photos") reach the person unchanged.
+  // But the storage gateway's allow-list refusal named request fields and
+  // happened to contain the phrase "voice note", so it matched a marker and
+  // the user was shown "filename or content_type must identify a supported
+  // image (jpg, png, webp, heic, gif), video (mp4, mov, webm) or voice note
+  // (m4a, aac, mp3)". The gateway's wording is fixed, but the shape of the
+  // bug is the marker list trusting a substring, so this closes it here too:
+  // anything that mentions a wire field or a MIME type is ours to phrase,
+  // not the server's.
+  for (final internal in const [
+    'content_type',
+    'content-type',
+    'filename',
+    'must identify',
+    'mime',
+    'keyspace',
+    'unsupported_media_type',
+  ]) {
+    if (s.contains(internal)) {
+      return 'That file type is not supported. Share a photo, a video, or a voice note.';
+    }
+  }
+  for (final marker in const [
+    'you can attach',
+    'voice note',
+    'shared files',
+    'too big',
+    'too large',
+    'seconds long',
+    'this deal is closed',
+    'minutes long',
+    'came out empty',
+    'signed in',
+  ]) {
+    if (s.contains(marker)) {
+      // Strip the gRPC envelope so the sentence reads on its own.
+      final m = RegExp(r'desc\s*=\s*(.+)$', dotAll: true).firstMatch(raw);
+      final text = (m?.group(1) ?? raw).trim();
+      return text.isEmpty ? 'That file could not be shared.' : text;
+    }
+  }
+  return 'That file could not be shared. Please try again.';
 }

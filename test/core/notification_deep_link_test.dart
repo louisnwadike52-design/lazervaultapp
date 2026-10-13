@@ -132,6 +132,51 @@ void main() {
       expect(t.precision, TargetPrecision.serviceLanding);
     });
 
+    // The CONTRIBUTION lifecycle events, which are not chat. Each one is
+    // about a specific circle and carries both ids, and taking the group id
+    // first landed every one of them on a list of circles instead of the one
+    // the member had just been told about.
+    for (final type in const [
+      'group_funds_esusu_started',
+      'group_funds_rotation_your_turn',
+      'group_funds_rotation_advanced',
+      'group_contribution_member_added',
+      'group_contribution_created',
+    ]) {
+      test('$type opens the contribution it is about', () {
+        final t = NotificationRouteResolver.resolve(type, {
+          'contribution_id': 'contrib-42',
+          'group_id': 'group-7',
+        });
+        expect(t, isNotNull, reason: '$type resolved to nothing');
+        expect(t!.route, AppRoutes.contributionDetails,
+            reason: '$type landed on ${t.route} instead of the contribution');
+        expect((t.arguments as Map)['contributionId'], 'contrib-42');
+        expect(t.precision, TargetPrecision.record);
+      });
+    }
+
+    // Joint-funds events carry no contribution id and must keep landing on
+    // the group. This is the half the change above must not break.
+    test('a joint-funds event with no contribution id still opens the group',
+        () {
+      final t = NotificationRouteResolver.resolve('group_account.member_left', {
+        'group_id': 'group-7',
+      });
+      expect(t!.route, AppRoutes.groupDetails);
+      expect(t.arguments, 'group-7');
+    });
+
+    // An invite predates any membership, so it goes to the list where the
+    // user accepts it, not to a circle they are not in yet.
+    test('an esusu invite still lands on the Group Funds list', () {
+      final t = NotificationRouteResolver.resolve('group_contribution_invite', {
+        'contribution_id': 'contrib-42',
+        'group_id': 'group-7',
+      });
+      expect(t!.route, AppRoutes.groupAccount);
+    });
+
     // The ordinary group notifications must NOT be dragged into the chat
     // branch by the new prefix match.
     test('a plain group notification still opens the group', () {

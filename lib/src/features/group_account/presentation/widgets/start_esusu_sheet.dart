@@ -103,6 +103,10 @@ class _StartEsusuSheetState extends State<_StartEsusuSheet> {
     return d;
   }
 
+  /// Mirrors the server's advanceDate (group_account_service.go) one period at
+  /// a time. Seconds are carried through: dropping them made the date shown
+  /// here differ from the server's own derivation by up to a minute, which is
+  /// invisible on screen but turns an equality check into a false mismatch.
   static DateTime _addPeriod(DateTime d, ContributionFrequency f) {
     switch (f) {
       case ContributionFrequency.daily:
@@ -112,9 +116,11 @@ class _StartEsusuSheetState extends State<_StartEsusuSheet> {
       case ContributionFrequency.biWeekly:
         return d.add(const Duration(days: 14));
       case ContributionFrequency.monthly:
-        return DateTime(d.year, d.month + 1, d.day, d.hour, d.minute);
+        return DateTime(d.year, d.month + 1, d.day, d.hour, d.minute, d.second);
       case ContributionFrequency.quarterly:
-        return DateTime(d.year, d.month + 3, d.day, d.hour, d.minute);
+        return DateTime(d.year, d.month + 3, d.day, d.hour, d.minute, d.second);
+      case ContributionFrequency.yearly:
+        return DateTime(d.year + 1, d.month, d.day, d.hour, d.minute, d.second);
     }
   }
 
@@ -130,6 +136,8 @@ class _StartEsusuSheetState extends State<_StartEsusuSheet> {
         return 'Monthly';
       case ContributionFrequency.quarterly:
         return 'Quarterly';
+      case ContributionFrequency.yearly:
+        return 'Yearly';
     }
   }
 

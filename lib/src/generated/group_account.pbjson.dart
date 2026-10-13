@@ -3864,6 +3864,7 @@ const SendContributionMessageRequest$json = {
       '10': 'mentionedUserIds'
     },
     {'1': 'mention_support', '3': 9, '4': 1, '5': 8, '10': 'mentionSupport'},
+    {'1': 'mention_all', '3': 10, '4': 1, '5': 8, '10': 'mentionAll'},
   ],
 };
 
@@ -3875,7 +3876,7 @@ final $typed_data.Uint8List sendContributionMessageRequestDescriptor = $convert.
     'VyYXRpb25NcxIqChFjbGllbnRfbWVzc2FnZV9pZBgGIAEoCVIPY2xpZW50TWVzc2FnZUlkEi0K'
     'E3JlcGx5X3RvX21lc3NhZ2VfaWQYByABKAlSEHJlcGx5VG9NZXNzYWdlSWQSLAoSbWVudGlvbm'
     'VkX3VzZXJfaWRzGAggAygJUhBtZW50aW9uZWRVc2VySWRzEicKD21lbnRpb25fc3VwcG9ydBgJ'
-    'IAEoCFIObWVudGlvblN1cHBvcnQ=');
+    'IAEoCFIObWVudGlvblN1cHBvcnQSHwoLbWVudGlvbl9hbGwYCiABKAhSCm1lbnRpb25BbGw=');
 
 @$core.Deprecated('Use sendContributionMessageResponseDescriptor instead')
 const SendContributionMessageResponse$json = {

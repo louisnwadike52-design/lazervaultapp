@@ -18,9 +18,15 @@ DateTime addPeriod(DateTime d, ContributionFrequency f) {
     case ContributionFrequency.biWeekly:
       return d.add(const Duration(days: 14));
     case ContributionFrequency.monthly:
-      return DateTime(d.year, d.month + 1, d.day, d.hour, d.minute);
+      return DateTime(d.year, d.month + 1, d.day, d.hour, d.minute, d.second);
     case ContributionFrequency.quarterly:
-      return DateTime(d.year, d.month + 3, d.day, d.hour, d.minute);
+      return DateTime(d.year, d.month + 3, d.day, d.hour, d.minute, d.second);
+    // The backend has always had yearly (models.ContributionFrequencyYearly,
+    // advanceDate's AddDate(1,0,0)). Dart folded it onto monthly until this
+    // was added, so a yearly circle displayed, and computed its end date, as
+    // if it ran twelve times as fast.
+    case ContributionFrequency.yearly:
+      return DateTime(d.year + 1, d.month, d.day, d.hour, d.minute, d.second);
   }
 }
 
@@ -34,6 +40,33 @@ DateTime endsOn(DateTime start, ContributionFrequency f, int cycles) {
 
 void main() {
   final start = DateTime(2026, 3, 10, 9, 0);
+
+  // Every frequency the enum offers must be walkable. The picker iterates
+  // ContributionFrequency.values, so a value with no arithmetic behind it is
+  // selectable and then silently wrong.
+  group('every frequency advances', () {
+    test('each one moves the date forward', () {
+      for (final f in ContributionFrequency.values) {
+        expect(addPeriod(start, f).isAfter(start), isTrue,
+            reason: '$f did not advance the date');
+      }
+    });
+
+    test('yearly is a year, not a month', () {
+      expect(addPeriod(start, ContributionFrequency.yearly),
+          DateTime(2027, 3, 10, 9, 0));
+      expect(endsOn(start, ContributionFrequency.yearly, 3),
+          DateTime(2029, 3, 10, 9, 0));
+    });
+
+    test('seconds survive a monthly step', () {
+      // Dropping them made the sheet's date differ from the server's own
+      // derivation by up to a minute, which reads as agreement on screen and
+      // as a mismatch to anything comparing the two.
+      final withSeconds = DateTime(2026, 3, 10, 9, 0, 37);
+      expect(addPeriod(withSeconds, ContributionFrequency.monthly).second, 37);
+    });
+  });
 
   group('the end date is the ROTATION end', () {
     test('six monthly cycles run six months, not one', () {

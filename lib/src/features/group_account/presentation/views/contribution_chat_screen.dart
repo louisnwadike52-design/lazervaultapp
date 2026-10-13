@@ -6,6 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
+import 'package:lazervault/core/utils/dismiss_keyboard.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -61,6 +63,22 @@ const MentionCandidate _supportCandidate = MentionCandidate(
   userId: _supportMentionId,
   name: 'Lazervault Support',
   username: 'support',
+);
+
+/// The id used for the "@all" mention candidate.
+///
+/// A sentinel for the same reason support is one: "everyone" is not a user and
+/// must not be put into the array that decides who is pushed a preview of a
+/// private conversation. The send path pulls it out and sets mention_all, and
+/// the SERVER expands it from the roster — a phone that last loaded the member
+/// list an hour ago would otherwise tag the people it remembers instead of the
+/// people actually in the circle.
+const String _allMentionId = 'lazervault-all';
+
+const MentionCandidate _allCandidate = MentionCandidate(
+  userId: _allMentionId,
+  name: 'Everyone',
+  username: 'all',
 );
 
 class _ContributionChatScreenState extends State<ContributionChatScreen>
@@ -206,6 +224,18 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
     ).isNotEmpty) {
       matches.insert(0, _supportCandidate);
     }
+
+    // "@all" first, when the term matches it.
+    //
+    // Ranked on the USERNAME as well as the name: people type "@all", not
+    // "@everyone", and a candidate you cannot reach by typing its own handle
+    // is not really offered. Inserted at the head because when someone has
+    // typed "@al" the thing they almost certainly mean is everyone, not the
+    // member whose name happens to contain those letters.
+    final term = q.term.trim().toLowerCase();
+    if (term.isEmpty || 'all'.startsWith(term) || 'everyone'.startsWith(term)) {
+      matches.insert(0, _allCandidate);
+    }
     return matches;
   }
 
@@ -301,31 +331,53 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
     if (text.trim().isEmpty) return;
     // Re-derived from the final text, not from what was picked: a name deleted
     // after selection must not still notify that person.
-    final mentions = MentionText.survivingMentions(text, _pickedMentions);
+    // Copied into a list we own: this is about to be mutated, and a caller
+    // that assumes a returned list is growable is exactly how the send button
+    // was broken once already.
+    final mentions =
+        List<String>.of(MentionText.survivingMentions(text, _pickedMentions));
     // Support is a sentinel, never a member id. Pulled out here so the array
     // that reaches the server contains only real members — the server would
     // drop it anyway (it validates every id against active membership), but
     // then the tag would silently do nothing.
     final mentionSupport = mentions.remove(_supportMentionId);
+    // Same sentinel treatment as support: never sent as a member id.
+    final mentionAll = mentions.remove(_allMentionId);
     _input.clear();
     setState(() {
       _pickedMentions.clear();
       _mentionBoundary = 0;
       _mentionQuery = null;
     });
-    await _chat.send(
+    final error = await _chat.send(
       text,
       mentionedUserIds: mentions,
       mentionSupport: mentionSupport,
+      mentionAll: mentionAll,
     );
     _scrollToBottom();
+    // Say what went wrong. The bubble carries a failed glyph and a retry in
+    // its long-press menu, but a glyph alone does not tell someone their
+    // session expired or that they are no longer a member — and this screen
+    // previously reported nothing at all.
+    if (error != null && mounted) {
+      showAppSnackbar('Group chat', error, type: AppSnackbarType.error);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => FocusScope.of(context).unfocus(),
+      // dismissKeyboard(), not FocusScope.of(context).unfocus().
+      //
+      // This context sits ABOVE the Scaffold, so the scope it resolves is not
+      // necessarily the one holding the composer's focus, and unfocusing the
+      // wrong scope leaves the keyboard up. The helper goes at
+      // FocusManager.instance.primaryFocus — whatever actually has focus —
+      // and then tells the platform to hide the keyboard, which is the half
+      // that makes it reliable on iOS.
+      onTap: dismissKeyboard,
       child: Scaffold(
         backgroundColor: _bg,
         appBar: AppBar(
@@ -691,6 +743,10 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
 
     return ListView.builder(
       controller: _scroll,
+      // Scrolling the conversation puts the keyboard away, which is what
+      // every other chat does and what someone reaching for older messages
+      // is trying to achieve anyway.
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
       itemCount: _chat.messages.length,
       itemBuilder: (context, i) {

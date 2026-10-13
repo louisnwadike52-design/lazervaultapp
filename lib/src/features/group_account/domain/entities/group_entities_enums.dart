@@ -151,6 +151,12 @@ enum ContributionFrequency {
   biWeekly,
   monthly,
   quarterly,
+  // The backend has always had this (CONTRIBUTION_FREQUENCY_YEARLY, and
+  // models.ContributionFrequencyYearly). Without it here the proto mapper had
+  // to fold YEARLY onto `monthly`, so a yearly circle displayed as monthly,
+  // computed an end date twelve times too short, and would have been written
+  // back as monthly the next time anything saved it.
+  yearly,
 }
 
 enum PayoutStatus {
@@ -288,6 +294,8 @@ extension ContributionFrequencyExtension on ContributionFrequency {
         return 'Monthly';
       case ContributionFrequency.quarterly:
         return 'Quarterly';
+      case ContributionFrequency.yearly:
+        return 'Yearly';
     }
   }
 
@@ -303,6 +311,8 @@ extension ContributionFrequencyExtension on ContributionFrequency {
         return const Duration(days: 30);
       case ContributionFrequency.quarterly:
         return const Duration(days: 90);
+      case ContributionFrequency.yearly:
+        return const Duration(days: 365);
     }
   }
 
@@ -318,6 +328,8 @@ extension ContributionFrequencyExtension on ContributionFrequency {
         return DateTime(from.year, from.month + 1, from.day);
       case ContributionFrequency.quarterly:
         return DateTime(from.year, from.month + 3, from.day);
+      case ContributionFrequency.yearly:
+        return DateTime(from.year + 1, from.month, from.day);
     }
   }
 }

@@ -115,7 +115,14 @@ class MentionText {
     String text,
     Map<String, String> chosen,
   ) {
-    if (chosen.isEmpty) return const [];
+    // GROWABLE, always. `const []` here was the whole of
+    // "the send button does nothing": the caller removes the support
+    // sentinel from this list, and removing from a const list throws
+    // UnsupportedError — before the composer is cleared, so the text stayed
+    // put, no message was sent, and nothing was reported. It fired for every
+    // message where no mention had been PICKED from the suggestion list,
+    // which is almost all of them.
+    if (chosen.isEmpty) return <String>[];
     final out = <String>[];
     for (final entry in chosen.entries) {
       final needle = '@${entry.value}';

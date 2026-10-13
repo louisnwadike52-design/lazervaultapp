@@ -322,11 +322,12 @@ class ContributionChatCubit extends ChangeNotifier {
   /// [mentionedUserIds] are people @-tagged in [body]. Already reconciled
   /// against the final text by the composer, so a name deleted after being
   /// picked is not in this list.
-  Future<void> send(String body,
+  Future<String?> send(String body,
       {List<String> mentionedUserIds = const [],
-      bool mentionSupport = false}) async {
+      bool mentionSupport = false,
+      bool mentionAll = false}) async {
     final text = body.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty) return null;
     final clientId = _uuid.v4();
     final reply = replyingTo;
 
@@ -365,6 +366,7 @@ class ContributionChatCubit extends ChangeNotifier {
         replyToMessageId: reply?.id ?? '',
         mentionedUserIds: mentionedUserIds,
         mentionSupport: mentionSupport,
+        mentionAll: mentionAll,
       );
       final i = messages
           .indexWhere((m) => m.clientMessageId == clientId && m.id.isEmpty);
@@ -374,23 +376,72 @@ class ContributionChatCubit extends ChangeNotifier {
           _cursor = saved.createdAt;
         }
       }
-    } catch (_) {
+    } catch (e) {
       final i = messages
           .indexWhere((m) => m.clientMessageId == clientId && m.id.isEmpty);
       if (i >= 0) {
         messages[i] = messages[i].copyWith(status: ChatDeliveryStatus.failed);
       }
+      // KEEP THE REASON. `catch (_)` meant a send could fail for any cause —
+      // expired token, not a member, a closed contribution — and the only
+      // trace anywhere was a small status glyph on the bubble. The caller
+      // shows this, so the person is told why rather than left to guess.
+      _safeNotify();
+      return _sendFailureMessage(e);
     }
     _safeNotify();
+    return null;
+  }
+
+  /// A sentence fit to show someone, from whatever the transport threw.
+  ///
+  /// The data source throws a bare String for an HTTP error (the server's own
+  /// `message` field when it sent one), and an exception otherwise. Technical
+  /// shapes are replaced rather than shown: an allow-list or wire-field
+  /// message is ours to phrase, not the server's.
+  String _sendFailureMessage(Object e) {
+    final raw = e is String ? e : e.toString();
+    final s = raw.toLowerCase();
+    if (s.contains('socket') ||
+        s.contains('unavailable') ||
+        s.contains('failed host lookup') ||
+        s.contains('network') ||
+        s.contains('timed out') ||
+        s.contains('timeout')) {
+      return 'Server not reachable. Please try again.';
+    }
+    if (s.contains('401') || s.contains('unauthor')) {
+      return 'Please sign in again to send messages.';
+    }
+    if (s.contains('403') || s.contains('forbidden') || s.contains('not a member')) {
+      return 'You are no longer a member of this contribution.';
+    }
+    if (s.contains('404')) return 'This conversation is not available.';
+    for (final internal in const [
+      'content_type',
+      'content-type',
+      'filename',
+      'mime',
+      'exception:',
+      'rpc error',
+      '<html',
+    ]) {
+      if (s.contains(internal)) return 'Could not send your message. Please try again.';
+    }
+    final text = raw.trim();
+    if (text.isEmpty || text.length > 160) {
+      return 'Could not send your message. Please try again.';
+    }
+    return text;
   }
 
   /// Retry a failed bubble. Reuses the SAME client id, so if the original
   /// request actually landed the server returns that row instead of posting a
   /// second copy.
-  Future<void> retry(ContributionMessage failed) async {
+  Future<String?> retry(ContributionMessage failed) async {
     final i = messages.indexWhere(
         (m) => m.clientMessageId == failed.clientMessageId && m.id.isEmpty);
-    if (i < 0) return;
+    if (i < 0) return null;
     messages[i] = messages[i].copyWith(status: ChatDeliveryStatus.sending);
     _safeNotify();
     try {
@@ -400,12 +451,20 @@ class ContributionChatCubit extends ChangeNotifier {
         body: failed.body,
         clientMessageId: failed.clientMessageId,
         replyToMessageId: failed.replyToMessageId,
+        // Carried through the retry. Without these a retried message lost its
+        // tags, so the people it was addressed to were never notified — and
+        // the bubble still rendered them, so nothing looked wrong.
+        mentionedUserIds: failed.mentionedUserIds,
+        mentionSupport: failed.supportRequested,
       );
       messages[i] = saved.copyWith(status: ChatDeliveryStatus.sent);
-    } catch (_) {
+    } catch (e) {
       messages[i] = messages[i].copyWith(status: ChatDeliveryStatus.failed);
+      _safeNotify();
+      return _sendFailureMessage(e);
     }
     _safeNotify();
+    return null;
   }
 
   Future<void> edit(ContributionMessage m, String newBody) async {

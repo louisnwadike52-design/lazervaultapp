@@ -169,6 +169,15 @@ void main() {
     ('kyc.verified', {}),
     ('group_funds_auto_charge_failed', {}),
     ('group_funds_auto_charge_failed_creator', {}),
+    // The contribution lifecycle. Each carries a contribution id, which is
+    // what makes it land on the circle rather than on the group.
+    ('group_funds_esusu_started', {'contribution_id': 'c1', 'group_id': 'g1'}),
+    ('group_funds_esusu_invite_lapsed', {'contribution_id': 'c1', 'group_id': 'g1'}),
+    ('group_contribution_created', {'contribution_id': 'c1', 'group_id': 'g1'}),
+    ('group_contribution_member_added', {'contribution_id': 'c1', 'group_id': 'g1'}),
+    ('group_contribution_members_added', {'contribution_id': 'c1', 'group_id': 'g1'}),
+    ('group_funds_rotation_your_turn', {'contribution_id': 'c1', 'group_id': 'g1'}),
+    ('group_funds_rotation_advanced', {'contribution_id': 'c1', 'group_id': 'g1'}),
     ('escrow_funded', {}),
     ('escrow_released', {}),
   ];
@@ -297,6 +306,9 @@ void main() {
       'payment',
       'bill',
       'group_funds_auto_charge_failed',
+      'group_funds_esusu_started',
+      'group_funds_rotation_your_turn',
+      'group_contribution_member_added',
       'autosave.triggered',
       'uplift_disbursement',
       'scheduled_payroll',

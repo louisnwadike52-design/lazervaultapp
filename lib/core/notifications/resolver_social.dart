@@ -136,6 +136,29 @@ NotificationTarget? _resolveSocial(String type, Map<String, String> data) {
     if (type.contains('invit')) {
       return _landing(AppRoutes.groupAccount);
     }
+    // A CONTRIBUTION id beats the group id when both are present.
+    //
+    // Every contribution lifecycle notification carries both — the esusu
+    // start, "it is your turn", a new payout cycle, a member added. Taking
+    // the group id first landed all of them on the group's screen, which
+    // lists the circles but says nothing about the one the message was
+    // about: the member who was just told it is their turn then had to go
+    // find the circle themselves. The group-fund chat branch above already
+    // routes this way; this is the same reasoning for the rest of the
+    // lifecycle.
+    //
+    // Joint-funds events (group_account_*, joint_*) carry no contribution
+    // id and still fall through to the group, unchanged.
+    final contributionId = _first(data, const [
+      'contribution_id',
+      'contributionId',
+    ]);
+    if (contributionId != null) {
+      return _record(
+        AppRoutes.contributionDetails,
+        arguments: {'contributionId': contributionId},
+      );
+    }
     final groupId = _first(data, const [
       'group_id',
       'groupId',

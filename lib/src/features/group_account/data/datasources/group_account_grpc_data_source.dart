@@ -1788,7 +1788,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       case pb_enum.ContributionFrequency.CONTRIBUTION_FREQUENCY_QUARTERLY:
         return ContributionFrequency.quarterly;
       case pb_enum.ContributionFrequency.CONTRIBUTION_FREQUENCY_YEARLY:
-        return ContributionFrequency.monthly;
+        return ContributionFrequency.yearly;
       default:
         return null;
     }
@@ -1807,6 +1807,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         return pb_enum.ContributionFrequency.CONTRIBUTION_FREQUENCY_MONTHLY;
       case ContributionFrequency.quarterly:
         return pb_enum.ContributionFrequency.CONTRIBUTION_FREQUENCY_QUARTERLY;
+      case ContributionFrequency.yearly:
+        return pb_enum.ContributionFrequency.CONTRIBUTION_FREQUENCY_YEARLY;
     }
   }
 

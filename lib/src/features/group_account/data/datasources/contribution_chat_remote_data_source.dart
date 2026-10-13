@@ -385,6 +385,7 @@ class ContributionChatRemoteDataSource {
     String replyToMessageId = '',
     List<String> mentionedUserIds = const [],
     bool mentionSupport = false,
+    bool mentionAll = false,
   }) async {
     final uri = Uri.parse('$_base/v1/contributions/$contributionId/messages');
     final res = await _client.post(
@@ -404,6 +405,9 @@ class ContributionChatRemoteDataSource {
         // Same reason: omitted when false so an older gateway never has to
         // interpret a field it does not know.
         if (mentionSupport) 'mention_support': true,
+        // Same reason again: omitted when false so a gateway that predates
+        // the field never has to interpret it.
+        if (mentionAll) 'mention_all': true,
       }),
     );
     if (res.statusCode < 200 || res.statusCode >= 300) {

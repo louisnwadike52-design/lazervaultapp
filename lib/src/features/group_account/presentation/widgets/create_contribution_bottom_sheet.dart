@@ -2452,6 +2452,9 @@ class _CreateContributionBottomSheetState
       case ContributionFrequency.quarterly:
         return DateTime(start.year, start.month + 3 * n, start.day, start.hour,
             start.minute, start.second);
+      case ContributionFrequency.yearly:
+        return DateTime(start.year + n, start.month, start.day, start.hour,
+            start.minute, start.second);
     }
   }
 
@@ -2522,6 +2525,8 @@ class _CreateContributionBottomSheetState
         return 'a month';
       case ContributionFrequency.quarterly:
         return 'three months';
+      case ContributionFrequency.yearly:
+        return 'a year';
       case null:
         return 'one cycle';
     }
