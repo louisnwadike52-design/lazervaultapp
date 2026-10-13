@@ -1518,6 +1518,34 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               ],
             ),
           ),
+          // The payout threshold, where the money it gates is being shown.
+          //
+          // minimum_balance is settable at creation and was then displayed
+          // NOWHERE — its only appearance was inside the payout banner, to an
+          // admin, and only once it was already blocking. So a member paying
+          // into a pot could not see what it has to reach, and a payout that
+          // had not happened looked like nothing more than a payout that had
+          // not happened. Stated here, under the bar it governs, with the
+          // remaining amount while it is short.
+          if (_payoutThresholdLabel(contribution) != null) ...[
+            SizedBox(height: 5.h),
+            Row(
+              children: [
+                Icon(Icons.flag_outlined,
+                    size: 11.sp, color: Colors.white.withValues(alpha: 0.75)),
+                SizedBox(width: 4.w),
+                Expanded(
+                  child: Text(
+                    _payoutThresholdLabel(contribution)!,
+                    style: GoogleFonts.inter(
+                      fontSize: 10.sp,
+                      color: Colors.white.withValues(alpha: 0.85),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
           SizedBox(height: 6.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1535,6 +1563,28 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         ],
       ),
     );
+  }
+
+  /// "Pays out at X" / "Y more before this can pay out".
+  ///
+  /// Null when no minimum is set, which is the common case — a contribution
+  /// without one pays out on whatever it holds, and a line saying so would be
+  /// noise on every circle that never had the setting.
+  ///
+  /// Mirrors PayoutReceiverBanner._potCoversMinimum, which mirrors the
+  /// server's own guard (processPayoutCore: current_amount < minimum_balance
+  /// → ErrInsufficientFunds). Three places now say the same thing; they agree
+  /// because they are all phrased from the same two numbers.
+  String? _payoutThresholdLabel(Contribution contribution) {
+    final min = contribution.minimumBalance ?? 0;
+    if (min <= 0) return null;
+    final pot = contribution.currentAmount;
+    final ccy = contribution.currency;
+    if (pot >= min) {
+      return 'Pays out at $ccy ${_fmtAmount(min)} — reached';
+    }
+    return '$ccy ${_fmtAmount(min - pot)} more before this can pay out '
+        '(needs $ccy ${_fmtAmount(min)})';
   }
 
   // Same shape as group_details_screen's _buildOverviewStat — kept
