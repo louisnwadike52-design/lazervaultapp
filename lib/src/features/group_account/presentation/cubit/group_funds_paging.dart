@@ -47,7 +47,7 @@ extension GroupFundsPaging on GroupAccountCubit {
     final cached = force ? null : groupsPrefetch[page];
     if (cached != null) {
       groupsPage = cached;
-      emit(GroupAccountGroupsPageLoaded(cached));
+      emitState(GroupAccountGroupsPageLoaded(cached));
       unawaited(_prefetchGroups(page + 1));
       return;
     }
@@ -57,7 +57,7 @@ extension GroupFundsPaging on GroupAccountCubit {
     // page on screen until the next one lands, which is what makes paging
     // feel like paging rather than like reloading.
     if (groupsPage == null) {
-      emit(const GroupAccountLoading(message: 'Loading groups...'));
+      emitState(const GroupAccountLoading(message: 'Loading groups...'));
     }
     try {
       var result = await usecase(PageParams(page: page, pageSize: pageSize));
@@ -85,12 +85,12 @@ extension GroupFundsPaging on GroupAccountCubit {
       // someone with twelve, and made opening a group on page 2 miss its
       // instant-render snapshot. loadUserGroups keeps that cache; this owns
       // the page.
-      emit(GroupAccountGroupsPageLoaded(result));
+      emitState(GroupAccountGroupsPageLoaded(result));
       if (page == 1) unawaited(_persistGroupsPage(result));
       unawaited(_prefetchGroups(page + 1));
     } catch (e) {
       if (!_sessionStillCurrent(generation)) return;
-      emit(GroupAccountError(
+      emitState(GroupAccountError(
           GroupAccountCubit._opError('Could not load that page', e)));
     }
   }
@@ -151,7 +151,7 @@ extension GroupFundsPaging on GroupAccountCubit {
       // instantly instead of showing a spinner. It is replaced the moment
       // the unpaged load lands.
       _cachedGroups ??= items;
-      emit(GroupAccountGroupsPageLoaded(page, fromCache: true));
+      emitState(GroupAccountGroupsPageLoaded(page, fromCache: true));
       return true;
     } catch (e) {
       debugPrint('[GroupAccountCubit] cached groups unreadable: $e');
@@ -192,7 +192,7 @@ extension GroupFundsPaging on GroupAccountCubit {
     final cached = force ? null : contributionsPrefetch[page];
     if (cached != null) {
       contributionsPage = cached;
-      emit(GroupAccountContributionsPageLoaded(groupId, cached));
+      emitState(GroupAccountContributionsPageLoaded(groupId, cached));
       unawaited(_prefetchContributions(groupId, page + 1));
       return;
     }
@@ -222,12 +222,12 @@ extension GroupFundsPaging on GroupAccountCubit {
         }
       }
       contributionsPage = result;
-      emit(GroupAccountContributionsPageLoaded(groupId, result));
+      emitState(GroupAccountContributionsPageLoaded(groupId, result));
       if (page == 1) unawaited(_persistContributionsPage(groupId, result));
       unawaited(_prefetchContributions(groupId, page + 1));
     } catch (e) {
       if (!_sessionStillCurrent(generation)) return;
-      emit(GroupAccountError(
+      emitState(GroupAccountError(
           GroupAccountCubit._opError('Could not load that page', e)));
     }
   }

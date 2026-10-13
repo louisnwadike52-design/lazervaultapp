@@ -19,6 +19,16 @@ import 'group_account_state.dart';
 part 'group_funds_paging.dart';
 
 class GroupAccountCubit extends Cubit<GroupAccountState> {
+  /// Emit, callable from this cubit's extensions.
+  ///
+  /// `emit` is @protected and @visibleForTesting, and an extension is not an
+  /// instance member of a BlocBase subclass however much it looks like one —
+  /// so the paging extension calling it directly produced sixteen analyzer
+  /// warnings. The behaviour was always correct; this is the declaration that
+  /// says so, rather than leaving a wall of warnings for the next person to
+  /// decide whether to care about.
+  void emitState(GroupAccountState state) => emit(state);
+
   final GetUserGroups getUserGroups;
   final GetGroupById getGroupById;
   final CreateGroup createGroup;
