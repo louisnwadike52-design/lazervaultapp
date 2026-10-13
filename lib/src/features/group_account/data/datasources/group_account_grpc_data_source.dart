@@ -2188,10 +2188,30 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   // ==========================================================================
 
   @override
-  Future<ContributionModel> openContribution(String contributionId) async {
+  Future<ContributionModel> openContribution(
+    String contributionId, {
+    ContributionFrequency? frequency,
+    int? totalCycles,
+    DateTime? deadline,
+  }) async {
     try {
       final request = pb.OpenContributionRequest()
         ..contributionId = contributionId;
+      // Only send what was chosen. An unset frequency is UNSPECIFIED and an
+      // unset cycle count is 0, both of which the server reads as "keep what
+      // you already have" — which is what makes an older build still work.
+      final freq = frequency;
+      if (freq != null) {
+        request.frequency = _mapFrequencyToProto(freq);
+      }
+      final cycles = totalCycles;
+      if (cycles != null && cycles > 0) {
+        request.totalCycles = cycles;
+      }
+      final endDate = deadline;
+      if (endDate != null) {
+        request.deadline = _dateTimeToTimestamp(endDate.toUtc());
+      }
       final callOptions = await _callOptionsHelper.withAuth();
       final response =
           await _client.openContribution(request, options: callOptions);

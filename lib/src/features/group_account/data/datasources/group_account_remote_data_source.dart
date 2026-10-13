@@ -84,7 +84,12 @@ abstract class GroupAccountRemoteDataSource {
   });
 
   /// Start an esusu and freeze its roster. Idempotent server-side.
-  Future<ContributionModel> openContribution(String contributionId);
+  Future<ContributionModel> openContribution(
+    String contributionId, {
+    ContributionFrequency? frequency,
+    int? totalCycles,
+    DateTime? deadline,
+  });
   Future<ContributionModel> updateContribution(ContributionModel contribution);
   Future<void> deleteContribution(String contributionId);
 

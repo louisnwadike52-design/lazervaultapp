@@ -267,6 +267,10 @@ class Contribution extends Equatable {
     double? minimumBalance,
     bool? autoPayoutEnabled,
     List<ContributionMember>? members,
+    DateTime? openedAt,
+    String? imageUrl,
+    bool? paidOut,
+    double? paidOutAmount,
   }) {
     return Contribution(
       id: id ?? this.id,
@@ -303,6 +307,17 @@ class Contribution extends Equatable {
       minimumBalance: minimumBalance ?? this.minimumBalance,
       autoPayoutEnabled: autoPayoutEnabled ?? this.autoPayoutEnabled,
       members: members ?? this.members,
+      // Carried, not dropped.
+      //
+      // These four were omitted, so EVERY copyWith reset them to their
+      // constructor defaults — openedAt to null, which makes an esusu that has
+      // already started report awaitingOpen and render as "Not started", and
+      // imageUrl to null, which wiped the avatar that had just been uploaded.
+      // Changing the cycle count was enough to trigger it.
+      openedAt: openedAt ?? this.openedAt,
+      imageUrl: imageUrl ?? this.imageUrl,
+      paidOut: paidOut ?? this.paidOut,
+      paidOutAmount: paidOutAmount ?? this.paidOutAmount,
     );
   }
 

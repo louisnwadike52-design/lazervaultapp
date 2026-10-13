@@ -2649,14 +2649,30 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   /// Returns null on success, or the reason it was refused — most often
   /// "needs at least 2 members", which is something the creator fixes in the
   /// next ten seconds and is worth showing verbatim.
-  Future<String?> openEsusu(String contributionId, {String? groupId}) async {
+  /// Start an esusu, fixing its schedule.
+  ///
+  /// [frequency], [totalCycles] and [deadline] are what the creator chose on
+  /// the start sheet. All optional: the server falls back to whatever was
+  /// stored at creation, which is what keeps an older build working.
+  Future<String?> openEsusu(
+    String contributionId, {
+    String? groupId,
+    ContributionFrequency? frequency,
+    int? totalCycles,
+    DateTime? deadline,
+  }) async {
     if (isClosed) return 'Opening is not available in this build.';
     final usecase = openContribution;
     if (usecase == null) return 'Opening is not available in this build.';
 
     final generation = _sessionGeneration;
     try {
-      final opened = await usecase(contributionId);
+      final opened = await usecase(OpenContributionParams(
+        contributionId: contributionId,
+        frequency: frequency,
+        totalCycles: totalCycles,
+        deadline: deadline,
+      ));
       if (!_sessionStillCurrent(generation)) return null;
       // Patch the loaded snapshot so the Open CTA goes and the rotation
       // badge appears without waiting for a refetch.

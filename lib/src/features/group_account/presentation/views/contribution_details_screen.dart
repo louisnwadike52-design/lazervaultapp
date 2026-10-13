@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/group_account/presentation/widgets/start_esusu_sheet.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -356,6 +357,12 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       children: [
         _buildHeader(contribution),
         _buildContributionSummary(contribution),
+        // Directly under the statistics, above everything else that competes
+        // for attention. An esusu that has not started is the one state where
+        // nothing else on this screen can proceed — no payment, no payout, no
+        // rotation — so the action that unblocks it belongs at the top rather
+        // than only on the card in the list behind.
+        if (contribution.awaitingOpen) _buildStartBanner(contribution),
         // Payout receiver banner — surfaces the scheduled-payout state
         // (pending_receiver / ready / scheduled / in_flight / settled
         // / failed / exhausted) with the right CTA for the role. Only
@@ -928,6 +935,118 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   // card) and reduced padding / inter-section spacing roughly 30%.
   // Numbers now render with thousands separators via _fmtAmount so
   // 30,000 reads as "30,000" not "30.0M" and not "30000.00".
+  /// The "this has not started yet" call to action.
+  ///
+  /// Only the people who can actually start it get the button; everyone else
+  /// gets the explanation, because a member seeing a disabled control they
+  /// cannot use learns nothing about why the circle is idle.
+  Widget _buildStartBanner(Contribution contribution) {
+    final cubit = context.read<GroupAccountCubit>();
+    final myUserId = cubit.currentUserId;
+    final canStart = contribution.createdBy == myUserId ||
+        GroupRolePermissions.canMember(
+            _currentGroupMember, GroupAction.editContribution);
+    final active = contribution.members
+        .where((m) => m.membershipStatus == ContributionMembershipStatus.active)
+        .length;
+
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
+      padding: EdgeInsets.all(13.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1206),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFF7A5B00)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.play_circle_outline,
+                  color: const Color(0xFFF59E0B), size: 19.sp),
+              SizedBox(width: 8.w),
+              Expanded(
+                child: Text('This esusu has not started',
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w700)),
+              ),
+            ],
+          ),
+          SizedBox(height: 5.h),
+          Text(
+            canStart
+                ? 'Add everyone first — starting sets the schedule and locks '
+                    'the members. $active ${active == 1 ? 'person is' : 'people are'} in so far.'
+                : 'The creator sets the schedule and starts it. Nobody can pay '
+                    'in until then.',
+            style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF), fontSize: 11.5.sp, height: 1.4),
+          ),
+          if (canStart) ...[
+            SizedBox(height: 10.h),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => _startEsusu(contribution),
+                icon: Icon(Icons.play_arrow_rounded, size: 18.sp),
+                label: Text('Start contribution',
+                    style: GoogleFonts.inter(
+                        fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFF59E0B),
+                  foregroundColor: Colors.black,
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.r)),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Collects the schedule, then starts the circle.
+  Future<void> _startEsusu(Contribution contribution) async {
+    final active = contribution.members
+        .where((m) => m.membershipStatus == ContributionMembershipStatus.active)
+        .toList();
+    final choice = await showStartEsusuSheet(
+      context,
+      contribution: contribution,
+      activeMembers: active.length,
+      rotationNames: active
+          .map((m) => m.userName.trim())
+          .where((n) => n.isNotEmpty)
+          .toList(),
+    );
+    if (choice == null || !mounted) return;
+    final error = await context.read<GroupAccountCubit>().openEsusu(
+          contribution.id,
+          groupId: contribution.groupId,
+          frequency: choice.frequency,
+          totalCycles: choice.totalCycles,
+          deadline: choice.endsOn,
+        );
+    if (!mounted) return;
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(error),
+        backgroundColor: const Color(0xFFEF4444),
+        behavior: SnackBarBehavior.floating,
+      ));
+      return;
+    }
+    // The schedule, the roster and the badges all change at once, so re-read
+    // rather than patching a field at a time.
+    _loadContributionDetails(force: true);
+  }
+
   Widget _buildContributionSummary(Contribution contribution) {
     final progressPercentage = contribution.progressPercentage;
 
@@ -2923,6 +3042,10 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   bool _shouldShowContributeFab() {
     final c = _currentContribution;
     if (c == null || c.isCompleted) return false;
+    // An esusu that has not been started has no cycle to pay into — the pot,
+    // the schedule and the rotation are all decided at start. Offering
+    // Contribute here produced a payment the server would refuse.
+    if (c.awaitingOpen) return false;
     if (GroupRolePermissions.canMember(
         _currentGroupMember, GroupAction.makeContribution)) {
       return true;
@@ -4338,6 +4461,13 @@ class _ContributionStateBadges extends StatelessWidget {
         badges.add(const _StateBadgeSpec('Paused', Color(0xFFFB923C)));
         break;
       case ContributionStatus.active:
+        // Checked before the active/overdue split: a circle that has not
+        // started is not overdue and not yet running, and saying "Active"
+        // about it contradicts the Start button right above.
+        if (contribution.awaitingOpen) {
+          badges.add(const _StateBadgeSpec('Not started', Color(0xFF9CA3AF)));
+          break;
+        }
         // Only an UNFINISHED contribution can be overdue.
         if (contribution.isOverdue) {
           badges.add(const _StateBadgeSpec('Overdue', Color(0xFFEF4444)));

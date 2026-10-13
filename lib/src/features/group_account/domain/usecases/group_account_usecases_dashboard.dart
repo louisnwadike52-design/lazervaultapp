@@ -92,14 +92,41 @@ class UnhideDashboardItem extends UseCase<void, DashboardItemParams> {
 /// CRUD because it is a lifecycle transition, not an edit: it changes what
 /// the schedulers will do, and after it the member list is no longer
 /// editable at all.
-class OpenContribution extends UseCase<Contribution, String> {
+/// The schedule an esusu will run on, chosen when it STARTS.
+///
+/// Every field is optional: the server falls back to whatever was stored at
+/// creation, so an older build that sends only the id still starts a circle.
+class OpenContributionParams {
+  const OpenContributionParams({
+    required this.contributionId,
+    this.frequency,
+    this.totalCycles,
+    this.deadline,
+  });
+
+  final String contributionId;
+  final ContributionFrequency? frequency;
+  final int? totalCycles;
+
+  /// Optional explicit end date. Left null the server derives the rotation
+  /// end from the cycle length and the number of cycles, which is the only
+  /// value consistent with the dates payments actually fall due on.
+  final DateTime? deadline;
+}
+
+class OpenContribution extends UseCase<Contribution, OpenContributionParams> {
   final GroupAccountRepository repository;
 
   OpenContribution(this.repository);
 
   @override
-  Future<Contribution> call(String contributionId) {
-    return repository.openContribution(contributionId);
+  Future<Contribution> call(OpenContributionParams params) {
+    return repository.openContribution(
+      params.contributionId,
+      frequency: params.frequency,
+      totalCycles: params.totalCycles,
+      deadline: params.deadline,
+    );
   }
 }
 

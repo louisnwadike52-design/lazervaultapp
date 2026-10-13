@@ -628,6 +628,7 @@ const ContributionMessage$json = {
       '6': '.google.protobuf.Timestamp',
       '10': 'openedAt'
     },
+    {'1': 'cycles_completed', '3': 38, '4': 1, '5': 5, '10': 'cyclesCompleted'},
   ],
 };
 
@@ -665,7 +666,8 @@ final $typed_data.Uint8List contributionMessageDescriptor = $convert.base64Decod
     'ABKARSFHJhaXNlZFRoaXNDeWNsZU1pbm9yEhsKCWltYWdlX3VybBgiIAEoCVIIaW1hZ2VVcmwS'
     'GQoIcGFpZF9vdXQYIyABKAhSB3BhaWRPdXQSMQoVcGFpZF9vdXRfYW1vdW50X21pbm9yGCQgAS'
     'gEUhJwYWlkT3V0QW1vdW50TWlub3ISNwoJb3BlbmVkX2F0GCUgASgLMhouZ29vZ2xlLnByb3Rv'
-    'YnVmLlRpbWVzdGFtcFIIb3BlbmVkQXQ=');
+    'YnVmLlRpbWVzdGFtcFIIb3BlbmVkQXQSKQoQY3ljbGVzX2NvbXBsZXRlZBgmIAEoBVIPY3ljbG'
+    'VzQ29tcGxldGVk');
 
 @$core.Deprecated('Use contributionMemberMessageDescriptor instead')
 const ContributionMemberMessage$json = {
@@ -4508,14 +4510,33 @@ const OpenContributionRequest$json = {
   '1': 'OpenContributionRequest',
   '2': [
     {'1': 'contribution_id', '3': 1, '4': 1, '5': 9, '10': 'contributionId'},
+    {
+      '1': 'frequency',
+      '3': 2,
+      '4': 1,
+      '5': 14,
+      '6': '.group_accounts.ContributionFrequency',
+      '10': 'frequency'
+    },
+    {'1': 'total_cycles', '3': 3, '4': 1, '5': 5, '10': 'totalCycles'},
+    {
+      '1': 'deadline',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'deadline'
+    },
   ],
 };
 
 /// Descriptor for `OpenContributionRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List openContributionRequestDescriptor =
-    $convert.base64Decode(
-        'ChdPcGVuQ29udHJpYnV0aW9uUmVxdWVzdBInCg9jb250cmlidXRpb25faWQYASABKAlSDmNvbn'
-        'RyaWJ1dGlvbklk');
+final $typed_data.Uint8List openContributionRequestDescriptor = $convert.base64Decode(
+    'ChdPcGVuQ29udHJpYnV0aW9uUmVxdWVzdBInCg9jb250cmlidXRpb25faWQYASABKAlSDmNvbn'
+    'RyaWJ1dGlvbklkEkMKCWZyZXF1ZW5jeRgCIAEoDjIlLmdyb3VwX2FjY291bnRzLkNvbnRyaWJ1'
+    'dGlvbkZyZXF1ZW5jeVIJZnJlcXVlbmN5EiEKDHRvdGFsX2N5Y2xlcxgDIAEoBVILdG90YWxDeW'
+    'NsZXMSNgoIZGVhZGxpbmUYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUghkZWFk'
+    'bGluZQ==');
 
 @$core.Deprecated('Use openContributionResponseDescriptor instead')
 const OpenContributionResponse$json = {

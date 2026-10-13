@@ -67,7 +67,12 @@ abstract class GroupAccountRepository {
   });
 
   /// Start an esusu and freeze its roster.
-  Future<Contribution> openContribution(String contributionId);
+  Future<Contribution> openContribution(
+    String contributionId, {
+    ContributionFrequency? frequency,
+    int? totalCycles,
+    DateTime? deadline,
+  });
 
   /// One page of the caller's groups, with the server's pagination facts.
   Future<PagedResult<GroupAccount>> getUserGroupsPage({

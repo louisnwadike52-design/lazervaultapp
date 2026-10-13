@@ -638,6 +638,7 @@ class ContributionMessage extends $pb.GeneratedMessage {
     $core.bool? paidOut,
     $fixnum.Int64? paidOutAmountMinor,
     $1.Timestamp? openedAt,
+    $core.int? cyclesCompleted,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -681,6 +682,7 @@ class ContributionMessage extends $pb.GeneratedMessage {
     if (paidOutAmountMinor != null)
       result.paidOutAmountMinor = paidOutAmountMinor;
     if (openedAt != null) result.openedAt = openedAt;
+    if (cyclesCompleted != null) result.cyclesCompleted = cyclesCompleted;
     return result;
   }
 
@@ -777,6 +779,8 @@ class ContributionMessage extends $pb.GeneratedMessage {
         defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOM<$1.Timestamp>(37, _omitFieldNames ? '' : 'openedAt',
         subBuilder: $1.Timestamp.create)
+    ..a<$core.int>(
+        38, _omitFieldNames ? '' : 'cyclesCompleted', $pb.PbFieldType.O3)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1155,6 +1159,19 @@ class ContributionMessage extends $pb.GeneratedMessage {
   void clearOpenedAt() => $_clearField(37);
   @$pb.TagNumber(37)
   $1.Timestamp ensureOpenedAt() => $_ensure(36);
+
+  /// Cycles that have CLOSED, as opposed to current_cycle, which is the
+  /// rotation position now in progress. Without it a client cannot render
+  /// "cycle 3 of 6" against the agreed total — the column has existed on the
+  /// model since migration 020 but was never exposed here.
+  @$pb.TagNumber(38)
+  $core.int get cyclesCompleted => $_getIZ(37);
+  @$pb.TagNumber(38)
+  set cyclesCompleted($core.int value) => $_setSignedInt32(37, value);
+  @$pb.TagNumber(38)
+  $core.bool hasCyclesCompleted() => $_has(37);
+  @$pb.TagNumber(38)
+  void clearCyclesCompleted() => $_clearField(38);
 }
 
 /// Member assigned to a contribution
@@ -14729,9 +14746,15 @@ class WithdrawJoinRequestResponse extends $pb.GeneratedMessage {
 class OpenContributionRequest extends $pb.GeneratedMessage {
   factory OpenContributionRequest({
     $core.String? contributionId,
+    ContributionFrequency? frequency,
+    $core.int? totalCycles,
+    $1.Timestamp? deadline,
   }) {
     final result = create();
     if (contributionId != null) result.contributionId = contributionId;
+    if (frequency != null) result.frequency = frequency;
+    if (totalCycles != null) result.totalCycles = totalCycles;
+    if (deadline != null) result.deadline = deadline;
     return result;
   }
 
@@ -14749,6 +14772,15 @@ class OpenContributionRequest extends $pb.GeneratedMessage {
       package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
       createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'contributionId')
+    ..e<ContributionFrequency>(
+        2, _omitFieldNames ? '' : 'frequency', $pb.PbFieldType.OE,
+        defaultOrMaker:
+            ContributionFrequency.CONTRIBUTION_FREQUENCY_UNSPECIFIED,
+        valueOf: ContributionFrequency.valueOf,
+        enumValues: ContributionFrequency.values)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'totalCycles', $pb.PbFieldType.O3)
+    ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'deadline',
+        subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -14782,6 +14814,50 @@ class OpenContributionRequest extends $pb.GeneratedMessage {
   $core.bool hasContributionId() => $_has(0);
   @$pb.TagNumber(1)
   void clearContributionId() => $_clearField(1);
+
+  /// The SCHEDULE, decided at start rather than at creation.
+  ///
+  /// A circle is created closed and only starts once the creator has finished
+  /// adding members — often days later. Collecting the cycle length and the
+  /// number of cycles at creation meant the window was already running down
+  /// before anyone could pay into it.
+  ///
+  /// All three are optional on the wire so an older app, which sends only
+  /// contribution_id, still starts a circle using whatever was stored at
+  /// creation. Unset frequency is UNSPECIFIED and unset total_cycles is 0;
+  /// the server treats both as "keep what you have".
+  @$pb.TagNumber(2)
+  ContributionFrequency get frequency => $_getN(1);
+  @$pb.TagNumber(2)
+  set frequency(ContributionFrequency value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasFrequency() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFrequency() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get totalCycles => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set totalCycles($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasTotalCycles() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTotalCycles() => $_clearField(3);
+
+  /// Optional explicit end date. Left unset the server derives it as
+  /// start + total_cycles × frequency_period, which is the rotation end and
+  /// the only value consistent with the cycle boundaries the scheduler fires
+  /// on. Must be in the future.
+  @$pb.TagNumber(4)
+  $1.Timestamp get deadline => $_getN(3);
+  @$pb.TagNumber(4)
+  set deadline($1.Timestamp value) => $_setField(4, value);
+  @$pb.TagNumber(4)
+  $core.bool hasDeadline() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearDeadline() => $_clearField(4);
+  @$pb.TagNumber(4)
+  $1.Timestamp ensureDeadline() => $_ensure(3);
 }
 
 class OpenContributionResponse extends $pb.GeneratedMessage {

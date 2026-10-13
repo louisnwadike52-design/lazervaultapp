@@ -5,6 +5,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/group_account/presentation/widgets/start_esusu_sheet.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -1741,59 +1742,39 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
   /// creator who taps it expecting "save" and finds a locked circle has no
   /// way back, so the dialog leads with the irreversible part rather than
   /// burying it.
+  /// Start an esusu, collecting the schedule it will run on.
+  ///
+  /// This used to be a confirm dialog with no input: the schedule had already
+  /// been chosen in the creation wizard, often days earlier, so a circle could
+  /// start with most of its window already spent. The sheet asks for the cycle
+  /// length and the number of cycles HERE, and the dates are counted from the
+  /// moment it actually starts.
   Future<void> _confirmOpenEsusu(Contribution contribution) async {
-    final memberCount = contribution.members
+    final activeMembers = contribution.members
         .where((m) => m.membershipStatus == ContributionMembershipStatus.active)
-        .length;
+        .toList();
 
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1F1F1F),
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        title: Text('Start this esusu?',
-            style: GoogleFonts.inter(
-                color: Colors.white, fontWeight: FontWeight.w700)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'The rotation begins and the member list is fixed from now on — '
-              'nobody else can be added to "${contribution.title}".',
-              style: GoogleFonts.inter(color: Colors.grey[300], fontSize: 13.sp),
-            ),
-            SizedBox(height: 10.h),
-            Text(
-              '$memberCount ${memberCount == 1 ? 'member' : 'members'} will '
-              'each pay their share every cycle, and one of them collects the '
-              'pot each time, in the order you set.',
-              style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF), fontSize: 12.sp),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Not yet',
-                style: GoogleFonts.inter(color: Colors.grey[400])),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Start esusu',
-                style: GoogleFonts.inter(
-                    color: const Color(0xFF10B981),
-                    fontWeight: FontWeight.w700)),
-          ),
-        ],
-      ),
+    final choice = await showStartEsusuSheet(
+      context,
+      contribution: contribution,
+      activeMembers: activeMembers.length,
+      rotationNames: activeMembers
+          .map((m) => m.userName.trim())
+          .where((n) => n.isNotEmpty)
+          .toList(),
     );
-    if (ok != true || !mounted) return;
+    if (choice == null || !mounted) return;
 
     final cubit = context.read<GroupAccountCubit>();
-    final error = await cubit.openEsusu(contribution.id, groupId: widget.groupId);
+    final error = await cubit.openEsusu(
+      contribution.id,
+      groupId: widget.groupId,
+      frequency: choice.frequency,
+      totalCycles: choice.totalCycles,
+      // The date the creator just approved on screen, rather than one derived
+      // a moment later on the server — they must match.
+      deadline: choice.endsOn,
+    );
     if (!mounted || error == null) return;
     // The refusals that land here are actionable — "needs at least 2 members",
     // "set the amount each member pays" — so they are shown verbatim rather

@@ -174,7 +174,9 @@ class _CreateContributionBottomSheetState
     if (_selectedType == ContributionType.oneTime) {
       return ['Type', 'Details', 'Members', 'Settings', 'Review'];
     }
-    return ['Type', 'Details', 'Schedule', 'Settings', 'Review'];
+    // "Rotation", not "Schedule": for an esusu this page now collects who is
+    // paid in what order, while the schedule itself is set when it starts.
+    return ['Type', 'Details', 'Rotation', 'Settings', 'Review'];
   }
 
   int get _totalPages => _pageNames.length;
@@ -1587,7 +1589,49 @@ class _CreateContributionBottomSheetState
           ),
           SizedBox(height: 24.h),
 
-          // Required: Frequency
+          // The SCHEDULE is not asked here for an esusu.
+          //
+          // An esusu is created closed and started later, once everyone has
+          // been added — often days later. Choosing the cycle length and the
+          // number of cycles now meant the window was already running down
+          // before the first member could pay in, and the end date stored
+          // disagreed with the one shown on the review screen. All of it is
+          // collected by the start sheet instead, counted from the moment the
+          // circle actually starts.
+          if (_selectedType == ContributionType.rotatingSavings) ...[
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A1206),
+                borderRadius: BorderRadius.circular(11.r),
+                border: Border.all(color: const Color(0xFF7A5B00)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.schedule,
+                      color: const Color(0xFFF59E0B), size: 17.sp),
+                  SizedBox(width: 9.w),
+                  Expanded(
+                    child: Text(
+                      'You will set how often members pay and how many cycles '
+                      'the circle runs when you START it — so the countdown '
+                      'begins the day it actually begins, not today.',
+                      style: GoogleFonts.inter(
+                          color: Colors.grey[300],
+                          fontSize: 11.5.sp,
+                          height: 1.45),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 20.h),
+          ],
+
+          // Required: Frequency — non-ROSCA recurring types only.
+          if (_selectedType != ContributionType.rotatingSavings) ...[
           _buildFieldLabel('Cycle length', required: true),
           SizedBox(height: 4.h),
           // "Payment Frequency" was ambiguous in exactly the way that
@@ -1608,6 +1652,7 @@ class _CreateContributionBottomSheetState
               hasError: _fieldErrors.containsKey('frequency')),
           _buildFieldError('frequency'),
           SizedBox(height: 20.h),
+          ],
 
           // Regular Amount: only shown for non-ROSCA recurring contributions.
           // For ROSCA, the per-member share is already captured on
@@ -1635,6 +1680,9 @@ class _CreateContributionBottomSheetState
           ],
 
           // Add More Fields button
+          // Start date and cycle count are part of the SCHEDULE, so for an
+          // esusu they belong to the start sheet with the rest of it.
+          if (_selectedType != ContributionType.rotatingSavings)
           _buildAddMoreFieldsWidget(
             fields: [
               if (!_visibleOptionalFields.contains('startDate'))
@@ -1648,7 +1696,8 @@ class _CreateContributionBottomSheetState
           ),
 
           // Optional: Start Date
-          if (_visibleOptionalFields.contains('startDate')) ...[
+          if (_selectedType != ContributionType.rotatingSavings &&
+              _visibleOptionalFields.contains('startDate')) ...[
             SizedBox(height: 20.h),
             _buildOptionalFieldContainer(
               title: 'Start Date',
@@ -1664,7 +1713,8 @@ class _CreateContributionBottomSheetState
           ],
 
           // Optional: Total Cycles
-          if (_visibleOptionalFields.contains('totalCycles')) ...[
+          if (_selectedType != ContributionType.rotatingSavings &&
+              _visibleOptionalFields.contains('totalCycles')) ...[
             SizedBox(height: 16.h),
             _buildOptionalFieldContainer(
               title: 'Total Cycles',
@@ -1685,10 +1735,9 @@ class _CreateContributionBottomSheetState
           // The cycle-end preview, now that both of its inputs — the
           // cadence above and the start date — are on this same screen and
           // whatever it says is derived from what the creator just chose.
-          if (_selectedType == ContributionType.rotatingSavings) ...[
-            SizedBox(height: 20.h),
-            _buildRoscaDeadlinePreview(),
-          ],
+          // The cycle-end preview lived here when the cadence and the start
+          // date were on this page. For an esusu both now belong to the start
+          // sheet, which shows the end date live as the creator picks them.
 
           SizedBox(height: 40.h),
         ],

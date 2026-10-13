@@ -53,6 +53,34 @@ class _Step3ScheduleState extends State<Step3Schedule> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // An esusu's schedule is set when it STARTS, not here.
+              //
+              // The circle is created closed and started once everyone has
+              // been added, often days later, so a window chosen now would be
+              // running down before anyone could pay into it. The same notice
+              // appears in the other create wizard — both reach the same
+              // CreateContribution RPC, and the server ignores schedule
+              // fields on a staged-open esusu, so leaving this screen asking
+              // for them would be collecting input that goes nowhere.
+              if (isRotatingSavings) ...[
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1A1206),
+                    borderRadius: BorderRadius.circular(11.r),
+                    border: Border.all(color: const Color(0xFF7A5B00)),
+                  ),
+                  child: Text(
+                    'You will choose how often members pay, and how many '
+                    'cycles the circle runs, when you start it — so the '
+                    'countdown begins the day it actually begins.',
+                    style: TextStyle(
+                        color: Colors.grey[300], fontSize: 12.sp, height: 1.45),
+                  ),
+                ),
+                SizedBox(height: 18.h),
+              ],
               Text(
                 'Payment Schedule',
                 style: GoogleFonts.inter(
