@@ -708,14 +708,41 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
   /// One row of the groups list. Shared by the reorderable and the
   /// search-filtered list so a dragged card and a searched card cannot
   /// drift apart.
-  Widget _groupRow(GroupAccount group) {
-    return GroupCard(
+  /// One row. [reorderIndex] is non-null only in the reorderable list, where
+  /// the card's handle drags it; in search results there is no order to drag.
+  Widget _groupRow(GroupAccount group, {int? reorderIndex}) {
+    final card = GroupCard(
       group: group,
       // Marks the groups this user started, so a list of group funds
       // distinguishes the ones they run from the ones they merely belong to.
       currentUserId: context.read<AuthenticationCubit>().userId,
       onTap: () => _navigateToGroupDetails(group),
       onMenu: () => _showGroupCardMenu(group),
+      // Long-press anywhere on the card opens the same menu the dots do.
+      onLongPress: () => _showGroupCardMenu(group),
+      reorderIndex: reorderIndex,
+    );
+
+    // Swipe left for the same actions. Deliberately NOT a swipe-to-delete
+    // that acts on release: this list sits inside a horizontally-swiped tab
+    // bar, so an over-travelled tab gesture would otherwise remove a group.
+    // The swipe opens the menu and the row springs back.
+    return Dismissible(
+      key: ValueKey('swipe-${group.id}'),
+      direction: DismissDirection.endToStart,
+      confirmDismiss: (_) async {
+        _showGroupCardMenu(group);
+        return false;
+      },
+      background: const SizedBox.shrink(),
+      secondaryBackground: Align(
+        alignment: Alignment.centerRight,
+        child: Padding(
+          padding: EdgeInsets.only(right: 18.w),
+          child: Icon(Icons.more_horiz, color: Colors.grey[500], size: 20.sp),
+        ),
+      ),
+      child: card,
     );
   }
 
@@ -901,11 +928,26 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
   /// start_index is the rank of this page's first row in the WHOLE list.
   /// Without it, reordering page 3 would number those five rows 0..4 and
   /// teleport them to the front.
+  /// Persist a drag.
+  ///
+  /// [visible] is the rows on screen — ONE tab, ONE page. [all] is every
+  /// group in its current order. The move is applied to the visible slice and
+  /// then written back into [all] at the positions those rows occupy, and the
+  /// WHOLE order is persisted from rank 0.
+  ///
+  /// Sending just the slice with an offset would be wrong here: Private and
+  /// Public are interleaved in the single global ordering, so the rows of one
+  /// tab do not occupy a contiguous range of ranks. Renumbering a slice from
+  /// its own start would overwrite the ranks of the other tab's groups that
+  /// sit between them. The list is small enough that sending all of it is
+  /// both cheaper to reason about and impossible to get subtly wrong.
   Future<void> _onGroupsReordered(
     List<GroupAccount> visible,
     int oldIndex,
-    int newIndex,
-  ) async {
+    int newIndex, {
+    int startIndex = 0,
+    List<GroupAccount> all = const [],
+  }) async {
     // Flutter reports newIndex as the slot BEFORE removal, so a downward
     // move is one too high. Getting this wrong puts the card one place from
     // where the user dropped it — the classic off-by-one of this API.
@@ -917,7 +959,24 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
     reordered.insert(newIndex, moved);
 
     final cubit = context.read<GroupAccountCubit>();
-    final page = cubit.groupsPage;
+
+    // Write the moved slice back into the full order at the positions those
+    // rows already occupy.
+    final globalOrder = <GroupAccount>[...(all.isEmpty ? reordered : all)];
+    if (all.isNotEmpty) {
+      final slots = <int>[];
+      for (var i = 0; i < globalOrder.length; i++) {
+        if (visible.any((g) => g.id == globalOrder[i].id)) slots.add(i);
+      }
+      // Defensive: if the slice no longer maps cleanly onto the full list
+      // (a refresh landed mid-drag), persist nothing rather than persist a
+      // wrong order.
+      if (slots.length == reordered.length) {
+        for (var i = 0; i < slots.length; i++) {
+          globalOrder[slots[i]] = reordered[i];
+        }
+      }
+    }
 
     setState(() {
       _reorderedGroups = reordered;
@@ -926,14 +985,26 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
 
     final ok = await cubit.persistListOrder(
       itemType: DashboardItemTypes.group,
-      orderedItemIds: reordered.map((g) => g.id).toList(),
-      startIndex: page?.startIndex ?? 0,
+      orderedItemIds: globalOrder.map((g) => g.id).toList(),
+      startIndex: 0,
     );
     if (!mounted) return;
     setState(() {
       _groupsPageBusy = false;
       if (!ok) _reorderedGroups = null;
     });
+  }
+
+  /// A page turn should start at the top of the new page, not wherever the
+  /// previous one was scrolled to.
+  void _scrollGroupsToTop() {
+    // PrimaryScrollController owns the CustomScrollView here, so there is no
+    // controller of our own to drive; jumping via the primary one keeps this
+    // honest if the list is ever re-parented.
+    final c = PrimaryScrollController.maybeOf(context);
+    if (c == null || !c.hasClients) return;
+    c.animateTo(0,
+        duration: const Duration(milliseconds: 220), curve: Curves.easeOut);
   }
 
   Future<void> _goToGroupsPage(int page) async {
@@ -1053,13 +1124,34 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
       }
     }
 
-    final displayGroups = query.isEmpty
+    final tabGroups = query.isEmpty
         ? filteredGroups
         : filteredGroups
             .where((g) =>
                 g.name.toLowerCase().contains(query) ||
                 g.description.toLowerCase().contains(query))
             .toList();
+
+    // Page the TAB's list, not the whole account.
+    //
+    // The server pages every group together and the screen then split that
+    // page into Private and Public, so a page boundary could never line up
+    // with a tab: page 1 might hold four private groups and one public one,
+    // and the counts beside each tab described the current page rather than
+    // the tab. Each tab now pages its own rows.
+    const tabPageSize = 5;
+    final tabTotalPages =
+        tabGroups.isEmpty ? 1 : ((tabGroups.length - 1) ~/ tabPageSize) + 1;
+    // Clamp: hiding or leaving a group can shrink a list under the page you
+    // are standing on.
+    final tabPage =
+        _currentSubTabPage > tabTotalPages ? tabTotalPages : _currentSubTabPage;
+    final sliceStart = (tabPage - 1) * tabPageSize;
+    final sliceEnd = (sliceStart + tabPageSize) > tabGroups.length
+        ? tabGroups.length
+        : sliceStart + tabPageSize;
+    final displayGroups = tabGroups.sublist(
+        sliceStart < 0 ? 0 : sliceStart, sliceEnd < 0 ? 0 : sliceEnd);
 
     return RefreshIndicator(
       onRefresh: _refreshGroups,
@@ -1215,19 +1307,23 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
                   ? SliverReorderableList(
                       itemCount: displayGroups.length,
                       onReorder: (oldIndex, newIndex) =>
-                          _onGroupsReordered(displayGroups, oldIndex, newIndex),
+                          _onGroupsReordered(displayGroups, oldIndex, newIndex,
+                              startIndex: sliceStart, all: groups),
                       // The card IS the drag handle: a separate grip on a
                       // card that is already one big tap target is a second
                       // thing to aim at for no reason.
                       itemBuilder: (context, index) {
                         final group = displayGroups[index];
-                        return ReorderableDelayedDragStartListener(
+                        // Reorder now starts from the card's own handle, not
+                        // from a long-press on the whole card. Long-press was
+                        // doing double duty — it was the ONLY way to reorder,
+                        // which left no gesture free for "leave or remove
+                        // this group", and the two cannot share one press
+                        // without both becoming unreliable.
+                        return Padding(
                           key: ValueKey('group-${group.id}'),
-                          index: index,
-                          child: Padding(
-                            padding: EdgeInsets.only(bottom: 10.h),
-                            child: _groupRow(group),
-                          ),
+                          padding: EdgeInsets.only(bottom: 10.h),
+                          child: _groupRow(group, reorderIndex: index),
                         );
                       },
                     )
@@ -1242,14 +1338,17 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
                     ),
             ),
           // The pager, under the rows it pages. Draws nothing when there is
-          // only one page.
-          if (page != null && query.isEmpty)
+          // only one page — a lone "1" is chrome that tells the user nothing.
+          if (query.isEmpty)
             SliverToBoxAdapter(
               child: ListPager(
-                currentPage: page.page,
-                totalPages: page.totalPages,
+                currentPage: tabPage,
+                totalPages: tabTotalPages,
                 busy: _groupsPageBusy,
-                onPageSelected: _goToGroupsPage,
+                onPageSelected: (p) {
+                  setState(() => _subTabPage[_myGroupsTabIndex] = p);
+                  _scrollGroupsToTop();
+                },
               ),
             ),
           SliverPadding(padding: EdgeInsets.only(bottom: 80.h)),
@@ -1257,6 +1356,15 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
       ),
     );
   }
+
+  /// Page number per sub-tab.
+  ///
+  /// Private and Public are separate lists, so they need separate positions:
+  /// one shared page number meant switching tabs could land you on page 3 of
+  /// a two-page list.
+  final Map<int, int> _subTabPage = {0: 1, 1: 1};
+
+  int get _currentSubTabPage => _subTabPage[_myGroupsTabIndex] ?? 1;
 
   Widget _buildMyGroupsSubTab({
     required String label,

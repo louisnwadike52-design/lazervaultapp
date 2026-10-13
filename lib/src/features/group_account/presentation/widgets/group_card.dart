@@ -10,11 +10,16 @@ class GroupCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   /// Opens the card's own menu (exit / remove from my list).
-  ///
-  /// A button rather than a long-press: on the groups list the card IS the
-  /// drag handle for reordering, so a long-press is already spoken for and a
-  /// second meaning on the same gesture would make both unreliable.
   final VoidCallback? onMenu;
+
+  /// Same menu, from a long-press anywhere on the card.
+  final VoidCallback? onLongPress;
+
+  /// Position in a reorderable list. When set, the dots become the DRAG
+  /// HANDLE as well as the menu button — press and hold them to move the
+  /// card. Reorder used to be a long-press on the whole card, which left no
+  /// gesture free for leaving or removing a group.
+  final int? reorderIndex;
 
   /// The signed-in user, used only to mark groups they created.
   /// Null simply means the badge is not shown — never a wrong badge.
@@ -26,6 +31,8 @@ class GroupCard extends StatelessWidget {
     required this.group,
     this.onTap,
     this.onMenu,
+    this.onLongPress,
+    this.reorderIndex,
   });
 
   @override
@@ -125,20 +132,7 @@ class GroupCard extends StatelessWidget {
                   ),
                 ),
                 SizedBox(width: 2.w),
-                if (onMenu != null)
-                  GestureDetector(
-                    onTap: onMenu,
-                    behavior: HitTestBehavior.opaque,
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 4.w, vertical: 4.h),
-                      child: Icon(
-                        Icons.more_vert,
-                        size: 17.sp,
-                        color: Colors.grey[500],
-                      ),
-                    ),
-                  ),
+                if (onMenu != null) _menuOrHandle(),
                 Icon(
                   Icons.chevron_right,
                   size: 18.sp,
@@ -259,6 +253,22 @@ class GroupCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// The dots: a menu button, and in a reorderable list the drag handle too.
+  Widget _menuOrHandle() {
+    final dots = GestureDetector(
+      onTap: onMenu,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
+        child: Icon(Icons.more_vert, size: 17.sp, color: Colors.grey[500]),
+      ),
+    );
+    if (reorderIndex == null) return dots;
+    // Press and hold the handle to drag. Scoped to the dots so an ordinary
+    // press on the card still opens the group.
+    return ReorderableDelayedDragStartListener(index: reorderIndex!, child: dots);
   }
 
   Color _getStatusColor(GroupAccountStatus status) {

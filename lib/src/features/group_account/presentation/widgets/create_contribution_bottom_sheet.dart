@@ -964,7 +964,21 @@ class _CreateContributionBottomSheetState
   /// The contribution is created with whatever URL succeeded; a failed
   /// upload simply means no avatar, never a failed contribution.
   Widget _buildAvatarPicker() {
-    return Row(
+    // The WHOLE row is the target, not just the 56px circle. Only the avatar
+    // was tappable, and nothing said so — the label beside it read as a
+    // caption rather than a control, so the obvious thing to press did
+    // nothing.
+    return InkWell(
+      onTap: _avatarUploading ? null : _pickAvatar,
+      borderRadius: BorderRadius.circular(12.r),
+      child: Container(
+        padding: EdgeInsets.all(10.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF151515),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFF2D2D2D)),
+        ),
+        child: Row(
       children: [
         GestureDetector(
           onTap: _avatarUploading ? null : _pickAvatar,
@@ -994,7 +1008,7 @@ class _CreateContributionBottomSheetState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                _avatarUrl == null ? 'Add a picture (optional)' : 'Picture added',
+                _avatarUrl == null ? 'Add an avatar' : 'Avatar added',
                 style: GoogleFonts.inter(
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
@@ -1004,8 +1018,8 @@ class _CreateContributionBottomSheetState
               Text(
                 _avatarError ??
                     (_avatarUrl == null
-                        ? 'Helps members pick this goal out of a list'
-                        : 'Tap the image to change it'),
+                        ? 'Optional — helps members pick this goal out of a list'
+                        : 'Tap to change it'),
                 style: GoogleFonts.inter(
                   fontSize: 11.5.sp,
                   color: _avatarError != null
@@ -1028,6 +1042,8 @@ class _CreateContributionBottomSheetState
                     fontSize: 12.sp, color: const Color(0xFF9CA3AF))),
           ),
       ],
+        ),
+      ),
     );
   }
 
