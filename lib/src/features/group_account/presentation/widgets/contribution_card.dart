@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/group_entities.dart';
 import 'contribution_type_badge.dart';
+import 'full_text_details_dialog.dart';
 import 'created_by_you_badge.dart';
 import 'group_funds_avatar.dart';
 import '../utils/group_funds_palette.dart';
@@ -77,15 +78,36 @@ class ContributionCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        contribution.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          fontSize: 14.5.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          height: 1.2,
+                      // Tapping the title shows it and the description in
+                      // full — same affordance as the group card above it in
+                      // the hierarchy. The description clips to one line so
+                      // four of these fit on a screen, which makes the title
+                      // the only thing identifying the goal, and it clips
+                      // too. Its own gesture detector inside the card's, so
+                      // everywhere else still opens the contribution.
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => showFullTextDetailsDialog(
+                          context,
+                          title: contribution.title,
+                          description: contribution.description,
+                          subtitle: contribution.isRotatingSavings
+                              ? 'Esusu · Rotating'
+                              : 'One-time goal',
+                          icon: contribution.isRotatingSavings
+                              ? Icons.sync
+                              : Icons.flag_outlined,
+                        ),
+                        child: Text(
+                          contribution.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontSize: 14.5.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            height: 1.2,
+                          ),
                         ),
                       ),
                       if (currentUserId != null &&
@@ -408,22 +430,28 @@ class ContributionCard extends StatelessWidget {
     final state = contribution.displayState;
     switch (state) {
       case ContributionDisplayState.overdue:
-        return _statusPill(const Color(0xFFEF4444), state.label, Icons.access_time);
+        return _statusPill(
+            const Color(0xFFEF4444), state.label, Icons.access_time);
       case ContributionDisplayState.active:
-        return _statusPill(const Color(0xFF10B981), state.label, Icons.trending_up);
+        return _statusPill(
+            const Color(0xFF10B981), state.label, Icons.trending_up);
       case ContributionDisplayState.completed:
-        return _statusPill(const Color(0xFF10B981), state.label, Icons.check_circle);
+        return _statusPill(
+            const Color(0xFF10B981), state.label, Icons.check_circle);
       case ContributionDisplayState.paidOut:
         // Distinct colour from Completed: "funded" and "the money has
         // reached them" are different facts and a member checking on a
         // wedding gift needs to tell them apart at a glance.
-        return _statusPill(const Color(0xFF3B82F6), state.label, Icons.task_alt);
+        return _statusPill(
+            const Color(0xFF3B82F6), state.label, Icons.task_alt);
       case ContributionDisplayState.closed:
         // Neutral, not green: it closed without reaching its target, and
         // green would congratulate the group on falling short.
-        return _statusPill(const Color(0xFF9CA3AF), state.label, Icons.lock_clock);
+        return _statusPill(
+            const Color(0xFF9CA3AF), state.label, Icons.lock_clock);
       case ContributionDisplayState.paused:
-        return _statusPill(const Color(0xFFF59E0B), state.label, Icons.pause_circle);
+        return _statusPill(
+            const Color(0xFFF59E0B), state.label, Icons.pause_circle);
       case ContributionDisplayState.cancelled:
         return _statusPill(const Color(0xFFEF4444), state.label, Icons.cancel);
     }

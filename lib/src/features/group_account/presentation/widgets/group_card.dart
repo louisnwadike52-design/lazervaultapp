@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/group_entities.dart';
 import 'created_by_you_badge.dart';
+import 'full_text_details_dialog.dart';
 import 'group_funds_avatar.dart';
 
 class GroupCard extends StatelessWidget {
@@ -85,25 +86,54 @@ class GroupCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        group.name,
-                        style: GoogleFonts.inter(
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                      // Tapping the name shows it in full.
+                      //
+                      // Both lines clip to one line so a list of ten groups
+                      // stays scannable, but the names people give these
+                      // things are longer than the row — so the one piece of
+                      // text that says WHICH group this is was the piece you
+                      // could not read, and opening it to find out defeats
+                      // the list.
+                      //
+                      // Its own gesture detector INSIDE the card's: the card
+                      // still opens the group everywhere else, including the
+                      // chevron, the counters and the whitespace.
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => showFullTextDetailsDialog(
+                          context,
+                          title: group.name,
+                          description: group.description,
+                          subtitle: group.visibility == GroupVisibility.public
+                              ? 'Public group'
+                              : 'Private group',
+                          icon: Icons.groups_rounded,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(height: 2.h),
-                      Text(
-                        group.description,
-                        style: GoogleFonts.inter(
-                          fontSize: 12.sp,
-                          color: Colors.grey[400],
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              group.name,
+                              style: GoogleFonts.inter(
+                                fontSize: 15.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            SizedBox(height: 2.h),
+                            Text(
+                              group.description,
+                              style: GoogleFonts.inter(
+                                fontSize: 12.sp,
+                                color: Colors.grey[400],
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
                       if (currentUserId != null &&
                           currentUserId!.isNotEmpty &&
@@ -268,7 +298,8 @@ class GroupCard extends StatelessWidget {
     if (reorderIndex == null) return dots;
     // Press and hold the handle to drag. Scoped to the dots so an ordinary
     // press on the card still opens the group.
-    return ReorderableDelayedDragStartListener(index: reorderIndex!, child: dots);
+    return ReorderableDelayedDragStartListener(
+        index: reorderIndex!, child: dots);
   }
 
   Color _getStatusColor(GroupAccountStatus status) {

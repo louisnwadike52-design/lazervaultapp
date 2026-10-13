@@ -318,10 +318,23 @@ class AiChatRepositoryImpl implements IAiChatRepository {
                 displayText = content.isNotEmpty ? content : 'Sent an image';
               }
 
+              // The server id is what POST /chat/feedback rates BY, so a
+              // message restored without one cannot be rated at all —
+              // AIChatCubit.rateAnswer skips a null id rather than guess.
+              // Until history returned it, feedback only worked on messages
+              // still in memory from the live turn.
+              final rawMessageId = entry['message_id'];
+              final serverMessageId = rawMessageId is int
+                  ? rawMessageId
+                  : int.tryParse('${rawMessageId ?? ''}');
+              final storedRating = (entry['rating'] ?? '').toString();
+
               chatEntities.add(ChatMessageEntity(
                 text: displayText,
                 isUser: role == 'user',
                 timestamp: timestamp,
+                serverMessageId: serverMessageId,
+                rating: storedRating.isEmpty ? null : storedRating,
                 receiptData: receiptData,
                 receiptCard: receiptCard,
                 pinPrompt: pinPrompt,

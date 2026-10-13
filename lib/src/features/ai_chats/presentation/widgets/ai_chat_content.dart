@@ -1648,10 +1648,38 @@ class _AiChatContentState extends State<AiChatContent>
   /// Held on the widget rather than the message so a rating survives the
   /// list rebuilding, and so an un-rated answer costs nothing to render.
   /// Ratings are also sent upstream; this map is only what the UI draws.
-  final Map<String, String> _answerRatings = {};
+  /// Ratings tapped in THIS session, by _ratingKey.
+  ///
+  /// The value is nullable on purpose: a key present with a null value means
+  /// "cleared just now", which has to outrank the rating the server sent with
+  /// the message — otherwise untapping a thumb restored from history would
+  /// immediately paint itself back.
+  final Map<String, String?> _answerRatings = {};
 
-  String _ratingKey(ChatMessage m) =>
-      '${m.timestamp.millisecondsSinceEpoch}';
+  /// Identity of a rateable answer.
+  ///
+  /// The SERVER id when there is one, so a rating follows the message across
+  /// a reload instead of being keyed to a timestamp that is regenerated when
+  /// history is reparsed. Falls back to the timestamp for an answer that has
+  /// not been persisted yet (the live turn, before its id comes back).
+  String _ratingKey(ChatMessage m) => m.serverMessageId != null
+      ? 'id:${m.serverMessageId}'
+      : 'ts:${m.timestamp.millisecondsSinceEpoch}';
+
+  /// What thumb to paint: the local tap if there is one, otherwise whatever
+  /// the server said when the thread loaded.
+  ///
+  /// Local wins so a tap is reflected instantly rather than waiting for a
+  /// round trip, and an untap (which clears to null) is not overwritten by
+  /// the stale stored value — `_answerRatings` holds the key with a null
+  /// value in that case, which `containsKey` distinguishes from "never
+  /// touched".
+  String? _ratingFor(ChatMessage m) {
+    final key = _ratingKey(m);
+    if (_answerRatings.containsKey(key)) return _answerRatings[key];
+    final stored = m.rating;
+    return (stored != null && stored.isNotEmpty) ? stored : null;
+  }
 
   /// Copy, helpful, not helpful.
   ///
@@ -1659,8 +1687,7 @@ class _AiChatContentState extends State<AiChatContent>
   /// answer. Rating is one tap and reversible — tapping the same thumb again
   /// clears it, because a mis-tap on feedback should not be permanent.
   Widget _buildAnswerActions(ChatMessage message) {
-    final key = _ratingKey(message);
-    final rating = _answerRatings[key];
+    final rating = _ratingFor(message);
     return Padding(
       padding: EdgeInsets.only(left: 6.w, top: 4.h, bottom: 2.h),
       child: Row(
@@ -1739,9 +1766,17 @@ class _AiChatContentState extends State<AiChatContent>
   /// best-effort.
   Future<void> _rateAnswer(ChatMessage message, String rating) async {
     final key = _ratingKey(message);
+    // Toggle against what is SHOWING, which may have come from the server
+    // rather than from a tap in this session — otherwise tapping the thumb
+    // that is already lit from history would set it again instead of
+    // clearing it.
+    final current = _ratingFor(message);
     setState(() {
-      if (_answerRatings[key] == rating) {
-        _answerRatings.remove(key);
+      if (current == rating) {
+        // Keep the key with a null value: that is how _ratingFor tells
+        // "cleared just now" from "never touched", so the stored rating does
+        // not immediately paint itself back.
+        _answerRatings[key] = null;
       } else {
         _answerRatings[key] = rating;
       }
@@ -1833,14 +1868,18 @@ class _AiChatContentState extends State<AiChatContent>
         'How do I withdraw?',
       ];
     }
-    if (area.contains('bill') || area.contains('airtime') || area.contains('data')) {
+    if (area.contains('bill') ||
+        area.contains('airtime') ||
+        area.contains('data')) {
       return const [
         'Show my recent bills',
         'Set up auto-recharge',
         'What did I spend on bills?',
       ];
     }
-    if (area.contains('budget') || area.contains('spen') || area.contains('expense')) {
+    if (area.contains('budget') ||
+        area.contains('spen') ||
+        area.contains('expense')) {
       return const [
         'Where did most of it go?',
         'Compare with last month',
@@ -1869,8 +1908,7 @@ class _AiChatContentState extends State<AiChatContent>
           decoration: BoxDecoration(
             color: InvoiceThemeColors.secondaryBackground,
             shape: BoxShape.circle,
-            border: Border.all(
-                color: Colors.white.withValues(alpha: 0.10)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.35),

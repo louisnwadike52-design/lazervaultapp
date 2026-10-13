@@ -745,5 +745,4 @@ class AIChatCubit extends Cubit<AIChatState> {
       // Deliberately swallowed — see the doc above.
     }
   }
-
 }

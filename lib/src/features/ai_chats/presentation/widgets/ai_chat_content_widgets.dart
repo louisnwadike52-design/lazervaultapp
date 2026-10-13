@@ -81,6 +81,10 @@ class ChatMessage {
   /// is about. Null for anything the server has not persisted.
   final int? serverMessageId;
 
+  /// The thumb this answer already carries from the server: 'up', 'down', or
+  /// null. Lets a rating survive a reload instead of resetting to neutral.
+  final String? rating;
+
   ChatMessage({
     required this.text,
     required this.isUser,
@@ -100,6 +104,7 @@ class ChatMessage {
     this.recipientCard,
     this.analyticsCard,
     this.serverMessageId,
+    this.rating,
   });
 
   factory ChatMessage.fromEntity(ChatMessageEntity entity) {
@@ -122,6 +127,7 @@ class ChatMessage {
       pinPrompt: entity.pinPrompt,
       analyticsCard: entity.analyticsCard,
       serverMessageId: entity.serverMessageId,
+      rating: entity.rating,
     );
   }
 }

@@ -87,6 +87,14 @@ class ChatMessageEntity extends Equatable {
   /// and the local timestamp is not something the server can resolve. Null for
   /// anything the server has not persisted (an optimistic bubble, an error).
   final int? serverMessageId;
+
+  /// The thumb this answer already carries: 'up', 'down', or null.
+  ///
+  /// Read back from history so a rating survives a reload. It was held only
+  /// in a local map on the chat widget, so reopening the thread reset every
+  /// thumb to neutral and the user could not tell whether their feedback had
+  /// registered — which, separately, it had not: see the /chat/feedback 422.
+  final String? rating;
   // PinPromptIntent payload (chat_services_shared/pin_prompt.py) — drives the
   // inline ChatPinPromptCard so a chat-driven money move collects the PIN in
   // the chat thread instead of telling the user to open a screen.
@@ -114,6 +122,7 @@ class ChatMessageEntity extends Equatable {
     this.receiptCard,
     this.analyticsCard,
     this.serverMessageId,
+    this.rating,
     this.qrCard,
     this.recipientCard,
     this.pinPrompt,
@@ -150,6 +159,7 @@ class ChatMessageEntity extends Equatable {
     Map<String, dynamic>? recipientCard,
     Map<String, dynamic>? analyticsCard,
     int? serverMessageId,
+    String? rating,
     Map<String, dynamic>? pinPrompt,
   }) {
     return ChatMessageEntity(
@@ -176,6 +186,7 @@ class ChatMessageEntity extends Equatable {
       recipientCard: recipientCard ?? this.recipientCard,
       analyticsCard: analyticsCard ?? this.analyticsCard,
       serverMessageId: serverMessageId ?? this.serverMessageId,
+      rating: rating ?? this.rating,
       pinPrompt: clearPinPrompt ? null : (pinPrompt ?? this.pinPrompt),
     );
   }
@@ -198,6 +209,7 @@ class ChatMessageEntity extends Equatable {
         recipientCard,
         analyticsCard,
         serverMessageId,
+        rating,
         pinPrompt,
       ];
 }

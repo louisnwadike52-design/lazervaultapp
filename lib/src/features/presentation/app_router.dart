@@ -2121,7 +2121,29 @@ class AppRouter {
     GetPage(
       name: AppRoutes.groupDetails,
       page: () {
-        final groupId = Get.arguments as String;
+        // Guarded like contributionDetails and makePayment below, and for the
+        // same reason — this was the last route in the family still doing a
+        // bare cast.
+        //
+        // `Get.arguments` is GLOBAL in GetX, not per-route: a modal, a sheet
+        // or another navigation can leave it null by the time this builder
+        // runs. `null as String` then throws inside the page builder, which
+        // paints a blank grey screen the user cannot navigate out of — the
+        // one reported after paying a due contribution from the dashboard and
+        // coming back, where the payment flow's own routes and sheets sit
+        // between setting the argument and this rebuild.
+        //
+        // A String id is the contract; a Map with a groupId is accepted too
+        // rather than refused, because that is the shape every sibling route
+        // in this file takes and the mistake is easy to make.
+        final raw = Get.arguments;
+        final groupId = raw is String
+            ? raw.trim()
+            : (raw is Map ? (raw['groupId'] as String? ?? '').trim() : '');
+        if (groupId.isEmpty) {
+          popMissingArgs('this group');
+          return const Scaffold(backgroundColor: Color(0xFF0A0A0A));
+        }
         // Note: loadGroupDetails is called in GroupDetailsScreen's initState
         return BlocProvider.value(
           value: serviceLocator<GroupAccountCubit>(),
