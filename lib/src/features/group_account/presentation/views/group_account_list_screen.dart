@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -295,49 +296,63 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       child: Row(
         children: [
+          // Sized down together. At 28sp the title needed more width than
+          // was left beside three full-size controls, so "Group Funds" wrapped
+          // onto two lines and pushed the subtitle into a third — a header
+          // taller than the stats card beneath it.
           GestureDetector(
             onTap: () => Get.offAll(() => const DashboardScreen()),
             child: Container(
-              padding: EdgeInsets.all(12.w),
+              padding: EdgeInsets.all(9.w),
               decoration: BoxDecoration(
                 color: Colors.grey[900],
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(10.r),
               ),
               child: Icon(
                 Icons.arrow_back,
                 color: Colors.white,
-                size: 20.sp,
+                size: 17.sp,
               ),
             ),
           ),
-          SizedBox(width: 16.w),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Group Funds',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
                     color: Colors.white,
-                    fontSize: 28.sp,
+                    fontSize: 19.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
                   'Manage & discover group contributions',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
                     color: Colors.grey[400],
-                    fontSize: 14.sp,
+                    fontSize: 11.sp,
                   ),
                 ),
               ],
             ),
           ),
-          ServiceVoiceButton(serviceName: 'groups'),
-          SizedBox(width: 8.w),
+          ServiceVoiceButton(
+            serviceName: 'groups',
+            buttonSize: 34.w,
+            iconSize: 17.sp,
+          ),
+          SizedBox(width: 6.w),
           MicroserviceChatIcon(
             serviceName: 'Group Funds',
             sourceContext: 'group_accounts',
+            size: 34.w,
+            iconSize: 17.sp,
           ),
           _buildOverflowMenu(),
         ],
@@ -358,7 +373,9 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
   /// stops paying, without having to start a group to find out.
   Widget _buildOverflowMenu() {
     return PopupMenuButton<String>(
-      icon: Icon(Icons.more_vert, color: Colors.white, size: 22.sp),
+      icon: Icon(Icons.more_vert, color: Colors.white, size: 18.sp),
+      padding: EdgeInsets.zero,
+      constraints: BoxConstraints(minWidth: 30.w, minHeight: 30.w),
       color: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
       itemBuilder: (_) => [
@@ -698,7 +715,180 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
       // distinguishes the ones they run from the ones they merely belong to.
       currentUserId: context.read<AuthenticationCubit>().userId,
       onTap: () => _navigateToGroupDetails(group),
+      onMenu: () => _showGroupCardMenu(group),
     );
+  }
+
+  /// The card's own menu.
+  ///
+  /// Removing a group is DELIBERATELY two steps — exit, then remove — and the
+  /// menu says so rather than offering a "delete" that would be refused. The
+  /// server enforces the same order (it refuses to hide a group you are still
+  /// an active member of), so a one-tap delete here would only produce an
+  /// error the user could not have predicted.
+  ///
+  /// Nothing is deleted from the database either way: removing hides the
+  /// group from THIS user's list. Every payment, payout and audit row it was
+  /// part of is still there, which is what makes it safe to offer at all.
+  Future<void> _showGroupCardMenu(GroupAccount group) async {
+    final userId = context.read<AuthenticationCubit>().userId;
+    final stillMember = group.members.any((m) =>
+        m.userId == userId && m.status == GroupMemberStatus.active);
+
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 10.h),
+            Container(
+              width: 36.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: Colors.grey[800],
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            SizedBox(height: 6.h),
+            Padding(
+              padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 4.h),
+              child: Text(
+                group.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600),
+              ),
+            ),
+            if (stillMember)
+              ListTile(
+                leading: Icon(Icons.logout_rounded,
+                    color: const Color(0xFFF59E0B), size: 20.sp),
+                title: Text('Exit group',
+                    style: GoogleFonts.inter(
+                        color: Colors.white, fontSize: 13.sp)),
+                subtitle: Text('Leave this group. You can remove it from your '
+                    'list afterwards.',
+                    style: GoogleFonts.inter(
+                        color: Colors.grey[500], fontSize: 10.5.sp)),
+                onTap: () => Navigator.pop(ctx, 'exit'),
+              )
+            else
+              ListTile(
+                leading: Icon(Icons.delete_outline,
+                    color: const Color(0xFFEF4444), size: 20.sp),
+                title: Text('Remove from my list',
+                    style: GoogleFonts.inter(
+                        color: Colors.white, fontSize: 13.sp)),
+                subtitle: Text('Hides it from your groups. Nothing is deleted '
+                    'and the records stay intact.',
+                    style: GoogleFonts.inter(
+                        color: Colors.grey[500], fontSize: 10.5.sp)),
+                onTap: () => Navigator.pop(ctx, 'remove'),
+              ),
+            SizedBox(height: 8.h),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || choice == null) return;
+
+    if (choice == 'exit') {
+      final userId = context.read<AuthenticationCubit>().userId;
+      final me = group.members.where((m) => m.userId == userId).toList();
+      if (me.isEmpty) {
+        showAppSnackbar('Group Funds',
+            'We could not find your membership on this group.',
+            type: AppSnackbarType.error);
+        return;
+      }
+      final ok = await _confirmDestructive(
+        title: 'Exit ${group.name}?',
+        body: 'You stop being a member and will not be asked for further '
+            'contributions. Money you have already paid in, and any payout '
+            'already made to you, are unaffected.',
+        confirmLabel: 'Exit group',
+      );
+      if (!ok || !mounted) return;
+      await context.read<GroupAccountCubit>().removeMemberFromGroupAccount(
+            groupId: group.id,
+            memberId: me.first.id,
+          );
+      if (!mounted) return;
+      showAppSnackbar('Group Funds',
+          'You have exited. Open the menu again to remove it from your list.',
+          type: AppSnackbarType.success);
+      return;
+    }
+
+    final ok = await _confirmDestructive(
+      title: 'Remove from your list?',
+      body: '${group.name} disappears from your groups. Nothing is deleted — '
+          'the group, its contributions and every payment record stay exactly '
+          'as they are, and you can find it again under Past groups.',
+      confirmLabel: 'Remove',
+    );
+    if (!ok || !mounted) return;
+
+    final err = await context.read<GroupAccountCubit>().removeFromMyLists(
+          itemType: 'group',
+          itemId: group.id,
+        );
+    if (!mounted) return;
+    if (err != null) {
+      showAppSnackbar('Group Funds', err, type: AppSnackbarType.error);
+      return;
+    }
+    showAppSnackbar('Group Funds', 'Removed from your list.',
+        type: AppSnackbarType.success);
+  }
+
+  /// Shared confirm for the destructive half of the card menu.
+  Future<bool> _confirmDestructive({
+    required String title,
+    required String body,
+    required String confirmLabel,
+  }) async {
+    final res = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14.r)),
+        title: Text(title,
+            style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w700)),
+        content: Text(body,
+            style: GoogleFonts.inter(
+                color: Colors.grey[400], fontSize: 12.sp, height: 1.45)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancel',
+                style: GoogleFonts.inter(
+                    color: Colors.grey[400], fontSize: 12.5.sp)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(confirmLabel,
+                style: GoogleFonts.inter(
+                    color: const Color(0xFFEF4444),
+                    fontSize: 12.5.sp,
+                    fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+    return res ?? false;
   }
 
   /// Persist a drag.

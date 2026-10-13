@@ -9,6 +9,13 @@ class GroupCard extends StatelessWidget {
   final GroupAccount group;
   final VoidCallback? onTap;
 
+  /// Opens the card's own menu (exit / remove from my list).
+  ///
+  /// A button rather than a long-press: on the groups list the card IS the
+  /// drag handle for reordering, so a long-press is already spoken for and a
+  /// second meaning on the same gesture would make both unreliable.
+  final VoidCallback? onMenu;
+
   /// The signed-in user, used only to mark groups they created.
   /// Null simply means the badge is not shown — never a wrong badge.
   final String? currentUserId;
@@ -18,6 +25,7 @@ class GroupCard extends StatelessWidget {
     super.key,
     required this.group,
     this.onTap,
+    this.onMenu,
   });
 
   @override
@@ -116,7 +124,21 @@ class GroupCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(width: 6.w),
+                SizedBox(width: 2.w),
+                if (onMenu != null)
+                  GestureDetector(
+                    onTap: onMenu,
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 4.w, vertical: 4.h),
+                      child: Icon(
+                        Icons.more_vert,
+                        size: 17.sp,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                  ),
                 Icon(
                   Icons.chevron_right,
                   size: 18.sp,

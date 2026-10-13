@@ -46,6 +46,11 @@ class _AddMembersToContributionDialogState
   /// Names dropped by the validity filter in the last submit, so the failure
   /// message can name them instead of blaming "invalid user IDs".
   final List<String> _skippedPartial = [];
+
+  /// Selected people whose member row carries no user id. Tracked apart from
+  /// [_skippedPartial] because the remedy differs: a partial account is the
+  /// person's to finish, an unresolved row is ours to repair.
+  final List<String> _skippedUnresolved = [];
   Set<String> _existingMemberUserIds = {};
   bool _isLoading = true;
   bool _isAdding = false;
@@ -571,6 +576,7 @@ class _AddMembersToContributionDialogState
       // user IDs" snackbar, which is both wrong and unactionable: the real
       // reasons are distinct and each has a different remedy.
       _skippedPartial.clear();
+      _skippedUnresolved.clear();
       final validSelectedUserIds = selectedMembers
           .where((m) {
             final hasUserId = m.userId.isNotEmpty &&
@@ -578,7 +584,12 @@ class _AddMembersToContributionDialogState
             if (!hasUserId) {
               debugPrint(
                   '🟡 AddMembers: Skipping ${m.userName} — no resolvable user id');
-              _skippedPartial.add(
+              // NOT the same as an unfinished signup, and it was reported as
+              // one. A member row can be missing its user id because the
+              // lookup failed when they were added — including when the search
+              // surface handed back a REDACTED email it could not match — and
+              // the person may have been fully signed up the whole time.
+              _skippedUnresolved.add(
                   m.userName.trim().isEmpty ? 'A selected member' : m.userName);
               return false;
             }
@@ -626,6 +637,20 @@ class _AddMembersToContributionDialogState
                 content: Text(
                     '$inviteCount invite(s) sent. They will be added to the contribution when they join.'),
                 backgroundColor: const Color(0xFF10B981),
+              ),
+            );
+          } else if (_skippedUnresolved.isNotEmpty) {
+            // Says what is true and what to do, instead of blaming the
+            // person's account for a link we failed to make.
+            final names = _skippedUnresolved.join(', ');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                    "We couldn't match $names to a Lazervault account from "
+                    'this group. Pull down to refresh the member list, then '
+                    'try again.'),
+                backgroundColor: const Color(0xFFF59E0B),
+                duration: const Duration(seconds: 5),
               ),
             );
           } else if (_skippedPartial.isNotEmpty) {

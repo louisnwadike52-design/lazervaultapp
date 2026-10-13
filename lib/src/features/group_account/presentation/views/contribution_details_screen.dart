@@ -140,15 +140,21 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     }
   }
 
-  void _loadContributionDetails() {
-    // Load contribution details if not provided
-    if (_currentContribution == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        context
-            .read<GroupAccountCubit>()
-            .loadContributionDetails(widget.contributionId);
-      });
-    }
+  /// Fetch the contribution.
+  ///
+  /// [force] re-reads even when one is already held. Without it this was a
+  /// first-load only: the `== null` guard meant every later call — after a
+  /// payment, on pull-to-refresh, on app resume — did nothing, so the header
+  /// kept reporting whatever was true when the screen opened. That is what
+  /// made the statistics disagree with the payments list underneath them.
+  void _loadContributionDetails({bool force = false}) {
+    if (_currentContribution != null && !force) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context
+          .read<GroupAccountCubit>()
+          .loadContributionDetails(widget.contributionId);
+    });
   }
 
   @override
@@ -208,8 +214,10 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                   behavior: SnackBarBehavior.floating,
                 ),
               );
-              // Refresh payments list
-              _loadLocalPayments();
+              // Refresh the list AND the statistics above it — a payment
+              // changes both, and refreshing only the list left the header
+              // reporting the figures from before the money moved.
+              _refreshPayments();
             } else if (state is ContributionMembersAdded) {
               // Members were added - the cubit already calls loadGroupDetails
               // which will emit GroupAccountGroupLoaded and update _currentContribution
@@ -1378,7 +1386,17 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     final remaining = (contribution.targetAmount - contribution.amountRaised)
         .clamp(0.0, double.infinity);
 
-    return SingleChildScrollView(
+    // Pull-to-refresh on EVERY tab, not just Payments. The statistics a user
+    // wants to re-check live on this tab, and the only way to update them was
+    // to leave the screen and come back.
+    return RefreshIndicator(
+      onRefresh: _refreshPayments,
+      backgroundColor: const Color(0xFF1F1F1F),
+      color: const Color.fromARGB(255, 78, 3, 208),
+      child: SingleChildScrollView(
+      // AlwaysScrollable so the gesture works even when the content is short
+      // enough not to scroll on its own.
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.all(20.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1468,6 +1486,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             ),
           ),
         ],
+      ),
       ),
     );
   }
@@ -1654,6 +1673,17 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   }
 
   Future<void> _refreshPayments() async {
+    // Both halves, always.
+    //
+    // This reloaded only the payments LIST, but the header — raised,
+    // contributors, progress, the per-cycle pot — is read off
+    // _currentContribution, which is replaced only when the cubit emits
+    // GroupAccountGroupLoaded. So after a payment the list said "2 payments,
+    // NGN 200" while the card above it still said "NGN 100 · 1 contributor ·
+    // 10%", and the two disagreed until the screen was left and reopened.
+    // force: the point of a refresh is to re-read something already held.
+    // The header updates when GroupAccountGroupLoaded lands.
+    _loadContributionDetails(force: true);
     await _loadLocalPayments();
   }
 
@@ -1725,7 +1755,12 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           gm.userId: gm.userUsername!,
     };
 
-    return ListView(
+    return RefreshIndicator(
+      onRefresh: _refreshPayments,
+      backgroundColor: const Color(0xFF1F1F1F),
+      color: const Color.fromARGB(255, 78, 3, 208),
+      child: ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.all(20.w),
       children: [
         // Members header with add button
@@ -1872,6 +1907,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             },
           ),
       ],
+      ),
     );
   }
 
