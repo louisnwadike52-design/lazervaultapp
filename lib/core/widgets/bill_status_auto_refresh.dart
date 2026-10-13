@@ -110,10 +110,34 @@ mixin BillStatusAutoRefresh<T extends StatefulWidget>
     _inFlight = true;
     try {
       await refreshBillStatus();
-    } catch (_) {
+    } catch (e, st) {
       // Opportunistic by design. A failed poll is indistinguishable from "not
       // settled yet" to the user, and surfacing it would turn a transient
       // network blip into an alarming receipt.
+      //
+      // But a PROGRAMMING error is not a network blip, and this catch hid one
+      // for as long as it existed: the data receipt route was registered
+      // without the BlocProvider its refresh reads from, so every poll threw
+      // ProviderNotFoundException here and was swallowed. A purchase that had
+      // completed in six seconds showed "Processing" indefinitely, and pulling
+      // to refresh — which throws into the RefreshIndicator and merely
+      // retracts the spinner — looked equally broken.
+      //
+      // Reported through FlutterError, so it is loud in debug and in tests and
+      // still silent for the user. The receipt keeps polling either way.
+      assert(() {
+        FlutterError.reportError(FlutterErrorDetails(
+          exception: e,
+          stack: st,
+          library: 'bill_status_auto_refresh',
+          context: ErrorDescription(
+            'refreshBillStatus() threw while polling $runtimeType. If this is '
+            'a ProviderNotFoundException, the route that registers this '
+            'screen is missing the BlocProvider the refresh reads from.',
+          ),
+        ));
+        return true;
+      }());
     } finally {
       _inFlight = false;
     }

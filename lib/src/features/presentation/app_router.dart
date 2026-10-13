@@ -4460,7 +4460,29 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.dataBundlesPaymentReceipt,
-      page: () => const DataPaymentReceiptScreen(),
+      // The BlocProvider is NOT optional, and its absence was the bug.
+      //
+      // The receipt re-reads its status with context.read<DataBundlesCubit>()
+      // — from pull-to-refresh and from the BillStatusAutoRefresh poll. GetX
+      // gives each route its own subtree, so the provider on the processing
+      // screen above is not an ancestor of this one, and that read threw
+      // ProviderNotFoundException every single time.
+      //
+      // Both callers swallow it: the poll catches everything by design
+      // ("a failed poll is indistinguishable from not settled yet"), and a
+      // throw out of onRefresh just retracts the spinner. So a data purchase
+      // that had completed six seconds after it was requested sat on
+      // "Processing" for ever, and pulling to refresh did nothing — while the
+      // push notification, which comes from the server, correctly said it had
+      // succeeded. Confirmed in prod: bill_payments row for
+      // DATA-1791892188-37826830 was `completed` at 11:49:53 with the receipt
+      // still showing Processing an hour later.
+      //
+      // It is the only one of the five data routes that lacked this.
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<DataBundlesCubit>(),
+        child: const DataPaymentReceiptScreen(),
+      ),
       transition: Transition.zoom,
     ),
     // International Data — consolidated single-screen flow. Backend is
