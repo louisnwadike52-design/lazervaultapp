@@ -1288,7 +1288,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     final go = await _actionDialog(
       icon: Icons.group_add_outlined,
       color: const Color(0xFFF59E0B),
-      title: 'Add one more member first',
+      title: active >= 1 ? 'Add one more member' : 'Add members first',
       body: 'An esusu is a rotation, so it needs at least 2 members who have '
           'ACCEPTED their invite before it can start. '
           '${active == 0 ? 'Nobody has' : active == 1 ? 'Only 1 person has' : '$active people have'} '
@@ -1298,7 +1298,21 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       cta: 'Add members',
     );
     if (go != true || !mounted) return;
-    _showAddMembersDialog(contribution);
+    // Continue STRAIGHT to Start once the requirement is met.
+    //
+    // Adding the member was never the goal — starting was. Dropping the user
+    // back on the details screen to hunt for Start again, immediately after
+    // telling them Start was the thing they could not do yet, makes them
+    // re-find a control they had already pressed.
+    _showAddMembersDialog(contribution, onDone: () {
+      if (!mounted) return;
+      final fresh = _currentContribution ?? contribution;
+      final nowActive = fresh.members
+          .where(
+              (m) => m.membershipStatus == ContributionMembershipStatus.active)
+          .length;
+      if (nowActive >= 2) _showStartDialog(fresh, nowActive);
+    });
   }
 
   Future<void> _showStartDialog(Contribution contribution, int active) async {
@@ -3591,6 +3605,19 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     // the schedule and the rotation are all decided at start. Offering
     // Contribute here produced a payment the server would refuse.
     if (c.awaitingOpen) return false;
+    // ESUSU: nothing left to pay this cycle means no Contribute button.
+    //
+    // A rotation allocates each member a FIXED share per cycle — that is what
+    // makes the pot (share x members) and the rotation fair. The server
+    // enforces it (payments must equal regular_amount, or fall within the
+    // remaining headroom when partials are allowed, and it refuses outright
+    // once the cycle is settled), but the button was offered regardless, so
+    // the only way to discover you had already paid was to go through the pay
+    // screen and be refused at the end.
+    //
+    // One-time goals are deliberately NOT gated: there is no per-member share
+    // there, people top up what they like, and that is the point of the type.
+    if (c.isRotatingSavings && _myCycleShareIsSettled(c)) return false;
     if (GroupRolePermissions.canMember(
         _currentGroupMember, GroupAction.makeContribution)) {
       return true;
@@ -3614,6 +3641,27 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       }
     }
     return false;
+  }
+
+  /// Whether THIS user has nothing left to pay into the current cycle.
+  ///
+  /// Mirrors the server's rule in payments.go so the two cannot disagree:
+  ///   - partials off  -> the flag alone decides; a payment is all or nothing
+  ///   - partials on   -> cumulative cycle_paid_amount has reached the share
+  ///
+  /// Unknown shape (no member row, no regular amount) answers FALSE: the
+  /// server is the authority, and hiding the button on a guess would strand
+  /// somebody who genuinely owes.
+  bool _myCycleShareIsSettled(Contribution c) {
+    final myUserId = context.read<GroupAccountCubit>().currentUserId;
+    if (myUserId == null) return false;
+    final me = c.members.where((m) => m.userId == myUserId).firstOrNull;
+    if (me == null) return false;
+    if (me.hasPaidCurrentCycle) return true;
+    if (!c.allowPartialPayments) return false;
+    final share = c.regularAmount ?? 0;
+    if (share <= 0) return false;
+    return me.cyclePaidAmount >= share;
   }
 
   void _navigateToMakePayment(Contribution contribution) {
@@ -4761,7 +4809,11 @@ Powered by Lazervault 🚀
     return Icons.payment;
   }
 
-  void _showAddMembersDialog(Contribution contribution) {
+  /// [onDone] runs after the sheet closes, once the refreshed roster has
+  /// landed — used by the Start flow to continue straight into scheduling
+  /// when adding the member satisfied the two-member minimum.
+  void _showAddMembersDialog(Contribution contribution,
+      {VoidCallback? onDone}) {
     showDialog(
       context: context,
       builder: (dialogContext) => BlocProvider.value(
@@ -4777,7 +4829,18 @@ Powered by Lazervault 🚀
           },
         ),
       ),
-    );
+    ).then((_) async {
+      if (onDone == null || !mounted) return;
+      // Re-read before deciding: onMembersAdded fires the reload but does
+      // not await it, so _currentContribution may still hold the pre-add
+      // roster at the moment the sheet closes. _loadContributionDetails is
+      // fire-and-forget, so give the cubit a frame to emit before reading
+      // the roster back.
+      _loadContributionDetails(force: true);
+      await Future<void>.delayed(const Duration(milliseconds: 400));
+      if (!mounted) return;
+      onDone();
+    });
   }
 
   void _copyToClipboard(String text) async {

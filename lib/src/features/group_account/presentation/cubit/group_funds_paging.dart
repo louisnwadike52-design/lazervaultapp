@@ -70,7 +70,9 @@ extension GroupFundsPaging on GroupAccountCubit {
       // leaves them looking at an empty page with a pager that says there is
       // nothing beyond it — and no obvious way back. Step to the last page
       // that exists instead.
-      if (result.items.isEmpty && result.totalPages > 0 && page > result.totalPages) {
+      if (result.items.isEmpty &&
+          result.totalPages > 0 &&
+          page > result.totalPages) {
         result = await usecase(
             PageParams(page: result.totalPages, pageSize: pageSize));
         if (!_sessionStillCurrent(generation)) return;
@@ -133,9 +135,8 @@ extension GroupFundsPaging on GroupAccountCubit {
       return false;
     }
     try {
-      final items = raw
-          .map<GroupAccount>((j) => GroupAccountModel.fromJson(j))
-          .toList();
+      final items =
+          raw.map<GroupAccount>((j) => GroupAccountModel.fromJson(j)).toList();
       final page = PagedResult<GroupAccount>(
         items: items,
         page: 1,
@@ -164,9 +165,7 @@ extension GroupFundsPaging on GroupAccountCubit {
     if (userId == null) return;
     await GroupFundsPageCache.writeGroups(
       userId,
-      page.items
-          .map((g) => GroupAccountModel.fromEntity(g).toJson())
-          .toList(),
+      page.items.map((g) => GroupAccountModel.fromEntity(g).toJson()).toList(),
     );
   }
 
@@ -210,7 +209,9 @@ extension GroupFundsPaging on GroupAccountCubit {
       }
       // See loadGroupsPage: a hidden or deleted contribution can shrink the
       // list out from under the page the user is on.
-      if (result.items.isEmpty && result.totalPages > 0 && page > result.totalPages) {
+      if (result.items.isEmpty &&
+          result.totalPages > 0 &&
+          page > result.totalPages) {
         result = await usecase(GroupPageParams(
           groupId: groupId,
           page: result.totalPages,
@@ -241,8 +242,7 @@ extension GroupFundsPaging on GroupAccountCubit {
       // state for this case, and a second opinion from the pager can only
       // contradict it.
       if (isNotAuthorizedError(e)) {
-        debugPrint(
-            '[GroupFundsPaging] contributions page refused for $groupId '
+        debugPrint('[GroupFundsPaging] contributions page refused for $groupId '
             '(not a member) — leaving the access state to loadGroupDetails');
         return;
       }
@@ -286,9 +286,7 @@ extension GroupFundsPaging on GroupAccountCubit {
     await GroupFundsPageCache.writeContributions(
       userId,
       groupId,
-      page.items
-          .map((c) => ContributionModel.fromEntity(c).toJson())
-          .toList(),
+      page.items.map((c) => ContributionModel.fromEntity(c).toJson()).toList(),
     );
   }
 

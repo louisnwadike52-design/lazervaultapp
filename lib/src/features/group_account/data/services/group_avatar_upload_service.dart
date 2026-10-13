@@ -147,8 +147,7 @@ class GroupAvatarUploadService {
         .put(
           Uri.parse(uploadUrl),
           headers: {
-            'Content-Type':
-                (decoded['content_type'] as String?) ?? type,
+            'Content-Type': (decoded['content_type'] as String?) ?? type,
           },
           body: payload,
         )

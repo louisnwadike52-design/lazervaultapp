@@ -12,7 +12,18 @@ import '../utils/group_funds_palette.dart';
 class ContributionTypeBadge extends StatelessWidget {
   final ContributionType type;
 
-  const ContributionTypeBadge({super.key, required this.type});
+  /// Tighter, for a row that already carries another badge.
+  ///
+  /// The card puts this beside "Created by you"; at full size the pair wrapped
+  /// to two lines on a narrow phone, which is the stacking this was meant to
+  /// remove.
+  final bool compact;
+
+  const ContributionTypeBadge({
+    super.key,
+    required this.type,
+    this.compact = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -20,8 +31,7 @@ class ContributionTypeBadge extends StatelessWidget {
     // Violet-400, not the brand purple: this pill only ever sits on a
     // near-black surface, where #4E03D0 as INK disappeared into the card.
     // See GroupFundsPalette.
-    final color =
-        isRosca ? GroupFundsPalette.onDark : const Color(0xFF10B981);
+    final color = isRosca ? GroupFundsPalette.onDark : const Color(0xFF10B981);
     final label = isRosca ? 'Esusu · Rotating' : 'One-time';
     final icon = isRosca ? Icons.sync : Icons.flag_outlined;
 
@@ -30,7 +40,8 @@ class ContributionTypeBadge extends StatelessWidget {
     // "Created by you" badge — three saturated pills in a row made the card
     // read as three alerts rather than one goal.
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(
+          horizontal: compact ? 6.w : 8.w, vertical: compact ? 2.h : 4.h),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(8.r),
@@ -39,15 +50,15 @@ class ContributionTypeBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 12.sp),
-          SizedBox(width: 4.w),
+          Icon(icon, color: color, size: compact ? 10.sp : 12.sp),
+          SizedBox(width: compact ? 3.w : 4.w),
           Flexible(
             child: Text(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.inter(
-                fontSize: 11.sp,
+                fontSize: compact ? 9.sp : 11.sp,
                 fontWeight: FontWeight.w600,
                 color: color,
               ),

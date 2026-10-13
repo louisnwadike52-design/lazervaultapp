@@ -126,7 +126,6 @@ abstract class GroupAccountRepository {
     required String itemId,
   });
 
-
   // Contribution Member methods
   Future<List<ContributionMember>> addMembersToContribution({
     required String contributionId,

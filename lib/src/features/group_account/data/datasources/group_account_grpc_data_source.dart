@@ -386,8 +386,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
           await _client.listGroupContributions(request, options: callOptions);
 
       return _pageFrom(
-        items:
-            response.contributions.map(_mapContributionFromProto).toList(),
+        items: response.contributions.map(_mapContributionFromProto).toList(),
         requestedPage: page,
         requestedSize: pageSize,
         currentPage: response.pagination.currentPage,
@@ -2305,7 +2304,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       // FailedPrecondition is the "leave it first" refusal and carries a
       // sentence written for the user; friendlyGrpcError passes those
       // through rather than replacing them with a generic line.
-      throw Exception(friendlyGrpcError(e, 'Failed to remove it from your list'));
+      throw Exception(
+          friendlyGrpcError(e, 'Failed to remove it from your list'));
     }
   }
 

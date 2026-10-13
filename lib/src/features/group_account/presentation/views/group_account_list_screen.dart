@@ -21,6 +21,7 @@ import 'package:lazervault/core/utils/debouncer.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
+import '../widgets/full_text_details_dialog.dart';
 import '../widgets/group_card.dart';
 import '../widgets/create_group_bottom_sheet.dart';
 import '../widgets/invite_card.dart';
@@ -48,6 +49,7 @@ class GroupFundsTab {
   static const int myGroups = 0;
   static const int discover = 1;
   static const int invites = 2;
+
   /// Requests from OTHER people to join groups this user runs. Distinct from
   /// `invites`, which is what others have asked of them.
   static const int joinRequests = 3;
@@ -819,6 +821,14 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
     final userId = context.read<AuthenticationCubit>().userId ?? '';
     if (!await GroupFundsTermsPrefs.shouldShow(userId)) return;
     if (!mounted) return;
+    // Marked BEFORE the await, not after.
+    //
+    // initState runs on every push of this screen, so opening a group and
+    // pressing back re-created it and re-opened the sheet on somebody who
+    // had just read it and had not ticked the box. Recording it here also
+    // closes the double-open: two frames can both pass shouldShow while the
+    // first sheet is still animating in.
+    GroupFundsTermsPrefs.markShownThisSession(userId);
     await showGroupFundsTermsSheet(
       context,
       offerDismiss: true,
@@ -875,8 +885,8 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
   /// part of is still there, which is what makes it safe to offer at all.
   Future<void> _showGroupCardMenu(GroupAccount group) async {
     final userId = context.read<AuthenticationCubit>().userId;
-    final stillMember = group.members.any((m) =>
-        m.userId == userId && m.status == GroupMemberStatus.active);
+    final stillMember = group.members
+        .any((m) => m.userId == userId && m.status == GroupMemberStatus.active);
 
     final choice = await showModalBottomSheet<String>(
       context: context,
@@ -917,7 +927,8 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
                 title: Text('Exit group',
                     style: GoogleFonts.inter(
                         color: Colors.white, fontSize: 13.sp)),
-                subtitle: Text('Leave this group. You can remove it from your '
+                subtitle: Text(
+                    'Leave this group. You can remove it from your '
                     'list afterwards.',
                     style: GoogleFonts.inter(
                         color: Colors.grey[500], fontSize: 10.5.sp)),
@@ -930,7 +941,8 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
                 title: Text('Remove from my list',
                     style: GoogleFonts.inter(
                         color: Colors.white, fontSize: 13.sp)),
-                subtitle: Text('Hides it from your groups. Nothing is deleted '
+                subtitle: Text(
+                    'Hides it from your groups. Nothing is deleted '
                     'and the records stay intact.',
                     style: GoogleFonts.inter(
                         color: Colors.grey[500], fontSize: 10.5.sp)),
@@ -947,8 +959,8 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
       final userId = context.read<AuthenticationCubit>().userId;
       final me = group.members.where((m) => m.userId == userId).toList();
       if (me.isEmpty) {
-        showAppSnackbar('Group Funds',
-            'We could not find your membership on this group.',
+        showAppSnackbar(
+            'Group Funds', 'We could not find your membership on this group.',
             type: AppSnackbarType.error);
         return;
       }
@@ -1003,8 +1015,8 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
         title: Text(title,
             style: GoogleFonts.inter(
                 color: Colors.white,
@@ -1153,7 +1165,8 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.lock_outline, size: 36.sp, color: const Color(0xFF9CA3AF)),
+            Icon(Icons.lock_outline,
+                size: 36.sp, color: const Color(0xFF9CA3AF)),
             SizedBox(height: 12.h),
             Text(
               'Sign in to see your joint funds',
@@ -1221,8 +1234,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
 
     // Filter by search query
     final query = _myGroupsSearchQuery.toLowerCase();
-    var filteredGroups =
-        _myGroupsTabIndex == 0 ? privateGroups : publicGroups;
+    var filteredGroups = _myGroupsTabIndex == 0 ? privateGroups : publicGroups;
     // The optimistic drag order wins while a save is in flight, so the card
     // stays where the user dropped it instead of snapping back for the
     // moment between the drop and the response.
@@ -1422,9 +1434,9 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
               sliver: query.isEmpty
                   ? SliverReorderableList(
                       itemCount: displayGroups.length,
-                      onReorder: (oldIndex, newIndex) =>
-                          _onGroupsReordered(displayGroups, oldIndex, newIndex,
-                              startIndex: sliceStart, all: groups),
+                      onReorder: (oldIndex, newIndex) => _onGroupsReordered(
+                          displayGroups, oldIndex, newIndex,
+                          startIndex: sliceStart, all: groups),
                       // The card IS the drag handle: a separate grip on a
                       // card that is already one big tap target is a second
                       // thing to aim at for no reason.
@@ -2845,6 +2857,28 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
   }
 
   void _navigateToGroupDetails(GroupAccount group) {
+    // A group you have only REQUESTED to join is not one you can open.
+    //
+    // It appears in this list because GetGroupsByUserID joins group_members
+    // without filtering on status, so a pending_approval row sits beside real
+    // memberships. The detail screen calls GetGroup, which refuses a
+    // non-member — and the screen rendered its empty state rather than the
+    // error: 0 Members, 0 Goals, a blank page with nothing explaining why.
+    //
+    // Say so instead of navigating.
+    if (group.hasPendingJoinRequest) {
+      showFullTextDetailsDialog(
+        context,
+        title: group.name,
+        description: 'You asked to join this group and an admin has not '
+            'decided yet.\n\nUntil they approve it you cannot open the '
+            'group, see its members or pay into its contributions. You will '
+            'get a notification the moment it is decided.',
+        subtitle: 'Waiting for approval',
+        icon: Icons.hourglass_top_rounded,
+      );
+      return;
+    }
     _navigatedToDetails = true;
     Get.toNamed(AppRoutes.groupDetails, arguments: group.id)?.then((_) {
       if (mounted && _navigatedToDetails) {

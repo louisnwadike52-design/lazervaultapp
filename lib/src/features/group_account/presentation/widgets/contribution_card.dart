@@ -110,12 +110,28 @@ class ContributionCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (currentUserId != null &&
-                          currentUserId!.isNotEmpty &&
-                          contribution.isCreator(currentUserId!)) ...[
-                        SizedBox(height: 4.h),
-                        const CreatedByYouBadge(compact: true),
-                      ],
+                      // Both badges on ONE row.
+                      //
+                      // They were stacked — "Created by you" under the title,
+                      // the type pill two rows further down under the
+                      // description — which spent three vertical bands on two
+                      // short labels and pushed the numbers that matter off
+                      // the first screen. Wrap, not Row, so a long type label
+                      // drops to a second line instead of overflowing.
+                      SizedBox(height: 4.h),
+                      Wrap(
+                        spacing: 6.w,
+                        runSpacing: 4.h,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          if (currentUserId != null &&
+                              currentUserId!.isNotEmpty &&
+                              contribution.isCreator(currentUserId!))
+                            const CreatedByYouBadge(compact: true),
+                          ContributionTypeBadge(
+                              type: contribution.type, compact: true),
+                        ],
+                      ),
                       SizedBox(height: 4.h),
                       Text(
                         contribution.description,
@@ -126,15 +142,6 @@ class ContributionCard extends StatelessWidget {
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(height: 6.h),
-                      // Surface the contribution type so a glance at
-                      // the list distinguishes rotating-savings cycles
-                      // from one-time goals — they have different
-                      // payout semantics.
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: ContributionTypeBadge(type: contribution.type),
                       ),
                     ],
                   ),

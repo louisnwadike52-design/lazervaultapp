@@ -102,7 +102,9 @@ class JoinRequestsTabState extends State<JoinRequestsTab> {
             '${_name(req.member)} asked to join "${req.groupName}". They can ask '
             'again, but only a limited number of times before they have to wait.',
             style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF), fontSize: 12.5.sp, height: 1.45),
+                color: const Color(0xFF9CA3AF),
+                fontSize: 12.5.sp,
+                height: 1.45),
           ),
           actions: [
             TextButton(
@@ -133,9 +135,8 @@ class JoinRequestsTabState extends State<JoinRequestsTab> {
       if (!mounted) return;
       setState(() {
         _requests = _requests
-            .where((r) =>
-                !(r.groupId == req.groupId &&
-                    r.member.userId == req.member.userId))
+            .where((r) => !(r.groupId == req.groupId &&
+                r.member.userId == req.member.userId))
             .toList();
         _deciding.remove(key);
       });

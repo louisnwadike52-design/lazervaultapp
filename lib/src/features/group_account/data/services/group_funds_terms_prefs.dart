@@ -17,6 +17,31 @@ class GroupFundsTermsPrefs {
 
   static const _prefix = 'group_funds_terms_dismissed_';
 
+  /// Who has already been shown the terms in THIS app session.
+  ///
+  /// The persistent flag below answers "has this person dismissed the terms
+  /// for good". It does not answer "have they already seen them a minute
+  /// ago", and the landing screen's initState runs on every push — so
+  /// opening a group and pressing back re-created the screen and re-opened
+  /// the sheet, on a user who had just read it and had NOT ticked the box.
+  /// A sheet that reappears every visit stops being read, which is the exact
+  /// thing the dismissal was added to prevent.
+  ///
+  /// In memory on purpose: "this session" means until the app is killed or
+  /// the user signs out, not until a date. Cleared by [endSession] on
+  /// sign-out so the next person on a shared device gets their own first
+  /// read.
+  static final Set<String> _shownThisSession = <String>{};
+
+  /// Forget the per-session record. Called on sign-out.
+  static void endSession() => _shownThisSession.clear();
+
+  /// Mark the terms as shown for this session, without dismissing them for
+  /// good. Separate from [dismiss] because they answer different questions:
+  /// this one is "not again right now", that one is "not ever".
+  static void markShownThisSession(String userId) =>
+      _shownThisSession.add(userId.isEmpty ? 'anon' : userId);
+
   static String _key(String userId) =>
       '$_prefix${userId.isEmpty ? 'anon' : userId}';
 
@@ -26,6 +51,12 @@ class GroupFundsTermsPrefs {
   /// Showing a sheet twice is a small annoyance; never showing the terms at
   /// all because a read failed is the outcome worth avoiding.
   static Future<bool> shouldShow(String userId) async {
+    // Already seen since this session began — do not reopen on a back
+    // navigation. Checked BEFORE storage so it costs nothing on the common
+    // path, and so it holds even when the persistent read fails open.
+    if (_shownThisSession.contains(userId.isEmpty ? 'anon' : userId)) {
+      return false;
+    }
     try {
       final prefs = await SharedPreferences.getInstance();
       return !(prefs.getBool(_key(userId)) ?? false);
@@ -47,6 +78,11 @@ class GroupFundsTermsPrefs {
 
   /// Bring them back, from Settings.
   static Future<void> reset(String userId) async {
+    // The session flag goes too. Without this, turning the terms back on from
+    // Settings appeared to do nothing until the app was restarted — the
+    // persistent flag was cleared but the in-memory one still said "already
+    // shown", so the next visit stayed silent.
+    _shownThisSession.remove(userId.isEmpty ? 'anon' : userId);
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_key(userId));

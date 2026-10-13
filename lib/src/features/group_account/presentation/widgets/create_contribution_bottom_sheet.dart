@@ -411,6 +411,28 @@ class _CreateContributionBottomSheetState
         return true;
 
       default:
+        // The SETTINGS page lands here, and "default: return true" is why
+        // Continue went straight through a visible validation error: the
+        // minimum-balance field painted its red border and its "Cannot
+        // exceed target amount" message, and the step advanced anyway.
+        //
+        // Re-checked from the controllers rather than trusting _fieldErrors.
+        // That map is populated by a post-frame callback from the inline
+        // Builder, and _clearErrors() at the top of this method wipes it
+        // before this switch runs — so by the time we got here the error the
+        // user could see on screen was not in the map to test.
+        //
+        // The invariant itself: a payout floor above the target can never be
+        // reached, so the contribution could never pay out.
+        final target = _parseAmount(_targetAmountController.text);
+        final minBal = _parseAmount(_minimumBalanceController.text);
+        if (minBal > 0 && target > 0 && minBal > target) {
+          _setFieldError('minimumBalance', 'Cannot exceed target amount');
+          _showErrorBanner(
+              'Minimum balance for payout cannot exceed the target amount');
+          debugPrint('🔴 Page $_currentPage validation: min balance > target');
+          return false;
+        }
         debugPrint('🟢 Page $_currentPage validation: PASS (default)');
         return true;
     }
@@ -981,69 +1003,69 @@ class _CreateContributionBottomSheetState
           border: Border.all(color: const Color(0xFF2D2D2D)),
         ),
         child: Row(
-      children: [
-        GestureDetector(
-          onTap: _avatarUploading ? null : _pickAvatar,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              GroupFundsAvatar(
-                name: _titleController.text.isNotEmpty
-                    ? _titleController.text
-                    : 'New goal',
-                imageUrl: _avatarUrl,
-                size: 56,
+          children: [
+            GestureDetector(
+              onTap: _avatarUploading ? null : _pickAvatar,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  GroupFundsAvatar(
+                    name: _titleController.text.isNotEmpty
+                        ? _titleController.text
+                        : 'New goal',
+                    imageUrl: _avatarUrl,
+                    size: 56,
+                  ),
+                  if (_avatarUploading)
+                    SizedBox(
+                      width: 20.w,
+                      height: 20.w,
+                      child: const CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
+                    ),
+                ],
               ),
-              if (_avatarUploading)
-                SizedBox(
-                  width: 20.w,
-                  height: 20.w,
-                  child: const CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.white),
-                ),
-            ],
-          ),
-        ),
-        SizedBox(width: 14.w),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _avatarUrl == null ? 'Add an avatar' : 'Avatar added',
-                style: GoogleFonts.inter(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white),
+            ),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _avatarUrl == null ? 'Add an avatar' : 'Avatar added',
+                    style: GoogleFonts.inter(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    _avatarError ??
+                        (_avatarUrl == null
+                            ? 'Optional — helps members pick this goal out of a list'
+                            : 'Tap to change it'),
+                    style: GoogleFonts.inter(
+                      fontSize: 11.5.sp,
+                      color: _avatarError != null
+                          ? const Color(0xFFEF4444)
+                          : const Color(0xFF9CA3AF),
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(height: 2.h),
-              Text(
-                _avatarError ??
-                    (_avatarUrl == null
-                        ? 'Optional — helps members pick this goal out of a list'
-                        : 'Tap to change it'),
-                style: GoogleFonts.inter(
-                  fontSize: 11.5.sp,
-                  color: _avatarError != null
-                      ? const Color(0xFFEF4444)
-                      : const Color(0xFF9CA3AF),
-                ),
+            ),
+            if (_avatarUrl != null && !_avatarUploading)
+              TextButton(
+                onPressed: () => setState(() {
+                  _avatarUrl = null;
+                  _avatarFile = null;
+                  _avatarError = null;
+                }),
+                child: Text('Remove',
+                    style: GoogleFonts.inter(
+                        fontSize: 12.sp, color: const Color(0xFF9CA3AF))),
               ),
-            ],
-          ),
-        ),
-        if (_avatarUrl != null && !_avatarUploading)
-          TextButton(
-            onPressed: () => setState(() {
-              _avatarUrl = null;
-              _avatarFile = null;
-              _avatarError = null;
-            }),
-            child: Text('Remove',
-                style: GoogleFonts.inter(
-                    fontSize: 12.sp, color: const Color(0xFF9CA3AF))),
-          ),
-      ],
+          ],
         ),
       ),
     );
@@ -1632,26 +1654,26 @@ class _CreateContributionBottomSheetState
 
           // Required: Frequency — non-ROSCA recurring types only.
           if (_selectedType != ContributionType.rotatingSavings) ...[
-          _buildFieldLabel('Cycle length', required: true),
-          SizedBox(height: 4.h),
-          // "Payment Frequency" was ambiguous in exactly the way that
-          // matters: in a circle it is BOTH. Members pay once per cycle and
-          // one member is paid at the end of each cycle, so the same number
-          // sets the paying-in rhythm and the paying-out rhythm — and a
-          // creator who read it as only one of those would set the wrong
-          // number.
-          Text(
-            'Members pay once per cycle, and one member collects the pot at '
-            'the end of each cycle.',
-            style: GoogleFonts.inter(
-                fontSize: 11.5.sp, color: const Color(0xFF9CA3AF)),
-          ),
-          SizedBox(height: 8.h),
-          SizedBox(height: 8.h),
-          _buildFrequencySelector(
-              hasError: _fieldErrors.containsKey('frequency')),
-          _buildFieldError('frequency'),
-          SizedBox(height: 20.h),
+            _buildFieldLabel('Cycle length', required: true),
+            SizedBox(height: 4.h),
+            // "Payment Frequency" was ambiguous in exactly the way that
+            // matters: in a circle it is BOTH. Members pay once per cycle and
+            // one member is paid at the end of each cycle, so the same number
+            // sets the paying-in rhythm and the paying-out rhythm — and a
+            // creator who read it as only one of those would set the wrong
+            // number.
+            Text(
+              'Members pay once per cycle, and one member collects the pot at '
+              'the end of each cycle.',
+              style: GoogleFonts.inter(
+                  fontSize: 11.5.sp, color: const Color(0xFF9CA3AF)),
+            ),
+            SizedBox(height: 8.h),
+            SizedBox(height: 8.h),
+            _buildFrequencySelector(
+                hasError: _fieldErrors.containsKey('frequency')),
+            _buildFieldError('frequency'),
+            SizedBox(height: 20.h),
           ],
 
           // Regular Amount: only shown for non-ROSCA recurring contributions.
@@ -1683,17 +1705,17 @@ class _CreateContributionBottomSheetState
           // Start date and cycle count are part of the SCHEDULE, so for an
           // esusu they belong to the start sheet with the rest of it.
           if (_selectedType != ContributionType.rotatingSavings)
-          _buildAddMoreFieldsWidget(
-            fields: [
-              if (!_visibleOptionalFields.contains('startDate'))
-                _ChipField('startDate', 'Start Date', Icons.event),
-              if (!_visibleOptionalFields.contains('totalCycles'))
-                _ChipField('totalCycles', 'Total Cycles', Icons.repeat),
-            ],
-            showChips: _showFieldChipsSchedule,
-            onToggle: () => setState(
-                () => _showFieldChipsSchedule = !_showFieldChipsSchedule),
-          ),
+            _buildAddMoreFieldsWidget(
+              fields: [
+                if (!_visibleOptionalFields.contains('startDate'))
+                  _ChipField('startDate', 'Start Date', Icons.event),
+                if (!_visibleOptionalFields.contains('totalCycles'))
+                  _ChipField('totalCycles', 'Total Cycles', Icons.repeat),
+              ],
+              showChips: _showFieldChipsSchedule,
+              onToggle: () => setState(
+                  () => _showFieldChipsSchedule = !_showFieldChipsSchedule),
+            ),
 
           // Optional: Start Date
           if (_selectedType != ContributionType.rotatingSavings &&
@@ -1760,8 +1782,7 @@ class _CreateContributionBottomSheetState
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.event_repeat,
-              size: 16.sp, color: const Color(0xFF9CA3AF)),
+          Icon(Icons.event_repeat, size: 16.sp, color: const Color(0xFF9CA3AF)),
           SizedBox(width: 10.w),
           Expanded(
             child: Text(
@@ -2160,7 +2181,8 @@ class _CreateContributionBottomSheetState
                 'Deadline',
                 (_selectedDeadline.hour == 0 && _selectedDeadline.minute == 0)
                     ? '${DateFormat('MMM dd, yyyy').format(_selectedDeadline)} (midnight)'
-                    : DateFormat('MMM dd, yyyy h:mm a').format(_selectedDeadline),
+                    : DateFormat('MMM dd, yyyy h:mm a')
+                        .format(_selectedDeadline),
               ),
             ],
             // ROSCA-specific schedule disclosure. The two

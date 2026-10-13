@@ -57,6 +57,7 @@ import '../domain/entities/signup_draft.dart';
 import '../domain/entities/two_factor_entity.dart';
 import 'authentication_state.dart';
 import 'package:lazervault/core/utilities/pending_referral.dart';
+import 'package:lazervault/src/features/group_account/data/services/group_funds_terms_prefs.dart';
 
 class AuthenticationCubit extends Cubit<AuthenticationState> {
   final LoginUseCase _loginUseCase;
@@ -515,6 +516,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     // through, including the auto-login path that clears a definitively
     // rejected refresh token without the user ever pressing Log out.
     PendingDeepLink.instance.clear();
+    // The Group Funds terms are shown once per LOGIN SESSION, tracked in
+    // memory because "this session" means until sign-out, not until a date.
+    // Cleared at the same chokepoint for the same reason as the stash above:
+    // the next person on a shared device gets their own first read, rather
+    // than inheriting the outgoing user's "already seen".
+    GroupFundsTermsPrefs.endSession();
     // Region is per-session, and LocaleManager is a process-lifetime singleton,
     // so a teardown that leaves it set hands the outgoing user's region to
     // whoever logs in next — including on the pre-login screens, before any

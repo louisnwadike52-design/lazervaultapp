@@ -86,6 +86,44 @@ class GroupCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Awaiting an admin's decision — say so on the row.
+                      //
+                      // The group is listed because a join request shares the
+                      // group_members table with real memberships, so without
+                      // this the row is indistinguishable from a group you
+                      // are actually in, right up until tapping it explains
+                      // otherwise.
+                      if (group.hasPendingJoinRequest) ...[
+                        Container(
+                          margin: EdgeInsets.only(bottom: 4.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 6.w, vertical: 2.h),
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFFF59E0B).withValues(alpha: 0.16),
+                            borderRadius: BorderRadius.circular(5.r),
+                            border: Border.all(
+                                color: const Color(0xFFF59E0B)
+                                    .withValues(alpha: 0.45)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.hourglass_top_rounded,
+                                  size: 9.sp, color: const Color(0xFFF59E0B)),
+                              SizedBox(width: 3.w),
+                              Text(
+                                'Waiting for approval',
+                                style: GoogleFonts.inter(
+                                  fontSize: 8.5.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFFF59E0B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                       // Tapping the name shows it in full.
                       //
                       // Both lines clip to one line so a list of ten groups

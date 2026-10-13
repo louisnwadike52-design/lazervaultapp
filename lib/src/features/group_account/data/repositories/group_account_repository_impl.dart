@@ -277,8 +277,8 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
     required int page,
     required int pageSize,
   }) async {
-    final p =
-        await remoteDataSource.getUserGroupsPage(page: page, pageSize: pageSize);
+    final p = await remoteDataSource.getUserGroupsPage(
+        page: page, pageSize: pageSize);
     // The models ARE the entities (they extend them); the cast widens the
     // list type so the domain layer never has to know about the data one.
     return PagedResult<GroupAccount>(

@@ -566,45 +566,45 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
                           }
                         : null,
                     child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 16.r,
-                        backgroundColor: _mine.withValues(alpha: 0.2),
-                        child: Text(
-                          _initialsOf(p.name),
-                          style: GoogleFonts.inter(
-                            fontSize: 11.sp,
-                            fontWeight: FontWeight.bold,
-                            color: _mine,
+                      children: [
+                        CircleAvatar(
+                          radius: 16.r,
+                          backgroundColor: _mine.withValues(alpha: 0.2),
+                          child: Text(
+                            _initialsOf(p.name),
+                            style: GoogleFonts.inter(
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.bold,
+                              color: _mine,
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(width: 10.w),
-                      Expanded(
-                        child: Text(
-                          p.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Text(
+                            p.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                                color: Colors.white, fontSize: 13.sp),
+                          ),
+                        ),
+                        Text(
+                          caughtUp ? 'Caught up' : 'Not opened yet',
                           style: GoogleFonts.inter(
-                              color: Colors.white, fontSize: 13.sp),
+                            fontSize: 10.5.sp,
+                            color: caughtUp
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFF9CA3AF),
+                          ),
                         ),
-                      ),
-                      Text(
-                        caughtUp ? 'Caught up' : 'Not opened yet',
-                        style: GoogleFonts.inter(
-                          fontSize: 10.5.sp,
-                          color: caughtUp
-                              ? const Color(0xFF10B981)
-                              : const Color(0xFF9CA3AF),
-                        ),
-                      ),
-                      if (taggable) ...[
-                        SizedBox(width: 8.w),
-                        Icon(Icons.alternate_email,
-                            size: 14.sp, color: const Color(0xFF9B6DFF)),
+                        if (taggable) ...[
+                          SizedBox(width: 8.w),
+                          Icon(Icons.alternate_email,
+                              size: 14.sp, color: const Color(0xFF9B6DFF)),
+                        ],
                       ],
-                    ],
-                  ),
+                    ),
                   );
                 },
               ),
@@ -845,9 +845,8 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
             // it must not look like either: the member has to be able to
             // tell Lazervault apart from the person in their circle who is
             // asking them for money.
-            color: m.isSupport
-                ? const Color(0xFF13302A)
-                : (mine ? _mine : _card),
+            color:
+                m.isSupport ? const Color(0xFF13302A) : (mine ? _mine : _card),
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(14.r),
               topRight: Radius.circular(14.r),

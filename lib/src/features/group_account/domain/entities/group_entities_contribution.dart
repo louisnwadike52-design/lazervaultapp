@@ -208,6 +208,7 @@ class Contribution extends Equatable {
         return ContributionDisplayState.active;
     }
   }
+
   bool get isActive => status == ContributionStatus.active;
   bool get isRotatingSavings => type == ContributionType.rotatingSavings;
   bool get hasSchedule => frequency != null && regularAmount != null;
@@ -224,9 +225,8 @@ class Contribution extends Equatable {
   /// Progress follows [amountRaised] for the same reason: after a payout the
   /// pot is empty, and a completed contribution showing 0% is wrong about
   /// its own history.
-  double get progressPercentage => targetAmount > 0
-      ? (amountRaised / targetAmount * 100).clamp(0, 100)
-      : 0;
+  double get progressPercentage =>
+      targetAmount > 0 ? (amountRaised / targetAmount * 100).clamp(0, 100) : 0;
 
   PayoutSchedule? get currentPayoutInfo => payoutSchedule.isNotEmpty
       ? payoutSchedule.firstWhere((p) => p.userId == currentPayoutRecipient,

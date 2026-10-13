@@ -374,8 +374,8 @@ class _PastContributionCard extends StatelessWidget {
                 ),
                 ContributionTypeBadge(type: c.type),
                 PopupMenuButton<String>(
-                  icon:
-                      Icon(Icons.more_vert, size: 18.sp, color: Colors.grey[600]),
+                  icon: Icon(Icons.more_vert,
+                      size: 18.sp, color: Colors.grey[600]),
                   color: const Color(0xFF1F1F1F),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.r)),

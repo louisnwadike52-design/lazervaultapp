@@ -401,7 +401,6 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
         );
   }
 
-
   /// True when the server refused because the contribution is not collecting.
   ///
   /// Matches on the backend's typed refusal
@@ -827,6 +826,25 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
             // (regular_amount - cycle_paid_amount); one-time uses
             // (expected_share - total_paid). Same shape: don't take
             // more than the user actually owes.
+            // ALREADY SETTLED for this cycle — refuse any amount.
+            //
+            // The cap below only engaged while `remaining > 0`, so a member
+            // whose share was fully paid had NO client-side guard at all:
+            // every amount passed validation, the pay screen ran its whole
+            // flow, and the server refused at the end with "this cycle is
+            // fully paid". Checked for both partial modes, because a fixed
+            // -amount circle prefills the full share and would re-submit it.
+            //
+            // Rotating savings only. A one-time goal has no per-member cycle
+            // share and people may top it up as often as they like.
+            if (_isRotatingSavings && _myMember != null) {
+              final fixed = _fixedRoscaAmount ?? 0;
+              final settled = _myMember!.hasPaidCurrentCycle ||
+                  (fixed > 0 && _myMember!.cyclePaidAmount >= fixed);
+              if (settled) {
+                return 'You have already paid your share for this cycle';
+              }
+            }
             if (_isRotatingSavings && _allowsPartial && _myMember != null) {
               final fixed = _fixedRoscaAmount ?? 0;
               final paid = _myMember!.cyclePaidAmount;
@@ -1121,7 +1139,8 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
     final target = contribution.targetAmount;
     if (target <= 0 && remaining <= 0) return const SizedBox.shrink();
 
-    Widget chip(String label, String sub, VoidCallback onTap) => GestureDetector(
+    Widget chip(String label, String sub, VoidCallback onTap) =>
+        GestureDetector(
           onTap: onTap,
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
@@ -1165,8 +1184,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
             GestureDetector(
               onTap: () => setState(() => _percentMode = !_percentMode),
               child: Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: const Color(0xFF2D2D2D),
                   borderRadius: BorderRadius.circular(20.r),

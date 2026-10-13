@@ -79,12 +79,16 @@ enum ContributionStatus {
 enum ContributionDisplayState {
   active,
   paused,
+
   /// Past its deadline and still open.
   overdue,
+
   /// Closed with the target met.
   completed,
+
   /// Closed because the deadline arrived, target unmet.
   closed,
+
   /// Closed, and a payout has settled.
   paidOut,
   cancelled,

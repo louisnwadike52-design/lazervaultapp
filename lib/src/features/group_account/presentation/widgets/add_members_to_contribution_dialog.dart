@@ -46,6 +46,7 @@ class _AddMembersToContributionDialogState
   /// Names dropped by the validity filter in the last submit, so the failure
   /// message can name them instead of blaming "invalid user IDs".
   final List<String> _skippedPartial = [];
+
   /// People whose group-add actually failed, as opposed to being skipped.
   final List<String> _failedToAdd = [];
 
@@ -517,7 +518,8 @@ class _AddMembersToContributionDialogState
       if (email.isNotEmpty && m.email.trim().toLowerCase() == email) {
         return true;
       }
-      final mu = (m.userUsername ?? '').trim().toLowerCase().replaceAll('@', '');
+      final mu =
+          (m.userUsername ?? '').trim().toLowerCase().replaceAll('@', '');
       if (username.isNotEmpty && mu.isNotEmpty && mu == username) return true;
       return false;
     });
@@ -580,8 +582,8 @@ class _AddMembersToContributionDialogState
       // Chris didn't". A failure here is now recorded against that person and
       // the rest of the batch continues.
       for (final newMember in _newMembersToAdd) {
-        final label = (newMember.user?.fullName ?? newMember.fullName ?? '')
-            .trim();
+        final label =
+            (newMember.user?.fullName ?? newMember.fullName ?? '').trim();
         try {
           if (newMember.user != null) {
             // Add existing Lazervault user to the group.

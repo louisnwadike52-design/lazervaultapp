@@ -187,8 +187,8 @@ class _OverdueRow extends StatelessWidget {
     // share; for a one-time goal there is no per-person figure, so the row
     // shows what the goal is still short instead of inventing one.
     final share = contribution.regularAmount;
-    final remaining =
-        (contribution.targetAmount - contribution.amountRaised).clamp(0, double.infinity);
+    final remaining = (contribution.targetAmount - contribution.amountRaised)
+        .clamp(0, double.infinity);
     final money = NumberFormat.currency(
       symbol: '${contribution.currency} ',
       decimalDigits: 0,

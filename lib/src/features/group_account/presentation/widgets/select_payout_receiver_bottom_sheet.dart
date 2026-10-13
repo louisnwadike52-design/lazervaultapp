@@ -538,7 +538,8 @@ class _SelectPayoutReceiverBottomSheetState
                           m.email,
                           style: GoogleFonts.inter(
                             fontSize: 12.sp,
-                            color: blocked ? Colors.grey[600] : Colors.grey[400],
+                            color:
+                                blocked ? Colors.grey[600] : Colors.grey[400],
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -556,8 +557,7 @@ class _SelectPayoutReceiverBottomSheetState
                                 child: Text(
                                   'Invite not accepted yet',
                                   style: GoogleFonts.inter(
-                                      color: Colors.grey[500],
-                                      fontSize: 11.sp),
+                                      color: Colors.grey[500], fontSize: 11.sp),
                                 ),
                               ),
                             ],

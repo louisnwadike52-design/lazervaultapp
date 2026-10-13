@@ -413,7 +413,9 @@ class ContributionChatCubit extends ChangeNotifier {
     if (s.contains('401') || s.contains('unauthor')) {
       return 'Please sign in again to send messages.';
     }
-    if (s.contains('403') || s.contains('forbidden') || s.contains('not a member')) {
+    if (s.contains('403') ||
+        s.contains('forbidden') ||
+        s.contains('not a member')) {
       return 'You are no longer a member of this contribution.';
     }
     if (s.contains('404')) return 'This conversation is not available.';
@@ -426,7 +428,8 @@ class ContributionChatCubit extends ChangeNotifier {
       'rpc error',
       '<html',
     ]) {
-      if (s.contains(internal)) return 'Could not send your message. Please try again.';
+      if (s.contains(internal))
+        return 'Could not send your message. Please try again.';
     }
     final text = raw.trim();
     if (text.isEmpty || text.length > 160) {

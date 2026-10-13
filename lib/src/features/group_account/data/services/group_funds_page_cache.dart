@@ -88,7 +88,8 @@ class GroupFundsPageCache {
     }
   }
 
-  static Future<void> _write(String key, List<Map<String, dynamic>> page) async {
+  static Future<void> _write(
+      String key, List<Map<String, dynamic>> page) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(

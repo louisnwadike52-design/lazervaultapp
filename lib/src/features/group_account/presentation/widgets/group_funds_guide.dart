@@ -284,8 +284,7 @@ class _Slide extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.lightbulb_outline,
-                      color: slide.tint, size: 15.sp),
+                  Icon(Icons.lightbulb_outline, color: slide.tint, size: 15.sp),
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(

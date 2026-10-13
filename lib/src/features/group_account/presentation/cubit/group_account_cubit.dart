@@ -216,7 +216,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   static String _opError(String prefix, Object e) {
     const generic = 'Something went wrong. Please try again.';
     final detail = friendlyError(e);
-    if (detail.isEmpty || detail == generic) return '$prefix. Please try again.';
+    if (detail.isEmpty || detail == generic)
+      return '$prefix. Please try again.';
     return detail;
   }
 
@@ -567,8 +568,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
           emit(await _resolveAccessState(groupId));
           return;
         }
-        emit(
-            GroupAccountError(_opError('Failed to load group details', e)));
+        emit(GroupAccountError(_opError('Failed to load group details', e)));
       }
     }
   }
@@ -1438,8 +1438,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       emit(GroupAccountSuccess('User statistics loaded'));
     } catch (e) {
       if (isClosed) return;
-      emit(
-          GroupAccountError(_opError('Failed to load user statistics', e)));
+      emit(GroupAccountError(_opError('Failed to load user statistics', e)));
     }
   }
 

@@ -172,7 +172,8 @@ class _StartEsusuSheetState extends State<_StartEsusuSheet> {
                     fontSize: 17.sp,
                     fontWeight: FontWeight.w700)),
             SizedBox(height: 2.h),
-            Text('Step ${_step + 1} of 2 · ${_step == 0 ? 'Schedule' : 'Confirm'}',
+            Text(
+                'Step ${_step + 1} of 2 · ${_step == 0 ? 'Schedule' : 'Confirm'}',
                 style: GoogleFonts.inter(color: _muted, fontSize: 11.5.sp)),
             SizedBox(height: 10.h),
             Row(
@@ -273,8 +274,8 @@ class _StartEsusuSheetState extends State<_StartEsusuSheet> {
                   decoration: BoxDecoration(
                     color: _frequency == f ? _accent : _card,
                     borderRadius: BorderRadius.circular(9.r),
-                    border: Border.all(
-                        color: _frequency == f ? _accent : _border),
+                    border:
+                        Border.all(color: _frequency == f ? _accent : _border),
                   ),
                   child: Text(_freqLabel(f),
                       style: GoogleFonts.inter(
@@ -424,8 +425,7 @@ class _StartEsusuSheetState extends State<_StartEsusuSheet> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: GoogleFonts.inter(color: _muted, fontSize: 12.sp)),
+          Text(label, style: GoogleFonts.inter(color: _muted, fontSize: 12.sp)),
           Text(value,
               style: GoogleFonts.inter(
                   color: Colors.white,

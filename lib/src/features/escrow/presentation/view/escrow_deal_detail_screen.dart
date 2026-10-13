@@ -1298,9 +1298,19 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
     // just happened is the thing somebody opens a deal to check.
     final events = deal.events.reversed.toList();
     final total = events.length;
+    // COLLAPSED MEANS COLLAPSED.
+    //
+    // This used to show up to _timelinePageSize events while collapsed, so on
+    // the common deal — four events, page size five — the "accordion" showed
+    // everything in both states and tapping the header did nothing visible.
+    // It reads as a broken control, which is worse than no control: the
+    // chevron promises something and then refuses.
+    //
+    // Collapsed now shows none, and the count badge on the header carries
+    // what is hidden, so a shut timeline still says how much history exists.
     final shown = _timelineExpanded
         ? (_timelineVisible > total ? total : _timelineVisible)
-        : (total > _timelinePageSize ? _timelinePageSize : total);
+        : 0;
     final visible = events.take(shown).toList();
     final remaining = total - shown;
 
@@ -1384,21 +1394,19 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
                 ],
               ),
             )),
-        // Page in the rest as the reader reaches the end, rather than
-        // rendering a deal's whole history up front. Collapsed, this is the
-        // control that opens it; expanded, it reveals one page at a time.
-        if (remaining > 0)
+        // Pages in the rest as the reader reaches the end, rather than
+        // rendering a deal's whole history up front.
+        //
+        // Only while EXPANDED. Collapsed, the header chevron is the opener,
+        // and showing this too would put two controls that do the same thing
+        // next to each other — under a label ("Show N earlier events") that
+        // is wrong when none are shown at all.
+        if (_timelineExpanded && remaining > 0)
           Padding(
             padding: EdgeInsets.only(top: 6.h),
             child: InkWell(
-              onTap: () => setState(() {
-                if (!_timelineExpanded) {
-                  _timelineExpanded = true;
-                  _timelineVisible = _timelinePageSize * 2;
-                } else {
-                  _timelineVisible += _timelinePageSize;
-                }
-              }),
+              onTap: () =>
+                  setState(() => _timelineVisible += _timelinePageSize),
               borderRadius: BorderRadius.circular(6.r),
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 6.h),
@@ -1421,9 +1429,11 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
               ),
             ),
           ),
-        // Only once everything is on screen, and only when there was enough
-        // to page — collapsing a five-event timeline is not worth a control.
-        if (remaining == 0 && _timelineExpanded && total > _timelinePageSize)
+        // Once everything is on screen. Offered for any non-empty timeline
+        // now that collapsing actually hides it: previously a four-event
+        // deal expanded with no way to shut it again except the header,
+        // because the control was gated on there being more than one page.
+        if (remaining == 0 && _timelineExpanded && total > 0)
           Padding(
             padding: EdgeInsets.only(top: 6.h),
             child: InkWell(

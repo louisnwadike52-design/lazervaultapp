@@ -849,20 +849,40 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
               children: [
                 Icon(Icons.more_vert, color: Colors.white, size: 24.sp),
                 // A request nobody notices is a person waiting indefinitely,
-                // so the count is surfaced on the closed menu rather than
+                // so the count is surfaced on the CLOSED menu rather than
                 // only inside it.
+                //
+                // The NUMBER, not a bare dot. A dot says "something is in
+                // here" and makes you open the menu to find out whether it
+                // is one person or nine — which is exactly the decision the
+                // indicator exists to inform. 9+ caps it so the pill cannot
+                // grow wide enough to clip the icon.
                 if (_pendingJoinRequestCount > 0)
                   Positioned(
-                    right: -2,
-                    top: -2,
+                    right: -6.w,
+                    top: -4.h,
                     child: Container(
-                      padding: EdgeInsets.all(3.w),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF59E0B),
-                        shape: BoxShape.circle,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 5.w, vertical: 1.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF59E0B),
+                        borderRadius: BorderRadius.circular(9.r),
                       ),
                       constraints:
-                          BoxConstraints(minWidth: 8.w, minHeight: 8.w),
+                          BoxConstraints(minWidth: 16.w, minHeight: 16.w),
+                      child: Center(
+                        child: Text(
+                          _pendingJoinRequestCount > 9
+                              ? '9+'
+                              : '$_pendingJoinRequestCount',
+                          style: GoogleFonts.inter(
+                            color: Colors.black,
+                            fontSize: 9.5.sp,
+                            fontWeight: FontWeight.w800,
+                            height: 1.1,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
               ],
