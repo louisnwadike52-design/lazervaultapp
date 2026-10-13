@@ -127,6 +127,15 @@ class _AddMemberForContributionSheetState
   UserSearchResultEntity? _selectedUser;
   bool _isAddingMember = false;
 
+  /// 0 = pick from the group's existing roster, 1 = search for somebody new.
+  ///
+  /// The roster tab is first and is the default. Creating a contribution in a
+  /// group you already run is overwhelmingly a matter of choosing which of
+  /// THOSE people are in this circle — this sheet offered only a search box,
+  /// so adding your own group's members meant typing each of their names and
+  /// hoping the search found the right one.
+  int _tab = 0;
+
   @override
   void initState() {
     super.initState();
@@ -443,9 +452,15 @@ class _AddMemberForContributionSheetState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSearchField(),
+                  _buildTabSwitcher(),
                   SizedBox(height: 16.h),
-                  _buildSearchResults(),
+                  if (_tab == 0) ...[
+                    _buildGroupRoster(),
+                  ] else ...[
+                    _buildSearchField(),
+                    SizedBox(height: 16.h),
+                    _buildSearchResults(),
+                  ],
                   SizedBox(height: 24.h),
                   _buildActionButtons(),
                   SizedBox(height: 20.h),
@@ -454,6 +469,231 @@ class _AddMemberForContributionSheetState
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTabSwitcher() {
+    Widget seg(int index, String label, IconData icon) {
+      final on = _tab == index;
+      return Expanded(
+        child: GestureDetector(
+          onTap: () => setState(() {
+            _tab = index;
+            _selectedUser = null;
+          }),
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 10.h),
+            decoration: BoxDecoration(
+              color: on ? PayFlowTheme.accent : Colors.transparent,
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon,
+                    size: 15.sp, color: on ? Colors.white : Colors.grey[400]),
+                SizedBox(width: 6.w),
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      fontSize: 12.5.sp,
+                      fontWeight: FontWeight.w600,
+                      color: on ? Colors.white : Colors.grey[400],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      padding: EdgeInsets.all(4.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D2D2D),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Row(children: [
+        seg(0, 'Group Members', Icons.groups_outlined),
+        seg(1, 'Add New', Icons.person_search_outlined),
+      ]),
+    );
+  }
+
+  /// The group's existing roster, minus whoever is already in the rotation.
+  ///
+  /// Members whose GROUP invite is still outstanding are listed but NOT
+  /// selectable, with a badge saying so. They used to be selectable, and the
+  /// server then refused the whole contribution with a sentence about an
+  /// unaccepted invite — a refusal the user could have been shown before
+  /// choosing, from information already on this screen.
+  Widget _buildGroupRoster() {
+    final already = widget.rotationOrder.toSet();
+    final roster = widget.existingMembers
+        .where((m) => m.status != GroupMemberStatus.removed)
+        .where((m) => !already.contains(m.userId))
+        .toList();
+
+    if (roster.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 28.h, horizontal: 16.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2D2D2D),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Column(
+          children: [
+            Icon(Icons.groups_outlined, size: 34.sp, color: Colors.grey[600]),
+            SizedBox(height: 10.h),
+            Text(
+              already.isEmpty
+                  ? 'This group has no other members yet'
+                  : 'Everyone in this group is already in',
+              textAlign: TextAlign.center,
+              style:
+                  GoogleFonts.inter(fontSize: 12.5.sp, color: Colors.grey[400]),
+            ),
+            SizedBox(height: 6.h),
+            TextButton(
+              onPressed: () => setState(() => _tab = 1),
+              child: Text('Search for someone',
+                  style: GoogleFonts.inter(
+                      fontSize: 12.5.sp,
+                      fontWeight: FontWeight.w600,
+                      color: PayFlowTheme.accentOnDark)),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final m in roster) _rosterRow(m),
+      ],
+    );
+  }
+
+  Widget _rosterRow(GroupMember m) {
+    // An outstanding GROUP invite is the one state that blocks adding
+    // somebody to a contribution inside it: they have not agreed to be in the
+    // group, so they cannot be enrolled in its circle.
+    final pending = m.status == GroupMemberStatus.pending;
+    final name = m.userName.trim().isNotEmpty ? m.userName.trim() : 'Member';
+    final selected =
+        !pending && _selectedUser != null && _selectedUser!.userId == m.userId;
+
+    return Opacity(
+      opacity: pending ? 0.55 : 1,
+      child: GestureDetector(
+        onTap: pending
+            ? null
+            : () => setState(() {
+                  // The roster holds one display name; the entity wants it
+                  // split. Split on the first space only, so "Praiz Onah
+                  // Chidera" keeps its surname rather than losing the tail.
+                  final sp = name.indexOf(' ');
+                  _selectedUser = UserSearchResultEntity(
+                    userId: m.userId,
+                    username: m.userUsername ?? '',
+                    firstName: sp == -1 ? name : name.substring(0, sp),
+                    lastName: sp == -1 ? '' : name.substring(sp + 1).trim(),
+                    email: m.email,
+                    phoneNumber: '',
+                    profilePicture: m.profileImage ?? '',
+                  );
+                }),
+        child: Container(
+          margin: EdgeInsets.only(bottom: 8.h),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+          decoration: BoxDecoration(
+            color: selected
+                ? PayFlowTheme.accent.withValues(alpha: 0.16)
+                : const Color(0xFF2D2D2D),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+              color: selected ? PayFlowTheme.accentOnDark : Colors.transparent,
+            ),
+          ),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 17.r,
+                backgroundColor: const Color(0xFF3D3D3D),
+                backgroundImage: (m.profileImage ?? '').isNotEmpty
+                    ? NetworkImage(m.profileImage!)
+                    : null,
+                child: (m.profileImage ?? '').isEmpty
+                    ? Text(
+                        name.substring(0, 1).toUpperCase(),
+                        style: GoogleFonts.inter(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white),
+                      )
+                    : null,
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white),
+                    ),
+                    if (m.email.isNotEmpty)
+                      Text(
+                        m.email,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                            fontSize: 11.sp, color: Colors.grey[500]),
+                      ),
+                    if (pending) ...[
+                      SizedBox(height: 4.h),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.hourglass_empty_rounded,
+                              size: 11.sp, color: const Color(0xFFF59E0B)),
+                          SizedBox(width: 4.w),
+                          Flexible(
+                            child: Text(
+                              'Invite sent — not accepted yet',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                  fontSize: 10.5.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFFF59E0B)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (selected)
+                Icon(Icons.check_circle,
+                    size: 20.sp, color: PayFlowTheme.accentOnDark),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -497,7 +737,9 @@ class _AddMemberForContributionSheetState
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  'Search for Lazervault users by name or @tag',
+                  _tab == 0
+                      ? 'Pick from this group, or search for someone new'
+                      : 'Search for Lazervault users by name or @tag',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
                     color: Colors.white.withValues(alpha: 0.8),

@@ -1380,6 +1380,14 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     // The schedule, the roster and the badges all change at once, so re-read
     // rather than patching a field at a time.
     _loadContributionDetails(force: true);
+    // And drop the cached contributions PAGE behind this screen. The group
+    // details list renders "Not started" and a "Start esusu" button from that
+    // cache, so without this the user starts the circle here, presses back,
+    // and is offered Start again on the card they just used.
+    if (!mounted) return;
+    final cubit = context.read<GroupAccountCubit>();
+    cubit.invalidatePages();
+    unawaited(cubit.loadContributionsPage(contribution.groupId, 1, force: true));
   }
 
   Widget _buildContributionSummary(Contribution contribution) {

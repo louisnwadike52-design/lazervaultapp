@@ -3576,14 +3576,33 @@ class AppRouter {
         // quick-view sheet, dashboard strip) pass a map so the detail
         // header paints on the first frame. A bare String id is still
         // accepted for cold entries — deep links, notification taps.
+        //
+        // Parsed DEFENSIVELY, because a throw here is invisible.
+        //
+        // `args as String` on a null, and `args['crowdfundId'] as String` on a
+        // map without that key, both throw inside the page builder. On a deep
+        // link that throw is caught by PendingDeepLink.consumeAndNavigate and
+        // turned into a trip to the notifications feed — so a shared campaign
+        // link lands the supporter somewhere unrelated with no error, which
+        // reads as the link being broken. Resolve what we can and let the
+        // screen's own empty state explain the rest.
         final args = Get.arguments;
-        final crowdfundId =
-            args is Map ? args['crowdfundId'] as String : args as String;
+        final rawId = args is Map
+            ? args['crowdfundId']
+            : (args is String ? args : null);
+        final crowdfundId = rawId is String ? rawId.trim() : '';
         final initialCrowdfund =
             args is Map ? args['crowdfund'] as Crowdfund? : null;
         return BlocProvider(
-          create: (_) => serviceLocator<CrowdfundCubit>()
-            ..loadCrowdfundDetails(crowdfundId),
+          create: (_) {
+            final cubit = serviceLocator<CrowdfundCubit>();
+            // An empty id means the arguments were not what any caller
+            // should send. Skip the load rather than asking the server for
+            // campaign "" — the screen renders its error state, which says
+            // something, instead of a spinner that never resolves.
+            if (crowdfundId.isNotEmpty) cubit.loadCrowdfundDetails(crowdfundId);
+            return cubit;
+          },
           child: CrowdfundDetailsScreen(
             crowdfundId: crowdfundId,
             initialCrowdfund: initialCrowdfund,
