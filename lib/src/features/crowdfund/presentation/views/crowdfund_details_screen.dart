@@ -89,10 +89,21 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
     // Data loading is triggered by the route's BlocProvider (..loadCrowdfundDetails())
     // Only reload if the cubit is in initial state (no data loaded yet)
     final state = context.read<CrowdfundCubit>().state;
-    if (state is CrowdfundInitial) {
+    if (state is CrowdfundInitial && widget.crowdfundId.trim().isNotEmpty) {
       context.read<CrowdfundCubit>().loadCrowdfundDetails(widget.crowdfundId);
     }
   }
+
+  /// Whether there is a campaign to load at all.
+  ///
+  /// The route resolves a missing or malformed `crowdfundId` argument to an
+  /// empty string rather than throwing — a throw inside the page builder is
+  /// swallowed by PendingDeepLink.consumeAndNavigate and silently redirects to
+  /// the notifications feed, which reads as a dead share link. Empty reaching
+  /// here means the arguments were not what any caller should send, so asking
+  /// the server for campaign "" would only turn a known-bad id into a round
+  /// trip and a spinner.
+  bool get _hasCampaignId => widget.crowdfundId.trim().isNotEmpty;
 
   @override
   void dispose() {
@@ -108,7 +119,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
     // and this screen is still on top, kick off an SWR revalidation so
     // counters / donations don't sit on stale data. The SWR layer
     // skips the network call when nothing is stale.
-    if (state == AppLifecycleState.resumed && mounted) {
+    if (state == AppLifecycleState.resumed && mounted && _hasCampaignId) {
       context.read<CrowdfundCubit>().loadCrowdfundDetails(widget.crowdfundId);
     }
   }
@@ -312,9 +323,13 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
                     color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
             SizedBox(height: 20.h),
             ElevatedButton(
-              onPressed: () => context
-                  .read<CrowdfundCubit>()
-                  .loadCrowdfundDetails(widget.crowdfundId),
+              // Disabled with no id: retrying a request that cannot be formed
+              // just loops the same error. See _hasCampaignId.
+              onPressed: !_hasCampaignId
+                  ? null
+                  : () => context
+                      .read<CrowdfundCubit>()
+                      .loadCrowdfundDetails(widget.crowdfundId),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4E03D0),
                 shape: RoundedRectangleBorder(
