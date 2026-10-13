@@ -537,39 +537,6 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
               ],
             ),
           ),
-          // Requests from OTHER people to join groups this user runs.
-          // Distinct from Invites, which is what others asked of them — and
-          // the reason it needs its own tab: a request sitting unseen on a
-          // group's own screen is a person who never gets in.
-          Tab(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.how_to_reg_outlined, size: 16.sp),
-                SizedBox(width: 6.w),
-                const Text('Requests'),
-                if (_pendingJoinRequestCount > 0) ...[
-                  SizedBox(width: 6.w),
-                  Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF59E0B),
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Text(
-                      '$_pendingJoinRequestCount',
-                      style: GoogleFonts.inter(
-                        color: Colors.black,
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
           Tab(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -623,6 +590,39 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
                   ],
                 );
               },
+            ),
+          ),
+          // Requests from OTHER people to join groups this user runs.
+          // Distinct from Invites, which is what others asked of them — and
+          // the reason it needs its own tab: a request sitting unseen on a
+          // group's own screen is a person who never gets in.
+          Tab(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.how_to_reg_outlined, size: 16.sp),
+                SizedBox(width: 6.w),
+                const Text('Requests'),
+                if (_pendingJoinRequestCount > 0) ...[
+                  SizedBox(width: 6.w),
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Text(
+                      '$_pendingJoinRequestCount',
+                      style: GoogleFonts.inter(
+                        color: Colors.black,
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
           Tab(

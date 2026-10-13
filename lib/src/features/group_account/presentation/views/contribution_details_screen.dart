@@ -528,39 +528,58 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 : 0,
             isAdmin: isAdmin,
             onReceiverChanged: _loadContributionDetails,
-            // Tells us whether it actually painted. Until it does, it must not
-            // hold a slot — see _autoPayoutChipVisible.
+            // Only drives the SPACING below. It must never decide whether the
+            // chip is in the tree — see the comment on autoPayoutRow.
             onVisibilityChanged: (visible) {
               if (!mounted || _autoPayoutChipVisible == visible) return;
               setState(() => _autoPayoutChipVisible = visible);
             },
           );
-    if (autoPayoutChip != null && _autoPayoutChipVisible) {
-      chips.add(autoPayoutChip);
-    }
     chips.add(roleChip);
 
-    // The chip only learns it should appear by fetching the receiver state,
-    // and it can only fetch while it is in the tree. While it is reporting
-    // itself invisible it is parked in a zero-size Offstage below the row —
-    // mounted, polling, taking no space — rather than left out entirely,
-    // which would mean it never appeared at all.
-    final parkedProbe = autoPayoutChip != null && !_autoPayoutChipVisible
-        ? Offstage(child: autoPayoutChip)
-        : null;
+    // The auto-payout chip lives on its OWN row, at a FIXED position, always
+    // mounted.
+    //
+    // It used to be moved between the chip row and a parked Offstage as its
+    // visibility changed, and that moved it to a different position in the
+    // widget tree — which destroys its State and builds a new one. The new
+    // State starts with no fetched data, so its first build reports "not
+    // visible", which moved it back, which built another new State, which
+    // fetched again... an endless rebuild loop with a network request per
+    // lap. On screen that is the flicker reported as "items glitching like
+    // multiple rerendering".
+    //
+    // Keeping it in one place fixes it outright: the chip renders
+    // SizedBox.shrink() while there is nothing to show, which costs no height
+    // and no row slot, so the original problem it was moved to solve — an
+    // invisible chip stealing half a row and pushing Role under the tab bar —
+    // does not arise either. Only the gap above it is conditional, and a
+    // changed padding value does not relocate anything.
+    final autoPayoutRow = autoPayoutChip == null
+        ? null
+        : Padding(
+            // Same 20.w gutter the chip row above uses — this sits OUTSIDE
+            // that row's Padding, so it has to carry its own.
+            padding: EdgeInsets.fromLTRB(
+                20.w, _autoPayoutChipVisible ? 8.h : 0, 20.w, 0),
+            child: autoPayoutChip,
+          );
 
-    Widget withProbe(Widget row) => parkedProbe == null
+    Widget withAutoPayout(Widget row) => autoPayoutRow == null
         ? row
-        : Column(mainAxisSize: MainAxisSize.min, children: [row, parkedProbe]);
+        : Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [row, autoPayoutRow],
+          );
 
     if (chips.length == 1) {
-      return withProbe(Padding(
+      return withAutoPayout(Padding(
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
         child: chips.first,
       ));
     }
 
-    return withProbe(Padding(
+    return withAutoPayout(Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
       child: LayoutBuilder(
         builder: (ctx, constraints) {
@@ -1015,6 +1034,32 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                       ],
                     ),
                   ),
+                // Change the payout receiver. Rotation only, admin/creator
+                // only, and only once the circle has actually started — there
+                // is no cycle to assign a receiver for before that, and the
+                // Start / Receiver pair on the body already covers that case.
+                //
+                // Here as well as on the body because this is the menu people
+                // open when they want to CHANGE something that is already
+                // set; the body's banner only appears while the receiver is
+                // still unset or the payout is in an exceptional state.
+                if (canEditContribution &&
+                    contribution.type == ContributionType.rotatingSavings &&
+                    !contribution.awaitingOpen)
+                  PopupMenuItem(
+                    value: 'change_receiver',
+                    child: Row(
+                      children: [
+                        Icon(Icons.swap_horiz_rounded,
+                            color: Colors.white, size: 20.sp),
+                        SizedBox(width: 12.w),
+                        Text(
+                          'Change payout receiver',
+                          style: GoogleFonts.inter(color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
                 PopupMenuItem(
                   value: 'transcript',
                   child: Row(
@@ -1271,6 +1316,65 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     await _startEsusu(contribution);
   }
 
+  /// Change who collects this cycle's pot, from the overflow menu.
+  ///
+  /// Gated by a confirmation that names the CURRENT receiver, so the admin
+  /// sees who they are about to replace rather than discovering it after the
+  /// fact. The picker that follows is itself a deliberate second action — it
+  /// opens with nothing selected and its Set Receiver button stays the only
+  /// way out that changes anything.
+  ///
+  /// The server still has the final say — it refuses a member who is behind,
+  /// a non-member, and any reassignment once the payout is in flight or
+  /// settled — and its sentence is shown verbatim if it does.
+  Future<void> _showChangeReceiverFlow(Contribution contribution) async {
+    final current = contribution.currentPayoutRecipient;
+    final currentName = current == null
+        ? null
+        : contribution.members
+            .where((m) => m.userId == current)
+            .map((m) => m.userName.trim())
+            .where((n) => n.isNotEmpty)
+            .firstOrNull;
+
+    final cycle = contribution.currentCycle ?? 1;
+    final go = await _actionDialog(
+      icon: Icons.swap_horiz_rounded,
+      color: const Color(0xFFFB923C),
+      title: 'Change the payout receiver',
+      body: currentName != null
+          ? '$currentName is currently set to collect cycle $cycle. Picking '
+              'somebody else hands this cycle\'s pot to them instead.\n\n'
+              'You can change it until the payout fires; after that it is '
+              'fixed.'
+          : 'Nobody is set to collect cycle $cycle yet. Whoever you pick is '
+              'paid by auto-payout, or by a manual trigger from an admin.\n\n'
+              'You can change it until the payout fires.',
+      cta: currentName != null ? 'Pick someone else' : 'Pick receiver',
+    );
+    if (go != true || !mounted) return;
+
+    final res = await SelectPayoutReceiverBottomSheet.show(
+      context: context,
+      contribution: contribution,
+      cycleIndex:
+          contribution.type == ContributionType.rotatingSavings ? cycle : 0,
+      currentReceiverUserId: current,
+    );
+    if (res == null || !mounted) return;
+
+    // The sheet performed the change. Re-read rather than patching a field:
+    // the receiver, the rotation badges and the payout banner all move at
+    // once, and the member list paints "Next payout" from the contribution.
+    _loadContributionDetails(force: true);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: const Text('Payout receiver updated'),
+      backgroundColor: const Color(0xFF10B981),
+      behavior: SnackBarBehavior.floating,
+    ));
+  }
+
   Future<void> _showReceiverDialog(Contribution contribution) async {
     final go = await _actionDialog(
       icon: Icons.person_add_alt_1,
@@ -1387,7 +1491,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     if (!mounted) return;
     final cubit = context.read<GroupAccountCubit>();
     cubit.invalidatePages();
-    unawaited(cubit.loadContributionsPage(contribution.groupId, 1, force: true));
+    unawaited(
+        cubit.loadContributionsPage(contribution.groupId, 1, force: true));
   }
 
   Widget _buildContributionSummary(Contribution contribution) {
@@ -2385,6 +2490,11 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                     member: member,
                     joinedAt: member.joinedAt,
                     memberPayments: payments,
+                    // Only meaningful for a rotation: a one-time goal pays a
+                    // named beneficiary once, so "next" is not a turn.
+                    isNextReceiver: contribution.isRotatingSavings &&
+                        contribution.currentPayoutRecipient != null &&
+                        contribution.currentPayoutRecipient == member.userId,
                   );
                 }
 
@@ -2477,6 +2587,14 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     ContributionMember? member,
     DateTime? joinedAt,
     List<ContributionPayment> memberPayments = const [],
+
+    /// Whose turn it is to collect the pot this cycle.
+    ///
+    /// In a rotation the single most useful fact about the roster is which of
+    /// these people is about to be paid, and the list said nothing about it —
+    /// you had to open the receiver sheet to find out, and the sheet only
+    /// tells you once you are already changing it.
+    bool isNextReceiver = false,
   }) {
     final displayName = userName.isNotEmpty
         ? userName
@@ -2566,6 +2684,37 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      if (isNextReceiver) ...[
+                        SizedBox(width: 8.w),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 6.w, vertical: 2.h),
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFF10B981).withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(4.r),
+                            border: Border.all(
+                                color: const Color(0xFF10B981)
+                                    .withValues(alpha: 0.45)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.redeem_rounded,
+                                  size: 10.sp, color: const Color(0xFF10B981)),
+                              SizedBox(width: 3.w),
+                              Text(
+                                'Next payout',
+                                style: GoogleFonts.inter(
+                                  fontSize: 9.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF10B981),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                       if (isPendingInvite) ...[
                         SizedBox(width: 8.w),
                         Container(
@@ -2968,6 +3117,9 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         break;
       case 'cycles':
         _showChangeCyclesDialog(contribution);
+        break;
+      case 'change_receiver':
+        _showChangeReceiverFlow(contribution);
         break;
       case 'edit':
         // Reuse the existing EditContributionScreen. Returning from
