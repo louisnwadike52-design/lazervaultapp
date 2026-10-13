@@ -684,9 +684,20 @@ Future<String> _determineInitialRoute() async {
       return AppRoutes.onboarding;
     }
 
-    // Fresh user: follow the canonical flow (default phone_passcode → phone
+    // Fresh user: follow the PLATFORM mode (default phone_passcode → phone
     // signup; email_password → email sign-in landing with its sign-up link).
-    if (!FeatureFlags.isEmailPasswordLogin) {
+    //
+    // Deliberately isPhonePasscodeMode (the platform setting) and NOT
+    // isEmailPasswordLogin (the per-ACCOUNT resolved flow). Reaching here
+    // means every returning-user check above fell through, so there is no
+    // stored account on this device — but `effective_login_method` is cached
+    // in SharedPreferences and is NOT cleared on logout, so whatever the last
+    // person to use this device signed in with was still deciding the screen.
+    // A new member tapping a group invite link on a phone that once held an
+    // email account landed on email/password, which is neither their account's
+    // flow nor the platform's. With no account to have a flow, the platform
+    // default is the only correct input.
+    if (FeatureFlags.isPhonePasscodeMode) {
       print('📱 Phone+passcode flow — starting phone signup');
       return AppRoutes.phoneEntry;
     }
