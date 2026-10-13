@@ -1,6 +1,16 @@
-# `e2e` needs the dev stack (localhost:7878 and friends). Declared so
+# `e2e` needs the dev stack (localhost:7878 and friends) AND live fixtures —
+# a provetest2 account with a ready_to_debit Mono sandbox mandate. Declared so
 # `--exclude-tags=e2e` is a supported flag rather than a warning, and so the
 # tag cannot be silently misspelled into a no-op.
+#
+# SKIPPED by default, because the alternative is what shipped: a plain
+# `flutter test` ended in "Some tests failed" with four red hooks that say
+# nothing about the code, every single run. A gate that is always red is a
+# gate nobody reads — four stale assertions in test/integration/ sat behind
+# that noise and were only found by going through the failures by hand.
+#
+# Run them deliberately, with the stack up:
+#   flutter test --run-skipped -t e2e
 tags:
   e2e:
-    skip: false
+    skip: "needs the dev stack: flutter test --run-skipped -t e2e"
