@@ -5,37 +5,47 @@
     
     
       
-      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.000271">
+      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.000277">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="1: app_store_connect_api_key" time="0.003378">
+      <testcase classname="fastlane.lanes" name="1: app_store_connect_api_key" time="0.002734">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="2: match" time="1.923397">
+      <testcase classname="fastlane.lanes" name="2: match" time="1.716884">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="3: flutter pub get" time="1.929987">
+      <testcase classname="fastlane.lanes" name="3: flutter pub get" time="1.808204">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="4: pod install" time="2.710736">
+      <testcase classname="fastlane.lanes" name="4: pod install" time="2.579977">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="5: update_code_signing_settings" time="0.032522">
+      <testcase classname="fastlane.lanes" name="5: update_code_signing_settings" time="0.050788">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="6: build_app" time="51.165574">
+      <testcase classname="fastlane.lanes" name="6: build_app" time="509.382352">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="7: app_store_connect_api_key" time="0.005385">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="8: upload_to_testflight" time="397.313931">
         
       </testcase>
     
