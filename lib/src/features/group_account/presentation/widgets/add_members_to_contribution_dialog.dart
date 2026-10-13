@@ -46,6 +46,8 @@ class _AddMembersToContributionDialogState
   /// Names dropped by the validity filter in the last submit, so the failure
   /// message can name them instead of blaming "invalid user IDs".
   final List<String> _skippedPartial = [];
+  /// People whose group-add actually failed, as opposed to being skipped.
+  final List<String> _failedToAdd = [];
 
   /// Selected people whose member row carries no user id. Tracked apart from
   /// [_skippedPartial] because the remedy differs: a partial account is the
@@ -495,16 +497,58 @@ class _AddMembersToContributionDialogState
     });
   }
 
+  /// Is this search result somebody already on the group roster?
+  ///
+  /// Matched on the user id, the email AND the @username, not the id alone.
+  /// A group_member row can carry an empty or placeholder user id — the
+  /// lookup failed when they were added, including when the search surface
+  /// handed back a REDACTED email it could not match — and on an id-only
+  /// comparison that member looked like a stranger. They were then offered in
+  /// the search tab as somebody new, the add went to the group path, and the
+  /// server answered "user is already a member of this group". That is the
+  /// "Chris didn't go through" report: he was in the group the whole time,
+  /// under a row this check could not recognise.
   bool _isUserAlreadyInGroup(UserSearchResultEntity user) {
-    return _groupMembers.any((m) => m.userId == user.userId);
+    final id = user.userId.trim();
+    final email = user.email.trim().toLowerCase();
+    final username = user.username.trim().toLowerCase().replaceAll('@', '');
+    return _groupMembers.any((m) {
+      if (id.isNotEmpty && m.userId.trim() == id) return true;
+      if (email.isNotEmpty && m.email.trim().toLowerCase() == email) {
+        return true;
+      }
+      final mu = (m.userUsername ?? '').trim().toLowerCase().replaceAll('@', '');
+      if (username.isNotEmpty && mu.isNotEmpty && mu == username) return true;
+      return false;
+    });
   }
 
   bool _isUserAlreadyInContribution(UserSearchResultEntity user) {
     return _existingMemberUserIds.contains(user.userId);
   }
 
+  /// Already picked in THIS session's "add new" list.
+  ///
+  /// Also email-aware: searching twice by two different handles for the same
+  /// person returned two results whose ids matched, but a search by email
+  /// followed by a search by username could produce entries this missed, and
+  /// the person was then added twice.
   bool _isUserAlreadySelected(UserSearchResultEntity user) {
-    return _newMembersToAdd.any((m) => m.user?.userId == user.userId);
+    final id = user.userId.trim();
+    final email = user.email.trim().toLowerCase();
+    return _newMembersToAdd.any((m) {
+      final u = m.user;
+      if (u != null) {
+        if (id.isNotEmpty && u.userId.trim() == id) return true;
+        if (email.isNotEmpty && u.email.trim().toLowerCase() == email) {
+          return true;
+        }
+        return false;
+      }
+      // An invite-by-email entry with no resolved account.
+      final pending = (m.email ?? '').trim().toLowerCase();
+      return email.isNotEmpty && pending == email;
+    });
   }
 
   void _addSelectedMembers() async {
@@ -524,31 +568,54 @@ class _AddMembersToContributionDialogState
 
     try {
       // Step 1: Add new members to the group first (if any)
+      // Cleared per attempt so a retry does not re-report last time's names.
+      _failedToAdd.clear();
       final newMemberUserIds = <String>[];
 
+      // EACH person is added on their own.
+      //
+      // One shared try block meant the first failure abandoned everybody after
+      // it: adding two people ended with one in and one not, and an error
+      // naming only the one that broke. Reported as "Promise went through but
+      // Chris didn't". A failure here is now recorded against that person and
+      // the rest of the batch continues.
       for (final newMember in _newMembersToAdd) {
-        if (newMember.user != null) {
-          // Add existing Lazervault user to the group
-          await cubit.addMemberToGroupAccount(
-            groupId: widget.contribution.groupId,
-            userId: newMember.user!.userId,
-            userName: newMember.user!.fullName,
-            email: newMember.user!.email,
-            profileImage: newMember.user!.profilePicture,
-            username: newMember.user!.username,
-            role: GroupMemberRole.member,
-          );
-          newMemberUserIds.add(newMember.user!.userId);
-        } else if (newMember.email != null && newMember.fullName != null) {
-          // Invite non-Lazervault user
-          await cubit.inviteUserToGroup(
-            groupId: widget.contribution.groupId,
-            identifier: newMember.email!,
-            fullName: newMember.fullName!,
-            identifierType: UserSearchType.email,
-            role: GroupMemberRole.member,
-          );
-          // Note: Can't add to contribution until they accept the invite
+        final label = (newMember.user?.fullName ?? newMember.fullName ?? '')
+            .trim();
+        try {
+          if (newMember.user != null) {
+            // Add existing Lazervault user to the group.
+            //
+            // alreadyMemberIsSuccess: being in the group already is the
+            // PRECONDITION for joining a contribution, not a failure. Without
+            // it the cubit emitted a global "user is already a member of this
+            // group" that this sheet could not suppress, for somebody who was
+            // only ever being added to a circle.
+            await cubit.addMemberToGroupAccount(
+              groupId: widget.contribution.groupId,
+              userId: newMember.user!.userId,
+              userName: newMember.user!.fullName,
+              email: newMember.user!.email,
+              profileImage: newMember.user!.profilePicture,
+              username: newMember.user!.username,
+              role: GroupMemberRole.member,
+              alreadyMemberIsSuccess: true,
+            );
+            newMemberUserIds.add(newMember.user!.userId);
+          } else if (newMember.email != null && newMember.fullName != null) {
+            // Invite non-Lazervault user
+            await cubit.inviteUserToGroup(
+              groupId: widget.contribution.groupId,
+              identifier: newMember.email!,
+              fullName: newMember.fullName!,
+              identifierType: UserSearchType.email,
+              role: GroupMemberRole.member,
+            );
+            // Note: Can't add to contribution until they accept the invite
+          }
+        } catch (e) {
+          _failedToAdd.add(label.isEmpty ? 'A selected person' : label);
+          debugPrint('🟡 AddMembers: $label could not be added — $e');
         }
       }
 
@@ -637,6 +704,21 @@ class _AddMembersToContributionDialogState
                 content: Text(
                     '$inviteCount invite(s) sent. They will be added to the contribution when they join.'),
                 backgroundColor: const Color(0xFF10B981),
+              ),
+            );
+          } else if (_failedToAdd.isNotEmpty) {
+            // Somebody's group-add failed outright. Named, because the batch
+            // continued past them and the rest may well have succeeded —
+            // "something went wrong" would not say who to try again.
+            final names = _failedToAdd.join(', ');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                    "We couldn't add $names to this group, so they were not "
+                    'added to the contribution. Everyone else went through. '
+                    'Please try them again.'),
+                backgroundColor: const Color(0xFFF59E0B),
+                duration: const Duration(seconds: 5),
               ),
             );
           } else if (_skippedUnresolved.isNotEmpty) {

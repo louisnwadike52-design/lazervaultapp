@@ -94,9 +94,22 @@ class _SelectPayoutReceiverBottomSheetState
     // receivers — the backend payout_assignment_service rejects
     // them too, but filtering here saves the round-trip and makes
     // the picker honest about who's eligible.
+    // The roster the creator expects to see: everyone on the contribution.
+    //
+    // This listed ACTIVE members only, so a circle whose other members had
+    // not yet accepted their invites showed exactly one name and looked
+    // broken ("setting receiver doesn't show all the members"). Hiding them
+    // also hid the reason they were missing. They are shown, ordered last,
+    // and left unselectable with "Invite not accepted yet" — the same
+    // honesty the arrears ordering below already applies.
     final activeMembers = widget.contribution.members
-        .where((m) => m.isActiveParticipant)
+        .where((m) => m.isActiveParticipant || m.isPendingInvite)
         .toList();
+    activeMembers.sort((a, b) {
+      final ap = a.isPendingInvite ? 1 : 0;
+      final bp = b.isPendingInvite ? 1 : 0;
+      return ap - bp;
+    });
 
     // Members who are up to date FIRST — this list IS the suggestion.
     //
@@ -128,12 +141,32 @@ class _SelectPayoutReceiverBottomSheetState
 
   /// Cycles this member owes the circle: historical misses plus the cycle
   /// now closing if they have not paid it. Mirrors the server's own sum
-  /// (payouts.go recipientOwedCycles) so the two cannot disagree about who
-  /// is behind.
+  /// (group_funds_restrictions.go arrearsOwed) so the two cannot disagree
+  /// about who is behind.
+  ///
+  /// TWO GUARDS, BOTH OF WHICH WERE MISSING
+  ///
+  /// `hasPaidCurrentCycle` is false for a member who simply has nothing to
+  /// pay yet, and counting that as arrears produced "Behind 1 cycle" on a
+  /// circle created minutes earlier — including for its own creator, who
+  /// was then unselectable as the first receiver of a rotation nobody had
+  /// contributed to. Reported twice.
+  ///
+  ///  - An esusu that has not STARTED has no cycle at all, so nobody can be
+  ///    behind on one.
+  ///  - Within a started cycle, the current cycle is only owed once its due
+  ///    date has passed. Before that the member is early, not late.
+  ///
+  /// The server gained exactly these guards; this is the client mirror that
+  /// was left behind, which is why the sheet disagreed with the backend
+  /// about who could receive.
   int _owedCycles(ContributionMember m) {
-    var owed = m.missedCycles;
-    if (!m.hasPaidCurrentCycle) owed++;
-    return owed;
+    if (widget.contribution.awaitingOpen) return 0;
+    final owed = m.missedCycles;
+    if (m.hasPaidCurrentCycle) return owed;
+    final due = widget.contribution.nextPaymentDate;
+    if (due == null || DateTime.now().isBefore(due)) return owed;
+    return owed + 1;
   }
 
   Future<void> _save() async {
@@ -413,10 +446,15 @@ class _SelectPayoutReceiverBottomSheetState
         // refused after the round-trip.
         final owed = widget.contribution.isRotatingSavings ? _owedCycles(m) : 0;
         final behind = owed > 0;
+        // Shown so the roster is complete, but not pickable: they have not
+        // accepted the group invite, so there is no account to pay into and
+        // the server refuses them as receiver.
+        final notJoined = m.isPendingInvite;
+        final blocked = behind || notJoined;
         return InkWell(
           borderRadius: BorderRadius.circular(10.r),
           onTap:
-              behind ? null : () => setState(() => _selectedUserId = m.userId),
+              blocked ? null : () => setState(() => _selectedUserId = m.userId),
           child: Container(
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
@@ -435,7 +473,7 @@ class _SelectPayoutReceiverBottomSheetState
               // Dimmed, not hidden: the creator often opens this screen to
               // find out WHO is behind, and removing them would answer a
               // different question than the one they came with.
-              opacity: behind ? 0.55 : 1,
+              opacity: blocked ? 0.55 : 1,
               child: Row(
                 children: [
                   CircleAvatar(
@@ -500,13 +538,31 @@ class _SelectPayoutReceiverBottomSheetState
                           m.email,
                           style: GoogleFonts.inter(
                             fontSize: 12.sp,
-                            color: behind ? Colors.grey[600] : Colors.grey[400],
+                            color: blocked ? Colors.grey[600] : Colors.grey[400],
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
                         // Says what they owe and why they cannot be picked.
                         // A greyed-out row with no explanation reads as a bug;
                         // this reads as the reason the pot was held.
+                        if (notJoined) ...[
+                          SizedBox(height: 3.h),
+                          Row(
+                            children: [
+                              Icon(Icons.hourglass_empty,
+                                  size: 12.sp, color: Colors.grey[500]),
+                              SizedBox(width: 4.w),
+                              Expanded(
+                                child: Text(
+                                  'Invite not accepted yet',
+                                  style: GoogleFonts.inter(
+                                      color: Colors.grey[500],
+                                      fontSize: 11.sp),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                         if (behind) ...[
                           SizedBox(height: 4.h),
                           Row(

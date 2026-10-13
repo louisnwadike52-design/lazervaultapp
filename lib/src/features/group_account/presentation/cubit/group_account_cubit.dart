@@ -753,6 +753,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     String? profileImage,
     String? username, // LazerTag username for user lookup
     GroupMemberRole role = GroupMemberRole.member,
+    bool alreadyMemberIsSuccess = false,
   }) async {
     if (isClosed) return null;
     // No GroupAccountLoading emit: the bottom sheet has its own button-
@@ -799,9 +800,33 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       return newMember;
     } catch (e) {
       if (isClosed) return null;
+      // "Already a member" is not always a failure.
+      //
+      // Adding somebody to a CONTRIBUTION starts by making sure they are in
+      // the group. If they already are, that step is done — which is success,
+      // not an error. Emitting a global GroupAccountError here put "user is
+      // already a member of this group" on screen for a member who was simply
+      // being added to a circle, and the caller could not suppress it because
+      // the emit is cross-cutting. Reported as "it says user already in a
+      // contribution while he's not".
+      if (alreadyMemberIsSuccess && _isAlreadyMemberError(e)) {
+        return null;
+      }
       emit(GroupAccountError(_opError('Failed to add member', e)));
       return null;
     }
+  }
+
+  /// Whether [e] is the server saying the person is already in the group.
+  ///
+  /// Matched on the sentence because the transport flattens the typed error:
+  /// the service returns ErrAlreadyMember, the handler maps it to
+  /// AlreadyExists/InvalidArgument, and what reaches here is a string.
+  static bool _isAlreadyMemberError(Object e) {
+    final s = e.toString().toLowerCase();
+    return s.contains('already a member') ||
+        s.contains('already a group member') ||
+        s.contains('alreadyexists');
   }
 
   Future<void> updateMemberRoleInGroup({
@@ -948,6 +973,22 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       // tab is fresh, then the sheet pops with the row already in view.
       await loadGroupDetails(groupId);
       if (isClosed) return;
+
+      // The PAGED Contributions tab holds its own cache.
+      //
+      // loadGroupDetails refreshes the group screen, but the Group Funds
+      // landing page serves its Contributions tab from contributionsPage +
+      // contributionsPrefetch, and neither knows a new pot exists. The
+      // creator closed the sheet and did not see their contribution in the
+      // tab until something else happened to refresh it. Dropping the cache
+      // and re-reading page one puts it where they just made it.
+      contributionsPrefetch.clear();
+      contributionsPage = null;
+      if (contributionsPageGroupId == groupId) {
+        await loadContributionsPage(groupId, 1, force: true);
+        if (isClosed) return;
+      }
+
       emit(GroupAccountContributionCreated(contribution));
 
       // Get group for auto-generated report

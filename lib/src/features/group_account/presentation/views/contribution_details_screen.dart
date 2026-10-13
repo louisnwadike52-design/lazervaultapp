@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/group_account/presentation/widgets/select_payout_receiver_bottom_sheet.dart';
 import 'package:lazervault/src/features/group_account/presentation/widgets/start_esusu_sheet.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -356,44 +357,78 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     return Column(
       children: [
         _buildHeader(contribution),
-        _buildContributionSummary(contribution),
-        // Directly under the statistics, above everything else that competes
-        // for attention. An esusu that has not started is the one state where
-        // nothing else on this screen can proceed — no payment, no payout, no
-        // rotation — so the action that unblocks it belongs at the top rather
-        // than only on the card in the list behind.
-        if (contribution.awaitingOpen) _buildStartBanner(contribution),
-        // Payout receiver banner — surfaces the scheduled-payout state
-        // (pending_receiver / ready / scheduled / in_flight / settled
-        // / failed / exhausted) with the right CTA for the role. Only
-        // admin/creator gets actionable buttons; members see read-only
-        // status. The banner self-loads + polls in_flight states.
-        PayoutReceiverBanner(
-          contribution: contribution,
-          cycleIndex: contribution.type == ContributionType.rotatingSavings
-              ? (contribution.currentCycle ?? 1)
-              : 0,
-          isAdmin: isAdmin,
-          // SCHEDULED state is rendered as a compact chip in the
-          // status row below; the banner only owns the actionable /
-          // exceptional states (pending, ready, in_flight, failed,
-          // exhausted, settled).
-          hideScheduled: true,
-          // After a manual trigger settles, the saga creates a new
-          // payout_transaction + zeros current_amount on the
-          // contribution. Refreshing the contribution details here
-          // makes the Payments / Overview tabs reflect the new state
-          // without the user pulling-to-refresh.
-          onStateChanged: _loadContributionDetails,
+        // SCROLLABLE above the tabs.
+        //
+        // Everything between the header and the tab bar is a variable number
+        // of cards — summary, start/receiver actions, status chips, external
+        // links — and on a small screen with several of them showing, the tab
+        // bar was pushed off the bottom and Overview / Payments / Members
+        // became unreachable. Flexible lets this block give way to the tabs
+        // rather than shoving them off, and the scroll view means nothing
+        // inside it is lost when it does.
+        Flexible(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildContributionSummary(contribution),
+                // Directly under the statistics, above everything else that competes
+                // for attention. An esusu that has not started is the one state where
+                // nothing else on this screen can proceed — no payment, no payout, no
+                // rotation — so the action that unblocks it belongs at the top rather
+                // than only on the card in the list behind.
+                // Not started: Start and Set receiver as ONE compact pair.
+                //
+                // Both used to be full-width banners with their whole explanation
+                // inline. Stacked under the summary card they filled the screen and
+                // pushed the tab bar off the bottom, so Overview / Payments /
+                // Members could not be reached at all on a phone. The detail now
+                // lives in a dialog behind each button, which is where somebody
+                // about to take an irreversible action (starting locks the roster)
+                // should be reading it anyway.
+                if (contribution.awaitingOpen)
+                  _buildAwaitingOpenActions(contribution, isAdmin),
+                if (!contribution.awaitingOpen) _buildStartBanner(contribution),
+                // Payout receiver banner — surfaces the scheduled-payout state
+                // (pending_receiver / ready / scheduled / in_flight / settled
+                // / failed / exhausted) with the right CTA for the role. Only
+                // admin/creator gets actionable buttons; members see read-only
+                // status. The banner self-loads + polls in_flight states.
+                PayoutReceiverBanner(
+                  contribution: contribution,
+                  cycleIndex:
+                      contribution.type == ContributionType.rotatingSavings
+                          ? (contribution.currentCycle ?? 1)
+                          : 0,
+                  isAdmin: isAdmin,
+                  // SCHEDULED state is rendered as a compact chip in the
+                  // status row below; the banner only owns the actionable /
+                  // exceptional states (pending, ready, in_flight, failed,
+                  // exhausted, settled).
+                  hideScheduled: true,
+                  // Offered in the compact pair above while the circle has not
+                  // started, so the tall version here would be a second copy of the
+                  // same action.
+                  hidePendingReceiver: contribution.awaitingOpen,
+                  // After a manual trigger settles, the saga creates a new
+                  // payout_transaction + zeros current_amount on the
+                  // contribution. Refreshing the contribution details here
+                  // makes the Payments / Overview tabs reflect the new state
+                  // without the user pulling-to-refresh.
+                  onStateChanged: _loadContributionDetails,
+                ),
+                // Status chips row: auto-debit + auto-payout (when scheduled)
+                // + role rendered side-by-side. Each chip is borderless, uses
+                // elevation, and opens a styled dialog with the full detail
+                // when tapped. Wraps to two rows on narrow screens.
+                _buildStatusChipsRow(
+                    contribution, isCreator, isMember, isAdmin),
+                if (contribution.hasExternalLinks)
+                  _buildExternalLinksSection(contribution),
+                SizedBox(height: 8.h),
+              ],
+            ),
+          ),
         ),
-        // Status chips row: auto-debit + auto-payout (when scheduled)
-        // + role rendered side-by-side. Each chip is borderless, uses
-        // elevation, and opens a styled dialog with the full detail
-        // when tapped. Wraps to two rows on narrow screens.
-        _buildStatusChipsRow(contribution, isCreator, isMember, isAdmin),
-        if (contribution.hasExternalLinks)
-          _buildExternalLinksSection(contribution),
-        SizedBox(height: 8.h),
         _buildTabBar(),
         Expanded(
           child: TabBarView(
@@ -823,8 +858,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                           m.membershipStatus ==
                               ContributionMembershipStatus.active)
                       .firstOrNull;
-              final canExitContribution = myMembership != null &&
-                  !contribution.displayState.isTerminal;
+              final canExitContribution =
+                  myMembership != null && !contribution.displayState.isTerminal;
 
               return [
                 PopupMenuItem(
@@ -940,6 +975,227 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   /// Only the people who can actually start it get the button; everyone else
   /// gets the explanation, because a member seeing a disabled control they
   /// cannot use learns nothing about why the circle is idle.
+  /// Start + Set receiver, side by side, each opening its own dialog.
+  ///
+  /// Replaces two stacked full-width banners that between them occupied most
+  /// of the screen and pushed the tab bar out of reach. The explanatory copy
+  /// is not lost — it moves into the dialog, in front of the button that
+  /// commits the action, which is where it is actually read.
+  Widget _buildAwaitingOpenActions(Contribution contribution, bool isAdmin) {
+    final cubit = context.read<GroupAccountCubit>();
+    final myUserId = cubit.currentUserId;
+    final canStart = contribution.createdBy == myUserId ||
+        GroupRolePermissions.canMember(
+            _currentGroupMember, GroupAction.editContribution);
+    final active = contribution.members
+        .where((m) => m.membershipStatus == ContributionMembershipStatus.active)
+        .length;
+
+    if (!canStart && !isAdmin) {
+      // A member who can do neither gets the sentence, not two dead buttons.
+      return Container(
+        width: double.infinity,
+        margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
+        padding: EdgeInsets.all(12.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1206),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFF7A5B00)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.play_circle_outline,
+                color: const Color(0xFFF59E0B), size: 18.sp),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                'This esusu has not started. The creator sets the schedule '
+                'and starts it; nobody can pay in until then.',
+                style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 11.5.sp,
+                    height: 1.35),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
+      child: Row(
+        children: [
+          if (canStart)
+            Expanded(
+              child: _compactAction(
+                icon: Icons.play_arrow_rounded,
+                label: 'Start',
+                sub: 'Set the schedule',
+                color: const Color(0xFFF59E0B),
+                onTap: () => _showStartDialog(contribution, active),
+              ),
+            ),
+          if (canStart && isAdmin) SizedBox(width: 10.w),
+          if (isAdmin)
+            Expanded(
+              child: _compactAction(
+                icon: Icons.person_add_alt_1,
+                label: 'Receiver',
+                sub: 'Who gets paid',
+                color: const Color(0xFFFB923C),
+                onTap: () => _showReceiverDialog(contribution),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _compactAction({
+    required IconData icon,
+    required String label,
+    required String sub,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(12.r),
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 11.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF151515),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: color.withValues(alpha: 0.45)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(6.w),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Icon(icon, color: color, size: 16.sp),
+            ),
+            SizedBox(width: 9.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(label,
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 12.5.sp,
+                          fontWeight: FontWeight.w700)),
+                  Text(sub,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                          color: Colors.grey[500], fontSize: 10.sp)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// The detail that used to sit in the banner, in front of the button that
+  /// commits it. Starting locks the roster, so it is worth a confirmation.
+  Future<void> _showStartDialog(Contribution contribution, int active) async {
+    final go = await _actionDialog(
+      icon: Icons.play_circle_outline,
+      color: const Color(0xFFF59E0B),
+      title: 'Start this esusu',
+      body: 'Starting sets the schedule and LOCKS the member list: nobody '
+          'can be added afterwards, and the rotation runs on the cycle '
+          'length you pick next. $active '
+          '${active == 1 ? 'person is' : 'people are'} in so far.',
+      cta: 'Choose schedule',
+    );
+    if (go != true || !mounted) return;
+    await _startEsusu(contribution);
+  }
+
+  Future<void> _showReceiverDialog(Contribution contribution) async {
+    final go = await _actionDialog(
+      icon: Icons.person_add_alt_1,
+      color: const Color(0xFFFB923C),
+      title: 'Set the payout receiver',
+      body: 'Pick the member who receives this cycle\'s payout. Whoever is '
+          'set here is paid by auto-payout, or by a manual trigger from an '
+          'admin. You can change it until the payout fires.',
+      cta: 'Pick receiver',
+    );
+    if (go != true || !mounted) return;
+    final res = await SelectPayoutReceiverBottomSheet.show(
+      context: context,
+      contribution: contribution,
+      cycleIndex: contribution.type == ContributionType.rotatingSavings
+          ? (contribution.currentCycle ?? 1)
+          : 0,
+      currentReceiverUserId: null,
+    );
+    if (res != null && mounted) _loadContributionDetails(force: true);
+  }
+
+  Future<bool?> _actionDialog({
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String body,
+    required String cta,
+  }) {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF151515),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Row(
+          children: [
+            Icon(icon, color: color, size: 20.sp),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(title,
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700)),
+            ),
+          ],
+        ),
+        content: Text(body,
+            style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 12.5.sp,
+                height: 1.45)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text('Cancel',
+                style: GoogleFonts.inter(color: Colors.grey[400])),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: color,
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(9.r)),
+            ),
+            child: Text(cta,
+                style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildStartBanner(Contribution contribution) {
     final cubit = context.read<GroupAccountCubit>();
     final myUserId = cubit.currentUserId;
@@ -1513,99 +1769,99 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       backgroundColor: const Color(0xFF1F1F1F),
       color: const Color.fromARGB(255, 78, 3, 208),
       child: SingleChildScrollView(
-      // AlwaysScrollable so the gesture works even when the content is short
-      // enough not to scroll on its own.
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.all(20.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // A finished contribution has nothing "remaining" — it has a
-          // result. Showing a shortfall on a goal that has closed (or worse,
-          // on one that was fully funded and paid out) describes a future
-          // that is not coming.
-          _buildStatCard(
-            title: contribution.displayState.isTerminal
-                ? (contribution.paidOut ? 'Paid out' : 'Total raised')
-                : 'Remaining Amount',
-            value: contribution.displayState.isTerminal
-                ? '${contribution.currency} '
-                    '${(contribution.paidOut ? contribution.paidOutAmount : contribution.amountRaised).toStringAsFixed(2)}'
-                : '${contribution.currency} ${remaining.toStringAsFixed(2)}',
-            icon: contribution.displayState.isTerminal
-                ? Icons.check_circle_outline
-                : Icons.account_balance_wallet,
-            color: contribution.displayState.isTerminal
-                ? const Color(0xFF10B981)
-                : const Color(0xFF3B82F6),
-          ),
-          SizedBox(height: 16.h),
-          // A finished contribution has no days remaining and cannot be
-          // overdue. Showing "Overdue" in red beside a Completed badge was
-          // the screen contradicting itself.
-          _buildStatCard(
-            // Reads off the same derived state as the badge, so the two
-            // cannot disagree: a cancelled contribution is not "Closed" on
-            // one card and "Cancelled" on the badge above it.
-            title: contribution.displayState.isTerminal
-                ? contribution.displayState.label
-                : 'Days Remaining',
-            value: contribution.displayState.isTerminal
-                ? DateFormat('MMM d, yyyy').format(contribution.deadline)
-                : _calculateDaysRemaining(contribution.deadline),
-            icon: Icons.schedule,
-            color: contribution.displayState.isTerminal
-                ? (contribution.displayState ==
-                        ContributionDisplayState.cancelled
-                    ? const Color(0xFFEF4444)
-                    : const Color(0xFF10B981))
-                : contribution.isOverdue
-                    ? const Color(0xFFEF4444)
-                    : const Color(0xFF10B981),
-          ),
-          SizedBox(height: 16.h),
-          _buildStatCard(
-            title: 'Average Payment',
-            // sum / count over **completed** payments only. Pending /
-            // failed / refunded rows don't represent successful chunks
-            // of money in, so excluding them keeps the average honest.
-            // When everything that's landed has since been refunded
-            // (count == 0), show "—" rather than misleading 0.00.
-            value: completedCount > 0
-                ? '${contribution.currency} ${(completedSum / completedCount).toStringAsFixed(2)}'
-                : '${contribution.currency} —',
-            icon: Icons.trending_up,
-            color: const Color(0xFFF59E0B),
-          ),
-          SizedBox(height: 24.h),
-          Text(
-            'Description',
-            style: GoogleFonts.inter(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+        // AlwaysScrollable so the gesture works even when the content is short
+        // enough not to scroll on its own.
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.all(20.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // A finished contribution has nothing "remaining" — it has a
+            // result. Showing a shortfall on a goal that has closed (or worse,
+            // on one that was fully funded and paid out) describes a future
+            // that is not coming.
+            _buildStatCard(
+              title: contribution.displayState.isTerminal
+                  ? (contribution.paidOut ? 'Paid out' : 'Total raised')
+                  : 'Remaining Amount',
+              value: contribution.displayState.isTerminal
+                  ? '${contribution.currency} '
+                      '${(contribution.paidOut ? contribution.paidOutAmount : contribution.amountRaised).toStringAsFixed(2)}'
+                  : '${contribution.currency} ${remaining.toStringAsFixed(2)}',
+              icon: contribution.displayState.isTerminal
+                  ? Icons.check_circle_outline
+                  : Icons.account_balance_wallet,
+              color: contribution.displayState.isTerminal
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFF3B82F6),
             ),
-          ),
-          SizedBox(height: 8.h),
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.all(16.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: const Color(0xFF2D2D2D)),
+            SizedBox(height: 16.h),
+            // A finished contribution has no days remaining and cannot be
+            // overdue. Showing "Overdue" in red beside a Completed badge was
+            // the screen contradicting itself.
+            _buildStatCard(
+              // Reads off the same derived state as the badge, so the two
+              // cannot disagree: a cancelled contribution is not "Closed" on
+              // one card and "Cancelled" on the badge above it.
+              title: contribution.displayState.isTerminal
+                  ? contribution.displayState.label
+                  : 'Days Remaining',
+              value: contribution.displayState.isTerminal
+                  ? DateFormat('MMM d, yyyy').format(contribution.deadline)
+                  : _calculateDaysRemaining(contribution.deadline),
+              icon: Icons.schedule,
+              color: contribution.displayState.isTerminal
+                  ? (contribution.displayState ==
+                          ContributionDisplayState.cancelled
+                      ? const Color(0xFFEF4444)
+                      : const Color(0xFF10B981))
+                  : contribution.isOverdue
+                      ? const Color(0xFFEF4444)
+                      : const Color(0xFF10B981),
             ),
-            child: Text(
-              contribution.description,
+            SizedBox(height: 16.h),
+            _buildStatCard(
+              title: 'Average Payment',
+              // sum / count over **completed** payments only. Pending /
+              // failed / refunded rows don't represent successful chunks
+              // of money in, so excluding them keeps the average honest.
+              // When everything that's landed has since been refunded
+              // (count == 0), show "—" rather than misleading 0.00.
+              value: completedCount > 0
+                  ? '${contribution.currency} ${(completedSum / completedCount).toStringAsFixed(2)}'
+                  : '${contribution.currency} —',
+              icon: Icons.trending_up,
+              color: const Color(0xFFF59E0B),
+            ),
+            SizedBox(height: 24.h),
+            Text(
+              'Description',
               style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                color: Colors.grey[300],
-                height: 1.5,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
               ),
             ),
-          ),
-        ],
-      ),
+            SizedBox(height: 8.h),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: const Color(0xFF2D2D2D)),
+              ),
+              child: Text(
+                contribution.description,
+                style: GoogleFonts.inter(
+                  fontSize: 14.sp,
+                  color: Colors.grey[300],
+                  height: 1.5,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1879,153 +2135,153 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       backgroundColor: const Color(0xFF1F1F1F),
       color: const Color.fromARGB(255, 78, 3, 208),
       child: ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.all(20.w),
-      children: [
-        // Members header with add button
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Contribution Members',
-                    style: GoogleFonts.inter(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.all(20.w),
+        children: [
+          // Members header with add button
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Contribution Members',
+                      style: GoogleFonts.inter(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    hasMembers
-                        ? '${contributionMembers.length} member${contributionMembers.length == 1 ? '' : 's'} assigned'
-                        : 'Add group members to track their contributions',
+                    SizedBox(height: 4.h),
+                    Text(
+                      hasMembers
+                          ? '${contributionMembers.length} member${contributionMembers.length == 1 ? '' : 's'} assigned'
+                          : 'Add group members to track their contributions',
+                      style: GoogleFonts.inter(
+                        fontSize: 13.sp,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: 12.w),
+              // Hidden once an esusu has started: its roster is frozen and the
+              // server refuses the add. A visible button that always fails is
+              // worse than no button — the creator taps it, picks people, and
+              // only then learns it was never possible.
+              if (!contribution.isRotatingSavings || contribution.awaitingOpen)
+                ElevatedButton.icon(
+                  onPressed: () => _showAddMembersDialog(contribution),
+                  icon: Icon(Icons.person_add_alt_1, size: 18.sp),
+                  label: Text(
+                    'Add',
                     style: GoogleFonts.inter(
                       fontSize: 13.sp,
-                      color: Colors.grey[400],
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                ],
-              ),
-            ),
-            SizedBox(width: 12.w),
-            // Hidden once an esusu has started: its roster is frozen and the
-            // server refuses the add. A visible button that always fails is
-            // worse than no button — the creator taps it, picks people, and
-            // only then learns it was never possible.
-            if (!contribution.isRotatingSavings || contribution.awaitingOpen)
-              ElevatedButton.icon(
-                onPressed: () => _showAddMembersDialog(contribution),
-                icon: Icon(Icons.person_add_alt_1, size: 18.sp),
-                label: Text(
-                  'Add',
-                style: GoogleFonts.inter(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-                  foregroundColor: Colors.white,
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.r),
-                  ),
-                  elevation: 0,
-                ),
-              )
-            else
-              // Says WHY it is gone. Without this the control simply vanishes
-              // after the esusu starts, which reads as a bug.
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.lock_outline,
-                      size: 14.sp, color: const Color(0xFF9CA3AF)),
-                  SizedBox(width: 6.w),
-                  Text(
-                    'Members fixed',
-                    style: GoogleFonts.inter(
-                      fontSize: 12.sp,
-                      color: const Color(0xFF9CA3AF),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                    foregroundColor: Colors.white,
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.r),
                     ),
+                    elevation: 0,
                   ),
-                ],
-              ),
-          ],
-        ),
+                )
+              else
+                // Says WHY it is gone. Without this the control simply vanishes
+                // after the esusu starts, which reads as a bug.
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.lock_outline,
+                        size: 14.sp, color: const Color(0xFF9CA3AF)),
+                    SizedBox(width: 6.w),
+                    Text(
+                      'Members fixed',
+                      style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        color: const Color(0xFF9CA3AF),
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
 
-        SizedBox(height: 20.h),
+          SizedBox(height: 20.h),
 
-        // Members list or empty state
-        if (!hasMembers)
-          _buildEmptyMembersInline()
-        else
-          ...List.generate(
-            contributionMembers.length +
-                userPayments.entries
+          // Members list or empty state
+          if (!hasMembers)
+            _buildEmptyMembersInline()
+          else
+            ...List.generate(
+              contributionMembers.length +
+                  userPayments.entries
+                      .where((e) =>
+                          !contributionMembers.any((m) => m.userId == e.key))
+                      .length,
+              (index) {
+                // Show assigned members first
+                if (index < contributionMembers.length) {
+                  final member = contributionMembers[index];
+                  final payments = userPayments[member.userId] ?? [];
+                  final totalPaid =
+                      payments.fold<double>(0, (sum, p) => sum + p.amount);
+
+                  return _buildMemberCard(
+                    userName: member.userName,
+                    email: member.email,
+                    username: usernameByUserId[member.userId],
+                    profileImage: member.profileImage,
+                    totalPaid: totalPaid,
+                    expectedAmount: member.expectedAmount,
+                    paymentCount: payments.length,
+                    currency: contribution.currency,
+                    hasPaidCurrentCycle: member.hasPaidCurrentCycle,
+                    member: member,
+                    joinedAt: member.joinedAt,
+                    memberPayments: payments,
+                  );
+                }
+
+                // Show payers who aren't assigned members
+                final nonAssignedPayers = userPayments.entries
                     .where((e) =>
                         !contributionMembers.any((m) => m.userId == e.key))
-                    .length,
-            (index) {
-              // Show assigned members first
-              if (index < contributionMembers.length) {
-                final member = contributionMembers[index];
-                final payments = userPayments[member.userId] ?? [];
-                final totalPaid =
-                    payments.fold<double>(0, (sum, p) => sum + p.amount);
+                    .toList();
+                final payerIndex = index - contributionMembers.length;
+                if (payerIndex < nonAssignedPayers.length) {
+                  final entry = nonAssignedPayers[payerIndex];
+                  final payments = entry.value;
+                  final totalAmount =
+                      payments.fold<double>(0, (sum, p) => sum + p.amount);
 
-                return _buildMemberCard(
-                  userName: member.userName,
-                  email: member.email,
-                  username: usernameByUserId[member.userId],
-                  profileImage: member.profileImage,
-                  totalPaid: totalPaid,
-                  expectedAmount: member.expectedAmount,
-                  paymentCount: payments.length,
-                  currency: contribution.currency,
-                  hasPaidCurrentCycle: member.hasPaidCurrentCycle,
-                  member: member,
-                  joinedAt: member.joinedAt,
-                  memberPayments: payments,
-                );
-              }
+                  return _buildMemberCard(
+                    userName: payments.first.userName,
+                    email: null,
+                    username: usernameByUserId[entry.key],
+                    profileImage: null,
+                    totalPaid: totalAmount,
+                    expectedAmount: contribution.targetAmount,
+                    paymentCount: payments.length,
+                    currency: contribution.currency,
+                    hasPaidCurrentCycle: true,
+                    memberPayments: payments,
+                    joinedAt: payments.first.paymentDate,
+                  );
+                }
 
-              // Show payers who aren't assigned members
-              final nonAssignedPayers = userPayments.entries
-                  .where(
-                      (e) => !contributionMembers.any((m) => m.userId == e.key))
-                  .toList();
-              final payerIndex = index - contributionMembers.length;
-              if (payerIndex < nonAssignedPayers.length) {
-                final entry = nonAssignedPayers[payerIndex];
-                final payments = entry.value;
-                final totalAmount =
-                    payments.fold<double>(0, (sum, p) => sum + p.amount);
-
-                return _buildMemberCard(
-                  userName: payments.first.userName,
-                  email: null,
-                  username: usernameByUserId[entry.key],
-                  profileImage: null,
-                  totalPaid: totalAmount,
-                  expectedAmount: contribution.targetAmount,
-                  paymentCount: payments.length,
-                  currency: contribution.currency,
-                  hasPaidCurrentCycle: true,
-                  memberPayments: payments,
-                  joinedAt: payments.first.paymentDate,
-                );
-              }
-
-              return const SizedBox.shrink();
-            },
-          ),
-      ],
+                return const SizedBox.shrink();
+              },
+            ),
+        ],
       ),
     );
   }
@@ -4412,7 +4668,6 @@ extension ChangeCyclesDialog on _ContributionDetailsScreenState {
     );
   }
 }
-
 
 /// The contribution's state, as badges rather than one word.
 ///

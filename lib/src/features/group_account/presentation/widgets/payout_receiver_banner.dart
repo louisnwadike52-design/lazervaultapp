@@ -473,6 +473,7 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
       // Admins see the actionable Set Receiver CTA; non-admins see a
       // read-only "Waiting for receiver" so they know payout is gated
       // on someone setting one.
+      if (widget.hidePendingReceiver) return const SizedBox.shrink();
       return widget.isAdmin
           ? _pendingReceiverBanner(hasRow: false)
           : _readOnlyPendingBanner();
@@ -492,6 +493,7 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
                 .SCHEDULED_PAYOUT_STATUS_PENDING_RECEIVER &&
         status !=
             pb_enum.ScheduledPayoutStatus.SCHEDULED_PAYOUT_STATUS_CANCELED) {
+      if (widget.hidePendingReceiver) return const SizedBox.shrink();
       return widget.isAdmin
           ? _pendingReceiverBanner(hasRow: true)
           : _readOnlyPendingBanner();
@@ -500,6 +502,7 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
     switch (status) {
       case pb_enum
             .ScheduledPayoutStatus.SCHEDULED_PAYOUT_STATUS_PENDING_RECEIVER:
+        if (widget.hidePendingReceiver) return const SizedBox.shrink();
         return widget.isAdmin
             ? _pendingReceiverBanner(hasRow: true)
             : _readOnlyPendingBanner();

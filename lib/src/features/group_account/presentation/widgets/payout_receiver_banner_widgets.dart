@@ -20,6 +20,14 @@ class PayoutReceiverBanner extends StatefulWidget {
   // the headroom.
   final bool hideScheduled;
 
+  /// Suppress the "set the payout receiver" state.
+  ///
+  /// Used while an esusu has not started, where the details screen offers
+  /// Start and Set receiver as one compact pair instead. Two tall banners
+  /// stacked above the tab bar pushed the tabs off the bottom of the screen,
+  /// so the content behind them could not be reached at all.
+  final bool hidePendingReceiver;
+
   const PayoutReceiverBanner({
     super.key,
     required this.contribution,
@@ -27,6 +35,7 @@ class PayoutReceiverBanner extends StatefulWidget {
     required this.isAdmin,
     this.onStateChanged,
     this.hideScheduled = false,
+    this.hidePendingReceiver = false,
   });
 
   @override
