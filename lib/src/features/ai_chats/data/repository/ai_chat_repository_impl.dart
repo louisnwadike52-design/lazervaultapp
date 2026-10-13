@@ -99,6 +99,14 @@ class AiChatRepositoryImpl implements IAiChatRepository {
           protoResponse.entities['_analytics_card'] = jsonEncode(analyticsCard);
         }
 
+        // The server's row id for this answer, on the same passthrough as the
+        // cards. Without it a thumbs-up has no way to say WHICH answer it
+        // means — the local timestamp is not something the server can resolve.
+        final messageId = response['message_id'];
+        if (messageId != null) {
+          protoResponse.entities['_message_id'] = messageId.toString();
+        }
+
         // Pass through other entities if present
         final entities = response['entities'];
         if (entities != null && entities is Map) {
@@ -389,5 +397,13 @@ class AiChatRepositoryImpl implements IAiChatRepository {
     } catch (e) {
       return Left(Failure(message: e.toString(), statusCode: 500));
     }
+  }
+
+  @override
+  Future<void> rateAnswer({
+    required int messageId,
+    required String rating,
+  }) {
+    return _dataSource.rateAnswer(messageId: messageId, rating: rating);
   }
 }

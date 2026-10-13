@@ -66,6 +66,17 @@ class AIChatCubit extends Cubit<AIChatState> {
     return decoded is Map ? Map<String, dynamic>.from(decoded) : null;
   }
 
+  /// Pull the server's message id off the passthrough.
+  ///
+  /// Same channel and the same removal discipline as the cards, so the raw
+  /// value never leaks into displayed entities.
+  int? _decodeMessageId(Map<String, String>? entitiesMap) {
+    if (entitiesMap == null) return null;
+    final raw = entitiesMap.remove('_message_id');
+    if (raw == null) return null;
+    return int.tryParse(raw);
+  }
+
   /// Decode the `_analytics_card` passthrough — the chart series behind a
   /// "how am I doing?" answer. Same channel and the same removal discipline as
   /// [_decodeQrCard], so the raw payload never leaks into displayed entities.
@@ -373,6 +384,7 @@ class AIChatCubit extends Cubit<AIChatState> {
           final qrCard = _decodeQrCard(entitiesMap);
           final recipientCard = _decodeRecipientCard(entitiesMap);
           final analyticsCard = _decodeAnalyticsCard(entitiesMap);
+          final serverMessageId = _decodeMessageId(entitiesMap);
 
           final aiMessageEntity = ChatMessageEntity(
             text: response.response,
@@ -396,6 +408,7 @@ class AIChatCubit extends Cubit<AIChatState> {
             qrCard: qrCard,
             recipientCard: recipientCard,
             analyticsCard: analyticsCard,
+            serverMessageId: serverMessageId,
             pinPrompt: pinPrompt,
           );
           _currentMessages.add(aiMessageEntity);
@@ -708,4 +721,29 @@ class AIChatCubit extends Cubit<AIChatState> {
     // No-op: settings are read from SharedPreferences by HttpAiChatDataSource.
     // This method exists so the UI can signal the cubit if needed in the future.
   }
+
+  /// Record how useful an answer was, so the assistant can be improved.
+  ///
+  /// Best-effort and silent: feedback is not the user's errand, so a failure
+  /// here must never surface as an error or undo the tap the user just made.
+  /// The UI holds the rating; this only reports it.
+  ///
+  /// Skipped entirely when the answer has no server id — an optimistic bubble
+  /// or an error message is not something the server can attribute a rating
+  /// to, and inventing one would record a thumb against the wrong row.
+  Future<void> rateAnswer({
+    required int? serverMessageId,
+    required String rating,
+  }) async {
+    if (serverMessageId == null) return;
+    try {
+      await _getAIChatHistoryUseCase.rateAnswer(
+        messageId: serverMessageId,
+        rating: rating,
+      );
+    } catch (_) {
+      // Deliberately swallowed — see the doc above.
+    }
+  }
+
 }

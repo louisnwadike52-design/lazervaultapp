@@ -27,4 +27,8 @@ abstract class IAiChatRepository {
     int? offset,
   });
   // Add other methods if needed (e.g., clear chat history on backend?)
+
+  /// Record a thumbs up/down on one stored answer. `rating` is 'up', 'down',
+  /// or '' to clear.
+  Future<void> rateAnswer({required int messageId, required String rating});
 }

@@ -23,4 +23,16 @@ class GetAIChatHistoryUseCase {
       offset: offset,
     );
   }
+
+  /// Report how useful an assistant answer was.
+  ///
+  /// Lives on the history use case because a rating is a fact ABOUT a stored
+  /// message, not a new turn in the conversation — it belongs with the thing
+  /// that reads them, not with the thing that sends them.
+  Future<void> rateAnswer({
+    required int messageId,
+    required String rating,
+  }) {
+    return _repository.rateAnswer(messageId: messageId, rating: rating);
+  }
 }

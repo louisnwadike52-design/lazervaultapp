@@ -80,6 +80,13 @@ class ChatMessageEntity extends Equatable {
   /// and labels only; the palette is the app's, because a backend that ships
   /// hex codes fights dark mode from the wrong side of the wire.
   final Map<String, dynamic>? analyticsCard;
+
+  /// The server's id for this message.
+  ///
+  /// Needed to rate an answer: a thumb has to name WHICH answer it is about,
+  /// and the local timestamp is not something the server can resolve. Null for
+  /// anything the server has not persisted (an optimistic bubble, an error).
+  final int? serverMessageId;
   // PinPromptIntent payload (chat_services_shared/pin_prompt.py) — drives the
   // inline ChatPinPromptCard so a chat-driven money move collects the PIN in
   // the chat thread instead of telling the user to open a screen.
@@ -106,6 +113,7 @@ class ChatMessageEntity extends Equatable {
     this.receiptData,
     this.receiptCard,
     this.analyticsCard,
+    this.serverMessageId,
     this.qrCard,
     this.recipientCard,
     this.pinPrompt,
@@ -141,6 +149,7 @@ class ChatMessageEntity extends Equatable {
     Map<String, dynamic>? qrCard,
     Map<String, dynamic>? recipientCard,
     Map<String, dynamic>? analyticsCard,
+    int? serverMessageId,
     Map<String, dynamic>? pinPrompt,
   }) {
     return ChatMessageEntity(
@@ -166,6 +175,7 @@ class ChatMessageEntity extends Equatable {
       qrCard: qrCard ?? this.qrCard,
       recipientCard: recipientCard ?? this.recipientCard,
       analyticsCard: analyticsCard ?? this.analyticsCard,
+      serverMessageId: serverMessageId ?? this.serverMessageId,
       pinPrompt: clearPinPrompt ? null : (pinPrompt ?? this.pinPrompt),
     );
   }
@@ -187,6 +197,7 @@ class ChatMessageEntity extends Equatable {
         qrCard,
         recipientCard,
         analyticsCard,
+        serverMessageId,
         pinPrompt,
       ];
 }

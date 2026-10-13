@@ -301,4 +301,27 @@ class HttpAiChatDataSource implements IAiChatDataSource {
   String _generateSessionId() {
     return 'chat_${DateTime.now().millisecondsSinceEpoch}_${DateTime.now().microsecond}';
   }
+
+  /// POST the rating to the gateway.
+  ///
+  /// Deliberately has no retry and swallows nothing: the CALLER decides that
+  /// feedback failures are silent (see AIChatCubit.rateAnswer). Keeping this
+  /// honest means a future caller that does care can still see the error.
+  @override
+  Future<void> rateAnswer({
+    required int messageId,
+    required String rating,
+  }) async {
+    final userId = await _secureStorageService.getUserId() ?? '';
+    final token = await _secureStorageService.getAccessToken() ?? '';
+    await _dio.post(
+      '/chat/feedback',
+      data: {
+        'user_id': userId,
+        'access_token': token,
+        'message_id': messageId,
+        'rating': rating,
+      },
+    );
+  }
 }

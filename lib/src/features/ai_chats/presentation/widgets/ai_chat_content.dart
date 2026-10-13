@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:csv/csv.dart';
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -62,6 +63,15 @@ class _AiChatContentState extends State<AiChatContent>
   // --- State variables ---
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+
+  /// Live scroll position, driving BOTH the app bar's fade and the
+  /// scroll-to-latest button — one read, so the two can never disagree about
+  /// where the list is.
+  double _scrollOffset = 0;
+
+  /// True once the user has scrolled meaningfully away from the newest
+  /// message. See _onScroll for why it is a threshold, not an equality.
+  bool _awayFromBottom = false;
   bool _isAttaching = false; // Kept for local UI state during image preview
   bool _isPinMode = false; // Hides chat history when entering a PIN
   // Re-entrancy guard for _handleSubmitted. Without this, a rapid double-tap
@@ -289,8 +299,24 @@ class _AiChatContentState extends State<AiChatContent>
   /// into a single fetch.
   void _onScroll() {
     if (!_scrollController.hasClients) return;
+    final pos = _scrollController.position;
+
+    // Drive the bar's fade and the jump button from the same read.
+    //
+    // "Away from the bottom" is a 220pt threshold, not "not exactly at the
+    // bottom": a list that sits a few pixels off the end after a keyboard
+    // resize would otherwise flash the button at someone who is already
+    // reading the newest message.
+    final away = (pos.maxScrollExtent - pos.pixels) > 220;
+    if (away != _awayFromBottom || (pos.pixels - _scrollOffset).abs() > 4) {
+      setState(() {
+        _awayFromBottom = away;
+        _scrollOffset = pos.pixels;
+      });
+    }
+
     if (_isPrependingOlder) return;
-    if (_scrollController.position.pixels <= 120) {
+    if (pos.pixels <= 120) {
       _loadOlderHistory();
     }
   }
@@ -1398,23 +1424,43 @@ class _AiChatContentState extends State<AiChatContent>
 
   // Updated to accept isTyping status
   PreferredSizeWidget _buildAppBar(bool isTyping) {
+    // Shorter, and it settles as you read.
+    //
+    // The bar is chrome: it names who you are talking to and gets out of the
+    // way. At 60pt it took a tenth of a phone screen away from the thread.
+    // The tint deepens slightly once the list has scrolled, which is what
+    // separates the bar from the message sliding under it — without a border,
+    // which would draw a hard line across the screen at rest.
+    final scrolled = (_scrollOffset / 60.0).clamp(0.0, 1.0);
     return PreferredSize(
-      preferredSize: Size.fromHeight(60.0),
+      preferredSize: Size.fromHeight(48.0),
       child: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        flexibleSpace: Container(
+        flexibleSpace: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15),
-                InvoiceThemeColors.gradientPurple.withValues(alpha: 0.08),
+                InvoiceThemeColors.primaryPurple
+                    .withValues(alpha: 0.15 + 0.25 * scrolled),
+                InvoiceThemeColors.gradientPurple
+                    .withValues(alpha: 0.08 + 0.18 * scrolled),
                 InvoiceThemeColors.primaryBackground,
               ],
             ),
+            boxShadow: scrolled > 0.05
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.28 * scrolled),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : const [],
           ),
         ),
         title: Row(
@@ -1597,6 +1643,252 @@ class _AiChatContentState extends State<AiChatContent>
   bool _showMessageText(ChatMessage message) =>
       message.text.isNotEmpty && message.mediaType != 'voice';
 
+  /// Which answers the user has rated, keyed by message timestamp.
+  ///
+  /// Held on the widget rather than the message so a rating survives the
+  /// list rebuilding, and so an un-rated answer costs nothing to render.
+  /// Ratings are also sent upstream; this map is only what the UI draws.
+  final Map<String, String> _answerRatings = {};
+
+  String _ratingKey(ChatMessage m) =>
+      '${m.timestamp.millisecondsSinceEpoch}';
+
+  /// Copy, helpful, not helpful.
+  ///
+  /// Deliberately quiet: low-contrast icons that do not compete with the
+  /// answer. Rating is one tap and reversible — tapping the same thumb again
+  /// clears it, because a mis-tap on feedback should not be permanent.
+  Widget _buildAnswerActions(ChatMessage message) {
+    final key = _ratingKey(message);
+    final rating = _answerRatings[key];
+    return Padding(
+      padding: EdgeInsets.only(left: 6.w, top: 4.h, bottom: 2.h),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _answerAction(
+            icon: Icons.content_copy_rounded,
+            tooltip: 'Copy',
+            active: false,
+            onTap: () async {
+              await Clipboard.setData(ClipboardData(text: message.text));
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Copied'),
+                  duration: const Duration(seconds: 1),
+                  behavior: SnackBarBehavior.floating,
+                  backgroundColor: InvoiceThemeColors.secondaryBackground,
+                ),
+              );
+            },
+          ),
+          SizedBox(width: 2.w),
+          _answerAction(
+            icon: rating == 'up'
+                ? Icons.thumb_up_rounded
+                : Icons.thumb_up_outlined,
+            tooltip: 'Helpful',
+            active: rating == 'up',
+            onTap: () => _rateAnswer(message, 'up'),
+          ),
+          SizedBox(width: 2.w),
+          _answerAction(
+            icon: rating == 'down'
+                ? Icons.thumb_down_rounded
+                : Icons.thumb_down_outlined,
+            tooltip: 'Not helpful',
+            active: rating == 'down',
+            onTap: () => _rateAnswer(message, 'down'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _answerAction({
+    required IconData icon,
+    required String tooltip,
+    required bool active,
+    required VoidCallback onTap,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14.r),
+        child: Padding(
+          padding: EdgeInsets.all(6.w),
+          child: Icon(
+            icon,
+            size: 15.sp,
+            color: active
+                ? InvoiceThemeColors.primaryPurple
+                : Colors.white.withValues(alpha: 0.38),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Record a rating, and send it upstream so the answers can be improved.
+  ///
+  /// Fire-and-forget on purpose: feedback is not the user's errand. A failed
+  /// send must never interrupt the conversation or undo what they just
+  /// tapped, so the UI state is authoritative locally and the network call is
+  /// best-effort.
+  Future<void> _rateAnswer(ChatMessage message, String rating) async {
+    final key = _ratingKey(message);
+    setState(() {
+      if (_answerRatings[key] == rating) {
+        _answerRatings.remove(key);
+      } else {
+        _answerRatings[key] = rating;
+      }
+    });
+    HapticFeedback.selectionClick();
+    final applied = _answerRatings[key];
+    if (applied == null) return;
+    unawaited(context.read<AIChatCubit>().rateAnswer(
+          serverMessageId: message.serverMessageId,
+          rating: applied,
+        ));
+  }
+
+  /// The jump-to-latest control.
+  ///
+  /// A plain circle rather than a labelled pill: it appears over the
+  /// conversation, and a word here would compete with the message underneath
+  /// it for the one moment it is visible.
+  /// What to offer next, based on what was just said.
+  ///
+  /// The chips were a fixed list of five, shown identically on the first turn
+  /// and the fiftieth — so after asking about a transfer you were still being
+  /// offered "Explain cryptocurrency trading". Follow-ups are drawn from the
+  /// service the last answer came from, which is the one thing we reliably
+  /// know about where the conversation is.
+  ///
+  /// Server-provided suggestions always win: the agent knows more about the
+  /// turn than this does. The fixed list survives only for an empty thread,
+  /// where there is genuinely nothing to follow.
+  List<String> _activeSuggestions(
+      List<ChatMessageEntity> messages, List<String> fromServer) {
+    if (fromServer.isNotEmpty) return fromServer;
+    if (messages.isEmpty) return _defaultSuggestions;
+
+    ChatMessageEntity? lastAnswer;
+    for (final m in messages.reversed) {
+      if (!m.isUser) {
+        lastAnswer = m;
+        break;
+      }
+    }
+    if (lastAnswer == null) return _defaultSuggestions;
+
+    final followUps = _followUpsFor(lastAnswer);
+    return followUps.isEmpty ? _defaultSuggestions : followUps;
+  }
+
+  /// Follow-ups keyed off the last answer's intent/service.
+  ///
+  /// Kept deliberately small and concrete. A chip is a shortcut, not a menu:
+  /// three good ones beat eight that make the user read.
+  List<String> _followUpsFor(ChatMessageEntity answer) {
+    final intent = (answer.intent ?? '').toLowerCase();
+    final text = answer.text.toLowerCase();
+    String area = intent;
+    if (area.isEmpty) {
+      for (final probe in const [
+        'transfer', 'invest', 'crypto', 'bill', 'budget',
+        // Stems, not whole words: an answer says "you SPENT", not "spend",
+        // and "SAVINGS", not "save". Matching the full word meant the most
+        // common phrasings fell through to the generic chips.
+        'spen', 'sav', 'card', 'loan',
+      ]) {
+        if (text.contains(probe)) {
+          area = probe;
+          break;
+        }
+      }
+    }
+
+    if (area.contains('transfer') || area.contains('send')) {
+      return const [
+        'What are the fees?',
+        'How long will it take?',
+        'Show my recent transfers',
+      ];
+    }
+    if (area.contains('invest')) {
+      return const [
+        'What are the risks?',
+        'How much should I start with?',
+        'Show my portfolio',
+      ];
+    }
+    if (area.contains('crypto')) {
+      return const [
+        "What's the current rate?",
+        'Show my crypto balance',
+        'How do I withdraw?',
+      ];
+    }
+    if (area.contains('bill') || area.contains('airtime') || area.contains('data')) {
+      return const [
+        'Show my recent bills',
+        'Set up auto-recharge',
+        'What did I spend on bills?',
+      ];
+    }
+    if (area.contains('budget') || area.contains('spen') || area.contains('expense')) {
+      return const [
+        'Where did most of it go?',
+        'Compare with last month',
+        'Set a budget for this',
+      ];
+    }
+    if (area.contains('sav') || area.contains('goal')) {
+      return const [
+        'How close am I?',
+        'Increase my savings',
+        'When will I reach it?',
+      ];
+    }
+    return const [];
+  }
+
+  Widget _buildJumpToLatest() {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _scrollToBottom(),
+        borderRadius: BorderRadius.circular(22.r),
+        child: Container(
+          width: 38.w,
+          height: 38.w,
+          decoration: BoxDecoration(
+            color: InvoiceThemeColors.secondaryBackground,
+            shape: BoxShape.circle,
+            border: Border.all(
+                color: Colors.white.withValues(alpha: 0.10)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: Colors.white.withValues(alpha: 0.85),
+            size: 22.sp,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildMessageBubble(ChatMessage message) {
     final bool isUser = message.isUser;
 
@@ -1752,6 +2044,13 @@ class _AiChatContentState extends State<AiChatContent>
                   ),
                 ],
               ),
+            // Copy / helpful / not helpful, under the answer itself.
+            //
+            // Placed after the bubble rather than inside it so the row sits
+            // under any card the answer carried too — rating "the answer"
+            // means the chart as much as the sentence above it.
+            if (!isUser && message.text.trim().isNotEmpty)
+              _buildAnswerActions(message),
             // Receipt card — displayed immediately after the message bubble
             if (!isUser && message.receiptData != null)
               ChatReceiptCard(
@@ -2118,13 +2417,10 @@ class _AiChatContentState extends State<AiChatContent>
               margin: EdgeInsets.only(bottom: 12.h),
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: suggestions.isNotEmpty
-                    ? suggestions.length
-                    : _defaultSuggestions.length,
+                itemCount: _activeSuggestions(messages, suggestions).length,
                 itemBuilder: (context, index) {
-                  final suggestionText = suggestions.isNotEmpty
-                      ? suggestions[index]
-                      : _defaultSuggestions[index];
+                  final suggestionText =
+                      _activeSuggestions(messages, suggestions)[index];
                   return GestureDetector(
                     onTap: () => _handleSubmitted(suggestionText),
                     child: Container(
@@ -2534,9 +2830,32 @@ class _AiChatContentState extends State<AiChatContent>
                   _buildHistoryErrorBanner(state.message),
                 // Hide chat history when user is entering a PIN
                 Expanded(
-                  child: _isPinMode
-                      ? _buildPinOverlay()
-                      : _buildMessagesList(messageEntities),
+                  child: Stack(
+                    children: [
+                      _isPinMode
+                          ? _buildPinOverlay()
+                          : _buildMessagesList(messageEntities),
+                      // Back to the newest message.
+                      //
+                      // Shown ONLY once the user has scrolled up — a button
+                      // that is always there is one more thing on screen that
+                      // does nothing most of the time. Hidden during PIN
+                      // entry, where the list is not what you are looking at.
+                      if (!_isPinMode)
+                        Positioned(
+                          right: 14.w,
+                          bottom: 14.h,
+                          child: AnimatedOpacity(
+                            opacity: _awayFromBottom ? 1 : 0,
+                            duration: const Duration(milliseconds: 160),
+                            child: IgnorePointer(
+                              ignoring: !_awayFromBottom,
+                              child: _buildJumpToLatest(),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
                 // Pass isTyping status to indicator
                 _buildTypingIndicator(isTyping),

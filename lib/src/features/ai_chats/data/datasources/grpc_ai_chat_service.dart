@@ -21,6 +21,10 @@ abstract class IAiChatDataSource {
     int? limit,
     int? offset,
   });
+
+  /// Report a thumbs up/down on one stored answer. `rating` is 'up', 'down',
+  /// or '' to clear.
+  Future<void> rateAnswer({required int messageId, required String rating});
 }
 
 class GrpcAiChatDataSource implements IAiChatDataSource {
@@ -103,5 +107,18 @@ class GrpcAiChatDataSource implements IAiChatDataSource {
     } catch (e) {
       throw Exception('An unexpected error occurred fetching chat history.');
     }
+  }
+
+  /// The gateway's feedback route is HTTP-only — there is no gRPC RPC for it,
+  /// and inventing a silent no-op that LOOKS like it sent would be worse than
+  /// saying so. The app uses the HTTP data source, which implements it.
+  @override
+  Future<void> rateAnswer({
+    required int messageId,
+    required String rating,
+  }) async {
+    throw UnimplementedError(
+      'rateAnswer is served over HTTP; use HttpAiChatDataSource.',
+    );
   }
 }

@@ -77,6 +77,10 @@ class ChatMessage {
   /// renders as charts rather than a paragraph of figures.
   final Map<String, dynamic>? analyticsCard;
 
+  /// The server's id for this message, so a thumbs-up can name the answer it
+  /// is about. Null for anything the server has not persisted.
+  final int? serverMessageId;
+
   ChatMessage({
     required this.text,
     required this.isUser,
@@ -95,6 +99,7 @@ class ChatMessage {
     this.pinPrompt,
     this.recipientCard,
     this.analyticsCard,
+    this.serverMessageId,
   });
 
   factory ChatMessage.fromEntity(ChatMessageEntity entity) {
@@ -116,6 +121,7 @@ class ChatMessage {
       qrCard: entity.qrCard,
       pinPrompt: entity.pinPrompt,
       analyticsCard: entity.analyticsCard,
+      serverMessageId: entity.serverMessageId,
     );
   }
 }
