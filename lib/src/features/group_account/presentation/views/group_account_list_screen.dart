@@ -37,6 +37,16 @@ class GroupAccountListScreen extends StatefulWidget {
   State<GroupAccountListScreen> createState() => _GroupAccountListScreenState();
 }
 
+/// Tab positions on this screen, named so callers do not pass a bare integer.
+///
+/// My Groups / Discover / Invites / Leaderboard.
+class GroupFundsTab {
+  static const int myGroups = 0;
+  static const int discover = 1;
+  static const int invites = 2;
+  static const int leaderboard = 3;
+}
+
 class _GroupAccountListScreenState extends State<GroupAccountListScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
@@ -99,6 +109,31 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
   /// flight, so two page changes cannot race and land on the wrong one.
   bool _groupsPageBusy = false;
 
+  /// Which tab the caller asked for, defaulting to My Groups.
+  ///
+  /// Accepts `{'initialTab': GroupFundsTab.invites}` or a bare int, and
+  /// clamps anything out of range — a stale deep link naming a tab this build
+  /// does not have must land somewhere real, not crash the screen.
+  int _requestedTabIndex() {
+    final args = Get.arguments;
+    int? requested;
+    if (args is int) {
+      requested = args;
+    } else if (args is Map) {
+      final v = args['initialTab'];
+      if (v is int) {
+        requested = v;
+      } else if (v is String) {
+        requested = int.tryParse(v);
+      }
+    }
+    if (requested == null) return GroupFundsTab.myGroups;
+    if (requested < 0 || requested > GroupFundsTab.leaderboard) {
+      return GroupFundsTab.myGroups;
+    }
+    return requested;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -114,7 +149,18 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
     // sits between Discover and Leaderboard so the badge is visible
     // without scrolling and the LTR reading order is "what I have
     // now → what's available → what's pending → who's leading".
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(
+      length: 4,
+      vsync: this,
+      // Land on the tab the caller asked for.
+      //
+      // An INVITE has to open where it can be accepted. Routing one to the
+      // group's own page sent the invitee somewhere they are not a member of
+      // yet, which the server correctly refuses — they got "Waiting for
+      // approval" over a raw "not authorized". The decision lives on this
+      // screen's Invites tab, so a caller can now ask for it directly.
+      initialIndex: _requestedTabIndex(),
+    );
     _tabController.addListener(_onTabChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeUserIdIfAuthenticated();

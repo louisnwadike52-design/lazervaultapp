@@ -146,14 +146,24 @@ class GroupAccountAwaitingApproval extends GroupAccountState {
   final GroupAccount? group;
   final bool awaitingApproval;
 
+  /// This user holds an UNACCEPTED invite to the group.
+  ///
+  /// A third case the screen used to collapse into the other two. Someone who
+  /// was invited has not "asked to join", so telling them a request is being
+  /// reviewed is false and telling them to ask to join is advice they do not
+  /// need — they already have the thing, they just have not accepted it.
+  final bool hasPendingInvite;
+
   const GroupAccountAwaitingApproval({
     required this.groupId,
     this.group,
     this.awaitingApproval = true,
+    this.hasPendingInvite = false,
   });
 
   @override
-  List<Object?> get props => [groupId, group, awaitingApproval];
+  List<Object?> get props =>
+      [groupId, group, awaitingApproval, hasPendingInvite];
 }
 
 class GroupAccountError extends GroupAccountState {

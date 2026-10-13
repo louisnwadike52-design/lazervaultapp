@@ -227,6 +227,25 @@ extension GroupFundsPaging on GroupAccountCubit {
       unawaited(_prefetchContributions(groupId, page + 1));
     } catch (e) {
       if (!_sessionStillCurrent(generation)) return;
+      // A membership refusal is NOT a page-load failure.
+      //
+      // loadGroupDetails deliberately turns PermissionDenied into the
+      // "Waiting for approval" / "Members only" screen, because a user who
+      // opened a group they have not joined has done nothing wrong. This path
+      // did not know that, so both ran: the friendly screen rendered and a red
+      // "not authorized" was thrown over the top of it. Reported from the
+      // dashboard's "waiting on you" sheet, which used to route an invite
+      // straight at a group the invitee is by definition not in yet.
+      //
+      // Silent here on purpose — the group-details load owns the user-facing
+      // state for this case, and a second opinion from the pager can only
+      // contradict it.
+      if (isNotAuthorizedError(e)) {
+        debugPrint(
+            '[GroupFundsPaging] contributions page refused for $groupId '
+            '(not a member) — leaving the access state to loadGroupDetails');
+        return;
+      }
       emitState(GroupAccountError(
           GroupAccountCubit._opError('Could not load that page', e)));
     }

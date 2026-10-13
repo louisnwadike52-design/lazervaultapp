@@ -578,6 +578,13 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   /// Matches on the gRPC status code first and only falls back to the message
   /// text, because the wording is a server-side string that can change without
   /// anyone thinking to look here.
+  /// Public alias so this cubit's extensions can ask the same question.
+  ///
+  /// The paging extension needs it to avoid contradicting the access state
+  /// loadGroupDetails has already decided on, and an extension cannot reach a
+  /// private member.
+  bool isNotAuthorizedError(Object e) => _isNotAuthorized(e);
+
   bool _isNotAuthorized(Object e) {
     if (e is GrpcError) {
       return e.code == StatusCode.permissionDenied;
@@ -597,6 +604,22 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   /// act on a gRPC failure, and "waiting for approval" is both the far more
   /// likely case and the one that does not accuse them of anything.
   Future<GroupAccountState> _resolveAccessState(String groupId) async {
+    // Do they hold an unaccepted INVITE to this group? That is a different
+    // answer from "your request is being reviewed" and from "members only":
+    // they were asked, and the way in is to accept, not to apply. Best-effort
+    // — a failure here just leaves the other two cases as before.
+    var invited = false;
+    try {
+      if (listMyInvitations != null) {
+        final invites = await listMyInvitations!(const ListMyInvitationsParams(
+          statuses: [GroupInvitationStatus.pending],
+          limit: 50,
+        ));
+        invited = invites.any((i) => i.groupId == groupId);
+      }
+    } catch (e) {
+      debugPrint('[GroupAccountCubit] invite check failed for $groupId: $e');
+    }
     try {
       final pub = await getPublicGroup?.call(groupId);
       if (pub != null) {
@@ -604,13 +627,17 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
           groupId: groupId,
           group: pub.group,
           awaitingApproval: pub.group.hasPendingJoinRequest,
+          hasPendingInvite: invited,
         );
       }
     } catch (e) {
       debugPrint(
           '[GroupAccountCubit] could not resolve access state for $groupId: $e');
     }
-    return GroupAccountAwaitingApproval(groupId: groupId);
+    return GroupAccountAwaitingApproval(
+      groupId: groupId,
+      hasPendingInvite: invited,
+    );
   }
 
   Future<void> createNewGroup({

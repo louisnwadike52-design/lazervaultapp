@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/group_account/presentation/views/group_account_list_screen.dart'
+    show GroupFundsTab;
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/invoice/domain/entities/tagged_invoice_entity.dart';
 import 'package:lazervault/src/features/invoice/domain/repositories/tagged_invoice_repository.dart';
@@ -346,8 +348,20 @@ class PendingActionsCubit extends Cubit<PendingActionsSnapshot> {
                   : 'Invited you to a joint account',
               createdAt: i.invitedAt,
               dueAt: i.expiresAt,
-              route: AppRoutes.groupDetails,
-              routeArguments: i.groupId,
+              // The INVITES tab, not the group's own page.
+              //
+              // An invitee is by definition not a member yet, so groupDetails
+              // asks the server for members and contributions it will refuse —
+              // the user got a "Waiting for approval" screen (which is the
+              // join-REQUEST state, a different thing entirely) over a raw
+              // "not authorized" toast, and no way to accept the invite that
+              // sent them there.
+              //
+              // The family invite above and the connection request below both
+              // already route to the surface where the decision is made. This
+              // was the one that did not.
+              route: AppRoutes.groupAccount,
+              routeArguments: {'initialTab': GroupFundsTab.invites},
             ))
         .toList();
   }

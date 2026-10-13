@@ -5,6 +5,8 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/group_account/presentation/views/group_account_list_screen.dart'
+    show GroupFundsTab;
 import 'package:lazervault/src/features/group_account/presentation/widgets/start_esusu_sheet.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -259,7 +261,11 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
   /// over an empty screen. That told a user who had asked to join, correctly,
   /// that something had broken — and gave them nothing to do about it.
   Widget _buildAwaitingApprovalView(GroupAccountAwaitingApproval state) {
-    final pending = state.awaitingApproval;
+    final invited = state.hasPendingInvite;
+    // An invite outranks both other cases: it is the one state with an action
+    // attached, and it is true regardless of whether a join request also
+    // exists.
+    final pending = state.awaitingApproval && !invited;
     final name = state.group?.name;
     return Center(
       child: SingleChildScrollView(
@@ -278,15 +284,26 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                pending ? Icons.hourglass_top_rounded : Icons.lock_outline,
-                color:
-                    pending ? const Color(0xFFF59E0B) : const Color(0xFF8E8E93),
+                invited
+                    ? Icons.mark_email_unread_outlined
+                    : pending
+                        ? Icons.hourglass_top_rounded
+                        : Icons.lock_outline,
+                color: invited
+                    ? const Color(0xFF581CD9)
+                    : pending
+                        ? const Color(0xFFF59E0B)
+                        : const Color(0xFF8E8E93),
                 size: 34.sp,
               ),
             ),
             SizedBox(height: 20.h),
             Text(
-              pending ? 'Waiting for approval' : 'Members only',
+              invited
+                  ? 'You have an invite'
+                  : pending
+                      ? 'Waiting for approval'
+                      : 'Members only',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 fontSize: 19.sp,
@@ -296,13 +313,16 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
             ),
             SizedBox(height: 10.h),
             Text(
-              pending
-                  ? 'Your request to join${name != null ? ' $name' : ''} has been '
-                      'sent. An admin needs to approve it before you can see '
-                      'members and contributions.'
-                  : 'Only members can see this group\'s members and '
-                      'contributions. Ask to join and an admin will review your '
-                      'request.',
+              invited
+                  ? 'You have been invited to${name != null ? ' $name' : ' this group'}. '
+                      'Accept the invite to see its members and contributions.'
+                  : pending
+                      ? 'Your request to join${name != null ? ' $name' : ''} has been '
+                          'sent. An admin needs to approve it before you can see '
+                          'members and contributions.'
+                      : 'Only members can see this group\'s members and '
+                          'contributions. Ask to join and an admin will review your '
+                          'request.',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
@@ -319,9 +339,18 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => context
-                    .read<GroupAccountCubit>()
-                    .loadGroupDetails(state.groupId),
+                // An invite has somewhere to GO; a pending request only has
+                // "check again". Offering "Check again" to someone holding an
+                // unaccepted invite would be asking them to wait for a
+                // decision that is theirs to make.
+                onPressed: () => invited
+                    ? Get.offAllNamed(
+                        AppRoutes.groupAccount,
+                        arguments: {'initialTab': GroupFundsTab.invites},
+                      )
+                    : context
+                        .read<GroupAccountCubit>()
+                        .loadGroupDetails(state.groupId),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF581CD9),
                   padding: EdgeInsets.symmetric(vertical: 15.h),
@@ -330,7 +359,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                   ),
                 ),
                 child: Text(
-                  'Check again',
+                  invited ? 'View invite' : 'Check again',
                   style: GoogleFonts.inter(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w600,
