@@ -1015,13 +1015,25 @@ class _AddMembersToContributionDialogState
 
   Widget _buildGroupMemberItem(GroupMember member) {
     final isAlreadyAdded = _existingMemberUserIds.contains(member.userId);
-    final isSelected =
-        !isAlreadyAdded && _selectedMemberIds.contains(member.id);
+    // Somebody who has not accepted their GROUP invite yet, or whose row never
+    // resolved to a real account. Either way they cannot join a contribution.
+    //
+    // They used to be selectable, and the refusal arrived AFTER the tap as an
+    // orange banner — "Promise Ezike hasn't finished setting up their
+    // Lazervault account, so they can't be added yet" — which is both late and
+    // the wrong explanation for the commonest case, which is simply an invite
+    // nobody has accepted. Unselectable with the reason ON the row says the
+    // same thing before the tap, and says which of the two it is.
+    final hasNoUserId = member.userId.trim().isEmpty ||
+        member.userId == '00000000-0000-0000-0000-000000000000';
+    final notJoinedYet = member.isPartial || hasNoUserId;
+    final blocked = isAlreadyAdded || notJoinedYet;
+    final isSelected = !blocked && _selectedMemberIds.contains(member.id);
 
     return Opacity(
-      opacity: isAlreadyAdded ? 0.5 : 1.0,
+      opacity: blocked ? 0.5 : 1.0,
       child: GestureDetector(
-        onTap: isAlreadyAdded ? null : () => _toggleMember(member.id),
+        onTap: blocked ? null : () => _toggleMember(member.id),
         onLongPress: () => _showMemberDetails(member),
         child: Container(
           margin: EdgeInsets.only(bottom: 8.h),
@@ -1094,6 +1106,35 @@ class _AddMembersToContributionDialogState
                           fontSize: 12.sp,
                           color: const Color(0xFFFB923C),
                         ),
+                      )
+                    // The reason ON the row, before the tap. Two different
+                    // causes with two different remedies: an invite nobody has
+                    // accepted (wait for them), versus a member row we could
+                    // never match to an account (refresh the list). The old
+                    // single message blamed the person's signup for both.
+                    else if (notJoinedYet)
+                      Row(
+                        children: [
+                          Icon(
+                            member.isPartial
+                                ? Icons.hourglass_empty
+                                : Icons.link_off,
+                            size: 12.sp,
+                            color: const Color(0xFFFB923C),
+                          ),
+                          SizedBox(width: 4.w),
+                          Expanded(
+                            child: Text(
+                              member.isPartial
+                                  ? 'Not accepted group invite yet'
+                                  : 'Account not linked yet',
+                              style: GoogleFonts.inter(
+                                fontSize: 11.5.sp,
+                                color: const Color(0xFFFB923C),
+                              ),
+                            ),
+                          ),
+                        ],
                       )
                     else if (member.email.isNotEmpty)
                       Text(

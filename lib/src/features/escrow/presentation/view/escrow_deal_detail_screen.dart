@@ -79,6 +79,21 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
   /// from a cancel that fired without being confirmed.
   bool _actionBusy = false;
 
+  /// Timeline accordion + how many events are currently shown.
+  ///
+  /// The timeline grows for the life of a deal — funding, every attachment,
+  /// a dispute, each admin message, each admin read, the resolution, the
+  /// release — and it was rendered in full, inline, every time. On a disputed
+  /// deal that pushed the Agreement and Receipt buttons, and the closing
+  /// notice, below a wall of history nobody had asked to read.
+  ///
+  /// Collapsed by default with the newest few shown, expanding a page at a
+  /// time as the reader reaches the end.
+  bool _timelineExpanded = false;
+  int _timelineVisible = _timelinePageSize;
+
+  static const int _timelinePageSize = 5;
+
   /// Runs a terminal money action once, with the action bar latched for its
   /// whole life, and re-reads the deal before unlatching so the buttons are
   /// rebuilt from the new status rather than the stale one.
@@ -1277,16 +1292,67 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
 
   Widget _timeline(EscrowDealEntity deal) {
     if (deal.events.isEmpty) return const SizedBox.shrink();
+
+    // NEWEST FIRST. The events arrive oldest-first, which is the right order
+    // for a full read but the wrong one for a collapsed view: the thing that
+    // just happened is the thing somebody opens a deal to check.
+    final events = deal.events.reversed.toList();
+    final total = events.length;
+    final shown = _timelineExpanded
+        ? (_timelineVisible > total ? total : _timelineVisible)
+        : (total > _timelinePageSize ? _timelinePageSize : total);
+    final visible = events.take(shown).toList();
+    final remaining = total - shown;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Timeline',
-            style: GoogleFonts.inter(
-                color: EscrowTheme.textSecondary,
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600)),
-        SizedBox(height: 8.h),
-        ...deal.events.map((e) => Padding(
+        // The accordion header. Tapping anywhere on it toggles, and the count
+        // is on the header so a collapsed timeline still says how much history
+        // there is rather than hiding that there is any.
+        InkWell(
+          onTap: () => setState(() {
+            _timelineExpanded = !_timelineExpanded;
+            if (!_timelineExpanded) _timelineVisible = _timelinePageSize;
+          }),
+          borderRadius: BorderRadius.circular(6.r),
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 4.h),
+            child: Row(
+              children: [
+                Text('Timeline',
+                    style: GoogleFonts.inter(
+                        color: EscrowTheme.textSecondary,
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600)),
+                SizedBox(width: 6.w),
+                Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
+                  decoration: BoxDecoration(
+                    color: EscrowTheme.primary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Text('$total',
+                      style: GoogleFonts.inter(
+                          color: EscrowTheme.primary,
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.w700)),
+                ),
+                const Spacer(),
+                Icon(
+                  _timelineExpanded
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
+                  color: EscrowTheme.textSecondary,
+                  size: 20.sp,
+                ),
+              ],
+            ),
+          ),
+        ),
+        SizedBox(height: 4.h),
+        ...visible.map((e) => Padding(
               padding: EdgeInsets.symmetric(vertical: 6.h),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1318,6 +1384,71 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
                 ],
               ),
             )),
+        // Page in the rest as the reader reaches the end, rather than
+        // rendering a deal's whole history up front. Collapsed, this is the
+        // control that opens it; expanded, it reveals one page at a time.
+        if (remaining > 0)
+          Padding(
+            padding: EdgeInsets.only(top: 6.h),
+            child: InkWell(
+              onTap: () => setState(() {
+                if (!_timelineExpanded) {
+                  _timelineExpanded = true;
+                  _timelineVisible = _timelinePageSize * 2;
+                } else {
+                  _timelineVisible += _timelinePageSize;
+                }
+              }),
+              borderRadius: BorderRadius.circular(6.r),
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 6.h),
+                child: Row(
+                  children: [
+                    Icon(Icons.expand_more_rounded,
+                        size: 16.sp, color: EscrowTheme.primary),
+                    SizedBox(width: 4.w),
+                    Text(
+                      remaining == 1
+                          ? 'Show 1 earlier event'
+                          : 'Show $remaining earlier events',
+                      style: GoogleFonts.inter(
+                          color: EscrowTheme.primary,
+                          fontSize: 11.5.sp,
+                          fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        // Only once everything is on screen, and only when there was enough
+        // to page — collapsing a five-event timeline is not worth a control.
+        if (remaining == 0 && _timelineExpanded && total > _timelinePageSize)
+          Padding(
+            padding: EdgeInsets.only(top: 6.h),
+            child: InkWell(
+              onTap: () => setState(() {
+                _timelineExpanded = false;
+                _timelineVisible = _timelinePageSize;
+              }),
+              borderRadius: BorderRadius.circular(6.r),
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 6.h),
+                child: Row(
+                  children: [
+                    Icon(Icons.expand_less_rounded,
+                        size: 16.sp, color: EscrowTheme.textSecondary),
+                    SizedBox(width: 4.w),
+                    Text('Collapse timeline',
+                        style: GoogleFonts.inter(
+                            color: EscrowTheme.textSecondary,
+                            fontSize: 11.5.sp,
+                            fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
