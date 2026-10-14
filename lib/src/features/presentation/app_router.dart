@@ -649,6 +649,7 @@ import 'package:lazervault/src/features/plan_my_day/presentation/screens/reminde
 import 'package:lazervault/src/features/presentation/views/notification_screen.dart';
 import '../fcy_account/presentation/fcy_kyc_wizard_screen.dart';
 import '../fcy_account/presentation/cubit/fcy_kyc_cubit.dart';
+import 'package:lazervault/core/shared_widgets/feature_gate_guard.dart';
 
 class AppRouter {
   // Phone+passcode SIGNUP is a multi-screen journey whose working state
@@ -2361,9 +2362,13 @@ class AppRouter {
     // Airtime routes
     GetPage(
       name: AppRoutes.airtime,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<AirtimeCubit>(),
-        child: const AirtimeScreen(),
+      page: () => FeatureGateGuard(
+        gate: FeatureFlags.featurePrefix('bill', 'airtime'),
+        title: 'Airtime',
+        builder: (_) => (() => BlocProvider(
+              create: (_) => serviceLocator<AirtimeCubit>(),
+              child: const AirtimeScreen(),
+            ))(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -2447,9 +2452,13 @@ class AppRouter {
     // ePIN (Recharge card printing) routes
     GetPage(
       name: AppRoutes.epinHome,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<EPinCubit>(),
-        child: const EPinHomeScreen(),
+      page: () => FeatureGateGuard(
+        gate: FeatureFlags.featurePrefix('bill', 'epin'),
+        title: 'Recharge card printing',
+        builder: (_) => (() => BlocProvider(
+              create: (_) => serviceLocator<EPinCubit>(),
+              child: const EPinHomeScreen(),
+            ))(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -2481,9 +2490,13 @@ class AppRouter {
     // Betting (Fund betting account) routes
     GetPage(
       name: AppRoutes.bettingHome,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<BettingCubit>(),
-        child: const BettingHomeScreen(),
+      page: () => FeatureGateGuard(
+        gate: FeatureFlags.featurePrefix('bill', 'betting'),
+        title: 'Betting top-up',
+        builder: (_) => (() => BlocProvider(
+              create: (_) => serviceLocator<BettingCubit>(),
+              child: const BettingHomeScreen(),
+            ))(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -3456,15 +3469,20 @@ class AppRouter {
     // Electricity Bill Payment routes
     GetPage(
       name: AppRoutes.electricityBillHome,
-      page: () {
-        return MultiBlocProvider(
-          providers: [
-            BlocProvider(create: (_) => serviceLocator<ElectricityBillCubit>()),
-            BlocProvider(create: (_) => serviceLocator<BeneficiaryCubit>()),
-          ],
-          child: const ElectricityBillHomeScreen(),
-        );
-      },
+      page: () => FeatureGateGuard(
+        gate: FeatureFlags.featurePrefix('bill', 'electricity'),
+        title: 'Electricity',
+        builder: (_) => (() {
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                  create: (_) => serviceLocator<ElectricityBillCubit>()),
+              BlocProvider(create: (_) => serviceLocator<BeneficiaryCubit>()),
+            ],
+            child: const ElectricityBillHomeScreen(),
+          );
+        })(),
+      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -3609,9 +3627,8 @@ class AppRouter {
         // reads as the link being broken. Resolve what we can and let the
         // screen's own empty state explain the rest.
         final args = Get.arguments;
-        final rawId = args is Map
-            ? args['crowdfundId']
-            : (args is String ? args : null);
+        final rawId =
+            args is Map ? args['crowdfundId'] : (args is String ? args : null);
         final crowdfundId = rawId is String ? rawId.trim() : '';
         final initialCrowdfund =
             args is Map ? args['crowdfund'] as Crowdfund? : null;
@@ -4063,9 +4080,13 @@ class AppRouter {
     // Cable TV routes
     GetPage(
       name: AppRoutes.cableTVHome,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<CableTVCubit>(),
-        child: const CableTVHomeScreen(),
+      page: () => FeatureGateGuard(
+        gate: FeatureFlags.featurePrefix('bill', 'cable_tv'),
+        title: 'Cable TV',
+        builder: (_) => (() => BlocProvider(
+              create: (_) => serviceLocator<CableTVCubit>(),
+              child: const CableTVHomeScreen(),
+            ))(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -4175,9 +4196,13 @@ class AppRouter {
     // Education routes
     GetPage(
       name: AppRoutes.educationHome,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<EducationCubit>(),
-        child: const EducationHomeScreen(),
+      page: () => FeatureGateGuard(
+        gate: FeatureFlags.featurePrefix('bill', 'education'),
+        title: 'Education PINs',
+        builder: (_) => (() => BlocProvider(
+              create: (_) => serviceLocator<EducationCubit>(),
+              child: const EducationHomeScreen(),
+            ))(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -4258,9 +4283,13 @@ class AppRouter {
     // Water Bill routes
     GetPage(
       name: AppRoutes.waterBillHome,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<WaterBillCubit>(),
-        child: const WaterBillHomeScreenNew(),
+      page: () => FeatureGateGuard(
+        gate: FeatureFlags.featurePrefix('bill', 'water'),
+        title: 'Water Bill',
+        builder: (_) => (() => BlocProvider(
+              create: (_) => serviceLocator<WaterBillCubit>(),
+              child: const WaterBillHomeScreenNew(),
+            ))(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -4348,9 +4377,13 @@ class AppRouter {
     // Internet Bill routes
     GetPage(
       name: AppRoutes.internetBillHome,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<InternetBillCubit>(),
-        child: const InternetBillHomeScreen(),
+      page: () => FeatureGateGuard(
+        gate: FeatureFlags.featurePrefix('bill', 'internet'),
+        title: 'Internet',
+        builder: (_) => (() => BlocProvider(
+              create: (_) => serviceLocator<InternetBillCubit>(),
+              child: const InternetBillHomeScreen(),
+            ))(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -4464,9 +4497,13 @@ class AppRouter {
       name: AppRoutes.dataBundlesHome,
       // Wrap in a BlocProvider so the landing's history strips can
       // dispatch loadDataPurchaseHistory and rebuild on state changes.
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<DataBundlesCubit>(),
-        child: const DataBundlesHomeScreen(),
+      page: () => FeatureGateGuard(
+        gate: FeatureFlags.featurePrefix('bill', 'data'),
+        title: 'Data Bundles',
+        builder: (_) => (() => BlocProvider(
+              create: (_) => serviceLocator<DataBundlesCubit>(),
+              child: const DataBundlesHomeScreen(),
+            ))(),
       ),
       transition: Transition.rightToLeft,
     ),
