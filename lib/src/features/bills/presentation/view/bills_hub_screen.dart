@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/shared_widgets/service_unavailable_modal.dart';
 import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/types/app_routes.dart';
@@ -147,7 +149,7 @@ class _BillsHubScreenState extends State<BillsHubScreen> {
   // A tile is visible when the catalogue reports its type enabled. Types the
   // catalogue doesn't govern (ePIN, betting) — and the whole grid when the
   // catalogue is unavailable — fall back to defaultVisible.
-  bool _isVisible(_BillType b) {
+  bool _catalogueAllows(_BillType b) {
     if (_hasCatalogue) {
       final enabled = _enabledByType[b.type];
       if (enabled != null) return enabled;
@@ -155,9 +157,41 @@ class _BillsHubScreenState extends State<BillsHubScreen> {
     return b.defaultVisible;
   }
 
+  /// The admin feature gate for this bill type.
+  String _gate(_BillType b) => FeatureFlags.featurePrefix('bill', b.type);
+
+  // TWO INDEPENDENT AUTHORITIES, ANSWERING DIFFERENT QUESTIONS.
+  //
+  //   catalogue    — can the rail actually deliver right now (provider health)
+  //   feature gate — do we want to offer this product, and to whom
+  //
+  // The catalogue HIDES a tile: a dead rail is not a product decision and
+  // there is nothing useful to say to the user about it. The gate DIMS one and
+  // explains itself, because a control that vanishes during an outage reads as
+  // a bug and costs a support ticket.
+  //
+  // The whitelist overrides the GATE but never the CATALOGUE — a rail that is
+  // down cannot be whitelisted into working, and letting a tester through to a
+  // dead provider is how you take a payment for something never delivered.
+  // Both are applied at the grid below: `_catalogueAllows` filters the list,
+  // `gateAllowed` decides each tile's enabled state.
+
   @override
   Widget build(BuildContext context) {
-    final bills = _allTiles.where(_isVisible).toList();
+    // Repaint when a fresh admin snapshot lands, so a type switched off
+    // reaches this screen within one poll instead of at next launch. The flags
+    // themselves are still read synchronously — nothing here awaits a network
+    // call.
+    return ValueListenableBuilder<int>(
+      valueListenable: FeatureFlags.revision,
+      builder: (context, _, __) => _buildHub(context),
+    );
+  }
+
+  Widget _buildHub(BuildContext context) {
+    // Everything the RAIL can serve. The admin gate then decides which of
+    // these are offered and which explain themselves.
+    final bills = _allTiles.where(_catalogueAllows).toList();
 
     return PopScope(
       // OS/Android back button routes to the dashboard, matching the
@@ -243,6 +277,39 @@ class _BillsHubScreenState extends State<BillsHubScreen> {
                         ),
                       ),
                     )
+                  // EVERY tile gone. Possible two ways: the catalogue reports
+                  // nothing enabled, or an admin has switched every type off.
+                  // Either way a bare screen reads as a broken app, so say
+                  // what is happening instead of rendering an empty grid.
+                  else if (bills.isEmpty)
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40.h),
+                      child: Column(
+                        children: [
+                          Icon(Icons.receipt_long_outlined,
+                              size: 44.sp, color: const Color(0xFF4B5563)),
+                          SizedBox(height: 12.h),
+                          Text(
+                            'Bill payments are not available right now',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(height: 6.h),
+                          Text(
+                            'Please check back shortly.',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(
+                              fontSize: 12.sp,
+                              color: const Color(0xFF9CA3AF),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
                   else
                     GridView.builder(
                       shrinkWrap: true,
@@ -257,11 +324,24 @@ class _BillsHubScreenState extends State<BillsHubScreen> {
                       itemCount: bills.length,
                       itemBuilder: (context, index) {
                         final b = bills[index];
+                        final enabled =
+                            FeatureFlags.gateAllowed(_gate(b));
                         return _BillTile(
                           icon: b.icon,
                           title: b.title,
                           description: b.description,
-                          onTap: () => Get.toNamed(b.route),
+                          enabled: enabled,
+                          onTap: () {
+                            if (!enabled) {
+                              showServiceUnavailableModal(
+                                context,
+                                serviceName: b.title,
+                                message: FeatureFlags.gateMessage(_gate(b)),
+                              );
+                              return;
+                            }
+                            Get.toNamed(b.route);
+                          },
                         );
                       },
                     ),
@@ -368,11 +448,19 @@ class _BillTile extends StatefulWidget {
   final String description;
   final VoidCallback onTap;
 
+  /// False when an admin has switched this bill type off.
+  ///
+  /// The tile stays in the grid and stays TAPPABLE — tapping opens the
+  /// explanation. A control that disappears during an outage looks like a bug
+  /// and costs a support ticket; one that is dimmed and says why does not.
+  final bool enabled;
+
   const _BillTile({
     required this.icon,
     required this.title,
     required this.description,
     required this.onTap,
+    this.enabled = true,
   });
 
   @override
@@ -389,7 +477,9 @@ class _BillTileState extends State<_BillTile> {
       onTapDown: (_) => setState(() => _pressed = true),
       onTapUp: (_) => setState(() => _pressed = false),
       onTapCancel: () => setState(() => _pressed = false),
-      child: AnimatedContainer(
+      child: Opacity(
+        opacity: widget.enabled ? 1.0 : 0.45,
+        child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 12.h),
         decoration: BoxDecoration(
@@ -463,6 +553,7 @@ class _BillTileState extends State<_BillTile> {
           ],
         ),
       ),
+        ),
     );
   }
 }

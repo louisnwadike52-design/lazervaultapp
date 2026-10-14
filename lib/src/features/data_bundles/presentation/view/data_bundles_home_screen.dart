@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import '../../../../../core/types/app_routes.dart';
@@ -34,6 +35,37 @@ class _DataBundlesHomeScreenState extends State<DataBundlesHomeScreen> {
   /// 0 = Local (eBills Africa), 1 = International (Reloadly).
   int _selectedTab = 0;
 
+  // Admin gates, mirroring the airtime landing so the two "split-by-scope"
+  // screens behave identically. Each scope can be switched off, carry its own
+  // explanation, and be opened to a whitelist of testers while shut to
+  // everyone else.
+  bool get _localTabEnabled => FeatureFlags.dataTabAllowed('local');
+  bool get _intlTabEnabled => FeatureFlags.dataTabAllowed('international');
+
+  bool _tabEnabled(int index) => switch (index) {
+        0 => _localTabEnabled,
+        1 => _intlTabEnabled,
+        _ => false,
+      };
+
+  /// First enabled tab, falling back to 0 so the toggle always has a
+  /// selection. When NOTHING is enabled the body renders the closed state
+  /// rather than tab 0's content — see the build method.
+  int get _firstEnabledTab {
+    for (final i in const [0, 1]) {
+      if (_tabEnabled(i)) return i;
+    }
+    return 0;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Land on a tab the user can actually use: with Local switched off this
+    // opens International rather than an empty Local panel.
+    _selectedTab = _firstEnabledTab;
+  }
+
   // Both tabs share the invoice purple when active — matches the airtime
   // landing so every utility's "split-by-scope" landing reads as one
   // palette. `_localColor` kept as an alias for call-site symmetry.
@@ -42,6 +74,17 @@ class _DataBundlesHomeScreenState extends State<DataBundlesHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Repaint when a fresh admin snapshot lands, so a scope switched off
+    // reaches this screen within one poll instead of at next launch. The gates
+    // themselves are read synchronously from the cache — nothing on the render
+    // path awaits a network call.
+    return ValueListenableBuilder<int>(
+      valueListenable: FeatureFlags.revision,
+      builder: (context, _, __) => _buildData(context),
+    );
+  }
+
+  Widget _buildData(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       body: SafeArea(
@@ -81,8 +124,12 @@ class _DataBundlesHomeScreenState extends State<DataBundlesHomeScreen> {
                       SizedBox(height: 20.h),
                       _buildTabToggle(),
                       SizedBox(height: 20.h),
-                      if (_selectedTab == 0) ..._buildLocalContent(),
-                      if (_selectedTab == 1) ..._buildIntlContent(),
+                      if (!_tabEnabled(_selectedTab))
+                        _buildScopeClosed()
+                      else ...[
+                        if (_selectedTab == 0) ..._buildLocalContent(),
+                        if (_selectedTab == 1) ..._buildIntlContent(),
+                      ],
                       SizedBox(height: 24.h),
                       DataRecentPurchasesCard(
                         accent: _selectedTab == 0 ? _localColor : _intlColor,
@@ -201,8 +248,14 @@ class _DataBundlesHomeScreenState extends State<DataBundlesHomeScreen> {
 
   Widget _buildTabItem(int index, IconData icon, String label, Color active) {
     final isActive = _selectedTab == index;
+    // A closed scope stays VISIBLE and dimmed, and selecting it shows why.
+    // Removing the tab would leave a one-tab toggle that looks like the other
+    // scope never existed, and the user asking support where it went.
+    final enabled = _tabEnabled(index);
     return Expanded(
-      child: GestureDetector(
+      child: Opacity(
+        opacity: enabled ? 1.0 : 0.45,
+        child: GestureDetector(
         onTap: () => setState(() => _selectedTab = index),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
@@ -231,6 +284,48 @@ class _DataBundlesHomeScreenState extends State<DataBundlesHomeScreen> {
             ],
           ),
         ),
+        ),
+      ),
+    );
+  }
+
+  /// Shown in place of the tab body when the selected scope is closed.
+  ///
+  /// Reached either by selecting a dimmed tab or, when BOTH scopes are off,
+  /// on open — [_firstEnabledTab] falls back to 0 so the toggle still has a
+  /// selection, and without this the Local panel would render under a tab
+  /// that is switched off.
+  Widget _buildScopeClosed() {
+    final scope = _selectedTab == 1 ? 'international' : 'local';
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 44.h),
+      child: Column(
+        children: [
+          Icon(Icons.wifi_off_rounded,
+              size: 44.sp, color: const Color(0xFF4B5563)),
+          SizedBox(height: 12.h),
+          Text(
+            _selectedTab == 1
+                ? 'International data is not available right now'
+                : 'Local data is not available right now',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            FeatureFlags.dataTabMessage(scope),
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 12.sp,
+              color: const Color(0xFF9CA3AF),
+              height: 1.4,
+            ),
+          ),
+        ],
       ),
     );
   }

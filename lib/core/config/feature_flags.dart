@@ -18,6 +18,20 @@ import 'voice_language_availability.dart';
 ///      a safe default if the key hasn't been seeded yet.
 ///   3) Hidden-by-default if exposing the surface costs us anything.
 class FeatureFlags {
+  /// Bumped every time a fresh admin snapshot is applied.
+  ///
+  /// Flags are read SYNCHRONOUSLY from SharedPreferences so a build method
+  /// never waits on the network — that part was already right and is not
+  /// changed here. What was missing is the other half: the background poll
+  /// re-applies the snapshot mid-session, but nothing told the widget tree, so
+  /// a flip landed in storage and the running session kept rendering the old
+  /// value until some unrelated rebuild happened to occur. For a kill switch
+  /// that meant "takes effect whenever the user next restarts the app".
+  ///
+  /// Gated surfaces listen via [ValueListenableBuilder] and repaint when this
+  /// changes. Still zero awaits on the render path.
+  static final ValueNotifier<int> revision = ValueNotifier<int>(0);
+
   // ── Existing flags ────────────────────────────────────────────────────────
   static const String useNewTransferApi = 'use_new_transfer_api';
 
@@ -518,6 +532,18 @@ class FeatureFlags {
         await prefs.setString(e.key, e.value);
       }
     }
+    // Generic gate family: feature_<domain>_<id>_(available|message|whitelist|
+    // whitelist_enabled). Stored VERBATIM as strings for the same reason the
+    // quick-service family is: the values are a mix of "false", free-text copy
+    // and CSV, and the ids are not knowable in advance, so a gate configured
+    // for the first time tomorrow needs no app change.
+    //
+    // Read through [FeatureGate], which parses per key on read.
+    for (final e in remote.entries) {
+      if (e.key.startsWith('feature_')) {
+        await prefs.setString(e.key, e.value);
+      }
+    }
     // Assistant entry-point toggles are BOOLEAN families, so they are stored
     // as bools and read with getBool — unlike the quick_service_ family above,
     // whose values are CSV/free text. Only an explicit "false" disables;
@@ -608,6 +634,12 @@ class FeatureFlags {
             : authModePhonePasscode,
       );
     }
+    // Everything above is now in SharedPreferences. Tell anyone rendering a
+    // gated surface, so a flip reaches the screen within one poll instead of
+    // at next launch. Last statement on purpose: listeners read the flags
+    // synchronously the moment this fires, so it must not run until every
+    // write above has completed.
+    revision.value++;
   }
 
   // ── Existing transfer-API helpers ────────────────────────────────────────
@@ -713,6 +745,101 @@ class FeatureFlags {
     if (list.isEmpty) return false;
     return list.contains(e);
   }
+
+  // ── Generic feature gates (admin-tunable, any surface) ────────────────
+  //
+  // One key family for every surface that is not a quick service, a bottom-nav
+  // destination or an airtime tab — bill types, the data Local/International
+  // scopes, account types and the Lifestyle entries:
+  //
+  //   feature_<domain>_<id>_available          "false" disables   (default ON)
+  //   feature_<domain>_<id>_message            unavailable copy   (optional)
+  //   feature_<domain>_<id>_whitelist          CSV of emails      (override)
+  //   feature_<domain>_<id>_whitelist_enabled  park the list      (default ON)
+  //
+  // ONE prefix rather than one per domain, deliberately. The gateway's bulk
+  // read builds its WHERE from hand-counted `LIKE ?` placeholders, and a
+  // prefix added without a matching placeholder takes down the no-auth
+  // endpoint the app polls for everything — that outage is on record.
+  //
+  // Absent keys mean AVAILABLE. Nothing needs seeding, and a surface added
+  // later is live by default rather than invisible until somebody remembers to
+  // configure it — an unconfigured new surface silently missing is far harder
+  // to notice than one that is present.
+  static String featurePrefix(String domain, String id) =>
+      'feature_${domain}_$id';
+
+  /// Whether [prefix] is switched on, IGNORING any whitelist.
+  ///
+  /// Only the exact string "false" disables. Anything unparseable leaves the
+  /// surface available, because a typo in an admin field must not take a
+  /// working service off the app — the backend still refuses whatever it
+  /// would refuse anyway.
+  static bool gateAvailable(String prefix) {
+    final raw = _prefs?.getString('${prefix}_available');
+    if (raw == null) return true;
+    return raw.trim().toLowerCase() != 'false';
+  }
+
+  /// Whether the current user may see [prefix].
+  ///
+  /// The whitelist is an OVERRIDE and is checked FIRST: an address on an
+  /// enabled list sees the surface even while it is switched off for everyone
+  /// else, which is the entire point of shipping to testers.
+  static bool gateAllowed(String prefix, {String? email}) {
+    if (whitelisted(prefix, email ?? currentUserEmail())) return true;
+    return gateAvailable(prefix);
+  }
+
+  /// Copy for the "not available" modal. Never blank, so an admin who disables
+  /// a surface without writing a message still gets a sentence that is true.
+  static String gateMessage(String prefix) {
+    final raw = _prefs?.getString('${prefix}_message')?.trim();
+    if (raw == null || raw.isEmpty) {
+      return 'This service is not available at the moment. '
+          'Please try again later.';
+    }
+    return raw;
+  }
+
+  // ── Scoped landing tabs (airtime Buy/International/Sell, data Local/Intl) ──
+  //
+  // Airtime ALREADY had `airtime_tab_<scope>_enabled` booleans, and rows may be
+  // configured against them, so that switch is honoured rather than replaced —
+  // renaming it would silently re-enable a tab somebody had turned off. What it
+  // never had is a whitelist or any copy explaining the closure, and those come
+  // from the generic `feature_airtimetab_<scope>` gate layered beside it.
+  //
+  // Data had no gate at all.
+  //
+  // Either switch can close a tab (AND); the whitelist opens it regardless
+  // (OVERRIDE), which is what lets a tab ship to testers while it stays shut
+  // for everyone else.
+
+  /// Airtime landing tab: 'buy' | 'international' | 'sell'.
+  static bool airtimeTabAllowed(String scope, {String? email}) {
+    final prefix = featurePrefix('airtimetab', scope);
+    if (whitelisted(prefix, email ?? currentUserEmail())) return true;
+    final legacy = switch (scope) {
+      'buy' => airtimeBuyTabIsEnabled,
+      'international' => airtimeInternationalTabIsEnabled,
+      'sell' => airtimeSellTabIsEnabled,
+      _ => true,
+    };
+    return legacy && gateAvailable(prefix);
+  }
+
+  /// Why an airtime tab is closed, for the message shown in its place.
+  static String airtimeTabMessage(String scope) =>
+      gateMessage(featurePrefix('airtimetab', scope));
+
+  /// Data bundles landing tab: 'local' | 'international'.
+  static bool dataTabAllowed(String scope, {String? email}) =>
+      gateAllowed(featurePrefix('datatab', scope), email: email);
+
+  /// Why a data tab is closed.
+  static String dataTabMessage(String scope) =>
+      gateMessage(featurePrefix('datatab', scope));
 
   // ── Bottom-nav gating (admin-tunable, per destination) ────────────────
   //

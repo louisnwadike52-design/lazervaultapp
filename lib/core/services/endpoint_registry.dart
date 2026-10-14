@@ -72,6 +72,29 @@ class EndpointRegistry {
     // names are as unknowable in advance as the quick-service gates.
     'chat_icon_',
     'voice_agent_',
+    // Bottom-nav destination switches and their whitelists
+    // (`bottom_nav_<slug>_enabled` / `_whitelist` / `_whitelist_enabled`).
+    //
+    // THIS WAS MISSING, AND THAT MADE THE WHOLE FAMILY INERT.
+    //
+    // Every other link was already built — admin-gateway allowlists the writes,
+    // its bulk read serves `bottom_nav_%` (the 18th LIKE), FeatureFlags knows
+    // how to hydrate it, and LocaleGating.navAllowed consults it at all five
+    // call sites. But nonUrlSnapshot() emits ONLY keys in this set or matching
+    // one of these prefixes, so the value was dropped between the registry
+    // cache and FeatureFlags and the `?? true` default won on every launch: an
+    // operator could disable a destination, see it stored, and watch every
+    // phone go on showing it.
+    //
+    // Exactly the omission intl_payout_enabled had, in the same place.
+    'bottom_nav_',
+    // The generic gate family: feature_<domain>_<id>_(available|message|
+    // whitelist|whitelist_enabled) for bills, data scopes, account types and
+    // the Lifestyle entries. One prefix for all of them on purpose — the
+    // gateway's bulk read counts its LIKE placeholders by hand, and each new
+    // prefix is a chance to 500 the no-auth endpoint the app polls for
+    // everything.
+    'feature_',
   };
 
   static bool _isPersistedNonUrlKey(String key) =>

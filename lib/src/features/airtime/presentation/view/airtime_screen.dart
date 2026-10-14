@@ -55,9 +55,59 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
   // Which of the three tabs the admin has enabled (Buy / International / Sell).
   // Buy + International default ON, Sell (airtime-to-cash) defaults OFF — all
   // read from the admin system_settings snapshot via FeatureFlags.
-  bool get _buyTabEnabled => FeatureFlags.airtimeBuyTabIsEnabled;
-  bool get _intlTabEnabled => FeatureFlags.airtimeInternationalTabIsEnabled;
-  bool get _sellTabEnabled => FeatureFlags.airtimeSellTabIsEnabled;
+  //
+  // Routed through airtimeTabAllowed rather than reading the booleans
+  // directly: that keeps the existing `airtime_tab_<scope>_enabled` switches
+  // authoritative (configured rows must not silently flip) while adding the
+  // whitelist override they never had — so International can be opened to a
+  // named set of testers while it stays shut for everyone else.
+  bool get _buyTabEnabled => FeatureFlags.airtimeTabAllowed('buy');
+  bool get _intlTabEnabled => FeatureFlags.airtimeTabAllowed('international');
+  bool get _sellTabEnabled => FeatureFlags.airtimeTabAllowed('sell');
+
+  /// Shown when the selected tab is closed — which, because
+  /// [_firstEnabledTab] falls back to 0, is exactly the case where an admin
+  /// has switched every airtime tab off.
+  ///
+  /// Says what is happening rather than leaving the body empty: a screen that
+  /// opens to nothing reads as a crash, and the admin's own message is used
+  /// when one was written.
+  Widget _buildAllTabsClosed() {
+    final scope = switch (_selectedTab) {
+      1 => 'international',
+      2 => 'sell',
+      _ => 'buy',
+    };
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 48.h),
+      child: Column(
+        children: [
+          Icon(Icons.phonelink_erase_outlined,
+              size: 44.sp, color: const Color(0xFF4B5563)),
+          SizedBox(height: 12.h),
+          Text(
+            'Airtime is not available right now',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            FeatureFlags.airtimeTabMessage(scope),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: const Color(0xFF9CA3AF),
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   bool _tabEnabled(int index) => switch (index) {
         0 => _buyTabEnabled,
@@ -118,6 +168,17 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Repaint when a fresh admin snapshot lands, so a scope switched off
+    // reaches this screen within one poll instead of at next launch. The gates
+    // themselves are read synchronously from the cache — nothing on the render
+    // path awaits a network call.
+    return ValueListenableBuilder<int>(
+      valueListenable: FeatureFlags.revision,
+      builder: (context, _, __) => _buildAirtime(context),
+    );
+  }
+
+  Widget _buildAirtime(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       body: Container(
@@ -143,9 +204,19 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
                           SizedBox(height: 16.h),
                           _buildTabToggle(),
                           SizedBox(height: 20.h),
-                          if (_selectedTab == 0) ..._buildBuyContent(),
-                          if (_selectedTab == 1) ..._buildIntlContent(),
-                          if (_selectedTab == 2) ..._buildSellContent(),
+                          // EVERY tab off is a legal configuration, and it
+                          // used to render the Buy flow anyway: _firstEnabledTab
+                          // falls back to 0 so the screen is never blank, which
+                          // meant index 0 was selected and its content shown
+                          // even though Buy itself was disabled. An admin who
+                          // closed airtime entirely still had it open.
+                          if (!_tabEnabled(_selectedTab))
+                            _buildAllTabsClosed()
+                          else ...[
+                            if (_selectedTab == 0) ..._buildBuyContent(),
+                            if (_selectedTab == 1) ..._buildIntlContent(),
+                            if (_selectedTab == 2) ..._buildSellContent(),
+                          ],
                           SizedBox(height: 20.h),
                         ],
                       ),
