@@ -694,7 +694,11 @@ class _DashboardState extends State<Dashboard> {
     // invites someone into a flow whose first step the server refuses.
     // Same chokepoint the carousel and the create flow use, so a corridor
     // opening turns all three on at once.
-    if (!LocaleGating.accountTypeAllowed('family')) {
+    // accountTypeOfferable, not accountTypeAllowed: this CTA OPENS a new pot,
+    // so it answers "is this product offered" — which is the admin gate plus
+    // the locale rule. The carousel deliberately asks the narrower question,
+    // because hiding a pot somebody already funded would strand their money.
+    if (!LocaleGating.accountTypeOfferable('family')) {
       return const SizedBox.shrink();
     }
     final accountManager = serviceLocator<AccountManager>();

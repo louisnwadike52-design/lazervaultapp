@@ -508,6 +508,19 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView>
                       if (!LocaleGating.accountCurrencyAllowed(a.currency)) {
                         return false;
                       }
+                      // LOCALE ONLY — deliberately NOT the admin feature gate.
+                      //
+                      // This filter decides whether an account the user ALREADY
+                      // HOLDS is rendered. A Family & Friends pot or a business
+                      // wallet carries a real balance, so gating the card on the
+                      // product switch would take the only surface showing that
+                      // money off the screen the moment an admin withdrew the
+                      // product — the user could not see it, select it or send
+                      // from it. Withdrawing a product stops NEW accounts being
+                      // opened; it must never strand existing ones.
+                      //
+                      // LocaleGating.accountTypeOfferable carries the gate and
+                      // is used by the CREATE surfaces instead.
                       if (LocaleGating.restricted &&
                           !LocaleGating.accountTypeAllowed(a.accountType)) {
                         return false;

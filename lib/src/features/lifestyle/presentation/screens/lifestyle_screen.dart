@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 
 import 'package:lazervault/core/services/injection_container.dart';
@@ -134,7 +135,13 @@ class _NewLifestyleScreenState extends State<NewLifestyleScreen> {
             // above the fold it pushed the actual destinations off-screen. The
             // widget hides itself if it cannot load, rather than holding space
             // with an error the user cannot act on from here.
-            const LazerPointsNavWidget(),
+            // LazerPoints is a REWARD BALANCE, so it is removed rather than
+            // dimmed when withdrawn: a points total the user cannot act on is
+            // worse than no total at all. The widget already hides itself when
+            // it cannot load, so an absent gate changes nothing.
+            if (FeatureFlags.gateAllowed(
+                FeatureFlags.featurePrefix('lifestyle', 'lazerpoints')))
+              const LazerPointsNavWidget(),
 
             // Bottom padding for nav bar
             SizedBox(height: 80.h),
@@ -159,6 +166,7 @@ class _NewLifestyleScreenState extends State<NewLifestyleScreen> {
           emoji: '\u{1F389}',
           colors: const [Color(0xFFFF6B00), Color(0xFFFF2D87)],
           onTap: _openSprayMe,
+          gate: FeatureFlags.featurePrefix('lifestyle', 'sprayme'),
         ),
         _LifestyleEntry(
           title: 'Plan My Day',
@@ -166,11 +174,56 @@ class _NewLifestyleScreenState extends State<NewLifestyleScreen> {
           emoji: '\u{1F4C5}',
           colors: const [Color(0xFF6366F1), Color(0xFF8B5CF6)],
           onTap: _openPlanMyDay,
+          gate: FeatureFlags.featurePrefix('lifestyle', 'planmyday'),
         ),
       ];
 
+  /// Entries an admin has switched off are REMOVED here, not dimmed.
+  ///
+  /// Unlike a bill tile or a nav destination, these two are the entire content
+  /// of the tab and nothing is addressed by their position — there is no index
+  /// a deep link can land on wrongly, so a withdrawn product is better absent
+  /// than present-and-refusing. A whitelisted tester still sees it.
+  List<_LifestyleEntry> get _visibleEntries =>
+      _entries.where((e) => FeatureFlags.gateAllowed(e.gate)).toList();
+
+  /// Both Lifestyle services withdrawn. Says so rather than leaving the tab
+  /// empty under a header that promises services.
+  Widget _buildNoEntries() {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 48.h),
+      child: Column(
+        children: [
+          Icon(Icons.spa_outlined, size: 44.sp, color: const Color(0xFF4B5563)),
+          SizedBox(height: 12.h),
+          Text(
+            'No lifestyle services are available right now',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            'Please check back shortly.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: const Color(0xFF9CA3AF),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildEntries() {
-    final entries = _entries;
+    final entries = _visibleEntries;
+    // Both withdrawn at once is a legal configuration and must not render as
+    // a blank tab under a header that promises services.
+    if (entries.isEmpty) return _buildNoEntries();
     switch (_viewMode) {
       case LifestyleViewMode.grid:
         return GridView.count(
@@ -377,6 +430,7 @@ class _LifestyleEntry {
     required this.emoji,
     required this.colors,
     required this.onTap,
+    required this.gate,
   });
 
   final String title;
@@ -384,4 +438,7 @@ class _LifestyleEntry {
   final String emoji;
   final List<Color> colors;
   final VoidCallback onTap;
+
+  /// Admin gate prefix, e.g. `feature_lifestyle_sprayme`.
+  final String gate;
 }

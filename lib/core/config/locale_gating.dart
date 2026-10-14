@@ -116,6 +116,36 @@ class LocaleGating {
         .contains(accountType.trim().toLowerCase());
   }
 
+  /// Whether a NEW account of this type may be opened, and its entry points
+  /// offered.
+  ///
+  /// DELIBERATELY SEPARATE FROM [accountTypeAllowed], AND IT IS A MONEY RULE.
+  ///
+  /// [accountTypeAllowed] is consulted by the dashboard carousel, which
+  /// decides whether an account CARD is rendered. Putting the admin gate there
+  /// would hide an account the user already holds — and a Family & Friends pot
+  /// or a business wallet holds a real balance, so withdrawing the product
+  /// would take the only surface showing that money off the screen. The user
+  /// could not see it, select it, or send from it. Switching a product off
+  /// must stop NEW ones being opened; it must never strand the ones that
+  /// exist.
+  ///
+  /// The locale rule is different and may hide a card, because there the
+  /// account is denominated in a currency this region cannot operate at all.
+  ///
+  /// Gated types only. personal / main / the FCY wallets are not withdrawable
+  /// products and always pass.
+  static bool accountTypeOfferable(String accountType) {
+    final token = accountType.trim().toLowerCase();
+    const gated = {'business', 'family', 'savings', 'investment'};
+    if (gated.contains(token) &&
+        !FeatureFlags.gateAllowed(
+            FeatureFlags.featurePrefix('account', token))) {
+      return false;
+    }
+    return accountTypeAllowed(accountType);
+  }
+
   /// Whether a money-movement action (`deposit` / `withdraw`) is offered in
   /// the current region.
   ///
